@@ -1,0 +1,1 @@
+curl https://raw2.github.com/mbostock/d3/master/d3.js > lib/d3.js

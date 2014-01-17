@@ -3,32 +3,40 @@
 <meta charset="utf-8">
 <head>
     <script src="http://d3js.org/d3.v3.js"></script>
-    <script src="prototype.js"></script>
-    <style type="text/css">
-        .highlighted {
-            stroke: red;
-        }
-    </style>
+
+    <!-- src -->
+    <script src="../src/class.js"></script>
+    <script src="../src/tau.data.js"></script>
+    <script src="../src/tau.charts.js"></script>
+    <script src="../src/tau.plugins.js"></script>
+
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../plugins/legend.js"></script>
+
+    <!-- css -->
+    <link href="../css/default.css" rel="stylesheet" />
 </head>
 <body>
-<svg id="chart" width="500" height="500">
-</svg>
-<script>
-    var data = tau.data.Array([
-        {duration: 10, effort: 1, timeSpent: 10, priority: 'Low'},
-        {duration: 5, effort: 3, timeSpent: 15, priority: 'High'},
-        {duration: 2, effort: 13, timeSpent: 5, priority: 'Urgent'}
-    ]);
+    <svg id="chart" width="500" height="500">
+    </svg>
+    <script>
+        var data = tau.data.Array([
+            {duration: 10, effort: 1, timeSpent: 10, priority: 'Low'},
+            {duration: 5, effort: 3, timeSpent: 15, priority: 'High'},
+            {duration: 2, effort: 13, timeSpent: 5, priority: 'Urgent'}
+        ]);
 
-    var scatterPlot = tau.charts.Scatterplot(data)
-            .map({
-                x: tau.data.map('duration').linear(),
-                y: tau.data.map('effort').linear(),
-                size: 'timeSpent',
-                color: tau.data.map('priority').category10()
-            })
-            .plugins(tau.plugins.legend(), tau.plugins.tooltip())
-            .render("#chart");
-</script>
+        tau.charts
+                .Scatterplot(data)
+                .map({
+                    x: tau.data.map('duration').linear(),
+                    y: tau.data.map('effort').linear(),
+                    size: 'timeSpent',
+                    color: tau.data.map('priority').category10()
+                })
+                .plugins(tau.plugins.legend(), tau.plugins.tooltip())
+                .render("#chart");
+    </script>
 </body>
 </html>
