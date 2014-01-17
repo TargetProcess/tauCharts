@@ -1,36 +1,36 @@
 (function () {
     /** @class
-      * @extends Plugin */
-     var Plugins = Class.extend({
-         /** @constructs */
-         init: function (plugins) {
-             this._plugins = plugins;
-         },
+     * @extends Plugin */
+    var Plugins = Class.extend({
+        /** @constructs */
+        init: function (plugins) {
+            this._plugins = plugins;
+        },
 
-         _call: function (name, args) {
-             for (var i = 0; i < this._plugins.length; i++) {
-                 if (typeof(this._plugins[i][name]) == "function") {
-                     this._plugins[i][name].apply(this._plugins[i], args);
-                 }
-             }
-         },
+        _call: function (name, args) {
+            for (var i = 0; i < this._plugins.length; i++) {
+                if (typeof(this._plugins[i][name]) == "function") {
+                    this._plugins[i][name].apply(this._plugins[i], args);
+                }
+            }
+        },
 
-         render: function (context, tools) {
-             this._call('render', arguments);
-         },
+        render: function (context, tools) {
+            this._call('render', arguments);
+        },
 
-         click: function (context, tools) {
-             this._call('click', arguments);
-         },
+        click: function (context, tools) {
+            this._call('click', arguments);
+        },
 
-         mouseover: function (context, tools) {
-             this._call('mouseover', arguments);
-         },
+        mouseover: function (context, tools) {
+            this._call('mouseover', arguments);
+        },
 
-         mouseout: function (context, tools) {
-             this._call('mouseout', arguments);
-         }
-     });
+        mouseout: function (context, tools) {
+            this._call('mouseout', arguments);
+        }
+    });
 
     /**
      * @class
@@ -199,7 +199,7 @@
         /** @constructs */
         init: function (elementContext) {
             this._elementContext = elementContext;
-        },
+        }
         //TODO: I don't think this is required (MD)
         /*
         highlight: function (datum) {
