@@ -7,11 +7,12 @@
          * @param {ChartTools} tools
          */
         render: function (context, tools) {
-            var color = tools.mapper.binder("color")._scale; // TODO: scale exposed - bad
+            // TODO: bad that we have width and mapper in tools interface
             var width = tools.width;
+            var domain = tools.mapper.domain("color");
 
             var legend = tools.d3.selectAll(".legend")
-                .data(color.domain())
+                .data(domain)
                 .enter().append("g")
                 .attr("class", "legend")
                 .attr("transform", function (d, i) {
@@ -22,16 +23,14 @@
                 .attr("x", width - 18)
                 .attr("width", 18)
                 .attr("height", 18)
-                .style("fill", color);
+                .style("fill", tools.mapper.map("color"));
 
             legend.append("text")
                 .attr("x", width - 24)
                 .attr("y", 9)
                 .attr("dy", ".35em")
                 .style("text-anchor", "end")
-                .text(function (d) {
-                    return d;
-                });
+                .text(tools.mapper.format("color"));
         }
     };
 

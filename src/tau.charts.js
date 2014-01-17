@@ -65,9 +65,9 @@
     var Axis = Class.extend({
         /**
          * @constructs
-         * @param {Object} binder */
-        init: function (binder) {
-            this._binder = binder;
+         * @param {PropertyMapper} mapper */
+        init: function (mapper) {
+            this._mapper = mapper;
         },
 
         render: function (context) {
@@ -83,11 +83,11 @@
      * @extends Axis */
     var XAxis = Axis.extend({
         render: function (context) {
-            // TODO: internal properties of binder are exposed
-            this._binder.range([0, this._width]);
+            this._mapper.range([0, this._width]);
 
             var xAxis = d3.svg.axis()
-                .scale(this._binder._scale)
+                // TODO: internal _scale property of binder is exposed
+                .scale(this._mapper._scale)
                 .orient("bottom");
 
             context.append("g")
@@ -99,7 +99,7 @@
                 .attr("x", this._width)
                 .attr("y", -6)
                 .style("text-anchor", "end")
-                .text(this._binder._name);
+                .text(this._mapper.caption());
         }
     });
 
@@ -107,11 +107,11 @@
      * @extends Axis */
     var YAxis = Axis.extend({
         render: function (context) {
-            // TODO: internal properties of binder are exposed
-            this._binder.range([this._height, 0]);
+            this._mapper.range([this._height, 0]);
 
             var yAxis = d3.svg.axis()
-                .scale(this._binder._scale)
+                // TODO: internal _scale property of binder is exposed
+                .scale(this._mapper._scale)
                 .orient("left");
 
             context.append("g")
@@ -123,7 +123,7 @@
                 .attr("y", 6)
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
-                .text(this._binder._name);
+                .text(this._mapper.caption());
         }
     });
 
@@ -158,10 +158,10 @@
                     .data(data)
                     .enter().append("circle")
                     .attr("class", "dot")
-                    .attr("r", this._mapper.bind("size"))
-                    .attr("cx", this._mapper.bind("x"))
-                    .attr("cy", this._mapper.bind("y"))
-                    .style("fill", this._mapper.bind("color"))
+                    .attr("r", this._mapper.map("size"))
+                    .attr("cx", this._mapper.map("x"))
+                    .attr("cy", this._mapper.map("y"))
+                    .style("fill", this._mapper.map("color"))
                     .on('click', function (d) {
                         this._plugins.click(new ClickContext(d), new ChartElementTools(svg.selectAll('circle')));
                     }.bind(this))
@@ -179,7 +179,13 @@
 
     /** @class ChartTools */
     var ChartTools = Class.extend({
-        /** @constructs */
+        /**
+         * @constructs
+         * @param d3Context
+         * @param width
+         * @param height
+         * @param {Mapper} mapper
+         */
         init: function (d3Context, width, height, mapper) {
             this.d3 = d3Context;
             this.width = width;

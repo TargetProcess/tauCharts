@@ -270,7 +270,7 @@
                 .Scatterplot(data)
                 .map({
                     x: tau.data.map('duration').linear(),
-                    y: tau.data.map('effort').linear(),
+                    y: tau.data.map('effort').caption("Effort, h").linear(),
                     size: 'timeSpent',
                     color: tau.data.map('priority').category10()
                 })

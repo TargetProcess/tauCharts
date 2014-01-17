@@ -1,4 +1,13 @@
-(function(){
+(function () {
+    var extend = function (obj, key, value) {
+        obj[key] = value;
+        return obj;
+    };
+
+    var toObject = function (key, value) {
+        return extend({}, key, value);
+    };
+
     /** @class DataSource */
     var DataSource = Class.extend({
         /**
@@ -32,13 +41,24 @@
             this._propertyMappers = propertyMappers;
         },
 
+        /**
+         * @param key
+         * @returns {PropertyMapper}
+         */
         binder: function (key) {
             return this._propertyMappers[key]; // TODO: try to get rid of this method
         },
 
-        bind: function (key) {
-            var binder = this.binder(key);
-            return binder.bind.bind(binder);
+        domain: function (key) {
+            return this.binder(key).domain();
+        },
+
+        map: function (key) {
+            return this.binder(key).map.bind(this.binder(key));
+        },
+
+        format: function (key) {
+            return this.binder(key).format.bind(this.binder(key));
         }
     });
 
@@ -49,17 +69,26 @@
         /** @constructs */
         init: function (name) {
             this._name = name;
+            this._caption = name;
             this._scale = d3.scale.linear();
         },
 
-        bind: function (d) {
+        map: function (d) {
             return this._scale(d[this._name]);
+        },
+
+        format: function(d){
+            return d[this._name].toString();
         },
 
         linear: function () {
             //noinspection JSValidateTypes,JSUnresolvedFunction
             this._scale = d3.scale.linear().domain([0, 30]).nice(); // TODO: use 0 - max by default
             return this;
+        },
+
+        domain: function () {
+            return this._scale.domain().map(toObject.bind(null, this._name));
         },
 
         category10: function () {
@@ -70,6 +99,15 @@
         range: function () {
             this._scale.range.apply(this._scale, arguments);
             return this;
+        },
+
+        caption: function(value) {
+            if (value){
+                this._caption = value;
+                return this;
+            }
+
+            return this._caption;
         }
     });
 
