@@ -12,7 +12,7 @@ TEXT {
 
 .dot.highlighted {
 	stroke: #000;
-	stroke-width: 4;
+	stroke-width: 6;
 	stroke-opacity: 0.4;
 	opacity: 1;
 }
@@ -52,4 +52,5 @@ TEXT {
 .dot {
 	opacity: 0.6;
 	transition: stroke-width 0.1s ease, opacity 0.1s ease;
+	stroke-width: 0;
 }

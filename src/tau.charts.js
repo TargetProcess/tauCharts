@@ -143,6 +143,7 @@
                 .attr("cx", this._mapper.map("x"))
                 .attr("cy", this._mapper.map("y"))
                 .style("fill", this._mapper.map("color"))
+                .style("stroke", this._mapper.map("color"))
                 .on('click', function (d) {
                     this._plugins.click(new ClickContext(d), new ChartElementTools(container.selectAll('circle')));
                 }.bind(this))
