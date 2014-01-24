@@ -1,6 +1,10 @@
 (function () {
     /** @class Tooltip
      * @extends Plugin */
+     /* Usage
+     .plugins(tau.plugins.tooltip('effort', 'priority'))
+    accepts a list of data fields names as properties
+    */
     var Tooltip = {
 
         init: function () {      
@@ -11,9 +15,9 @@
          * @param {HoverContext} context
          * @param {ChartElementTools} tools
          */
-        mouseover: function (context, tools) { //TODO: this tooltip jumps a bit, need to be fixed
-            //tools.highlight(context.datum);
-            
+        mouseover: function (context, tools) { 
+            //TODO: this tooltip jumps a bit, need to be fixed
+
             var text = '';
             for (var i = this._dataFields.length - 1; i >= 0; i--) {
                 var field = this._dataFields[i];
@@ -32,7 +36,6 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
-            //TODO: remove highlighting
             this._container.style("display", "none");
         }
     };
