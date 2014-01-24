@@ -1,5 +1,6 @@
 .highlighted {
-	stroke-width: 5;
+	stroke: #000;
+	stroke-width: 4;
 	stroke-opacity: 0.5;
 	opacity: 1;
 }
