@@ -116,6 +116,15 @@
                 .text(this._mapper.caption());
 
             container
+                .selectAll(".tick line")
+                .attr('x1', container.layout('width') - 6)
+                .attr('x2', container.layout('width'));
+
+            container
+                .selectAll(".tick text")
+                .attr('dx', container.layout('width'));
+
+            container
                 .select('.domain')
                 .attr('transform', 'translate(' + container.layout('width') + ', 0)');
         }
