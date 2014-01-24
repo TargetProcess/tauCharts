@@ -6,7 +6,7 @@
 
     test('should place elements width transform attribute', function () {
         var svg = document.createElement('svg');
-        var layout = new tau.svg.Layout(d3.select(svg), 100, 100);
+        var layout = new tau.svg.Layout(d3.select(svg), {width: 100, height: 100});
         layout.row(20);
         layout.row();
         layout.col(40);
@@ -17,18 +17,18 @@
 
     test('should take negative values as relative', function () {
         var svg = document.createElement('svg');
-        var layout = new tau.svg.Layout(d3.select(svg), 100, 100);
+        var layout = new tau.svg.Layout(d3.select(svg), {width: 100, height: 100});
         layout.row(-20);
         layout.row();
-        var b1 = layout.col(-40);
-        var b2 = layout.col();
+        layout.col(-40);
+        layout.col();
 
         equal(svg.innerHTML, '<g transform="translate(0,80)"></g><g transform="translate(60,80)"></g>');
     });
 
     test('should extend d3_selection with layout properties accessor', function () {
         var svg = document.createElement('svg');
-        var layout = new tau.svg.Layout(d3.select(svg), 100, 100);
+        var layout = new tau.svg.Layout(d3.select(svg), {width: 100, height: 100});
         layout.row(20);
         var box = layout.col(40);
 
@@ -38,7 +38,7 @@
 
     test('should return non-zero width and height for stretched elements', function () {
         var svg = document.createElement('svg');
-        var layout = new tau.svg.Layout(d3.select(svg), 100, 100);
+        var layout = new tau.svg.Layout(d3.select(svg), {width: 100, height: 100});
         layout.row(20);
         layout.row();
         layout.col(40);
@@ -50,7 +50,7 @@
 
     test('should guess dimensions when create layout inside layout', function () {
         var svg = document.createElement('svg');
-        var layout1 = new tau.svg.Layout(d3.select(svg), 100, 100);
+        var layout1 = new tau.svg.Layout(d3.select(svg), {width: 100, height: 100});
         layout1.row();
         layout1.col();
 
@@ -63,7 +63,6 @@
     });
 
     module('tau.svg.bringOnTop', {
-
     });
 
     test('should re-insert element to bring it on top', function () {
@@ -76,5 +75,43 @@
         tau.svg.bringOnTop(svg.select('#g1'));
 
         equal(svgNode.innerHTML, '<g id="g2"></g><g id="g1"></g>');
-    })
+    });
+
+    module('tau.svg.getBBox', {
+    });
+
+    test('should get element dimensions when set in number', function () {
+        var svgNode = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgNode.setAttribute('width', '100');
+        svgNode.setAttribute('height', '100');
+
+        deepEqual(tau.svg.getBBox(svgNode), {width: 100, height: 100});
+    });
+
+    test('should get element dimensions when set in percent', function () {
+        var svgNode = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgNode.setAttribute('width', '100%');
+        svgNode.setAttribute('height', '100%');
+
+        var container = document.createElement('div');
+        container.width = 200;
+        container.height = 200;
+
+        container.appendChild(svgNode);
+
+        deepEqual(tau.svg.getBBox(svgNode), {width: 200, height: 200});
+    });
+
+    test('should get element dimensions when set in percent and attached to body', function () {
+        var svgNode = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgNode.setAttribute('width', '100%');
+        svgNode.setAttribute('height', '100%');
+
+        document.body.appendChild(svgNode);
+
+        var box = tau.svg.getBBox(svgNode);
+
+        ok(box.width);
+        ok(box.height);
+    });
 })();

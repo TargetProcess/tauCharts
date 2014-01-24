@@ -6,11 +6,16 @@
     /** @class */
     var Layout = Class.extend({
         /** @constructs */
-        init: function (svg, width, height) {
+        init: function (svg, box) {
             this._svg = svg;
 
-            this._width = width || svg.layout('width');
-            this._height = height || svg.layout('height');
+            if (box){
+                this._width = box.width;
+                this._height = box.height;
+            } else {
+                this._width = svg.layout('width');
+                this._height = svg.layout('height');
+            }
 
             this._x = 0;
             this._y = 0;
@@ -64,9 +69,28 @@
         node.parentNode.appendChild(node);
     };
 
+    var getSVGLengthValue = function(element, property){
+        var value = element[property].baseVal;
+
+        switch(value.unitType){
+            case 1: // SVG_LENGTHTYPE_NUMBER
+                return value.value;
+            case 2: // SVG_LENGTHTYPE_PERCENTAGE
+                return (element.parentNode[property] || element.parentNode.getBoundingClientRect()[property]) * value.valueInSpecifiedUnits / 100;
+            default:
+                throw new Error('unitType ' + value.unitType + ' is not supported');
+        }
+    };
+
+    var getBBox = function(svgElement) {
+        return {
+            width: getSVGLengthValue(svgElement, 'width'),
+            height: getSVGLengthValue(svgElement, 'height')
+        };
+    };
+
     var paddedBox = function(d3_element, padding){
-        var box = d3_element[0][0].getBoundingClientRect();
-        var layout = new tau.svg.Layout(d3_element, box.width, box.height);
+        var layout = new tau.svg.Layout(d3_element, getBBox(d3_element[0][0]));
         layout.row(padding.top);
         layout.row(-padding.bottom);
         layout.col(padding.left);
@@ -75,6 +99,7 @@
     };
 
     tau.svg = {
+        getBBox: getBBox,
         bringOnTop: bringOnTop,
         paddedBox: paddedBox,
         Layout: Layout
