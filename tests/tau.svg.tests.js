@@ -1,8 +1,11 @@
 /*global module, test */
 
 (function () {
-    module('tau.svg.Layout', {
+    test('failing tests', function () {
+        equal(1, 0, 'means that ci works');
+    });
 
+    module('tau.svg.Layout', {
     });
 
     test('should place elements width transform attribute', function () {
