@@ -1,7 +1,4 @@
-var test = window.test;
+/*global test */
 
 (function () {
-    test("null test", function () {
-        ok(true);
-    });
 })();

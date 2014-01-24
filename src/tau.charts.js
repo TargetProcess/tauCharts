@@ -71,32 +71,24 @@
         },
 
         render: function (context) {
-        },
-
-        box: function (width, height) {
-            this._width = width;
-            this._height = height;
         }
     });
 
     /** @class
      * @extends Axis */
     var XAxis = Axis.extend({
-        render: function (context) {
-            this._mapper.range([0, this._width]);
-
+        render: function (container) {
             var xAxis = d3.svg.axis()
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
                 .orient("bottom");
 
-            context.append("g")
+            container
                 .attr("class", "x axis")
-                .attr("transform", "translate(0," + this._height + ")")
                 .call(xAxis)
                 .append("text")
                 .attr("class", "label")
-                .attr("x", this._width)
+                .attr("x", container.layout('width'))
                 .attr("y", -6)
                 .style("text-anchor", "end")
                 .text(this._mapper.caption());
@@ -106,24 +98,26 @@
     /** @class
      * @extends Axis */
     var YAxis = Axis.extend({
-        render: function (context) {
-            this._mapper.range([this._height, 0]);
-
+        render: function (container) {
             var yAxis = d3.svg.axis()
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
                 .orient("left");
 
-            context.append("g")
+            container
                 .attr("class", "y axis")
                 .call(yAxis)
                 .append("text")
                 .attr("class", "label")
                 .attr("transform", "rotate(-90)")
-                .attr("y", 6)
+                .attr("y", 6 + container.layout('width'))
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
                 .text(this._mapper.caption());
+
+            container
+                .select('.domain')
+                .attr('transform', 'translate(' + container.layout('width') + ', 0)');
         }
     });
 
@@ -136,43 +130,52 @@
             this._super.call(this, dataSource);
         },
 
-        render: function (selector) {
-            var axes = [new XAxis(this._mapper.binder("x")), new YAxis(this._mapper.binder("y"))];
-            var margin = {top: 20, right: 20, bottom: 30, left: 40},
-                width = 960 - margin.left - margin.right,
-                height = 500 - margin.top - margin.bottom;
+        _renderData: function (container, data) {
+            this._mapper.binder('x').range([0, container.layout('width')]);
+            this._mapper.binder('y').range([container.layout('height'), 0]);
 
-            var svg = d3.select(selector)
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            container
+                .selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("r", this._mapper.map("size"))
+                .attr("cx", this._mapper.map("x"))
+                .attr("cy", this._mapper.map("y"))
+                .style("fill", this._mapper.map("color"))
+                .on('click', function (d) {
+                    this._plugins.click(new ClickContext(d), new ChartElementTools(container.selectAll('circle')));
+                }.bind(this))
+                .on('mouseover', function (d) {
+                    this._plugins.mouseover(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
+                }.bind(this))
+                .on('mouseout', function (d) {
+                    this._plugins.mouseout(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
+                }.bind(this));
+        },
+
+        render: function (selector) {
+            var container = tau.svg.paddedBox(d3.select(selector), {top: 20, right: 20, bottom: 30, left: 40});
 
             this._dataSource.get(/** @this ScatterPlotChart */ function (data) {
-                for (var i = 0; i < axes.length; i++) {
-                    axes[i].box(width, height); // TODO: bad
-                    axes[i].render(svg);
-                }
+                var layout = new tau.svg.Layout(container);
 
-                svg.selectAll(".dot")
-                    .data(data)
-                    .enter().append("circle")
-                    .attr("class", "dot")
-                    .attr("r", this._mapper.map("size"))
-                    .attr("cx", this._mapper.map("x"))
-                    .attr("cy", this._mapper.map("y"))
-                    .style("fill", this._mapper.map("color"))
-                    .on('click', function (d) {
-                        this._plugins.click(new ClickContext(d), new ChartElementTools(svg.selectAll('circle')));
-                    }.bind(this))
-                    .on('mouseover', function (d) {
-                        this._plugins.mouseover(new HoverContext(d), new ChartElementTools(svg.selectAll('circle')));
-                    }.bind(this))
-                    .on('mouseout', function (d) {
-                        this._plugins.mouseout(new HoverContext(d), new ChartElementTools(svg.selectAll('circle')));
-                    }.bind(this));
+                layout.row(-30);
+                var yAxisContainer = layout.col(20);
+                var dataContainer = layout.col();
 
-                this._plugins.render(new RenderContext(), new ChartTools(svg, width, height, this._mapper));
+                layout.row();
+                layout.col(20);
+                var xAxisContainer = layout.col();
+
+                this._renderData(dataContainer, data);
+
+                new YAxis(this._mapper.binder("y")).render(yAxisContainer);
+                new XAxis(this._mapper.binder("x")).render(xAxisContainer);
+
+                tau.svg.bringOnTop(dataContainer);
+
+                this._plugins.render(new RenderContext(), new ChartTools(container, this._mapper));
             }.bind(this));
         }
     });
@@ -181,15 +184,13 @@
     var ChartTools = Class.extend({
         /**
          * @constructs
-         * @param d3Context
+         * @param d3container
          * @param width
          * @param height
          * @param {Mapper} mapper
          */
-        init: function (d3Context, width, height, mapper) {
-            this.d3 = d3Context;
-            this.width = width;
-            this.height = height;
+        init: function (d3container, mapper) {
+            this.d3 = d3container;
             this.mapper = mapper;
         }
     });
