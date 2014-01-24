@@ -21,6 +21,14 @@
 
          click: function (context, tools) {
              this._call('click', arguments);
+         },
+
+         mouseover: function (context, tools) {
+             this._call('mouseover', arguments);
+         },
+
+         mouseout: function (context, tools) {
+             this._call('mouseout', arguments);
          }
      });
 
@@ -156,6 +164,12 @@
                     .style("fill", this._mapper.bind("color"))
                     .on('click', function (d) {
                         this._plugins.click(new ClickContext(d), new ChartElementTools(svg.selectAll('circle')));
+                    }.bind(this))
+                    .on('mouseover', function (d) {
+                        this._plugins.mouseover(new HoverContext(d), new ChartElementTools(svg.selectAll('circle')));
+                    }.bind(this))
+                    .on('mouseout', function (d) {
+                        this._plugins.mouseout(new HoverContext(d), new ChartElementTools(svg.selectAll('circle')));
                     }.bind(this));
 
                 this._plugins.render(new RenderContext(), new ChartTools(svg, width, height, this._mapper));
@@ -180,7 +194,8 @@
         init: function (elementContext) {
             this._elementContext = elementContext;
         },
-
+        //TODO: I don't think this is required (MD)
+        /*
         highlight: function (datum) {
             this._elementContext.classed('highlighted', function (d) {
                 return d === datum
@@ -188,8 +203,14 @@
         },
 
         tooltip: function (html) {
-            d3.select('body').append('div').html(html);
-        }
+            d3.select('body')
+            .append('div')
+            .classed('tooltip', true)
+            .style('top', (event.pageY-10)+"px")
+            .style('left',(event.pageX+10)+"px")
+            .style('display', 'block')
+            .html(html);
+        }*/
     });
 
     /** @class RenderContext*/
@@ -198,6 +219,14 @@
 
     /** @class ClickContext*/
     var ClickContext = Class.extend({
+        /** @constructs */
+        init: function (datum) {
+            this.datum = datum;
+        }
+    });
+
+    /** @class HoverContext*/
+    var HoverContext = Class.extend({
         /** @constructs */
         init: function (datum) {
             this.datum = datum;
