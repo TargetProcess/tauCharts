@@ -1,3 +1,8 @@
 .highlighted {
     stroke: green;
 }
+
+.axis line{
+    stroke-width: 1px;
+    stroke: #BDC3CD
+}
