@@ -13,6 +13,7 @@
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
     <script src="../plugins/legend.js"></script>
+    <script src="../plugins/highlighter.js"></script>
 
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet" />
@@ -35,7 +36,11 @@
                     size: 'timeSpent',
                     color: tau.data.map('priority').category10()
                 })
-                .plugins(tau.plugins.legend(), tau.plugins.tooltip())
+                .plugins(
+                    tau.plugins.legend(), 
+                    tau.plugins.tooltip('effort', 'priority'),
+                    tau.plugins.highlighter()
+                )
                 .render("#chart");
     </script>
 </body>

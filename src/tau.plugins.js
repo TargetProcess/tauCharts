@@ -1,6 +1,10 @@
 (function () {
     /** @class Plugin */
     var Plugin = Class.extend({
+        
+        init: function() {            
+        },
+
         /**
          * @param {RenderContext} context
          * @param {ChartTools} tools
@@ -13,6 +17,20 @@
          * @param {ChartElementTools} tools
          */
         click: function (context, tools) {
+        },
+
+        /**
+         * @param {HoverContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseover: function (context, tools) {
+        },
+
+        /**
+         * @param {HoverContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseout: function (context, tools) {
         }
     });
 

@@ -1,3 +1,11 @@
 .highlighted {
     stroke: green;
 }
+
+.tooltip {
+	position: absolute;
+	background: #eee;
+	padding: 10px;
+	display: none;
+	font: 12px Arial;
+}
