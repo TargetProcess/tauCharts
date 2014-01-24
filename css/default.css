@@ -1,8 +1,27 @@
 .highlighted {
-    stroke: green;
+	stroke-width: 5;
+	stroke-opacity: 0.5;
+	opacity: 1;
 }
 
 .axis line{
-    stroke-width: 1px;
-    stroke: #BDC3CD
+    stroke-width: 1;
+    fill: none;
+    stroke: #BDC3CD;
+    shape-rendering: crispEdges;
+}
+
+.axis path{
+    stroke-width: 1;
+    fill: none;
+    stroke: #BDC3CD;
+    shape-rendering: crispEdges;
+}
+
+.dot{
+	opacity: 0.6;
+}
+
+text{
+	font:normal 13px 'Open Sans', sans-serif;
 }
