@@ -1,41 +1,55 @@
-.highlighted {
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+
+BODY {
+	font: normal 13px 'Open Sans', sans-serif;
+	color: #000;
+	background-color: #fff;
+}
+
+TEXT {
+	font:normal 13px 'Open Sans', sans-serif;
+}
+
+.dot.highlighted {
 	stroke: #000;
 	stroke-width: 4;
-	stroke-opacity: 0.5;
+	stroke-opacity: 0.4;
 	opacity: 1;
 }
 
 .tooltip {
 	position: absolute;
-	background: #eee;
-	padding: 10px;
 	display: none;
-	font: 12px Arial;
+
+	font-size: 11px;
+	padding: 7px 10px 8px;
+	border-radius: 5px;
+	background: #FFFFFF;
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2),  0px 0px 0px 1px rgba(0, 0, 0, 0.05);
 }
 
-.axis line{
+.tooltip EM {
+	font-style: normal;
+	color: #999;
+	display: inline-block;
+	min-width: 45px;
+}
+
+.axis LINE {
     stroke-width: 1;
     fill: none;
     stroke: #BDC3CD;
     shape-rendering: crispEdges;
 }
 
-.axis line {
-    stroke-width: 1px;
-    stroke: #BDC3CD;
-}
-
-.axis path{
+.axis PATH {
     stroke-width: 1;
     fill: none;
     stroke: #BDC3CD;
     shape-rendering: crispEdges;
 }
 
-.dot{
+.dot {
 	opacity: 0.6;
-}
-
-text{
-	font:normal 13px 'Open Sans', sans-serif;
+	transition: stroke-width 0.1s ease, opacity 0.1s ease;
 }

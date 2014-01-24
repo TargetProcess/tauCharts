@@ -21,7 +21,7 @@
             var text = '';
             for (var i = this._dataFields.length - 1; i >= 0; i--) {
                 var field = this._dataFields[i];
-                text += field + ': ' + context.datum[field] + '<br>'
+                text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + context.datum[field] + '</p>'
             };
 
             this._container.classed('tooltip', true)
