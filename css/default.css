@@ -9,3 +9,7 @@
 	display: none;
 	font: 12px Arial;
 }
+.axis line {
+    stroke-width: 1px;
+    stroke: #BDC3CD
+}
