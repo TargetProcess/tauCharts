@@ -15,6 +15,7 @@
     <script src="../plugins/tooltip.js"></script>
     <script src="../plugins/legend.js"></script>
     <script src="../plugins/highlighter.js"></script>
+    <script src="../plugins/projection.js"></script>
 
     <!-- test data -->
     <script src="data.js"></script>
@@ -43,7 +44,8 @@
                 .plugins(
                     tau.plugins.legend(), 
                     tau.plugins.tooltip('effort', 'priority'),
-                    tau.plugins.highlighter()
+                    tau.plugins.highlighter(),
+                    tau.plugins.projection()
                 )
                 .render("#chartScatter");
 

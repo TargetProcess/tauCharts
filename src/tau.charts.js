@@ -143,6 +143,8 @@
             this._mapper.binder('x').range([0, container.layout('width')]);
             this._mapper.binder('y').range([container.layout('height'), 0]);
 
+            var plugins = this._plugins;
+
             container
                 .selectAll(".dot")
                 .data(data)
@@ -154,14 +156,14 @@
                 .attr("cx", this._mapper.map("x"))
                 .attr("cy", this._mapper.map("y"))
                 .on('click', function (d) {
-                    this._plugins.click(new ClickContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this))
+                    plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
+                })
                 .on('mouseover', function (d) {
-                    this._plugins.mouseover(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this))
+                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                })
                 .on('mouseout', function (d) {
-                    this._plugins.mouseout(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this));
+                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                });
         },
 
         render: function (selector) {
@@ -245,8 +247,6 @@
         /**
          * @constructs
          * @param d3container
-         * @param width
-         * @param height
          * @param {Mapper} mapper
          */
         init: function (d3container, mapper) {
@@ -258,46 +258,38 @@
     /** @class ChartElementTools*/
     var ChartElementTools = Class.extend({
         /** @constructs */
-        init: function (elementContext) {
-            this._elementContext = elementContext;
+        init: function (element) {
+            this.element = element;
         }
-        //TODO: I don't think this is required (MD)
-        /*
-        highlight: function (datum) {
-            this._elementContext.classed('highlighted', function (d) {
-                return d === datum
-            });
-        },
-
-        tooltip: function (html) {
-            d3.select('body')
-            .append('div')
-            .classed('tooltip', true)
-            .style('top', (event.pageY-10)+"px")
-            .style('left',(event.pageX+10)+"px")
-            .style('display', 'block')
-            .html(html);
-        }*/
     });
 
     /** @class RenderContext*/
     var RenderContext = Class.extend({
     });
 
-    /** @class ClickContext*/
-    var ClickContext = Class.extend({
-        /** @constructs */
+    /** @class ElementContext */
+    var ElementContext = Class.extend({
+        /**
+         * @constructs
+         * @param datum
+         */
         init: function (datum) {
             this.datum = datum;
         }
     });
 
-    /** @class HoverContext*/
-    var HoverContext = Class.extend({
-        /** @constructs */
-        init: function (datum) {
-            this.datum = datum;
-        }
+    /**
+     * @class ClickContext
+     * @extends {ElementContext}
+     */
+    var ClickContext = ElementContext.extend({
+    });
+
+    /**
+     * @class HoverContext
+     * @extends {ElementContext}
+     */
+    var HoverContext = ElementContext.extend({
     });
 
     tau.charts = {

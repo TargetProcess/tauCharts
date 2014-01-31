@@ -1,13 +1,19 @@
 (function () {
     /** @class Tooltip
      * @extends Plugin */
-    var Highlighter = {
+    var Projection = {
+
+        init: function () {      
+
+        },
         /**
          * @param {HoverContext} context
          * @param {ChartElementTools} tools
          */
         mouseover: function (context, tools) { 
-            tools.element.classed('highlighted', true);
+            /*tools._elementContext.classed('projection', function (d) {
+                return d === context.datum; 
+            })*/
         },
 
         /**
@@ -15,9 +21,9 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
-            tools.element.classed('highlighted', false)
+            /*tools._elementContext.classed('projection', false)*/
         }
     };
 
-    tau.plugins.add('highlighter', Highlighter);
+    tau.plugins.add('projection', Projection);
 })();
