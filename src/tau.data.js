@@ -92,7 +92,7 @@
         },
 
         category10: function () {
-            this._scale = d3.scale.category10();
+            this._scale = d3.scale.ordinal().range(['color10-0', 'color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9']);
             return this;
         },
 

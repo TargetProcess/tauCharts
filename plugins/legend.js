@@ -21,10 +21,12 @@
                 });
 
             legend.append("rect")
-                .attr("class", "dot")// TODO: bad
+                // TODO: copy pasted from scatterplot for now, think on it better
+                .attr("class", function(d){
+                    return "dot " + tools.mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                }.bind(this))
                 .attr("width", 18)
-                .attr("height", 18)
-                .style("fill", tools.mapper.map("color"));
+                .attr("height", 18);
 
             legend.append("text")
                 .attr("dx", -10)

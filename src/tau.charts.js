@@ -147,12 +147,12 @@
                 .selectAll(".dot")
                 .data(data)
                 .enter().append("circle")
-                .attr("class", "dot")
+                .attr("class", function(d){
+                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                }.bind(this))
                 .attr("r", this._mapper.map("size"))
                 .attr("cx", this._mapper.map("x"))
                 .attr("cy", this._mapper.map("y"))
-                .style("fill", this._mapper.map("color"))
-                .style("stroke", this._mapper.map("color"))
                 .on('click', function (d) {
                     this._plugins.click(new ClickContext(d), new ChartElementTools(container.selectAll('circle')));
                 }.bind(this))
