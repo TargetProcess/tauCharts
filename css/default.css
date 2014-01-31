@@ -69,3 +69,40 @@ text {
     fill: #2ca02c;
     stroke: #2ca02c;
 }
+
+.projections line{
+	stroke-width: 1;
+	opacity: 0.6;
+}
+
+.projections .x text{
+	text-anchor: middle;
+}
+
+.projections .y text{
+	text-anchor: end;
+}
+
+.projections.color10-0 line {
+    stroke: #1f77b4;
+}
+
+.projections.color10-1 line {
+    stroke: #ff7f0e;
+}
+
+.projections.color10-2 line {
+    stroke: #2ca02c;
+}
+
+.projections.color10-0 text {
+    fill: #1f77b4;
+}
+
+.projections.color10-1 text {
+    fill: #ff7f0e;
+}
+
+.projections.color10-2 text {
+    fill: #2ca02c;
+}
