@@ -143,6 +143,8 @@
             this._mapper.binder('x').range([0, container.layout('width')]);
             this._mapper.binder('y').range([container.layout('height'), 0]);
 
+            var plugins = this._plugins;
+
             container
                 .selectAll(".dot")
                 .data(data)
@@ -154,14 +156,14 @@
                 .attr("cx", this._mapper.map("x"))
                 .attr("cy", this._mapper.map("y"))
                 .on('click', function (d) {
-                    this._plugins.click(new ClickContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this))
+                    plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
+                })
                 .on('mouseover', function (d) {
-                    this._plugins.mouseover(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this))
+                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                })
                 .on('mouseout', function (d) {
-                    this._plugins.mouseout(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this));
+                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                });
         },
 
         render: function (selector) {
