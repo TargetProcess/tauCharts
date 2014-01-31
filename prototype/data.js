@@ -1,4 +1,57 @@
-window.data = [
+window.lineData = [
+    {
+        "priority": "High",
+        "effort": 1,
+        "bugsCount": 2
+    },
+    {
+        "priority": "High",
+        "effort": 2,
+        "bugsCount": 2
+    },
+    {
+        "priority": "High",
+        "effort": 3,
+        "bugsCount": 4
+    },
+    {
+        "priority": "High",
+        "effort": 4,
+        "bugsCount": 7
+    },
+    {
+        "priority": "High",
+        "effort": 5,
+        "bugsCount": 3
+    },
+    {
+        "priority": "High",
+        "effort": 6,
+        "bugsCount": 8
+    },
+    {
+        "priority": "High",
+        "effort": 7,
+        "bugsCount": 3
+    },
+    {
+        "priority": "High",
+        "effort": 8,
+        "bugsCount": 3
+    },
+    {
+        "priority": "High",
+        "effort": 9,
+        "bugsCount": 18
+    },
+    {
+        "priority": "High",
+        "effort": 10,
+        "bugsCount": 12
+    },
+];
+
+window.scatterData = [
     {
         "duration": 20,
         "effort": 10,

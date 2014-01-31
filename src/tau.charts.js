@@ -132,42 +132,21 @@
 
     /**@class */
     /**@extends Chart */
-    var ScatterPlotChart = Chart.extend({
-        /** @constructs
+    var BasicChart = Chart.extend({
+       /** @constructs
          * @param {DataSource} dataSource */
         init: function (dataSource) {
             this._super.call(this, dataSource);
         },
 
         _renderData: function (container, data) {
-            this._mapper.binder('x').range([0, container.layout('width')]);
-            this._mapper.binder('y').range([container.layout('height'), 0]);
-
-            container
-                .selectAll(".dot")
-                .data(data)
-                .enter().append("circle")
-                .attr("class", function(d){
-                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
-                }.bind(this))
-                .attr("r", this._mapper.map("size"))
-                .attr("cx", this._mapper.map("x"))
-                .attr("cy", this._mapper.map("y"))
-                .on('click', function (d) {
-                    this._plugins.click(new ClickContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this))
-                .on('mouseover', function (d) {
-                    this._plugins.mouseover(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this))
-                .on('mouseout', function (d) {
-                    this._plugins.mouseout(new HoverContext(d), new ChartElementTools(container.selectAll('circle')));
-                }.bind(this));
+            throw new Error('Not implemented');
         },
 
         render: function (selector) {
             var container = tau.svg.paddedBox(d3.select(selector), {top: 20, right: 20, bottom: 30, left: 40});
 
-            this._dataSource.get(/** @this ScatterPlotChart */ function (data) {
+            this._dataSource.get(/** @this BasicChart */ function (data) {
                 var layout = new tau.svg.Layout(container);
 
                 layout.row(-30);
@@ -179,14 +158,97 @@
                 var xAxisContainer = layout.col();
 
                 this._renderData(dataContainer, data);
+                this._dataSource.update(this._renderData.bind(this, dataContainer));
 
                 new YAxis(this._mapper.binder("y")).render(yAxisContainer);
                 new XAxis(this._mapper.binder("x")).render(xAxisContainer);
 
                 tau.svg.bringOnTop(dataContainer);
 
-                this._plugins.render(new RenderContext(), new ChartTools(container, this._mapper));
+                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(container, this._mapper));
             }.bind(this));
+        }
+    });
+
+    /**@class */
+    /**@extends BasicChart */
+    var ScatterPlotChart = BasicChart.extend({
+
+        _renderData: function (container, data) {
+            this._mapper.binder('x').range([0, container.layout('width')]);
+            this._mapper.binder('y').range([container.layout('height'), 0]);
+
+            var plugins = this._plugins;
+            var mapper = this._mapper;
+
+            var update = function(){
+                return this
+                    .attr("class", function(d){
+                        return "dot " + mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                    }.bind(this))
+                    .attr("r", mapper.map("size"))
+                    .attr("cx", mapper.map("x"))
+                    .attr("cy", mapper.map("y"))
+                    .on('click', function (d) {
+                        plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
+                    })
+                    .on('mouseover', function (d) {
+                        plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                    })
+                    .on('mouseout', function (d) {
+                        plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                    });
+            };
+
+            var elements = container.selectAll(".dot").data(data);
+
+            elements.call(update);
+            elements.enter().append("circle").call(update);
+            elements.exit().remove();
+        }
+    });
+
+
+    /**@class */
+    /**@extends BasicChart */
+    var LineChart = BasicChart.extend({
+
+        _renderData: function (container, data) {
+            this._mapper.binder('x').range([0, container.layout('width')]);
+            this._mapper.binder('y').range([container.layout('height'), 0]);
+
+            var plugins = this._plugins;
+
+            var _line = d3.svg.line()
+              .x(this._mapper.map("x"))
+              .y(this._mapper.map("y"));
+
+            // draw line
+            container
+                .append("path")
+                 // use first data element to define line color.
+                 // TODO: refactor when create multiline chart
+                .attr("class", "line " + this._mapper.map("color")(data[0]))
+                .attr("d", _line.call(this, data));
+
+            // draw circles (to enable mouse interactions)
+            container
+                .append('g')
+                .selectAll('.dot')
+                .data(data)
+                .enter().append('circle')
+                .attr("class", function(d){
+                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                }.bind(this))
+                .attr("cx", this._mapper.map("x"))
+                .attr("cy", this._mapper.map("y"))
+                .attr('r', function() { return 3; })
+                .on('mouseover', function (d) {
+                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mouseout', function (d) {
+                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                });
         }
     });
 
@@ -195,8 +257,6 @@
         /**
          * @constructs
          * @param d3container
-         * @param width
-         * @param height
          * @param {Mapper} mapper
          */
         init: function (d3container, mapper) {
@@ -208,46 +268,42 @@
     /** @class ChartElementTools*/
     var ChartElementTools = Class.extend({
         /** @constructs */
-        init: function (elementContext) {
-            this._elementContext = elementContext;
+        init: function (element) {
+            this.element = element;
         }
-        //TODO: I don't think this is required (MD)
-        /*
-        highlight: function (datum) {
-            this._elementContext.classed('highlighted', function (d) {
-                return d === datum
-            });
-        },
-
-        tooltip: function (html) {
-            d3.select('body')
-            .append('div')
-            .classed('tooltip', true)
-            .style('top', (event.pageY-10)+"px")
-            .style('left',(event.pageX+10)+"px")
-            .style('display', 'block')
-            .html(html);
-        }*/
     });
 
     /** @class RenderContext*/
     var RenderContext = Class.extend({
+        /** @constructs */
+        init: function(dataSource) {
+            this.data = dataSource;
+        }
     });
 
-    /** @class ClickContext*/
-    var ClickContext = Class.extend({
-        /** @constructs */
+    /** @class ElementContext */
+    var ElementContext = Class.extend({
+        /**
+         * @constructs
+         * @param datum
+         */
         init: function (datum) {
             this.datum = datum;
         }
     });
 
-    /** @class HoverContext*/
-    var HoverContext = Class.extend({
-        /** @constructs */
-        init: function (datum) {
-            this.datum = datum;
-        }
+    /**
+     * @class ClickContext
+     * @extends {ElementContext}
+     */
+    var ClickContext = ElementContext.extend({
+    });
+
+    /**
+     * @class HoverContext
+     * @extends {ElementContext}
+     */
+    var HoverContext = ElementContext.extend({
     });
 
     tau.charts = {
@@ -257,6 +313,9 @@
          */
         Scatterplot: function (data) {
             return new ScatterPlotChart(data);
+        },
+        Line: function (data) {
+            return new LineChart(data);
         }
     };
 })();

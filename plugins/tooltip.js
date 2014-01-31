@@ -25,8 +25,8 @@
             };
 
             this._container.classed('tooltip', true)
-            .style('top', (event.pageY-10) + 'px')
-            .style('left',(event.pageX+10) + 'px')
+            .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
+            .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px')
             .style('display', 'block')
             .html(text);
         },

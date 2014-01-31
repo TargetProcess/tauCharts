@@ -1,4 +1,10 @@
 (function () {
+    function not(x){
+        return function(d){
+            return x != d;
+        }
+    }
+
     /** @class Legend
      * @extends Plugin */
     var Legend = {
@@ -11,6 +17,7 @@
 
             // TODO: bad that we have mapper in tools interface
             var domain = tools.mapper.domain("color");
+            var disabled = [];
 
             var legend = tools.d3.selectAll(".legend")
                 .data(domain)
@@ -21,12 +28,28 @@
                 });
 
             legend.append("rect")
-                // TODO: copy pasted from scatterplot for now, think on it better
+                // TODO: copy pasted from scatterplot for now to reuse css, remove in future
                 .attr("class", function(d){
                     return "dot " + tools.mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
                 }.bind(this))
                 .attr("width", 18)
-                .attr("height", 18);
+                .attr("height", 18)
+                .on('click', function(d) {
+                    // TODO: quick and dirty filtering, will be removed when data types and legend controls for them are introduced
+                    var value = tools.mapper.map("color")(d);
+
+                    if (disabled.indexOf(value) == -1) {
+                        disabled.push(value);
+                        d3.select(this).classed('disabled', true);
+                    } else {
+                        disabled = disabled.filter(not(value));
+                        d3.select(this).classed('disabled', false);
+                    }
+
+                    context.data.filter(function(d){
+                        return disabled.indexOf(tools.mapper.map("color")(d)) == -1;
+                    })
+                });
 
             legend.append("text")
                 .attr("dx", -10)

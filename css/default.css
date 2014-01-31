@@ -55,19 +55,19 @@ text {
 	stroke-width: 0;
 }
 
-.dot.color10-0 {
+.color10-0 {
     fill: #1f77b4;
-    stroke: #1f77b4;
+    stroke: #1f77b4 !important;
 }
 
-.dot.color10-1 {
+.color10-1 {
     fill: #ff7f0e;
-    stroke: #ff7f0e;
+    stroke: #ff7f0e !important;
 }
 
-.dot.color10-2 {
+.color10-2 {
     fill: #2ca02c;
-    stroke: #2ca02c;
+    stroke: #2ca02c !important;
 }
 
 .projections line{
@@ -106,3 +106,12 @@ text {
 .projections.color10-2 text {
     fill: #2ca02c;
 }
+
+.line {
+  fill: none;
+  stroke-width: 1.5px;
+  stroke: red;
+}
+
+.legend .disabled {
+    opacity: 0.2;
