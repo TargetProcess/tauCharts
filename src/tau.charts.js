@@ -146,7 +146,7 @@
         render: function (selector) {
             var container = tau.svg.paddedBox(d3.select(selector), {top: 20, right: 20, bottom: 30, left: 40});
 
-            this._dataSource.get(/** @this ScatterPlotChart */ function (data) {
+            this._dataSource.get(/** @this BasicChart */ function (data) {
                 var layout = new tau.svg.Layout(container);
 
                 layout.row(-30);
@@ -158,13 +158,14 @@
                 var xAxisContainer = layout.col();
 
                 this._renderData(dataContainer, data);
+                this._dataSource.update(this._renderData.bind(this, dataContainer));
 
                 new YAxis(this._mapper.binder("y")).render(yAxisContainer);
                 new XAxis(this._mapper.binder("x")).render(xAxisContainer);
 
                 tau.svg.bringOnTop(dataContainer);
 
-                this._plugins.render(new RenderContext(), new ChartTools(container, this._mapper));
+                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(container, this._mapper));
             }.bind(this));
         }
     });
@@ -178,26 +179,32 @@
             this._mapper.binder('y').range([container.layout('height'), 0]);
 
             var plugins = this._plugins;
+            var mapper = this._mapper;
 
-            container
-                .selectAll(".dot")
-                .data(data)
-                .enter().append("circle")
-                .attr("class", function(d){
-                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
-                }.bind(this))
-                .attr("r", this._mapper.map("size"))
-                .attr("cx", this._mapper.map("x"))
-                .attr("cy", this._mapper.map("y"))
-                .on('click', function (d) {
-                    plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
-                })
-                .on('mouseover', function (d) {
-                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
-                })
-                .on('mouseout', function (d) {
-                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
-                });
+            var update = function(){
+                return this
+                    .attr("class", function(d){
+                        return "dot " + mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                    }.bind(this))
+                    .attr("r", mapper.map("size"))
+                    .attr("cx", mapper.map("x"))
+                    .attr("cy", mapper.map("y"))
+                    .on('click', function (d) {
+                        plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
+                    })
+                    .on('mouseover', function (d) {
+                        plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                    })
+                    .on('mouseout', function (d) {
+                        plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                    });
+            };
+
+            var elements = container.selectAll(".dot").data(data);
+
+            elements.call(update);
+            elements.enter().append("circle").call(update);
+            elements.exit().remove();
         }
     });
 
@@ -268,6 +275,10 @@
 
     /** @class RenderContext*/
     var RenderContext = Class.extend({
+        /** @constructs */
+        init: function(dataSource) {
+            this.data = dataSource;
+        }
     });
 
     /** @class ElementContext */

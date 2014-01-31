@@ -75,3 +75,7 @@ text {
   stroke-width: 1.5px;
   stroke: red;
 }
+
+.legend .disabled {
+    opacity: 0.2;
+}

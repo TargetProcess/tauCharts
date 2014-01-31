@@ -8,14 +8,53 @@
         return extend({}, key, value);
     };
 
-    /** @class DataSource */
+    var noop = function () {
+    };
+
+    var chain = function (fn1, fn2) {
+        return function() {
+            fn1.apply(fn1, arguments);
+            fn2.apply(fn2, arguments);
+        }
+    };
+
+    /** @class DataSource
+     * @extends Class */
     var DataSource = Class.extend({
+        /**
+         * @constructs
+         */
+        init: function () {
+            this._observers = {
+                'update': noop
+            };
+        },
         /**
          * @abstract
          * @param {Function} callback
          */
-        get: function (callback) { // TODO: consider deferred and jQuery reference
+        get: function (callback) {
             throw new Error('not implemented');
+        },
+
+        /**
+         * @abstract
+         * @param {Function} predicate
+         */
+        filter: function (predicate) {
+            throw new Error('not implemented');
+        },
+
+        update: function (callback) {
+            this._on('update', callback);
+        },
+
+        _on: function (e, observer) {
+            this._observers[e] = chain(this._observers[e], observer);
+        },
+
+        _trigger: function (e, data) {
+            this._observers[e](data);
         }
     });
 
@@ -26,10 +65,16 @@
         /** @constructs */
         init: function (data) {
             this._data = data;
+            this._super();
         },
 
         get: function (callback) {
-            callback(this._data);
+            callback(this._predicate ? this._data.filter(this._predicate) : this._data); // TODO: ix copy-paste
+        },
+
+        filter: function (predicate) {
+            this._predicate = predicate;
+            this._trigger('update', this._predicate ? this._data.filter(this._predicate) : this._data);
         }
     });
 
@@ -77,7 +122,7 @@
             return this._scale(d[this._name]);
         },
 
-        format: function(d){
+        format: function (d) {
             return d[this._name].toString();
         },
 
@@ -101,8 +146,8 @@
             return this;
         },
 
-        caption: function(value) {
-            if (value){
+        caption: function (value) {
+            if (value) {
                 this._caption = value;
                 return this;
             }
