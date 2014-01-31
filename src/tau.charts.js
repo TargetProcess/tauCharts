@@ -130,40 +130,15 @@
         }
     });
 
-    /**@class */
-    /**@extends Chart */
-    var ScatterPlotChart = Chart.extend({
-        /** @constructs
+    var BasicChart = Chart.extend({
+       /** @constructs
          * @param {DataSource} dataSource */
         init: function (dataSource) {
             this._super.call(this, dataSource);
         },
 
         _renderData: function (container, data) {
-            this._mapper.binder('x').range([0, container.layout('width')]);
-            this._mapper.binder('y').range([container.layout('height'), 0]);
-
-            var plugins = this._plugins;
-
-            container
-                .selectAll(".dot")
-                .data(data)
-                .enter().append("circle")
-                .attr("class", function(d){
-                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
-                }.bind(this))
-                .attr("r", this._mapper.map("size"))
-                .attr("cx", this._mapper.map("x"))
-                .attr("cy", this._mapper.map("y"))
-                .on('click', function (d) {
-                    plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
-                })
-                .on('mouseover', function (d) {
-                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
-                })
-                .on('mouseout', function (d) {
-                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
-                });
+            throw new Error('Not implemented');
         },
 
         render: function (selector) {
@@ -192,53 +167,55 @@
         }
     });
 
-
     /**@class */
-    /**@extends Chart */
-    var LineChart = Chart.extend({
-        /** @constructs
-         * @param {DataSource} dataSource */
-        init: function (dataSource) {
-            this._super.call(this, dataSource);
-        },
+    /**@extends BasicChart */
+    var ScatterPlotChart = BasicChart.extend({
 
         _renderData: function (container, data) {
             this._mapper.binder('x').range([0, container.layout('width')]);
             this._mapper.binder('y').range([container.layout('height'), 0]);
 
-        var line = d3.svg.line()
+            var plugins = this._plugins;
+
+            container
+                .selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", function(d){
+                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                }.bind(this))
+                .attr("r", this._mapper.map("size"))
+                .attr("cx", this._mapper.map("x"))
+                .attr("cy", this._mapper.map("y"))
+                .on('click', function (d) {
+                    plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mouseover', function (d) {
+                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mouseout', function (d) {
+                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                });
+        }
+    });
+
+
+    /**@class */
+    /**@extends BasicChart */
+    var LineChart = BasicChart.extend({
+
+        _renderData: function (container, data) {
+            this._mapper.binder('x').range([0, container.layout('width')]);
+            this._mapper.binder('y').range([container.layout('height'), 0]);
+
+        var _line = d3.svg.line()
           .x(this._mapper.map("x"))
           .y(this._mapper.map("y"));
 
            container
                 .append("path")
                 .attr("class", "line")
-                .attr("d", line.call(this, data));
-        },
-
-        render: function (selector) {
-            var container = tau.svg.paddedBox(d3.select(selector), {top: 20, right: 20, bottom: 30, left: 40});
-
-            this._dataSource.get(/** @this ScatterPlotChart */ function (data) {
-                var layout = new tau.svg.Layout(container);
-
-                layout.row(-30);
-                var yAxisContainer = layout.col(20);
-                var dataContainer = layout.col();
-
-                layout.row();
-                layout.col(20);
-                var xAxisContainer = layout.col();
-
-                this._renderData(dataContainer, data);
-
-                new YAxis(this._mapper.binder("y")).render(yAxisContainer);
-                new XAxis(this._mapper.binder("x")).render(xAxisContainer);
-
-                tau.svg.bringOnTop(dataContainer);
-
-                this._plugins.render(new RenderContext(), new ChartTools(container, this._mapper));
-            }.bind(this));
+                .attr("d", _line.call(this, data));
         }
     });
 
