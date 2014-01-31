@@ -47,8 +47,43 @@ window.lineData = [
     {
         "priority": "High",
         "effort": 10,
+        "bugsCount": 19
+    },
+    {
+        "priority": "Low",
+        "effort": 2,
+        "bugsCount": 1
+    },
+    {
+        "priority": "Low",
+        "effort": 5,
+        "bugsCount": 13
+    },
+    {
+        "priority": "Low",
+        "effort": 7,
         "bugsCount": 12
     },
+    {
+        "priority": "Average",
+        "effort": 2,
+        "bugsCount": 1
+    },
+    {
+        "priority": "Average",
+        "effort": 10,
+        "bugsCount": 6
+    },
+    {
+        "priority": "Average",
+        "effort": 18,
+        "bugsCount": 13
+    },
+    {
+        "priority": "Average",
+        "effort": 21,
+        "bugsCount": 12
+    }
 ];
 
 window.scatterData = [

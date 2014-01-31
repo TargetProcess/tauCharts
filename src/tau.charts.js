@@ -219,17 +219,49 @@
 
             var plugins = this._plugins;
 
+            //TODO: allow to set interpolation outside
             var _line = d3.svg.line()
-              .x(this._mapper.map("x"))
-              .y(this._mapper.map("y"));
+                .interpolate("basis")
+                .x(this._mapper.map("x"))
+                .y(this._mapper.map("y"));
 
-            // draw line
-            container
+
+            // extract categories domain from data
+            var groups = [];
+            var groupName = this._mapper._propertyMappers.color._name;
+            data.forEach(function(d) {
+                var item = d[groupName];
+                if (groups.indexOf(item) == -1) {
+                   groups.push(item);
+                }
+            });
+
+
+            // prepare data to build several lines
+            // TODO: provide several data transformers to support more formats 
+            var categories = groups.map(function(name) {
+                return {
+                  name: name,
+                  values: data.filter(function(d) {
+                    return d[groupName] == name;
+                  })
+                };
+            });
+
+            var category = container.selectAll(".category")
+                .data(categories)
+                .enter().append("g")
+                .attr("class", "category");
+
+            // draw line(s)
+            category
                 .append("path")
-                 // use first data element to define line color.
-                 // TODO: refactor when create multiline chart
-                .attr("class", "line " + this._mapper.map("color")(data[0]))
-                .attr("d", _line.call(this, data));
+                .attr("class", function(d){
+                    var v = {};
+                    v[groupName] = d.name;
+                    return "line " + this._mapper.map("color")(v); // TODO: think on more elegant syntax like in next lines
+                }.bind(this))
+                .attr("d", function(d) { return _line.call(this, d.values); });
 
             // draw circles (to enable mouse interactions)
             container

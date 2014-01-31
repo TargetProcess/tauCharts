@@ -57,7 +57,7 @@
                     color: tau.data.map('priority').category10()
                 })
                 .plugins(
-                    //tau.plugins.legend() 
+                    tau.plugins.legend(), 
                     tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
                     tau.plugins.highlighter()
                 )
