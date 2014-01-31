@@ -53,12 +53,13 @@
                 .Line(lineData)
                 .map({
                     x: tau.data.map('effort').linear(),
-                    y: tau.data.map('bugsCount').linear()
+                    y: tau.data.map('bugsCount').linear(),
+                    color: tau.data.map('priority').category10()
                 })
                 .plugins(
                     //tau.plugins.legend() 
-                    //tau.plugins.tooltip('priority'),
-                    //tau.plugins.highlighter()
+                    tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+                    tau.plugins.highlighter()
                 )
                 .render("#chartLine");
     </script>

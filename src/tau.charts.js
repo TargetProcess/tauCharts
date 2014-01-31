@@ -130,6 +130,8 @@
         }
     });
 
+    /**@class */
+    /**@extends Chart */
     var BasicChart = Chart.extend({
        /** @constructs
          * @param {DataSource} dataSource */
@@ -208,14 +210,38 @@
             this._mapper.binder('x').range([0, container.layout('width')]);
             this._mapper.binder('y').range([container.layout('height'), 0]);
 
-        var _line = d3.svg.line()
-          .x(this._mapper.map("x"))
-          .y(this._mapper.map("y"));
+            var plugins = this._plugins;
 
-           container
+            var _line = d3.svg.line()
+              .x(this._mapper.map("x"))
+              .y(this._mapper.map("y"));
+
+            // draw line
+            container
                 .append("path")
-                .attr("class", "line")
+                 // use first data element to define line color.
+                 // TODO: refactor when create multiline chart
+                .attr("class", "line " + this._mapper.map("color")(data[0]))
                 .attr("d", _line.call(this, data));
+
+            // draw circles (to enable mouse interactions)
+            container
+                .append('g')
+                .selectAll('.dot')
+                .data(data)
+                .enter().append('circle')
+                .attr("class", function(d){
+                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
+                }.bind(this))
+                .attr("cx", this._mapper.map("x"))
+                .attr("cy", this._mapper.map("y"))
+                .attr('r', function() { return 3; })
+                .on('mouseover', function (d) {
+                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mouseout', function (d) {
+                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                });
         }
     });
 
