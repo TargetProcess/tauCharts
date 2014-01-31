@@ -69,3 +69,9 @@ text {
     fill: #2ca02c;
     stroke: #2ca02c;
 }
+
+.line {
+  fill: none;
+  stroke-width: 1.5px;
+  stroke: red;
+}

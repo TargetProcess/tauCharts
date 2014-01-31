@@ -24,13 +24,16 @@
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
 </head>
 <body>
-    <svg id="chart" width="500" height="500">
+    <svg id="chartScatter" width="500" height="400">
+    </svg>
+    <svg id="chartLine" width="500" height="400">
     </svg>
     <script>
-        var data = tau.data.Array(window.data);
+        var scatterplotData = tau.data.Array(window.scatterData);
+        var lineData = tau.data.Array(window.lineData);
 
         tau.charts
-                .Scatterplot(data)
+                .Scatterplot(scatterplotData)
                 .map({
                     x: tau.data.map('duration').linear(),
                     y: tau.data.map('effort').caption("Effort, h").linear(),
@@ -42,7 +45,20 @@
                     tau.plugins.tooltip('effort', 'priority'),
                     tau.plugins.highlighter()
                 )
-                .render("#chart");
+                .render("#chartScatter");
+
+        tau.charts
+                .Line(lineData)
+                .map({
+                    x: tau.data.map('effort').linear(),
+                    y: tau.data.map('bugsCount').linear()
+                })
+                .plugins(
+                    //tau.plugins.legend() 
+                    //tau.plugins.tooltip('priority'),
+                    //tau.plugins.highlighter()
+                )
+                .render("#chartLine");
     </script>
 </body>
 </html>

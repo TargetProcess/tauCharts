@@ -190,6 +190,56 @@
         }
     });
 
+
+    /**@class */
+    /**@extends Chart */
+    var LineChart = Chart.extend({
+        /** @constructs
+         * @param {DataSource} dataSource */
+        init: function (dataSource) {
+            this._super.call(this, dataSource);
+        },
+
+        _renderData: function (container, data) {
+            this._mapper.binder('x').range([0, container.layout('width')]);
+            this._mapper.binder('y').range([container.layout('height'), 0]);
+
+        var line = d3.svg.line()
+          .x(this._mapper.map("x"))
+          .y(this._mapper.map("y"));
+
+           container
+                .append("path")
+                .attr("class", "line")
+                .attr("d", line.call(this, data));
+        },
+
+        render: function (selector) {
+            var container = tau.svg.paddedBox(d3.select(selector), {top: 20, right: 20, bottom: 30, left: 40});
+
+            this._dataSource.get(/** @this ScatterPlotChart */ function (data) {
+                var layout = new tau.svg.Layout(container);
+
+                layout.row(-30);
+                var yAxisContainer = layout.col(20);
+                var dataContainer = layout.col();
+
+                layout.row();
+                layout.col(20);
+                var xAxisContainer = layout.col();
+
+                this._renderData(dataContainer, data);
+
+                new YAxis(this._mapper.binder("y")).render(yAxisContainer);
+                new XAxis(this._mapper.binder("x")).render(xAxisContainer);
+
+                tau.svg.bringOnTop(dataContainer);
+
+                this._plugins.render(new RenderContext(), new ChartTools(container, this._mapper));
+            }.bind(this));
+        }
+    });
+
     /** @class ChartTools */
     var ChartTools = Class.extend({
         /**
@@ -257,6 +307,9 @@
          */
         Scatterplot: function (data) {
             return new ScatterPlotChart(data);
+        },
+        Line: function (data) {
+            return new LineChart(data);
         }
     };
 })();

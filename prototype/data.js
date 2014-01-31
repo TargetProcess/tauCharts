@@ -1,4 +1,32 @@
-window.data = [
+window.lineData = [
+    {
+        "priority": "High",
+        "effort": 1,
+        "bugsCount": 2
+    },
+    {
+        "priority": "High",
+        "effort": 2,
+        "bugsCount": 2
+    },
+    {
+        "priority": "High",
+        "effort": 3,
+        "bugsCount": 4
+    },
+    {
+        "priority": "High",
+        "effort": 4,
+        "bugsCount": 20
+    },
+    {
+        "priority": "High",
+        "effort": 5,
+        "bugsCount": 3
+    },
+];
+
+window.scatterData = [
     {
         "duration": 20,
         "effort": 10,
