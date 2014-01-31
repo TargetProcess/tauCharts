@@ -55,19 +55,32 @@ text {
 	stroke-width: 0;
 }
 
-.color10-0 {
+.dot.color10-0 {
     fill: #1f77b4;
-    stroke: #1f77b4 !important;
+    stroke: #1f77b4;
 }
 
-.color10-1 {
+.dot.color10-1 {
     fill: #ff7f0e;
-    stroke: #ff7f0e !important;
+    stroke: #ff7f0e;
 }
 
-.color10-2 {
+.dot.color10-2 {
     fill: #2ca02c;
-    stroke: #2ca02c !important;
+    stroke: #2ca02c;
+}
+
+.line.color10-0 {
+    stroke: #1f77b4;
+}
+
+.line.color10-1 {
+    stroke: #ff7f0e;
+}
+
+.line.color10-2 {
+    fill: #2ca02c;
+    stroke: #2ca02c;
 }
 
 .projections line{
