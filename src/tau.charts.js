@@ -195,8 +195,6 @@
         /**
          * @constructs
          * @param d3container
-         * @param width
-         * @param height
          * @param {Mapper} mapper
          */
         init: function (d3container, mapper) {
@@ -208,46 +206,38 @@
     /** @class ChartElementTools*/
     var ChartElementTools = Class.extend({
         /** @constructs */
-        init: function (elementContext) {
-            this._elementContext = elementContext;
+        init: function (element) {
+            this.element = element;
         }
-        //TODO: I don't think this is required (MD)
-        /*
-        highlight: function (datum) {
-            this._elementContext.classed('highlighted', function (d) {
-                return d === datum
-            });
-        },
-
-        tooltip: function (html) {
-            d3.select('body')
-            .append('div')
-            .classed('tooltip', true)
-            .style('top', (event.pageY-10)+"px")
-            .style('left',(event.pageX+10)+"px")
-            .style('display', 'block')
-            .html(html);
-        }*/
     });
 
     /** @class RenderContext*/
     var RenderContext = Class.extend({
     });
 
-    /** @class ClickContext*/
-    var ClickContext = Class.extend({
-        /** @constructs */
+    /** @class ElementContext */
+    var ElementContext = Class.extend({
+        /**
+         * @constructs
+         * @param datum
+         */
         init: function (datum) {
             this.datum = datum;
         }
     });
 
-    /** @class HoverContext*/
-    var HoverContext = Class.extend({
-        /** @constructs */
-        init: function (datum) {
-            this.datum = datum;
-        }
+    /**
+     * @class ClickContext
+     * @extends {ElementContext}
+     */
+    var ClickContext = ElementContext.extend({
+    });
+
+    /**
+     * @class HoverContext
+     * @extends {ElementContext}
+     */
+    var HoverContext = ElementContext.extend({
     });
 
     tau.charts = {

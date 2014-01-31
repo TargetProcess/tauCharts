@@ -2,14 +2,12 @@
     /** @class Tooltip
      * @extends Plugin */
     var Highlighter = {
-
-        
         /**
          * @param {HoverContext} context
          * @param {ChartElementTools} tools
          */
         mouseover: function (context, tools) { 
-            tools._elementContext.classed('highlighted', function (d) {
+            tools.element.classed('highlighted', function (d) {
                 return d === context.datum
             })
         },
@@ -19,7 +17,7 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
-            tools._elementContext.classed('highlighted', false)
+            tools.element.classed('highlighted', false)
         }
     };
 
