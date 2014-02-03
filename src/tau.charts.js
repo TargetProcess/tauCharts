@@ -236,17 +236,13 @@
                 }
             });
 
-
             // prepare data to build several lines
             // TODO: provide several data transformers to support more formats 
-            var categories = groups.map(function(name) {
-                return {
-                  name: name,
-                  values: data.filter(function(d) {
-                    return d[groupName] == name;
-                  })
-                };
-            });
+            // sometime we will have data already nested, for example.
+            var categories = d3.nest()
+                .key(function(d) { return d[groupName]; })
+                .entries(data);
+
 
             var category = container.selectAll(".category")
                 .data(categories)
@@ -258,7 +254,7 @@
                 .append("path")
                 .attr("class", function(d){
                     var v = {};
-                    v[groupName] = d.name;
+                    v[groupName] = d.key;
                     return "line " + this._mapper.map("color")(v); // TODO: think on more elegant syntax like in next lines
                 }.bind(this))
                 .attr("d", function(d) { return _line.call(this, d.values); });
