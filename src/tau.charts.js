@@ -183,9 +183,8 @@
 
             var update = function(){
                 return this
-                    .attr("class", function(d){
-                        return "dot " + mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
-                    }.bind(this))
+                    .attr("class",  mapper.map("color"))
+                    .classed("dot", true)
                     .attr("r", mapper.map("size"))
                     .attr("cx", mapper.map("x"))
                     .attr("cy", mapper.map("y"))
@@ -214,21 +213,22 @@
     var LineChart = BasicChart.extend({
 
         _renderData: function (container, data) {
-            this._mapper.binder('x').range([0, container.layout('width')]);
-            this._mapper.binder('y').range([container.layout('height'), 0]);
-
             var plugins = this._plugins;
+            var mapper = this._mapper;
+
+            mapper.binder('x').range([0, container.layout('width')]);
+            mapper.binder('y').range([container.layout('height'), 0]);
 
             //TODO: allow to set interpolation outside
             var _line = d3.svg.line()
                 .interpolate("basis")
-                .x(this._mapper.map("x"))
-                .y(this._mapper.map("y"));
+                .x(mapper.map("x"))
+                .y(mapper.map("y"));
 
 
             // extract categories domain from data
             var groups = [];
-            var groupName = this._mapper._propertyMappers.color._name;
+            var groupName = mapper._propertyMappers.color._name;
             data.forEach(function(d) {
                 var item = d[groupName];
                 if (groups.indexOf(item) == -1) {
@@ -255,8 +255,9 @@
                 .attr("class", function(d){
                     var v = {};
                     v[groupName] = d.key;
-                    return "line " + this._mapper.map("color")(v); // TODO: think on more elegant syntax like in next lines
+                    return mapper.map("color")(v); // TODO: we have to remap value to get color...
                 }.bind(this))
+                .classed("line", true)
                 .attr("d", function(d) { return _line.call(this, d.values); });
 
             // draw circles (to enable mouse interactions)
@@ -265,11 +266,10 @@
                 .selectAll('.dot')
                 .data(data)
                 .enter().append('circle')
-                .attr("class", function(d){
-                    return "dot " + this._mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
-                }.bind(this))
-                .attr("cx", this._mapper.map("x"))
-                .attr("cy", this._mapper.map("y"))
+                .attr("class",  mapper.map("color"))
+                .classed("dot", true)
+                .attr("cx", mapper.map("x"))
+                .attr("cy", mapper.map("y"))
                 .attr('r', function() { return 3; })
                 .on('mouseover', function (d) {
                     plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
