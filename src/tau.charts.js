@@ -228,35 +228,26 @@
             var groupName = mapper._propertyMappers.color._name;
 
             // prepare data to build several lines
-            // TODO: provide several data transformers to support more formats 
+            // TODO: provide several data transformers to support more formats
             // sometime we will have data already nested, for example.
             var categories = d3.nest()
                 .key(function(d) { return d[groupName]; })
                 .entries(data);
 
-
-            var category = container.selectAll(".category")
-                .data(categories)
-                .enter().append("g")
-                .attr("class", "category");
-
-            // draw line(s)
-            category
-                .append("path")
+            var updateLines = function(){
+                return this
                 .attr("class", function(d){
                     var v = {};
                     v[groupName] = d.key;
                     return mapper.map("color")(v); // TODO: we have to remap value to get color...
                 }.bind(this))
                 .classed("line", true)
-                .attr("d", function(d) { return _line.call(this, d.values); });
+                .attr("d", function(d) {return _line.call(this, d.values); });
+            };
 
-            // draw circles (to enable mouse interactions)
-            container
-                .append('g')
-                .selectAll('.dot')
-                .data(data)
-                .enter().append('circle')
+            var updateDots = function(){
+                 // draw circles (to enable mouse interactions)
+                return this
                 .attr("class",  mapper.map("color"))
                 .classed("dot", true)
                 .attr("cx", mapper.map("x"))
@@ -268,7 +259,20 @@
                 .on('mouseout', function (d) {
                     plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
                 });
+
+            };
+
+            var lines = container.selectAll(".line").data(categories);
+            lines.call(updateLines);
+            lines.enter().append("path").call(updateLines);
+            lines.exit().remove();
+
+            var dots = container.selectAll('.dot').data(data);
+            dots.call(updateDots);
+            dots.enter().append("circle").call(updateDots);
+            dots.exit().remove();
         }
+
     });
 
     /** @class ChartTools */
