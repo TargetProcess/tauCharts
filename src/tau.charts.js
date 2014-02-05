@@ -225,16 +225,7 @@
                 .x(mapper.map("x"))
                 .y(mapper.map("y"));
 
-
-            // extract categories domain from data
-            var groups = [];
             var groupName = mapper._propertyMappers.color._name;
-            data.forEach(function(d) {
-                var item = d[groupName];
-                if (groups.indexOf(item) == -1) {
-                   groups.push(item);
-                }
-            });
 
             // prepare data to build several lines
             // TODO: provide several data transformers to support more formats 
