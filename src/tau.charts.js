@@ -61,6 +61,10 @@
         }
     });
 
+    var Axes = {
+        padding: 10
+    };
+
     /** @class */
     var Axis = Class.extend({
         /**
@@ -84,12 +88,14 @@
                 .orient("bottom");
 
             container
+                .append("g")
                 .attr("class", "x axis")
+                .attr("transform", "translate(0, " + Axes.padding + ")")
                 .call(xAxis)
                 .append("text")
                 .attr("class", "label")
                 .attr("x", container.layout('width'))
-                .attr("y", -6)
+                .attr("y", -xAxis.tickSize())
                 .style("text-anchor", "end")
                 .text(this._mapper.caption());
         }
@@ -105,12 +111,14 @@
                 .orient("left");
 
             container
+                .append("g")
                 .attr("class", "y axis")
+                .attr("transform", "translate(-" + Axes.padding + ", 0)")
                 .call(yAxis)
                 .append("text")
                 .attr("class", "label")
                 .attr("transform", "rotate(-90)")
-                .attr("y", 6 + container.layout('width'))
+                .attr("y", yAxis.tickSize() + container.layout('width'))
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
                 .text(this._mapper.caption());
@@ -130,10 +138,38 @@
         }
     });
 
+    /** @class */
+    var Grid = Class.extend({
+        init: function (mapperX, mapperY) {
+            this._mapperX = mapperX;
+            this._mapperY = mapperY;
+        },
+
+        render: function (container) {
+            var xAxis = d3.svg.axis()
+                // TODO: internal _scale property of binder is exposed
+                .scale(this._mapperX._scale)
+                .orient('bottom')
+                .tickSize(container.layout('height'));
+
+            var yAxis = d3.svg.axis()
+                // TODO: internal _scale property of binder is exposed
+                .scale(this._mapperY._scale)
+                .orient('left')
+                .tickSize(-container.layout('width'));
+
+            container.select('.grid').append('g').call(xAxis);
+            container.select('.grid').append('g').call(yAxis);
+
+            // TODO: make own axes and grid instead of using d3's in such tricky way
+            container.selectAll('text').remove();
+        }
+    });
+
     /**@class */
     /**@extends Chart */
     var BasicChart = Chart.extend({
-       /** @constructs
+        /** @constructs
          * @param {DataSource} dataSource */
         init: function (dataSource) {
             this._super.call(this, dataSource);
@@ -157,11 +193,14 @@
                 layout.col(20);
                 var xAxisContainer = layout.col();
 
+                dataContainer.append("g").attr("class", "grid"); // TODO: tricky way to create placeholder for grid which will be at the bottom, refactor
+
                 this._renderData(dataContainer, data);
                 this._dataSource.update(this._renderData.bind(this, dataContainer));
 
                 new YAxis(this._mapper.binder("y")).render(yAxisContainer);
                 new XAxis(this._mapper.binder("x")).render(xAxisContainer);
+                new Grid(this._mapper.binder("x"), this._mapper.binder("y")).render(dataContainer);
 
                 tau.svg.bringOnTop(dataContainer);
 
