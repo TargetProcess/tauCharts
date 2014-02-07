@@ -260,7 +260,7 @@
 
             //TODO: allow to set interpolation outside
             var _line = d3.svg.line()
-                .interpolate("basis")
+                .interpolate("cardinal")
                 .x(mapper.map("x"))
                 .y(mapper.map("y"));
 
