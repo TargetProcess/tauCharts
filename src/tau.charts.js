@@ -130,10 +130,51 @@
         }
     });
 
+    /** @class */
+    var Grid = Class.extend({
+        init: function (mapperX, mapperY) {
+            this._mapperX = mapperX;
+            this._mapperY = mapperY;
+        },
+
+        render: function (container) {
+            var xAxis = d3.svg.axis()
+                // TODO: internal _scale property of binder is exposed
+                .scale(this._mapperX._scale)
+                .orient('bottom')
+                .tickSize(container.layout('height'));
+
+            var yAxis = d3.svg.axis()
+                // TODO: internal _scale property of binder is exposed
+                .scale(this._mapperY._scale)
+                .orient('left')
+                .tickSize(-container.layout('width'));
+
+            container
+                .select('.grid')
+                .append('g')
+                .call(xAxis)
+                .select('.tick') // removes first tick
+                .remove();
+
+            container
+                .select('.grid')
+                .append('g')
+                .call(yAxis)
+                .select('.tick') // removes first tick
+                .remove();
+
+            // TODO: make own axes and grid instead of using d3's in such tricky way
+            container
+                .selectAll('text')
+                .remove();
+        }
+    });
+
     /**@class */
     /**@extends Chart */
     var BasicChart = Chart.extend({
-       /** @constructs
+        /** @constructs
          * @param {DataSource} dataSource */
         init: function (dataSource) {
             this._super.call(this, dataSource);
@@ -157,11 +198,14 @@
                 layout.col(20);
                 var xAxisContainer = layout.col();
 
+                dataContainer.append("g").attr("class", "grid"); // TODO: tricky way to create placeholder for grid which will be at the bottom, refactor
+
                 this._renderData(dataContainer, data);
                 this._dataSource.update(this._renderData.bind(this, dataContainer));
 
                 new YAxis(this._mapper.binder("y")).render(yAxisContainer);
                 new XAxis(this._mapper.binder("x")).render(xAxisContainer);
+                new Grid(this._mapper.binder("x"), this._mapper.binder("y")).render(dataContainer);
 
                 tau.svg.bringOnTop(dataContainer);
 

@@ -88,6 +88,10 @@ text {
 	opacity: 0.6;
 }
 
+.projections text{
+    stroke: none;
+}
+
 .projections .x text{
 	text-anchor: middle;
 }
@@ -128,3 +132,16 @@ text {
 
 .legend .disabled {
     opacity: 0.2;
+}
+
+.grid path {
+    fill: none;
+}
+
+.grid line {
+    opacity: 0.5;
+    stroke-width: 1;
+    fill: none;
+    stroke: #BDC3CD;
+    stroke-width: 1px;
+}
