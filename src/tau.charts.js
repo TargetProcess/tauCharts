@@ -118,6 +118,7 @@
                 .append("text")
                 .attr("class", "label")
                 .attr("transform", "rotate(-90)")
+                .attr("x", yAxis.tickSize())
                 .attr("y", yAxis.tickSize() + container.layout('width'))
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
