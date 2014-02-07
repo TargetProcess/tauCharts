@@ -1,0 +1,155 @@
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+
+body {
+	font: normal 13px 'Open Sans', sans-serif;
+	color: #000;
+	background-color: #fff;
+}
+
+text {
+	font:normal 13px 'Open Sans', sans-serif;
+}
+
+.dot.highlighted {
+	stroke: #000;
+	stroke-width: 6;
+	stroke-opacity: 0.4;
+	opacity: 1;
+}
+
+.tooltip {
+	position: absolute;
+	display: none;
+
+	font-size: 11px;
+	padding: 7px 10px 8px;
+	border-radius: 5px;
+	background: #FFFFFF;
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2),  0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+}
+
+.tooltip em {
+	font-style: normal;
+	color: #999;
+	display: inline-block;
+	min-width: 45px;
+}
+
+.axis line {
+    stroke-width: 1;
+    fill: none;
+    stroke: #BDC3CD;
+    shape-rendering: crispEdges;
+}
+
+.axis path {
+    stroke-width: 1;
+    fill: none;
+    stroke: #BDC3CD;
+    shape-rendering: crispEdges;
+}
+
+.dot {
+	opacity: 0.6;
+	transition: stroke-width 0.1s ease, opacity 0.1s ease;
+	stroke-width: 0;
+	cursor: pointer;
+}
+
+.dot.color10-3 {
+    fill: #1f77b4;
+    stroke: #1f77b4;
+}
+
+.dot.color10-1 {
+    fill: #ff7f0e;
+    stroke: #ff7f0e;
+}
+
+.dot.color10-2 {
+    fill: #2ca02c;
+    stroke: #2ca02c;
+}
+
+.line.color10-3 {
+    stroke: #1f77b4;
+}
+
+.line.color10-1 {
+    stroke: #ff7f0e;
+}
+
+.line.color10-2 {
+    stroke: #2ca02c;
+}
+
+.projections line{
+	stroke-width: 1;
+	opacity: 0.6;
+	shape-rendering: crispEdges;
+}
+
+.projections text{
+    stroke: none;
+}
+
+.projections .x text{
+	text-anchor: end;
+}
+
+.projections .y text{
+	text-anchor: middle;
+}
+
+.projections.color10-3 line {
+    stroke: #1f77b4;
+}
+
+.projections.color10-1 line {
+    stroke: #ff7f0e;
+}
+
+.projections.color10-2 line {
+    stroke: #2ca02c;
+}
+
+.projections.color10-3 text {
+    fill: #1f77b4;
+}
+
+.projections.color10-1 text {
+    fill: #ff7f0e;
+}
+
+.projections.color10-2 text {
+    fill: #2ca02c;
+}
+
+.line {
+  fill: none;
+  stroke-width: 1.5px;
+  stroke: red;
+}
+
+.legend .disabled {
+    opacity: 0.2;
+}
+
+.grid path {
+    fill: none;
+    shape-rendering: crispEdges;
+}
+
+.grid line {
+    opacity: 0.5;
+    stroke-width: 1;
+    fill: none;
+    stroke: #BDC3CD;
+    stroke-width: 1px;
+	shape-rendering: crispEdges;
+}
+
+.datatable {position: absolute;}
+.datatableContent {display: none; background: white; padding: 10px; height: 300px; overflow: scroll; width: 300px; border: 1px solid #999;}
+.datatable table td {padding: 2px;}
+.datatable table th {padding: 2px; font-weight: bold;}
