@@ -1,6 +1,11 @@
 /*global module, test, ok, deepEqual, expect */
 
 (function () {
+    test('environment check', function () {
+        var f = function() {};
+        ok(f.bind, 'Function.prototype.bind defined');
+    });
+
     module('tau.data.Array', {});
 
     test('should support filtering', function () {
