@@ -61,6 +61,10 @@
         }
     });
 
+    var Axes = {
+        padding: 10
+    };
+
     /** @class */
     var Axis = Class.extend({
         /**
@@ -84,12 +88,14 @@
                 .orient("bottom");
 
             container
+                .append("g")
                 .attr("class", "x axis")
+                .attr("transform", "translate(0, " + Axes.padding + ")")
                 .call(xAxis)
                 .append("text")
                 .attr("class", "label")
                 .attr("x", container.layout('width'))
-                .attr("y", -6)
+                .attr("y", -xAxis.tickSize())
                 .style("text-anchor", "end")
                 .text(this._mapper.caption());
         }
@@ -105,12 +111,14 @@
                 .orient("left");
 
             container
+                .append("g")
                 .attr("class", "y axis")
+                .attr("transform", "translate(-" + Axes.padding + ", 0)")
                 .call(yAxis)
                 .append("text")
                 .attr("class", "label")
                 .attr("transform", "rotate(-90)")
-                .attr("y", 6 + container.layout('width'))
+                .attr("y", yAxis.tickSize() + container.layout('width'))
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
                 .text(this._mapper.caption());
@@ -150,24 +158,11 @@
                 .orient('left')
                 .tickSize(-container.layout('width'));
 
-            container
-                .select('.grid')
-                .append('g')
-                .call(xAxis)
-                .select('.tick') // removes first tick
-                .remove();
-
-            container
-                .select('.grid')
-                .append('g')
-                .call(yAxis)
-                .select('.tick') // removes first tick
-                .remove();
+            container.select('.grid').append('g').call(xAxis);
+            container.select('.grid').append('g').call(yAxis);
 
             // TODO: make own axes and grid instead of using d3's in such tricky way
-            container
-                .selectAll('text')
-                .remove();
+            container.selectAll('text').remove();
         }
     });
 

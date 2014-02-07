@@ -8,6 +8,7 @@
         },
 
         render: function(context, tools){
+            // TODO: think how to replace constants with some provided values
             var marginLeft = 20;
             var marginBottom = 30;
             var width = tools.d3.layout('width');
@@ -29,14 +30,14 @@
                         .attr("class", "y")
                     .append("line")
                         .attr("x1", mapper.map("x"))
-                        .attr("y1", height - marginBottom)
+                        .attr("y1", height - marginBottom  + 10) // TODO: think how to replace constants with some provided values
                         .attr("x2", mapper.map("x"))
                         .attr("y2", mapper.map("y"))
 
                 projections.select(".y")
                     .append("text")
                         .attr("transform", "translate(0, 4)")
-                        .attr("dx", -9)
+                        .attr("dx", -19) // TODO: think how to replace constants with some provided values
                         .attr("dy", mapper.map("y"))
                         .text(function(d){
                             return d[mapper._propertyMappers.y._name];
@@ -47,7 +48,7 @@
                 projections.append("g")
                     .attr("class", "x")
                     .append("line")
-                        .attr("x1", 0)
+                        .attr("x1", -10) // TODO: think how to replace constants with some provided values
                         .attr("y1", mapper.map("y"))
                         .attr("x2", mapper.map("x"))
                         .attr("y2", mapper.map("y"));
@@ -56,7 +57,7 @@
                     .append("text")
                         .attr("transform", "translate(0, 18)")
                         .attr("dx", mapper.map("x"))
-                        .attr("dy", height - marginBottom)
+                        .attr("dy", height - marginBottom + 10) // TODO: think how to replace constants with some provided values
                         .text(function(d){
                             return d[mapper._propertyMappers.x._name];
                             // TODO: fix this when mapper interface allows
