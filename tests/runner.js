@@ -65,7 +65,9 @@
 		} else {
             // bind fix
             page.evaluate(function () {
-                Function.prototype.bind = Function.prototype.bind || function(thisArg){
+                console.log('adding \'bind\' method to Function.prototype');
+
+                Function.prototype.bind = function(thisArg){
                     var that = this;
                     return function(){
                         return that.apply(thisArg, arguments);
