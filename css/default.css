@@ -88,11 +88,11 @@ text {
 }
 
 .projections .x text{
-	text-anchor: middle;
+	text-anchor: end;
 }
 
 .projections .y text{
-	text-anchor: end;
+	text-anchor: middle;
 }
 
 .projections.color10-0 line {

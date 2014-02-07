@@ -45,7 +45,7 @@
                     tau.plugins.legend(),
                     tau.plugins.tooltip('effort', 'priority'),
                     tau.plugins.highlighter(),
-                    tau.plugins.projection()
+                    tau.plugins.projection('y', 'x')
                 )
                 .render("#chartScatter");
 
@@ -60,7 +60,7 @@
                     tau.plugins.legend(),
                     tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
                     tau.plugins.highlighter(),
-                    tau.plugins.projection()
+                    tau.plugins.projection('x')
                 )
                 .render("#chartLine");
     </script>
