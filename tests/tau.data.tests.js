@@ -75,4 +75,19 @@
 
         equal(mapper.map("to")(data), 0);
     });
+
+    test('should support formatting', function () {
+        var mapper = tau.data.Mapper({
+            t1: tau.data.map('f1').linear().range([0, 10]),
+            t2: tau.data.map('f2').linear().range([10, 0])
+        });
+
+        var data = {
+            f1: 0,
+            f2: 0
+        };
+
+        equal(mapper.map("t1: %t1%, t2: %t2%")(data), "t1: 0, t2: 10");
+        equal(mapper.raw("t1: %t1%, t2: %t2%")(data), "t1: 0, t2: 0");
+    });
 })();

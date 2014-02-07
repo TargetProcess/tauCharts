@@ -12,7 +12,7 @@
     };
 
     var chain = function (fn1, fn2) {
-        return function() {
+        return function () {
             fn1.apply(fn1, arguments);
             fn2.apply(fn2, arguments);
         }
@@ -98,12 +98,33 @@
             return this.binder(key).domain();
         },
 
+        _bind: function(key, callback){
+            var regex = /%[^%]*%/g;
+
+            if (regex.test(key)) {
+                return function (d) {
+                    return key.replace(regex, function (capture) {
+                        var key = capture.substr(1, capture.length - 2);
+                        return callback(key, d);
+                    }.bind(this));
+                }.bind(this);
+            }
+
+            return function(d){
+                return callback(key, d);
+            }
+        },
+
         map: function (key) {
-            return this.binder(key).map.bind(this.binder(key));
+            return this._bind(key, function(key, d){
+                return this.binder(key).map(d);
+            }.bind(this))
         },
 
         raw: function (key) {
-            return this.binder(key).raw.bind(this.binder(key));
+            return this._bind(key, function(key, d){
+                return this.binder(key).raw(d);
+            }.bind(this))
         },
 
         alias: function (key, prop) {
@@ -127,13 +148,13 @@
             this._scale = d3.scale.linear();
         },
 
-        alias: function(name) {
+        alias: function (name) {
             this._names.push(name);
         },
 
         raw: function (d) {
             return d[this._names
-                .filter(function(name){
+                .filter(function (name) {
                     return d.hasOwnProperty(name)
                 })[0]];
         },

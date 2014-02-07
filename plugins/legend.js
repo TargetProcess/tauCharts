@@ -28,8 +28,7 @@
                 });
 
             legend.append("rect")
-                .attr("class",  tools.mapper.map("color"))
-                .classed("dot", true)
+                .attr("class",  tools.mapper.map("dot %color%"))
                 .attr("width", 18)
                 .attr("height", 18)
                 .on('click', function(d) {
@@ -53,7 +52,7 @@
                 .attr("dx", -10)
                 .attr("dy", 12)
                 .style("text-anchor", "end")
-                .text(tools.mapper.format("color"));
+                .text(tools.mapper.raw("color"));
         }
     };
 

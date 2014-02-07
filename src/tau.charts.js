@@ -222,8 +222,7 @@
 
             var update = function () {
                 return this
-                    .attr("class", mapper.map("color"))
-                    .classed("dot", true)
+                    .attr("class", mapper.map("dot %color%"))
                     .attr("r", mapper.map("size"))
                     .attr("cx", mapper.map("x"))
                     .attr("cy", mapper.map("y"))
@@ -271,9 +270,7 @@
                 .entries(data);
 
             var updateLines = function () {
-                this
-                    .attr("class", mapper.map("color"))
-                    .classed("line", true);
+                this.attr("class", mapper.map("line %color%"));
 
                 var paths = this.selectAll("path").data(function (d) {
                     return [d.values];
