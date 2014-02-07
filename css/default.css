@@ -145,3 +145,8 @@ text {
     stroke: #BDC3CD;
     stroke-width: 1px;
 }
+
+.datatable {position: absolute;}
+.datatableContent {display: none; background: white; padding: 10px; height: 300px; overflow: scroll; width: 300px; border: 1px solid #999;}
+.datatable table td {padding: 2px;}
+.datatable table th {padding: 2px; font-weight: bold;}

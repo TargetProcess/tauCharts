@@ -16,6 +16,7 @@
     <script src="../plugins/legend.js"></script>
     <script src="../plugins/highlighter.js"></script>
     <script src="../plugins/projection.js"></script>
+    <script src="../plugins/datatable.js"></script>
 
     <!-- test data -->
     <script src="data.js"></script>
@@ -45,7 +46,8 @@
                     tau.plugins.legend(),
                     tau.plugins.tooltip('effort', 'priority'),
                     tau.plugins.highlighter(),
-                    tau.plugins.projection()
+                    tau.plugins.projection(),
+                    tau.plugins.datatable()
                 )
                 .render("#chartScatter");
 
@@ -60,7 +62,8 @@
                     tau.plugins.legend(),
                     tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
                     tau.plugins.highlighter(),
-                    tau.plugins.projection()
+                    tau.plugins.projection(),
+                    tau.plugins.datatable()
                 )
                 .render("#chartLine");
     </script>
