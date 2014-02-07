@@ -98,7 +98,7 @@
             return this.binder(key).domain();
         },
 
-        _bind: function(key, callback){
+        _bind: function (key, callback) {
             var regex = /%[^%]*%/g;
 
             if (regex.test(key)) {
@@ -110,30 +110,25 @@
                 }.bind(this);
             }
 
-            return function(d){
+            return function (d) {
                 return callback(key, d);
             }
         },
 
         map: function (key) {
-            return this._bind(key, function(key, d){
+            return this._bind(key, function (key, d) {
                 return this.binder(key).map(d);
             }.bind(this))
         },
 
         raw: function (key) {
-            return this._bind(key, function(key, d){
+            return this._bind(key, function (key, d) {
                 return this.binder(key).raw(d);
             }.bind(this))
         },
 
         alias: function (key, prop) {
             this._propertyMappers[key].alias(prop);
-        },
-
-        format: function (key) {
-            // TODO: get rid of it
-            return this.binder(key).format.bind(this.binder(key));
         }
     });
 
@@ -161,10 +156,6 @@
 
         map: function (d) {
             return this._scale(this.raw(d));
-        },
-
-        format: function (d) {
-            return d[this._name].toString();
         },
 
         linear: function () {
