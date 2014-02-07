@@ -14,6 +14,8 @@
         render: function(context, tools){
             var marginLeft = 20;
             var marginBottom = 30;
+            var padding = 10;
+
             //TODO: remove magic numbers
             var width = tools.d3.layout("width");
             var height = tools.d3.layout("height");
@@ -37,16 +39,16 @@
                             .attr("class", "y")
                         .append("line")
                             .attr("x1", mapper.map("x"))
-                            .attr("y1", height - marginBottom)
+                            .attr("y1", height - marginBottom + padding)
                             .attr("x2", mapper.map("x"))
                             .attr("y2", mapper.map("y"))
 
                     projections.select(".y")
                         .append("text")
                             .attr("transform", "translate(0, 18)")
-                            //TODO: remove magic numbers
+                            //TODO: think how to replace constants with some provided values
                             .attr("dx", mapper.map("x"))
-                            .attr("dy", height - marginBottom)
+                            .attr("dy", height - marginBottom + 10)
                             .text(function(d){
                                 return d[mapper._propertyMappers.x._name];
                                 // TODO: fix this when mapper interface allows
@@ -65,8 +67,8 @@
 
                     projections.select(".x")
                         .append("text")
-                            .attr("transform", "translate(-9, 4)")
-                            //TODO: remove magic numbers
+                            .attr("transform", "translate(-19, 4)")
+                            //TODO: think how to replace constants with some provided values
                             .attr("dx", 0)
                             .attr("dy", mapper.map("y"))
                             .text(function(d){
