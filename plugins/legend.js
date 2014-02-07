@@ -28,10 +28,8 @@
                 });
 
             legend.append("rect")
-                // TODO: copy pasted from scatterplot for now to reuse css, remove in future
-                .attr("class", function(d){
-                    return "dot " + tools.mapper.map("color")(d); // TODO: think on more elegant syntax like in next lines
-                }.bind(this))
+                .attr("class",  tools.mapper.map("color"))
+                .classed("dot", true)
                 .attr("width", 18)
                 .attr("height", 18)
                 .on('click', function(d) {
@@ -48,7 +46,7 @@
 
                     context.data.filter(function(d){
                         return disabled.indexOf(tools.mapper.map("color")(d)) == -1;
-                    })
+                    });
                 });
 
             legend.append("text")

@@ -53,6 +53,7 @@ text {
 	opacity: 0.6;
 	transition: stroke-width 0.1s ease, opacity 0.1s ease;
 	stroke-width: 0;
+	cursor: pointer;
 }
 
 .dot.color10-0 {
