@@ -102,7 +102,16 @@
             return this.binder(key).map.bind(this.binder(key));
         },
 
+        raw: function (key) {
+            return this.binder(key).raw.bind(this.binder(key));
+        },
+
+        alias: function (key, prop) {
+            this._propertyMappers[key].alias(prop);
+        },
+
         format: function (key) {
+            // TODO: get rid of it
             return this.binder(key).format.bind(this.binder(key));
         }
     });
@@ -113,13 +122,24 @@
     var PropertyMapper = Class.extend({
         /** @constructs */
         init: function (name) {
-            this._name = name;
+            this._names = [name];
             this._caption = name;
             this._scale = d3.scale.linear();
         },
 
+        alias: function(name) {
+            this._names.push(name);
+        },
+
+        raw: function (d) {
+            return d[this._names
+                .filter(function(name){
+                    return d.hasOwnProperty(name)
+                })[0]];
+        },
+
         map: function (d) {
-            return this._scale(d[this._name]);
+            return this._scale(this.raw(d));
         },
 
         format: function (d) {

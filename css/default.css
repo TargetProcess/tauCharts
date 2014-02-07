@@ -83,6 +83,21 @@ text {
     stroke: #2ca02c;
 }
 
+.line.color10-0 .dot{
+    fill: #1f77b4;
+    stroke: #1f77b4;
+}
+
+.line.color10-1 .dot{
+    fill: #ff7f0e;
+    stroke: #ff7f0e;
+}
+
+.line.color10-2 .dot{
+    fill: #2ca02c;
+    stroke: #2ca02c;
+}
+
 .projections line{
 	stroke-width: 1;
 	opacity: 0.6;

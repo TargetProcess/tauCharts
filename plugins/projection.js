@@ -52,10 +52,7 @@
                             //TODO: think how to replace constants with some provided values
                             .attr("dx", mapper.map("x"))
                             .attr("dy", height - marginBottom + 10)
-                            .text(function(d){
-                                return d[mapper._propertyMappers.x._name];
-                                // TODO: fix this when mapper interface allows
-                            }.bind(this));
+                            .text(mapper.raw("y"));
                 };
 
                 if (axises.indexOf("y") > -1){
@@ -74,10 +71,7 @@
                             //TODO: think how to replace constants with some provided values
                             .attr("dx", 0)
                             .attr("dy", mapper.map("y"))
-                            .text(function(d){
-                                return d[mapper._propertyMappers.y._name];
-                                // TODO: fix this when mapper interface allows
-                            }.bind(this));
+                            .text(mapper.raw("y"));
                 };
 
             }
