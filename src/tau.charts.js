@@ -220,10 +220,9 @@
             var plugins = this._plugins;
             var mapper = this._mapper;
 
-            var update = function(){
+            var update = function () {
                 return this
-                    .attr("class",  mapper.map("color"))
-                    .classed("dot", true)
+                    .attr("class", mapper.map("dot %color%"))
                     .attr("r", mapper.map("size"))
                     .attr("cx", mapper.map("x"))
                     .attr("cy", mapper.map("y"))
@@ -250,7 +249,12 @@
     /**@class */
     /**@extends BasicChart */
     var LineChart = BasicChart.extend({
+        map: function (config) {
+            this._super(config);
+            this._mapper.alias("color", "key");
 
+            return this;
+        },
         _renderData: function (container, data) {
             var plugins = this._plugins;
             var mapper = this._mapper;
@@ -258,60 +262,66 @@
             mapper.binder('x').range([0, container.layout('width')]);
             mapper.binder('y').range([container.layout('height'), 0]);
 
-            //TODO: allow to set interpolation outside
-            var _line = d3.svg.line()
-                .interpolate("basis")
-                .x(mapper.map("x"))
-                .y(mapper.map("y"));
-
-            var groupName = mapper._propertyMappers.color._name;
-
             // prepare data to build several lines
             // TODO: provide several data transformers to support more formats
             // sometime we will have data already nested, for example.
             var categories = d3.nest()
-                .key(function(d) { return d[groupName]; })
+                .key(mapper.raw("color"))
                 .entries(data);
 
-            var updateLines = function(){
-                return this
-                .attr("class", function(d){
-                    var v = {};
-                    v[groupName] = d.key;
-                    return mapper.map("color")(v); // TODO: we have to remap value to get color...
-                }.bind(this))
-                .classed("line", true)
-                .attr("d", function(d) {return _line.call(this, d.values); });
+            var updateLines = function () {
+                this.attr("class", mapper.map("line %color%"));
+
+                var paths = this.selectAll("path").data(function (d) {
+                    return [d.values];
+                });
+
+                // TODO: extract update pattern to some place
+                paths.call(updatePaths);
+                paths.enter().append("path").call(updatePaths);
+                paths.exit().remove();
+
+                var dots = this.selectAll('.dot').data(function(d){
+                    return d.values;
+                });
+
+                dots.call(updateDots);
+                dots.enter().append("circle").classed("dot", true).call(updateDots);
+                dots.exit().remove();
             };
 
-            var updateDots = function(){
-                 // draw circles (to enable mouse interactions)
+            //TODO: allow to set interpolation outside
+            var line = d3.svg.line()
+                .interpolate("cardinal")
+                .x(mapper.map("x"))
+                .y(mapper.map("y"));
+
+            var updatePaths = function () {
+                this.attr("d", line);
+            };
+
+            var updateDots = function () {
+                // draw circles (to enable mouse interactions)
                 return this
-                .attr("class",  mapper.map("color"))
-                .classed("dot", true)
-                .attr("cx", mapper.map("x"))
-                .attr("cy", mapper.map("y"))
-                .attr('r', function() { return 3; })
-                .on('mouseover', function (d) {
-                    plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
-                })
-                .on('mouseout', function (d) {
-                    plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
-                });
+                    .attr("cx", mapper.map("x"))
+                    .attr("cy", mapper.map("y"))
+                    .attr('r', function () {
+                        return 3;
+                    })
+                    .on('mouseover', function (d) {
+                        plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                    })
+                    .on('mouseout', function (d) {
+                        plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                    });
 
             };
 
             var lines = container.selectAll(".line").data(categories);
             lines.call(updateLines);
-            lines.enter().append("path").call(updateLines);
+            lines.enter().append("g").call(updateLines);
             lines.exit().remove();
-
-            var dots = container.selectAll('.dot').data(data);
-            dots.call(updateDots);
-            dots.enter().append("circle").call(updateDots);
-            dots.exit().remove();
         }
-
     });
 
     /** @class ChartTools */
@@ -338,7 +348,7 @@
     /** @class RenderContext*/
     var RenderContext = Class.extend({
         /** @constructs */
-        init: function(dataSource) {
+        init: function (dataSource) {
             this.data = dataSource;
         }
     });

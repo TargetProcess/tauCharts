@@ -23,6 +23,11 @@ $colors-number: 10
 		stroke: nth($colors, $i)
 		fill: nth($colors, $i)
 
+@for $i from 1 through $colors-number
+	.line.color#{$colors-number}-#{$i} .dot
+		stroke: nth($colors, $i)
+		fill: nth($colors, $i)
+
 
 /* Axises and Grid */
 

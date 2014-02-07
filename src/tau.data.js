@@ -12,7 +12,7 @@
     };
 
     var chain = function (fn1, fn2) {
-        return function() {
+        return function () {
             fn1.apply(fn1, arguments);
             fn2.apply(fn2, arguments);
         }
@@ -98,12 +98,37 @@
             return this.binder(key).domain();
         },
 
-        map: function (key) {
-            return this.binder(key).map.bind(this.binder(key));
+        _bind: function (key, callback) {
+            var regex = /%[^%]*%/g;
+
+            if (regex.test(key)) {
+                return function (d) {
+                    return key.replace(regex, function (capture) {
+                        var key = capture.substr(1, capture.length - 2);
+                        return callback(key, d);
+                    }.bind(this));
+                }.bind(this);
+            }
+
+            return function (d) {
+                return callback(key, d);
+            }
         },
 
-        format: function (key) {
-            return this.binder(key).format.bind(this.binder(key));
+        map: function (key) {
+            return this._bind(key, function (key, d) {
+                return this.binder(key).map(d);
+            }.bind(this))
+        },
+
+        raw: function (key) {
+            return this._bind(key, function (key, d) {
+                return this.binder(key).raw(d);
+            }.bind(this))
+        },
+
+        alias: function (key, prop) {
+            this._propertyMappers[key].alias(prop);
         }
     });
 
@@ -113,17 +138,24 @@
     var PropertyMapper = Class.extend({
         /** @constructs */
         init: function (name) {
-            this._name = name;
+            this._names = [name];
             this._caption = name;
             this._scale = d3.scale.linear();
         },
 
-        map: function (d) {
-            return this._scale(d[this._name]);
+        alias: function (name) {
+            this._names.push(name);
         },
 
-        format: function (d) {
-            return d[this._name].toString();
+        raw: function (d) {
+            return d[this._names
+                .filter(function (name) {
+                    return d.hasOwnProperty(name)
+                })[0]];
+        },
+
+        map: function (d) {
+            return this._scale(this.raw(d));
         },
 
         linear: function () {
