@@ -4,11 +4,10 @@
     var Projection = {
 
         init: function () {      
-
+            this._axises = arguments;
         },
 
         render: function(context, tools){
-
             var marginLeft = 20;
             var marginBottom = 30;
             var width = tools.d3.layout('width');
