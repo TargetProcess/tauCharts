@@ -56,7 +56,7 @@ text {
 	cursor: pointer;
 }
 
-.dot.color10-0 {
+.dot.color10-3 {
     fill: #1f77b4;
     stroke: #1f77b4;
 }
@@ -71,7 +71,7 @@ text {
     stroke: #2ca02c;
 }
 
-.line.color10-0 {
+.line.color10-3 {
     stroke: #1f77b4;
 }
 
@@ -101,7 +101,7 @@ text {
 	text-anchor: middle;
 }
 
-.projections.color10-0 line {
+.projections.color10-3 line {
     stroke: #1f77b4;
 }
 
@@ -113,7 +113,7 @@ text {
     stroke: #2ca02c;
 }
 
-.projections.color10-0 text {
+.projections.color10-3 text {
     fill: #1f77b4;
 }
 

@@ -1,6 +1,9 @@
 (function () {
-    /** @class Tooltip
+    /** @class Projection
      * @extends Plugin */
+    /* Usage
+    .plugins(tau.plugins.projection('x', 'y'))
+    */
     var Projection = {
 
         init: function () {
