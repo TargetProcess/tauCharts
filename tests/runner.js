@@ -37,8 +37,9 @@
 	};
 
 	page.onInitialized = function() {
+        page.evaluate(fixFunctionBind);
 		page.evaluate(addLogging);
-	};
+    };
 
 	page.onCallback = function(message) {
 		var result,
@@ -63,17 +64,6 @@
 			console.error('Unable to access network: ' + status);
 			phantom.exit(1);
 		} else {
-            // bind fix
-            page.evaluate(function () {
-                console.log('adding \'bind\' method to Function.prototype');
-
-                Function.prototype.bind = function(thisArg){
-                    var that = this;
-                    return function(){
-                        return that.apply(thisArg, arguments);
-                    }
-                }
-            });
 			// Cannot do this verification with the 'DOMContentLoaded' handler because it
 			// will be too late to attach it if a page does not have any script tags.
 			var qunitMissing = page.evaluate(function() { return (typeof QUnit === 'undefined' || !QUnit); });
@@ -93,6 +83,17 @@
 			// Do nothing... the callback mechanism will handle everything!
 		}
 	});
+
+    function fixFunctionBind() {
+        console.log('adding \'bind\' method to Function.prototype');
+
+        Function.prototype.bind = function (thisArg) {
+            var that = this;
+            return function () {
+                return that.apply(thisArg, arguments);
+            }
+        }
+    }
 
 	function addLogging() {
 		window.document.addEventListener('DOMContentLoaded', function() {
