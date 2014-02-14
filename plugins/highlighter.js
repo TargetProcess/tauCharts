@@ -3,7 +3,7 @@
      * @extends Plugin */
     var Highlighter = {
         /**
-         * @param {HoverContext} context
+         * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
         mouseover: function (context, tools) { 
@@ -11,7 +11,7 @@
         },
 
         /**
-         * @param {HoverContext} context
+         * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {

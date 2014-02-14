@@ -12,7 +12,7 @@
             this._container = d3.select('body').append('div');    
         },
         /**
-         * @param {HoverContext} context
+         * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
         mouseover: function (context, tools) { 
@@ -32,7 +32,7 @@
         },
 
         /**
-         * @param {HoverContext} context
+         * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {

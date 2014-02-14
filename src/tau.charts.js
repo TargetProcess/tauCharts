@@ -227,13 +227,13 @@
                     .attr("cx", mapper.map("x"))
                     .attr("cy", mapper.map("y"))
                     .on('click', function (d) {
-                        plugins.click(new ClickContext(d), new ChartElementTools(d3.select(this)));
+                        plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     })
                     .on('mouseover', function (d) {
-                        plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                        plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     })
                     .on('mouseout', function (d) {
-                        plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                        plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     });
             };
 
@@ -309,10 +309,10 @@
                         return 3;
                     })
                     .on('mouseover', function (d) {
-                        plugins.mouseover(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                        plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     })
                     .on('mouseout', function (d) {
-                        plugins.mouseout(new HoverContext(d), new ChartElementTools(d3.select(this)));
+                        plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     });
 
             };
@@ -362,20 +362,6 @@
         init: function (datum) {
             this.datum = datum;
         }
-    });
-
-    /**
-     * @class ClickContext
-     * @extends {ElementContext}
-     */
-    var ClickContext = ElementContext.extend({
-    });
-
-    /**
-     * @class HoverContext
-     * @extends {ElementContext}
-     */
-    var HoverContext = ElementContext.extend({
     });
 
     tau.charts = {
