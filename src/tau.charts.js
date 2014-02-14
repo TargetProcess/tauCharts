@@ -213,6 +213,9 @@
 
                 dataContainer.append("g").attr("class", "grid"); // TODO: tricky way to create placeholder for grid which will be at the bottom, refactor
 
+                this._mapper.binder('x').range([0, dataContainer.layout('width')]);
+                this._mapper.binder('y').range([dataContainer.layout('height'), 0]);
+
                 this._renderData(dataContainer, data);
                 this._dataSource.update(this._renderData.bind(this, dataContainer));
 
@@ -232,9 +235,6 @@
     var ScatterPlotChart = BasicChart.extend({
 
         _renderData: function (container, data) {
-            this._mapper.binder('x').range([0, container.layout('width')]);
-            this._mapper.binder('y').range([container.layout('height'), 0]);
-
             var plugins = this._plugins;
             var mapper = this._mapper;
 
@@ -244,6 +244,7 @@
                     .attr("r", mapper.map("size"))
                     .attr("cx", mapper.map("x"))
                     .attr("cy", mapper.map("y"))
+                    //TODO: code duplication
                     .on('click', function (d) {
                         plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     })
@@ -276,9 +277,6 @@
         _renderData: function (container, data) {
             var plugins = this._plugins;
             var mapper = this._mapper;
-
-            mapper.binder('x').range([0, container.layout('width')]);
-            mapper.binder('y').range([container.layout('height'), 0]);
 
             // prepare data to build several lines
             // TODO: provide several data transformers to support more formats
