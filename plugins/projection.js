@@ -52,7 +52,7 @@
                         //TODO: think how to replace constants with some provided values
                         .attr("dx", mapper.map("x"))
                         .attr("dy", height - marginBottom + 10)
-                        .text(mapper.raw("y"));
+                        .text(mapper.raw("x"));
                 }
 
                 if (axises.indexOf("y") > -1) {
@@ -71,7 +71,7 @@
                         //TODO: think how to replace constants with some provided values
                         .attr("dx", 0)
                         .attr("dy", mapper.map("y"))
-                        .text(mapper.raw("x"));
+                        .text(mapper.raw("y"));
                 }
             };
 
