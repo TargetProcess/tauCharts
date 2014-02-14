@@ -98,33 +98,33 @@
             return this.binder(key).domain();
         },
 
-        _bind: function (key, callback) {
+        _bind: function (key, callback, ctx) {
             var regex = /%[^%]*%/g;
 
             if (regex.test(key)) {
                 return function (d) {
                     return key.replace(regex, function (capture) {
                         var key = capture.substr(1, capture.length - 2);
-                        return callback(key, d);
-                    }.bind(this));
-                }.bind(this);
+                        return callback.call(ctx, key, d);
+                    });
+                };
             }
 
             return function (d) {
-                return callback(key, d);
+                return callback.call(ctx, key, d);
             }
         },
 
         map: function (key) {
             return this._bind(key, function (key, d) {
                 return this.binder(key).map(d);
-            }.bind(this))
+            }, this)
         },
 
         raw: function (key) {
             return this._bind(key, function (key, d) {
                 return this.binder(key).raw(d);
-            }.bind(this))
+            }, this)
         },
 
         alias: function (key, prop) {
@@ -165,7 +165,7 @@
         },
 
         domain: function () {
-            return this._scale.domain().map(toObject.bind(null, this._name));
+            return this._scale.domain().map(toObject.bind(null, this._names[0]));
         },
 
         category10: function () {
@@ -219,6 +219,10 @@
          */
         map: function (name) {
             return new PropertyMapper(name);
+        },
+
+        identity: function (x) {
+            return x;
         }
     };
 })();

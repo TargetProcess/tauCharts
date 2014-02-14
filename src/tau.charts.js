@@ -181,10 +181,27 @@
         },
 
         render: function (selector) {
-            var container = tau.svg.paddedBox(d3.select(selector), {top: 20, right: 20, bottom: 30, left: 40});
+            var container = d3
+                .select(selector)
+                .style('overflow', 'visible')
+                .style('position', 'relative')
+                .html('<svg></svg>' +
+                    '<div class="html html-right"></div>' +
+                    '<div class="html html-left"></div>' +
+                    '<div class="html html-above"></div>' +
+                    '<div class="html html-below"></div>');
+
+            var paddedContainer = tau.svg.paddedBox(container.select('svg'), {top: 20, right: 20, bottom: 30, left: 40});
+
+            var html = {
+                left: container.select('.html-left'),
+                right: container.select('.html-right'),
+                above: container.select('.html-above'),
+                below: container.select('.html-below')
+            };
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
-                var layout = new tau.svg.Layout(container);
+                var layout = new tau.svg.Layout(paddedContainer);
 
                 layout.row(-30);
                 var yAxisContainer = layout.col(20);
@@ -205,7 +222,7 @@
 
                 tau.svg.bringOnTop(dataContainer);
 
-                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(container, this._mapper));
+                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(paddedContainer, this._mapper, html));
             }.bind(this));
         }
     });
@@ -282,7 +299,7 @@
                 paths.enter().append("path").call(updatePaths);
                 paths.exit().remove();
 
-                var dots = this.selectAll('.dot').data(function(d){
+                var dots = this.selectAll('.dot').data(function (d) {
                     return d.values;
                 });
 
@@ -331,9 +348,11 @@
          * @constructs
          * @param d3container
          * @param {Mapper} mapper
+         * @param html
          */
-        init: function (d3container, mapper) {
-            this.d3 = d3container;
+        init: function (d3container, mapper, html) {
+            this.svg = d3container;
+            this.html = html;
             this.mapper = mapper;
         }
     });

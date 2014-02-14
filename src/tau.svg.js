@@ -65,8 +65,7 @@
     });
 
     var bringOnTop = function(d3_element){
-        var node = d3_element[0][0]; // TODO: add constraints
-        node.parentNode.appendChild(node);
+        d3_element.node().parentNode.appendChild(d3_element.node());
     };
 
     var getSVGLengthValue = function(element, property){
@@ -90,7 +89,7 @@
     };
 
     var paddedBox = function(d3_element, padding){
-        var layout = new tau.svg.Layout(d3_element, getBBox(d3_element[0][0]));
+        var layout = new tau.svg.Layout(d3_element, getBBox(d3_element.node()));
         layout.row(padding.top);
         layout.row(-padding.bottom);
         layout.col(padding.left);

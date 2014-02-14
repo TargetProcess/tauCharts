@@ -1,6 +1,6 @@
 (function () {
-    function not(x){
-        return function(d){
+    function not(x) {
+        return function (d) {
             return x != d;
         }
     }
@@ -13,25 +13,39 @@
          * @param {ChartTools} tools
          */
         render: function (context, tools) {
-            var width = tools.d3.layout('width');
+            var width = tools.svg.layout('width');
 
             // TODO: bad that we have mapper in tools interface
-            var domain = tools.mapper.domain("color");
+            var domain = tools.mapper.domain('color');
             var disabled = [];
 
-            var legend = tools.d3.selectAll(".legend")
-                .data(domain)
-                .enter().append("g")
-                .attr("class", "legend")
-                .attr("transform", function (d, i) {
-                    return "translate(" + (tools.d3.layout('width')) + "," + i * 20 + ")";
-                });
+            var container = tools.html
+                .right
+                .append('div')
+                .attr('class', 'legend')
+                .style('margin-top', '20px')
+                .style('display', 'inline-table')
+                .style('border-style', 'solid')
+                .style('border-width', '1px')
+                .style('border-color', '#bdc3cd')
+                .style('padding', '10px');
 
-            legend.append("rect")
-                .attr("class",  tools.mapper.map("dot %color%"))
-                .attr("width", 18)
-                .attr("height", 18)
-                .on('click', function(d) {
+            var legend = container
+                .selectAll('div')
+                .data(domain)
+                .enter()
+                .append('div');
+
+            legend
+                .append('span')
+                .html('&nbsp')
+                .attr('class', tools.mapper.map("dot %color%"))
+                .style('width', '18px')
+                .style('height', '18px')
+                .style('display', 'inline-block')
+                .style('margin', '1px')
+                .on('click', function (d) {
+                    console.log('click')
                     // TODO: quick and dirty filtering, will be removed when data types and legend controls for them are introduced
                     var value = tools.mapper.map("color")(d);
 
@@ -43,16 +57,14 @@
                         d3.select(this).classed('disabled', false);
                     }
 
-                    context.data.filter(function(d){
+                    context.data.filter(function (d) {
                         return disabled.indexOf(tools.mapper.map("color")(d)) == -1;
                     });
                 });
 
-            legend.append("text")
-                .attr("dx", -10)
-                .attr("dy", 12)
-                .style("text-anchor", "end")
-                .text(tools.mapper.raw("color"));
+            legend
+                .append('span')
+                .text(tools.mapper.raw('color'));
         }
     };
 

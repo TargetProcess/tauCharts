@@ -7,6 +7,10 @@
         ok(f.bind, 'Function.prototype.bind defined');
     });
 
+    test('tau.data.identity', function(){
+        equal(1, tau.data.identity(1));
+    });
+
     module('tau.data.Array', {});
 
     test('should support filtering', function () {

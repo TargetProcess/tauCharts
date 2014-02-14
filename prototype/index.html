@@ -27,10 +27,14 @@
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
 </head>
 <body>
-    <svg id="chartScatter" width="500" height="400">
-    </svg>
-    <svg id="chartLine" width="500" height="400">
-    </svg>
+    <div id="chartScatter" style="width:500px;height:400px;display:inline-block">
+    </div>
+
+    <span style="width:200px;display:inline-block"></span>
+
+    <div id="chartLine" style="width:500px;height:400px;display:inline-block">
+    </div>
+
     <script>
         var scatterplotData = tau.data.Array(window.scatterData);
         var lineData = tau.data.Array(window.lineData);
