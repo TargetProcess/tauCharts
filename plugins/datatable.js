@@ -10,8 +10,9 @@
             // TODO: think about css for plugins
             var container = tools.html.right
                 .append('div')
-                .style('margin-top', '20px');
-
+                .style('margin-top', '20px')
+                .style('border', '1px solid #999999')
+                .style('padding', '10px');
 
             container
                 .append('a')

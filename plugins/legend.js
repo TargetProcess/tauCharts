@@ -22,7 +22,10 @@
             var container = tools.html
                 .right
                 .append('div')
-                .attr('class', 'legend');
+                .attr('class', 'legend')
+                .style('margin-top', '20px')
+                .style('border', '1px solid #999999')
+                .style('padding', '10px');
 
             var legend = container
                 .selectAll('div')

@@ -200,9 +200,10 @@
                 .select(selector)
                 .style('overflow', 'visible')
                 .style('position', 'relative')
-                .html('<svg></svg>' +
-                    '<div class="html html-right"></div>' +
+                .html(
                     '<div class="html html-left"></div>' +
+                    '<svg></svg>' +
+                    '<div class="html html-right"></div>' +
                     '<div class="html html-above"></div>' +
                     '<div class="html html-below"></div>');
 

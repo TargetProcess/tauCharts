@@ -213,29 +213,30 @@ svg {
 
 .html {
   position: absolute;
+  display: inline-table;
   white-space: nowrap;
-  top: 0;
-  left: 0;
 }
 
 .html-left {
-  right: 0;
+  top: 0;
+  right: 100%;
   height: 100%;
 }
 
 .html-right {
+  top: 0;
   left: 100%;
-  border: 1px solid #999999;
-  margin-top: 20px;
-  padding: 10px
+  height: 100%;
 }
 
 .html-above{
+  left: 0;
   bottom: 100%;
   width: 100%
 }
 
 .html-below{
+  left: 0;
   top: 100%;
   width: 100%;
 }
