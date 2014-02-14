@@ -7,7 +7,7 @@
         ok(f.bind, 'Function.prototype.bind defined');
     });
 
-    test('tau.data.identity', function(){
+    test('tau.data.identity', function () {
         equal(1, tau.data.identity(1));
     });
 
@@ -51,7 +51,7 @@
             from: 1
         };
 
-        equal(mapper.map("to")(data), 1);
+        equal(mapper.map('to')(data), 1);
     });
 
     test('should give access to raw data', function () {
@@ -63,7 +63,7 @@
             from: 2
         };
 
-        equal(mapper.raw("to")(data), 2);
+        equal(mapper.raw('to')(data), 2);
     });
 
     test('should provide an option to set aliases', function () {
@@ -75,9 +75,9 @@
             alias: 0
         };
 
-        mapper.alias("to", "alias");
+        mapper.alias('to', 'alias');
 
-        equal(mapper.map("to")(data), 0);
+        equal(mapper.map('to')(data), 0);
     });
 
     test('should support formatting', function () {
@@ -91,7 +91,7 @@
             f2: 0
         };
 
-        equal(mapper.map("t1: %t1%, t2: %t2%")(data), "t1: 0, t2: 10");
-        equal(mapper.raw("t1: %t1%, t2: %t2%")(data), "t1: 0, t2: 0");
+        equal(mapper.map('t1: %t1%, t2: %t2%')(data), 't1: 0, t2: 10');
+        equal(mapper.raw('t1: %t1%, t2: %t2%')(data), 't1: 0, t2: 0');
     });
 })();

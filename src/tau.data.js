@@ -160,12 +160,16 @@
 
         linear: function () {
             //noinspection JSValidateTypes,JSUnresolvedFunction
-            this._scale = d3.scale.linear().domain([0, 30]).nice(); // TODO: use 0 - max by default
+            this._scale = d3.scale.linear();
             return this;
         },
 
         domain: function () {
-            return this._scale.domain().map(toObject.bind(null, this._names[0]));
+            // TODO: messy, clean up
+            if (!arguments.length) {
+                return this._scale.domain().map(toObject.bind(null, this._names[0]));
+            }
+            return this._scale.domain.apply(this._scale.domain, arguments);
         },
 
         category10: function () {

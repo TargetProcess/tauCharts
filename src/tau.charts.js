@@ -228,6 +228,10 @@
 
                 dataContainer.append("g").attr("class", "grid"); // TODO: tricky way to create placeholder for grid which will be at the bottom, refactor
 
+                // TODO: use metadata to get domain when implemented
+                this._mapper.binder('x').domain([0, d3.max(data, this._mapper.raw('x'))]);
+                this._mapper.binder('y').domain([0, d3.max(data, this._mapper.raw('y'))]);
+
                 this._mapper.binder('x').range([0, dataContainer.layout('width')]);
                 this._mapper.binder('y').range([dataContainer.layout('height'), 0]);
 
@@ -281,7 +285,6 @@
             return this;
         },
         _renderData: function (container, data) {
-            var plugins = this._plugins;
             var mapper = this._mapper;
 
             // prepare data to build several lines
