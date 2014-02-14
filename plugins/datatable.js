@@ -8,12 +8,10 @@
          */
         render: function (context, tools) {
             // TODO: think about css for plugins
-            var container = tools.html.above
+            var container = tools.html.right
                 .append('div')
-                .attr('class', 'datatable')
-                .style('position', 'absolute')
-                .style('right', '1px')
-                .style('text-align', 'right');
+                .style('margin-top', '20px');
+
 
             container
                 .append('a')
@@ -26,7 +24,7 @@
 
             var tableContainer = container
                 .append('div')
-                .classed('datatableContent', true)
+                .classed('datatable', true)
                 .style('display', 'none');
 
             var drawTableFn = function () {

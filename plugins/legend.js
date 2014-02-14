@@ -23,12 +23,6 @@
                 .right
                 .append('div')
                 .attr('class', 'legend')
-                .style('margin-top', '20px')
-                .style('display', 'inline-table')
-                .style('border-style', 'solid')
-                .style('border-width', '1px')
-                .style('border-color', '#bdc3cd')
-                .style('padding', '10px');
 
             var legend = container
                 .selectAll('div')
@@ -43,7 +37,7 @@
                 .style('width', '18px')
                 .style('height', '18px')
                 .style('display', 'inline-block')
-                .style('margin', '1px')
+                .style('margin', '3px')
                 .on('click', function (d) {
                     console.log('click')
                     // TODO: quick and dirty filtering, will be removed when data types and legend controls for them are introduced
