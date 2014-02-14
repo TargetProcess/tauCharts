@@ -206,7 +206,12 @@ span.color10-10 {
 }
 
 /* Charts */
-svg {
+.tau-chart {
+  overflow: visible;
+  position: relative
+}
+
+.tau-chart svg {
   width: 100%;
   height: 100%
 }

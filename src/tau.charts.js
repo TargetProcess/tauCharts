@@ -9,7 +9,7 @@
 
         _call: function (name, args) {
             for (var i = 0; i < this._plugins.length; i++) {
-                if (typeof(this._plugins[i][name]) == "function") {
+                if (typeof(this._plugins[i][name]) == 'function') {
                     this._plugins[i][name].apply(this._plugins[i], args);
                 }
             }
@@ -85,18 +85,18 @@
             var xAxis = d3.svg.axis()
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
-                .orient("bottom");
+                .orient('bottom');
 
             container
-                .append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0, " + Axes.padding + ")")
+                .append('g')
+                .attr('class', 'x axis')
+                .attr('transform', 'translate(0, ' + Axes.padding + ')')
                 .call(xAxis)
-                .append("text")
-                .attr("class", "label")
-                .attr("x", container.layout('width'))
-                .attr("y", -xAxis.tickSize())
-                .style("text-anchor", "end")
+                .append('text')
+                .attr('class', 'label')
+                .attr('x', container.layout('width'))
+                .attr('y', -xAxis.tickSize())
+                .style('text-anchor', 'end')
                 .text(this._mapper.caption());
         }
     });
@@ -108,29 +108,29 @@
             var yAxis = d3.svg.axis()
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
-                .orient("left");
+                .orient('left');
 
             container
-                .append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(-" + Axes.padding + ", 0)")
+                .append('g')
+                .attr('class', 'y axis')
+                .attr('transform', 'translate(-' + Axes.padding + ', 0)')
                 .call(yAxis)
-                .append("text")
-                .attr("class", "label")
-                .attr("transform", "rotate(-90)")
-                .attr("x", yAxis.tickSize())
-                .attr("y", yAxis.tickSize() + container.layout('width'))
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
+                .append('text')
+                .attr('class', 'label')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', yAxis.tickSize())
+                .attr('y', yAxis.tickSize() + container.layout('width'))
+                .attr('dy', '.71em')
+                .style('text-anchor', 'end')
                 .text(this._mapper.caption());
 
             container
-                .selectAll(".tick line")
+                .selectAll('.tick line')
                 .attr('x1', container.layout('width') - 6)
                 .attr('x2', container.layout('width'));
 
             container
-                .selectAll(".tick text")
+                .selectAll('.tick text')
                 .attr('dx', container.layout('width'));
 
             container
@@ -159,11 +159,54 @@
                 .orient('left')
                 .tickSize(-container.layout('width'));
 
-            container.select('.grid').append('g').call(xAxis);
-            container.select('.grid').append('g').call(yAxis);
+            var grid = container.insert('g', ':first-child').attr('class', 'grid');
+
+            grid.append('g').call(xAxis);
+            grid.append('g').call(yAxis);
 
             // TODO: make own axes and grid instead of using d3's in such tricky way
-            container.selectAll('text').remove();
+            grid.selectAll('text').remove();
+        }
+    });
+
+    var CHART_PADDINGS = {top: 20, right: 20, bottom: 30, left: 40};
+
+    var CHART_HTML =
+        '<div class="html html-left"></div>' +
+        '<svg></svg>' +
+        '<div class="html html-right"></div>' +
+        '<div class="html html-above"></div>' +
+        '<div class="html html-below"></div>';
+
+    /** @class */
+    var ChartLayout = Class.extend({
+        /** @constructs */
+        init: function(selector){
+            var container = d3.select(selector)
+                .classed('tau-chart', true)
+                .html(CHART_HTML);
+
+            this.html = {
+                left: container.select('.html-left'),
+                right: container.select('.html-right'),
+                above: container.select('.html-above'),
+                below: container.select('.html-below')
+            };
+
+            this.svg = tau.svg.paddedBox(container.select('svg'), CHART_PADDINGS);
+
+            var layout = new tau.svg.Layout(this.svg);
+
+            layout.row(-30);
+            this.yAxis = layout.col(20);
+            this.data = layout.col();
+
+            layout.row();
+            layout.col(20);
+            this.xAxis = layout.col();
+
+            this.width = this.data.layout('width');
+            this.height = this.data.layout('height');
         }
     });
 
@@ -196,62 +239,31 @@
         },
 
         render: function (selector) {
-            var container = d3
-                .select(selector)
-                .style('overflow', 'visible')
-                .style('position', 'relative')
-                .html(
-                    '<div class="html html-left"></div>' +
-                    '<svg></svg>' +
-                    '<div class="html html-right"></div>' +
-                    '<div class="html html-above"></div>' +
-                    '<div class="html html-below"></div>');
+            var chartLayout = new ChartLayout(selector);
 
-            var paddedContainer = tau.svg.paddedBox(container.select('svg'), {top: 20, right: 20, bottom: 30, left: 40});
-
-            var html = {
-                left: container.select('.html-left'),
-                right: container.select('.html-right'),
-                above: container.select('.html-above'),
-                below: container.select('.html-below')
-            };
+            this._mapper.binder('x').range([0, chartLayout.width]);
+            this._mapper.binder('y').range([chartLayout.height, 0]);
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
-                // TODO: refactor this giant routine
-                var layout = new tau.svg.Layout(paddedContainer);
-
-                layout.row(-30);
-                var yAxisContainer = layout.col(20);
-                var dataContainer = layout.col();
-
-                layout.row();
-                layout.col(20);
-                var xAxisContainer = layout.col();
-
-                dataContainer.append("g").attr("class", "grid"); // TODO: tricky way to create placeholder for grid which will be at the bottom, refactor
-
                 // TODO: use metadata to get domain when implemented
                 this._mapper.binder('x').domain([0, d3.max(data, this._mapper.raw('x'))]);
                 this._mapper.binder('y').domain([0, d3.max(data, this._mapper.raw('y'))]);
 
-                this._mapper.binder('x').range([0, dataContainer.layout('width')]);
-                this._mapper.binder('y').range([dataContainer.layout('height'), 0]);
-
                 var renderData = function(data){
-                    this._renderData(dataContainer, data);
-                    dataContainer.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                    this._renderData(chartLayout.data, data);
+                    chartLayout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
                 }.bind(this);
 
                 renderData(data);
                 this._dataSource.update(renderData);
 
-                new YAxis(this._mapper.binder("y")).render(yAxisContainer);
-                new XAxis(this._mapper.binder("x")).render(xAxisContainer);
-                new Grid(this._mapper.binder("x"), this._mapper.binder("y")).render(dataContainer);
+                new YAxis(this._mapper.binder('y')).render(chartLayout.yAxis);
+                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
+                new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data);
 
-                tau.svg.bringOnTop(dataContainer);
+                tau.svg.bringOnTop(chartLayout.data);
 
-                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(paddedContainer, this._mapper, html));
+                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(chartLayout, this._mapper));
             }.bind(this));
         }
     });
@@ -265,16 +277,16 @@
 
             var update = function () {
                 return this
-                    .attr("class", mapper.map("dot i-role-datum %color%"))
-                    .attr("r", mapper.map("size"))
-                    .attr("cx", mapper.map("x"))
-                    .attr("cy", mapper.map("y"));
+                    .attr('class', mapper.map('dot i-role-datum %color%'))
+                    .attr('r', mapper.map('size'))
+                    .attr('cx', mapper.map('x'))
+                    .attr('cy', mapper.map('y'));
             };
 
-            var elements = container.selectAll(".dot").data(data);
+            var elements = container.selectAll('.dot').data(data);
 
             elements.call(update);
-            elements.enter().append("circle").call(update);
+            elements.enter().append('circle').call(update);
             elements.exit().remove();
         }
     });
@@ -285,7 +297,7 @@
     var LineChart = BasicChart.extend({
         map: function (config) {
             this._super(config);
-            this._mapper.alias("color", "key");
+            this._mapper.alias('color', 'key');
 
             return this;
         },
@@ -296,19 +308,19 @@
             // TODO: provide several data transformers to support more formats
             // sometime we will have data already nested, for example.
             var categories = d3.nest()
-                .key(mapper.raw("color"))
+                .key(mapper.raw('color'))
                 .entries(data);
 
             var updateLines = function () {
-                this.attr("class", mapper.map("line %color%"));
+                this.attr('class', mapper.map('line %color%'));
 
-                var paths = this.selectAll("path").data(function (d) {
+                var paths = this.selectAll('path').data(function (d) {
                     return [d.values];
                 });
 
                 // TODO: extract update pattern to some place
                 paths.call(updatePaths);
-                paths.enter().append("path").call(updatePaths);
+                paths.enter().append('path').call(updatePaths);
                 paths.exit().remove();
 
                 var dots = this.selectAll('.dot').data(function (d) {
@@ -316,33 +328,33 @@
                 });
 
                 dots.call(updateDots);
-                dots.enter().append("circle").attr('class', 'dot i-role-datum').call(updateDots);
+                dots.enter().append('circle').attr('class', 'dot i-role-datum').call(updateDots);
                 dots.exit().remove();
             };
 
             //TODO: allow to set interpolation outside
             var line = d3.svg.line()
-                .interpolate("cardinal")
-                .x(mapper.map("x"))
-                .y(mapper.map("y"));
+                .interpolate('cardinal')
+                .x(mapper.map('x'))
+                .y(mapper.map('y'));
 
             var updatePaths = function () {
-                this.attr("d", line);
+                this.attr('d', line);
             };
 
             var updateDots = function () {
                 // draw circles (to enable mouse interactions)
                 return this
-                    .attr("cx", mapper.map("x"))
-                    .attr("cy", mapper.map("y"))
+                    .attr('cx', mapper.map('x'))
+                    .attr('cy', mapper.map('y'))
                     .attr('r', function () {
                         return 3;
                     });
             };
 
-            var lines = container.selectAll(".line").data(categories);
+            var lines = container.selectAll('.line').data(categories);
             lines.call(updateLines);
-            lines.enter().append("g").call(updateLines);
+            lines.enter().append('g').call(updateLines);
             lines.exit().remove();
         }
     });
@@ -351,13 +363,12 @@
     var ChartTools = Class.extend({
         /**
          * @constructs
-         * @param d3container
+         * @param {ChartLayout} layout
          * @param {Mapper} mapper
-         * @param html
          */
-        init: function (d3container, mapper, html) {
-            this.svg = d3container;
-            this.html = html;
+        init: function (layout, mapper) {
+            this.svg = layout.svg;
+            this.html = layout.html;
             this.mapper = mapper;
         }
     });
