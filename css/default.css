@@ -213,7 +213,7 @@ svg {
 
 .html {
   position: absolute;
-  display: inline-table;
+  white-space: nowrap;
   top: 0;
   left: 0;
 }

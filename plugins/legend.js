@@ -22,7 +22,7 @@
             var container = tools.html
                 .right
                 .append('div')
-                .attr('class', 'legend')
+                .attr('class', 'legend');
 
             var legend = container
                 .selectAll('div')
@@ -39,7 +39,6 @@
                 .style('display', 'inline-block')
                 .style('margin', '3px')
                 .on('click', function (d) {
-                    console.log('click')
                     // TODO: quick and dirty filtering, will be removed when data types and legend controls for them are introduced
                     var value = tools.mapper.map("color")(d);
 
