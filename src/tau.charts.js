@@ -217,6 +217,7 @@
             };
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
+                // TODO: refactor this giant routine
                 var layout = new tau.svg.Layout(paddedContainer);
 
                 layout.row(-30);
@@ -236,14 +237,17 @@
                 this._mapper.binder('x').range([0, dataContainer.layout('width')]);
                 this._mapper.binder('y').range([dataContainer.layout('height'), 0]);
 
-                this._renderData(dataContainer, data);
-                this._dataSource.update(this._renderData.bind(this, dataContainer));
+                var renderData = function(data){
+                    this._renderData(dataContainer, data);
+                    dataContainer.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                }.bind(this);
+
+                renderData(data);
+                this._dataSource.update(renderData);
 
                 new YAxis(this._mapper.binder("y")).render(yAxisContainer);
                 new XAxis(this._mapper.binder("x")).render(xAxisContainer);
                 new Grid(this._mapper.binder("x"), this._mapper.binder("y")).render(dataContainer);
-
-                dataContainer.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
 
                 tau.svg.bringOnTop(dataContainer);
 
