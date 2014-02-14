@@ -167,6 +167,21 @@
         }
     });
 
+    var propagateDatumEvents = function (plugins) {
+        return function () {
+            this
+                .on('click', function (d) {
+                    plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mouseover', function (d) {
+                    plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mouseout', function (d) {
+                    plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
+                })
+        }
+    };
+
     /**@class */
     /**@extends Chart */
     var BasicChart = Chart.extend({
@@ -223,6 +238,8 @@
                 new XAxis(this._mapper.binder("x")).render(xAxisContainer);
                 new Grid(this._mapper.binder("x"), this._mapper.binder("y")).render(dataContainer);
 
+                dataContainer.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+
                 tau.svg.bringOnTop(dataContainer);
 
                 this._plugins.render(new RenderContext(this._dataSource), new ChartTools(paddedContainer, this._mapper, html));
@@ -235,25 +252,14 @@
     var ScatterPlotChart = BasicChart.extend({
 
         _renderData: function (container, data) {
-            var plugins = this._plugins;
             var mapper = this._mapper;
 
             var update = function () {
                 return this
-                    .attr("class", mapper.map("dot %color%"))
+                    .attr("class", mapper.map("dot i-role-datum %color%"))
                     .attr("r", mapper.map("size"))
                     .attr("cx", mapper.map("x"))
-                    .attr("cy", mapper.map("y"))
-                    //TODO: code duplication
-                    .on('click', function (d) {
-                        plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
-                    })
-                    .on('mouseover', function (d) {
-                        plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
-                    })
-                    .on('mouseout', function (d) {
-                        plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
-                    });
+                    .attr("cy", mapper.map("y"));
             };
 
             var elements = container.selectAll(".dot").data(data);
@@ -302,7 +308,7 @@
                 });
 
                 dots.call(updateDots);
-                dots.enter().append("circle").classed("dot", true).call(updateDots);
+                dots.enter().append("circle").attr('class', 'dot i-role-datum').call(updateDots);
                 dots.exit().remove();
             };
 
@@ -323,14 +329,7 @@
                     .attr("cy", mapper.map("y"))
                     .attr('r', function () {
                         return 3;
-                    })
-                    .on('mouseover', function (d) {
-                        plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
-                    })
-                    .on('mouseout', function (d) {
-                        plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
                     });
-
             };
 
             var lines = container.selectAll(".line").data(categories);
