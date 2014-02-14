@@ -1,0 +1,146 @@
+@import "compass/reset"
+
+
+
+/* BASIC */
+
+/* Fonts */
+body
+	font: normal 13px 'Open Sans', sans-serif
+
+text
+	font: normal 13px 'Open Sans', sans-serif
+
+
+/* Colors */
+
+$colors: #e41a1c #377eb8 #4daf4a #984ea3 #ff7f00 #ffff33 #a65628 #f781bf #999999 #222222
+
+$colors-number: 10
+
+@for $i from 1 through $colors-number
+	.color#{$colors-number}-#{$i}
+		stroke: nth($colors, $i)
+		fill: nth($colors, $i)
+
+@for $i from 1 through $colors-number
+	.line.color#{$colors-number}-#{$i} .dot
+		stroke: nth($colors, $i)
+		fill: nth($colors, $i)
+
+
+/* Axises and Grid */
+
+.axis
+	line
+		stroke-width: 1
+		fill: none
+		stroke: #BDC3CD
+		shape-rendering: crispEdges
+	path
+		stroke-width: 1
+		fill: none
+		stroke: #BDC3CD
+		shape-rendering: crispEdges
+
+.grid
+	path
+		fill: none
+		shape-rendering: crispEdges
+	line
+		opacity: 0.5
+		stroke-width: 1
+		fill: none
+		stroke: #BDC3CD
+		stroke-width: 1px
+		shape-rendering: crispEdges
+
+
+/* Scatterplot */
+
+.dot
+	opacity: 0.6
+	transition: stroke-width 0.1s ease, opacity 0.1s ease
+	stroke-width: 0
+	cursor: pointer
+
+
+/* Linechart */
+
+.line
+	fill: none !important
+	stroke-width: 1.5px
+
+
+
+
+/* PLUGINS */
+
+/* Highlighter */
+
+.dot.highlighted
+	stroke-width: 6
+	stroke-opacity: 0.4
+	opacity: 1
+
+
+/* Tooltip */
+
+.tooltip
+	position: absolute
+	display: none
+	font-size: 11px
+	padding: 7px 10px 8px
+	border-radius: 5px
+	background: #FFFFFF
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2),  0px 0px 0px 1px rgba(0, 0, 0, 0.05)
+	em
+		font-style: normal
+		color: #999
+		display: inline-block
+		min-width: 45px
+
+
+/* Projections */
+
+.projections
+	line
+		stroke-width: 1
+		opacity: 0.6
+		shape-rendering: crispEdges
+	text
+		stroke: none
+	.x text
+		text-anchor: end
+	.y text
+		text-anchor: middle
+
+
+/* Datatable */
+
+.datatable
+	position: absolute
+	.datatableContent
+		display: none
+		background: #fff
+		padding: 10px
+		height: 300px
+		overflow: scroll
+		width: 300px
+		border: 1px solid #999
+	table
+		td
+			padding: 2px
+		th
+			padding: 2px
+			font-weight: bold
+
+
+/* Legend */
+
+.legend
+	.disabled
+		opacity: 0.2
+
+
+

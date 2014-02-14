@@ -71,7 +71,7 @@
                             //TODO: think how to replace constants with some provided values
                             .attr("dx", 0)
                             .attr("dy", mapper.map("y"))
-                            .text(mapper.raw("y"));
+                            .text(mapper.raw("x"));
                 };
 
             }
