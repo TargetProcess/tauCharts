@@ -14,33 +14,89 @@ text
 
 /* Colors */
 
-$colors: #e41a1c #377eb8 #4daf4a #984ea3 #ff7f00 #ffff33 #a65628 #f781bf #999999 #222222
+$link-color: #3962FF
+$link-hover-color: #E17152
+
+
+$axis-color: #BDC3CD
+
+
+$category-colors: #e41a1c #377eb8 #4daf4a #984ea3 #ff7f00 #ffff33 #a65628 #f781bf #999999 #222222
 
 $colors-number: 10
 
 @for $i from 1 through $colors-number
 	.color#{$colors-number}-#{$i}
-		stroke: nth($colors, $i)
-		fill: nth($colors, $i)
+		stroke: nth($category-colors, $i)
+		fill: nth($category-colors, $i)
 
 @for $i from 1 through $colors-number
 	.line.color#{$colors-number}-#{$i} .dot
-		stroke: nth($colors, $i)
-		fill: nth($colors, $i)
+		stroke: nth($category-colors, $i)
+		fill: nth($category-colors, $i)
+
+@for $i from 1 through $colors-number
+	.legend li.color#{$colors-number}-#{$i}:before
+		background-color: nth($category-colors, $i)
+
+@for $i from 1 through $colors-number
+	.legend li.disabled.color#{$colors-number}-#{$i}:before
+		border-color: nth($category-colors, $i)
+
+
+/* Links */
+
+a
+	color: $link-color
+	border-bottom: 1px solid transparentize($link-color, 0.7)
+	text-decoration: none
+	&:hover
+		color: #E17152
+		border-bottom: 1px solid transparentize($link-hover-color, 0.7)
+
+
+/* Charts */
+
+.tau-chart
+	overflow: visible
+	position: relative
+	svg
+		width: 100%
+		height: 100%
+
+.html
+	position: absolute
+	display: inline-table
+	white-space: nowrap
+
+.html-left
+	top: 0
+	right: 100%
+	height: 100%
+
+.html-right
+	top: 0
+	left: 100%
+	height: 100%
+
+.html-above
+	left: 0
+	bottom: 100%
+	width: 100%
+
+.html-below
+	left: 0
+	top: 100%
+	width: 100%
 
 
 /* Axises and Grid */
 
 .axis
-	line
+	line, path
 		stroke-width: 1
 		fill: none
-		stroke: #BDC3CD
-		shape-rendering: crispEdges
-	path
-		stroke-width: 1
-		fill: none
-		stroke: #BDC3CD
+		stroke: $axis-color
 		shape-rendering: crispEdges
 
 .grid
@@ -48,10 +104,9 @@ $colors-number: 10
 		fill: none
 		shape-rendering: crispEdges
 	line
-		opacity: 0.5
 		stroke-width: 1
 		fill: none
-		stroke: #BDC3CD
+		stroke: transparentize($axis-color, 0.5)
 		stroke-width: 1px
 		shape-rendering: crispEdges
 
@@ -92,7 +147,7 @@ $colors-number: 10
 	font-size: 11px
 	padding: 7px 10px 8px
 	border-radius: 5px
-	background: #FFFFFF
+	background: #fff
 	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2),  0px 0px 0px 1px rgba(0, 0, 0, 0.05)
 	em
 		font-style: normal
@@ -119,28 +174,79 @@ $colors-number: 10
 /* Datatable */
 
 .datatable
-	position: absolute
-	.datatableContent
+	padding: 15px 20px
+	border-radius: 2px
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05)
+	margin: 20px 0 0 20px
+	div
 		display: none
-		background: #fff
-		padding: 10px
-		height: 300px
-		overflow: scroll
+		background: white
 		width: 300px
-		border: 1px solid #999
-	table
-		td
-			padding: 2px
-		th
-			padding: 2px
-			font-weight: bold
+		position: absolute
+		z-index: 2
+		box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2),  0px 0px 0px 1px rgba(0, 0, 0, 0.05)
+		border-radius: 2px
+		margin-left: -20px
+		margin-top: 15px
+		table
+			width: 100%
+			thead
+				display: table
+				width: 100%
+			tbody
+				display: block
+				width: 100%
+				height: 300px
+				overflow: scroll
+			tr
+				display: table
+				width: 100%
+			tr:hover
+				background-color: transparentize($link-color, 0.95)
+			th
+				padding: 10px
+				font-weight: 600
+				border-bottom: 1px solid transparentize($axis-color, 0.5)
+				font-size: 11px
+				overflow: hidden
+				text-overflow: ellipsis
 
+			@for $i from 1 through 10
+				&.col-#{$i} th, &.col-#{$i} td 
+					width: (100% / $i)
+			td
+				padding: 2px 10px
+				
+	&.show
+		box-shadow: inset 0px 2px 4px 0px rgba(0, 0, 0, 0.2), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.05)
+		background-color: transparentize($link-color, 0.95)
+		div
+			display: block
 
 /* Legend */
 
 .legend
-	.disabled
-		opacity: 0.2
+	padding: 20px 20px 15px
+	border-radius: 2px
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05)
+	margin: 20px 0 0 20px
+	li
+		cursor: pointer
+		margin-bottom: 5px
+		&:before
+			width: 14px
+			height: 14px
+			display: inline-block
+			content: ''
+			padding: 1px
+			vertical-align: middle
+			margin-right: 5px
+			border-radius: 2px
+			margin-top: -2px
+		&.disabled:before
+			background-color: transparent
+			border: 1px solid #666
+			padding: 0
 
 
 

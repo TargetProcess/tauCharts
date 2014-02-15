@@ -21,26 +21,17 @@
 
             var container = tools.html
                 .right
-                .append('div')
-                .attr('class', 'legend')
-                .style('margin-top', '20px')
-                .style('border', '1px solid #999999')
-                .style('padding', '10px');
+                .append('ul')
+                .attr('class', 'legend');
 
             var legend = container
-                .selectAll('div')
+                .selectAll('li')
                 .data(domain)
                 .enter()
-                .append('div');
+                .append('li');
 
             legend
-                .append('span')
-                .html('&nbsp')
-                .attr('class', tools.mapper.map("dot %color%"))
-                .style('width', '18px')
-                .style('height', '18px')
-                .style('display', 'inline-block')
-                .style('margin', '3px')
+                .attr('class', tools.mapper.map("color"))
                 .on('click', function (d) {
                     // TODO: quick and dirty filtering, will be removed when data types and legend controls for them are introduced
                     var value = tools.mapper.map("color")(d);
@@ -59,7 +50,6 @@
                 });
 
             legend
-                .append('span')
                 .text(tools.mapper.raw('color'));
         }
     };

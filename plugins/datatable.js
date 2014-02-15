@@ -10,23 +10,19 @@
             // TODO: think about css for plugins
             var container = tools.html.right
                 .append('div')
-                .style('margin-top', '20px')
-                .style('border', '1px solid #999999')
-                .style('padding', '10px');
+                .attr('class', 'datatable');
 
             container
                 .append('a')
                 .attr('href', '#')
-                .html("data table")
+                .html("Show data table")
                 .on('click', function (d) {
                     drawTableFn();
-                    toggleTable(tableContainer);
+                    toggleTable(container);
+                    d3.event.preventDefault();
                 });
 
-            var tableContainer = container
-                .append('div')
-                .classed('datatable', true)
-                .style('display', 'none');
+            var tableContainer = container.append('div');
 
             var drawTableFn = function () {
 
@@ -36,6 +32,9 @@
 
                 // TODO: fix when metadata and data types introduced
                 var columns = Object.keys(context.data._data[0]);
+
+                table
+                    .attr('class', function(){return 'col-' + columns.length});
 
                 // create the table header
                 thead.selectAll('th')
@@ -64,7 +63,7 @@
             };
 
             var toggleTable = function (el) {
-                (el.style('display') == 'none') ? el.style('display', 'block') : el.style('display', 'none');
+                (el.attr('class') == 'datatable') ? el.attr('class', 'datatable show') : el.attr('class', 'datatable');
             };
         }
     };

@@ -27,12 +27,12 @@
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
 </head>
 <body>
-    <div id="chartScatter" style="width:500px;height:400px;display:inline-block">
+    <div id="chartScatter" style="width:800px;height:600px;display:inline-block">
     </div>
 
     <span style="width:200px;display:inline-block"></span>
 
-    <div id="chartLine" style="width:500px;height:400px;display:inline-block">
+    <div id="chartLine" style="width:800px;height:600px;display:inline-block">
     </div>
 
     <script>
@@ -43,7 +43,7 @@
                 .Scatterplot(scatterplotData)
                 .map({
                     x: tau.data.map('duration').linear(),
-                    y: tau.data.map('effort').caption("Effort, h").linear(),
+                    y: tau.data.map('effort').caption('Effort, h').linear(),
                     size: 'timeSpent',
                     color: tau.data.map('priority').category10()
                 })
@@ -71,7 +71,7 @@
                     tau.plugins.datatable(),
                     tau.plugins.projection('x')
                 )
-                .render("#chartLine");
+                .render("#chartLine"); 
     </script>
 </body>
 </html>
