@@ -273,7 +273,7 @@
     var ScatterPlotChart = BasicChart.extend({
 
         _renderData: function (container, data) {
-            this._mapper.binder('size').domain([0, d3.max(data, this._mapper.raw('size'))]); // TODO: should be done automatically using chart metadata
+            this._mapper.binder('size').domain(d3.extent(data, this._mapper.raw('size'))); // TODO: should be done automatically using chart metadata
 
             var mapper = this._mapper;
 

@@ -44,7 +44,7 @@
                 .map({
                     x: tau.data.map('duration').linear(),
                     y: tau.data.map('effort').caption('Effort, h').linear(),
-                    size: tau.data.map('timeSpent').linear().range([0, 10]),
+                    size: tau.data.map('timeSpent').linear().range([5, 15]),
                     color: tau.data.map('priority').category10()
                 })
                 .plugins(
