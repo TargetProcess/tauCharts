@@ -34,7 +34,7 @@
                 .attr('class', tools.mapper.map("color"))
                 .on('click', function (d) {
                     // TODO: quick and dirty filtering, will be removed when data types and legend controls for them are introduced
-                    var value = tools.mapper.map("color")(d);
+                    var value = tools.mapper.raw("color")(d);
 
                     if (disabled.indexOf(value) == -1) {
                         disabled.push(value);
@@ -45,8 +45,19 @@
                     }
 
                     context.data.filter(function (d) {
-                        return disabled.indexOf(tools.mapper.map("color")(d)) == -1;
+                        return disabled.indexOf(tools.mapper.raw("color")(d)) == -1;
                     });
+                })
+                .on('mouseover', function (d) {
+                    var value = tools.mapper.raw("color")(d);
+
+                    tools.elements().classed('highlighted',
+                        function (d) {
+                            return tools.mapper.raw('color')(d) === value;
+                        })
+                })
+                .on('mouseout', function () {
+                    tools.elements().classed('highlighted', false);
                 });
 
             legend

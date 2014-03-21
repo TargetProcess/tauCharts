@@ -192,6 +192,35 @@
         }
     });
 
+    /**
+     * @class
+     */
+    var ConstantMapper = Class.extend({
+        /** @constructs */
+        init: function (value) {
+            this._value = value;
+        },
+
+        raw: function (d) {
+            return this._value;
+        },
+
+        map: function (d) {
+            return this._value;
+        },
+
+        domain: function () {
+        },
+
+        range: function () {
+            throw new Error('range is not implemented for constants');
+        },
+
+        caption: function (value) {
+            throw new Error('caption is not implemented for constants');
+        }
+    });
+
     tau.data = {
         Array: function (d) {
             return new ArrayDataSource(d);
@@ -223,6 +252,14 @@
          */
         map: function (name) {
             return new PropertyMapper(name);
+        },
+
+        /**
+         * @param value
+         * @returns {ConstantMapper}
+         */
+        constant: function (value) {
+            return new ConstantMapper(value);
         },
 
         identity: function (x) {

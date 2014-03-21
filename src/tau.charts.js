@@ -372,6 +372,10 @@
             this.svg = layout.svg;
             this.html = layout.html;
             this.mapper = mapper;
+        },
+
+        elements: function(){
+            return this.svg.selectAll('.i-role-datum');
         }
     });
 

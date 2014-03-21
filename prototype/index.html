@@ -20,6 +20,7 @@
 
     <!-- test data -->
     <script src="data.js"></script>
+    <script src="countries.js"></script>
 
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet" />
@@ -36,20 +37,20 @@
     </div>
 
     <script>
-        var scatterplotData = tau.data.Array(window.scatterData);
+        var scatterplotData = tau.data.Array(window.countries);
         var lineData = tau.data.Array(window.lineData);
 
         tau.charts
                 .Scatterplot(scatterplotData)
                 .map({
-                    x: tau.data.map('duration').linear(),
-                    y: tau.data.map('effort').caption('Effort, h').linear(),
-                    size: tau.data.map('timeSpent').linear().range([5, 15]),
-                    color: tau.data.map('priority').category10()
+                    x: tau.data.map('Gdp').caption('Gdp, ??').linear(),
+                    y: tau.data.map('Happiness').caption('Happiness, ??').linear(),
+                    size: tau.data.constant(10),
+                    color: tau.data.map('Country').category10()
                 })
                 .plugins(
                     tau.plugins.legend(),
-                    tau.plugins.tooltip('effort', 'priority'),
+                    tau.plugins.tooltip('Country'),
                     tau.plugins.highlighter(),
                     tau.plugins.datatable(),
                     tau.plugins.projection('y', 'x')
