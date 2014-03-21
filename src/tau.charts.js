@@ -46,7 +46,7 @@
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = tau.data.Mapper(config);
+            this._mapper = new tau.data.MapperBuilder(this._meta).config(config).build();
             return this;
         },
 

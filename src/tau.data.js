@@ -226,30 +226,49 @@
         }
     });
 
+    /**
+     * @class
+     */
+    var MapperBuilder = Class.extend({
+        /**
+         * @construct
+         * @param meta
+         */
+        init: function (meta) {
+            this._propertyMappers = {};
+        },
+
+        config: function(config){
+            for (var key in config) {
+                var propertyMapper = config[key];
+
+                if (typeof(propertyMapper) === 'string') {
+                    propertyMapper = new PropertyMapper(propertyMapper);
+                }
+
+                this._propertyMappers[key] = propertyMapper;
+            }
+
+            return this;
+        },
+
+        build: function (config) {
+            return new Mapper(this._propertyMappers);
+        }
+    });
+
+
     tau.data = {
+        types: {
+            quantitative: 'quantitative ',
+            categorical: 'categorical'
+        },
+
         Array: function (d) {
             return new ArrayDataSource(d);
         },
 
-        Mapper: function (config) {
-            function processConfig() {
-                var result = {};
-
-                for (var key in config) {
-                    var mapper = config[key];
-
-                    if (typeof(mapper) === 'string') {
-                        mapper = new PropertyMapper(mapper);
-                    }
-
-                    result[key] = mapper;
-                }
-
-                return result;
-            }
-
-            return new Mapper(processConfig());
-        },
+        MapperBuilder: MapperBuilder,
 
         /**
          * @param {String} name

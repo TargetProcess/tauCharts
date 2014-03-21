@@ -94,4 +94,34 @@
         equal(mapper.map('t1: %t1%, t2: %t2%')(data), 't1: 0, t2: 10');
         equal(mapper.raw('t1: %t1%, t2: %t2%')(data), 't1: 0, t2: 0');
     });
+
+    module('tau.data.MapperBuilder', {});
+
+    test('TODO: split to several tests on one module', function() {
+        // scatter meta
+        var meta = {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1},
+            size: {type: tau.data.types.quantitative, default: 10}
+        };
+
+        var mapperBuilder = new tau.data.MapperBuilder(meta);
+
+        // [TEST - should support string mapping]
+        var config = {
+            x: 'fromX',
+            y: 'fromY',
+            color: 'fromColor',
+            size: 'fromSize'
+        };
+
+        // [TEST - should support string mapping with default scales]
+
+        // [TEST - should support auto mapping]
+        var config = {};
+        var mapper = mapperBuilder.build(config);
+
+        // [TEST - should support optional properties]
+    })
 })();
