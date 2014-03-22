@@ -1,5 +1,5 @@
 (function() {
-	/**@class */
+    /**@class */
     /**@extends BasicChart */
     var LineChart = tau.charts.Base.extend({
         map: function (config) {
@@ -66,7 +66,8 @@
         }
     });
 
-	tau.charts.add('Line', function (data) {
+    tau.charts.add('Line', function (data) {
         return new LineChart(data);
     });
+    
 })();

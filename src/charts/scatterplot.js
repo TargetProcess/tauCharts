@@ -1,6 +1,6 @@
 (function() {
 
-	/**@class */
+    /**@class */
     /**@extends BasicChart */
     var ScatterPlotChart = tau.charts.Base.extend({
 
