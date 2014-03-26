@@ -12,7 +12,7 @@
         layout.col(40);
         layout.col();
 
-        equal(svg.innerHTML, '<g transform="translate(0,20)"></g><g transform="translate(40,20)"></g>')
+        equal(svg.innerHTML, '<g transform="translate(0,20)"></g><g transform="translate(40,20)"></g>');
     });
 
     test('should take negative values as relative', function () {

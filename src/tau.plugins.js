@@ -40,7 +40,7 @@
 
             tau.plugins[name] = function(){
                 return Class.new(plugin, arguments);
-            }
+            };
         }
     };
 })();
