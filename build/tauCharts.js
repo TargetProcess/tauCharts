@@ -280,8 +280,8 @@
                 })
                 .on('mouseout', function (d) {
                     plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
-                })
-        }
+                });
+        };
     };
 
     /**@class */
@@ -407,7 +407,7 @@
         return function () {
             fn1.apply(fn1, arguments);
             fn2.apply(fn2, arguments);
-        }
+        };
     };
 
     /** @class DataSource
@@ -504,19 +504,19 @@
 
             return function (d) {
                 return callback.call(ctx, key, d);
-            }
+            };
         },
 
         map: function (key) {
             return this._bind(key, function (key, d) {
                 return this.binder(key).map(d);
-            }, this)
+            }, this);
         },
 
         raw: function (key) {
             return this._bind(key, function (key, d) {
                 return this.binder(key).raw(d);
-            }, this)
+            }, this);
         },
 
         alias: function (key, prop) {
@@ -542,7 +542,7 @@
         raw: function (d) {
             return d[this._names
                 .filter(function (name) {
-                    return d.hasOwnProperty(name)
+                    return d.hasOwnProperty(name);
                 })[0]];
         },
 
@@ -632,7 +632,7 @@
                     result[key] = mapper;
                 }
 
-                return result
+                return result;
             }
 
             return new Mapper(processConfig());
@@ -746,7 +746,7 @@
 
             d3_selection.layout = function(key){
                 return layout[key];
-            }
+            };
         },
 
         /**

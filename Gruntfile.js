@@ -33,10 +33,10 @@ module.exports = function(grunt) {
     jshint: {
       all: {
         src: [
-          "src/**/*.js", "Gruntfile.js", "test/**/*.js"
+          "src/**/*.js", "Gruntfile.js"
         ],
         options: {
-          jshintrc: true
+          "loopfunc": true
         }
       }
     },
@@ -86,7 +86,7 @@ module.exports = function(grunt) {
 
   // Default task.
   //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-  //grunt.registerTask('default', ['bowercopy', 'jshint', 'concat', 'uglify']);
-  grunt.registerTask('default', ['bowercopy',  'concat', 'uglify']);
+  grunt.registerTask('default', ['bowercopy', 'jshint', 'concat', 'uglify']);
+  
 
 };

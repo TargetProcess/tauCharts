@@ -221,8 +221,8 @@
                 })
                 .on('mouseout', function (d) {
                     plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
-                })
-        }
+                });
+        };
     };
 
     /**@class */

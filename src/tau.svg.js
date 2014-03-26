@@ -38,7 +38,7 @@
 
             d3_selection.layout = function(key){
                 return layout[key];
-            }
+            };
         },
 
         /**
