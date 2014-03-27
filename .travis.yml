@@ -1,2 +1,2 @@
 script:
-  phantomjs tests/runner.js tests/index.html
+  phantomjs test/runner.js test/index.html
