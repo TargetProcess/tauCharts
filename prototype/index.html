@@ -4,10 +4,8 @@
 <head>
     <script src="../libs/d3.js"></script>
 
-    
     <script src="../build/tauCharts.js"></script>
 
-    
     <!-- test data -->
     <script src="data.js"></script>
 
@@ -24,11 +22,20 @@
 
     <span style="width:200px;display:inline-block"></span>
 
-    <div id="chartLine" style="width:800px;height:600px;display:inline-block;margin-top:350px"> <!-- Magic margin-top-->
+    <div id="chartLine" style="width:800px;height:600px;display:inline-block;margin-top:200px"> <!-- Magic margin-top-->
     </div>
+
 
     <div id="hivChart" style="width:800px;height:600px;display:inline-block;margin-top:350px"> <!-- Magic margin-top-->
     </div>
+
+
+    <span style="width:200px;display:inline-block"></span>
+
+    <div id="chartDot" style="width:800px;height:600px;display:inline-block">
+    </div>
+
+
 
     <script>
         var scatterplotData = tau.data.Array(window.countries);
@@ -71,14 +78,79 @@
                     tau.plugins.projection('x'),
                     tau.plugins.header(
                         'Sample line chart',
-                        'A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically. A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically. A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically. ')
+                        'A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically.')
                 )
                 .render("#chartLine"); 
 
 
-       
 
-      
+
+        tau.charts
+                .Scatterplot(lineData)
+                .map({
+                    x: tau.data.map('effort').linear(),
+                    y: tau.data.map('bugsCount').linear(),
+                    size: tau.data.constant(5),
+                    color: tau.data.map('priority').category10()
+                })
+                .plugins(
+                tau.plugins.legend(),
+                tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+                tau.plugins.highlighter(),
+                tau.plugins.datatable(),
+                tau.plugins.trend(),
+                tau.plugins.projection('y', 'x')
+
+        )
+        .render("#chartDot");
+
+         // This all looks terrible...
+        var hivData = [];
+        d3.csv("http://localhost:8888/prototype/hiv.csv", 
+            function(d) {
+                
+                var countryData = [];
+                for (var key in d) {
+                   if (d.hasOwnProperty(key)) {
+                        if (+d[key]) {
+                            countryData.push({country: d.Country, year: new Date(+key, 0, 1), percentage: +d[key]})
+                        }                        
+                   }
+                }
+                
+              return countryData;
+            }, 
+            function(error, rows) { 
+                var singleArray = [];
+                for (var i = 0; i < rows.length; i++) {
+                    for (var j = 0; j < rows[i].length; j++) {
+                        singleArray.push(rows[i][j]);
+                    };
+                    
+                };
+                hivData = tau.data.Array(singleArray);
+                buildHivChart();
+            }
+        );
+
+        function buildHivChart() {
+            tau.charts
+                    .Line(hivData)
+                    .map({
+                        x: tau.data.map('year').time(),
+                        y: tau.data.map('percentage').linear(),
+                        color: tau.data.map('country').category10()
+                    })
+                    .plugins(
+                        tau.plugins.legend(),
+                        tau.plugins.tooltip('year', 'country', 'percentage'),
+                        tau.plugins.highlighter(),
+                        tau.plugins.datatable(),
+                        tau.plugins.projection('x')
+                    )
+                    .render("#hivChart"); 
+        }
+
 
     </script>
 </body>

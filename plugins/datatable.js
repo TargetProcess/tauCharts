@@ -58,8 +58,7 @@
                         return d
                     });
 
-                drawTableFn = function () {
-                };  // We invoke this function only once.
+                drawTableFn = function () {};  // We invoke this function only once.
             };
 
             var toggleTable = function (el) {
