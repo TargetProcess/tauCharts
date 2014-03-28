@@ -164,6 +164,11 @@
             return this;
         },
 
+        time: function () {
+            this._scale = d3.time.scale();
+            return this;
+        },
+
         domain: function () {
             // TODO: messy, clean up
             if (!arguments.length) {
