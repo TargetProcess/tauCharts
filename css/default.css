@@ -91,8 +91,8 @@ text {
 }
 
 .color10-6 {
-  stroke: #ffff33;
-  fill: #ffff33;
+  stroke: #e9e964;
+  fill: #e9e964;
 }
 
 .color10-7 {
@@ -141,8 +141,8 @@ text {
 }
 
 .line.color10-6 .dot {
-  stroke: #ffff33;
-  fill: #ffff33;
+  stroke: #e9e964;
+  fill: #e9e964;
 }
 
 .line.color10-7 .dot {
@@ -186,7 +186,7 @@ text {
 }
 
 .legend li.color10-6:before {
-  background-color: #ffff33;
+  background-color: #e9e964;
 }
 
 .legend li.color10-7:before {
@@ -226,7 +226,7 @@ text {
 }
 
 .legend li.disabled.color10-6:before {
-  border-color: #ffff33;
+  border-color: #e9e964;
 }
 
 .legend li.disabled.color10-7:before {
