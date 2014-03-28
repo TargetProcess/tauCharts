@@ -79,7 +79,7 @@
                 .map({
                     x: tau.data.map('effort').linear(),
                     y: tau.data.map('bugsCount').linear(),
-                    size: tau.data.constant(6),
+                    size: tau.data.constant(5),
                     color: tau.data.map('priority').category10()
                 })
                 .plugins(
