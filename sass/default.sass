@@ -134,11 +134,11 @@ a
 header
 	margin: 0px 60px 20px
 
-h1
-	font: 600 18px 'Open Sans', sans-serif
-	margin: 0 0 10px
-p
-	margin-left: 15px
+	h1
+		font: 600 18px 'Open Sans', sans-serif
+		margin: 0 0 10px
+	p
+		margin-left: 15px
 
 
 /* Highlighter */
@@ -188,6 +188,8 @@ p
 	border-radius: 2px
 	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05)
 	margin: 20px 0 0 20px
+	white-space: nowrap
+	text-align: center
 	div
 		display: none
 		background: white
@@ -211,21 +213,32 @@ p
 			tr
 				display: table
 				width: 100%
+				white-space: nowrap
 			tr:hover
 				background-color: transparentize($link-color, 0.95)
 			th
-				padding: 10px
+				padding: 10px 0
 				font-weight: 600
 				border-bottom: 1px solid transparentize($axis-color, 0.5)
 				font-size: 11px
 				overflow: hidden
 				text-overflow: ellipsis
+				display: inline-block
+				white-space: nowrap
+				&:first-child
+					padding-left: 4%
 
 			@for $i from 1 through 10
 				&.col-#{$i} th, &.col-#{$i} td 
-					width: (100% / $i)
+					width: (96% / $i)
 			td
-				padding: 2px 10px
+				padding: 2px 0
+				overflow: hidden
+				text-overflow: ellipsis
+				display: inline-block
+				white-space: nowrap
+				&:first-child
+					padding-left: 4%
 				
 	&.show
 		box-shadow: inset 0px 2px 4px 0px rgba(0, 0, 0, 0.2), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.05)
@@ -244,7 +257,10 @@ p
 	overflow: auto
 	li
 		cursor: pointer
+		overflow: hidden
+		text-overflow: ellipsis
 		margin-bottom: 5px
+		white-space: nowrap
 		&:before
 			width: 14px
 			height: 14px

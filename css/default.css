@@ -334,13 +334,11 @@ a:hover {
 header {
   margin: 0px 60px 20px;
 }
-
-h1 {
+header h1 {
   font: 600 18px "Open Sans", sans-serif;
   margin: 0 0 10px;
 }
-
-p {
+header p {
   margin-left: 15px;
 }
 
@@ -390,6 +388,8 @@ p {
   border-radius: 2px;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
   margin: 20px 0 0 20px;
+  white-space: nowrap;
+  text-align: center;
 }
 .datatable div {
   display: none;
@@ -418,50 +418,63 @@ p {
 .datatable div table tr {
   display: table;
   width: 100%;
+  white-space: nowrap;
 }
 .datatable div table tr:hover {
   background-color: rgba(57, 98, 255, 0.05);
 }
 .datatable div table th {
-  padding: 10px;
+  padding: 10px 0;
   font-weight: 600;
   border-bottom: 1px solid rgba(189, 195, 205, 0.5);
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-block;
+  white-space: nowrap;
+}
+.datatable div table th:first-child {
+  padding-left: 4%;
 }
 .datatable div table.col-1 th, .datatable div table.col-1 td {
-  width: 100%;
+  width: 96%;
 }
 .datatable div table.col-2 th, .datatable div table.col-2 td {
-  width: 50%;
+  width: 48%;
 }
 .datatable div table.col-3 th, .datatable div table.col-3 td {
-  width: 33.33333%;
+  width: 32%;
 }
 .datatable div table.col-4 th, .datatable div table.col-4 td {
-  width: 25%;
+  width: 24%;
 }
 .datatable div table.col-5 th, .datatable div table.col-5 td {
-  width: 20%;
+  width: 19.2%;
 }
 .datatable div table.col-6 th, .datatable div table.col-6 td {
-  width: 16.66667%;
+  width: 16%;
 }
 .datatable div table.col-7 th, .datatable div table.col-7 td {
-  width: 14.28571%;
+  width: 13.71429%;
 }
 .datatable div table.col-8 th, .datatable div table.col-8 td {
-  width: 12.5%;
+  width: 12%;
 }
 .datatable div table.col-9 th, .datatable div table.col-9 td {
-  width: 11.11111%;
+  width: 10.66667%;
 }
 .datatable div table.col-10 th, .datatable div table.col-10 td {
-  width: 10%;
+  width: 9.6%;
 }
 .datatable div table td {
-  padding: 2px 10px;
+  padding: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  white-space: nowrap;
+}
+.datatable div table td:first-child {
+  padding-left: 4%;
 }
 .datatable.show {
   box-shadow: inset 0px 2px 4px 0px rgba(0, 0, 0, 0.2), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
@@ -482,7 +495,10 @@ p {
 }
 .legend li {
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-bottom: 5px;
+  white-space: nowrap;
 }
 .legend li:before {
   width: 14px;
