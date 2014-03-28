@@ -4,10 +4,8 @@
 <head>
     <script src="../libs/d3.js"></script>
 
-    
     <script src="../build/tauCharts.js"></script>
 
-    
     <!-- test data -->
     <script src="data.js"></script>
     <script src="countries.js"></script>
@@ -25,6 +23,12 @@
 
     <div id="chartLine" style="width:800px;height:600px;display:inline-block">
     </div>
+
+    <span style="width:200px;display:inline-block"></span>
+
+    <div id="chartDot" style="width:800px;height:600px;display:inline-block">
+    </div>
+
 
     <script>
         var scatterplotData = tau.data.Array(window.countries);
@@ -62,7 +66,28 @@
                     tau.plugins.datatable(),
                     tau.plugins.projection('x')
                 )
-                .render("#chartLine"); 
+                .render("#chartLine");
+
+
+        tau.charts
+                .Scatterplot(lineData)
+                .map({
+                    x: tau.data.map('effort').linear(),
+                    y: tau.data.map('bugsCount').linear(),
+                    size: tau.data.constant(6),
+                    color: tau.data.map('priority').category10()
+                })
+                .plugins(
+                tau.plugins.legend(),
+                tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+                tau.plugins.highlighter(),
+                tau.plugins.datatable(),
+                tau.plugins.trend(),
+                tau.plugins.projection('y', 'x')
+
+        )
+                .render("#chartDot");
+
     </script>
 </body>
 </html>
