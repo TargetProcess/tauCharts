@@ -269,7 +269,6 @@ a:hover {
 .html {
   position: absolute;
   display: inline-table;
-  white-space: nowrap;
 }
 
 .html-left {
@@ -331,6 +330,15 @@ a:hover {
 }
 
 /* PLUGINS */
+/* Header */
+header {
+  margin: 0px 60px 20px;
+}
+
+h1 {
+  font: 600 18px "Open Sans", sans-serif;
+}
+
 /* Highlighter */
 .dot.highlighted {
   stroke-width: 6;
@@ -464,7 +472,7 @@ a:hover {
   border-radius: 2px;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
   margin: 20px 0 0 20px;
-  height: 300px;
+  max-height: 300px;
   overflow: auto;
 }
 .legend li {
