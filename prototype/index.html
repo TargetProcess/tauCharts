@@ -105,38 +105,26 @@
         )
         .render("#chartDot");
 
-         // This all looks terrible...
+         // This all looks bad...
         var hivData = [];
         d3.csv("http://localhost:8888/prototype/hiv.csv", 
             function(d) {
-                
-                var countryData = [];
                 for (var key in d) {
                    if (d.hasOwnProperty(key)) {
                         if (+d[key]) {
-                            countryData.push({country: d.Country, year: new Date(+key, 0, 1), percentage: +d[key]})
+                            hivData.push({country: d.Country, year: new Date(+key, 0, 1), percentage: +d[key]})
                         }                        
                    }
                 }
-                
-              return countryData;
             }, 
             function(error, rows) { 
-                var singleArray = [];
-                for (var i = 0; i < rows.length; i++) {
-                    for (var j = 0; j < rows[i].length; j++) {
-                        singleArray.push(rows[i][j]);
-                    };
-                    
-                };
-                hivData = tau.data.Array(singleArray);
-                buildHivChart();
+                buildHivChart(tau.data.Array(hivData));
             }
         );
 
-        function buildHivChart() {
+        function buildHivChart(data) {
             tau.charts
-                    .Line(hivData)
+                    .Line(data)
                     .map({
                         x: tau.data.map('year').time(),
                         y: tau.data.map('percentage').caption('HIV %').linear(),
