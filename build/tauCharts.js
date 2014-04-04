@@ -568,11 +568,6 @@
             return this._scale(key ? d[key] : this._default);
         },
 
-        time: function () {
-            this._scale = d3.time.scale();
-            return this;
-        },
-
         domain: function () {
             // TODO: do we still need toObject here?
             return this._scale.domain().map(toObject.bind(null, this._names[0]));
@@ -608,6 +603,11 @@
 
         range: function() {
             this._scale.range.apply(this._scale.range, arguments);
+            return this;
+        },
+
+        time: function () {
+            this._scale = d3.time.scale();
             return this;
         },
 
@@ -770,6 +770,9 @@
     var Categorical = Type.extend({
         defaultScale: function () {
             return tau.data.scale.color10();
+        },
+
+        setDomain: function () {
         }
     });
 

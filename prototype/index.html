@@ -87,10 +87,9 @@
         tau.charts
                 .Scatterplot(lineData)
                 .map({
-                    x: tau.data.map('effort').linear(),
-                    y: tau.data.map('bugsCount').linear(),
-                    size: tau.data.constant(5),
-                    color: tau.data.map('priority').category10()
+                    x: 'effort',
+                    y: 'bugsCount',
+                    color: 'priority'
                 })
                 .plugins(
                 tau.plugins.legend(),
@@ -106,7 +105,7 @@
 
          // This all looks bad...
         var hivData = [];
-        d3.csv("http://localhost:8888/prototype/hiv.csv", 
+        d3.csv('hiv.csv',
             function(d) {
                 for (var key in d) {
                    if (d.hasOwnProperty(key)) {
@@ -127,7 +126,7 @@
                     .map({
                         x: tau.data.map('year').time(),
                         y: tau.data.map('percentage').caption('HIV %').linear(),
-                        color: tau.data.map('country').category10()
+                        color: tau.data.map('country').color10()
                     })
                     .plugins(
                         tau.plugins.legend(),
@@ -137,10 +136,8 @@
                         tau.plugins.projection('x'),
                         tau.plugins.header('Estimated HIV Prevalence % - (Ages 15-49)','The data from 1990 onwards you see in this graph is from UNAIDS, but Gapminder has provided extra estimates for some countries before 1990, and the compilation was documented and could be accessed from the link below.Due to visualization limits, we only display the countries with the 1st available estimate before 1988, and for countries that have no data or estimate available until 1988, we display it from 1990 onwards using the data from UNAIDS. Data for Brazil was the average of the high and low estimate from UNAIDS from 1990 onwards, and 1979 was the estimate from Gapminder Foundation.')
                     )
-                    .render("#hivChart"); 
+                    .render('#hivChart');
         }
-
-
     </script>
 </body>
 </html>

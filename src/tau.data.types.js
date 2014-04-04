@@ -52,6 +52,9 @@
     var Categorical = Type.extend({
         defaultScale: function () {
             return tau.data.scale.color10();
+        },
+
+        setDomain: function () {
         }
     });
 
