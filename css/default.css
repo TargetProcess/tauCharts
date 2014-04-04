@@ -315,6 +315,10 @@ a:hover {
   shape-rendering: crispEdges;
 }
 
+.label {
+  font-size: 11px;
+}
+
 /* Scatterplot */
 .dot {
   opacity: 0.6;
