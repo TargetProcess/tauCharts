@@ -44,10 +44,9 @@
         tau.charts
                 .Scatterplot(scatterplotData)
                 .map({
-                    x: tau.data.map('Gdp').caption('Gdp, ??').linear(),
-                    y: tau.data.map('Happiness').caption('Happiness, ??').linear(),
-                    size: tau.data.constant(6),
-                    color: tau.data.map('Country').category10()
+                    x: tau.data.map('Gdp').caption('Gdp, ??'),
+                    y: tau.data.map('Happiness').caption('Happiness, ??'),
+                    color: 'Country'
                 })
                 .plugins(
                     tau.plugins.legend(),
@@ -68,7 +67,7 @@
                 .map({
                     x: tau.data.map('effort').linear(),
                     y: tau.data.map('bugsCount').linear(),
-                    color: tau.data.map('priority').category10()
+                    color: 'priority'
                 })
                 .plugins(
                     tau.plugins.legend(),

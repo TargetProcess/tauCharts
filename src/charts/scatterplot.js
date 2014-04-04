@@ -3,10 +3,15 @@
     /**@class */
     /**@extends BasicChart */
     var ScatterPlotChart = tau.charts.Base.extend({
+        _meta: {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1},
+            size: {type: tau.data.types.quantitative, default: 10}
+        },
 
         _renderData: function (container, data) {
-            this._mapper.binder('size').domain(d3.extent(data, this._mapper.raw('size'))); // TODO: should be done automatically using chart metadata
-
+            this._mapper.binder('size').range([0, container.layout('width')/100]);
             var mapper = this._mapper;
 
             var update = function () {

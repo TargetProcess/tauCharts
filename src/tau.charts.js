@@ -46,7 +46,7 @@
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = tau.data.Mapper(config);
+            this._mapper = new tau.data.MapperBuilder().config(config).build(this._meta);
             return this;
         },
 
@@ -245,9 +245,7 @@
             this._mapper.binder('y').range([chartLayout.height, 0]);
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
-                // TODO: use metadata to get domain when implemented
-                this._mapper.binder('x').domain([0, d3.max(data, this._mapper.raw('x'))]);
-                this._mapper.binder('y').domain([0, d3.max(data, this._mapper.raw('y'))]);
+                this._mapper.domain(data);
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);

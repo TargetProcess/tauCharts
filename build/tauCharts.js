@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-03-29
+/*! tauCharts - v0.0.1 - 2014-04-04
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function () {
@@ -105,7 +105,7 @@
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = tau.data.Mapper(config);
+            this._mapper = new tau.data.MapperBuilder().config(config).build(this._meta);
             return this;
         },
 
@@ -304,9 +304,7 @@
             this._mapper.binder('y').range([chartLayout.height, 0]);
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
-                // TODO: use metadata to get domain when implemented
-                this._mapper.binder('x').domain([0, d3.max(data, this._mapper.raw('x'))]);
-                this._mapper.binder('y').domain([0, d3.max(data, this._mapper.raw('y'))]);
+                this._mapper.domain(data);
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);
@@ -486,8 +484,22 @@
             return this._propertyMappers[key]; // TODO: try to get rid of this method
         },
 
-        domain: function (key) {
+        _getDomain: function (key) {
             return this.binder(key).domain();
+        },
+
+        _setDomain: function (data) {
+            for (var key in this._propertyMappers) {
+                this._propertyMappers[key]._setDomain(data); // TODO: messy
+            }
+        },
+
+        domain: function (args) {
+            if (typeof(args) === 'string') {
+                return this._getDomain(args);
+            } else {
+                this._setDomain(args);
+            }
         },
 
         _bind: function (key, callback, ctx) {
@@ -536,24 +548,24 @@
         },
 
         alias: function (name) {
+            // TODO: find way to get rid of it
             this._names.push(name);
         },
 
-        raw: function (d) {
-            return d[this._names
+        _getOwnProperty: function (d) {
+            return this._names
                 .filter(function (name) {
                     return d.hasOwnProperty(name);
-                })[0]];
+                })[0];
+        },
+
+        raw: function (d) {
+            return d[this._getOwnProperty(d)];
         },
 
         map: function (d) {
-            return this._scale(this.raw(d));
-        },
-
-        linear: function () {
-            //noinspection JSValidateTypes,JSUnresolvedFunction
-            this._scale = d3.scale.linear();
-            return this;
+            var key = this._getOwnProperty(d);
+            return this._scale(key ? d[key] : this._default);
         },
 
         time: function () {
@@ -562,29 +574,15 @@
         },
 
         domain: function () {
-            // TODO: messy, clean up
-            if (!arguments.length) {
-                return this._scale.domain().map(toObject.bind(null, this._names[0]));
-            }
-            return this._scale.domain.apply(this._scale.domain, arguments);
-        },
-
-        category10: function () {
-            this._scale = d3.scale.ordinal().range(['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10']);
-            return this;
+            // TODO: do we still need toObject here?
+            return this._scale.domain().map(toObject.bind(null, this._names[0]));
         },
 
         range: function () {
             this._scale.range.apply(this._scale, arguments);
-            return this;
         },
 
-        caption: function (value) {
-            if (value) {
-                this._caption = value;
-                return this;
-            }
-
+        caption: function () {
             return this._caption;
         }
     });
@@ -592,29 +590,100 @@
     /**
      * @class
      */
-    var ConstantMapper = Class.extend({
-        /** @constructs */
-        init: function (value) {
-            this._value = value;
+    var PropertyMapperBuilder = Class.extend({
+        /**
+         * @constructs
+         * @param name
+         */
+        init: function (name) {
+            this._name = name;
+            this._scale = null;
         },
 
-        raw: function (d) {
-            return this._value;
+        linear: function () {
+            //noinspection JSValidateTypes,JSUnresolvedFunction
+            this._scale = d3.scale.linear();
+            return this;
         },
 
-        map: function (d) {
-            return this._value;
+        range: function() {
+            this._scale.range.apply(this._scale.range, arguments);
+            return this;
         },
 
-        domain: function () {
-        },
-
-        range: function () {
-            throw new Error('range is not implemented for constants');
+        color10: function () {
+            this._scale = tau.data.scale.color10();
+            return this;
         },
 
         caption: function (value) {
-            throw new Error('caption is not implemented for constants');
+            // TODO: maybe better to put it to meta?
+            this._caption = value;
+            return this;
+        },
+
+        domain: function () {
+            this._scale.domain.apply(this._scale.domain, arguments);
+            return this;
+        },
+
+        /**
+         * @param {{type: Type, default: Bool, default: Object}} meta
+         * @returns {PropertyMapper}
+         */
+        build: function (meta) {
+            var propertyMapper = new PropertyMapper(this._name);
+            propertyMapper._scale = this._scale || meta.type.defaultScale();
+            propertyMapper._setDomain = meta.type.setDomain.bind(propertyMapper);
+            propertyMapper._default = meta.default;
+            propertyMapper._caption = this._caption || this._name;
+            return propertyMapper;
+        }
+    });
+
+    /**
+     * @class
+     */
+    var MapperBuilder = Class.extend({
+        /**
+         * @construct
+         */
+        init: function () {
+        },
+
+        config: function (config) {
+            this._config = config;
+
+            return this;
+        },
+
+        build: function (meta) {
+            var propertyMappers = {};
+
+            for (var key in meta) {
+                var propertyMapperBuilder = this._config[key];
+
+                if (typeof(propertyMapperBuilder) === 'undefined') {
+                    propertyMapperBuilder = key;
+                }
+
+                if (typeof(propertyMapperBuilder) === 'string') {
+                    propertyMapperBuilder = new PropertyMapperBuilder(propertyMapperBuilder);
+                }
+
+                propertyMappers[key] = propertyMapperBuilder.build(meta[key]);
+            }
+
+            return new Mapper(propertyMappers);
+        }
+    });
+
+    /**
+     * @class
+     */
+    var Scales = Class.extend({
+        color10: function() {
+            return d3.scale.ordinal().range(['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10']);
         }
     });
 
@@ -623,45 +692,90 @@
             return new ArrayDataSource(d);
         },
 
-        Mapper: function (config) {
-            function processConfig() {
-                var result = {};
-
-                for (var key in config) {
-                    var mapper = config[key];
-
-                    if (typeof(mapper) === 'string') {
-                        mapper = new PropertyMapper(mapper);
-                    }
-
-                    result[key] = mapper;
-                }
-
-                return result;
-            }
-
-            return new Mapper(processConfig());
-        },
+        /**
+         * @type {MapperBuilder}
+         */
+        MapperBuilder: MapperBuilder,
 
         /**
          * @param {String} name
-         * @returns {PropertyMapper}
+         * @returns {PropertyMapperBuilder}
          */
         map: function (name) {
-            return new PropertyMapper(name);
+            return new PropertyMapperBuilder(name);
         },
 
         /**
-         * @param value
-         * @returns {ConstantMapper}
+         * @type Scales
          */
-        constant: function (value) {
-            return new ConstantMapper(value);
-        },
+        scale: new Scales(),
 
         identity: function (x) {
             return x;
         }
+    };
+})();
+
+(function () {
+    var notImplemented = function () {
+        throw new Error('Not implemented');
+    };
+
+    /**
+     * @class
+     * @extends Class
+     */
+    var Type = Class.extend({
+        /**
+         * @abstract
+         */
+        defaultScale: notImplemented,
+
+        /**
+         * @abstract
+         */
+        setDomain: notImplemented
+    });
+
+    /**
+     * @class
+     * @extends Type
+     */
+    var Quantitative = Type.extend({
+        defaultScale: function () {
+            return d3.scale.linear();
+        },
+
+        /**
+         * @this PropertyMapper
+         * @param data
+         */
+        setDomain: function (data) {
+            // TODO: messy
+            var hasValue = data.length && this._getOwnProperty(data[0]);
+            if (!hasValue) {
+                this._scale = this._scale.domain([0, this._default]);
+                return;
+            }
+            //
+
+            this._scale = this._scale.domain([0, d3.max(data, this.raw.bind(this))]);
+        }
+    });
+
+    /**
+     * @class
+     * @extends Type
+     */
+    var Categorical = Type.extend({
+        defaultScale: function () {
+            return tau.data.scale.color10();
+        }
+    });
+
+    tau.data.types = {
+        quantitative: new Quantitative(),
+        categorical: new Categorical()
     };
 })();
 (function () {
@@ -821,12 +935,19 @@
     /**@class */
     /**@extends BasicChart */
     var LineChart = tau.charts.Base.extend({
+        _meta: {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1}
+        },
+
         map: function (config) {
             this._super(config);
             this._mapper.alias('color', 'key');
 
             return this;
         },
+
         _renderData: function (container, data) {
             var mapper = this._mapper;
 
@@ -895,10 +1016,15 @@
     /**@class */
     /**@extends BasicChart */
     var ScatterPlotChart = tau.charts.Base.extend({
+        _meta: {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1},
+            size: {type: tau.data.types.quantitative, default: 10}
+        },
 
         _renderData: function (container, data) {
-            this._mapper.binder('size').domain(d3.extent(data, this._mapper.raw('size'))); // TODO: should be done automatically using chart metadata
-
+            this._mapper.binder('size').range([0, container.layout('width')/100]);
             var mapper = this._mapper;
 
             var update = function () {

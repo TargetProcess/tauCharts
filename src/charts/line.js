@@ -2,12 +2,19 @@
     /**@class */
     /**@extends BasicChart */
     var LineChart = tau.charts.Base.extend({
+        _meta: {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1}
+        },
+
         map: function (config) {
             this._super(config);
             this._mapper.alias('color', 'key');
 
             return this;
         },
+
         _renderData: function (container, data) {
             var mapper = this._mapper;
 
