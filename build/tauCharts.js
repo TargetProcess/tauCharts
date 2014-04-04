@@ -590,8 +590,9 @@
          * @constructs
          * @param name
          */
-        init: function (name) {
+        init: function (name, dataType) {
             this._name = name;
+            this._dataType = dataType; // we can override data type that is set in _meta by default
             this._scale = null;
         },
 
@@ -634,7 +635,10 @@
         build: function (meta) {
             var propertyMapper = new PropertyMapper(this._name);
             propertyMapper._scale = this._scale || meta.type.defaultScale();
-            propertyMapper._setDomain = meta.type.setDomain.bind(propertyMapper);
+
+            //TODO: maybe put meta into init?
+            this._dataType = this._dataType || meta.type;
+            propertyMapper._setDomain = this._dataType.setDomain.bind(propertyMapper);
             propertyMapper._default = meta.default;
             propertyMapper._caption = this._caption || this._name;
             return propertyMapper;
@@ -701,8 +705,8 @@
          * @param {String} name
          * @returns {PropertyMapperBuilder}
          */
-        map: function (name) {
-            return new PropertyMapperBuilder(name);
+        map: function (name, dataType) {
+            return new PropertyMapperBuilder(name, dataType);
         },
 
         /**
@@ -758,8 +762,35 @@
                 return;
             }
             //
-
+            
             this._scale = this._scale.domain([0, d3.max(data, this.raw.bind(this))]);
+        }
+    });
+
+    /**
+     * @class
+     * @extends Type
+     */
+    var Time = Type.extend({
+        defaultScale: function () {
+            return d3.scale.time();
+        },
+
+        /**
+         * @this PropertyMapper
+         * @param data
+         */
+        setDomain: function (data) {
+            // TODO: messy. Maybe we need a different check for Time type?
+            var hasValue = data.length && this._getOwnProperty(data[0]);
+            if (!hasValue) {
+                this._scale = this._scale.domain([0, this._default]);
+                return;
+            }
+            //
+
+            // find min and max dates in time series.
+            this._scale = this._scale.domain([d3.min(data, function(d) {return d[hasValue];}), d3.max(data, function(d) {return d[hasValue];})]);
         }
     });
 
@@ -778,7 +809,8 @@
 
     tau.data.types = {
         quantitative: new Quantitative(),
-        categorical: new Categorical()
+        categorical: new Categorical(),
+        time: new Time()
     };
 })();
 (function () {
@@ -945,6 +977,7 @@
         },
 
         map: function (config) {
+            
             this._super(config);
             this._mapper.alias('color', 'key');
 
@@ -982,9 +1015,9 @@
                 dots.exit().remove();
             };
 
-            //TODO: allow to set interpolation outside
+            //TODO: allow to set interpolation outside?
             var line = d3.svg.line()
-                .interpolate('cardinal')
+                //.interpolate('cardinal')
                 .x(mapper.map('x'))
                 .y(mapper.map('y'));
 

@@ -9,6 +9,7 @@
         },
 
         map: function (config) {
+            
             this._super(config);
             this._mapper.alias('color', 'key');
 
@@ -46,9 +47,9 @@
                 dots.exit().remove();
             };
 
-            //TODO: allow to set interpolation outside
+            //TODO: allow to set interpolation outside?
             var line = d3.svg.line()
-                .interpolate('cardinal')
+                //.interpolate('cardinal')
                 .x(mapper.map('x'))
                 .y(mapper.map('y'));
 

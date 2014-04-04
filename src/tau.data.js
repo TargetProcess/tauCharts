@@ -200,8 +200,9 @@
          * @constructs
          * @param name
          */
-        init: function (name) {
+        init: function (name, dataType) {
             this._name = name;
+            this._dataType = dataType; // we can override data type that is set in _meta by default
             this._scale = null;
         },
 
@@ -244,7 +245,10 @@
         build: function (meta) {
             var propertyMapper = new PropertyMapper(this._name);
             propertyMapper._scale = this._scale || meta.type.defaultScale();
-            propertyMapper._setDomain = meta.type.setDomain.bind(propertyMapper);
+
+            //TODO: maybe put meta into init?
+            this._dataType = this._dataType || meta.type;
+            propertyMapper._setDomain = this._dataType.setDomain.bind(propertyMapper);
             propertyMapper._default = meta.default;
             propertyMapper._caption = this._caption || this._name;
             return propertyMapper;
@@ -311,8 +315,8 @@
          * @param {String} name
          * @returns {PropertyMapperBuilder}
          */
-        map: function (name) {
-            return new PropertyMapperBuilder(name);
+        map: function (name, dataType) {
+            return new PropertyMapperBuilder(name, dataType);
         },
 
         /**
