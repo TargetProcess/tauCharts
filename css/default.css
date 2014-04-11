@@ -296,27 +296,49 @@ a:hover {
 }
 
 /* Axises and Grid */
-.axis line, .axis path {
+svg {
+  position: relative;
+  z-index: 1000;
+}
+svg .axis line, svg .axis path {
   stroke-width: 1;
   fill: none;
   stroke: #bdc3cd;
   shape-rendering: crispEdges;
 }
-
-.grid path {
+svg .grid path {
   fill: none;
   shape-rendering: crispEdges;
 }
-.grid line {
+svg .grid line {
   stroke-width: 1;
   fill: none;
   stroke: rgba(189, 195, 205, 0.5);
   stroke-width: 1px;
   shape-rendering: crispEdges;
 }
-
-.label {
+svg .label {
   font-size: 11px;
+}
+
+.html-chart {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+.html-chart .axis {
+  position: absolute;
+  z-index: 876;
+}
+.html-chart .axis.y {
+  top: 30px;
+  left: 30px;
+}
+.html-chart .axis.x {
+  top: 100%;
+  width: 100%;
+  text-align: center;
 }
 
 /* Scatterplot */

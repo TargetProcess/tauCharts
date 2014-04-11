@@ -62,8 +62,8 @@
         tau.charts
                 .Scatterplot(scatterplotData)
                 .map({
-                    x: tau.data.map('Gdp').caption('Gdp, ??'),
-                    y: tau.data.map('Happiness').caption('Happiness, ??'),
+                    x: tau.data.map('Gdp').caption('<h4>GDP</h4>, <p>points</p>'),
+                    y: tau.data.map('Happiness').caption('<h4>Happiness</h4><p>points</p>'),
                     color: 'Country'
                 })
                 .plugins(

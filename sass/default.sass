@@ -90,27 +90,44 @@ a
 
 
 /* Axises and Grid */
+svg
+	position: relative
+	z-index: 1000
+	.axis
+		line, path
+			stroke-width: 1
+			fill: none
+			stroke: $axis-color
+			shape-rendering: crispEdges
 
-.axis
-	line, path
-		stroke-width: 1
-		fill: none
-		stroke: $axis-color
-		shape-rendering: crispEdges
+	.grid
+		path
+			fill: none
+			shape-rendering: crispEdges
+		line
+			stroke-width: 1
+			fill: none
+			stroke: transparentize($axis-color, 0.5)
+			stroke-width: 1px
+			shape-rendering: crispEdges
+	.label
+		font-size: 11px
 
-.grid
-	path
-		fill: none
-		shape-rendering: crispEdges
-	line
-		stroke-width: 1
-		fill: none
-		stroke: transparentize($axis-color, 0.5)
-		stroke-width: 1px
-		shape-rendering: crispEdges
-.label
-	font-size: 11px
-
+.html-chart
+	width: 100%
+	height: 100%
+	top: 0
+	left: 0
+	.axis
+		position: absolute
+		z-index: 876
+		&.y
+			top: 30px
+			left: 30px
+		&.x
+			top: 100%
+			width: 100%
+			text-align: center
 
 /* Scatterplot */
 

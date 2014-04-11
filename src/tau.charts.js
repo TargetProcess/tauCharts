@@ -87,17 +87,22 @@
                 .scale(this._mapper._scale)
                 .orient('bottom');
 
-            container
+            container.svg
                 .append('g')
                 .attr('class', 'x axis')
                 .attr('transform', 'translate(0, ' + Axes.padding + ')')
                 .call(xAxis)
                 .append('text')
                 .attr('class', 'label')
-                .attr('x', container.layout('width'))
+                .attr('x', container.svg.layout('width'))
                 .attr('y', -xAxis.tickSize())
                 .style('text-anchor', 'end')
                 .text(this._mapper.caption());
+
+            container.html
+                .append('div')
+                .attr('class', 'x axis')
+                .html(this._mapper.caption());
         }
     });
 
@@ -110,7 +115,7 @@
                 .scale(this._mapper._scale)
                 .orient('left');
 
-            container
+            container.svg
                 .append('g')
                 .attr('class', 'y axis')
                 .attr('transform', 'translate(-' + Axes.padding + ', 0)')
@@ -119,23 +124,28 @@
                 .attr('class', 'label')
                 .attr('transform', 'rotate(-90)')
                 .attr('x', yAxis.tickSize())
-                .attr('y', yAxis.tickSize() + container.layout('width'))
+                .attr('y', yAxis.tickSize() + container.svg.layout('width'))
                 .attr('dy', '.71em')
                 .style('text-anchor', 'end')
                 .text(this._mapper.caption());
 
-            container
+            container.svg
                 .selectAll('.tick line')
-                .attr('x1', container.layout('width') - 6)
-                .attr('x2', container.layout('width'));
+                .attr('x1', container.svg.layout('width') - 6)
+                .attr('x2', container.svg.layout('width'));
 
-            container
+            container.svg
                 .selectAll('.tick text')
-                .attr('dx', container.layout('width'));
+                .attr('dx', container.svg.layout('width'));
 
-            container
+            container.svg
                 .select('.domain')
-                .attr('transform', 'translate(' + container.layout('width') + ', 0)');
+                .attr('transform', 'translate(' + container.svg.layout('width') + ', 0)');
+
+            container.html
+                .append('div')
+                .attr('class', 'y axis')
+                .html(this._mapper.caption());
         }
     });
 
@@ -173,6 +183,7 @@
 
     var CHART_HTML =
         '<div class="html html-left"></div>' +
+        '<div class="html html-chart"></div>' + 
         '<svg></svg>' +
         '<div class="html html-right"></div>' +
         '<div class="html html-above"></div>' +
@@ -198,12 +209,12 @@
             var layout = new tau.svg.Layout(this.svg);
 
             layout.row(-30);
-            this.yAxis = layout.col(20);
+            this.yAxis = { svg: layout.col(20), html: container.select('.html-chart')};
             this.data = layout.col();
 
             layout.row();
             layout.col(20);
-            this.xAxis = layout.col();
+            this.xAxis = { svg: layout.col(), html: container.select('.html-chart')};
 
             this.width = this.data.layout('width');
             this.height = this.data.layout('height');
