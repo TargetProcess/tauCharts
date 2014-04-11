@@ -1,4 +1,5 @@
 @import "compass/reset"
+@import "compass/css3/transform"
 
 
 
@@ -92,7 +93,7 @@ a
 /* Axises and Grid */
 svg
 	position: relative
-	z-index: 1000
+	z-index: 800
 	.axis
 		line, path
 			stroke-width: 1
@@ -112,6 +113,10 @@ svg
 			shape-rendering: crispEdges
 	.label
 		font-size: 11px
+		display: none
+
+
+/* Axis Labels */
 
 .html-chart
 	width: 100%
@@ -120,14 +125,34 @@ svg
 	left: 0
 	.axis
 		position: absolute
-		z-index: 876
+		z-index: 700
+		&:after
+			content: '\2192'
+			margin-left: 5px
+		&:first-letter
+			text-transform: uppercase
 		&.y
-			top: 30px
-			left: 30px
-		&.x
-			top: 100%
+			top: 50%
+			left: -49%
 			width: 100%
 			text-align: center
+			@include rotate(-90deg)
+		&.x
+			top: 97%
+			width: 100%
+			text-align: center
+		h4
+			font: 700 12px Roboto, sans-serif
+			text-transform: uppercase
+			letter-spacing: 1px
+			display: inline-block
+			margin-left: 50px
+			&:after
+				content: ','
+				margin-right: 5px
+		p
+			display: inline-block
+
 
 /* Scatterplot */
 
@@ -151,13 +176,13 @@ svg
 
 /* Header */
 header
-	margin: 0px 60px 20px
+	margin: 0px 25px 20px
 
 	h1
-		font: 600 18px 'Open Sans', sans-serif
+		font: 700 24px 'Roboto', sans-serif
 		margin: 0 0 10px
 	p
-		margin-left: 15px
+		margin-left: 0px
 
 
 /* Highlighter */
@@ -173,6 +198,7 @@ header
 .tooltip
 	position: absolute
 	display: none
+	z-index: 900
 	font-size: 11px
 	padding: 7px 10px 8px
 	border-radius: 5px

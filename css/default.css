@@ -298,7 +298,7 @@ a:hover {
 /* Axises and Grid */
 svg {
   position: relative;
-  z-index: 1000;
+  z-index: 800;
 }
 svg .axis line, svg .axis path {
   stroke-width: 1;
@@ -319,8 +319,10 @@ svg .grid line {
 }
 svg .label {
   font-size: 11px;
+  display: none;
 }
 
+/* Axis Labels */
 .html-chart {
   width: 100%;
   height: 100%;
@@ -329,16 +331,44 @@ svg .label {
 }
 .html-chart .axis {
   position: absolute;
-  z-index: 876;
+  z-index: 700;
+}
+.html-chart .axis:after {
+  content: "\2192";
+  margin-left: 5px;
+}
+.html-chart .axis:first-letter {
+  text-transform: uppercase;
 }
 .html-chart .axis.y {
-  top: 30px;
-  left: 30px;
-}
-.html-chart .axis.x {
-  top: 100%;
+  top: 50%;
+  left: -49%;
   width: 100%;
   text-align: center;
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+.html-chart .axis.x {
+  top: 97%;
+  width: 100%;
+  text-align: center;
+}
+.html-chart .axis h4 {
+  font: 700 12px Roboto, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: inline-block;
+  margin-left: 50px;
+}
+.html-chart .axis h4:after {
+  content: ",";
+  margin-right: 5px;
+}
+.html-chart .axis p {
+  display: inline-block;
 }
 
 /* Scatterplot */
@@ -358,14 +388,14 @@ svg .label {
 /* PLUGINS */
 /* Header */
 header {
-  margin: 0px 60px 20px;
+  margin: 0px 25px 20px;
 }
 header h1 {
-  font: 600 18px "Open Sans", sans-serif;
+  font: 700 24px "Roboto", sans-serif;
   margin: 0 0 10px;
 }
 header p {
-  margin-left: 15px;
+  margin-left: 0px;
 }
 
 /* Highlighter */
@@ -379,6 +409,7 @@ header p {
 .tooltip {
   position: absolute;
   display: none;
+  z-index: 900;
   font-size: 11px;
   padding: 7px 10px 8px;
   border-radius: 5px;

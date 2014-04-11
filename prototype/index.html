@@ -30,26 +30,22 @@
     <link href="../css/default.css" rel="stylesheet" />
     <link href="../css/oldschool.css" rel="stylesheet" />
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
 </head>
 <body>
-    <div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin-top:150px"> <!-- Magic margin-top-->
+    <div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
     </div>
 
-    <span style="width:200px;display:inline-block"></span>
-
-    <div id="chartLine" style="width:800px;height:600px;display:inline-block;margin-top:200px"> <!-- Magic margin-top-->
+    <div id="chartLine" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
     </div>
 
-
-    <div id="hivChart" style="width:800px;height:600px;display:inline-block;margin-top:150px"> <!-- Magic margin-top-->
+    <div id="hivChart" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
     </div>
 
-    <span style="width:200px;display:inline-block"></span>
-
-    <div id="chartDot" style="width:800px;height:600px;display:inline-block;margin-top:50px">
+    <div id="chartDot" style="width:800px;height:600px;display:inline-block;margin:160px 30px;">
     </div>
 
-        <div id="marriageChart" style="width:800px;height:600px;display:inline-block;margin-top:150px"> <!-- Magic margin-top-->
+    <div id="marriageChart" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
     </div>
 
 
@@ -62,7 +58,7 @@
         tau.charts
                 .Scatterplot(scatterplotData)
                 .map({
-                    x: tau.data.map('Gdp').caption('<h4>GDP</h4>, <p>points</p>'),
+                    x: tau.data.map('Gdp').caption('<h4>GDP</h4><p>points</p>'),
                     y: tau.data.map('Happiness').caption('<h4>Happiness</h4><p>points</p>'),
                     color: 'Country'
                 })
