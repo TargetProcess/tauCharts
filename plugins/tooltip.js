@@ -31,6 +31,14 @@
             .html(text);
         },
 
+        mousemove: function (context, tools) {
+            if (this._container.style("display", "block")) {
+                this._container
+                    .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
+                    .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px');
+            };
+        },
+
         /**
          * @param {ElementContext} context
          * @param {ChartElementTools} tools

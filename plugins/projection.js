@@ -55,7 +55,9 @@
                         .attr("x1", mapper.map("x"))
                         .attr("y1", height - marginBottom + padding)
                         .attr("x2", mapper.map("x"))
-                        .attr("y2", mapper.map("y"));
+                        .attr("y2", function(d){
+                            return mapper.map("y")(d) + mapper.map("size")(d);
+                        });
 
                     projections.select(".y")
                         .append("text")
@@ -72,9 +74,11 @@
                     projections.append("g")
                         .attr("class", "x")
                         .append("line")
-                        .attr("x1", 0)
+                        .attr("x1", -padding)
                         .attr("y1", mapper.map("y"))
-                        .attr("x2", mapper.map("x"))
+                        .attr("x2", function(d){
+                            return mapper.map("x")(d) - mapper.map("size")(d);
+                        })
                         .attr("y2", mapper.map("y"));
 
                     projections.select(".x")

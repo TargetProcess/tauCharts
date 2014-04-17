@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-04-11
+/*! tauCharts - v0.0.1 - 2014-04-17
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function () {
@@ -88,6 +88,10 @@
 
         mouseout: function (context, tools) {
             this._call('mouseout', arguments);
+        },
+
+        mousemove: function (context, tools) {
+            this._call('mousemove', arguments);
         }
     });
 
@@ -291,6 +295,9 @@
                 })
                 .on('mouseout', function (d) {
                     plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mousemove', function (d) {
+                    plugins.mousemove(new ElementContext(d), new ChartElementTools(d3.select(this)));
                 });
         };
     };
@@ -857,6 +864,13 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
+        },
+
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mousemove: function (context, tools) {
         }
     });
 
@@ -1348,7 +1362,9 @@
                         .attr("x1", mapper.map("x"))
                         .attr("y1", height - marginBottom + padding)
                         .attr("x2", mapper.map("x"))
-                        .attr("y2", mapper.map("y"));
+                        .attr("y2", function(d){
+                            return mapper.map("y")(d) + mapper.map("size")(d);
+                        });
 
                     projections.select(".y")
                         .append("text")
@@ -1365,9 +1381,11 @@
                     projections.append("g")
                         .attr("class", "x")
                         .append("line")
-                        .attr("x1", 0)
+                        .attr("x1", -padding)
                         .attr("y1", mapper.map("y"))
-                        .attr("x2", mapper.map("x"))
+                        .attr("x2", function(d){
+                            return mapper.map("x")(d) - mapper.map("size")(d);
+                        })
                         .attr("y2", mapper.map("y"));
 
                     projections.select(".x")
@@ -1421,6 +1439,14 @@
             .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px')
             .style('display', 'block')
             .html(text);
+        },
+
+        mousemove: function (context, tools) {
+            if (this._container.style("display", "block")) {
+                this._container
+                    .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
+                    .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px');
+            };
         },
 
         /**

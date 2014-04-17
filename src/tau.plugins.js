@@ -31,6 +31,13 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
+        },
+
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mousemove: function (context, tools) {
         }
     });
 

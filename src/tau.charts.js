@@ -29,6 +29,10 @@
 
         mouseout: function (context, tools) {
             this._call('mouseout', arguments);
+        },
+
+        mousemove: function (context, tools) {
+            this._call('mousemove', arguments);
         }
     });
 
@@ -232,6 +236,9 @@
                 })
                 .on('mouseout', function (d) {
                     plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
+                })
+                .on('mousemove', function (d) {
+                    plugins.mousemove(new ElementContext(d), new ChartElementTools(d3.select(this)));
                 });
         };
     };
