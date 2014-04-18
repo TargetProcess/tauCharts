@@ -81,11 +81,14 @@ module.exports = function (grunt) {
             files: '<%= jshint.all.src %>',
             tasks: ['bowercopy', 'concat', 'uglify']
         },
-        /*githooks: {
+        githooks: {
             all: {
+                options: {
+                    'hashbang': '#!/usr/bin/env /usr/local/bin/node'
+                },
                 'pre-commit': 'build'
             }
-        }*/
+        }
     });
 
     // These plugins provide necessary tasks.

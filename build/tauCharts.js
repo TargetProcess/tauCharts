@@ -1237,6 +1237,21 @@
     tau.plugins.add('highlighter', Highlighter);
 })();
 (function () {
+    /** @class Legend
+     * @extends Plugin */
+    var Jittering = {
+        /**
+         * @param {RenderContext} context
+         * @param {ChartTools} tools
+         */
+        render: function (context, tools) {
+
+        }
+    };
+
+    tau.plugins.add('jittering', Jittering);
+})();
+(function () {
     function not(x) {
         return function (d) {
             return x != d;
