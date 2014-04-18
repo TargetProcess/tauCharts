@@ -1,3 +1,4 @@
+(function () {
     /** @class Legend
      * @extends Plugin */
     var Jittering = {
