@@ -7,7 +7,7 @@
          * @param {ChartTools} tools
          */
         render: function (context, tools) {
-
+            console.log("ololorereeee");
         }
     };
 
