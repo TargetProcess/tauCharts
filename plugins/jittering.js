@@ -34,10 +34,12 @@
                 .append('span')
                 .text('Jittering');
 
-            var data = context.data._data;
+            var data = context.data._data.map(function(d){
+                return {initialX: x(d), initialY: y(d), x : x(d), y: y(d), radius: size(d)};  
+            });
+
 
             var node = tools.elements(); 
-
 
             var force = d3.layout.force()
                 .nodes(data)
@@ -47,12 +49,6 @@
                 .gravity(0)
                 .chargeDistance(500);
 
-
-            data.forEach(function(d) {
-                d.x = x(d);
-                d.y = y(d);
-                d.radius = size(d);
-            });
 
             d3.select("#applyjittering").on("change", function() {
                 force.resume();
@@ -65,22 +61,23 @@
 
                 if (checkbox.node().checked) node.each(collide(e.alpha));
 
-                node.attr("cx", function(d) { return d.x; })
-                    .attr("cy", function(d) { return d.y; });
+                node.attr("cx", function(d, i) { return data[i].x; })
+                    .attr("cy", function(d, i) { return data[i].y; });
 
             }            
             function moveTowardDataPosition(alpha) {
-                return function(d) {
+                return function(d, i) {
 
-                  d.x += (x(d) - d.x) * 0.1 * alpha;
-                  d.y += (y(d) - d.y) * 0.1 * alpha;
+                  data[i].x += (data[i].initialX - data[i].x) * 0.1 * alpha;
+                  data[i].y += (data[i].initialY - data[i].y) * 0.1 * alpha;
                 };
               } 
 
               // Resolve collisions between nodes.
               function collide(alpha) {
                 var quadtree = d3.geom.quadtree(data);
-                return function(d) {
+                return function(_, i) {
+                  var d = data[i];
                   var r = d.radius + radius + padding,
                       nx1 = d.x - r,
                       nx2 = d.x + r,
