@@ -1,2 +1,6 @@
+notifications:
+  slack:
+    rooms:
+      targetprocess:o25eQr7bOyzMrwknqPXWsXQx#taucharts
 script:
   phantomjs test/runner.js test/index.html
