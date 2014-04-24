@@ -15,7 +15,7 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
-            tools.element.classed('highlighted', false)
+            tools.element.classed('highlighted', false);
         }
     };
 

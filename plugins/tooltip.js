@@ -25,17 +25,17 @@
             };
 
             this._container.classed('tooltip', true)
-            .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
-            .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px')
+            .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
+            .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
             .style('display', 'block')
             .html(text);
         },
 
         mousemove: function (context, tools) {
-            if (this._container.style("display", "block")) {
+            if (this._container.style('display', 'block')) {
                 this._container
-                    .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
-                    .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px');
+                    .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
+                    .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)');
             };
         },
 

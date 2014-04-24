@@ -36,10 +36,14 @@
                             '</feMerge>' +
                         '</filter>');
 
+            var parent = tools;
 
-            this.mouseover = function (context) {
+            this.mouseover = function (context, tools) {
 
-                var projections = tools.svg.selectAll(".projections")
+                var currentY = +tools.element.attr("cy");
+                var currentX = +tools.element.attr("cx");
+
+                var projections = parent.svg.selectAll(".projections")
                     .data([context.datum])
                     .enter().append("g")
                     .attr("transform", "translate(" + marginLeft + ", 0)")
@@ -54,9 +58,9 @@
                         .append("line")
                         .attr("x1", mapper.map("x"))
                         .attr("y1", height - marginBottom + padding)
-                        .attr("x2", mapper.map("x"))
+                        .attr("x2", currentX)
                         .attr("y2", function(d){
-                            return mapper.map("y")(d) + mapper.map("size")(d);
+                            return currentY + mapper.map("size")(d);
                         });
 
                     projections.select(".y")
@@ -77,9 +81,9 @@
                         .attr("x1", -padding)
                         .attr("y1", mapper.map("y"))
                         .attr("x2", function(d){
-                            return mapper.map("x")(d) - mapper.map("size")(d);
+                            return currentX - mapper.map("size")(d);
                         })
-                        .attr("y2", mapper.map("y"));
+                        .attr("y2", currentY);
 
                     projections.select(".x")
                         .append("text")
@@ -95,6 +99,8 @@
             this.mouseout = function () {
                 tools.svg.selectAll(".projections").remove();
             }
+        },
+        mouseover: function(context, tools){
         }
     };
 

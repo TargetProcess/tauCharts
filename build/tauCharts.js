@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-04-22
+/*! tauCharts - v0.0.1 - 2014-04-24
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function () {
@@ -1230,7 +1230,7 @@
          * @param {ChartElementTools} tools
          */
         mouseout: function (context, tools) {
-            tools.element.classed('highlighted', false)
+            tools.element.classed('highlighted', false);
         }
     };
 
@@ -1451,10 +1451,14 @@
                             '</feMerge>' +
                         '</filter>');
 
+            var parent = tools;
 
-            this.mouseover = function (context) {
+            this.mouseover = function (context, tools) {
 
-                var projections = tools.svg.selectAll(".projections")
+                var currentY = +tools.element.attr("cy");
+                var currentX = +tools.element.attr("cx");
+
+                var projections = parent.svg.selectAll(".projections")
                     .data([context.datum])
                     .enter().append("g")
                     .attr("transform", "translate(" + marginLeft + ", 0)")
@@ -1469,9 +1473,9 @@
                         .append("line")
                         .attr("x1", mapper.map("x"))
                         .attr("y1", height - marginBottom + padding)
-                        .attr("x2", mapper.map("x"))
+                        .attr("x2", currentX)
                         .attr("y2", function(d){
-                            return mapper.map("y")(d) + mapper.map("size")(d);
+                            return currentY + mapper.map("size")(d);
                         });
 
                     projections.select(".y")
@@ -1492,9 +1496,9 @@
                         .attr("x1", -padding)
                         .attr("y1", mapper.map("y"))
                         .attr("x2", function(d){
-                            return mapper.map("x")(d) - mapper.map("size")(d);
+                            return currentX - mapper.map("size")(d);
                         })
-                        .attr("y2", mapper.map("y"));
+                        .attr("y2", currentY);
 
                     projections.select(".x")
                         .append("text")
@@ -1510,6 +1514,8 @@
             this.mouseout = function () {
                 tools.svg.selectAll(".projections").remove();
             }
+        },
+        mouseover: function(context, tools){
         }
     };
 
@@ -1543,17 +1549,17 @@
             };
 
             this._container.classed('tooltip', true)
-            .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
-            .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px')
+            .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
+            .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
             .style('display', 'block')
             .html(text);
         },
 
         mousemove: function (context, tools) {
-            if (this._container.style("display", "block")) {
+            if (this._container.style('display', 'block')) {
                 this._container
-                    .style('top', (d3.mouse(this._container[0].parentNode)[1]-10) + 'px')
-                    .style('left',(d3.mouse(this._container[0].parentNode)[0]+10) + 'px');
+                    .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
+                    .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)');
             };
         },
 

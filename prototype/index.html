@@ -71,7 +71,7 @@
                     tau.plugins.highlighter(),
                     tau.plugins.datatable(),
                     tau.plugins.jittering(),
-                    //tau.plugins.projection('y', 'x'),
+                    tau.plugins.projection('y', 'x'),
                     tau.plugins.header(
                         'Sample scatter plot',
                         'The data is displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. This kind of plot is also called a scatter chart, scattergram, scatter diagram, or scatter graph.')
@@ -92,7 +92,7 @@
                     tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
                     tau.plugins.highlighter(),
                     tau.plugins.datatable(),
-                    tau.plugins.projection('x'),
+                    tau.plugins.projection('x', 'y'),
                     tau.plugins.header(
                         'Sample line chart',
                         'A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically.')
