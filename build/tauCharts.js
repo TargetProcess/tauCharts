@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-04-24
+/*! tauCharts - v0.0.1 - 2014-04-25
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function () {
@@ -1259,6 +1259,9 @@
                 .attr('type', 'checkbox')
                 .attr('id', 'applyjittering');
 
+            var width = tools.svg.layout("width");
+            var height = tools.svg.layout("height");
+
             var x = tools.mapper.map('x');
 
             var y = tools.mapper.map('y');
@@ -1281,7 +1284,7 @@
 
             var force = d3.layout.force()
                 .nodes(data)
-                .size([tools.svg.layout("width"), tools.svg.layout("height")])
+                .size([width, height])
                 .on("tick", tick)
                 .charge(0)
                 .gravity(0)
@@ -1299,8 +1302,12 @@
 
                 if (checkbox.node().checked) node.each(collide(e.alpha));
 
-                node.attr("cx", function(d, i) { return data[i].x; })
-                    .attr("cy", function(d, i) { return data[i].y; });
+                //node.attr("cx", function(d, i) { return data[i].x; })
+                //    .attr("cy", function(d, i) { return data[i].y; });
+
+
+                node.attr("cx", function(d, i) { return data[i].x = Math.max(0, Math.min(width, data[i].x)); })
+                    .attr("cy", function(d, i) { return data[i].y = Math.max(0, Math.min(height, data[i].y)); });
 
             }            
             function moveTowardDataPosition(alpha) {
