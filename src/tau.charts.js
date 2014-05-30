@@ -43,14 +43,16 @@
         /**
          * @constructs
          * @param {DataSource} dataSource
+         * @param {Graphics} graphics
          */
-        init: function (dataSource) {
+        init: function (dataSource, graphics) {
             this._dataSource = dataSource;
+            this._graphics = graphics;
         },
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = new tau.data.MapperBuilder().config(config).build(this._meta);
+            this._mapper = new tau.data.MapperBuilder().config(config).build(this._graphics.meta);// TODO: bad
             return this;
         },
 
@@ -71,8 +73,6 @@
 
     /** @class */
     var Axis = Class.extend({
-        padding: 20,
-        
         /**
          * @constructs
          * @param {PropertyMapper} mapper */
@@ -205,7 +205,7 @@
     /** @class */
     var ChartLayout = Class.extend({
         /** @constructs */
-        init: function(selector, x, y){ // TODO: bad params
+        init: function(selector){
             var container = d3.select(selector)
                 .classed('tau-chart', true)
                 .html(CHART_HTML);
@@ -221,12 +221,12 @@
 
             var layout = new tau.svg.Layout(this.svg);
 
-            layout.row(-x);
-            this.yAxis = { svg: layout.col(y), html: container.select('.html-chart')};
+            layout.row(-20);
+            this.yAxis = { svg: layout.col(20), html: container.select('.html-chart')};
             this.data = layout.col();
 
             layout.row();
-            layout.col(y);
+            layout.col(20);
             this.xAxis = { svg: layout.col(), html: container.select('.html-chart')};
 
             this.width = this.data.layout('width');
@@ -252,28 +252,30 @@
         };
     };
 
-    /**@class */
-    /**@extends Chart */
+    /** @class Graphics */
+    /** @extends Class */
+    var Graphics = Class.extend({
+        meta: null,
+
+        render: function(container, data, mapper) { // TODO: pass already mapped data?
+            throw new Error('not implemented');
+        }
+    });
+
+    /** @class */
+    /** @extends Chart */
     var BasicChart = Chart.extend({
-        /** @constructs
-         * @param {DataSource} dataSource */
-        init: function (dataSource) {
-            this._super.call(this, dataSource);
-        },
-        
         map: function (config){
             this._super(config);
             
             this._yAxis = new YAxis(this._mapper.binder('y'));
             this._xAxis = new XAxis(this._mapper.binder('x'));
-        },
 
-        _renderData: function (container, data) {
-            throw new Error('Not implemented');
+            return this;
         },
 
         render: function (selector) {
-            var chartLayout = new ChartLayout(selector, this._xAxis.padding, this._yAxis.padding);
+            var chartLayout = new ChartLayout(selector);
 
             this._mapper.binder('x').range([0, chartLayout.width]);
             this._mapper.binder('y').range([chartLayout.height, 0]);
@@ -282,7 +284,7 @@
                 this._mapper.domain(data);
 
                 var renderData = function(data){
-                    this._renderData(chartLayout.data, data);
+                    this._graphics.render(chartLayout.data, data, this._mapper);
                     chartLayout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
                 }.bind(this);
 
@@ -380,17 +382,17 @@
          */
         Composite: CompositeChart,
 
-        /**
-         * @param data
-         * @returns {BasicChart}
-         */
-        Base: BasicChart,
+        Graphics: Graphics,
 
         /**
         * Register new chart
+         * @param {String} name
+         * @param {Graphics} graphics
         */
-        add: function(name, fn) {
-            tau.charts[name] = fn;    
+        addGraphics: function(name, graphics) {
+            tau.charts[name] = function(data){
+                return new BasicChart(data, graphics); // TODO: single stateless instance?
+            };
         }
     };
     

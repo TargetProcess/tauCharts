@@ -102,14 +102,16 @@
         /**
          * @constructs
          * @param {DataSource} dataSource
+         * @param {Graphics} graphics
          */
-        init: function (dataSource) {
+        init: function (dataSource, graphics) {
             this._dataSource = dataSource;
+            this._graphics = graphics;
         },
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = new tau.data.MapperBuilder().config(config).build(this._meta);
+            this._mapper = new tau.data.MapperBuilder().config(config).build(this._graphics.meta);// TODO: bad
             return this;
         },
 
@@ -137,9 +139,16 @@
             this._mapper = mapper;
         },
 
-        render: function (context) {
+        render: function (container) {
         }
     });
+    
+    var NullAxis = {
+        padding: 0,
+        
+        render: function() {            
+        }        
+    };
 
     /** @class
      * @extends Axis */
@@ -271,7 +280,7 @@
 
             var layout = new tau.svg.Layout(this.svg);
 
-            layout.row(-30);
+            layout.row(-20);
             this.yAxis = { svg: layout.col(20), html: container.select('.html-chart')};
             this.data = layout.col();
 
@@ -302,17 +311,26 @@
         };
     };
 
-    /**@class */
-    /**@extends Chart */
-    var BasicChart = Chart.extend({
-        /** @constructs
-         * @param {DataSource} dataSource */
-        init: function (dataSource) {
-            this._super.call(this, dataSource);
-        },
+    /** @class Graphics */
+    /** @extends Class */
+    var Graphics = Class.extend({
+        meta: null,
 
-        _renderData: function (container, data) {
-            throw new Error('Not implemented');
+        render: function(container, data, mapper) { // TODO: pass already mapped data?
+            throw new Error('not implemented');
+        }
+    });
+
+    /** @class */
+    /** @extends Chart */
+    var BasicChart = Chart.extend({
+        map: function (config){
+            this._super(config);
+            
+            this._yAxis = new YAxis(this._mapper.binder('y'));
+            this._xAxis = new XAxis(this._mapper.binder('x'));
+
+            return this;
         },
 
         render: function (selector) {
@@ -325,15 +343,15 @@
                 this._mapper.domain(data);
 
                 var renderData = function(data){
-                    this._renderData(chartLayout.data, data);
+                    this._graphics.render(chartLayout.data, data, this._mapper);
                     chartLayout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
                 }.bind(this);
 
                 renderData(data);
                 this._dataSource.update(renderData);
 
-                new YAxis(this._mapper.binder('y')).render(chartLayout.yAxis);
-                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
+                this._yAxis.render(chartLayout.yAxis);
+                this._xAxis.render(chartLayout.xAxis);
                 new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data);
 
                 tau.svg.bringOnTop(chartLayout.data);
@@ -388,19 +406,52 @@
             this.datum = datum;
         }
     });
+    
+    var CompositeChart = Chart.extend({
+        charts: function(){
+            this._charts = arguments;
+            return this;         
+        },
+        
+        render: function (selector) {
+            var height = 100/this._charts.length;
+            var element = d3.select(selector);
+            for(var i = 0; i < this._charts.length; i++) {
+                var className = 'part-' + i;
+                
+                element
+                    .append('div')
+                    .classed(className, true)
+                    .style('height', height + '%');
+                
+                if (i < this._charts.length - 1) {
+                    this._charts[i]._xAxis = NullAxis;
+                }
+                    
+                // TODO: we should check charts to be derived from BasicChart
+                this._charts[i].render(selector + ' .' + className);
+            }
+        }
+    });
 
     tau.charts = {
         /**
          * @param data
-         * @returns {BasicChart}
+         * @returns {CompositeChart}
          */
-        Base: BasicChart,
+        Composite: CompositeChart,
+
+        Graphics: Graphics,
 
         /**
         * Register new chart
+         * @param {String} name
+         * @param {Graphics} graphics
         */
-        add: function(name, fn) {
-            tau.charts[name] = fn;    
+        addGraphics: function(name, graphics) {
+            tau.charts[name] = function(data){
+                return new BasicChart(data, graphics); // TODO: single stateless instance?
+            };
         }
     };
     
@@ -993,24 +1044,16 @@
 })();
 (function() {
     /**@class */
-    /**@extends BasicChart */
-    var LineChart = tau.charts.Base.extend({
-        _meta: {
+    /**@extends Graphics */
+    var LineChartGraphics = tau.charts.Graphics.extend({
+        meta: {
             x: {type: tau.data.types.quantitative},
             y: {type: tau.data.types.quantitative},
             color: {type: tau.data.types.categorical, default: 1}
         },
 
-        map: function (config) {
-            
-            this._super(config);
-            this._mapper.alias('color', 'key');
-
-            return this;
-        },
-
-        _renderData: function (container, data) {
-            var mapper = this._mapper;
+        render: function (container, data, mapper) {
+            mapper.alias('color', 'key'); // TODO: check that aliases applied once
 
             // prepare data to build several lines
             // TODO: provide several data transformers to support more formats
@@ -1067,26 +1110,22 @@
         }
     });
 
-    tau.charts.add('Line', function (data) {
-        return new LineChart(data);
-    });
-    
+    tau.charts.addGraphics('Line', new LineChartGraphics());
 })();
 (function() {
 
-    /**@class */
-    /**@extends BasicChart */
-    var ScatterPlotChart = tau.charts.Base.extend({
-        _meta: {
+    /** @class */
+    /** @extends Graphics */
+    var ScatterPlotGraphics = tau.charts.Graphics.extend({
+        meta: {
             x: {type: tau.data.types.quantitative},
             y: {type: tau.data.types.quantitative},
             color: {type: tau.data.types.categorical, default: 1},
             size: {type: tau.data.types.quantitative, default: 10}
         },
 
-        _renderData: function (container, data) {
-            this._mapper.binder('size').range([0, container.layout('width')/100]);
-            var mapper = this._mapper;
+        render: function (container, data, mapper) {
+            mapper.binder('size').range([0, container.layout('width')/100]);
 
             var update = function () {
                 return this
@@ -1104,10 +1143,7 @@
         }
     });
 
-    tau.charts.add('Scatterplot', function (data) {
-        return new ScatterPlotChart(data);
-    });
-
+    tau.charts.addGraphics('Scatterplot', new ScatterPlotGraphics());
 })();
 (function () {
     /** @class DataTable

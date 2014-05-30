@@ -1,23 +1,15 @@
 (function() {
     /**@class */
-    /**@extends BasicChart */
-    var LineChart = tau.charts.Base.extend({
-        _meta: {
+    /**@extends Graphics */
+    var LineChartGraphics = tau.charts.Graphics.extend({
+        meta: {
             x: {type: tau.data.types.quantitative},
             y: {type: tau.data.types.quantitative},
             color: {type: tau.data.types.categorical, default: 1}
         },
 
-        map: function (config) {
-            
-            this._super(config);
-            this._mapper.alias('color', 'key');
-
-            return this;
-        },
-
-        _renderData: function (container, data) {
-            var mapper = this._mapper;
+        render: function (container, data, mapper) {
+            mapper.alias('color', 'key'); // TODO: check that aliases applied once
 
             // prepare data to build several lines
             // TODO: provide several data transformers to support more formats
@@ -74,8 +66,5 @@
         }
     });
 
-    tau.charts.add('Line', function (data) {
-        return new LineChart(data);
-    });
-    
+    tau.charts.addGraphics('Line', new LineChartGraphics());
 })();
