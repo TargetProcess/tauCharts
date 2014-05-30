@@ -107,6 +107,7 @@
         init: function (dataSource, graphics) {
             this._dataSource = dataSource;
             this._graphics = graphics;
+            this._plugins = new Plugins([]);
         },
 
         map: function (config) {
@@ -275,14 +276,14 @@
 
             layout.row(-20);
             this.yAxis = { svg: layout.col(20), html: container.select('.html-chart')};
-            this.data = layout.col();
+            this.data = {svg: layout.col(), html: container.select('.html-chart')};
 
             layout.row();
             layout.col(20);
             this.xAxis = { svg: layout.col(), html: container.select('.html-chart')};
 
-            this.width = this.data.layout('width');
-            this.height = this.data.layout('height');
+            this.width = this.data.svg.layout('width');
+            this.height = this.data.svg.layout('height');
         }
     });
 
@@ -335,9 +336,9 @@
             this._dataSource.get(/** @this BasicChart */ function (data) {
                 this._mapper.domain(data);
 
-                var renderData = function(data){
-                    this._graphics.render(chartLayout.data, data, this._mapper);
-                    chartLayout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                var renderData = function (data) {
+                    this._graphics.render(chartLayout.data.svg, data, this._mapper);
+                    chartLayout.data.svg.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
                 }.bind(this);
 
                 renderData(data);
@@ -345,9 +346,9 @@
 
                 this._yAxis.render(chartLayout.yAxis);
                 this._xAxis.render(chartLayout.xAxis);
-                new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data);
+                new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data.svg);
 
-                tau.svg.bringOnTop(chartLayout.data);
+                tau.svg.bringOnTop(chartLayout.data.svg);
 
                 this._plugins.render(new RenderContext(this._dataSource), new ChartTools(chartLayout, this._mapper));
             }.bind(this));
@@ -400,6 +401,58 @@
         }
     });
 
+    /**
+     * @class
+     */
+    var CompositeChartLayout = Class.extend({
+        _padding: 5,
+
+        init: function (selector, numberOfCharts) {
+            var chartLayout = new ChartLayout(selector);
+
+            this._dataLayout = new tau.svg.Layout(chartLayout.data.svg);
+            this._yAxisLayout = new tau.svg.Layout(chartLayout.yAxis.svg);
+
+            this._chartHeightWithPadding = chartLayout.height / numberOfCharts;
+            this._chartHeight = this._chartHeightWithPadding - this._padding;
+
+            this._html = chartLayout.data.html;
+            this._top = 0;
+
+            this.xAxis = chartLayout.xAxis;
+            this.data = chartLayout.data;
+            this.width = chartLayout.width;
+        },
+
+        nextHeight: function(){
+            return this._chartHeight;
+        },
+
+        nextYAxis: function () {
+            this._yAxisLayout.row(this._padding);
+            this._yAxisLayout.row(this._chartHeight);
+            return this._yAxisLayout.col();
+        },
+
+        nextData: function() {
+            this._dataLayout.row(this._padding);
+            this._dataLayout.row(this._chartHeight);
+            return this._dataLayout.col();
+        },
+
+        nextHtml: function() {
+            this._top += this._chartHeightWithPadding;
+
+            return this._html
+                .append('div')
+                .style({
+                    'position': 'absolute',
+                    'top': (this._top - this._chartHeightWithPadding) + 'px',
+                    'height': this._chartHeight + 'px'
+                });
+        }
+    });
+
     var CompositeChart = Chart.extend({
         charts: function () {
             this._charts = arguments;
@@ -420,14 +473,7 @@
         },
 
         render: function (selector) {
-            var chartLayout = new ChartLayout(selector);
-
-            var dataLayout = new tau.svg.Layout(chartLayout.data);
-            var yAxisLayout = new tau.svg.Layout(chartLayout.yAxis.svg);
-
-            var chartHeightWithPadding = chartLayout.height / this._charts.length;
-            var padding = 5;
-            var chartHeight = chartHeightWithPadding - padding;
+            var chartLayout = new CompositeChartLayout(selector, this._charts.length);
 
             this._mapper.binder('x').range([0, chartLayout.width]);
 
@@ -438,34 +484,32 @@
                     var chart = this._charts[i];
                     var chartMapper = chart._mapper; // TODO: bad mapping
 
-                    chartMapper.binder('y').range([chartHeight, 0]);
+                    chartMapper.binder('y').range([chartLayout.nextHeight(), 0]);
                     chartMapper.binder('x').range([0, chartLayout.width]);
                     chartMapper.domain(data);
 
-                    yAxisLayout.row(chartHeight);
-                    new YAxis(chartMapper.binder('y')).render({svg: yAxisLayout.col(), html: chartLayout.yAxis.html}); // TODO: fix html
+                    var yAxis = new YAxis(chartMapper.binder('y'));
 
-                    dataLayout.row(chartHeight);
-                    var container = dataLayout.col();
+                    var chartHtml = chartLayout.nextHtml();
+                    var dataSvg = chartLayout.nextData();
+                    var yAxisSvg = chartLayout.nextYAxis();
 
-                    // TODO: all in loop
-                    var renderData = function(data){
+                    yAxis.render({svg: yAxisSvg, html: chartHtml});
+
+                    var renderData = function (data) {
                         // TODO: graphics exposed
-                        chart._graphics.render(container, data, chartMapper);
+                        chart._graphics.render(dataSvg, data, chartMapper);
                         // TODO: copy-paste
-                        container.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                        dataSvg.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
                     }.bind(this);
 
                     renderData(data);
                     this._dataSource.update(renderData);
 
-                    new Grid(this._mapper.binder('x'), chartMapper.binder('y')).render(container);
-
-                    yAxisLayout.row(padding);
-                    dataLayout.row(padding);
+                    new Grid(this._mapper.binder('x'), chartMapper.binder('y')).render(dataSvg);
                 }
 
-                tau.svg.bringOnTop(chartLayout.data);
+                tau.svg.bringOnTop(chartLayout.data.svg);
 
                 new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
             }.bind(this));
@@ -1556,7 +1600,7 @@
                         .attr("y1", height - marginBottom + padding)
                         .attr("x2", currentX)
                         .attr("y2", function(d){
-                            return currentY + mapper.map("size")(d);
+                            return currentY + mapper.map("size")(d); // TODO: not all charts have size (like linechart for example)
                         });
 
                     projections.select(".y")

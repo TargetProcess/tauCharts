@@ -45,13 +45,13 @@
 <div id="chart" style="width:800px;height:500px;display:inline-block;margin: 0px 30px 0px 30px;"> <!-- Magic margin-->
 </div>
 <script>
-    var data = tau.data.Array(window.lineData);
+    var data = tau.data.Array(window.scatterData.sort(function(a,b){return d3.descending(a.effort, b.effort);}));
 
     var chart1 = tau.charts
             .Line(data)
             .map({
                 x: tau.data.map('effort').linear(),
-                y: tau.data.map('bugsCount').linear(),
+                y: tau.data.map('duration').linear(),
                 color: 'priority'
             })
             .plugins(
@@ -64,7 +64,7 @@
             .Line(data)
             .map({
                 x: tau.data.map('effort').linear(),
-                y: tau.data.map('bugsCount').linear(),
+                y: tau.data.map('timeSpent').linear(),
                 color: 'priority'
             })
             .plugins(
