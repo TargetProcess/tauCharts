@@ -8,11 +8,12 @@
         var svg = document.createElement('svg');
         var layout = new tau.svg.Layout(d3.select(svg), {width: 100, height: 100});
         layout.row(20);
+        layout.row(1);
         layout.row();
         layout.col(40);
         layout.col();
 
-        equal(svg.innerHTML, '<g transform="translate(0,20)"></g><g transform="translate(40,20)"></g>');
+        equal(svg.innerHTML, '<g transform="translate(0,21)"></g><g transform="translate(40,21)"></g>');
     });
 
     test('should take negative values as relative', function () {

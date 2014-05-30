@@ -47,7 +47,7 @@
         row: function(height){
             this._translateX = 0;
             this._translateY = this._y;
-            this._y = height ? this._y + absolute(height - this._y, this._height) : null; // TODO: handle several rows without specification
+            this._y = height ? this._y + absolute(height, this._height) : null; // TODO: handle several rows without specification
         },
 
         /**
@@ -56,7 +56,7 @@
          */
         col: function(width){
             this._translateX = this._x;
-            this._x = width ? this._x + absolute(width - this._x, this._width) : null; // TODO: handle several cols without specification
+            this._x = width ? this._x + absolute(width, this._width) : null; // TODO: handle several cols without specification
             return this._svg
                 .append('g')
                 .call(this._translate.bind(this))
