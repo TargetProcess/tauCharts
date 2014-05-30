@@ -14,7 +14,12 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "libs",
+    "prototype",
+    "sass",
+    "Gruntfile.js",
+    "config.rb",
+    ".travis.yml"
   ],
   "dependencies": {
     "d3": "~3.4.3"
