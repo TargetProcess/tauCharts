@@ -71,6 +71,8 @@
 
     /** @class */
     var Axis = Class.extend({
+        padding: 20,
+        
         /**
          * @constructs
          * @param {PropertyMapper} mapper */
@@ -78,9 +80,16 @@
             this._mapper = mapper;
         },
 
-        render: function (context) {
+        render: function (container) {
         }
     });
+    
+    var NullAxis = {
+        padding: 0,
+        
+        render: function() {            
+        }        
+    };
 
     /** @class
      * @extends Axis */
@@ -196,7 +205,7 @@
     /** @class */
     var ChartLayout = Class.extend({
         /** @constructs */
-        init: function(selector){
+        init: function(selector, x, y){ // TODO: bad params
             var container = d3.select(selector)
                 .classed('tau-chart', true)
                 .html(CHART_HTML);
@@ -212,12 +221,12 @@
 
             var layout = new tau.svg.Layout(this.svg);
 
-            layout.row(-30);
-            this.yAxis = { svg: layout.col(20), html: container.select('.html-chart')};
+            layout.row(-x);
+            this.yAxis = { svg: layout.col(y), html: container.select('.html-chart')};
             this.data = layout.col();
 
             layout.row();
-            layout.col(20);
+            layout.col(y);
             this.xAxis = { svg: layout.col(), html: container.select('.html-chart')};
 
             this.width = this.data.layout('width');
@@ -251,13 +260,20 @@
         init: function (dataSource) {
             this._super.call(this, dataSource);
         },
+        
+        map: function (config){
+            this._super(config);
+            
+            this._yAxis = new YAxis(this._mapper.binder('y'));
+            this._xAxis = new XAxis(this._mapper.binder('x'));
+        },
 
         _renderData: function (container, data) {
             throw new Error('Not implemented');
         },
 
         render: function (selector) {
-            var chartLayout = new ChartLayout(selector);
+            var chartLayout = new ChartLayout(selector, this._xAxis.padding, this._yAxis.padding);
 
             this._mapper.binder('x').range([0, chartLayout.width]);
             this._mapper.binder('y').range([chartLayout.height, 0]);
@@ -273,8 +289,8 @@
                 renderData(data);
                 this._dataSource.update(renderData);
 
-                new YAxis(this._mapper.binder('y')).render(chartLayout.yAxis);
-                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
+                this._yAxis.render(chartLayout.yAxis);
+                this._xAxis.render(chartLayout.xAxis);
                 new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data);
 
                 tau.svg.bringOnTop(chartLayout.data);
@@ -329,8 +345,41 @@
             this.datum = datum;
         }
     });
+    
+    var CompositeChart = Chart.extend({
+        charts: function(){
+            this._charts = arguments;
+            return this;         
+        },
+        
+        render: function (selector) {
+            var height = 100/this._charts.length;
+            var element = d3.select(selector);
+            for(var i = 0; i < this._charts.length; i++) {
+                var className = 'part-' + i;
+                
+                element
+                    .append('div')
+                    .classed(className, true)
+                    .style('height', height + '%');
+                
+                if (i < this._charts.length - 1) {
+                    this._charts[i]._xAxis = NullAxis;
+                }
+                    
+                // TODO: we should check charts to be derived from BasicChart
+                this._charts[i].render(selector + ' .' + className);
+            }
+        }
+    });
 
     tau.charts = {
+        /**
+         * @param data
+         * @returns {CompositeChart}
+         */
+        Composite: CompositeChart,
+
         /**
          * @param data
          * @returns {BasicChart}

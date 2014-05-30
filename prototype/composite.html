@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="../libs/d3.js"></script>
+
+    <!-- src -->
+    <script src="../src/class.js"></script>
+    <script src="../src/tau.data.js"></script>
+    <script src="../src/tau.data.types.js"></script>
+    <script src="../src/tau.svg.js"></script>
+    <script src="../src/tau.charts.js"></script>
+    <script src="../src/charts/line.js"></script>
+    <script src="../src/charts/scatterplot.js"></script>
+    <script src="../src/tau.plugins.js"></script>
+
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/highlighter.js"></script>
+    <script src="../plugins/projection.js"></script>
+    <script src="../plugins/datatable.js"></script>
+    <script src="../plugins/header.js"></script>
+    <script src="../plugins/trend.js"></script>
+    <script src="../plugins/jittering.js"></script>
+
+    <!-- test data -->
+    <script src="data.js"></script>
+
+    <script src="countries.js"></script>
+
+    <!-- css -->
+    <link href="../css/default.css" rel="stylesheet" />
+    <link href="../css/oldschool.css" rel="stylesheet" />
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
+    <style>
+        #chart1 .x.axis {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart" style="width:800px;height:500px;display:inline-block;margin: 0px 30px 0px 30px;"> <!-- Magic margin-->
+    </div>
+    <script>
+        var data = tau.data.Array(window.lineData);
+
+        var chart1 = tau.charts
+                .Line(data)
+                .map({
+                    x: tau.data.map('effort').linear(),
+                    y: tau.data.map('bugsCount').linear(),
+                    color: 'priority'
+                })
+                .plugins(
+                    tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+                    tau.plugins.highlighter(),
+                    tau.plugins.projection('x', 'y')
+                );
+
+        var chart2 = tau.charts
+                .Line(data)
+                .map({
+                    x: tau.data.map('effort').linear(),
+                    y: tau.data.map('bugsCount').linear(),
+                    color: 'priority'
+                })
+                .plugins(
+                    tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+                    tau.plugins.highlighter(),
+                    tau.plugins.projection('x', 'y')
+                );
+                
+         new tau.charts
+            .Composite(data)
+            .charts(chart1, chart2)
+            .render('#chart')
+                
+    </script>
+</body>
+</html>
