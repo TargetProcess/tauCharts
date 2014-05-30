@@ -83,13 +83,6 @@
         render: function (container) {
         }
     });
-    
-    var NullAxis = {
-        padding: 0,
-        
-        render: function() {            
-        }        
-    };
 
     /** @class
      * @extends Axis */
@@ -347,31 +340,77 @@
             this.datum = datum;
         }
     });
-    
+
     var CompositeChart = Chart.extend({
-        charts: function(){
+        charts: function () {
             this._charts = arguments;
-            return this;         
+            return this;
         },
-        
+
+        // TODO: bad
+        meta: {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1}
+        },
+
+        map: function (config) {
+            /** @type Mapper */
+            this._mapper = new tau.data.MapperBuilder().config(config).build(this.meta);// TODO: bad
+            return this;
+        },
+
         render: function (selector) {
-            var height = 100/this._charts.length;
-            var element = d3.select(selector);
-            for(var i = 0; i < this._charts.length; i++) {
-                var className = 'part-' + i;
-                
-                element
-                    .append('div')
-                    .classed(className, true)
-                    .style('height', height + '%');
-                
-                if (i < this._charts.length - 1) {
-                    this._charts[i]._xAxis = NullAxis;
+            var chartLayout = new ChartLayout(selector);
+
+            var dataLayout = new tau.svg.Layout(chartLayout.data);
+            var yAxisLayout = new tau.svg.Layout(chartLayout.yAxis.svg);
+
+            var chartHeightWithPadding = chartLayout.height / this._charts.length;
+            var padding = 5;
+            var chartHeight = chartHeightWithPadding - padding;
+
+            this._mapper.binder('x').range([0, chartLayout.width]);
+
+            this._dataSource.get(/** @this BasicChart */ function (data) {
+                this._mapper.domain(data);
+
+                for (var i = 0; i < this._charts.length; i++) {
+                    var chart = this._charts[i];
+                    var chartMapper = chart._mapper; // TODO: bad mapping
+
+                    chartMapper.binder('y').range([chartHeight, 0]);
+                    chartMapper.binder('x').range([0, chartLayout.width]);
+                    chartMapper.domain(data);
+
+                    yAxisLayout.row(chartHeight);
+                    new YAxis(chartMapper.binder('y')).render({svg: yAxisLayout.col(), html: chartLayout.yAxis.html}); // TODO: fix html
+
+                    dataLayout.row(chartHeight);
+                    var container = dataLayout.col();
+
+                    // TODO: all in loop
+                    var renderData = function(data){
+                        // TODO: graphics exposed
+                        chart._graphics.render(container, data, chartMapper);
+                        // TODO: copy-paste
+                        container.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                    }.bind(this);
+
+                    renderData(data);
+                    this._dataSource.update(renderData);
+
+                    new Grid(this._mapper.binder('x'), chartMapper.binder('y')).render(container);
+
+                    //TODO: temporarily commented due to the bug in layout
+                    //yAxisLayout.row(padding);
+                    //dataLayout.row(padding);
                 }
-                    
-                // TODO: we should check charts to be derived from BasicChart
-                this._charts[i].render(selector + ' .' + className);
-            }
+
+                tau.svg.bringOnTop(chartLayout.data);
+
+                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
+            }.bind(this));
         }
     });
 

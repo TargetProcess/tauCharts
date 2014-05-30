@@ -30,10 +30,11 @@
     <script src="countries.js"></script>
 
     <!-- css -->
-    <link href="../css/default.css" rel="stylesheet" />
-    <link href="../css/oldschool.css" rel="stylesheet" />
+    <link href="../css/default.css" rel="stylesheet"/>
+    <link href="../css/oldschool.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
-    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+          type='text/css'>
     <style>
         #chart1 .x.axis {
             display: none;
@@ -41,42 +42,46 @@
     </style>
 </head>
 <body>
-    <div id="chart" style="width:800px;height:500px;display:inline-block;margin: 0px 30px 0px 30px;"> <!-- Magic margin-->
-    </div>
-    <script>
-        var data = tau.data.Array(window.lineData);
+<div id="chart" style="width:800px;height:500px;display:inline-block;margin: 0px 30px 0px 30px;"> <!-- Magic margin-->
+</div>
+<script>
+    var data = tau.data.Array(window.lineData);
 
-        var chart1 = tau.charts
-                .Line(data)
-                .map({
-                    x: tau.data.map('effort').linear(),
-                    y: tau.data.map('bugsCount').linear(),
-                    color: 'priority'
-                })
-                .plugins(
+    var chart1 = tau.charts
+            .Line(data)
+            .map({
+                x: tau.data.map('effort').linear(),
+                y: tau.data.map('bugsCount').linear(),
+                color: 'priority'
+            })
+            .plugins(
                     tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
                     tau.plugins.highlighter(),
                     tau.plugins.projection('x', 'y')
-                );
+            );
 
-        var chart2 = tau.charts
-                .Line(data)
-                .map({
-                    x: tau.data.map('effort').linear(),
-                    y: tau.data.map('bugsCount').linear(),
-                    color: 'priority'
-                })
-                .plugins(
+    var chart2 = tau.charts
+            .Line(data)
+            .map({
+                x: tau.data.map('effort').linear(),
+                y: tau.data.map('bugsCount').linear(),
+                color: 'priority'
+            })
+            .plugins(
                     tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
                     tau.plugins.highlighter(),
                     tau.plugins.projection('x', 'y')
-                );
-                
-         new tau.charts
+            );
+
+    new tau.charts
             .Composite(data)
+            .map({
+                x: tau.data.map('effort').linear(), // TODO: think how to map y
+                color: 'priority'
+            })
             .charts(chart1, chart2)
             .render('#chart')
-                
-    </script>
+
+</script>
 </body>
 </html>
