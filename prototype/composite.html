@@ -45,43 +45,33 @@
 <div id="chart" style="width:800px;height:500px;display:inline-block;margin: 0px 30px 0px 30px;"> <!-- Magic margin-->
 </div>
 <script>
-    var data = tau.data.Array(window.scatterData.sort(function(a,b){return d3.descending(a.effort, b.effort);}));
+    var data = tau.data.Array(window.scatterData.sort(function (a, b) {
+        return d3.descending(a.effort, b.effort);
+    }));
 
-    var chart1 = tau.charts
-            .Line(data)
-            .map({
+    new tau.charts
+            .Composite(data)
+            .Line({
+                x: tau.data.map('effort').linear(),
+                y: tau.data.map('timeSpent').linear(),
+                color: 'priority'
+            })
+            .Line({
                 x: tau.data.map('effort').linear(),
                 y: tau.data.map('duration').linear(),
                 color: 'priority'
             })
             .plugins(
-                    tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
-                    tau.plugins.highlighter(),
-                    tau.plugins.projection('x', 'y')
-            );
-
-    var chart2 = tau.charts
-            .Line(data)
-            .map({
-                x: tau.data.map('effort').linear(),
-                y: tau.data.map('timeSpent').linear(),
-                color: 'priority'
-            })
-            .plugins(
-                    tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
-                    tau.plugins.highlighter(),
-                    tau.plugins.projection('x', 'y')
-            );
-
-    new tau.charts
-            .Composite(data)
-            .map({
-                x: tau.data.map('effort').linear(), // TODO: think how to map y
-                color: 'priority'
-            })
-            .charts(chart1, chart2)
-            .render('#chart')
-
+                tau.plugins.legend(),
+                tau.plugins.tooltip('priority', 'effort', 'timeSpent', 'duration'),
+                tau.plugins.highlighter(),
+                tau.plugins.datatable(),
+                tau.plugins.projection('x', 'y'), // doesn't work
+                tau.plugins.header(
+                    'Sample line chart',
+                    'A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically.')
+            )
+            .render('#chart');
 </script>
 </body>
 </html>

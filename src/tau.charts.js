@@ -362,6 +362,10 @@
 
             this.xAxis = chartLayout.xAxis;
             this.data = chartLayout.data;
+
+            this.svg= chartLayout.svg;
+            this.html= chartLayout.html;
+
             this.width = chartLayout.width;
         },
 
@@ -395,11 +399,6 @@
     });
 
     var CompositeChart = Chart.extend({
-        charts: function () {
-            this._charts = arguments;
-            return this;
-        },
-
         // TODO: bad
         meta: {
             x: {type: tau.data.types.quantitative},
@@ -407,29 +406,26 @@
             color: {type: tau.data.types.categorical, default: 1}
         },
 
-        map: function (config) {
-            /** @type Mapper */
-            this._mapper = new tau.data.MapperBuilder().config(config).build(this.meta);// TODO: bad
-            return this;
+        init: function (data) {
+            this._super(data);
+
+            this._graphics = [];
+            this._mappers = [];
         },
 
         render: function (selector) {
-            var chartLayout = new CompositeChartLayout(selector, this._charts.length);
-
-            this._mapper.binder('x').range([0, chartLayout.width]);
+            var chartLayout = new CompositeChartLayout(selector, this._graphics.length);
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
-                this._mapper.domain(data);
+                for (var i = 0; i < this._graphics.length; i++) {
+                    // TODO: many copy-past from BasicChart, think on it
+                    var mapper = this._mappers[i];
 
-                for (var i = 0; i < this._charts.length; i++) {
-                    var chart = this._charts[i];
-                    var chartMapper = chart._mapper; // TODO: bad mapping
+                    mapper.binder('y').range([chartLayout.nextHeight(), 0]);
+                    mapper.binder('x').range([0, chartLayout.width]);
+                    mapper.domain(data);
 
-                    chartMapper.binder('y').range([chartLayout.nextHeight(), 0]);
-                    chartMapper.binder('x').range([0, chartLayout.width]);
-                    chartMapper.domain(data);
-
-                    var yAxis = new YAxis(chartMapper.binder('y'));
+                    var yAxis = new YAxis(mapper.binder('y'));
 
                     var chartHtml = chartLayout.nextHtml();
                     var dataSvg = chartLayout.nextData();
@@ -437,22 +433,23 @@
 
                     yAxis.render({svg: yAxisSvg, html: chartHtml});
 
-                    var renderData = function (data) {
-                        // TODO: graphics exposed
-                        chart._graphics.render(dataSvg, data, chartMapper);
+                    var renderData = function (graphics, container, mapper, data) {
+                        graphics.render(container, data, mapper);
                         // TODO: copy-paste
-                        dataSvg.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
-                    }.bind(this);
+                        container.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                    }.bind(this, this._graphics[i], dataSvg, mapper);
 
                     renderData(data);
                     this._dataSource.update(renderData);
 
-                    new Grid(this._mapper.binder('x'), chartMapper.binder('y')).render(dataSvg);
+                    new Grid(mapper.binder('x'), mapper.binder('y')).render(dataSvg);
                 }
 
                 tau.svg.bringOnTop(chartLayout.data.svg);
 
-                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
+                new XAxis(this._mappers[0].binder('x')).render(chartLayout.xAxis); // TODO: no guarantee that x is the same for all
+
+                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(chartLayout, this._mappers[0]));
             }.bind(this));
         }
     });
@@ -472,6 +469,13 @@
          * @param {Graphics} graphics
         */
         addGraphics: function(name, graphics) {
+            // TODO: restrict by 2d only
+            CompositeChart.prototype[name] = function(mapping){
+                this._graphics.push(graphics);
+                this._mappers.push(new tau.data.MapperBuilder().config(mapping).build(graphics.meta)); // TODO: still not very good
+                return this;
+            };
+
             tau.charts[name] = function(data){
                 return new BasicChart(data, graphics); // TODO: single stateless instance?
             };
