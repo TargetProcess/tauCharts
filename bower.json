@@ -7,11 +7,15 @@
     "d3",
     "charts"
   ],
+  "main": [
+	"build/tauCharts.js",
+	"build/tauCharts.min.js",
+  ],
   "license": "MIT",
   "private": true,
   "ignore": [
     "**/.*",
-    "./prototype",
+    "prototype",
   ],
   "dependencies": {
     "d3": "~3.4.3"
