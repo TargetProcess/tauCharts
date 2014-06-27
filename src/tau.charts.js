@@ -44,16 +44,18 @@
          * @constructs
          * @param {DataSource} dataSource
          * @param {Graphics} graphics
+         * @param {MapperBuilder} mapperBuilder
          */
-        init: function (dataSource, graphics) {
+        init: function (dataSource, graphics, mapperBuilder) {
             this._dataSource = dataSource;
             this._graphics = graphics;
+            this._mapperBuilder = mapperBuilder;
             this._plugins = new Plugins([]);
         },
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = new tau.data.MapperBuilder().config(config).build(this._graphics.meta);// TODO: bad
+            this._mapper = this._mapperBuilder.build(config);
             return this;
         },
 
@@ -468,16 +470,16 @@
          * @param {String} name
          * @param {Graphics} graphics
         */
-        addGraphics: function(name, graphics) {
+        addGraphics: function(name, graphics, meta) {
             // TODO: restrict by 2d only
             CompositeChart.prototype[name] = function(mapping){
                 this._graphics.push(graphics);
-                this._mappers.push(new tau.data.MapperBuilder().config(mapping).build(graphics.meta)); // TODO: still not very good
+                this._mappers.push(new tau.data.MapperBuilder(meta).build(mapping)); // TODO: still not very good
                 return this;
             };
 
             tau.charts[name] = function(data){
-                return new BasicChart(data, graphics); // TODO: single stateless instance?
+                return new BasicChart(data, graphics, new tau.data.MapperBuilder(meta)); // TODO: single stateless instance?
             };
         }
     };

@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-05-30
+/*! tauCharts - v0.0.1 - 2014-06-27
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function () {
@@ -103,16 +103,18 @@
          * @constructs
          * @param {DataSource} dataSource
          * @param {Graphics} graphics
+         * @param {MapperBuilder} mapperBuilder
          */
-        init: function (dataSource, graphics) {
+        init: function (dataSource, graphics, mapperBuilder) {
             this._dataSource = dataSource;
             this._graphics = graphics;
+            this._mapperBuilder = mapperBuilder;
             this._plugins = new Plugins([]);
         },
 
         map: function (config) {
             /** @type Mapper */
-            this._mapper = new tau.data.MapperBuilder().config(config).build(this._graphics.meta);// TODO: bad
+            this._mapper = this._mapperBuilder.build(config);
             return this;
         },
 
@@ -527,16 +529,16 @@
          * @param {String} name
          * @param {Graphics} graphics
         */
-        addGraphics: function(name, graphics) {
+        addGraphics: function(name, graphics, meta) {
             // TODO: restrict by 2d only
             CompositeChart.prototype[name] = function(mapping){
                 this._graphics.push(graphics);
-                this._mappers.push(new tau.data.MapperBuilder().config(mapping).build(graphics.meta)); // TODO: still not very good
+                this._mappers.push(new tau.data.MapperBuilder(meta).build(mapping)); // TODO: still not very good
                 return this;
             };
 
             tau.charts[name] = function(data){
-                return new BasicChart(data, graphics); // TODO: single stateless instance?
+                return new BasicChart(data, graphics, new tau.data.MapperBuilder(meta)); // TODO: single stateless instance?
             };
         }
     };
@@ -807,20 +809,15 @@
         /**
          * @construct
          */
-        init: function () {
+        init: function (meta) {
+            this._meta = meta;
         },
 
-        config: function (config) {
-            this._config = config;
-
-            return this;
-        },
-
-        build: function (meta) {
+        build: function (config) {
             var propertyMappers = {};
 
-            for (var key in meta) {
-                var propertyMapperBuilder = this._config[key];
+            for (var key in  this._meta) {
+                var propertyMapperBuilder = config[key];
 
                 if (typeof(propertyMapperBuilder) === 'undefined') {
                     propertyMapperBuilder = key;
@@ -830,7 +827,7 @@
                     propertyMapperBuilder = new PropertyMapperBuilder(propertyMapperBuilder);
                 }
 
-                propertyMappers[key] = propertyMapperBuilder.build(meta[key]);
+                propertyMappers[key] = propertyMapperBuilder.build(this._meta[key]);
             }
 
             return new Mapper(propertyMappers);
@@ -1129,15 +1126,15 @@
     };
 })();
 (function() {
+    var lineChartMeta = {
+        x: {type: tau.data.types.quantitative},
+        y: {type: tau.data.types.quantitative},
+        color: {type: tau.data.types.categorical, default: 1}
+    };
+
     /**@class */
     /**@extends Graphics */
     var LineChartGraphics = tau.charts.Graphics.extend({
-        meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1}
-        },
-
         render: function (container, data, mapper) {
             mapper.alias('color', 'key'); // TODO: check that aliases applied once
 
@@ -1196,22 +1193,21 @@
         }
     });
 
-    tau.charts.addGraphics('Line', new LineChartGraphics());
+    tau.charts.addGraphics('Line', new LineChartGraphics(), lineChartMeta);
 })();
-(function() {
+(function () {
+    var scatterPlotMeta = {
+        x: {type: tau.data.types.quantitative},
+        y: {type: tau.data.types.quantitative},
+        color: {type: tau.data.types.categorical, default: 1},
+        size: {type: tau.data.types.quantitative, default: 10}
+    };
 
     /** @class */
     /** @extends Graphics */
     var ScatterPlotGraphics = tau.charts.Graphics.extend({
-        meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1},
-            size: {type: tau.data.types.quantitative, default: 10}
-        },
-
         render: function (container, data, mapper) {
-            mapper.binder('size').range([0, container.layout('width')/100]);
+            mapper.binder('size').range([0, container.layout('width') / 100]);
 
             var update = function () {
                 return this
@@ -1229,7 +1225,7 @@
         }
     });
 
-    tau.charts.addGraphics('Scatterplot', new ScatterPlotGraphics());
+    tau.charts.addGraphics('Scatterplot', new ScatterPlotGraphics(), scatterPlotMeta);
 })();
 (function () {
     /** @class DataTable
@@ -1604,7 +1600,7 @@
                         .attr("y1", height - marginBottom + padding)
                         .attr("x2", currentX)
                         .attr("y2", function(d){
-                            return currentY + mapper.map("size")(d); // TODO: not all charts have size (like linechart for example)
+                            return currentY + mapper.map("size")(d);
                         });
 
                     projections.select(".y")

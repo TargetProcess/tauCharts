@@ -50,7 +50,7 @@
                 size: {type: tau.data.types.quantitative, default: 10}
             };
 
-            return new tau.data.MapperBuilder().config(config).build(meta);
+            return new tau.data.MapperBuilder(meta).build(config);
         }
     });
 

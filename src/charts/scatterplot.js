@@ -1,17 +1,16 @@
-(function() {
+(function () {
+    var scatterPlotMeta = {
+        x: {type: tau.data.types.quantitative},
+        y: {type: tau.data.types.quantitative},
+        color: {type: tau.data.types.categorical, default: 1},
+        size: {type: tau.data.types.quantitative, default: 10}
+    };
 
     /** @class */
     /** @extends Graphics */
     var ScatterPlotGraphics = tau.charts.Graphics.extend({
-        meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1},
-            size: {type: tau.data.types.quantitative, default: 10}
-        },
-
         render: function (container, data, mapper) {
-            mapper.binder('size').range([0, container.layout('width')/100]);
+            mapper.binder('size').range([0, container.layout('width') / 100]);
 
             var update = function () {
                 return this
@@ -29,5 +28,5 @@
         }
     });
 
-    tau.charts.addGraphics('Scatterplot', new ScatterPlotGraphics());
+    tau.charts.addGraphics('Scatterplot', new ScatterPlotGraphics(), scatterPlotMeta);
 })();

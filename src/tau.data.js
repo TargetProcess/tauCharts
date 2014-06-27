@@ -262,20 +262,15 @@
         /**
          * @construct
          */
-        init: function () {
+        init: function (meta) {
+            this._meta = meta;
         },
 
-        config: function (config) {
-            this._config = config;
-
-            return this;
-        },
-
-        build: function (meta) {
+        build: function (config) {
             var propertyMappers = {};
 
-            for (var key in meta) {
-                var propertyMapperBuilder = this._config[key];
+            for (var key in  this._meta) {
+                var propertyMapperBuilder = config[key];
 
                 if (typeof(propertyMapperBuilder) === 'undefined') {
                     propertyMapperBuilder = key;
@@ -285,7 +280,7 @@
                     propertyMapperBuilder = new PropertyMapperBuilder(propertyMapperBuilder);
                 }
 
-                propertyMappers[key] = propertyMapperBuilder.build(meta[key]);
+                propertyMappers[key] = propertyMapperBuilder.build(this._meta[key]);
             }
 
             return new Mapper(propertyMappers);
