@@ -255,6 +255,10 @@
 
         render: function(container, data, mapper) { // TODO: pass already mapped data?
             throw new Error('not implemented');
+        },
+
+        elements: function(container) {
+            return container.selectAll('.i-role-datum');
         }
     });
 
@@ -281,7 +285,7 @@
 
                 var renderData = function (data) {
                     this._graphics.render(chartLayout.data.svg, data, this._mapper);
-                    chartLayout.data.svg.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                    this._graphics.elements(chartLayout.data.svg).call(propagateDatumEvents(this._plugins));
                 }.bind(this);
 
                 renderData(data);
@@ -401,13 +405,6 @@
     });
 
     var CompositeChart = Chart.extend({
-        // TODO: bad
-        meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1}
-        },
-
         init: function (data) {
             this._super(data);
 
@@ -420,7 +417,6 @@
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
                 for (var i = 0; i < this._graphics.length; i++) {
-                    // TODO: many copy-past from BasicChart, think on it
                     var mapper = this._mappers[i];
 
                     mapper.binder('y').range([chartLayout.nextHeight(), 0]);
@@ -437,8 +433,7 @@
 
                     var renderData = function (graphics, container, mapper, data) {
                         graphics.render(container, data, mapper);
-                        // TODO: copy-paste
-                        container.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                        graphics.elements(container).call(propagateDatumEvents(this._plugins));
                     }.bind(this, this._graphics[i], dataSvg, mapper);
 
                     renderData(data);
@@ -474,7 +469,7 @@
             // TODO: restrict by 2d only
             CompositeChart.prototype[name] = function(mapping){
                 this._graphics.push(graphics);
-                this._mappers.push(new tau.data.MapperBuilder(meta).build(mapping)); // TODO: still not very good
+                this._mappers.push(new tau.data.MapperBuilder(meta).build(mapping));
                 return this;
             };
 

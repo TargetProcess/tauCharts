@@ -309,6 +309,7 @@
         /**
          * @param {String} name
          * @returns {PropertyMapperBuilder}
+         * @param dataType
          */
         map: function (name, dataType) {
             return new PropertyMapperBuilder(name, dataType);
