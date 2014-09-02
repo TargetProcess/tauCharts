@@ -91,6 +91,10 @@
                 .scale(this._mapper._scale)
                 .orient('bottom');
 
+            if (this._mapper.format()) {
+                xAxis.tickFormat(this._mapper.format());
+            }
+
             container.svg
                 .append('g')
                 .attr('class', 'x axis')
@@ -117,7 +121,12 @@
             var yAxis = d3.svg.axis()
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
+
                 .orient('left');
+
+            if (this._mapper.format()) {
+                yAxis.tickFormat(this._mapper.format());
+            }
 
             container.svg
                 .append('g')
@@ -256,14 +265,24 @@
             throw new Error('Not implemented');
         },
 
+        _onDataMapped: function(config) {
+        },
+
         render: function (selector) {
             var chartLayout = new ChartLayout(selector);
 
-            this._mapper.binder('x').range([0, chartLayout.width]);
-            this._mapper.binder('y').range([chartLayout.height, 0]);
+            var scaleX = this._mapper.binder('x');
+            scaleX.range([0, chartLayout.width]);
+            var scaleY = this._mapper.binder('y');
+            scaleY.range([chartLayout.height, 0]);
+
+
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
+
                 this._mapper.domain(data);
+
+                this._onDataMapped({ x: scaleX, y : scaleY, layout: chartLayout.data, data: data });
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);

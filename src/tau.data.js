@@ -189,7 +189,12 @@
 
         caption: function () {
             return this._caption;
+        },
+
+        format: function() {
+            return this._format;
         }
+
     });
 
     /**
@@ -222,6 +227,11 @@
             return this;
         },
 
+        format: function(format) {
+            this._format = format || null;
+            return this;
+        },
+
         color10: function () {
             this._scale = tau.data.scale.color10();
             return this;
@@ -232,6 +242,7 @@
             this._caption = value;
             return this;
         },
+
 
         domain: function () {
             this._scale.domain.apply(this._scale.domain, arguments);
@@ -251,6 +262,7 @@
             propertyMapper._setDomain = this._dataType.setDomain.bind(propertyMapper);
             propertyMapper._default = meta.default;
             propertyMapper._caption = this._caption || this._name;
+            propertyMapper._format = this._format;
             return propertyMapper;
         }
     });
