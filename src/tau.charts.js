@@ -121,7 +121,6 @@
             var yAxis = d3.svg.axis()
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
-
                 .orient('left');
 
             if (this._mapper.format()) {
@@ -275,8 +274,6 @@
             scaleX.range([0, chartLayout.width]);
             var scaleY = this._mapper.binder('y');
             scaleY.range([chartLayout.height, 0]);
-
-
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
 

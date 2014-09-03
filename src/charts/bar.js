@@ -16,40 +16,80 @@
             return this;
         },
 
+        _onDataMapped: function(config) {
+            var mapper = this._mapper;
+            var maxValue = 0;
+
+            d3.nest()
+                .key(mapper.raw('x'))
+                .rollup(function(leaves) {
+                    var sum = d3.sum(leaves, mapper.raw('y'));
+                    if (sum > maxValue) {
+                        maxValue = sum;
+                    }
+                }).entries(config.data);
+
+            //REMAP MAX VALUE OF DOMAIN
+            config.y._scale.domain([0, maxValue]);
+        },
+
         _renderData: function (container, data) {
 
             var mapper = this._mapper;
-
-            var categories = d3.nest()
-                .key(mapper.raw('color'))
-                .entries(data);
 
             var xValues = d3.nest()
                 .key(mapper.raw('x'))
                 .entries(data);
 
-            var barWidth = Math.round(container.layout('width') / (categories.length || 1) / (xValues.length || 1)) - 1;
+            var barWidth = 10;
 
-            if (barWidth < 1) {
-                barWidth = 1;
+            var looksGoodBarWidth = Math.round(container.layout('width') / (xValues.length || 1));
+
+            if (looksGoodBarWidth < 1) {
+                looksGoodBarWidth = 1;
             }
 
+            if (barWidth > looksGoodBarWidth) {
+                barWidth = looksGoodBarWidth;
+            }
+
+            var categories = d3.nest()
+                .key(mapper.raw('color'))
+                .entries(data);
+
+            var stackData = categories.map(function(category) {
+                return category.values.map(function(d) {
+                    return { x: mapper.raw('x')(d), y: mapper.raw('y')(d), color: category.key }
+                });
+            });
+
+            var arrays = d3.layout.stack()(stackData);
+
+            var stack = d3.merge(arrays);
+
+            var getScale = function(name) {
+                  return mapper.binder(name)._scale;
+            };
+
             var update = function () {
-                return this.attr('class', mapper.map('bar i-role-datum %color%'))
+
+                return this.attr('class', function(d) { return 'bar i-role-datum ' + getScale('color')(d.color)})
                     .attr("x", function (d) {
-                        return mapper.map('x')(d);
+                        return getScale('x')(d.x) - barWidth/2;
                     })
                     .attr("y", function (d) {
-                        return mapper.map('y')(d);
+                        var scale = getScale('y');
+                        return scale(d.y + d.y0);
                     })
                     .attr("width", barWidth)
                     .attr("height", function (d) {
-                        return container.layout('height') - mapper.map('y')(d);
+                        var scale = getScale('y');
+                        return container.layout('height') - scale(d.y);
                     })
-                    .attr('fill', mapper.map('color'));
+                    .attr('fill', function(d) { return getScale('color')(d.color) });
             };
 
-            var elements = container.selectAll('.bar').data(data);
+            var elements = container.selectAll('.bar').data(stack);
             elements.call(update);
             elements.enter().append('rect').call(update);
             elements.exit().remove();

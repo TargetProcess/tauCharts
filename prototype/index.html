@@ -112,8 +112,10 @@
         var story = stories[i];
 
         teams[story.team] = teams[story.team] || [];
+
         var date = new Date(story.endDate);
-        if (date < new Date(1, 0, 2014)) {
+
+        if (date < new Date(2014, 0)) {
             continue;
         }
 
@@ -146,7 +148,7 @@
             tau.plugins.highlighter(),
             tau.plugins.datatable(),
             tau.plugins.header(
-                    'Sample bar chart',
+                    'Stories delivered by Targetprocess teams in 2014',
                     'Stacked one for now.'))
             .render("#chartBar");
 
