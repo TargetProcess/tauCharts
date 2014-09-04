@@ -85,8 +85,7 @@
                     .attr("height", function (d) {
                         var scale = getScale('y');
                         return container.layout('height') - scale(d.y);
-                    })
-                    .attr('fill', function(d) { return getScale('color')(d.color) });
+                    });
             };
 
             var elements = container.selectAll('.bar').data(stack);
