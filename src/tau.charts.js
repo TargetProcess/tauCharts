@@ -264,7 +264,7 @@
             throw new Error('Not implemented');
         },
 
-        _onDataMapped: function(config) {
+        _onScalesDomainsLayoutsConfigured: function(config) {
         },
 
         render: function (selector) {
@@ -279,7 +279,7 @@
 
                 this._mapper.domain(data);
 
-                this._onDataMapped({ x: scaleX, y : scaleY, layout: chartLayout.data, data: data });
+                this._onScalesDomainsLayoutsConfigured({ x: scaleX, y : scaleY, layout: chartLayout.data, data: data });
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);

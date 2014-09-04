@@ -16,7 +16,7 @@
             return this;
         },
 
-        _onDataMapped: function(config) {
+        _onScalesDomainsLayoutsConfigured: function(config) {
             var mapper = this._mapper;
             var maxValue = 0;
 
