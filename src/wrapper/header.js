@@ -1,12 +1,11 @@
 // jshint ignore: start
 (function(definition){
-    var tau = definition();
     if (typeof define === "function" && define.amd) {
-        define(["tauCharts"], tau);
+        define(definition);
     } else if (typeof module === "object" && module.exports) {
-        module.exports = tau;
+        module.exports = definition();
     } else {
-        this.tauChart = tau;
+        this.tauChart = definition();
     }
 })
 (function () {
