@@ -1,4 +1,4 @@
-(function() {
+(function(tau) {
 
     /**@class */
     /**@extends BasicChart */
@@ -34,4 +34,4 @@
         return new ScatterPlotChart(data);
     });
 
-})();
+})(tau);

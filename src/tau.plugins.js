@@ -1,4 +1,4 @@
-(function () {
+(function (tau, Class) {
     /** @class Plugin */
     var Plugin = Class.extend({
         
@@ -50,4 +50,4 @@
             };
         }
     };
-})();
+})(tau, Class);

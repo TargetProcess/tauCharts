@@ -1,24 +1,24 @@
-(function () {
-    /**
-     * @typedef {Object} Class
-     * @property {function} init
-     * @property {function} _super
-     */
+var tau = {};
 
-    var Class = function () {
-    };
-
+/**
+ * @typedef {Object} Class
+ * @property {function} init
+ * @property {function} _super
+ */
+var Class = function () {
+};
+(function (tau, Class) {
     Class.new = function (constructor, args) {
-        function create() {
+        function Create() {
             return constructor.apply(this, args);
         }
 
-        create.prototype = constructor.prototype;
+        Create.prototype = constructor.prototype;
 
-        return new create();
+        return new Create();
     };
 
-    Class.extend = function (prop) {
+    Class.extend = function extend (prop) {
         var _super = this.prototype;
         var initializing = true;
         var prototype = new this();
@@ -47,10 +47,7 @@
 
         Class.prototype = prototype;
         Class.prototype.constructor = Class;
-        Class.extend = arguments.callee;
+        Class.extend = extend;
         return Class;
     };
-
-    window.Class = Class;
-    window.tau = {};
-})();
+})(tau, Class);
