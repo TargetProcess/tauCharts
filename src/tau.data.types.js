@@ -1,4 +1,4 @@
-(function () {
+(function (tau, Class) {
     var notImplemented = function () {
         throw new Error('Not implemented');
     };
@@ -90,4 +90,4 @@
         categorical: new Categorical(),
         time: new Time()
     };
-})();
+})(tau, Class);

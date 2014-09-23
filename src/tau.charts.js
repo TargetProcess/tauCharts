@@ -1,4 +1,4 @@
-(function () {
+(function (tau, Class) {
     /** @class
      * @extends Plugin */
     var Plugins = Class.extend({
@@ -360,5 +360,5 @@
             tau.charts[name] = fn;    
         }
     };
-    
-})();
+
+})(tau, Class);

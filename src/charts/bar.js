@@ -1,4 +1,4 @@
-(function () {
+(function (tau) {
     /**@class */
     /**@extends BasicChart */
     var BarChart = tau.charts.Base.extend({
@@ -16,13 +16,13 @@
             return this;
         },
 
-        _onScalesDomainsLayoutsConfigured: function(config) {
+        _onScalesDomainsLayoutsConfigured: function (config) {
             var mapper = this._mapper;
             var maxValue = 0;
 
             d3.nest()
                 .key(mapper.raw('x'))
-                .rollup(function(leaves) {
+                .rollup(function (leaves) {
                     var sum = d3.sum(leaves, mapper.raw('y'));
                     if (sum > maxValue) {
                         maxValue = sum;
@@ -57,9 +57,9 @@
                 .key(mapper.raw('color'))
                 .entries(data);
 
-            var stackData = categories.map(function(category) {
-                return category.values.map(function(d) {
-                    return { x: mapper.raw('x')(d), y: mapper.raw('y')(d), color: category.key }
+            var stackData = categories.map(function (category) {
+                return category.values.map(function (d) {
+                    return {x: mapper.raw('x')(d), y: mapper.raw('y')(d), color: category.key};
                 });
             });
 
@@ -67,15 +67,17 @@
 
             var stack = d3.merge(arrays);
 
-            var getScale = function(name) {
-                  return mapper.binder(name)._scale;
+            var getScale = function (name) {
+                return mapper.binder(name)._scale;
             };
 
             var update = function () {
 
-                return this.attr('class', function(d) { return 'bar i-role-datum ' + getScale('color')(d.color)})
+                return this.attr('class', function (d) {
+                    return 'bar i-role-datum ' + getScale('color')(d.color);
+                })
                     .attr("x", function (d) {
-                        return getScale('x')(d.x) - barWidth/2;
+                        return getScale('x')(d.x) - barWidth / 2;
                     })
                     .attr("y", function (d) {
                         var scale = getScale('y');
@@ -99,4 +101,4 @@
         return new BarChart(data);
     });
 
-})();
+})(tau);

@@ -1,4 +1,4 @@
-(function () {
+(function (tau, Class) {
     function absolute(value, base) {
         return value > 0 ? value : base + value;
     }
@@ -103,4 +103,4 @@
         paddedBox: paddedBox,
         Layout: Layout
     };
-})();
+})(tau, Class);

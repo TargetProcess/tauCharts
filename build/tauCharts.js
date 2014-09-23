@@ -1,27 +1,41 @@
-/*! tauCharts - v0.0.1 - 2014-08-22
+/*! tauCharts - v0.0.1 - 2014-09-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
+// jshint ignore: start
+(function(definition){
+    var tau = definition();
+    if (typeof define === "function" && define.amd) {
+        define(["tauCharts"], tau);
+    } else if (typeof module === "object" && module.exports) {
+        module.exports = tau;
+    } else {
+        this.tauChart = tau;
+    }
+})
 (function () {
-    /**
-     * @typedef {Object} Class
-     * @property {function} init
-     * @property {function} _super
-     */
+    'use strict';
 
-    var Class = function () {
-    };
+var tau = {};
 
+/**
+ * @typedef {Object} Class
+ * @property {function} init
+ * @property {function} _super
+ */
+var Class = function () {
+};
+(function (tau, Class) {
     Class.new = function (constructor, args) {
-        function create() {
+        function Create() {
             return constructor.apply(this, args);
         }
 
-        create.prototype = constructor.prototype;
+        Create.prototype = constructor.prototype;
 
-        return new create();
+        return new Create();
     };
 
-    Class.extend = function (prop) {
+    Class.extend = function extend (prop) {
         var _super = this.prototype;
         var initializing = true;
         var prototype = new this();
@@ -50,14 +64,11 @@
 
         Class.prototype = prototype;
         Class.prototype.constructor = Class;
-        Class.extend = arguments.callee;
+        Class.extend = extend;
         return Class;
     };
-
-    window.Class = Class;
-    window.tau = {};
-})();
-(function () {
+})(tau, Class);
+(function (tau, Class) {
     /** @class
      * @extends Plugin */
     var Plugins = Class.extend({
@@ -150,6 +161,10 @@
                 .scale(this._mapper._scale)
                 .orient('bottom');
 
+            if (this._mapper.format()) {
+                xAxis.tickFormat(this._mapper.format());
+            }
+
             container.svg
                 .append('g')
                 .attr('class', 'x axis')
@@ -177,6 +192,10 @@
                 // TODO: internal _scale property of binder is exposed
                 .scale(this._mapper._scale)
                 .orient('left');
+
+            if (this._mapper.format()) {
+                yAxis.tickFormat(this._mapper.format());
+            }
 
             container.svg
                 .append('g')
@@ -315,14 +334,22 @@
             throw new Error('Not implemented');
         },
 
+        _onScalesDomainsLayoutsConfigured: function(config) {
+        },
+
         render: function (selector) {
             var chartLayout = new ChartLayout(selector);
 
-            this._mapper.binder('x').range([0, chartLayout.width]);
-            this._mapper.binder('y').range([chartLayout.height, 0]);
+            var scaleX = this._mapper.binder('x');
+            scaleX.range([0, chartLayout.width]);
+            var scaleY = this._mapper.binder('y');
+            scaleY.range([chartLayout.height, 0]);
 
             this._dataSource.get(/** @this BasicChart */ function (data) {
+
                 this._mapper.domain(data);
+
+                this._onScalesDomainsLayoutsConfigured({ x: scaleX, y : scaleY, layout: chartLayout.data, data: data });
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);
@@ -403,10 +430,10 @@
             tau.charts[name] = fn;    
         }
     };
-    
-})();
 
-(function () {
+})(tau, Class);
+
+(function (tau, Class) {
     var extend = function (obj, key, value) {
         obj[key] = value;
         return obj;
@@ -597,7 +624,12 @@
 
         caption: function () {
             return this._caption;
+        },
+
+        format: function() {
+            return this._format;
         }
+
     });
 
     /**
@@ -630,6 +662,11 @@
             return this;
         },
 
+        format: function(format) {
+            this._format = format || null;
+            return this;
+        },
+
         color10: function () {
             this._scale = tau.data.scale.color10();
             return this;
@@ -640,6 +677,7 @@
             this._caption = value;
             return this;
         },
+
 
         domain: function () {
             this._scale.domain.apply(this._scale.domain, arguments);
@@ -659,6 +697,7 @@
             propertyMapper._setDomain = this._dataType.setDomain.bind(propertyMapper);
             propertyMapper._default = meta.default;
             propertyMapper._caption = this._caption || this._name;
+            propertyMapper._format = this._format;
             return propertyMapper;
         }
     });
@@ -736,9 +775,9 @@
             return x;
         }
     };
-})();
+})(tau, Class);
 
-(function () {
+(function (tau, Class) {
     var notImplemented = function () {
         throw new Error('Not implemented');
     };
@@ -830,8 +869,8 @@
         categorical: new Categorical(),
         time: new Time()
     };
-})();
-(function () {
+})(tau, Class);
+(function (tau, Class) {
     /** @class Plugin */
     var Plugin = Class.extend({
         
@@ -883,9 +922,9 @@
             };
         }
     };
-})();
+})(tau, Class);
 
-(function () {
+(function (tau, Class) {
     function absolute(value, base) {
         return value > 0 ? value : base + value;
     }
@@ -990,8 +1029,112 @@
         paddedBox: paddedBox,
         Layout: Layout
     };
-})();
-(function() {
+})(tau, Class);
+(function (tau) {
+    /**@class */
+    /**@extends BasicChart */
+    var BarChart = tau.charts.Base.extend({
+        _meta: {
+            x: {type: tau.data.types.quantitative},
+            y: {type: tau.data.types.quantitative},
+            color: {type: tau.data.types.categorical, default: 1}
+        },
+
+        map: function (config) {
+
+            this._super(config);
+            this._mapper.alias('color', 'key');
+
+            return this;
+        },
+
+        _onScalesDomainsLayoutsConfigured: function (config) {
+            var mapper = this._mapper;
+            var maxValue = 0;
+
+            d3.nest()
+                .key(mapper.raw('x'))
+                .rollup(function (leaves) {
+                    var sum = d3.sum(leaves, mapper.raw('y'));
+                    if (sum > maxValue) {
+                        maxValue = sum;
+                    }
+                }).entries(config.data);
+
+            //REMAP MAX VALUE OF DOMAIN
+            config.y._scale.domain([0, maxValue]);
+        },
+
+        _renderData: function (container, data) {
+
+            var mapper = this._mapper;
+
+            var xValues = d3.nest()
+                .key(mapper.raw('x'))
+                .entries(data);
+
+            var barWidth = 10;
+
+            var looksGoodBarWidth = Math.round(container.layout('width') / (xValues.length || 1));
+
+            if (looksGoodBarWidth < 1) {
+                looksGoodBarWidth = 1;
+            }
+
+            if (barWidth > looksGoodBarWidth) {
+                barWidth = looksGoodBarWidth;
+            }
+
+            var categories = d3.nest()
+                .key(mapper.raw('color'))
+                .entries(data);
+
+            var stackData = categories.map(function (category) {
+                return category.values.map(function (d) {
+                    return {x: mapper.raw('x')(d), y: mapper.raw('y')(d), color: category.key};
+                });
+            });
+
+            var arrays = d3.layout.stack()(stackData);
+
+            var stack = d3.merge(arrays);
+
+            var getScale = function (name) {
+                return mapper.binder(name)._scale;
+            };
+
+            var update = function () {
+
+                return this.attr('class', function (d) {
+                    return 'bar i-role-datum ' + getScale('color')(d.color);
+                })
+                    .attr("x", function (d) {
+                        return getScale('x')(d.x) - barWidth / 2;
+                    })
+                    .attr("y", function (d) {
+                        var scale = getScale('y');
+                        return scale(d.y + d.y0);
+                    })
+                    .attr("width", barWidth)
+                    .attr("height", function (d) {
+                        var scale = getScale('y');
+                        return container.layout('height') - scale(d.y);
+                    });
+            };
+
+            var elements = container.selectAll('.bar').data(stack);
+            elements.call(update);
+            elements.enter().append('rect').call(update);
+            elements.exit().remove();
+        }
+    });
+
+    tau.charts.add('Bar', function (data) {
+        return new BarChart(data);
+    });
+
+})(tau);
+(function(tau) {
     /**@class */
     /**@extends BasicChart */
     var LineChart = tau.charts.Base.extend({
@@ -1070,9 +1213,9 @@
     tau.charts.add('Line', function (data) {
         return new LineChart(data);
     });
-    
-})();
-(function() {
+
+})(tau);
+(function(tau) {
 
     /**@class */
     /**@extends BasicChart */
@@ -1108,7 +1251,7 @@
         return new ScatterPlotChart(data);
     });
 
-})();
+})(tau);
 (function () {
     /** @class DataTable
      * @extends Plugin */
@@ -1719,3 +1862,8 @@
 
     tau.plugins.add('trend', Trend);
 })();
+
+// jshint ignore: start
+return tau;
+
+});

@@ -1,4 +1,4 @@
-(function() {
+(function(tau) {
     /**@class */
     /**@extends BasicChart */
     var LineChart = tau.charts.Base.extend({
@@ -77,5 +77,5 @@
     tau.charts.add('Line', function (data) {
         return new LineChart(data);
     });
-    
-})();
+
+})(tau);

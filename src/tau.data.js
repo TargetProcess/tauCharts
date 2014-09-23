@@ -1,4 +1,4 @@
-(function () {
+(function (tau, Class) {
     var extend = function (obj, key, value) {
         obj[key] = value;
         return obj;
@@ -340,4 +340,4 @@
             return x;
         }
     };
-})();
+})(tau, Class);
