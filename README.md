@@ -5,7 +5,7 @@ Dev:
 
 Use grunt to build everything. Maybe 'bower install' is required
 
-[Live prototype](http://rawgithub.com/TargetProcess/tauCharts/master/prototype/index.html)
+[Live prototype](https://targetprocess.github.io/tauCharts/)
 
 How it looks right now
 

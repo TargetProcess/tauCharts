@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script>window.jQuery || document.write('<script src="libs/d3.js"><\/script>')</script>
+
+    <!-- src -->
+    <script src="src/class.js"></script>
+    <script src="src/tau.data.js"></script>
+    <script src="src/tau.data.types.js"></script>
+    <script src="src/tau.svg.js"></script>
+    <script src="src/tau.charts.js"></script>
+    <script src="src/charts/line.js"></script>
+    <script src="src/charts/scatterplot.js"></script>
+    <script src="src/charts/bar.js"></script>
+    <script src="src/tau.plugins.js"></script>
+
+    <!-- plugins -->
+    <script src="plugins/tooltip.js"></script>
+    <script src="plugins/legend.js"></script>
+    <script src="plugins/highlighter.js"></script>
+    <script src="plugins/projection.js"></script>
+    <script src="plugins/datatable.js"></script>
+    <script src="plugins/header.js"></script>
+    <script src="plugins/trend.js"></script>
+    <script src="plugins/jittering.js"></script>
+
+    <!-- test data -->
+    <script src="prototype/data.js"></script>
+
+    <script src="prototype/countries.js"></script>
+    <script src="prototype/tpStories.js"></script>
+
+    <!-- css -->
+    <link href="css/default.css" rel="stylesheet"/>
+    <link href="css/oldschool.css" rel="stylesheet"/>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+          type='text/css'>
+</head>
+<body>
+<div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
+</div>
+
+<div id="chartLine" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
+</div>
+
+<div id="chartBar" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
+</div>
+
+<div id="hivChart" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
+</div>
+
+<div id="chartDot" style="width:800px;height:600px;display:inline-block;margin:160px 30px;">
+</div>
+
+<div id="marriageChart" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
+</div>
+
+
+<script>
+    var scatterplotData = tau.data.Array(window.countries);
+
+
+    tau.charts
+            .Scatterplot(scatterplotData)
+            .map({
+                x: tau.data.map('Gdp').caption('<h4>GDP</h4><p>points</p>'),
+                y: tau.data.map('Happiness').caption('<h4>Happiness</h4><p>points</p>'),
+                color: 'Country'
+            })
+            .plugins(
+            tau.plugins.legend(),
+            tau.plugins.tooltip('Country'),
+            tau.plugins.highlighter(),
+            tau.plugins.datatable(),
+            tau.plugins.jittering(),
+            tau.plugins.projection('y', 'x'),
+            tau.plugins.header(
+                    'Sample scatter plot',
+                    'The data is displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. This kind of plot is also called a scatter chart, scattergram, scatter diagram, or scatter graph.')
+    )
+            .render("#chartScatter");
+
+    var lineData = tau.data.Array(window.lineData);
+
+    tau.charts
+            .Line(lineData)
+            .map({
+                x: tau.data.map('effort').linear(),
+                y: tau.data.map('bugsCount').linear(),
+                color: 'priority'
+            })
+            .plugins(
+            tau.plugins.legend(),
+            tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+            tau.plugins.highlighter(),
+            tau.plugins.datatable(),
+            tau.plugins.projection('x', 'y'),
+            tau.plugins.header(
+                    'Sample line chart',
+                    'A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically.')
+    )
+            .render("#chartLine");
+
+
+    var stories = getUserStories();
+
+    var teams = {};
+
+    for (var i = 0; i < stories.length; i ++) {
+        var story = stories[i];
+
+        teams[story.team] = teams[story.team] || [];
+
+        var date = new Date(story.endDate);
+
+        if (date < new Date(2014, 0)) {
+            continue;
+        }
+
+        teams[story.team][date.getMonth()] = (teams[story.team][date.getMonth()] || 0) + 1;
+    }
+
+    var data = [];
+    var maxValue = 0;
+
+    for(var team in teams) {
+        for(var month = 0; month < 12; month ++) {
+            data.push({
+                month: new Date(2014, month, 1),
+                team: team,
+                count: teams[team][month] || 0
+            });
+        }
+    }
+
+    tau.charts
+            .Bar(tau.data.Array(data))
+            .map({
+                x: tau.data.map('month', tau.data.types.time).time().format(d3.time.format('%b')),
+                y: 'count',
+                color: 'team'
+            })
+            .plugins(
+            tau.plugins.legend(),
+            tau.plugins.tooltip('team', 'count', 'month'),
+            tau.plugins.highlighter(),
+            tau.plugins.datatable(),
+            tau.plugins.header(
+                    'Stories delivered by Targetprocess teams in 2014',
+                    'Stacked one for now.'))
+            .render("#chartBar");
+
+
+    tau.charts
+            .Scatterplot(lineData)
+            .map({
+                x: 'effort',
+                y: 'bugsCount',
+                color: 'priority'
+            })
+            .plugins(
+            tau.plugins.legend(),
+            tau.plugins.tooltip('priority', 'effort', 'bugsCount'),
+            tau.plugins.highlighter(),
+            tau.plugins.datatable(),
+            tau.plugins.trend(),
+            tau.plugins.projection('y', 'x'),
+            tau.plugins.header('Trend line Demo', 'LOESS is used here')
+    )
+            .render("#chartDot");
+
+    // This all looks bad...
+    var hivData = [];
+    d3.csv('prototype/hiv.csv',
+            function (d) {
+                for (var key in d) {
+                    if (d.hasOwnProperty(key)) {
+                        if (+d[key]) {
+                            hivData.push({country: d.Country, year: new Date(+key, 0, 1), percentage: +d[key]})
+                        }
+                    }
+                }
+            },
+            function (error, rows) {
+                buildHivChart(tau.data.Array(hivData));
+            }
+    );
+
+    function buildHivChart(data) {
+        tau.charts
+                .Line(data)
+                .map({
+                    x: tau.data.map('year', tau.data.types.time).time(),
+                    y: tau.data.map('percentage').caption('HIV %').linear(),
+                    color: tau.data.map('country').color10()
+                })
+                .plugins(
+                tau.plugins.legend(),
+                tau.plugins.tooltip('year', 'country', 'percentage'),
+                tau.plugins.highlighter(),
+                tau.plugins.datatable(),
+                tau.plugins.projection('x'),
+                tau.plugins.header('Estimated HIV Prevalence % - (Ages 15-49)', 'The data from 1990 onwards you see in this graph is from UNAIDS, but Gapminder has provided extra estimates for some countries before 1990, and the compilation was documented and could be accessed from the link below.Due to visualization limits, we only display the countries with the 1st available estimate before 1988, and for countries that have no data or estimate available until 1988, we display it from 1990 onwards using the data from UNAIDS. Data for Brazil was the average of the high and low estimate from UNAIDS from 1990 onwards, and 1979 was the estimate from Gapminder Foundation.')
+        )
+                .render('#hivChart');
+    }
+
+    var marriageData = [];
+    d3.csv('prototype/marriage.csv',
+            function (d) {
+                for (var key in d) {
+                    if (d.hasOwnProperty(key)) {
+                        if (+d[key]) {
+                            marriageData.push({country: d[''], year: new Date(+key, 0, 1), age: +d[key]})
+                        }
+                    }
+                }
+            },
+            function (error, rows) {
+                buildMarriageChart(tau.data.Array(marriageData));
+            }
+    );
+
+    function buildMarriageChart(data) {
+        tau.charts
+                .Line(data)
+                .map({
+                    x: tau.data.map('year', tau.data.types.time).time(),
+                    y: tau.data.map('age').caption('Mean age').linear(),
+                    color: tau.data.map('country').color10()
+                })
+                .plugins(
+                tau.plugins.legend(),
+                tau.plugins.tooltip('year', 'country', 'age'),
+                tau.plugins.highlighter(),
+                tau.plugins.projection('x'),
+                tau.plugins.header('Mean age at 1st marriage of women', 'The average age, in years, of first marriage for women. Women who never married are excluded. Cohabitation is excluded. The data are based on multple sources and definitions might vary.')
+        )
+                .render('#marriageChart');
+    }
+
+
+</script>
+</body>
+</html>

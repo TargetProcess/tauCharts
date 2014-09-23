@@ -1,6 +1,5 @@
 /.idea
-/lib/*.js
-/lib/*.css
+libs
 /bower_components/
 .DS_Store
 node_modules
