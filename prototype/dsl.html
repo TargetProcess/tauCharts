@@ -2,6 +2,7 @@
 <html>
 <meta charset="utf-8">
 <head>
+    <script src="../libs/underscore.js"></script>
     <script src="../libs/d3.js"></script>
 
     <!-- src -->
@@ -40,9 +41,154 @@
 </head>
 <body>
 
-<div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin--></div>
+<!--<div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> &lt;!&ndash; Magic margin&ndash;&gt;</div>-->
+<div id="chart-container" style="width:100%;height:800px;display:inline-block;margin:0px;border: solid 1px;"> <!-- Magic margin--></div>
 
 <script>
+
+    var TEST_DATA = getUserStories();
+
+    var translate = function(left, top) {
+        return 'translate(' + left + ',' + top + ')';
+    };
+
+    var getDomain = function(data, scaleDim, scaleType) {
+        var domain = _(data).chain().pluck(scaleDim);
+        return ((scaleType === 'ordinal')
+                ? domain.uniq().value()
+                : d3.extent(domain.value()));
+    };
+
+    var metaFilter = function (filterPredicates, row) {
+        return _.every(
+                filterPredicates,
+                function(fnPredicate) {
+                    return fnPredicate(row);
+                });
+    };
+
+    var createEqualPredicate = function(propName, shouldEqualTo) {
+        return function(row) {
+            return row[propName] === shouldEqualTo;
+        };
+    };
+
+    var CROSS = function(dimX, dimY) {
+        var domains = {
+            x: _(TEST_DATA).chain().pluck(dimX).uniq().value(),
+            y: _(TEST_DATA).chain().pluck(dimY).uniq().value()
+        };
+
+        var rMatrix = [];
+        for (var r = 0; r < domains.y; r++) {
+            var RV = domains.y[r];
+            var row = [];
+            for (var c = 0; c < domains.x; c++) {
+                var RC = domains.x[c];
+                var filterPredicates = [
+                    createEqualPredicate(dimX, RV),
+                    createEqualPredicate(dimY, RC)
+                ];
+                row.push(metaFilter.bind(null, filterPredicates));
+            }
+            rMatrix.push(row);
+        }
+
+        return rMatrix;
+    };
+
+    var UNITS_MAP = {
+
+        'COORDS/RECT': function(unit, unitIterator) {
+            var options = unit.options || {};
+            var axes = unit.axes;
+            var x = axes[0];
+            var y = axes[1];
+            var PX = 36;
+            var PY = 18;
+
+            var W = options.width - 2 * PX;
+            var H = options.height - 2 * PY;
+
+            options.container
+                    .append('rect')
+                    .attr("width", options.width)
+                    .attr("height", options.height)
+                    .style('fill', '#fff')
+                    .style('fill-opacity', '0.7')
+                    .style('stroke', '#aaa');
+
+
+            this.container = options
+                    .container
+                    .append('g')
+                    .attr('class', 'cell')
+                    // .attr('transform', "translate(" + PADDING + "," + PADDING + ") scale(" + (options.width - 2 * PADDING) / options.width + ", " + (options.height - 2 * PADDING) / options.height + ")");
+                    .attr('transform', translate(PX, PY / 2));
+
+            var xScale = d3
+                    .scale[x.scaleType]()
+                    .rangeRoundBands([0, W])
+                    .domain(getDomain(TEST_DATA, x.scaleDim, x.scaleType));
+
+            var yScale = d3
+                    .scale[y.scaleType]()
+                    .rangeRoundBands([H, 0])
+                    .domain(getDomain(TEST_DATA, y.scaleDim, y.scaleType));
+
+            var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
+            var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
+
+            this.container
+                    .append('g')
+                    .attr('class', 'x axis')
+                    .attr('transform', translate(0, H))
+                    .call(xAxis);
+
+            this.container
+                    .append('g')
+                    .attr('class', 'y axis')
+                    .attr('transform', translate(0, 0))
+                    .call(yAxis);
+
+            var grid = this.container
+                    .append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', translate(0, 0));
+
+            grid
+                    .append('rect')
+                    .attr('class', 'grid')
+                    .attr('transform', translate(0, 0))
+                    .style('fill', 'green')
+                    .style('opacity', '0.2')
+                    .attr("width", W)
+                    .attr("height", H);
+
+            var matrix2DPredicates = unit.func();
+
+            var nR = matrix2DPredicates.length;
+            var pH = H / nR;
+
+            _.each(
+                    matrix2DPredicates,
+                    function(rowOfPredicates) {
+                        _.each(rowOfPredicates, function(predicateRC) {
+
+                            unit.unit.forEach(function(node) {
+                                node.filter = predicateRC;
+                                unitIterator(
+                                        node,
+                                        {
+                                            container: grid,
+                                            width: W,
+                                            height: H
+                                        });
+                            });
+                        })
+                    });
+        }
+    };
 
     var def = {
 
@@ -52,28 +198,28 @@
             CNTRY: 'Country'
         },
 
-        coords: {
-            type: 'RECT',
+        unit: {
+            type: 'COORDS/RECT',
+            func: function() { return CROSS('team', 'project') },
             axes: [
-                { axis: 'GDP', label: '<h4>GDP</h4><p>points</p>' },
-                { axis: 'HPNS', label: '<h4>Happiness</h4><p>points</p>' }
+                { scaleDim: 'project', scaleType: 'ordinal', scaleOrient: 'bottom', label: '<h4>Projects</h4>' },
+                { scaleDim: 'team', scaleType: 'ordinal', scaleOrient: 'left', label: '<h4>Teams</h4>' }
             ],
-            unit: [
-                {
-                    type: 'POINT',
-                    color: 'CNTRY',
-                    size: null,
-                    shape: null,
-                    position: [
-                        'GDP',
-                        'HPNS'
-                    ]
-                }
-            ]
+            unit: []
         }
     };
 
     var DSLReader = function (ast) {
+
+        this.W = 1600;
+        this.H = 800;
+
+        this.container = d3
+                .select("#chart-container")
+                .append("svg")
+                .attr("width", this.W)
+                .attr("height", this.H);
+
         this.ast = ast;
     };
 
@@ -81,28 +227,21 @@
 
         process: function (rawData) {
 
-            var data = tau.data.Array(rawData);
+            var unit = this.ast.unit;
 
-            var DIMS = this.ast.dimensions;
-            var COORDS = this.ast.coords;
-            var axes = COORDS.axes;
-            var xmap = {};
+            var unitIterator = function (sUnit, options) {
+                sUnit.options = options;
+                sUnit.data = (sUnit.filter) ? sUnit.filter(rawData) : rawData;
+                UNITS_MAP[sUnit.type](sUnit, unitIterator);
+            };
 
-            var X = axes[0];
-            xmap.x = tau.data.map(DIMS[X.axis]);
-            if (X.label) {
-                xmap.x = xmap.x.caption(X.label);
-            }
-
-            var Y = axes[1];
-            xmap.y = tau.data.map(DIMS[Y.axis]);
-            if (Y.label) {
-                xmap.y = xmap.y.caption(Y.label);
-            }
-
-            xmap.color = DIMS[COORDS.unit[0].color];
-
-            tau.charts.Scatterplot(data).map(xmap).render("#chartScatter");
+            unitIterator(
+                    unit,
+                    {
+                        container: this.container,
+                        width: this.W,
+                        height: this.H
+                    });
         }
     };
 
