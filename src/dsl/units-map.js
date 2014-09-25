@@ -122,6 +122,31 @@ var UNITS_MAP = {
         elements.enter().append('circle').call(update);
         elements.exit().remove();
     },
+    'ELEMENT/LINE':function(unit) {
+        var options = unit.options || {};
+        var data = _(TEST_DATA).filter(unit.filter);
+        var updatePaths = function () {
+            this.attr('d', line);
+        };
+        var updateLines = function () {
+            var paths = this.selectAll('path').data(function (d) {
+                return [d.values];
+            });
+
+            paths.call(updatePaths);
+            paths.enter().append('path').call(updatePaths);
+            paths.exit().remove();
+        };
+
+        var line = d3.svg.line()
+            .x(function(d) { return options.xScale(d[unit.x]); })
+            .y(function(d) { return options.yScale(d[unit.y]); });
+
+        var lines = this.container.selectAll('.line').data(data);
+        lines.call(updateLines);
+        lines.enter().append('g').call(updateLines);
+        lines.exit().remove();
+    },
     'ELEMENT/INTERVAL': function (unit) {
         var options = unit.options || {};
         var data = _(TEST_DATA).filter(unit.filter);

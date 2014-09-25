@@ -140,6 +140,24 @@
                     },
                     {
                         type: 'COORDS/RECT',
+                        showGrid:true,
+                        axes: [
+                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
+                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                        ],
+                        unit: [
+                            {
+                                type: 'ELEMENT/LINE',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            }
+                        ]
+                    },
+                    {
+                        type: 'COORDS/RECT',
                         axes: [
                             {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
                             {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'},
