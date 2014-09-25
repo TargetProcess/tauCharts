@@ -1,8 +1,8 @@
 var getDomain = function (data, scaleDim, scaleType) {
     var domain = _(data).chain().pluck(scaleDim);
-    return ((scaleType === 'ordinal')
-            ? domain.uniq().value()
-            : d3.extent(domain.value()));
+    return ((scaleType === 'ordinal')?
+            domain.uniq().value():
+            d3.extent(domain.value()));
 };
 
 var TMatrix = function(r, c) {
@@ -66,9 +66,9 @@ var TMap = {
             unit.axes,
             function(memo, axis) {
                 var x = _.defaults(axis || {}, {});
-                memo[x.scaleDim] = ((x.scaleDim)
-                    ? d3.scale[x.scaleType]().domain(getDomain(srcData, x.scaleDim, x.scaleType))
-                    : null);
+                memo[x.scaleDim] = ((x.scaleDim)?
+                    d3.scale[x.scaleType]().domain(getDomain(srcData, x.scaleDim, x.scaleType)):
+                    null);
                 return memo;
             },
             {});

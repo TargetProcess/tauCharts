@@ -17,9 +17,9 @@ var UNITS_MAP = {
             .append('g')
             .attr('class', 'cell')
             .attr('transform', translate(options.left + PX, options.top + PY / 2));
-
+        var xScale;
         if (x.scaleDim) {
-            var xScale = d3
+            xScale = d3
                 .scale[x.scaleType]()
                 .domain(getDomain(TEST_DATA, x.scaleDim, x.scaleType))[getRangeMethod(x.scaleType)]([0, W], 0.1);
             var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
@@ -29,9 +29,9 @@ var UNITS_MAP = {
                 .attr('transform', translate(0, H + 6))
                 .call(xAxis);
         }
-
+        var yScale;
         if (y.scaleDim) {
-            var yScale = d3
+            yScale = d3
                 .scale[y.scaleType]()
                 .domain(getDomain(TEST_DATA, y.scaleDim, y.scaleType))[getRangeMethod(y.scaleType)]([H, 0], 0.1);
             var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
@@ -41,7 +41,7 @@ var UNITS_MAP = {
                 .attr('transform', translate(-6, 0))
                 .call(yAxis).selectAll('.tick text').attr('transform', 'rotate(' + (y.rotate || 0) + ')');
         }
-        if (unit.showGrid && y.scaleDim && x.scaleDim) {
+        if (unit.showGrid && xScale && yScale) {
             var xGridAxis = d3.svg.axis()
                 .scale(xScale)
                 .orient('bottom')
@@ -51,13 +51,13 @@ var UNITS_MAP = {
                 .scale(yScale)
                 .orient('left')
                 .tickSize(-W);
-            var grid = this.container.insert('g', ':first-child').attr('class', 'grids');
+            var grids = this.container.insert('g', ':first-child').attr('class', 'grids');
 
-            grid.append('g').call(xGridAxis);
-            grid.append('g').call(yGridAxis);
+            grids.append('g').call(xGridAxis);
+            grids.append('g').call(yGridAxis);
 
             // TODO: make own axes and grid instead of using d3's in such tricky way
-            grid.selectAll('text').remove();
+            grids.selectAll('text').remove();
         }
 
         var grid = this.container
@@ -97,7 +97,7 @@ var UNITS_MAP = {
                             yScale: yScale
                         });
                 });
-            })
+            });
         });
     },
 
@@ -122,7 +122,7 @@ var UNITS_MAP = {
         elements.enter().append('circle').call(update);
         elements.exit().remove();
     },
-    'ELEMENT/LINE':function(unit) {
+    'ELEMENT/LINE': function (unit) {
         var options = unit.options || {};
         var data = _(TEST_DATA).filter(unit.filter);
         var updatePaths = function () {
@@ -139,13 +139,20 @@ var UNITS_MAP = {
         };
 
         var line = d3.svg.line()
-            .x(function(d) { return options.xScale(d[unit.x]); })
-            .y(function(d) { return options.yScale(d[unit.y]); });
+            .x(function (d) {
+                return options.xScale(d[unit.x]);
+            })
+            .y(function (d) {
+                return options.yScale(d[unit.y]);
+            });
 
-        var lines = this.container.selectAll('.line').data(data);
-        lines.call(updateLines);
-        lines.enter().append('g').call(updateLines);
-        lines.exit().remove();
+        var lines = this.container.append('g').attr("class", "line").attr('stroke', '#4daf4a').append("path")
+            .datum(data)
+            .attr("d", line);
+        /*.selectAll('.line').data(data);
+         lines.call(updateLines);
+         lines.enter().append('g').call(updateLines);
+         lines.exit().remove();*/
     },
     'ELEMENT/INTERVAL': function (unit) {
         var options = unit.options || {};
