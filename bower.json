@@ -18,7 +18,9 @@
     "prototype"
   ],
   "dependencies": {
-    "d3": "~3.4.3"
+    "d3": "~3.4.3",
+    "underscore": "1.7.0",
+    "jquery": "2.1.1"
   },
   "devDependencies": {
     "qunit": "~1.14.0"

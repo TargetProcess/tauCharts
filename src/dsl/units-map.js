@@ -3,8 +3,8 @@ var UNITS_MAP = {
     'COORDS/RECT': function (unit, unitIterator) {
         var options = unit.options || {};
         var axes = unit.axes;
-        var x = _.defaults(axes[0] || {}, { scaleOrient: 'bottom' });
-        var y = _.defaults(axes[1] || {}, { scaleOrient: 'left' });
+        var x = _.defaults(axes[0] || {}, {scaleOrient: 'bottom'});
+        var y = _.defaults(axes[1] || {}, {scaleOrient: 'left'});
         var PX = 36;
         var PY = 18;
 
@@ -12,58 +12,58 @@ var UNITS_MAP = {
         var H = options.height - 2 * PY;
 
         options.container
-                .append('rect')
-                .attr("width", options.width)
-                .attr("height", options.height)
-                .style('fill', '#fff')
-                .style('fill-opacity', '0.7')
-                .style('stroke', '#aaa')
-                .attr('transform', translate(options.left, options.top));
+            .append('rect')
+            .attr("width", options.width)
+            .attr("height", options.height)
+            .style('fill', '#fff')
+            .style('fill-opacity', '0.7')
+            .style('stroke', '#aaa')
+            .attr('transform', translate(options.left, options.top));
 
 
         this.container = options
-                .container
-                .append('g')
-                .attr('class', 'cell')
-                .attr('transform', translate(options.left + PX, options.top + PY / 2));
+            .container
+            .append('g')
+            .attr('class', 'cell')
+            .attr('transform', translate(options.left + PX, options.top + PY / 2));
 
         if (x.scaleDim) {
             var xScale = d3
-                    .scale[x.scaleType]()
-                    .domain(getDomain(TEST_DATA, x.scaleDim, x.scaleType))[getRangeMethod(x.scaleType)]([0, W]);
+                .scale[x.scaleType]()
+                .domain(getDomain(TEST_DATA, x.scaleDim, x.scaleType))[getRangeMethod(x.scaleType)]([0, W], 0.1);
             var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
             this.container
-                    .append('g')
-                    .attr('class', 'x axis')
-                    .attr('transform', translate(0, H))
-                    .call(xAxis);
+                .append('g')
+                .attr('class', 'x axis')
+                .attr('transform', translate(0, H))
+                .call(xAxis);
         }
 
         if (y.scaleDim) {
             var yScale = d3
-                    .scale[y.scaleType]()
-                    .domain(getDomain(TEST_DATA, y.scaleDim, y.scaleType))[getRangeMethod(y.scaleType)]([H, 0]);
+                .scale[y.scaleType]()
+                .domain(getDomain(TEST_DATA, y.scaleDim, y.scaleType))[getRangeMethod(y.scaleType)]([H, 0], 0.1);
             var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
             this.container
-                    .append('g')
-                    .attr('class', 'y axis')
-                    .attr('transform', translate(0, 0))
-                    .call(yAxis).selectAll('.tick text').attr('transform', 'rotate(' + (y.rotate || 0) + ')');
+                .append('g')
+                .attr('class', 'y axis')
+                .attr('transform', translate(0, 0))
+                .call(yAxis).selectAll('.tick text').attr('transform', 'rotate(' + (y.rotate || 0) + ')');
         }
 
         var grid = this.container
-                .append('g')
-                .attr('class', 'grid')
-                .attr('transform', translate(0, 0));
+            .append('g')
+            .attr('class', 'grid')
+            .attr('transform', translate(0, 0));
 
         grid
-                .append('rect')
-                .attr('class', 'grid')
-                .attr('transform', translate(0, 0))
-                .style('fill', 'green')
-                .style('opacity', '0.2')
-                .attr("width", W)
-                .attr("height", H);
+            .append('rect')
+            .attr('class', 'grid')
+            .attr('transform', translate(0, 0))
+            .style('fill', 'green')
+            .style('opacity', '0.2')
+            .attr("width", W)
+            .attr("height", H);
 
         var unitFilter = (unit.filter || _.identity);
 
@@ -91,16 +91,16 @@ var UNITS_MAP = {
                 unit.unit.forEach(function (node) {
                     node.filter = predicateRC;
                     unitIterator(
-                            node,
-                            {
-                                container: grid,
-                                width: cellW,
-                                height: cellH,
-                                top: iRow * cellH,
-                                left: iCol * cellW,
-                                xScale: xScale,
-                                yScale: yScale
-                            });
+                        node,
+                        {
+                            container: grid,
+                            width: cellW,
+                            height: cellH,
+                            top: iRow * cellH,
+                            left: iCol * cellW,
+                            xScale: xScale,
+                            yScale: yScale
+                        });
                 });
             })
         });
@@ -111,13 +111,13 @@ var UNITS_MAP = {
 
         var update = function () {
             return this
-                    .attr('r', 3)
-                    .attr('cx', function (d) {
-                        return options.xScale(d[unit.x]);
-                    })
-                    .attr('cy', function (d) {
-                        return options.yScale(d[unit.y]);
-                    });
+                .attr('r', 3)
+                .attr('cx', function (d) {
+                    return options.xScale(d[unit.x]);
+                })
+                .attr('cy', function (d) {
+                    return options.yScale(d[unit.y]);
+                });
         };
 
         var data = _(TEST_DATA).filter(unit.filter);
@@ -125,6 +125,31 @@ var UNITS_MAP = {
         var elements = options.container.selectAll('.dot').data(data);
         elements.call(update);
         elements.enter().append('circle').call(update);
+        elements.exit().remove();
+    },
+    'ELEMENT/INTERVAL': function (unit) {
+        var options = unit.options || {};
+        var data = _(TEST_DATA).filter(unit.filter);
+
+        var update = function () {
+            return this
+                .attr('class', 'bar')
+                .attr('x', function (d) {
+                    return options.xScale(d[unit.x]);
+                })
+                .attr('width', options.xScale.rangeBand())
+                .attr('y', function (d) {
+                    return options.yScale(d[unit.y]);
+                })
+                .attr('height', function (d) {
+                    return options.height - options.yScale(d[unit.y]);
+                });
+        };
+
+
+        var elements = options.container.selectAll(".bar").data(data);
+        elements.call(update);
+        elements.enter().append('rect').call(update);
         elements.exit().remove();
     }
 };

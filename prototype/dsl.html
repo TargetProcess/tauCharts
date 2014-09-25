@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <head>
     <script src="../libs/underscore.js"></script>
-    <script src="../libs/jquery-2.1.1.min.js"></script>
+    <script src="../libs/jquery.js"></script>
     <script src="../libs/d3.js"></script>
 
     <!-- src -->
@@ -142,7 +142,7 @@ var def = {
 
 // RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
 var reader = new DSLReader(def);
-reader.process(window.countries);
+reader.process(data);
 
 </script>
 </body>

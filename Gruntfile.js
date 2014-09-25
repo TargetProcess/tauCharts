@@ -73,7 +73,9 @@ module.exports = function (grunt) {
                     destPrefix: "libs"
                 },
                 files: {
-                    "d3.js": "d3/d3.js"
+                    "d3.js": "d3/d3.js",
+                    "underscore.js": "underscore/underscore.js",
+                    "jquery.js":"jquery/dist/jquery.js"
                 }
             }
         },

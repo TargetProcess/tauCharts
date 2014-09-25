@@ -1159,7 +1159,6 @@
     return value;
   };
 
-  // Predicate-generating functions. Often useful outside of Underscore.
   _.constant = function(value) {
     return function() {
       return value;
