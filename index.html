@@ -2,40 +2,41 @@
 <html>
 <meta charset="utf-8">
 <head>
-    <script src="../libs/d3.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script>window.d3 || document.write('<script src="libs/d3.js"><\/script>')</script>
 
     <!-- src -->
-    <script src="../src/class.js"></script>
-    <script src="../src/tau.data.js"></script>
-    <script src="../src/tau.data.types.js"></script>
-    <script src="../src/tau.svg.js"></script>
-    <script src="../src/tau.charts.js"></script>
-    <script src="../src/charts/line.js"></script>
-    <script src="../src/charts/scatterplot.js"></script>
-    <script src="../src/charts/bar.js"></script>
-    <script src="../src/tau.plugins.js"></script>
+    <script src="src/class.js"></script>
+    <script src="src/tau.data.js"></script>
+    <script src="src/tau.data.types.js"></script>
+    <script src="src/tau.svg.js"></script>
+    <script src="src/tau.charts.js"></script>
+    <script src="src/charts/line.js"></script>
+    <script src="src/charts/scatterplot.js"></script>
+    <script src="src/charts/bar.js"></script>
+    <script src="src/tau.plugins.js"></script>
 
     <!-- plugins -->
-    <script src="../plugins/tooltip.js"></script>
-    <script src="../plugins/legend.js"></script>
-    <script src="../plugins/highlighter.js"></script>
-    <script src="../plugins/projection.js"></script>
-    <script src="../plugins/datatable.js"></script>
-    <script src="../plugins/header.js"></script>
-    <script src="../plugins/trend.js"></script>
-    <script src="../plugins/jittering.js"></script>
+    <script src="plugins/tooltip.js"></script>
+    <script src="plugins/legend.js"></script>
+    <script src="plugins/highlighter.js"></script>
+    <script src="plugins/projection.js"></script>
+    <script src="plugins/datatable.js"></script>
+    <script src="plugins/header.js"></script>
+    <script src="plugins/trend.js"></script>
+    <script src="plugins/jittering.js"></script>
 
     <!-- test data -->
-    <script src="data.js"></script>
+    <script src="prototype/data.js"></script>
 
-    <script src="countries.js"></script>
-    <script src="tpStories.js"></script>
+    <script src="prototype/countries.js"></script>
+    <script src="prototype/tpStories.js"></script>
 
     <!-- css -->
-    <link href="../css/default.css" rel="stylesheet"/>
-    <link href="../css/oldschool.css" rel="stylesheet"/>
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
-    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+    <link href="css/default.css" rel="stylesheet"/>
+    <link href="css/oldschool.css" rel="stylesheet"/>
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='//fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
           type='text/css'>
 </head>
 <body>
@@ -70,12 +71,12 @@
                 color: 'Country'
             })
             .plugins(
-            //tau.plugins.legend(),
-           // tau.plugins.tooltip('Country'),
-            //tau.plugins.highlighter(),
-            //tau.plugins.datatable(),
-            //tau.plugins.jittering(),
-            //tau.plugins.projection('y', 'x'),
+            tau.plugins.legend(),
+            tau.plugins.tooltip('Country'),
+            tau.plugins.highlighter(),
+            tau.plugins.datatable(),
+            tau.plugins.jittering(),
+            tau.plugins.projection('y', 'x'),
             tau.plugins.header(
                     'Sample scatter plot',
                     'The data is displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. This kind of plot is also called a scatter chart, scattergram, scatter diagram, or scatter graph.')
@@ -173,7 +174,7 @@
 
     // This all looks bad...
     var hivData = [];
-    d3.csv('hiv.csv',
+    d3.csv('prototype/hiv.csv',
             function (d) {
                 for (var key in d) {
                     if (d.hasOwnProperty(key)) {
@@ -208,7 +209,7 @@
     }
 
     var marriageData = [];
-    d3.csv('marriage.csv',
+    d3.csv('prototype/marriage.csv',
             function (d) {
                 for (var key in d) {
                     if (d.hasOwnProperty(key)) {
