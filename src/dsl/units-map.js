@@ -69,13 +69,7 @@ var UNITS_MAP = {
         var unitFilter = (unit.filter || _.identity);
 
         var unitOperation = (unit.func || function () {
-            return [
-                [
-                    function (rec) {
-                        return unitFilter(rec);
-                    }
-                ]
-            ];
+            return [[unitFilter]];
         });
 
         var matrix2DPredicates = unitOperation(x.scaleDim, y.scaleDim);

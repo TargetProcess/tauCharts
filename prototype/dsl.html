@@ -57,13 +57,6 @@ var translate = function (left, top) {
     return 'translate(' + left + ',' + top + ')';
 };
 
-var getDomain = function (data, scaleDim, scaleType) {
-    var domain = _(data).chain().pluck(scaleDim);
-    return ((scaleType === 'ordinal')
-            ? domain.uniq().value()
-            : d3.extent(domain.value()));
-};
-
 var getRangeMethod = function (scaleType) {
     return ((scaleType === 'ordinal')
             ? 'rangeRoundBands'
