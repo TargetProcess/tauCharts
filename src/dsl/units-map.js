@@ -11,15 +11,6 @@ var UNITS_MAP = {
         var W = options.width - 2 * PX;
         var H = options.height - 2 * PY;
 
-        options.container
-            .append('rect')
-            .attr("width", options.width)
-            .attr("height", options.height)
-            .style('fill', '#fff')
-            .style('fill-opacity', '0.7')
-            .style('stroke', '#aaa')
-            .attr('transform', translate(options.left, options.top));
-
 
         this.container = options
             .container
@@ -35,7 +26,7 @@ var UNITS_MAP = {
             this.container
                 .append('g')
                 .attr('class', 'x axis')
-                .attr('transform', translate(0, H))
+                .attr('transform', translate(0, H + 6))
                 .call(xAxis);
         }
 
@@ -47,8 +38,26 @@ var UNITS_MAP = {
             this.container
                 .append('g')
                 .attr('class', 'y axis')
-                .attr('transform', translate(0, 0))
+                .attr('transform', translate(-6, 0))
                 .call(yAxis).selectAll('.tick text').attr('transform', 'rotate(' + (y.rotate || 0) + ')');
+        }
+        if (unit.showGrid && y.scaleDim && x.scaleDim) {
+            var xGridAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient('bottom')
+                .tickSize(H);
+
+            var yGridAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient('left')
+                .tickSize(-W);
+            var grid = this.container.insert('g', ':first-child').attr('class', 'grids');
+
+            grid.append('g').call(xGridAxis);
+            grid.append('g').call(yGridAxis);
+
+            // TODO: make own axes and grid instead of using d3's in such tricky way
+            grid.selectAll('text').remove();
         }
 
         var grid = this.container
@@ -56,14 +65,6 @@ var UNITS_MAP = {
             .attr('class', 'grid')
             .attr('transform', translate(0, 0));
 
-        grid
-            .append('rect')
-            .attr('class', 'grid')
-            .attr('transform', translate(0, 0))
-            .style('fill', 'green')
-            .style('opacity', '0.2')
-            .attr("width", W)
-            .attr("height", H);
 
         var unitFilter = (unit.filter || _.identity);
 

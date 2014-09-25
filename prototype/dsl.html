@@ -120,6 +120,7 @@ var def = {
         unit: [
             {
                 type: 'COORDS/RECT',
+                showGrid:true,
                 axes: [
                     { scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
                     { scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>' }
@@ -142,7 +143,7 @@ var def = {
 
 // RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
 var reader = new DSLReader(def);
-reader.process(data);
+reader.process(TEST_DATA);
 
 </script>
 </body>
