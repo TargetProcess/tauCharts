@@ -3,6 +3,7 @@
 <meta charset="utf-8">
 <head>
     <script src="../libs/underscore.js"></script>
+    <script src="../libs/jquery-2.1.1.min.js"></script>
     <script src="../libs/d3.js"></script>
 
     <!-- src -->
@@ -41,213 +42,278 @@
 </head>
 <body>
 
-<!--<div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> &lt;!&ndash; Magic margin&ndash;&gt;</div>-->
-<div id="chart-container" style="width:100%;height:800px;display:inline-block;margin:0px;border: solid 1px;"> <!-- Magic margin--></div>
+<div id="chart-container" style="display:inline-block;margin:0px;border: solid 1px;"></div>
 
 <script>
 
-    var TEST_DATA = getUserStories();
+var TEST_DATA = _(getUserStories()).map(function (r, i) {
+    r.cycleTime = r.name.length;
+    return r;
+});
 
-    var translate = function(left, top) {
-        return 'translate(' + left + ',' + top + ')';
+var translate = function (left, top) {
+    return 'translate(' + left + ',' + top + ')';
+};
+
+var getDomain = function (data, scaleDim, scaleType) {
+    var domain = _(data).chain().pluck(scaleDim);
+    return ((scaleType === 'ordinal')
+            ? domain.uniq().value()
+            : d3.extent(domain.value()));
+};
+
+var getRangeMethod = function (scaleType) {
+    return ((scaleType === 'ordinal')
+            ? 'rangeRoundBands'
+            : 'rangeRound');
+};
+
+var metaFilter = function (filterPredicates, row) {
+    return _.every(
+            filterPredicates,
+            function (fnPredicate) {
+                return fnPredicate(row);
+            });
+};
+
+var createEqualPredicate = function (propName, shouldEqualTo) {
+    return function (row) {
+        return row[propName] === shouldEqualTo;
+    };
+};
+
+var CROSS = function (dimX, dimY) {
+
+    var domains = {
+        x: _(TEST_DATA).chain().pluck(dimX).uniq().value(),
+        y: _(TEST_DATA).chain().pluck(dimY).uniq().value()
     };
 
-    var getDomain = function(data, scaleDim, scaleType) {
-        var domain = _(data).chain().pluck(scaleDim);
-        return ((scaleType === 'ordinal')
-                ? domain.uniq().value()
-                : d3.extent(domain.value()));
-    };
+    return _(domains.y).map(function (RV) {
+        return _(domains.x).map(function (RC) {
+            return metaFilter.bind(
+                    null,
+                    [
+                        createEqualPredicate(dimX, RC),
+                        createEqualPredicate(dimY, RV)
+                    ]);
+        });
+    });
+};
 
-    var metaFilter = function (filterPredicates, row) {
-        return _.every(
-                filterPredicates,
-                function(fnPredicate) {
-                    return fnPredicate(row);
-                });
-    };
+var UNITS_MAP = {
 
-    var createEqualPredicate = function(propName, shouldEqualTo) {
-        return function(row) {
-            return row[propName] === shouldEqualTo;
-        };
-    };
+    'COORDS/RECT': function (unit, unitIterator) {
+        var options = unit.options || {};
+        var axes = unit.axes;
+        var x = _.defaults(axes[0] || {}, { scaleOrient: 'bottom' });
+        var y = _.defaults(axes[1] || {}, { scaleOrient: 'left' });
+        var PX = 36;
+        var PY = 18;
 
-    var CROSS = function(dimX, dimY) {
-        var domains = {
-            x: _(TEST_DATA).chain().pluck(dimX).uniq().value(),
-            y: _(TEST_DATA).chain().pluck(dimY).uniq().value()
-        };
+        var W = options.width - 2 * PX;
+        var H = options.height - 2 * PY;
 
-        var rMatrix = [];
-        for (var r = 0; r < domains.y; r++) {
-            var RV = domains.y[r];
-            var row = [];
-            for (var c = 0; c < domains.x; c++) {
-                var RC = domains.x[c];
-                var filterPredicates = [
-                    createEqualPredicate(dimX, RV),
-                    createEqualPredicate(dimY, RC)
-                ];
-                row.push(metaFilter.bind(null, filterPredicates));
-            }
-            rMatrix.push(row);
-        }
-
-        return rMatrix;
-    };
-
-    var UNITS_MAP = {
-
-        'COORDS/RECT': function(unit, unitIterator) {
-            var options = unit.options || {};
-            var axes = unit.axes;
-            var x = axes[0];
-            var y = axes[1];
-            var PX = 36;
-            var PY = 18;
-
-            var W = options.width - 2 * PX;
-            var H = options.height - 2 * PY;
-
-            options.container
-                    .append('rect')
-                    .attr("width", options.width)
-                    .attr("height", options.height)
-                    .style('fill', '#fff')
-                    .style('fill-opacity', '0.7')
-                    .style('stroke', '#aaa');
+        options.container
+                .append('rect')
+                .attr("width", options.width)
+                .attr("height", options.height)
+                .style('fill', '#fff')
+                .style('fill-opacity', '0.7')
+                .style('stroke', '#aaa')
+                .attr('transform', translate(options.left, options.top));
 
 
-            this.container = options
-                    .container
-                    .append('g')
-                    .attr('class', 'cell')
-                    // .attr('transform', "translate(" + PADDING + "," + PADDING + ") scale(" + (options.width - 2 * PADDING) / options.width + ", " + (options.height - 2 * PADDING) / options.height + ")");
-                    .attr('transform', translate(PX, PY / 2));
+        this.container = options
+                .container
+                .append('g')
+                .attr('class', 'cell')
+                .attr('transform', translate(options.left + PX, options.top + PY / 2));
 
+        if (x.scaleDim) {
             var xScale = d3
                     .scale[x.scaleType]()
-                    .rangeRoundBands([0, W])
-                    .domain(getDomain(TEST_DATA, x.scaleDim, x.scaleType));
-
-            var yScale = d3
-                    .scale[y.scaleType]()
-                    .rangeRoundBands([H, 0])
-                    .domain(getDomain(TEST_DATA, y.scaleDim, y.scaleType));
-
+                    .domain(getDomain(TEST_DATA, x.scaleDim, x.scaleType))[getRangeMethod(x.scaleType)]([0, W]);
             var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
-            var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
-
             this.container
                     .append('g')
                     .attr('class', 'x axis')
                     .attr('transform', translate(0, H))
                     .call(xAxis);
+        }
 
+        if (y.scaleDim) {
+            var yScale = d3
+                    .scale[y.scaleType]()
+                    .domain(getDomain(TEST_DATA, y.scaleDim, y.scaleType))[getRangeMethod(y.scaleType)]([H, 0]);
+            var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
             this.container
                     .append('g')
                     .attr('class', 'y axis')
                     .attr('transform', translate(0, 0))
-                    .call(yAxis);
+                    .call(yAxis).selectAll('.tick text').attr('transform', 'rotate(' + (y.rotate || 0) + ')');
+        }
 
-            var grid = this.container
-                    .append('g')
-                    .attr('class', 'grid')
-                    .attr('transform', translate(0, 0));
+        var grid = this.container
+                .append('g')
+                .attr('class', 'grid')
+                .attr('transform', translate(0, 0));
 
-            grid
-                    .append('rect')
-                    .attr('class', 'grid')
-                    .attr('transform', translate(0, 0))
-                    .style('fill', 'green')
-                    .style('opacity', '0.2')
-                    .attr("width", W)
-                    .attr("height", H);
+        grid
+                .append('rect')
+                .attr('class', 'grid')
+                .attr('transform', translate(0, 0))
+                .style('fill', 'green')
+                .style('opacity', '0.2')
+                .attr("width", W)
+                .attr("height", H);
 
-            var matrix2DPredicates = unit.func();
+        var unitFilter = (unit.filter || _.identity);
 
-            var nR = matrix2DPredicates.length;
-            var pH = H / nR;
+        var unitOperation = (unit.func || function () {
+            return [
+                [
+                    function (rec) {
+                        return unitFilter(rec);
+                    }
+                ]
+            ];
+        });
 
-            _.each(
-                    matrix2DPredicates,
-                    function(rowOfPredicates) {
-                        _.each(rowOfPredicates, function(predicateRC) {
+        var matrix2DPredicates = unitOperation(x.scaleDim, y.scaleDim);
 
-                            unit.unit.forEach(function(node) {
-                                node.filter = predicateRC;
-                                unitIterator(
-                                        node,
-                                        {
-                                            container: grid,
-                                            width: W,
-                                            height: H
-                                        });
+        var nR = matrix2DPredicates.length;
+        _.each(matrix2DPredicates, function (rowOfPredicates, iRow) {
+
+            var nC = rowOfPredicates.length;
+            var cellW = W / nC;
+            var cellH = H / nR;
+
+            _.each(rowOfPredicates, function (predicateRC, iCol) {
+
+                unit.unit.forEach(function (node) {
+                    node.filter = predicateRC;
+                    unitIterator(
+                            node,
+                            {
+                                container: grid,
+                                width: cellW,
+                                height: cellH,
+                                top: iRow * cellH,
+                                left: iCol * cellW,
+                                xScale: xScale,
+                                yScale: yScale
                             });
-                        })
+                });
+            })
+        });
+    },
+
+    'ELEMENT/POINT': function (unit) {
+        var options = unit.options || {};
+
+        var update = function () {
+            return this
+                    .attr('r', 3)
+                    .attr('cx', function (d) {
+                        return options.xScale(d[unit.x]);
+                    })
+                    .attr('cy', function (d) {
+                        return options.yScale(d[unit.y]);
                     });
-        }
-    };
+        };
 
-    var def = {
+        var data = _(TEST_DATA).filter(unit.filter);
 
-        dimensions: {
-            GDP: 'Gdp',
-            HPNS: 'Happiness',
-            CNTRY: 'Country'
-        },
+        var elements = options.container.selectAll('.dot').data(data);
+        elements.call(update);
+        elements.enter().append('circle').call(update);
+        elements.exit().remove();
+    }
+};
 
-        unit: {
-            type: 'COORDS/RECT',
-            func: function() { return CROSS('team', 'project') },
-            axes: [
-                { scaleDim: 'project', scaleType: 'ordinal', scaleOrient: 'bottom', label: '<h4>Projects</h4>' },
-                { scaleDim: 'team', scaleType: 'ordinal', scaleOrient: 'left', label: '<h4>Teams</h4>' }
-            ],
-            unit: []
-        }
-    };
+var def = {
 
-    var DSLReader = function (ast) {
-
-        this.W = 1600;
-        this.H = 800;
-
-        this.container = d3
-                .select("#chart-container")
-                .append("svg")
-                .attr("width", this.W)
-                .attr("height", this.H);
-
-        this.ast = ast;
-    };
-
-    DSLReader.prototype = {
-
-        process: function (rawData) {
-
-            var unit = this.ast.unit;
-
-            var unitIterator = function (sUnit, options) {
-                sUnit.options = options;
-                sUnit.data = (sUnit.filter) ? sUnit.filter(rawData) : rawData;
-                UNITS_MAP[sUnit.type](sUnit, unitIterator);
-            };
-
-            unitIterator(
-                    unit,
+    dimensions: {
+        GDP: 'Gdp',
+        HPNS: 'Happiness',
+        CNTRY: 'Country'
+    },
+    unit: {
+        type: 'COORDS/RECT',
+        func: CROSS,
+        axes: [
+            { scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
+            { scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }
+        ],
+        unit: [
+            {
+                type: 'COORDS/RECT',
+                axes: [
+                    { scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                    { scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>' }
+                ],
+                unit: [
                     {
-                        container: this.container,
-                        width: this.W,
-                        height: this.H
-                    });
-        }
-    };
+                        type: 'ELEMENT/POINT',
+                        x: 'cycleTime',
+                        y: 'effort',
+                        color: null,
+                        size: null,
+                        shape: null
+                    }
+                ]
+            }
+        ]
+    }
+};
 
-    // RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
-    var reader = new DSLReader(def);
-    reader.process(window.countries);
+var DSLReader = function (ast) {
+
+    this.W = 1600;
+    this.H = 1000;
+
+    $("#chart-container").css({
+        width: this.W,
+        height: this.H
+    });
+
+    this.container = d3
+            .select("#chart-container")
+            .append("svg")
+            .attr("width", this.W)
+            .attr("height", this.H);
+
+    this.ast = ast;
+};
+
+DSLReader.prototype = {
+
+    process: function (rawData) {
+
+        var unit = this.ast.unit;
+
+        var unitIterator = function (sUnit, options) {
+            sUnit.options = options;
+            sUnit.data = (sUnit.filter) ? sUnit.filter(rawData) : rawData;
+            UNITS_MAP[sUnit.type](sUnit, unitIterator);
+        };
+
+        unitIterator(
+                unit,
+                {
+                    container: this.container,
+                    width: this.W,
+                    height: this.H,
+                    top: 0,
+                    left: 0
+                });
+    }
+};
+
+// RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
+var reader = new DSLReader(def);
+reader.process(window.countries);
 
 </script>
 </body>
