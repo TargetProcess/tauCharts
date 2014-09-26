@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+
+    <!-- src -->
+    <script src="../src/class.js"></script>
+    <script src="../src/tau.data.js"></script>
+    <script src="../src/tau.data.types.js"></script>
+    <script src="../src/tau.svg.js"></script>
+    <script src="../src/tau.charts.js"></script>
+    <script src="../src/charts/line.js"></script>
+    <script src="../src/charts/scatterplot.js"></script>
+    <script src="../src/charts/bar.js"></script>
+    <script src="../src/tau.plugins.js"></script>
+    <script src="../src/dsl/units-map.js"></script>
+    <script src="../src/dsl/dsl-reader.js"></script>
+
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/highlighter.js"></script>
+    <script src="../plugins/projection.js"></script>
+    <script src="../plugins/datatable.js"></script>
+    <script src="../plugins/header.js"></script>
+    <script src="../plugins/trend.js"></script>
+    <script src="../plugins/jittering.js"></script>
+
+    <!-- test data -->
+    <script src="data.js"></script>
+
+    <script src="countries.js"></script>
+    <script src="tpStories.js"></script>
+
+    <!-- css -->
+    <link href="../css/default.css" rel="stylesheet"/>
+    <link href="../css/oldschool.css" rel="stylesheet"/>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+          type='text/css'>
+</head>
+<body>
+
+<div id="chart-container" style="display:inline-block;margin:0px;border: solid 1px;"></div>
+
+<script>
+
+    var TEST_DATA = _(getUserStories()).map(function (r, i) {
+        r.cycleTime = r.name.length;
+        return r;
+    });
+
+    var translate = function (left, top) {
+        return 'translate(' + left + ',' + top + ')';
+    };
+
+    var getRangeMethod = function (scaleType) {
+        return ((scaleType === 'ordinal')
+                ? 'rangeRoundBands'
+                : 'rangeRound');
+    };
+
+    var metaFilter = function (filterPredicates, row) {
+        return _.every(
+                filterPredicates,
+                function (fnPredicate) {
+                    return fnPredicate(row);
+                });
+    };
+
+    var createEqualPredicate = function (propName, shouldEqualTo) {
+        return function (row) {
+            return row[propName] === shouldEqualTo;
+        };
+    };
+
+    var CROSS = function (dimX, dimY) {
+
+        var domains = {
+            x: _(TEST_DATA).chain().pluck(dimX).uniq().value(),
+            y: _(TEST_DATA).chain().pluck(dimY).uniq().value()
+        };
+
+        return _(domains.y).map(function (RV) {
+            return _(domains.x).map(function (RC) {
+                return metaFilter.bind(
+                        null,
+                        [
+                            createEqualPredicate(dimX, RC),
+                            createEqualPredicate(dimY, RV)
+                        ]);
+            });
+        });
+    };
+
+    var def = {
+
+        dimensions: {
+            GDP: 'Gdp',
+            HPNS: 'Happiness',
+            CNTRY: 'Country'
+        },
+        unit: {
+            type: 'COORDS/RECT',
+            func: CROSS,
+            axes: [
+                /*{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
+                { scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }*/
+            ],
+            unit: [
+                {
+                    type: 'COORDS/RECT',
+                    showGrid:true,
+                    axes: [
+                        { scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                        { scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>' }
+                    ],
+                    unit: [
+                        {
+                            type: 'ELEMENT/POINT',
+                            x: 'cycleTime',
+                            y: 'effort',
+                            color: 'team',
+                            size: null,
+                            shape: null
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+
+    // RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
+    var reader = new DSLReader(def);
+    reader.process(TEST_DATA);
+
+</script>
+</body>
+</html>

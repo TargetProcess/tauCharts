@@ -103,10 +103,16 @@ var UNITS_MAP = {
 
     'ELEMENT/POINT': function (unit) {
         var options = unit.options || {};
-
+        var data = _(TEST_DATA).filter(unit.filter);
+        var color = tau.data.scale.color10().domain(_.uniq(data.map(function(el){
+            return el[unit.color];
+        })));
         var update = function () {
             return this
                 .attr('r', 3)
+                .attr('class',function(d){
+                   return color(d[unit.color]);
+                })
                 .attr('cx', function (d) {
                     return options.xScale(d[unit.x]);
                 })
@@ -115,7 +121,7 @@ var UNITS_MAP = {
                 });
         };
 
-        var data = _(TEST_DATA).filter(unit.filter);
+
 
         var elements = options.container.selectAll('.dot').data(data);
         elements.call(update);
