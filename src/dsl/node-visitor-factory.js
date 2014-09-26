@@ -100,12 +100,41 @@ var TNodeVisitorFactory = (function () {
             });
         },
 
-        'ELEMENT/POINT': function (unit, srcData) {
+        'ELEMENT/POINT': function (unit, data) {
+
             var options = unit.options || {};
+
+            var color = tau
+                .data
+                .scale
+                .color10()
+                .domain(_.uniq(data.map(function (el) {
+                    return el[unit.color];
+                })));
+
+            var size = d3
+                .scale
+                .linear()
+                .range([0, options.width / 100])
+                .domain([
+                    0,
+                    _.max(data.map(function (el) {
+                        return el[unit.size];
+                    }))
+                ]);
 
             var update = function () {
                 return this
-                    .attr('r', 3)
+                    .attr('r', function (d) {
+                        var s = size(d[unit.size]);
+                        if(_.isNaN(s)) {
+                            s = options.width / 100;
+                        }
+                        return s ;
+                    })
+                    .attr('class', function (d) {
+                        return color(d[unit.color]);
+                    })
                     .attr('cx', function (d) {
                         return options.xScale(d[unit.x]);
                     })
@@ -114,7 +143,7 @@ var TNodeVisitorFactory = (function () {
                     });
             };
 
-            var elements = options.container.selectAll('.dot').data(srcData);
+            var elements = options.container.selectAll('.dot').data(data);
             elements.call(update);
             elements.enter().append('circle').call(update);
             elements.exit().remove();
@@ -152,7 +181,20 @@ var TNodeVisitorFactory = (function () {
                 this.attr('d', line);
             };
 
-            var line = d3.svg.line()
+            var updateLines = function () {
+
+                var paths = this.selectAll('path').data(function (d) {
+                    return [d.values];
+                });
+
+                paths.call(updatePaths);
+                paths.enter().append('path').call(updatePaths);
+                paths.exit().remove();
+            };
+
+            var line = d3
+                .svg
+                .line()
                 .x(function (d) {
                     return options.xScale(d[unit.x]);
                 })
@@ -167,6 +209,11 @@ var TNodeVisitorFactory = (function () {
                 .append("path")
                 .datum(data)
                 .attr("d", line);
+
+            /*.selectAll('.line').data(data);
+             lines.call(updateLines);
+             lines.enter().append('g').call(updateLines);
+             lines.exit().remove();*/
         }
     };
 

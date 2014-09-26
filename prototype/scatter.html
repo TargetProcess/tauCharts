@@ -19,6 +19,10 @@
     <script src="../src/dsl/units-map.js"></script>
     <script src="../src/dsl/dsl-reader.js"></script>
 
+    <script src="../src/dsl/matrix.js"></script>
+    <script src="../src/dsl/unit-visitor-factory.js"></script>
+    <script src="../src/dsl/node-visitor-factory.js"></script>
+
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
     <script src="../plugins/legend.js"></script>
@@ -48,54 +52,6 @@
 
 <script>
 
-    var TEST_DATA = _(getUserStories()).map(function (r, i) {
-        r.cycleTime = r.name.length;
-        return r;
-    });
-
-    var translate = function (left, top) {
-        return 'translate(' + left + ',' + top + ')';
-    };
-
-    var getRangeMethod = function (scaleType) {
-        return ((scaleType === 'ordinal')
-                ? 'rangeRoundBands'
-                : 'rangeRound');
-    };
-
-    var metaFilter = function (filterPredicates, row) {
-        return _.every(
-                filterPredicates,
-                function (fnPredicate) {
-                    return fnPredicate(row);
-                });
-    };
-
-    var createEqualPredicate = function (propName, shouldEqualTo) {
-        return function (row) {
-            return row[propName] === shouldEqualTo;
-        };
-    };
-
-    var CROSS = function (dimX, dimY) {
-
-        var domains = {
-            x: _(TEST_DATA).chain().pluck(dimX).uniq().value(),
-            y: _(TEST_DATA).chain().pluck(dimY).uniq().value()
-        };
-
-        return _(domains.y).map(function (RV) {
-            return _(domains.x).map(function (RC) {
-                return metaFilter.bind(
-                        null,
-                        [
-                            createEqualPredicate(dimX, RC),
-                            createEqualPredicate(dimY, RV)
-                        ]);
-            });
-        });
-    };
-
     var def = {
 
         dimensions: {
@@ -105,15 +61,15 @@
         },
         unit: {
             type: 'COORDS/RECT',
-            func: CROSS,
+            func: 'CROSS',
             axes: [
-                /*{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
-                { scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }*/
+                //{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
+                //{ scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }
             ],
             unit: [
                 {
                     type: 'COORDS/RECT',
-                    showGrid:true,
+                    showGrid: true,
                     axes: [
                         { scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
                         { scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>' }
@@ -133,10 +89,11 @@
         }
     };
 
-
-    // RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
     var reader = new DSLReader(def);
-    reader.process(TEST_DATA);
+    reader.traverse(_(getUserStories()).map(function (r) {
+        r.cycleTime = r.name.length;
+        return r;
+    }));
 
 </script>
 </body>
