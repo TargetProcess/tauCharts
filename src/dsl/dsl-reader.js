@@ -4,14 +4,13 @@ var DSLReader = function (ast) {
 
 DSLReader.prototype = {
     traverse: function (rawData) {
-
         var unit = this.ast.unit;
-
         var buildLogicalGraphRecursively = function (unitRef, srcData) {
             return TUnitVisitorFactory(unitRef.type)(unitRef, srcData, buildLogicalGraphRecursively);
         };
-
-        var refUnit = buildLogicalGraphRecursively(unit, rawData);
+        return buildLogicalGraphRecursively(unit, rawData);
+    },
+    traverseToNode: function (refUnit, rawData, c) {
         this.container =  d3
             .select(this.ast.container)
             .append("svg")
@@ -25,9 +24,6 @@ DSLReader.prototype = {
             top: 0,
             left: 0
         };
-        return refUnit;
-    },
-    traverseToNode: function (refUnit, rawData, c) {
         var renderLogicalGraphRecursively = function (unitRef, srcData) {
             return TNodeVisitorFactory(unitRef.type)(unitRef, _(srcData).filter(unitRef.$filter), renderLogicalGraphRecursively);
         };

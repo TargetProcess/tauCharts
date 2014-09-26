@@ -131,7 +131,7 @@ var TNodeVisitorFactory = (function () {
                         return s;
                     })
                     .attr('class', function (d) {
-                        return color(d[unit.color]);
+                        return  'dot i-role-datum ' + color(d[unit.color]);
                     })
                     .attr('cx', function (d) {
                         return options.xScale(d[unit.x]);
@@ -152,9 +152,9 @@ var TNodeVisitorFactory = (function () {
 
             var update = function () {
                 return this
-                    .attr('class', 'bar')
+                    .attr('class', 'i-role-datum  bar')
                     .attr('x', function (d) {
-                        return options.xScale(d[unit.x]);
+                        return  options.xScale(d[unit.x]);
                     })
                     .attr('width', options.xScale.rangeBand())
                     .attr('y', function (d) {
@@ -202,7 +202,7 @@ var TNodeVisitorFactory = (function () {
 
             var lines = this.container
                 .append('g')
-                .attr("class", "line")
+                .attr("class", "line i-role-datum")
                 .attr('stroke', '#4daf4a')
                 .append("path")
                 .datum(data)

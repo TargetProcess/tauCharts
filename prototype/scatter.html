@@ -16,7 +16,6 @@
     <script src="../src/charts/scatterplot.js"></script>
     <script src="../src/charts/bar.js"></script>
     <script src="../src/tau.plugins.js"></script>
-    <script src="../src/dsl/units-map.js"></script>
     <script src="../src/dsl/dsl-reader.js"></script>
 
     <script src="../src/dsl/matrix.js"></script>
@@ -39,7 +38,12 @@
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
     <script src="../src/dsl/tau.newCharts.js"></script>
-
+    <style>
+        .tau-chart {
+            width: 1000px;
+            height: 800px;
+        }
+    </style>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/oldschool.css" rel="stylesheet"/>
@@ -49,12 +53,12 @@
 </head>
 <body>
 
-<div id="chart-container" style="display:inline-block;margin:0px;border: solid 1px;"></div>
+<div id="chart-container" class="tau-chart" style="display:inline-block;margin:0px;border: solid 1px;"></div>
 
 <script>
 
     var def = {
-        container:'#chart-container',
+        container: '#chart-container',
         dimensions: {
             GDP: 'Gdp',
             HPNS: 'Happiness',
@@ -74,8 +78,8 @@
                     type: 'COORDS/RECT',
                     showGrid: true,
                     axes: [
-                        { scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
-                        { scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>' }
+                        {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                        {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
                     ],
                     unit: [
                         {
@@ -96,7 +100,11 @@
         r.cycleTime = r.name.length;
         return r;
     });
-    var chart = new Chart({data: rawData, spec: def});
+    var chart = new Chart({
+        data: rawData,
+        spec: def,
+        plugins: [tau.plugins.tooltip('team', 'cycleTime', 'effort'), tau.plugins.highlighter()]
+    });
 </script>
 </body>
 </html>
