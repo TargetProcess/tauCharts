@@ -19,6 +19,10 @@
     <script src="../src/dsl/units-map.js"></script>
     <script src="../src/dsl/dsl-reader.js"></script>
 
+    <script src="../src/dsl/matrix.js"></script>
+    <script src="../src/dsl/unit-visitor-factory.js"></script>
+    <script src="../src/dsl/node-visitor-factory.js"></script>
+
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
     <script src="../plugins/legend.js"></script>
@@ -53,58 +57,8 @@
 
 <script>
 
-    var TEST_DATA = [];
-    var translate = function (left, top) {
-        return 'translate(' + left + ',' + top + ')';
-    };
-
-    var getDomain = function (data, scaleDim, scaleType) {
-        var domain = _(data).chain().pluck(scaleDim);
-        return ((scaleType === 'ordinal')
-                ? domain.uniq().value()
-                : d3.extent(domain.value()));
-    };
-
-    var getRangeMethod = function (scaleType) {
-        return ((scaleType === 'ordinal')
-                ? 'rangeRoundBands'
-                : 'rangeRound');
-    };
-
-    var metaFilter = function (filterPredicates, row) {
-        return _.every(
-                filterPredicates,
-                function (fnPredicate) {
-                    return fnPredicate(row);
-                });
-    };
-
-    var createEqualPredicate = function (propName, shouldEqualTo) {
-        return function (row) {
-            return row[propName] === shouldEqualTo;
-        };
-    };
-
-    var CROSS = function (dimX, dimY) {
-
-        var domains = {
-            x: _(TEST_DATA).chain().pluck(dimX).uniq().value(),
-            y: _(TEST_DATA).chain().pluck(dimY).uniq().value()
-        };
-
-        return _(domains.y).map(function (RV) {
-            return _(domains.x).map(function (RC) {
-                return metaFilter.bind(
-                        null,
-                        [
-                            createEqualPredicate(dimX, RC),
-                            createEqualPredicate(dimY, RV)
-                        ]);
-            });
-        });
-    };
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
-        TEST_DATA = data;
+
         var def = {
 
             dimensions: {
@@ -114,7 +68,7 @@
             },
             unit: {
                 type: 'COORDS/RECT',
-                func: CROSS,
+                func: 'CROSS',
                 axes: [
                     null,//{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
                     {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
@@ -125,7 +79,7 @@
                         showGrid:true,
                         axes: [
                             {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
-                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'}
                         ],
                         unit: [
                             {
@@ -158,10 +112,8 @@
             }
         };
 
-
-        // RECT(DIM(GDP, HPNS), POINT({ x: GPR, y: HPNS, color: CNTRY }))
         var reader = new DSLReader(def);
-        reader.process(window.countries);
+        reader.traverse(data);
     });
 
 </script>
