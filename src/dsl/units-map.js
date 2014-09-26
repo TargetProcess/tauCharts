@@ -104,14 +104,23 @@ var UNITS_MAP = {
     'ELEMENT/POINT': function (unit) {
         var options = unit.options || {};
         var data = _(TEST_DATA).filter(unit.filter);
-        var color = tau.data.scale.color10().domain(_.uniq(data.map(function(el){
+        var color = tau.data.scale.color10().domain(_.uniq(data.map(function (el) {
             return el[unit.color];
         })));
+        var size = d3.scale.linear().range([0, options.width / 100]).domain([0, _.max(data.map(function (el) {
+            return el[unit.size];
+        }))]);
         var update = function () {
             return this
-                .attr('r', 3)
-                .attr('class',function(d){
-                   return color(d[unit.color]);
+                .attr('r', function (d) {
+                    var s = size(d[unit.size]);
+                    if(_.isNaN(s)) {
+                        s = options.width / 100;
+                    }
+                    return s ;
+                })
+                .attr('class', function (d) {
+                    return color(d[unit.color]);
                 })
                 .attr('cx', function (d) {
                     return options.xScale(d[unit.x]);
