@@ -5,9 +5,7 @@ var TNodeVisitorFactory = (function () {
     };
 
     var getRangeMethod = function (scaleType) {
-        return ((scaleType === 'ordinal')
-                ? 'rangeRoundBands'
-                : 'rangeRound');
+        return ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
     };
 
     var TNodeMap = {
@@ -82,7 +80,7 @@ var TNodeVisitorFactory = (function () {
             var cellW = W / nC;
             var cellH = H / nR;
 
-            node.$matrix.iterate(function(iRow, iCol, subNodes) {
+            node.$matrix.iterate(function (iRow, iCol, subNodes) {
                 subNodes.forEach(function (node) {
 
                     node.options = {
@@ -127,10 +125,10 @@ var TNodeVisitorFactory = (function () {
                 return this
                     .attr('r', function (d) {
                         var s = size(d[unit.size]);
-                        if(_.isNaN(s)) {
+                        if (_.isNaN(s)) {
                             s = options.width / 100;
                         }
-                        return s ;
+                        return s;
                     })
                     .attr('class', function (d) {
                         return color(d[unit.color]);

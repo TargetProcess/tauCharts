@@ -39,9 +39,14 @@
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
     <script src="dataTp.js"></script>
+    <script src="../src/dsl/tau.newCharts.js"></script>
     <style>
         .bar {
             fill: steelblue;
+        }
+        #chart-container {
+            width: 1000px;
+            height: 800px;
         }
     </style>
     <!-- css -->
@@ -53,14 +58,16 @@
 </head>
 <body>
 
-<div id="chart-container" class="tau-chart"></div>
+<div id="chart-container" style="height: 800px; width: 1000px;" class="tau-chart"></div>
 
 <script>
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
         var def = {
-
+            container: '#chart-container',
+            W: 1000,
+            H: 800,
             dimensions: {
                 GDP: 'Gdp',
                 HPNS: 'Happiness',
@@ -70,13 +77,13 @@
                 type: 'COORDS/RECT',
                 func: 'CROSS',
                 axes: [
-                    null,//{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
+                    null,
                     {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
                 ],
                 unit: [
                     {
                         type: 'COORDS/RECT',
-                        showGrid:true,
+                        showGrid: true,
                         axes: [
                             {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
                             {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'}
@@ -111,9 +118,7 @@
                 ]
             }
         };
-
-        var reader = new DSLReader(def);
-        reader.traverse(data);
+        var chart = new Chart({data: data, spec: def});
     });
 
 </script>

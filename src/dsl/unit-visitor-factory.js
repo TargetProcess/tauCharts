@@ -53,9 +53,9 @@ var TUnitVisitorFactory = (function () {
                 unit.axes,
                 function (memo, axis) {
                     var x = _.defaults(axis || {}, {});
-                    memo[x.scaleDim] = ((x.scaleDim)
-                        ? d3.scale[x.scaleType]().domain(getDomain(srcData, x.scaleDim, x.scaleType))
-                        : null);
+                    memo[x.scaleDim] = ((x.scaleDim) ?
+                        d3.scale[x.scaleType]().domain(getDomain(srcData, x.scaleDim, x.scaleType)):
+                        null);
                     return memo;
                 },
                 {});

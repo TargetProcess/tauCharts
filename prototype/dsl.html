@@ -38,7 +38,7 @@
 
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
-
+    <script src="../src/dsl/tau.newCharts.js"></script>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/oldschool.css" rel="stylesheet"/>
@@ -52,50 +52,53 @@
 
 <script>
 
-var def = {
+    var def = {
+        container:'#chart-container',
+        dimensions: {
+            GDP: 'Gdp',
+            HPNS: 'Happiness',
+            CNTRY: 'Country'
+        },
+        W: 1000,
+        H: 800,
+        unit: {
+            type: 'COORDS/RECT',
+            func: 'CROSS',
+            axes: [
+                {scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>'},
+                {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
+            ],
+            unit: [
+                {
+                    type: 'COORDS/RECT',
+                    showGrid: true,
+                    axes: [
+                        {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                        {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
+                    ],
+                    unit: [
+                        {
+                            type: 'ELEMENT/POINT',
+                            x: 'cycleTime',
+                            y: 'effort',
+                            color: 'name',
+                            size: null,
+                            shape: null
+                        }
+                    ]
+                }
+            ]
+        }
+    };
 
-    dimensions: {
-        GDP: 'Gdp',
-        HPNS: 'Happiness',
-        CNTRY: 'Country'
-    },
-    unit: {
-        type: 'COORDS/RECT',
-        func: 'CROSS',
-        axes: [
-            { scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
-            { scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }
-        ],
-        unit: [
-            {
-                type: 'COORDS/RECT',
-                showGrid:true,
-                axes: [
-                    { scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
-                    { scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>' }
-                ],
-                unit: [
-                    {
-                        type: 'ELEMENT/POINT',
-                        x: 'cycleTime',
-                        y: 'effort',
-                        color: 'name',
-                        size: null,
-                        shape: null
-                    }
-                ]
-            }
-        ]
-    }
-};
+    var rawData = _.map(
+            getUserStories(),
+            function (r) {
+                r.cycleTime = r.name.length;
+                return r;
+            });
 
-var reader = new DSLReader(def);
-reader.traverse(_.map(
-        getUserStories(),
-        function (r) {
-            r.cycleTime = r.name.length;
-            return r;
-        }));
+    var chart = new Chart({data: rawData, spec: def});
 
 </script>
 </body>

@@ -38,6 +38,7 @@
 
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
+    <script src="../src/dsl/tau.newCharts.js"></script>
 
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
@@ -53,12 +54,14 @@
 <script>
 
     var def = {
-
+        container:'#chart-container',
         dimensions: {
             GDP: 'Gdp',
             HPNS: 'Happiness',
             CNTRY: 'Country'
         },
+        W: 1000,
+        H: 800,
         unit: {
             type: 'COORDS/RECT',
             func: 'CROSS',
@@ -89,12 +92,11 @@
         }
     };
 
-    var reader = new DSLReader(def);
-    reader.traverse(_(getUserStories()).map(function (r) {
+    var rawData = _(getUserStories()).map(function (r) {
         r.cycleTime = r.name.length;
         return r;
-    }));
-
+    });
+    var chart = new Chart({data: rawData, spec: def});
 </script>
 </body>
 </html>
