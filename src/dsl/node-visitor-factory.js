@@ -7,6 +7,58 @@ var TNodeVisitorFactory = (function () {
     var getRangeMethod = function (scaleType) {
         return ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
     };
+    var getBubbleAxis = function (node) {
+        var cube = node.$matrix.cube[0];
+        if (cube && cube[0] && cube[0][0].axes && cube[0][0].axes[0] && cube[0][0].axes[0].bubble) {
+            return {
+                $scales: cube[0][0].$scales,
+                axes: cube[0][0].axes
+            };
+        } else {
+            return {axes: []};
+        }
+    };
+
+    var drawNestedAxes = function (nestedAxesConfig, container, srcData, dimensions, sizes) {
+        container = container.append('g').attr("class", "axes nest");
+        var nestedAxes = nestedAxesConfig;
+        var groupX = _.chain(srcData).map(function (item) {
+            return item[dimensions.x];
+        }).unique().value();
+
+        var groupY = _.chain(srcData).map(function (item) {
+            return item[dimensions.y];
+        }).unique().value();
+
+
+        var xs = nestedAxes.axes[0];
+        var xScales = nestedAxes.$scales[xs.scaleDim][getRangeMethod(xs.scaleType)]([0, sizes.width - 20], 0.1);
+        // xScales.
+        container.selectAll(".x.axis.nest")
+            .data(groupX)
+            .enter().append("g")
+            .attr("class", "x axis nest")
+            .attr("transform", function (d, ind) {
+                return "translate(" + ((ind) * sizes.width + 10) + "," + sizes.containerHeight + ")";
+            })
+            .each(function (d) {
+                d3.select(this).call(d3.svg.axis().scale(xScales).orient('bottom'));
+            }
+        );
+        var ys = nestedAxes.axes[1];
+        var yScales = nestedAxes.$scales[ys.scaleDim][getRangeMethod(ys.scaleType)]([sizes.height - 20, 0], 0.1);
+        container.selectAll(".y.axis.nest")
+            .data(groupY)
+            .enter().append("g")
+            .attr("class", "y axis nest")
+            .attr("transform", function (d, ind) {
+                return "translate(" + 0 + "," + (ind * sizes.height + 5) + ")";
+            })
+            .each(function (d) {
+                d3.select(this).call(d3.svg.axis().scale(yScales).orient('left'));
+            }
+        );
+    };
 
     var TNodeMap = {
 
@@ -17,9 +69,22 @@ var TNodeVisitorFactory = (function () {
             var y = _.defaults(axes[1] || {}, {scaleOrient: 'left'});
             var PX = 36;
             var PY = 18;
-
+            var paddingForNestedX = 10;
+            var paddingForNestedY = 10;
+            var bubbleAxes = getBubbleAxis(node);
+            var existBubbleAxes = bubbleAxes.axes.length;
+            if (x.bubble === true && y.bubble === true) {
+                PX = paddingForNestedX;
+                PY = paddingForNestedY;
+            } else {
+                if (existBubbleAxes) {
+                    PX = 56;
+                    PY = 30;
+                }
+            }
             var W = options.width - 2 * PX;
             var H = options.height - 2 * PY;
+
 
             this.container = options
                 .container
@@ -27,26 +92,32 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell')
                 .attr('transform', translate(options.left + PX, options.top + PY / 2));
 
+
             var xScale;
             if (x.scaleDim) {
                 xScale = node.$scales[x.scaleDim][getRangeMethod(x.scaleType)]([0, W], 0.1);
-                var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
-                this.container
-                    .append('g')
-                    .attr('class', 'x axis')
-                    .attr('transform', translate(0, H + 6))
-                    .call(xAxis);
+                if (x.bubble !== true) {
+                    var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
+                    this.container
+                        .append('g')
+                        .attr('class', 'x axis nest')
+                        .attr('transform', translate(0, H + 25))
+                        .call(xAxis);
+                }
+
             }
 
             var yScale;
             if (y.scaleDim) {
                 yScale = node.$scales[y.scaleDim][getRangeMethod(y.scaleType)]([H, 0], 0.1);
-                var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
-                this.container
-                    .append('g')
-                    .attr('class', 'y axis')
-                    .attr('transform', translate(-6, 0))
-                    .call(yAxis);
+                if (y.bubble !== true) {
+                    var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
+                    this.container
+                        .append('g')
+                        .attr('class', 'y axis')
+                        .attr('transform', translate(-25, 0))
+                        .call(yAxis);
+                }
             }
 
             if (node.showGrid && xScale && yScale) {
@@ -79,6 +150,23 @@ var TNodeVisitorFactory = (function () {
 
             var cellW = W / nC;
             var cellH = H / nR;
+            if(existBubbleAxes) {
+                drawNestedAxes(
+                    bubbleAxes,
+                    this.container,
+                    srcData,
+                    {
+                        x: x.scaleDim,
+                        y: y.scaleDim
+                    },
+                    {
+                        width: cellW,
+                        height: cellH,
+                        containerHeight: H
+                    }
+                );
+            }
+
 
             node.$matrix.iterate(function (iRow, iCol, subNodes) {
                 subNodes.forEach(function (node) {
@@ -131,7 +219,7 @@ var TNodeVisitorFactory = (function () {
                         return s;
                     })
                     .attr('class', function (d) {
-                        return  'dot i-role-datum ' + color(d[unit.color]);
+                        return 'dot i-role-datum ' + color(d[unit.color]);
                     })
                     .attr('cx', function (d) {
                         return options.xScale(d[unit.x]);
@@ -154,7 +242,7 @@ var TNodeVisitorFactory = (function () {
                 return this
                     .attr('class', 'i-role-datum  bar')
                     .attr('x', function (d) {
-                        return  options.xScale(d[unit.x]);
+                        return options.xScale(d[unit.x]);
                     })
                     .attr('width', options.xScale.rangeBand())
                     .attr('y', function (d) {
@@ -202,7 +290,7 @@ var TNodeVisitorFactory = (function () {
 
             var lines = this.container
                 .append('g')
-                .attr("class", "line i-role-datum")
+                .attr("class", "line")
                 .attr('stroke', '#4daf4a')
                 .append("path")
                 .datum(data)

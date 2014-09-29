@@ -85,8 +85,8 @@
                         type: 'COORDS/RECT',
                         showGrid: true,
                         axes: [
-                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
-                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'}
+                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>', bubble:true},
+                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>', bubble:true}
                         ],
                         unit: [
                             {
@@ -118,7 +118,7 @@
                 ]
             }
         };
-        var chart = new Chart({data: data, spec: def});
+        var chart = new Chart({data: data, spec: def, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
     });
 
 </script>
