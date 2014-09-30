@@ -86,6 +86,8 @@ var TUnitVisitorFactory = (function () {
         }
     };
 
+    TUnitMap['COORDS.RECT'] = TUnitMap['COORDS/RECT'];
+
     return function (unitType) {
         return TUnitMap[unitType] || _.identity;
     };
