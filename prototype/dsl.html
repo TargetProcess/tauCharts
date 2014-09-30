@@ -16,7 +16,6 @@
     <script src="../src/charts/scatterplot.js"></script>
     <script src="../src/charts/bar.js"></script>
     <script src="../src/tau.plugins.js"></script>
-    <script src="../src/dsl/units-map.js"></script>
     <script src="../src/dsl/dsl-reader.js"></script>
 
     <script src="../src/dsl/matrix.js"></script>
@@ -66,7 +65,7 @@
             func: 'CROSS',
             axes: [
                 {scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>'},
-                {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
+                {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>'}
             ],
             unit: [
                 {
@@ -82,7 +81,7 @@
                             x: 'cycleTime',
                             y: 'effort',
                             color: 'name',
-                            size: null,
+                            size: 'cycleTime',
                             shape: null
                         }
                     ]
@@ -98,7 +97,11 @@
                 return r;
             });
 
-    var chart = new Chart({data: rawData, spec: def});
+    var chart = new Chart({
+        data: rawData,
+        spec: def,
+        plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
+    });
 
 </script>
 </body>

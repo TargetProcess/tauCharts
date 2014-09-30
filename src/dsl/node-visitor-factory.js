@@ -206,9 +206,7 @@ var TNodeVisitorFactory = (function () {
                 .range([0, options.width / 100])
                 .domain([
                     0,
-                    _.max(data.map(function (el) {
-                        return el[unit.size];
-                    }))
+                    _(data).chain().pluck(unit.size).max().value()
                 ]);
 
             var update = function () {

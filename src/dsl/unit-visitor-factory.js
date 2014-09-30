@@ -26,7 +26,7 @@ var TUnitVisitorFactory = (function () {
 
             var domains = {
                 x: _(srcData).chain().pluck(dimX).uniq().value(),
-                y: _(srcData).chain().pluck(dimY).uniq().value()
+                y: _(srcData).chain().pluck(dimY).uniq().value().reverse()
             };
 
             return _(domains.y).map(function (RV) {
