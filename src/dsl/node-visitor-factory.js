@@ -104,7 +104,6 @@ var TNodeVisitorFactory = (function () {
                         .attr('transform', translate(0, H + 25))
                         .call(xAxis);
                 }
-
             }
 
             var yScale;
@@ -120,21 +119,27 @@ var TNodeVisitorFactory = (function () {
                 }
             }
 
-            if (node.showGrid && xScale && yScale) {
-                var xGridAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .orient('bottom')
-                    .tickSize(H);
-
-                var yGridAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient('left')
-                    .tickSize(-W);
+            if (node.showGrid) {
 
                 var grids = this.container.insert('g', ':first-child').attr('class', 'grids');
 
-                grids.append('g').call(xGridAxis);
-                grids.append('g').call(yGridAxis);
+                if (xScale) {
+                    var xGridAxis = d3.svg.axis()
+                        .scale(xScale)
+                        .orient(x.scaleOrient)
+                        .tickSize(H);
+
+                    grids.append('g').call(xGridAxis);
+                }
+
+                if (yScale) {
+                    var yGridAxis = d3.svg.axis()
+                        .scale(yScale)
+                        .orient(y.scaleOrient)
+                        .tickSize(-W);
+
+                    grids.append('g').call(yGridAxis);
+                }
 
                 // TODO: make own axes and grid instead of using d3's in such tricky way
                 grids.selectAll('text').remove();

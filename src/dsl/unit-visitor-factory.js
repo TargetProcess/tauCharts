@@ -60,7 +60,7 @@ var TUnitVisitorFactory = (function () {
                 },
                 {});
 
-            unit.$filter = unit.$filter || _.identity;
+            unit.$filter = unit.$filter || function() { return true; };
             var unitFltr = unit.$filter;
             var unitFunc = (TFuncMap[unit.func] || function () {
                 return [
