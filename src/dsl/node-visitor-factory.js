@@ -62,7 +62,7 @@ var TNodeVisitorFactory = (function () {
 
     var TNodeMap = {
 
-        'COORDS/RECT': function (node, srcData, continueTraverse) {
+        'COORDS/RECT': function (node, filteredData, srcData, continueTraverse) {
             var options = node.options || {};
             var axes = node.axes;
             var x = _.defaults(axes[0] || {}, {scaleOrient: 'bottom'});
@@ -154,7 +154,7 @@ var TNodeVisitorFactory = (function () {
                 drawNestedAxes(
                     bubbleAxes,
                     this.container,
-                    srcData,
+                    filteredData,
                     {
                         x: x.scaleDim,
                         y: y.scaleDim
@@ -188,7 +188,7 @@ var TNodeVisitorFactory = (function () {
             });
         },
 
-        'ELEMENT/POINT': function (unit, data) {
+        'ELEMENT/POINT': function (unit, filteredData, srcData) {
 
             var options = unit.options || {};
 
@@ -196,9 +196,7 @@ var TNodeVisitorFactory = (function () {
                 .data
                 .scale
                 .color10()
-                .domain(_.uniq(data.map(function (el) {
-                    return el[unit.color];
-                })));
+                .domain(_(srcData).chain().pluck(unit.color).uniq().value());
 
             var size = d3
                 .scale
@@ -206,7 +204,7 @@ var TNodeVisitorFactory = (function () {
                 .range([0, options.width / 100])
                 .domain([
                     0,
-                    _(data).chain().pluck(unit.size).max().value()
+                    _(srcData).chain().pluck(unit.size).max().value()
                 ]);
 
             var update = function () {
@@ -229,13 +227,13 @@ var TNodeVisitorFactory = (function () {
                     });
             };
 
-            var elements = options.container.selectAll('.dot').data(data);
+            var elements = options.container.selectAll('.dot').data(filteredData);
             elements.call(update);
             elements.enter().append('circle').call(update);
             elements.exit().remove();
         },
 
-        'ELEMENT/INTERVAL': function (unit, srcData) {
+        'ELEMENT/INTERVAL': function (unit, filteredData, srcData) {
             var options = unit.options || {};
 
             var update = function () {
@@ -254,13 +252,13 @@ var TNodeVisitorFactory = (function () {
             };
 
 
-            var elements = options.container.selectAll(".bar").data(srcData);
+            var elements = options.container.selectAll(".bar").data(filteredData);
             elements.call(update);
             elements.enter().append('rect').call(update);
             elements.exit().remove();
         },
 
-        'ELEMENT/LINE': function (unit, data) {
+        'ELEMENT/LINE': function (unit, filteredData, srcData) {
             var options = unit.options || {};
 
             var updatePaths = function () {
@@ -293,7 +291,7 @@ var TNodeVisitorFactory = (function () {
                 .attr("class", "line")
                 .attr('stroke', '#4daf4a')
                 .append("path")
-                .datum(data)
+                .datum(filteredData)
                 .attr("d", line);
 
             /*.selectAll('.line').data(data);

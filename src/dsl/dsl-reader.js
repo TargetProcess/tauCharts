@@ -25,7 +25,7 @@ DSLReader.prototype = {
             left: 0
         };
         var renderLogicalGraphRecursively = function (unitRef, srcData) {
-            return TNodeVisitorFactory(unitRef.type)(unitRef, _(srcData).filter(unitRef.$filter), renderLogicalGraphRecursively);
+            return TNodeVisitorFactory(unitRef.type)(unitRef, _(srcData).filter(unitRef.$filter), srcData, renderLogicalGraphRecursively);
         };
         renderLogicalGraphRecursively(refUnit, rawData);
         return refUnit.options.container;
