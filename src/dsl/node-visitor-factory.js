@@ -32,27 +32,27 @@ var TNodeVisitorFactory = (function () {
 
 
         var xs = nestedAxes.axes[0];
-        var xScales = nestedAxes.$scales[xs.scaleDim][getRangeMethod(xs.scaleType)]([0, sizes.width - 20], 0.1);
+        var xScales = nestedAxes.$scales[xs.scaleDim][getRangeMethod(xs.scaleType)]([0, sizes.width - sizes.paddingX*2], 0.1);
         // xScales.
         container.selectAll(".x.axis.nest")
             .data(groupX)
             .enter().append("g")
             .attr("class", "x axis nest")
             .attr("transform", function (d, ind) {
-                return "translate(" + ((ind) * sizes.width + 10) + "," + sizes.containerHeight + ")";
+                return "translate(" + ((ind) * sizes.width + sizes.paddingY) + "," + sizes.containerHeight + ")";
             })
             .each(function (d) {
                 d3.select(this).call(d3.svg.axis().scale(xScales).orient('bottom'));
             }
         );
         var ys = nestedAxes.axes[1];
-        var yScales = nestedAxes.$scales[ys.scaleDim][getRangeMethod(ys.scaleType)]([sizes.height - 20, 0], 0.1);
+        var yScales = nestedAxes.$scales[ys.scaleDim][getRangeMethod(ys.scaleType)]([sizes.height - sizes.paddingY*2, 0], 0.1);
         container.selectAll(".y.axis.nest")
             .data(groupY)
             .enter().append("g")
             .attr("class", "y axis nest")
             .attr("transform", function (d, ind) {
-                return "translate(" + 0 + "," + (ind * sizes.height + 5) + ")";
+                return "translate(" + 0 + "," + (ind * sizes.height + sizes.paddingY/2) + ")";
             })
             .each(function (d) {
                 d3.select(this).call(d3.svg.axis().scale(yScales).orient('left'));
@@ -69,8 +69,8 @@ var TNodeVisitorFactory = (function () {
             var y = _.defaults(axes[1] || {}, {scaleOrient: 'left'});
             var PX = 36;
             var PY = 18;
-            var paddingForNestedX = 10;
-            var paddingForNestedY = 10;
+            var paddingForNestedX = 5;
+            var paddingForNestedY = 5;
             var bubbleAxes = getBubbleAxis(node);
             var existBubbleAxes = bubbleAxes.axes.length;
             if (x.bubble === true && y.bubble === true) {
@@ -162,7 +162,9 @@ var TNodeVisitorFactory = (function () {
                     {
                         width: cellW,
                         height: cellH,
-                        containerHeight: H
+                        containerHeight: H,
+                        paddingX:paddingForNestedX,
+                        paddingY:paddingForNestedY
                     }
                 );
             }
