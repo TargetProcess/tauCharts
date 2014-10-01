@@ -132,49 +132,70 @@
 
     var complex_scatter = {
         container: '#complex-container',
-        W: 800,
-        H: 800,
+        W: 1602,
+        H: 1602,
         unit: {
             type: 'COORDS.RECT',
             func: 'CROSS',
             axes: [
-                {scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>'},
-                {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', lwidth: 120}
+                null,
+                {
+                    scaleDim: 'project',
+                    scaleType: 'ordinal',
+                    label: '<h4>Projects</h4>',
+                    lwidth: 36
+                }
             ],
             unit: [
                 {
                     type: 'COORDS.RECT',
-                    showGridLines: 'xy',
+                    func: 'CROSS',
                     axes: [
+                        null,
                         {
-                            scaleDim: 'cycleTime',
-                            scaleType: 'linear',
-                            label: '<h4>cycle time</h4>',
-                            hide: true,
-                            lwidth: 0,
-                            rwidth: 0,
-                            padding: 0,
-                            bubble: true
-                        },
-                        {
-                            scaleDim: 'effort',
-                            scaleType: 'linear',
-                            label: '<h4>effort</h4>',
-                            hide: true,
-                            lwidth: 0,
-                            rwidth: 0,
-                            padding: 0,
-                            bubble: true
+                            scaleDim: 'team',
+                            scaleType: 'ordinal',
+                            label: '<h4>Teams</h4>',
+                            lwidth: 120
                         }
                     ],
                     unit: [
                         {
-                            type: 'ELEMENT/POINT',
-                            x: 'cycleTime',
-                            y: 'effort',
-                            color: 'effort',
-                            size: 'cycleTime',
-                            shape: null
+                            type: 'COORDS.RECT',
+                            showGridLines: 'xy',
+                            axes: [
+                                {
+                                    scaleDim: 'cycleTime',
+                                    scaleType: 'linear',
+                                    label: '<h4>cycle time</h4>',
+                                    hide: true,
+                                    // lwidth: 24,
+                                    lwidth: 0,
+                                    rwidth: 0,
+                                    padding: 0,
+                                    bubble: true
+                                },
+                                {
+                                    scaleDim: 'effort',
+                                    scaleType: 'linear',
+                                    label: '<h4>effort</h4>',
+                                    // hide: true,
+                                    lwidth: 24,
+                                    rwidth: 0,
+                                    padding: 0,
+                                    bubble: true
+                                }
+                            ],
+                            unit: [
+                                {
+                                    type: 'ELEMENT/POINT',
+                                    x: 'cycleTime',
+                                    y: 'effort',
+                                    color: 'effort',
+                                    size: 'cycleTime',
+                                    shape: null
+                                }
+                            ]
                         }
                     ]
                 }

@@ -254,35 +254,35 @@ var TNodeVisitorFactory = (function () {
         'COORDS.RECT': function (node, continueTraverse) {
 
             var options = node.options || {};
-            var axes = node.axes;
+            var axes = _(node.axes).map(function(axis, i) {
+                var a = _.isArray(axis) ? axis : [axis];
+                a[0] = _.defaults(
+                    a[0] || {},
+                    {
+                        scaleOrient: (i === 0 ? 'bottom' : 'left'),
+                        lwidth: 0,
+                        rwidth: 0,
+                        padding: 0
+                    });
+                return a;
+            });
 
-            var x = _.defaults(
-                axes[0] || {},
-                {
-                    scaleOrient: 'bottom',
-                    lwidth: 36,
-                    rwidth: 12,
-                    padding: 0
-                });
+            var x = axes[0][0];
+            var y = axes[1][0];
 
-            var y = _.defaults(
-                axes[1] || {},
-                {
-                    scaleOrient: 'left',
-                    lwidth: 36,
-                    rwidth: 12,
-                    padding: 0
-                });
+            var T = options.top  + _(axes[0]).reduce(function(memo, x) { return memo + x.rwidth; }, 0);
+            var L = options.left + _(axes[1]).reduce(function(memo, y) { return memo + y.lwidth + y.padding; }, 0);
 
-            var L = options.left + y.lwidth + y.padding;
-            var T = options.top  + x.rwidth;
-            var W = options.width  - (y.lwidth + y.rwidth + y.padding);
-            var H = options.height - (x.lwidth + x.rwidth + x.padding);
+            var fnPaddings = function(memo, a) { return memo + a.lwidth + a.rwidth + a.padding; };
+
+            var W = options.width  - _(axes[1]).reduce(fnPaddings, 0);
+            var H = options.height - _(axes[0]).reduce(fnPaddings, 0);
 
             var xScale = x.scaleDim && node.scale(x.scaleDim, x.scaleType)[getRangeMethod(x.scaleType)]([0, W], 0.1);
-            axes[0].scale = xScale;
             var yScale = y.scaleDim && node.scale(y.scaleDim, y.scaleType)[getRangeMethod(y.scaleType)]([H, 0], 0.1);
-            axes[1].scale = yScale;
+
+            axes[0][0].scale = xScale;
+            axes[1][0].scale = yScale;
 
             var X_AXIS_POS = [0, H + x.padding];
             var Y_AXIS_POS = [0 - y.padding, 0];
