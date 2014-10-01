@@ -16,11 +16,6 @@
     <script src="../src/charts/scatterplot.js"></script>
     <script src="../src/charts/bar.js"></script>
     <script src="../src/tau.plugins.js"></script>
-    <script src="../src/dsl/dsl-reader.js"></script>
-
-    <script src="../src/dsl/matrix.js"></script>
-    <script src="../src/dsl/unit-visitor-factory.js"></script>
-    <script src="../src/dsl/node-visitor-factory.js"></script>
 
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
@@ -37,7 +32,7 @@
 
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
-    <script src="../src/dsl/tau.newCharts.js"></script>
+    <script src="../build/tau.newCharts.js"></script>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/oldschool.css" rel="stylesheet"/>
@@ -194,19 +189,19 @@
                 return r;
             });
 
-    var chart = new Chart({
+    var chart = new tauChart({
         data: rawData,
         spec: def,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
     });
 
-    var scatterChart = new Chart({
+    var scatterChart = new tauChart({
         data: rawData,
         spec: scatter,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
     });
 
-    var complexChart = new Chart({
+    var complexChart = new tauChart({
         data: rawData,
         spec: complex_scatter,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]

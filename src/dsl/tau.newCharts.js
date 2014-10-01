@@ -1,3 +1,4 @@
+import {DSLReader} from './dsl-reader'
 function Chart(config) {
     this.config = _.defaults(config, {
         spec: null,
@@ -27,6 +28,8 @@ Chart.prototype = {
         return d3.select(el).node().appendChild(this._chart);
     }*/
 };
+
+export {Chart}
 
 //plugins
 /** @class

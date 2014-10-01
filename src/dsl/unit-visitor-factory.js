@@ -1,3 +1,4 @@
+import {TMatrix} from './matrix'
 var TUnitVisitorFactory = (function () {
 
     var getDomain = function (data, scaleDim, scaleType) {
@@ -93,3 +94,5 @@ var TUnitVisitorFactory = (function () {
     };
 
 })();
+
+export {TUnitVisitorFactory}

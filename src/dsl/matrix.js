@@ -53,3 +53,5 @@ var TMatrix = (function () {
     return Matrix;
 
 })();
+
+export {TMatrix}

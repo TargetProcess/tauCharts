@@ -1,3 +1,6 @@
+import {TUnitVisitorFactory} from './unit-visitor-factory';
+import {TNodeVisitorFactory} from './node-visitor-factory';
+
 var DSLReader = function (ast) {
     this.ast = ast;
 };
@@ -68,3 +71,5 @@ DSLReader.prototype = {
         return refUnit.options.container;
     }
 };
+
+export {DSLReader};

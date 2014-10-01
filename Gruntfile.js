@@ -21,6 +21,13 @@ module.exports = function (grunt) {
                 dest: 'build/<%= pkg.name %>.js'
             }
         },
+        compile: {
+            build: {
+                cwd: "src/dsl/",
+                src: ["tau.newCharts.js"],
+                dest: "build/tau.newCharts.js"
+            }
+        },
         uglify: {
             options: {
                 banner: '<%= banner %>'
@@ -81,7 +88,7 @@ module.exports = function (grunt) {
         },
         watch: {
             files: '<%= jshint.all.src %>',
-            tasks: ['bowercopy', 'concat', 'uglify']
+            tasks: ['compile']
         },
         githooks: {
             all: {
@@ -92,6 +99,8 @@ module.exports = function (grunt) {
             }
         }
     });
+    // load local tasks
+    grunt.loadTasks("tasks");
 
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -107,5 +116,6 @@ module.exports = function (grunt) {
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['githooks', 'bowercopy', 'jshint', 'concat', 'uglify']);
-    grunt.registerTask('build', ['concat', 'uglify', 'shell:gitadd']);
+    grunt.registerTask('build', ['concat','uglify', 'shell:gitadd']);
+    grunt.registerTask('watching', ['watch']);
 };

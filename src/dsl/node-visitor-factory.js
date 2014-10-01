@@ -1,6 +1,6 @@
 var TNodeVisitorFactory = (function () {
 
-    var translate = function (left, top) {
+    var translate = (left, top) => {
         return 'translate(' + left + ',' + top + ')';
     };
 
@@ -450,3 +450,5 @@ var TNodeVisitorFactory = (function () {
     };
 
 })();
+
+export {TNodeVisitorFactory}
