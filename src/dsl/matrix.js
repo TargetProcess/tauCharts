@@ -54,4 +54,4 @@ var TMatrix = (function () {
 
 })();
 
-export {TMatrix}
+export {TMatrix};

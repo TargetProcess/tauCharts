@@ -77,7 +77,7 @@ var TNodeVisitorFactory = (function () {
     };
 
     var drawNestedAxes = function (nestedAxesConfig, container, srcData, dimensions, sizes) {
-        container = container.append('g').attr("class", "axes nest");
+        container.append('g').attr("class", "axes nest");
         var nestedAxes = nestedAxesConfig;
         var groupX = _.chain(srcData).map(function (item) {
             return item[dimensions.x];
@@ -144,7 +144,7 @@ var TNodeVisitorFactory = (function () {
             var H = options.height - 2 * PY;
 
 
-            this.container = options
+            var container = options
                 .container
                 .append('g')
                 .attr('class', 'cell')
@@ -156,7 +156,7 @@ var TNodeVisitorFactory = (function () {
                 xScale = node.$scales[x.scaleDim][getRangeMethod(x.scaleType)]([0, W], 0.1);
                 if (x.bubble !== true) {
                     var xAxis = d3.svg.axis().scale(xScale).orient(x.scaleOrient);
-                    this.container
+                    container
                         .append('g')
                         .attr('class', 'x axis nest')
                         .attr('transform', translate(0, H + 25))
@@ -169,7 +169,7 @@ var TNodeVisitorFactory = (function () {
                 yScale = node.$scales[y.scaleDim][getRangeMethod(y.scaleType)]([H, 0], 0.1);
                 if (y.bubble !== true) {
                     var yAxis = d3.svg.axis().scale(yScale).orient(y.scaleOrient);
-                    this.container
+                    container
                         .append('g')
                         .attr('class', 'y axis')
                         .attr('transform', translate(-25, 0))
@@ -179,7 +179,7 @@ var TNodeVisitorFactory = (function () {
 
             if (node.showGrid) {
 
-                var grids = this.container.insert('g', ':first-child').attr('class', 'grids');
+                var grids = container.insert('g', ':first-child').attr('class', 'grids');
 
                 if (xScale) {
                     var xGridAxis = d3.svg.axis()
@@ -203,7 +203,7 @@ var TNodeVisitorFactory = (function () {
                 grids.selectAll('text').remove();
             }
 
-            var grid = this.container
+            var grid = container
                 .append('g')
                 .attr('class', 'grid')
                 .attr('transform', translate(0, 0));
@@ -216,7 +216,7 @@ var TNodeVisitorFactory = (function () {
             if(existBubbleAxes) {
                 drawNestedAxes(
                     bubbleAxes,
-                    this.container,
+                    container,
                     node.partition(),
                     {
                         x: x.scaleDim,
@@ -287,16 +287,16 @@ var TNodeVisitorFactory = (function () {
             var X_AXIS_POS = [0, H + x.padding];
             var Y_AXIS_POS = [0 - y.padding, 0];
 
-            this.container = options
+            var container = options
                 .container
                 .append('g')
                 .attr('class', 'cell')
                 .attr('transform', translate(L, T));
 
-            !x.hide && fnDrawDimAxis.call(this.container, x, X_AXIS_POS, 'x axis');
-            !y.hide && fnDrawDimAxis.call(this.container, y, Y_AXIS_POS, 'y axis');
+            !x.hide && fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+            !y.hide && fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
 
-            var grid = fnDrawGrid.call(this.container, node, H, W);
+            var grid = fnDrawGrid.call(container, node, H, W);
 
             var nR = node.$matrix.sizeR();
             var nC = node.$matrix.sizeC();
@@ -425,7 +425,7 @@ var TNodeVisitorFactory = (function () {
                     return options.yScale(d[node.y]);
                 });
 
-            var lines = this.container
+            var lines = options.container
                 .append('g')
                 .attr("class", "line")
                 .attr('stroke', '#4daf4a')

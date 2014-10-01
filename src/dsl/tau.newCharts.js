@@ -1,4 +1,4 @@
-import {DSLReader} from './dsl-reader'
+import {DSLReader} from './dsl-reader';
 function Chart(config) {
     this.config = _.defaults(config, {
         spec: null,
@@ -29,7 +29,7 @@ Chart.prototype = {
     }*/
 };
 
-export {Chart}
+export {Chart};
 
 //plugins
 /** @class

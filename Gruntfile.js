@@ -54,7 +54,8 @@ module.exports = function (grunt) {
                     "src/**/*.js", "Gruntfile.js"
                 ],
                 options: {
-                    "loopfunc": true
+                    "loopfunc": true,
+                    "esnext": true
                 }
             }
         },
@@ -82,7 +83,9 @@ module.exports = function (grunt) {
                 files: {
                     "d3.js": "d3/d3.js",
                     "underscore.js": "underscore/underscore.js",
-                    "jquery.js":"jquery/dist/jquery.js"
+                    "jquery.js":"jquery/dist/jquery.js",
+                    "traceur.js":"traceur/traceur.js",
+                    "es6-module-loader.js":"es6-module-loader/dist/es6-module-loader.src.js"
                 }
             }
         },
@@ -117,5 +120,5 @@ module.exports = function (grunt) {
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['githooks', 'bowercopy', 'jshint', 'concat', 'uglify']);
     grunt.registerTask('build', ['concat','uglify', 'shell:gitadd']);
-    grunt.registerTask('watching', ['watch']);
+    grunt.registerTask('watching', ['compile','watch']);
 };
