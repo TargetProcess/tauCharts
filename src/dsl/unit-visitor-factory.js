@@ -1,20 +1,6 @@
 import {TMatrix} from './matrix';
+
 var TUnitVisitorFactory = (function () {
-
-    var getDomain = function (data, scaleDim, scaleType) {
-        var domain = _(data).chain().pluck(scaleDim);
-        return ((scaleType === 'ordinal')?
-                domain.uniq().value():
-                d3.extent(domain.value()));
-    };
-
-    var metaFilter = function (filterPredicates, row) {
-        return _.every(
-                filterPredicates,
-                function (fnPredicate) {
-                    return fnPredicate(row);
-                });
-    };
 
     var createEqualPredicate = function (propName, shouldEqualTo) {
         return function (row) {
@@ -23,67 +9,63 @@ var TUnitVisitorFactory = (function () {
     };
 
     var TFuncMap = {
-        'CROSS': function (srcData, dimX, dimY) {
+        'CROSS': function (root, dimX, dimY) {
 
-            var domains = {
-                x: _(srcData).chain().pluck(dimX).uniq().value(),
-                y: _(srcData).chain().pluck(dimY).uniq().value().reverse()
-            };
+            var domainX = root.domain(dimX);
+            var domainY = root.domain(dimY).reverse();
 
-            return _(domains.y).map(function (RV) {
-                return _(domains.x).map(function (RC) {
-                    return metaFilter.bind(
-                        null,
-                        [
-                            createEqualPredicate(dimX, RC),
-                            createEqualPredicate(dimY, RV)
-                        ]);
+            return _(domainY).map((RV) =>
+            {
+                return _(domainX).map((RC) =>
+                {
+                    return [
+                        createEqualPredicate(dimX, RC),
+                        createEqualPredicate(dimY, RV)
+                    ];
                 });
             });
         }
     };
 
+    var EMPTY_CELL_FILTER = [];
+
     var TUnitMap = {
 
-        'COORDS/RECT': function (unit, srcData, continueTraverse) {
+        'COORDS/RECT': function (unit, continueTraverse) {
 
-            var x = _.defaults(unit.axes[0] || {}, {});
-            var y = _.defaults(unit.axes[1] || {}, {});
-
-            var $scales = _.reduce(
-                unit.axes,
-                function (memo, axis) {
-                    var x = _.defaults(axis || {}, {});
-                    memo[x.scaleDim] = ((x.scaleDim) ?
-                        d3.scale[x.scaleType]().domain(getDomain(srcData, x.scaleDim, x.scaleType)):
-                        null);
-                    return memo;
-                },
-                {});
-
-            unit.$filter = unit.$filter || function() { return true; };
-            var unitFltr = unit.$filter;
-            var unitFunc = (TFuncMap[unit.func] || function () {
-                return [
-                    [unitFltr]
-                ]; // array: [1 x 1]
-            });
-
-            var matrixOfPrFilters = new TMatrix(unitFunc(srcData, x.scaleDim, y.scaleDim));
-            var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
-            matrixOfPrFilters.iterate(function (r, c, predicateRC) {
-                var logicalUnits = _.map(unit.unit, function (subUnit) {
-                    return continueTraverse(
-                        _.extend({ $filter: predicateRC, $scales: $scales }, subUnit),
-                        srcData);
+            var root = _.defaults(
+                unit,
+                {
+                    $filter: EMPTY_CELL_FILTER
                 });
-                matrixOfUnitNodes.setRC(r, c, logicalUnits);
+
+            var x = _.defaults(root.axes[0] || {}, {});
+            var y = _.defaults(root.axes[1] || {}, {});
+
+            var unitFunc = TFuncMap[root.func] || (() => [[EMPTY_CELL_FILTER]]);
+
+            var matrixOfPrFilters = new TMatrix(unitFunc(root, x.scaleDim, y.scaleDim));
+            var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
+
+            matrixOfPrFilters.iterate((row, col, $filterRC) =>
+            {
+                var cellFilter = root.$filter.concat($filterRC);
+                var cellNodes = _(root.unit).map((sUnit) =>
+                {
+                    // keep arguments order. cloned objects are created
+                    return _.extend({}, sUnit, { $filter: cellFilter });
+                });
+                matrixOfUnitNodes.setRC(row, col, cellNodes);
             });
 
-            unit.$scales = $scales;
-            unit.$matrix = matrixOfUnitNodes;
+            root.$matrix = matrixOfUnitNodes;
 
-            return unit;
+            matrixOfUnitNodes.iterate((r, c, cellNodes) =>
+            {
+                _.each(cellNodes, (refSubNode) => continueTraverse(refSubNode));
+            });
+
+            return root;
         }
     };
 

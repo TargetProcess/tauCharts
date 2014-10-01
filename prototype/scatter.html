@@ -54,24 +54,20 @@
 
     var def = {
         container: '#chart-container',
-        dimensions: {
-            GDP: 'Gdp',
-            HPNS: 'Happiness',
-            CNTRY: 'Country'
-        },
         W: 1000,
         H: 800,
         unit: {
             type: 'COORDS/RECT',
             func: 'CROSS',
             axes: [
-                //{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
-                //{ scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }
+                null, //{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
+                null//{ scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }
             ],
             unit: [
                 {
                     type: 'COORDS/RECT',
-                    showGrid: true,
+                    padding: { L:36, B:36, R:8, T:8 },
+                    showGridLines: 'xy',
                     axes: [
                         {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
                         {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}

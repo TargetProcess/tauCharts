@@ -61,14 +61,10 @@
             container: '#chart-container',
             W: 1000,
             H: 800,
-            dimensions: {
-                GDP: 'Gdp',
-                HPNS: 'Happiness',
-                CNTRY: 'Country'
-            },
             unit: {
                 type: 'COORDS/RECT',
                 func: 'CROSS',
+                padding: { L:80, B:36, R:8, T:8 },
                 axes: [
                     null,
                     {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
@@ -76,7 +72,8 @@
                 unit: [
                     {
                         type: 'COORDS/RECT',
-                        showGrid: true,
+                        padding: { L:36, B:36, R:8, T:8 },
+                        showGridLines: 'xy',
                         axes: [
                             {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>', bubble:true},
                             {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>', bubble:true}

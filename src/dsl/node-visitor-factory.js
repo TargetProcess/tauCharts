@@ -270,13 +270,15 @@ var TNodeVisitorFactory = (function () {
             var x = axes[0][0];
             var y = axes[1][0];
 
-            var T = options.top  + _(axes[0]).reduce((memo, x) => memo + x.rwidth, 0);
-            var L = options.left + _(axes[1]).reduce((memo, y) => memo + y.lwidth + y.padding, 0);
+            var padding = _.defaults(
+                node.padding || {},
+                { L:0, B:0, R:0, T:0 });
 
-            var fnPaddings = (memo, a) => memo + a.lwidth + a.rwidth + a.padding;
+            var L = options.left + padding.L;
+            var T = options.top  + padding.T;
 
-            var W = options.width  - _(axes[1]).reduce(fnPaddings, 0);
-            var H = options.height - _(axes[0]).reduce(fnPaddings, 0);
+            var W = options.width  - (padding.L + padding.R);
+            var H = options.height - (padding.T + padding.B);
 
             var xScale = x.scaleDim && node.scale(x.scaleDim, x.scaleType)[getRangeMethod(x.scaleType)]([0, W], 0.1);
             var yScale = y.scaleDim && node.scale(y.scaleDim, y.scaleType)[getRangeMethod(y.scaleType)]([H, 0], 0.1);
@@ -439,6 +441,8 @@ var TNodeVisitorFactory = (function () {
              lines.exit().remove();*/
         }
     };
+
+    TNodeMap['COORDS/RECT'] = TNodeMap['COORDS.RECT'];
 
     return function (unitType) {
 

@@ -60,17 +60,18 @@
         W: 800,
         H: 800,
         unit: {
-            type: 'COORDS/RECT',
+            type: 'COORDS.RECT',
+            padding: { L:120, B:24, R:8, T:8 },
             func: 'CROSS',
-            showGrid: false,
             axes: [
                 {scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>'},
                 {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>'}
             ],
             unit: [
                 {
-                    type: 'COORDS/RECT',
-                    showGrid: true,
+                    type: 'COORDS.RECT',
+                    showGridLines: 'xy',
+                    padding: { L:36, B:36, R:8, T:8 },
                     axes: [
                         {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>', bubble :true},
                         {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>', bubble:true}
@@ -97,13 +98,12 @@
         unit: {
             type: 'COORDS.RECT',
             showGridLines: 'xy',
+            padding: { L:36, B:36, R:8, T:8 },
             axes: [
                 {
                     scaleDim: 'cycleTime',
                     scaleType: 'linear',
                     label: '<h4>cycle time</h4>',
-                    lwidth: 36,
-                    rwidth: 12,
                     padding: 8,
                     bubble: true
                 },
@@ -111,8 +111,6 @@
                     scaleDim: 'effort',
                     scaleType: 'linear',
                     label: '<h4>effort</h4>',
-                    lwidth: 36,
-                    rwidth: 12,
                     padding: 8,
                     bubble: true
                 }
@@ -137,42 +135,40 @@
         unit: {
             type: 'COORDS.RECT',
             func: 'CROSS',
+            padding: { L:36, B:2, R:0, T:2 },
             axes: [
                 null,
                 {
                     scaleDim: 'project',
                     scaleType: 'ordinal',
-                    label: '<h4>Projects</h4>',
-                    lwidth: 36
+                    label: '<h4>Projects</h4>'
                 }
             ],
             unit: [
                 {
                     type: 'COORDS.RECT',
                     func: 'CROSS',
+                    padding: { L:120, B:4, R:8, T:4 },
                     axes: [
                         null,
                         {
                             scaleDim: 'team',
                             scaleType: 'ordinal',
-                            label: '<h4>Teams</h4>',
-                            lwidth: 120
+                            label: '<h4>Teams</h4>'
                         }
                     ],
                     unit: [
                         {
                             type: 'COORDS.RECT',
                             showGridLines: 'xy',
+                            padding: { L:36, B:4, R:8, T:4 },
                             axes: [
                                 {
                                     scaleDim: 'cycleTime',
                                     scaleType: 'linear',
                                     label: '<h4>cycle time</h4>',
                                     hide: true,
-                                    // lwidth: 24,
-                                    lwidth: 0,
-                                    rwidth: 0,
-                                    padding: 0,
+                                    padding: 4,
                                     bubble: true
                                 },
                                 {
@@ -180,9 +176,7 @@
                                     scaleType: 'linear',
                                     label: '<h4>effort</h4>',
                                     // hide: true,
-                                    lwidth: 24,
-                                    rwidth: 0,
-                                    padding: 0,
+                                    padding: 4,
                                     bubble: true
                                 }
                             ],

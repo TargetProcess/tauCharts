@@ -1,6 +1,15 @@
 import {TUnitVisitorFactory} from './unit-visitor-factory';
 import {TNodeVisitorFactory} from './node-visitor-factory';
 
+var SCALE_STRATEGIES = {
+
+    'ordinal': (domain) => domain,
+
+    'linear': (domain) => d3.extent(domain)
+};
+
+var metaFilter = (filterPredicates, row) => _.every(filterPredicates, (fnPredicate) => fnPredicate(row));
+
 var DSLReader = function (ast) {
     this.ast = ast;
 };
@@ -8,10 +17,26 @@ var DSLReader = function (ast) {
 DSLReader.prototype = {
     traverse: function (rawData) {
         var unit = this.ast.unit;
-        var buildLogicalGraphRecursively = function (unitRef, srcData) {
-            return TUnitVisitorFactory(unitRef.type)(unitRef, srcData, buildLogicalGraphRecursively);
+
+        var decorateUnit = function(unit) {
+
+            unit.source = (filter) => _(rawData).filter(filter || (() => true));
+
+            unit.partition = () => unit.source(unit.$filter);
+
+            // TODO: memoize
+            unit.domain = (dim) => _(rawData).chain().pluck(dim).uniq().value();
+
+            // TODO: memoize
+            unit.scale = (scaleDim, scaleType) => d3.scale[scaleType]().domain(SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)));
+
+            return unit;
         };
-        return buildLogicalGraphRecursively(unit, rawData);
+
+        var buildLogicalGraphRecursively = function (unitRef) {
+            return TUnitVisitorFactory(unitRef.type)(decorateUnit(unitRef), buildLogicalGraphRecursively);
+        };
+        return buildLogicalGraphRecursively(unit);
     },
     traverseToNode: function (refUnit, rawData, c) {
         this.container =  d3
@@ -29,35 +54,17 @@ DSLReader.prototype = {
             left: 0
         };
 
-        var SCALE_STRATEGIES = {
-            'ordinal': function(domain) {
-                return domain;
-            },
-
-            'linear': function(domain) {
-                return d3.extent(domain);
-            }
-        };
-
         var decorateUnit = function(unit) {
 
-            unit.source = function(filter) {
-                return _(rawData).filter(filter || _.identity.bind(_, true));
-            };
+            unit.source = (filter) => _(rawData).filter(filter || (() => true));
 
-            unit.partition = function() {
-                return this.source(this.$filter);
-            };
+            unit.partition = () => unit.source(metaFilter.bind(null, unit.$filter));
 
             // TODO: memoize
-            unit.domain = function(dim) {
-                return _(rawData).chain().pluck(dim).uniq().value();
-            };
+            unit.domain = (dim) => _(rawData).chain().pluck(dim).uniq().value();
 
             // TODO: memoize
-            unit.scale = function(scaleDim, scaleType) {
-                return d3.scale[scaleType]().domain(SCALE_STRATEGIES[scaleType](this.domain(scaleDim)));
-            };
+            unit.scale = (scaleDim, scaleType) => d3.scale[scaleType]().domain(SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)));
 
             return unit;
         };
