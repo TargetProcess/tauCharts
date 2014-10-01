@@ -270,10 +270,10 @@ var TNodeVisitorFactory = (function () {
             var x = axes[0][0];
             var y = axes[1][0];
 
-            var T = options.top  + _(axes[0]).reduce(function(memo, x) { return memo + x.rwidth; }, 0);
-            var L = options.left + _(axes[1]).reduce(function(memo, y) { return memo + y.lwidth + y.padding; }, 0);
+            var T = options.top  + _(axes[0]).reduce((memo, x) => memo + x.rwidth, 0);
+            var L = options.left + _(axes[1]).reduce((memo, y) => memo + y.lwidth + y.padding, 0);
 
-            var fnPaddings = function(memo, a) { return memo + a.lwidth + a.rwidth + a.padding; };
+            var fnPaddings = (memo, a) => memo + a.lwidth + a.rwidth + a.padding;
 
             var W = options.width  - _(axes[1]).reduce(fnPaddings, 0);
             var H = options.height - _(axes[0]).reduce(fnPaddings, 0);
