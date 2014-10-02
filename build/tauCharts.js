@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-10-01
+/*! tauCharts - v0.0.1 - 2014-10-02
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 // jshint ignore: start

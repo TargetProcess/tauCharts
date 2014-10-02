@@ -32,8 +32,8 @@
     "grunt-devserver": "^0.5.0",
     "grunt-githooks": "",
     "grunt-shell": "",
-    "es6-module-transpiler": "^0.6.0",
-    "es6-transpiler": "^0.7.14-2",
+    "es6-module-transpiler": "0.8.0",
+    "es6-transpiler": "0.7.17",
     "esprima": "git://github.com/esnext/esprima#harmony-esnext",
     "recast": "^0.6.6",
     "recast": ""

@@ -7,7 +7,7 @@
         this.tauChart = definition();
     }
 })(function() {
-    var $$matrix$$TMatrix = (function () {
+    var matrix$$TMatrix = (function () {
     
         var Matrix = function (r, c) {
     
@@ -63,7 +63,7 @@
     
     })();
 
-    var $$unit$visitor$factory$$TUnitVisitorFactory = (function () {
+    var unit$visitor$factory$$TUnitVisitorFactory = (function () {
     
         var createEqualPredicate = function(propName, shouldEqualTo)  {return function(row)  {return row[propName] === shouldEqualTo}} ;
     
@@ -103,8 +103,8 @@
     
                 var unitFunc = TFuncMap[root.func] || (function()  {return [[EMPTY_CELL_FILTER]]});
     
-                var matrixOfPrFilters = new $$matrix$$TMatrix(unitFunc(root, x.scaleDim, y.scaleDim));
-                var matrixOfUnitNodes = new $$matrix$$TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
+                var matrixOfPrFilters = new matrix$$TMatrix(unitFunc(root, x.scaleDim, y.scaleDim));
+                var matrixOfUnitNodes = new matrix$$TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
     
                 matrixOfPrFilters.iterate(function(row, col, $filterRC) 
                 {
@@ -136,7 +136,7 @@
     
     })();
 
-    var $$node$visitor$factory$$TNodeVisitorFactory = (function () {
+    var node$visitor$factory$$TNodeVisitorFactory = (function () {
     
         var translate = function(left, top)  {
             return 'translate(' + left + ',' + top + ')';
@@ -567,22 +567,22 @@
     
     })();
 
-    var $$dsl$reader$$SCALE_STRATEGIES = {
+    var dsl$reader$$SCALE_STRATEGIES = {
     
         'ordinal': function(domain)  {return domain},
     
         'linear': function(domain)  {return d3.extent(domain)}
     };
 
-    var $$dsl$reader$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
+    var dsl$reader$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
 
-    var $$dsl$reader$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
+    var dsl$reader$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
 
-    var $$dsl$reader$$decorateUnit = function(unit, meta, rawData) {
+    var dsl$reader$$decorateUnit = function(unit, meta, rawData) {
     
         unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
     
-        unit.partition = function()  {return unit.source($$dsl$reader$$metaFilter.bind(null, unit.$filter))};
+        unit.partition = function()  {return unit.source(dsl$reader$$metaFilter.bind(null, unit.$filter))};
     
         // TODO: memoize
         unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
@@ -594,17 +594,17 @@
     
             var type = dimx.scaleType;
             var vals = unit.domain(dimx.scaleDim);
-            return d3.scale[type]().domain($$dsl$reader$$SCALE_STRATEGIES[type](vals))[$$dsl$reader$$getRangeMethod(type)](interval, 0.1);
+            return d3.scale[type]().domain(dsl$reader$$SCALE_STRATEGIES[type](vals))[dsl$reader$$getRangeMethod(type)](interval, 0.1);
         };
     
         return unit;
     };
 
-    var $$dsl$reader$$DSLReader = function (ast) {
+    var dsl$reader$$DSLReader = function (ast) {
         this.ast = ast;
     };
 
-    $$dsl$reader$$DSLReader.prototype = {
+    dsl$reader$$DSLReader.prototype = {
     
         traverse: function (rawData, styleEngine) {
     
@@ -648,7 +648,7 @@
     
             var buildLogicalGraphRecursively = function(unitRef) 
             {
-                return $$unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)($$dsl$reader$$decorateUnit(unitRef, meta, rawData), buildLogicalGraphRecursively);
+                return unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)(dsl$reader$$decorateUnit(unitRef, meta, rawData), buildLogicalGraphRecursively);
             };
     
             var unit = this.ast.unit;
@@ -675,7 +675,7 @@
     
             var renderLogicalGraphRecursively = function(unit) 
             {
-                return $$node$visitor$factory$$TNodeVisitorFactory(unit.type)(unit, renderLogicalGraphRecursively);
+                return node$visitor$factory$$TNodeVisitorFactory(unit.type)(unit, renderLogicalGraphRecursively);
             };
     
             renderLogicalGraphRecursively(refUnit);
@@ -684,35 +684,34 @@
         }
     };
 
-    function tau$newCharts$$Chart(config) {
-        this.config = _.defaults(config, {
-            spec: null,
-            data: [],
-            plugins: []
-        });
-        this.plugins = this.config.plugins;
-        this.spec = this.config.spec;
-        this.data = this.config.data;
-        this.reader = new $$dsl$reader$$DSLReader(this.spec);
-        var render = this._render(this.reader.traverse(this.data));
-        this._chart = render.node();
+    var tau$newCharts$$Chart = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+        function Chart(config) {
+            this.config = _.defaults(config, {
+                spec: null,
+                data: [],
+                plugins: []
+            });
+            this.plugins = this.config.plugins;
+            this.spec = this.config.spec;
+            this.data = this.config.data;
+            this.reader = new dsl$reader$$DSLReader(this.spec);
+            var render = this._render(this.reader.traverse(this.data));
+            this._chart = render.node();
     
-        //plugins
-        this._plugins = new tau$newCharts$$Plugins(this.config.plugins);
-        render.selectAll('.i-role-datum').call(tau$newCharts$$propagateDatumEvents(this._plugins));
-    }
-
-    tau$newCharts$$Chart.prototype = {
-        _render: function (graph) {
+            //plugins
+            this._plugins = new tau$newCharts$$Plugins(this.config.plugins);
+            render.selectAll('.i-role-datum').call(tau$newCharts$$propagateDatumEvents(this._plugins));
+        }DP$0(Chart,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+    
+        proto$0._render = function(graph) {
             return this.reader.traverseToNode(graph, this.data);
-        },
-        getSvg: function () {
+        };
+    
+        proto$0.getSvg = function() {
             return this._chart;
-        }/*,
-        appendTo: function (el) {
-            return d3.select(el).node().appendChild(this._chart);
-        }*/
-    };
+        };
+    
+    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})();
 
     //plugins
     /** @class
@@ -810,10 +809,12 @@
             this.mapper = mapper;
         },
     
-        elements: function(){
+        elements: function () {
             return this.svg.selectAll('.i-role-datum');
         }
     });
+
+    var tau$newCharts$$tauChart = tau$newCharts$$Chart;
     "use strict";
     return tau$newCharts$$Chart;
 });
