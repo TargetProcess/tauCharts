@@ -45,6 +45,7 @@
         .axes.nest .axis.nest text {
             font-size: 10px;
         }
+
         .tau-chart {
             width: 1000px;
             height: 800px;
@@ -56,44 +57,38 @@
 <div id="chart-container" class="tau-chart" style="display:inline-block;margin:0px;border: solid 1px;"></div>
 <script>
     System.baseURL = '/tauCharts/src/dsl/';
-    System.import('tau.newCharts').then(function(m) {
+    System.import('tau.newCharts').then(function (m) {
         var def = {
             container: '#chart-container',
             dimensions: {
-                GDP: 'Gdp',
-                HPNS: 'Happiness',
-                CNTRY: 'Country'
+                project: { scaleType: 'ordinal' },
+                team: { scaleType: 'ordinal' },
+                cycleTime: { scaleType: 'linear' },
+                effort: { scaleType: 'linear' }
             },
             W: 1000,
             H: 800,
             unit: {
-                type: 'COORDS/RECT',
-                func: 'CROSS',
+                padding: { L:24, B:24, R:24, T:24 },
+                type: 'COORDS.RECT',
+                showGrid: true,
                 axes: [
-                    //{ scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>' },
-                    //{ scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45 }
+                    {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                    {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
                 ],
                 unit: [
                     {
-                        type: 'COORDS/RECT',
-                        showGrid: true,
-                        axes: [
-                            {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
-                            {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
-                        ],
-                        unit: [
-                            {
-                                type: 'ELEMENT/POINT',
-                                x: 'cycleTime',
-                                y: 'effort',
-                                color: 'team',
-                                size: 'effort',
-                                shape: null
-                            }
-                        ]
+                        type: 'ELEMENT/POINT',
+                        x: 'cycleTime',
+                        y: 'effort',
+                        color: 'team',
+                        size: 'effort',
+                        shape: null
                     }
                 ]
             }
+
+
         };
 
         var rawData = _(getUserStories()).map(function (r) {

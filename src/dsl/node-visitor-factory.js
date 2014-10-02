@@ -319,10 +319,9 @@ var TNodeVisitorFactory = (function () {
             options.xScale = node.scaleTo(node.x, [0, options.width]);
             options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
-            var color = tau
-                .data
-                .scale
-                .color10()
+            var color = d3.scale
+                .ordinal()
+                .range(['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'])
                 .domain(_(srcData).chain().pluck(node.color).uniq().value());
 
             var size = d3

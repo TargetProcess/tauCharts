@@ -18,7 +18,7 @@ module.exports = function (grunt) {
             var result = es6tr.run({
                 filename: this.data.cwd + filename,
                 outputFilename: tmpDir + '/' + filename,
-                globals: {d3: true, _: true, tau: true, Class: true}
+                globals: {d3: true, _: true}
             });
             if (result.errors.length > 0) {
                 grunt.fail.fatal(this.data.cwd + filename + "\n" + result.errors.join("\n"));

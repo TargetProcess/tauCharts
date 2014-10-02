@@ -1,4 +1,6 @@
 import {DSLReader} from './dsl-reader';
+import {Plugins, propagateDatumEvents} from './plugins';
+
 class Chart {
     constructor(config) {
         this.config = _.defaults(config, {
@@ -28,105 +30,4 @@ class Chart {
 
 }
 
-//plugins
-/** @class
- * @extends Plugin */
-var Plugins = Class.extend({
-    /** @constructs */
-    init: function (plugins) {
-        this._plugins = plugins;
-    },
-
-    _call: function (name, args) {
-        for (var i = 0; i < this._plugins.length; i++) {
-            if (typeof(this._plugins[i][name]) == 'function') {
-                this._plugins[i][name].apply(this._plugins[i], args);
-            }
-        }
-    },
-
-    render: function (context, tools) {
-        this._call('render', arguments);
-    },
-
-    click: function (context, tools) {
-        this._call('click', arguments);
-    },
-
-    mouseover: function (context, tools) {
-        this._call('mouseover', arguments);
-    },
-
-    mouseout: function (context, tools) {
-        this._call('mouseout', arguments);
-    },
-
-    mousemove: function (context, tools) {
-        this._call('mousemove', arguments);
-    }
-});
-
-var propagateDatumEvents = function (plugins) {
-    return function () {
-        this
-            .on('click', function (d) {
-                plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
-            })
-            .on('mouseover', function (d) {
-                plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
-            })
-            .on('mouseout', function (d) {
-                plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
-            })
-            .on('mousemove', function (d) {
-                plugins.mousemove(new ElementContext(d), new ChartElementTools(d3.select(this)));
-            });
-    };
-};
-
-/** @class ChartElementTools*/
-var ChartElementTools = Class.extend({
-    /** @constructs */
-    init: function (element) {
-        this.element = element;
-    }
-});
-
-/** @class RenderContext*/
-var RenderContext = Class.extend({
-    /** @constructs */
-    init: function (dataSource) {
-        this.data = dataSource;
-    }
-});
-
-/** @class ElementContext */
-var ElementContext = Class.extend({
-    /**
-     * @constructs
-     * @param datum
-     */
-    init: function (datum) {
-        this.datum = datum;
-    }
-});
-
-/** @class ChartTools */
-var ChartTools = Class.extend({
-    /**
-     * @constructs
-     * @param {ChartLayout} layout
-     * @param {Mapper} mapper
-     */
-    init: function (layout, mapper) {
-        this.svg = layout.svg;
-        this.html = layout.html;
-        this.mapper = mapper;
-    },
-
-    elements: function () {
-        return this.svg.selectAll('.i-role-datum');
-    }
-});
-
-export var tauChart = Chart;
+export {Chart};

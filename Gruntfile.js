@@ -91,7 +91,7 @@ module.exports = function (grunt) {
         },
         watch: {
             files: '<%= jshint.all.src %>',
-            tasks: ['compile']
+            tasks: ['jshint','compile']
         },
         githooks: {
             all: {
@@ -120,5 +120,5 @@ module.exports = function (grunt) {
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['githooks', 'bowercopy', 'jshint', 'concat', 'uglify']);
     grunt.registerTask('build', ['concat','uglify', 'shell:gitadd']);
-    grunt.registerTask('watching', ['compile','watch']);
+    grunt.registerTask('watching', ['compile','jshint','watch']);
 };
