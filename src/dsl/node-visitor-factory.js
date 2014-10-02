@@ -295,8 +295,12 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell')
                 .attr('transform', translate(L, T));
 
-            !x.hide && fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
-            !y.hide && fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            if(!x.hide) {
+                fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+            }
+            if(!y.hide){
+                fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            }
 
             var grid = fnDrawGrid.call(container, node, H, W);
 
@@ -455,4 +459,4 @@ var TNodeVisitorFactory = (function () {
 
 })();
 
-export {TNodeVisitorFactory}
+export {TNodeVisitorFactory};

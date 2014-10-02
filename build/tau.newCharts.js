@@ -7,13 +7,13 @@
         this.tauChart = definition();
     }
 })(function() {
-    var $$matrix$$TMatrix = (function () {
-    
+    var matrix$$TMatrix = (function () {
+
         var Matrix = function (r, c) {
-    
+
             var args = _.toArray(arguments);
             var cube;
-    
+
             if (_.isArray(args[0])) {
                 cube = args[0];
             }
@@ -24,12 +24,12 @@
                     });
                 });
             }
-    
+
             this.cube = cube;
         };
-    
+
         Matrix.prototype = {
-    
+
             iterate: function (iterator) {
                 var cube = this.cube;
                 _.each(cube, function (row, ir) {
@@ -39,44 +39,44 @@
                 });
                 return this;
             },
-    
+
             getRC: function (r, c) {
                 return this.cube[r][c];
             },
-    
+
             setRC: function (r, c, val) {
                 this.cube[r][c] = val;
                 return this;
             },
-    
+
             sizeR: function () {
                 return this.cube.length;
             },
-    
+
             sizeC: function () {
                 var row = this.cube[0] || [];
                 return row.length;
             }
         };
-    
+
         return Matrix;
-    
+
     })();
 
-    var $$unit$visitor$factory$$TUnitVisitorFactory = (function () {
-    
+    var unit$visitor$factory$$TUnitVisitorFactory = (function () {
+
         var createEqualPredicate = function (propName, shouldEqualTo) {
             return function (row) {
                 return row[propName] === shouldEqualTo;
             };
         };
-    
+
         var TFuncMap = {
             'CROSS': function (root, dimX, dimY) {
-    
+
                 var domainX = root.domain(dimX);
                 var domainY = root.domain(dimY).reverse();
-    
+
                 return _(domainY).map(function(RV) 
                 {
                     return _(domainX).map(function(RC) 
@@ -89,27 +89,27 @@
                 });
             }
         };
-    
+
         var EMPTY_CELL_FILTER = [];
-    
+
         var TUnitMap = {
-    
+
             'COORDS/RECT': function (unit, continueTraverse) {
-    
+
                 var root = _.defaults(
                     unit,
                     {
                         $filter: EMPTY_CELL_FILTER
                     });
-    
+
                 var x = _.defaults(root.axes[0] || {}, {});
                 var y = _.defaults(root.axes[1] || {}, {});
-    
+
                 var unitFunc = TFuncMap[root.func] || (function()  {return [[EMPTY_CELL_FILTER]]});
-    
-                var matrixOfPrFilters = new $$matrix$$TMatrix(unitFunc(root, x.scaleDim, y.scaleDim));
-                var matrixOfUnitNodes = new $$matrix$$TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
-    
+
+                var matrixOfPrFilters = new matrix$$TMatrix(unitFunc(root, x.scaleDim, y.scaleDim));
+                var matrixOfUnitNodes = new matrix$$TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
+
                 matrixOfPrFilters.iterate(function(row, col, $filterRC) 
                 {
                     var cellFilter = root.$filter.concat($filterRC);
@@ -120,36 +120,36 @@
                     });
                     matrixOfUnitNodes.setRC(row, col, cellNodes);
                 });
-    
+
                 root.$matrix = matrixOfUnitNodes;
-    
+
                 matrixOfUnitNodes.iterate(function(r, c, cellNodes) 
                 {
                     _.each(cellNodes, function(refSubNode)  {return continueTraverse(refSubNode)});
                 });
-    
+
                 return root;
             }
         };
-    
+
         TUnitMap['COORDS.RECT'] = TUnitMap['COORDS/RECT'];
-    
+
         return function (unitType) {
             return TUnitMap[unitType] || _.identity;
         };
-    
+
     })();
 
-    var $$node$visitor$factory$$TNodeVisitorFactory = (function () {
-    
+    var node$visitor$factory$$TNodeVisitorFactory = (function () {
+
         var translate = function(left, top)  {
             return 'translate(' + left + ',' + top + ')';
         };
-    
+
         var getRangeMethod = function (scaleType) {
             return ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
         };
-    
+
         var fnDrawDimAxis = function(x, AXIS_POSITION, CSS_CLASS) {
             var container = this;
             if (x.scaleDim) {
@@ -160,21 +160,21 @@
                     .call(d3.svg.axis().scale(x.scale).orient(x.scaleOrient));
             }
         };
-    
+
         var fnDrawGrid = function(node, H, W) {
-    
+
             var container = this;
-    
+
             var grid = container
                 .append('g')
                 .attr('class', 'grid')
                 .attr('transform', translate(0, 0));
-    
+
             var linesOptions = (node.showGridLines || '').toLowerCase();
             if (linesOptions.length > 0) {
-    
+
                 var gridLines = grid.append('g').attr('class', 'grid-lines');
-    
+
                 if ((linesOptions.indexOf('x') > -1) && node.axes[0]) {
                     var x = node.axes[0];
                     var xGridAxis = d3
@@ -183,10 +183,10 @@
                         .scale(x.scale)
                         .orient(x.scaleOrient)
                         .tickSize(H);
-    
+
                     gridLines.append('g').call(xGridAxis);
                 }
-    
+
                 if ((linesOptions.indexOf('y') > -1) && node.axes[1]) {
                     var y = node.axes[1];
                     var yGridAxis = d3
@@ -195,17 +195,17 @@
                         .scale(y.scale)
                         .orient(y.scaleOrient)
                         .tickSize(-W);
-    
+
                     gridLines.append('g').call(yGridAxis);
                 }
-    
+
                 // TODO: make own axes and grid instead of using d3's in such tricky way
                 gridLines.selectAll('text').remove();
             }
-    
+
             return grid;
         };
-    
+
         var getBubbleAxis = function (node) {
             var cube = node.$matrix.cube[0];
             if (cube && cube[0] && cube[0][0].axes && cube[0][0].axes[0] && cube[0][0].axes[0].bubble) {
@@ -217,19 +217,19 @@
                 return {axes: []};
             }
         };
-    
+
         var drawNestedAxes = function (nestedAxesConfig, container, srcData, dimensions, sizes) {
             container.append('g').attr("class", "axes nest");
             var nestedAxes = nestedAxesConfig;
             var groupX = _.chain(srcData).map(function (item) {
                 return item[dimensions.x];
             }).unique().value();
-    
+
             var groupY = _.chain(srcData).map(function (item) {
                 return item[dimensions.y];
             }).unique().value();
-    
-    
+
+
             var xs = nestedAxes.axes[0];
             var xScales = nestedAxes.$scales[xs.scaleDim][getRangeMethod(xs.scaleType)]([0, sizes.width - sizes.paddingX*2], 0.1);
             // xScales.
@@ -258,11 +258,11 @@
                 }
             );
         };
-    
+
         var TNodeMap = {
-    
+
             'COORDS/RECT': function (node, continueTraverse) {
-    
+
                 var options = node.options || {};
                 var axes = node.axes;
                 var x = _.defaults(axes[0] || {}, {scaleOrient: 'bottom'});
@@ -284,15 +284,15 @@
                 }
                 var W = options.width - 2 * PX;
                 var H = options.height - 2 * PY;
-    
-    
+
+
                 var container = options
                     .container
                     .append('g')
                     .attr('class', 'cell')
                     .attr('transform', translate(options.left + PX, options.top + PY / 2));
-    
-    
+
+
                 var xScale;
                 if (x.scaleDim) {
                     xScale = node.$scales[x.scaleDim][getRangeMethod(x.scaleType)]([0, W], 0.1);
@@ -305,7 +305,7 @@
                             .call(xAxis);
                     }
                 }
-    
+
                 var yScale;
                 if (y.scaleDim) {
                     yScale = node.$scales[y.scaleDim][getRangeMethod(y.scaleType)]([H, 0], 0.1);
@@ -318,41 +318,41 @@
                             .call(yAxis);
                     }
                 }
-    
+
                 if (node.showGrid) {
-    
+
                     var grids = container.insert('g', ':first-child').attr('class', 'grids');
-    
+
                     if (xScale) {
                         var xGridAxis = d3.svg.axis()
                             .scale(xScale)
                             .orient(x.scaleOrient)
                             .tickSize(H);
-    
+
                         grids.append('g').call(xGridAxis);
                     }
-    
+
                     if (yScale) {
                         var yGridAxis = d3.svg.axis()
                             .scale(yScale)
                             .orient(y.scaleOrient)
                             .tickSize(-W);
-    
+
                         grids.append('g').call(yGridAxis);
                     }
-    
+
                     // TODO: make own axes and grid instead of using d3's in such tricky way
                     grids.selectAll('text').remove();
                 }
-    
+
                 var grid = container
                     .append('g')
                     .attr('class', 'grid')
                     .attr('transform', translate(0, 0));
-    
+
                 var nR = node.$matrix.sizeR();
                 var nC = node.$matrix.sizeC();
-    
+
                 var cellW = W / nC;
                 var cellH = H / nR;
                 if(existBubbleAxes) {
@@ -373,11 +373,11 @@
                         }
                     );
                 }
-    
-    
+
+
                 node.$matrix.iterate(function (iRow, iCol, subNodes) {
                     subNodes.forEach(function (node) {
-    
+
                         node.options = {
                             container: grid,
                             width: cellW,
@@ -387,14 +387,14 @@
                             xScale: xScale,
                             yScale: yScale
                         };
-    
+
                         continueTraverse(node);
                     });
                 });
             },
-    
+
             'COORDS.RECT': function (node, continueTraverse) {
-    
+
                 var options = node.options || {};
                 var axes = _(node.axes).map(function(axis, i) {
                     var a = _.isArray(axis) ? axis : [axis];
@@ -408,49 +408,53 @@
                         });
                     return a;
                 });
-    
+
                 var x = axes[0][0];
                 var y = axes[1][0];
-    
+
                 var padding = _.defaults(
                     node.padding || {},
                     { L:0, B:0, R:0, T:0 });
-    
+
                 var L = options.left + padding.L;
                 var T = options.top  + padding.T;
-    
+
                 var W = options.width  - (padding.L + padding.R);
                 var H = options.height - (padding.T + padding.B);
-    
+
                 var xScale = x.scaleDim && node.scale(x.scaleDim, x.scaleType)[getRangeMethod(x.scaleType)]([0, W], 0.1);
                 var yScale = y.scaleDim && node.scale(y.scaleDim, y.scaleType)[getRangeMethod(y.scaleType)]([H, 0], 0.1);
-    
+
                 axes[0][0].scale = xScale;
                 axes[1][0].scale = yScale;
-    
+
                 var X_AXIS_POS = [0, H + x.padding];
                 var Y_AXIS_POS = [0 - y.padding, 0];
-    
+
                 var container = options
                     .container
                     .append('g')
                     .attr('class', 'cell')
                     .attr('transform', translate(L, T));
-    
-                !x.hide && fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
-                !y.hide && fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
-    
+
+                if(!x.hide) {
+                    fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+                }
+                if(!y.hide){
+                    fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+                }
+
                 var grid = fnDrawGrid.call(container, node, H, W);
-    
+
                 var nR = node.$matrix.sizeR();
                 var nC = node.$matrix.sizeC();
-    
+
                 var cellW = W / nC;
                 var cellH = H / nR;
-    
+
                 node.$matrix.iterate(function (iRow, iCol, subNodes) {
                     subNodes.forEach(function (node) {
-    
+
                         node.options = {
                             container: grid,
                             width: cellW,
@@ -460,25 +464,25 @@
                             xScale: xScale,
                             yScale: yScale
                         };
-    
+
                         continueTraverse(node);
                     });
                 });
             },
-    
+
             'ELEMENT/POINT': function (node) {
-    
+
                 var filteredData = node.partition();
                 var srcData = node.source();
-    
+
                 var options = node.options || {};
-    
+
                 var color = tau
                     .data
                     .scale
                     .color10()
                     .domain(_(srcData).chain().pluck(node.color).uniq().value());
-    
+
                 var size = d3
                     .scale
                     .linear()
@@ -487,7 +491,7 @@
                         0,
                         _(srcData).chain().pluck(node.size).max().value()
                     ]);
-    
+
                 var update = function () {
                     return this
                         .attr('r', function (d) {
@@ -507,17 +511,17 @@
                             return options.yScale(d[node.y]);
                         });
                 };
-    
+
                 var elements = options.container.selectAll('.dot').data(filteredData);
                 elements.call(update);
                 elements.exit().remove();
                 elements.enter().append('circle').call(update);
             },
-    
+
             'ELEMENT/INTERVAL': function (node) {
-    
+
                 var options = node.options || {};
-    
+
                 var update = function () {
                     return this
                         .attr('class', 'i-role-datum  bar')
@@ -532,33 +536,33 @@
                             return options.height - options.yScale(d[node.y]);
                         });
                 };
-    
-    
+
+
                 var elements = options.container.selectAll(".bar").data(node.partition());
                 elements.call(update);
                 elements.enter().append('rect').call(update);
                 elements.exit().remove();
             },
-    
+
             'ELEMENT/LINE': function (node) {
-    
+
                 var options = node.options || {};
-    
+
                 var updatePaths = function () {
                     this.attr('d', line);
                 };
-    
+
                 var updateLines = function () {
-    
+
                     var paths = this.selectAll('path').data(function (d) {
                         return [d.values];
                     });
-    
+
                     paths.call(updatePaths);
                     paths.enter().append('path').call(updatePaths);
                     paths.exit().remove();
                 };
-    
+
                 var line = d3
                     .svg
                     .line()
@@ -568,7 +572,7 @@
                     .y(function (d) {
                         return options.yScale(d[node.y]);
                     });
-    
+
                 var lines = options.container
                     .append('g')
                     .attr("class", "line")
@@ -576,61 +580,61 @@
                     .append("path")
                     .datum(node.partition())
                     .attr("d", line);
-    
+
                 /*.selectAll('.line').data(data);
                  lines.call(updateLines);
                  lines.enter().append('g').call(updateLines);
                  lines.exit().remove();*/
             }
         };
-    
+
         TNodeMap['COORDS/RECT'] = TNodeMap['COORDS.RECT'];
-    
+
         return function (unitType) {
-    
+
             if (!TNodeMap.hasOwnProperty(unitType)) {
                 throw new Error('Unknown unit type: ' + unitType);
             }
-    
+
             return TNodeMap[unitType];
         };
-    
+
     })();
 
-    var $$dsl$reader$$SCALE_STRATEGIES = {
-    
+    var dsl$reader$$SCALE_STRATEGIES = {
+
         'ordinal': function(domain)  {return domain},
-    
+
         'linear': function(domain)  {return d3.extent(domain)}
     };
 
-    var $$dsl$reader$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
+    var dsl$reader$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
 
-    var $$dsl$reader$$DSLReader = function (ast) {
+    var dsl$reader$$DSLReader = function (ast) {
         this.ast = ast;
     };
 
-    $$dsl$reader$$DSLReader.prototype = {
+    dsl$reader$$DSLReader.prototype = {
         traverse: function (rawData) {
             var unit = this.ast.unit;
-    
+
             var decorateUnit = function(unit) {
-    
+
                 unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
-    
+
                 unit.partition = function()  {return unit.source(unit.$filter)};
-    
+
                 // TODO: memoize
                 unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
-    
+
                 // TODO: memoize
-                unit.scale = function(scaleDim, scaleType)  {return d3.scale[scaleType]().domain($$dsl$reader$$SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)))};
-    
+                unit.scale = function(scaleDim, scaleType)  {return d3.scale[scaleType]().domain(dsl$reader$$SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)))};
+
                 return unit;
             };
-    
+
             var buildLogicalGraphRecursively = function (unitRef) {
-                return $$unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)(decorateUnit(unitRef), buildLogicalGraphRecursively);
+                return unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)(decorateUnit(unitRef), buildLogicalGraphRecursively);
             };
             return buildLogicalGraphRecursively(unit);
         },
@@ -641,7 +645,7 @@
                 .style("border", 'solid 1px')
                 .attr("width", this.ast.W)
                 .attr("height", this.ast.H);
-    
+
             refUnit.options = {
                 container: this.container,
                 width: this.ast.W,
@@ -649,61 +653,60 @@
                 top: 0,
                 left: 0
             };
-    
+
             var decorateUnit = function(unit) {
-    
+
                 unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
-    
-                unit.partition = function()  {return unit.source($$dsl$reader$$metaFilter.bind(null, unit.$filter))};
-    
+
+                unit.partition = function()  {return unit.source(dsl$reader$$metaFilter.bind(null, unit.$filter))};
+
                 // TODO: memoize
                 unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
-    
+
                 // TODO: memoize
-                unit.scale = function(scaleDim, scaleType)  {return d3.scale[scaleType]().domain($$dsl$reader$$SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)))};
-    
+                unit.scale = function(scaleDim, scaleType)  {return d3.scale[scaleType]().domain(dsl$reader$$SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)))};
+
                 return unit;
             };
-    
+
             var renderLogicalGraphRecursively = function (unitRef) {
-                return $$node$visitor$factory$$TNodeVisitorFactory(unitRef.type)(decorateUnit(unitRef), renderLogicalGraphRecursively);
+                return node$visitor$factory$$TNodeVisitorFactory(unitRef.type)(decorateUnit(unitRef), renderLogicalGraphRecursively);
             };
-    
+
             renderLogicalGraphRecursively(refUnit);
-    
+
             return refUnit.options.container;
         }
     };
 
-    function tau$newCharts$$Chart(config) {
-        this.config = _.defaults(config, {
-            spec: null,
-            data: [],
-            plugins: []
-        });
-        this.plugins = this.config.plugins;
-        this.spec = this.config.spec;
-        this.data = this.config.data;
-        this.reader = new $$dsl$reader$$DSLReader(this.spec);
-        var render = this._render(this.reader.traverse(this.data));
-        this._chart = render.node();
-    
-        //plugins
-        this._plugins = new tau$newCharts$$Plugins(this.config.plugins);
-        render.selectAll('.i-role-datum').call(tau$newCharts$$propagateDatumEvents(this._plugins));
-    }
+    var tau$newCharts$$Chart = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+        function Chart(config) {
+            this.config = _.defaults(config, {
+                spec: null,
+                data: [],
+                plugins: []
+            });
+            this.plugins = this.config.plugins;
+            this.spec = this.config.spec;
+            this.data = this.config.data;
+            this.reader = new dsl$reader$$DSLReader(this.spec);
+            var render = this._render(this.reader.traverse(this.data));
+            this._chart = render.node();
 
-    tau$newCharts$$Chart.prototype = {
-        _render: function (graph) {
+            //plugins
+            this._plugins = new tau$newCharts$$Plugins(this.config.plugins);
+            render.selectAll('.i-role-datum').call(tau$newCharts$$propagateDatumEvents(this._plugins));
+        }DP$0(Chart,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+
+        proto$0._render = function(graph) {
             return this.reader.traverseToNode(graph, this.data);
-        },
-        getSvg: function () {
+        };
+
+        proto$0.getSvg = function() {
             return this._chart;
-        }/*,
-        appendTo: function (el) {
-            return d3.select(el).node().appendChild(this._chart);
-        }*/
-    };
+        };
+
+    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})();
 
     //plugins
     /** @class
@@ -713,7 +716,7 @@
         init: function (plugins) {
             this._plugins = plugins;
         },
-    
+
         _call: function (name, args) {
             for (var i = 0; i < this._plugins.length; i++) {
                 if (typeof(this._plugins[i][name]) == 'function') {
@@ -721,23 +724,23 @@
                 }
             }
         },
-    
+
         render: function (context, tools) {
             this._call('render', arguments);
         },
-    
+
         click: function (context, tools) {
             this._call('click', arguments);
         },
-    
+
         mouseover: function (context, tools) {
             this._call('mouseover', arguments);
         },
-    
+
         mouseout: function (context, tools) {
             this._call('mouseout', arguments);
         },
-    
+
         mousemove: function (context, tools) {
             this._call('mousemove', arguments);
         }
@@ -800,11 +803,13 @@
             this.html = layout.html;
             this.mapper = mapper;
         },
-    
-        elements: function(){
+
+        elements: function () {
             return this.svg.selectAll('.i-role-datum');
         }
     });
+
+    var tau$newCharts$$tauChart = tau$newCharts$$Chart;
     "use strict";
     return tau$newCharts$$Chart;
 });

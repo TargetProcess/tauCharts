@@ -1,35 +1,32 @@
 import {DSLReader} from './dsl-reader';
-function Chart(config) {
-    this.config = _.defaults(config, {
-        spec: null,
-        data: [],
-        plugins: []
-    });
-    this.plugins = this.config.plugins;
-    this.spec = this.config.spec;
-    this.data = this.config.data;
-    this.reader = new DSLReader(this.spec);
-    var render = this._render(this.reader.traverse(this.data));
-    this._chart = render.node();
+class Chart {
+    constructor(config) {
+        this.config = _.defaults(config, {
+            spec: null,
+            data: [],
+            plugins: []
+        });
+        this.plugins = this.config.plugins;
+        this.spec = this.config.spec;
+        this.data = this.config.data;
+        this.reader = new DSLReader(this.spec);
+        var render = this._render(this.reader.traverse(this.data));
+        this._chart = render.node();
 
-    //plugins
-    this._plugins = new Plugins(this.config.plugins);
-    render.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
-}
+        //plugins
+        this._plugins = new Plugins(this.config.plugins);
+        render.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+    }
 
-Chart.prototype = {
-    _render: function (graph) {
+    _render(graph) {
         return this.reader.traverseToNode(graph, this.data);
-    },
-    getSvg: function () {
-        return this._chart;
-    }/*,
-    appendTo: function (el) {
-        return d3.select(el).node().appendChild(this._chart);
-    }*/
-};
+    }
 
-export {Chart};
+    getSvg() {
+        return this._chart;
+    }
+
+}
 
 //plugins
 /** @class
@@ -127,7 +124,9 @@ var ChartTools = Class.extend({
         this.mapper = mapper;
     },
 
-    elements: function(){
+    elements: function () {
         return this.svg.selectAll('.i-role-datum');
     }
 });
+
+export var tauChart = Chart;

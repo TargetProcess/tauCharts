@@ -12,9 +12,20 @@ module.exports = function (grunt) {
     grunt.task.registerMultiTask("compile", function () {
         var options = this.options();
         var outputFile = this.data.dest;
-
+        var tmpDir = 'tmp_dir';
+        grunt.file.mkdir(tmpDir);
+        this.filesSrc.forEach(function (filename) {
+            var result = es6tr.run({
+                filename: this.data.cwd + filename,
+                outputFilename: tmpDir + '/' + filename,
+                globals: {d3: true, _: true, tau: true, Class: true}
+            });
+            if (result.errors.length > 0) {
+                grunt.fail.fatal(this.data.cwd + filename + "\n" + result.errors.join("\n"));
+            }
+        }, this);
         var container = new Container({
-            resolvers: [new FileResolver([this.data.cwd || "./"])],
+            resolvers: [new FileResolver([tmpDir + '/' || "./"])],
             formatter: new BundleFormatter()
         });
 
@@ -22,35 +33,10 @@ module.exports = function (grunt) {
             container.getModule(filename);
         });
 
+
         var ast = container.convert();
-        var code = recast.print(ast[0]).code;
-
-        if (options.jsdocs === false) {
-            // remove jsdoc comments from the output
-            code = code.replace(/\/\*\*([\s\S]*?)\*\/\s+/gm, "");
-        }
-
-        if (options.banner) {
-            code = options.banner + "\n" + code;
-        }
-
-        code = grunt.template.process(code);
-        // fix for browserify
-       // code = code.replace("}).call(this)", "})()");
-
         grunt.file.mkdir(path.dirname(outputFile));
-
-        var result = es6tr.run({
-            src: code,
-            globals: {define: true, module: true, d3: true, _: true, Class: true, tau: true},
-            outputFilename: outputFile,
-            environments: ["browser"]
-        });
-
-        if (result.errors.length > 0) {
-            grunt.fail.fatal("\n" + result.errors.join("\n"));
-
-            grunt.file.write(outputFile, code);
-        }
+        grunt.file.write(outputFile, recast.print(ast[0]).code);
+        grunt.file.delete(tmpDir);
     });
 };

@@ -24,7 +24,7 @@ module.exports = function (grunt) {
         compile: {
             build: {
                 cwd: "src/dsl/",
-                src: ["tau.newCharts.js"],
+                src: ["*.js"],
                 dest: "build/tau.newCharts.js"
             }
         },
