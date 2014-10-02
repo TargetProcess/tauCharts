@@ -2,11 +2,7 @@ import {TMatrix} from './matrix';
 
 var TUnitVisitorFactory = (function () {
 
-    var createEqualPredicate = function (propName, shouldEqualTo) {
-        return function (row) {
-            return row[propName] === shouldEqualTo;
-        };
-    };
+    var createEqualPredicate = (propName, shouldEqualTo) => ((row) => row[propName] === shouldEqualTo);
 
     var TFuncMap = {
         'CROSS': function (root, dimX, dimY) {

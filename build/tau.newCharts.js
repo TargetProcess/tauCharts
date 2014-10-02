@@ -65,11 +65,7 @@
 
     var $$unit$visitor$factory$$TUnitVisitorFactory = (function () {
     
-        var createEqualPredicate = function (propName, shouldEqualTo) {
-            return function (row) {
-                return row[propName] === shouldEqualTo;
-            };
-        };
+        var createEqualPredicate = function(propName, shouldEqualTo)  {return function(row)  {return row[propName] === shouldEqualTo}} ;
     
         var TFuncMap = {
             'CROSS': function (root, dimX, dimY) {
@@ -402,8 +398,6 @@
                         a[0] || {},
                         {
                             scaleOrient: (i === 0 ? 'bottom' : 'left'),
-                            lwidth: 0,
-                            rwidth: 0,
                             padding: 0
                         });
                     return a;
@@ -412,9 +406,7 @@
                 var x = axes[0][0];
                 var y = axes[1][0];
     
-                var padding = _.defaults(
-                    node.padding || {},
-                    { L:0, B:0, R:0, T:0 });
+                var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
     
                 var L = options.left + padding.L;
                 var T = options.top  + padding.T;
@@ -422,8 +414,8 @@
                 var W = options.width  - (padding.L + padding.R);
                 var H = options.height - (padding.T + padding.B);
     
-                var xScale = x.scaleDim && node.scale(x.scaleDim, x.scaleType)[getRangeMethod(x.scaleType)]([0, W], 0.1);
-                var yScale = y.scaleDim && node.scale(y.scaleDim, y.scaleType)[getRangeMethod(y.scaleType)]([H, 0], 0.1);
+                var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
+                var yScale = y.scaleDim && node.scaleTo(y, [H, 0]);
     
                 axes[0][0].scale = xScale;
                 axes[1][0].scale = yScale;
@@ -437,29 +429,21 @@
                     .attr('class', 'cell')
                     .attr('transform', translate(L, T));
     
-                !x.hide && fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
-                !y.hide && fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+                if (!x.hide) {
+                    fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+                }
+    
+                if (!y.hide) {
+                    fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+                }
     
                 var grid = fnDrawGrid.call(container, node, H, W);
     
-                var nR = node.$matrix.sizeR();
-                var nC = node.$matrix.sizeC();
-    
-                var cellW = W / nC;
-                var cellH = H / nR;
-    
-                node.$matrix.iterate(function (iRow, iCol, subNodes) {
-                    subNodes.forEach(function (node) {
-    
-                        node.options = {
-                            container: grid,
-                            width: cellW,
-                            height: cellH,
-                            top: iRow * cellH,
-                            left: iCol * cellW,
-                            xScale: xScale,
-                            yScale: yScale
-                        };
+                node.$matrix.iterate(function(iRow, iCol, subNodes) 
+                {
+                    subNodes.forEach(function(node) 
+                    {
+                        node.options = _.extend({ container: grid }, node.options || {});
     
                         continueTraverse(node);
                     });
@@ -472,6 +456,8 @@
                 var srcData = node.source();
     
                 var options = node.options || {};
+                options.xScale = node.scaleTo(node.x, [0, options.width]);
+                options.yScale = node.scaleTo(node.y, [options.height, 0]);
     
                 var color = tau
                     .data
@@ -517,6 +503,8 @@
             'ELEMENT/INTERVAL': function (node) {
     
                 var options = node.options || {};
+                options.xScale = node.scaleTo(node.x, [0, options.width]);
+                options.yScale = node.scaleTo(node.y, [options.height, 0]);
     
                 var update = function () {
                     return this
@@ -543,21 +531,8 @@
             'ELEMENT/LINE': function (node) {
     
                 var options = node.options || {};
-    
-                var updatePaths = function () {
-                    this.attr('d', line);
-                };
-    
-                var updateLines = function () {
-    
-                    var paths = this.selectAll('path').data(function (d) {
-                        return [d.values];
-                    });
-    
-                    paths.call(updatePaths);
-                    paths.enter().append('path').call(updatePaths);
-                    paths.exit().remove();
-                };
+                options.xScale = node.scaleTo(node.x, [0, options.width]);
+                options.yScale = node.scaleTo(node.y, [options.height, 0]);
     
                 var line = d3
                     .svg
@@ -569,18 +544,13 @@
                         return options.yScale(d[node.y]);
                     });
     
-                var lines = options.container
+                options.container
                     .append('g')
                     .attr("class", "line")
                     .attr('stroke', '#4daf4a')
                     .append("path")
                     .datum(node.partition())
                     .attr("d", line);
-    
-                /*.selectAll('.line').data(data);
-                 lines.call(updateLines);
-                 lines.enter().append('g').call(updateLines);
-                 lines.exit().remove();*/
             }
         };
     
@@ -604,37 +574,96 @@
         'linear': function(domain)  {return d3.extent(domain)}
     };
 
+    var $$dsl$reader$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
+
     var $$dsl$reader$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
+
+    var $$dsl$reader$$decorateUnit = function(unit, meta, rawData) {
+    
+        unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
+    
+        unit.partition = function()  {return unit.source($$dsl$reader$$metaFilter.bind(null, unit.$filter))};
+    
+        // TODO: memoize
+        unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
+    
+        unit.scaleTo = function(scaleDim, interval) 
+        {
+            var temp = _.isString(scaleDim) ? { scaleDim: scaleDim } : scaleDim;
+            var dimx = _.defaults(temp, meta[temp.scaleDim]);
+    
+            var type = dimx.scaleType;
+            var vals = unit.domain(dimx.scaleDim);
+            return d3.scale[type]().domain($$dsl$reader$$SCALE_STRATEGIES[type](vals))[$$dsl$reader$$getRangeMethod(type)](interval, 0.1);
+        };
+    
+        return unit;
+    };
 
     var $$dsl$reader$$DSLReader = function (ast) {
         this.ast = ast;
     };
 
     $$dsl$reader$$DSLReader.prototype = {
-        traverse: function (rawData) {
+    
+        traverse: function (rawData, styleEngine) {
+    
+            var meta = this.ast.dimensions;
+    
+            var styleDecorator = styleEngine || (function(node) 
+            {
+    
+                if (!node.$matrix) {
+                    return node;
+                }
+    
+                var options = node.options || {};
+                var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
+    
+                var W = options.width  - (padding.L + padding.R);
+                var H = options.height - (padding.T + padding.B);
+    
+                var nR = node.$matrix.sizeR();
+                var nC = node.$matrix.sizeC();
+    
+                var cellW = W / nC;
+                var cellH = H / nR;
+    
+                node.$matrix.iterate(function(iRow, iCol, subNodes) 
+                {
+                    subNodes.forEach(function(node) 
+                    {
+                        node.options = {
+                            width: cellW,
+                            height: cellH,
+                            top: iRow * cellH,
+                            left: iCol * cellW
+                        };
+                        styleDecorator(node);
+                    });
+                });
+    
+                return node;
+            });
+    
+            var buildLogicalGraphRecursively = function(unitRef) 
+            {
+                return $$unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)($$dsl$reader$$decorateUnit(unitRef, meta, rawData), buildLogicalGraphRecursively);
+            };
+    
             var unit = this.ast.unit;
-    
-            var decorateUnit = function(unit) {
-    
-                unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
-    
-                unit.partition = function()  {return unit.source(unit.$filter)};
-    
-                // TODO: memoize
-                unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
-    
-                // TODO: memoize
-                unit.scale = function(scaleDim, scaleType)  {return d3.scale[scaleType]().domain($$dsl$reader$$SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)))};
-    
-                return unit;
+            unit.options = {
+                width: this.ast.W,
+                height: this.ast.H,
+                top: 0,
+                left: 0
             };
     
-            var buildLogicalGraphRecursively = function (unitRef) {
-                return $$unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)(decorateUnit(unitRef), buildLogicalGraphRecursively);
-            };
-            return buildLogicalGraphRecursively(unit);
+            return styleDecorator(buildLogicalGraphRecursively(unit));
         },
-        traverseToNode: function (refUnit, rawData, c) {
+    
+        traverseToNode: function (refUnit, rawData) {
+    
             this.container =  d3
                 .select(this.ast.container)
                 .append("svg")
@@ -642,31 +671,11 @@
                 .attr("width", this.ast.W)
                 .attr("height", this.ast.H);
     
-            refUnit.options = {
-                container: this.container,
-                width: this.ast.W,
-                height: this.ast.H,
-                top: 0,
-                left: 0
-            };
+            refUnit.options.container = this.container;
     
-            var decorateUnit = function(unit) {
-    
-                unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
-    
-                unit.partition = function()  {return unit.source($$dsl$reader$$metaFilter.bind(null, unit.$filter))};
-    
-                // TODO: memoize
-                unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
-    
-                // TODO: memoize
-                unit.scale = function(scaleDim, scaleType)  {return d3.scale[scaleType]().domain($$dsl$reader$$SCALE_STRATEGIES[scaleType](unit.domain(scaleDim)))};
-    
-                return unit;
-            };
-    
-            var renderLogicalGraphRecursively = function (unitRef) {
-                return $$node$visitor$factory$$TNodeVisitorFactory(unitRef.type)(decorateUnit(unitRef), renderLogicalGraphRecursively);
+            var renderLogicalGraphRecursively = function(unit) 
+            {
+                return $$node$visitor$factory$$TNodeVisitorFactory(unit.type)(unit, renderLogicalGraphRecursively);
             };
     
             renderLogicalGraphRecursively(refUnit);

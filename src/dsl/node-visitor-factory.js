@@ -260,8 +260,6 @@ var TNodeVisitorFactory = (function () {
                     a[0] || {},
                     {
                         scaleOrient: (i === 0 ? 'bottom' : 'left'),
-                        lwidth: 0,
-                        rwidth: 0,
                         padding: 0
                     });
                 return a;
@@ -270,9 +268,7 @@ var TNodeVisitorFactory = (function () {
             var x = axes[0][0];
             var y = axes[1][0];
 
-            var padding = _.defaults(
-                node.padding || {},
-                { L:0, B:0, R:0, T:0 });
+            var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
 
             var L = options.left + padding.L;
             var T = options.top  + padding.T;
@@ -280,8 +276,8 @@ var TNodeVisitorFactory = (function () {
             var W = options.width  - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
-            var xScale = x.scaleDim && node.scale(x.scaleDim, x.scaleType)[getRangeMethod(x.scaleType)]([0, W], 0.1);
-            var yScale = y.scaleDim && node.scale(y.scaleDim, y.scaleType)[getRangeMethod(y.scaleType)]([H, 0], 0.1);
+            var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
+            var yScale = y.scaleDim && node.scaleTo(y, [H, 0]);
 
             axes[0][0].scale = xScale;
             axes[1][0].scale = yScale;
@@ -295,29 +291,21 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell')
                 .attr('transform', translate(L, T));
 
-            !x.hide && fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
-            !y.hide && fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            if (!x.hide) {
+                fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+            }
+
+            if (!y.hide) {
+                fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            }
 
             var grid = fnDrawGrid.call(container, node, H, W);
 
-            var nR = node.$matrix.sizeR();
-            var nC = node.$matrix.sizeC();
-
-            var cellW = W / nC;
-            var cellH = H / nR;
-
-            node.$matrix.iterate(function (iRow, iCol, subNodes) {
-                subNodes.forEach(function (node) {
-
-                    node.options = {
-                        container: grid,
-                        width: cellW,
-                        height: cellH,
-                        top: iRow * cellH,
-                        left: iCol * cellW,
-                        xScale: xScale,
-                        yScale: yScale
-                    };
+            node.$matrix.iterate((iRow, iCol, subNodes) =>
+            {
+                subNodes.forEach((node) =>
+                {
+                    node.options = _.extend({ container: grid }, node.options || {});
 
                     continueTraverse(node);
                 });
@@ -330,6 +318,8 @@ var TNodeVisitorFactory = (function () {
             var srcData = node.source();
 
             var options = node.options || {};
+            options.xScale = node.scaleTo(node.x, [0, options.width]);
+            options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
             var color = tau
                 .data
@@ -375,6 +365,8 @@ var TNodeVisitorFactory = (function () {
         'ELEMENT/INTERVAL': function (node) {
 
             var options = node.options || {};
+            options.xScale = node.scaleTo(node.x, [0, options.width]);
+            options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
             var update = function () {
                 return this
@@ -401,21 +393,8 @@ var TNodeVisitorFactory = (function () {
         'ELEMENT/LINE': function (node) {
 
             var options = node.options || {};
-
-            var updatePaths = function () {
-                this.attr('d', line);
-            };
-
-            var updateLines = function () {
-
-                var paths = this.selectAll('path').data(function (d) {
-                    return [d.values];
-                });
-
-                paths.call(updatePaths);
-                paths.enter().append('path').call(updatePaths);
-                paths.exit().remove();
-            };
+            options.xScale = node.scaleTo(node.x, [0, options.width]);
+            options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
             var line = d3
                 .svg
@@ -427,18 +406,13 @@ var TNodeVisitorFactory = (function () {
                     return options.yScale(d[node.y]);
                 });
 
-            var lines = options.container
+            options.container
                 .append('g')
                 .attr("class", "line")
                 .attr('stroke', '#4daf4a')
                 .append("path")
                 .datum(node.partition())
                 .attr("d", line);
-
-            /*.selectAll('.line').data(data);
-             lines.call(updateLines);
-             lines.enter().append('g').call(updateLines);
-             lines.exit().remove();*/
         }
     };
 

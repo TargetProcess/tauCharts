@@ -32,6 +32,7 @@
 
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
+    <script src="dataTp.js"></script>
     <script src="../build/tau.newCharts.js"></script>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
@@ -43,15 +44,25 @@
         .axes.nest .axis.nest text {
             font-size: 10px;
         }
+        .bar {
+            fill: steelblue;
+        }
+        .cc {
+            display:inline-block;
+            margin:2px 0 0 2px;
+            float:left;
+        }
     </style>
 </head>
 <body>
 
-<div id="chart-container" style="display:inline-block;margin:0px;float:left"></div>
+<div id="chart-container" class="cc"></div>
 
-<div id="simple-container" style="display:inline-block;margin:0px;float:left"></div>
+<div id="simple-container" class="cc"></div>
 
-<div id="complex-container" style="display:inline-block;margin:0px;float:left"></div>
+<div id="complex-container" class="cc"></div>
+
+<div id="bars-container" class="cc"></div>
 
 <script>
 
@@ -59,6 +70,12 @@
         container:'#chart-container',
         W: 800,
         H: 800,
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
         unit: {
             type: 'COORDS.RECT',
             padding: { L:120, B:24, R:8, T:8 },
@@ -95,6 +112,12 @@
         container: '#simple-container',
         W: 800,
         H: 800,
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
         unit: {
             type: 'COORDS.RECT',
             showGridLines: 'xy',
@@ -130,8 +153,14 @@
 
     var complex_scatter = {
         container: '#complex-container',
-        W: 1602,
-        H: 1602,
+        W: 800,
+        H: 800,
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
         unit: {
             type: 'COORDS.RECT',
             func: 'CROSS',
@@ -220,6 +249,71 @@
         data: rawData,
         spec: complex_scatter,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
+    });
+
+    getCountOfEntitiesByTeamOnMonth().then(function (data) {
+
+        var def = {
+            container: '#bars-container',
+            W: 800,
+            H: 800,
+            dimensions: {
+                month: { scaleType: 'ordinal' },
+                project: { scaleType: 'ordinal' },
+                team: { scaleType: 'ordinal' },
+                cycleTime: { scaleType: 'linear' },
+                effort: { scaleType: 'linear' },
+                count: { scaleType: 'linear' }
+            },
+            unit: {
+                type: 'COORDS/RECT',
+                func: 'CROSS',
+                padding: { L:80, B:8, R:8, T:8 },
+                axes: [
+                    null,
+                    {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
+                ],
+                unit: [
+                    {
+                        type: 'COORDS/RECT',
+                        padding: { L:36, B:36, R:8, T:8 },
+                        showGridLines: 'xy',
+                        axes: [
+                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>', bubble:true},
+                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>', bubble:true}
+                        ],
+                        unit: [
+                            {
+                                type: 'ELEMENT/POINT',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            },
+                            {
+                                type: 'ELEMENT/INTERVAL',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            },
+                            {
+                                type: 'ELEMENT/LINE',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        var chart = new tauChart({data: data, spec: def, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
     });
 
 </script>
