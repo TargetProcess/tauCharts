@@ -1,8 +1,6 @@
 var TNodeVisitorFactory = (function () {
 
-    var translate = (left, top) => {
-        return 'translate(' + left + ',' + top + ')';
-    };
+    var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 
     var getRangeMethod = function (scaleType) {
         return ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
@@ -429,4 +427,4 @@ var TNodeVisitorFactory = (function () {
 
 })();
 
-export {TNodeVisitorFactory}
+export {TNodeVisitorFactory};

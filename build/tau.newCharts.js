@@ -138,9 +138,7 @@
 
     var node$visitor$factory$$TNodeVisitorFactory = (function () {
     
-        var translate = function(left, top)  {
-            return 'translate(' + left + ',' + top + ')';
-        };
+        var translate = function(left, top)  {return 'translate(' + left + ',' + top + ')'};
     
         var getRangeMethod = function (scaleType) {
             return ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
