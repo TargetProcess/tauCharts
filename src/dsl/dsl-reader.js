@@ -1,3 +1,4 @@
+import {TMatrix} from './matrix';
 import {TUnitVisitorFactory} from './unit-visitor-factory';
 import {TNodeVisitorFactory} from './node-visitor-factory';
 
@@ -43,6 +44,71 @@ DSLReader.prototype = {
     traverse: function (rawData, styleEngine) {
 
         var meta = this.ast.dimensions;
+
+        var isLCol = (r, c) => (c === 0);
+        var isTRow = (r, c) => (r === 0);
+
+        var transformationExtractAxes = ((root) => {
+
+            var traverse = ((node, refWrapper) =>
+            {
+                if (!node.$matrix) {
+                    return node;
+                }
+
+                if (!node.skipForcePadding) {
+                    node.padding = { L:0, B:0, R:0, T:0 };
+                }
+
+                _.each(node.axes, (a, i) => a.hide = true);
+
+                var row = [];
+                var col = [];
+                refWrapper.x.push(row);
+                refWrapper.y.push(col);
+
+                node.$matrix.iterate((r, c, subNodes) => {
+                    subNodes.forEach((node) => {
+
+                        if (r === 0 && c === 0) {
+                            refWrapper.padding.L += node.padding.L;
+                            refWrapper.padding.B += node.padding.B;
+                        }
+
+                        var space = _.extend({}, node.padding);
+
+                        if (node.axes && isTRow(r, c)) {
+                            row.push(_.extend({ space: space }, node.axes[0]));
+                        }
+
+                        if (node.axes && isLCol(r, c)) {
+                            col.push(_.extend({ space: space }, node.axes[1]));
+                        }
+
+                        traverse(node, refWrapper);
+                    });
+                });
+
+                return node;
+            });
+
+            var wrapperNode = {
+                type: 'WRAP.MULTI_AXES',
+                options: _.extend({}, root.options),
+                axes: [],
+                padding: { L:0, R:0, T:0, B:0 },
+                skipForcePadding: true,
+                x: [],
+                y: [],
+                $matrix: new TMatrix([
+                    [
+                        [root]
+                    ]
+                ])
+            };
+
+            return traverse(decorateUnit(wrapperNode, meta, rawData), wrapperNode);
+        });
 
         var styleDecorator = styleEngine || ((node) =>
         {
@@ -93,7 +159,7 @@ DSLReader.prototype = {
             left: 0
         };
 
-        return styleDecorator(buildLogicalGraphRecursively(unit));
+        return (styleDecorator(transformationExtractAxes(buildLogicalGraphRecursively(unit))));
     },
 
     traverseToNode: function (refUnit, rawData) {

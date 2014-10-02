@@ -410,6 +410,66 @@ var TNodeVisitorFactory = (function () {
                 .append("path")
                 .datum(node.partition())
                 .attr("d", line);
+        },
+
+        'WRAP.MULTI_AXES': function(node, continueTraverse) {
+            var options = node.options || {};
+            var padding = node.padding;
+
+            var xItems = _(node.x).filter((m) => m.length > 0).reverse();
+            var yItems = _(node.y).filter((m) => m.length > 0).reverse();
+
+//            var L = options.left + _.reduce(yItems, (memo, items) => memo + items[0].space.L, 0);
+//            var T = options.top  + _.reduce(xItems, (memo, items) => memo + items[0].space.T, 0);
+
+            var L = options.left + padding.L;
+            var T = options.top  + padding.T;
+
+            var W = options.width  - (padding.L + padding.R);
+            var H = options.height - (padding.T + padding.B);
+
+//            var X_AXIS_POS = [0, H + x.padding];
+//            var Y_AXIS_POS = [0 - y.padding, 0];
+
+
+            var container = options
+                .container
+                .append('g')
+                .attr('class', 'cell-wrapper')
+                .attr('transform', translate(L, T));
+
+            var kP = 36;
+
+            _(xItems).each((items, lvl) => {
+                var level = lvl;
+                var myW = W / items.length;
+                _(items).each((x, i) => {
+                    var X_AXIS_POS = [myW * i, H + level * kP];
+                    x.scale = x.scaleDim ? node.scaleTo(x.scaleDim, [0, myW]) : null;
+                    fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+                });
+            });
+
+            _(yItems).each((items, lvl) => {
+                var level = lvl;
+                var myH = H / items.length;
+                _(items).each((y, i) => {
+                    var Y_AXIS_POS = [0 - level * kP, myH * i];
+                    y.scale = y.scaleDim ? node.scaleTo(y.scaleDim, [myH, 0]) : null;
+                    fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+                });
+            });
+
+            var grid = fnDrawGrid.call(container, node, H, W);
+
+            node.$matrix.iterate((r, c, subNodes) =>
+            {
+                subNodes.forEach((node) =>
+                {
+                    node.options = _.extend({ container: grid }, node.options || {});
+                    continueTraverse(node);
+                });
+            });
         }
     };
 

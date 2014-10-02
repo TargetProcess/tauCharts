@@ -35,19 +35,21 @@ var TUnitVisitorFactory = (function () {
                     $filter: EMPTY_CELL_FILTER
                 });
 
-            var x = _.defaults(root.axes[0] || {}, {});
-            var y = _.defaults(root.axes[1] || {}, {});
+            // declare defaults
+            root.padding = _.defaults(root.padding || {}, { L:0, B:0, R:0, T:0 });
+            root.axes = _(root.axes).map((axis, i) => _.defaults(axis || {}, {
+                scaleOrient: (i === 0 ? 'bottom' : 'left'),
+                padding: 0
+            }));
 
             var unitFunc = TFuncMap[root.func] || (() => [[EMPTY_CELL_FILTER]]);
 
-            var matrixOfPrFilters = new TMatrix(unitFunc(root, x.scaleDim, y.scaleDim));
+            var matrixOfPrFilters = new TMatrix(unitFunc(root, root.axes[0].scaleDim, root.axes[1].scaleDim));
             var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
-            matrixOfPrFilters.iterate((row, col, $filterRC) =>
-            {
+            matrixOfPrFilters.iterate((row, col, $filterRC) => {
                 var cellFilter = root.$filter.concat($filterRC);
-                var cellNodes = _(root.unit).map((sUnit) =>
-                {
+                var cellNodes = _(root.unit).map((sUnit) => {
                     // keep arguments order. cloned objects are created
                     return _.extend({}, sUnit, { $filter: cellFilter });
                 });
@@ -56,8 +58,7 @@ var TUnitVisitorFactory = (function () {
 
             root.$matrix = matrixOfUnitNodes;
 
-            matrixOfUnitNodes.iterate((r, c, cellNodes) =>
-            {
+            matrixOfUnitNodes.iterate((r, c, cellNodes) => {
                 _.each(cellNodes, (refSubNode) => continueTraverse(refSubNode));
             });
 
@@ -68,7 +69,10 @@ var TUnitVisitorFactory = (function () {
     TUnitMap['COORDS.RECT'] = TUnitMap['COORDS/RECT'];
 
     return function (unitType) {
-        return TUnitMap[unitType] || _.identity;
+        return TUnitMap[unitType] || ((unit) => {
+            unit.padding = _.defaults(unit.padding || {}, { L:0, B:0, R:0, T:0 });
+            return unit;
+        });
     };
 
 })();
