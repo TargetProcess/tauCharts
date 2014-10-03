@@ -17,7 +17,7 @@ module.exports = function (grunt) {
                 stripBanners: true
             },
             dist: {
-                src: ['src/wrapper/header.js','src/*.js', 'src/charts/*.js', 'plugins/*.js', 'src/wrapper/footer.js'],
+                src: ['build/tauCharts.js'],
                 dest: 'build/<%= pkg.name %>.js'
             }
         },
@@ -25,7 +25,7 @@ module.exports = function (grunt) {
             build: {
                 cwd: "src/",
                 src: ["dsl-reader.js","matrix.js","node-visitor-factory.js","plugins.js","tau.newCharts.js","unit-visitor-factory.js"],
-                dest: "build/tau.newCharts.js"
+                dest: "build/<%= pkg.name %>.js"
             }
         },
         uglify: {
@@ -59,22 +59,9 @@ module.exports = function (grunt) {
                 }
             }
         },
-        qunit: {
-            files: ['test/index.html']
-        },
         bowercopy: {
             options: {
                 clean: true
-            },
-
-            tests: {
-                options: {
-                    destPrefix: "test/libs"
-                },
-                files: {
-                    "qunit": "qunit/qunit",
-                    "d3.js": "d3/d3.js"
-                }
             },
             libs: {
                 options: {
@@ -92,14 +79,6 @@ module.exports = function (grunt) {
         watch: {
             files: '<%= jshint.all.src %>',
             tasks: ['jshint','compile']
-        },
-        githooks: {
-            all: {
-                options: {
-                    'hashbang': '#!/usr/bin/env /usr/local/bin/node'
-                },
-                'pre-commit': 'build'
-            }
         }
     });
     // load local tasks
@@ -108,17 +87,14 @@ module.exports = function (grunt) {
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-qunit');
-    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-bowercopy');
-    grunt.loadNpmTasks('grunt-githooks');
     grunt.loadNpmTasks('grunt-shell');
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['githooks', 'bowercopy', 'jshint', 'concat', 'uglify']);
-    grunt.registerTask('build', ['concat','uglify', 'shell:gitadd']);
-    grunt.registerTask('watching', ['compile','jshint','watch']);
+    grunt.registerTask('default', ['bowercopy', 'jshint','compile', 'concat', 'uglify']);
+    grunt.registerTask('build', ['compile','concat','uglify', 'shell:gitadd']);
+    grunt.registerTask('watching', ['compile','concat','jshint','watch']);
 };

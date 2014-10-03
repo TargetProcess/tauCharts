@@ -2,7 +2,7 @@ var path = require("path");
 var es6tr = require("es6-transpiler");
 
 var es6modules = require("es6-module-transpiler");
-var recast = require("es6-module-transpiler/node_modules/recast");
+var recast = require("recast");
 var Container = es6modules.Container;
 var FileResolver = es6modules.FileResolver;
 var BundleFormatter = require('./formatter');

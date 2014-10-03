@@ -24,18 +24,14 @@
     "grunt-cli":"0.1.13",
     "grunt-contrib-jshint": "^0.9.2",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-contrib-qunit": "^0.4.0",
     "grunt-contrib-concat": "^0.3.0",
     "grunt-contrib-uglify": "^0.4.0",
-    "grunt-contrib-copy": "^0.5.0",
     "grunt-bowercopy": "^1.0.0",
     "grunt-devserver": "^0.5.0",
-    "grunt-githooks": "",
     "grunt-shell": "",
     "es6-module-transpiler": "0.8.0",
     "es6-transpiler": "0.7.17",
     "esprima": "git://github.com/esnext/esprima#harmony-esnext",
-    "recast": "^0.6.6",
-    "recast": ""
+    "recast": "^0.6.6"
   }
 }
