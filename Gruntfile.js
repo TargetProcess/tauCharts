@@ -23,8 +23,8 @@ module.exports = function (grunt) {
         },
         compile: {
             build: {
-                cwd: "src/dsl/",
-                src: ["*.js"],
+                cwd: "src/",
+                src: ["dsl-reader.js","matrix.js","node-visitor-factory.js","plugins.js","tau.newCharts.js","unit-visitor-factory.js"],
                 dest: "build/tau.newCharts.js"
             }
         },

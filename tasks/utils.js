@@ -17,7 +17,7 @@ var template = [
     '} else {',
     'this.tauChart = definition();',
     '}',
-    '})(function(){ return tau$newCharts$$Chart;})'
+    '})(function(){ return tau$newCharts$$tauChart;})'
 ].join('');
 function memo(object, property, getter) {
     Object.defineProperty(object, property, {

@@ -30,4 +30,8 @@ class Chart {
 
 }
 
-export {Chart};
+var tauChart = {
+    Chart:Chart
+};
+
+export {tauChart};

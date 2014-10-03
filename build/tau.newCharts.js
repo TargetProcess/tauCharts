@@ -943,6 +943,10 @@
     
     MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})();
 
+    var tau$newCharts$$tauChart = {
+        Chart:tau$newCharts$$Chart
+    };
+
     "use strict";
-    return tau$newCharts$$Chart;
+    return tau$newCharts$$tauChart;
 });

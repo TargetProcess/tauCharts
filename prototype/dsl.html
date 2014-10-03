@@ -236,19 +236,18 @@
                 return r;
             });
 
-    var chart = new tauChart({
+    var chart = new tauChart.Chart({
         data: rawData,
         spec: def,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
     });
 
-    var scatterChart = new tauChart({
+    var scatterChart = new tauChart.Chart({
         data: rawData,
         spec: scatter,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
     });
-
-    var complexChart = new tauChart({
+    var complexChart = new tauChart.Chart({
         data: rawData,
         spec: complex_scatter,
         plugins: [tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'), tau.plugins.highlighter()]
@@ -316,7 +315,7 @@
             }
         };
 
-        var chart = new tauChart({data: data, spec: def, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
+        var chart = new tauChart.Chart({data: data, spec: def, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
     });
 
 </script>
