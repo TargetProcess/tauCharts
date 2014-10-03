@@ -28,6 +28,11 @@ module.exports = function (grunt) {
                 dest: "build/<%= pkg.name %>.js"
             }
         },
+        karma: {
+            unit: {
+                configFile: 'config/karma.conf.js'
+            }
+        },
         uglify: {
             options: {
                 banner: '<%= banner %>'
@@ -90,11 +95,13 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-bowercopy');
+    grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-shell');
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'jshint','compile', 'concat', 'uglify']);
     grunt.registerTask('build', ['compile','concat','uglify', 'shell:gitadd']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint','compile', 'concat', 'uglify','karma']);
     grunt.registerTask('watching', ['compile','concat','jshint','watch']);
 };
