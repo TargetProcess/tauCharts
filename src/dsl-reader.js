@@ -35,6 +35,11 @@ var decorateUnit = function(unit, meta, rawData) {
     return unit;
 };
 
+var cloneNodeSettings = (node) => {
+    var obj = _.omit(node, '$matrix');
+    return JSON.parse(JSON.stringify(obj));
+};
+
 var DSLReader = function (ast) {
     this.ast = ast;
 };
@@ -45,47 +50,67 @@ DSLReader.prototype = {
 
         var meta = this.ast.dimensions;
 
-        var isLCol = (r, c) => (c === 0);
-        var isTRow = (r, c) => (r === 0);
+        var multiAxisDecorator = (node) => {
+
+            if (!node.$axes) {
+                return node;
+            }
+
+            var options = node.options || {};
+            var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
+
+            var W = options.width  - (padding.L + padding.R);
+            var H = options.height - (padding.T + padding.B);
+
+            var nR = node.$axes.sizeR();
+            var nC = node.$axes.sizeC();
+
+            var cellW = W / nC;
+            var cellH = H / nR;
+
+            node.$axes.iterate((iRow, iCol, subNodes) =>
+            {
+                subNodes.forEach((node) =>
+                {
+                    node.options = {
+                        width: cellW,
+                        height: cellH,
+                        top: iRow * cellH,
+                        left: iCol * cellW
+                    };
+                    multiAxisDecorator(node);
+                });
+            });
+
+            return node;
+        };
 
         var transformationExtractAxes = ((root) => {
 
-            var traverse = ((node, refWrapper) =>
+            var traverse = ((node, wrapperNode) =>
             {
                 if (!node.$matrix) {
                     return node;
                 }
 
-                if (!node.skipForcePadding) {
-                    node.padding = { L:0, B:0, R:0, T:0 };
-                }
-
                 _.each(node.axes, (a, i) => a.hide = true);
 
-                var row = [];
-                var col = [];
-                refWrapper.x.push(row);
-                refWrapper.y.push(col);
+                var nRows = node.$matrix.sizeR();
+                var nCols = node.$matrix.sizeC();
+
+                wrapperNode.$axes = new TMatrix(nRows, nCols);
 
                 node.$matrix.iterate((r, c, subNodes) => {
-                    subNodes.forEach((node) => {
 
-                        if (r === 0 && c === 0) {
-                            refWrapper.padding.L += node.padding.L;
-                            refWrapper.padding.B += node.padding.B;
+                    var multiAxesNodes = [];
+                    wrapperNode.$axes.setRC(r, c, multiAxesNodes);
+
+                    subNodes.forEach((node, i) => {
+                        if (node.$matrix) {
+                            var nodeAxis = _.extend(cloneNodeSettings(node), { type: 'WRAP.AXIS' });
+                            multiAxesNodes.push(nodeAxis);
+                            traverse(node, nodeAxis);
                         }
-
-                        var space = _.extend({}, node.padding);
-
-                        if (node.axes && isTRow(r, c)) {
-                            row.push(_.extend({ space: space }, node.axes[0]));
-                        }
-
-                        if (node.axes && isLCol(r, c)) {
-                            col.push(_.extend({ space: space }, node.axes[1]));
-                        }
-
-                        traverse(node, refWrapper);
                     });
                 });
 
@@ -94,17 +119,9 @@ DSLReader.prototype = {
 
             var wrapperNode = {
                 type: 'WRAP.MULTI_AXES',
-                options: _.extend({}, root.options),
-                axes: [],
                 padding: { L:0, R:0, T:0, B:0 },
-                skipForcePadding: true,
-                x: [],
-                y: [],
-                $matrix: new TMatrix([
-                    [
-                        [root]
-                    ]
-                ])
+                options: cloneNodeSettings(root.options),
+                $matrix: new TMatrix([[[root]]])
             };
 
             return traverse(decorateUnit(wrapperNode, meta, rawData), wrapperNode);
@@ -159,10 +176,12 @@ DSLReader.prototype = {
             left: 0
         };
 
-        return (styleDecorator(transformationExtractAxes(buildLogicalGraphRecursively(unit))));
+        return (styleDecorator(multiAxisDecorator(transformationExtractAxes(buildLogicalGraphRecursively(unit)))));
     },
 
     traverseToNode: function (refUnit, rawData) {
+
+        var meta = this.ast.dimensions;
 
         this.container =  d3
             .select(this.ast.container)
@@ -175,7 +194,7 @@ DSLReader.prototype = {
 
         var renderLogicalGraphRecursively = (unit) =>
         {
-            return TNodeVisitorFactory(unit.type)(unit, renderLogicalGraphRecursively);
+            return TNodeVisitorFactory(unit.type)(decorateUnit(unit, meta, rawData), renderLogicalGraphRecursively);
         };
 
         renderLogicalGraphRecursively(refUnit);

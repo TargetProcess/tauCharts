@@ -412,15 +412,23 @@ var TNodeVisitorFactory = (function () {
                 .attr("d", line);
         },
 
-        'WRAP.MULTI_AXES': function(node, continueTraverse) {
+        'WRAP.AXIS': function(node, continueTraverse) {
             var options = node.options || {};
-            var padding = node.padding;
+            var axes = _(node.axes).map(function(axis, i) {
+                var a = _.isArray(axis) ? axis : [axis];
+                a[0] = _.defaults(
+                    a[0] || {},
+                    {
+                        scaleOrient: (i === 0 ? 'bottom' : 'left'),
+                        padding: 0
+                    });
+                return a;
+            });
 
-            var xItems = _(node.x).filter((m) => m.length > 0).reverse();
-            var yItems = _(node.y).filter((m) => m.length > 0).reverse();
+            var x = axes[0][0];
+            var y = axes[1][0];
 
-//            var L = options.left + _.reduce(yItems, (memo, items) => memo + items[0].space.L, 0);
-//            var T = options.top  + _.reduce(xItems, (memo, items) => memo + items[0].space.T, 0);
+            var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
 
             var L = options.left + padding.L;
             var T = options.top  + padding.T;
@@ -428,9 +436,67 @@ var TNodeVisitorFactory = (function () {
             var W = options.width  - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
-//            var X_AXIS_POS = [0, H + x.padding];
-//            var Y_AXIS_POS = [0 - y.padding, 0];
+            var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
+            var yScale = y.scaleDim && node.scaleTo(y, [H, 0]);
 
+            axes[0][0].scale = xScale;
+            axes[1][0].scale = yScale;
+
+            var X_AXIS_POS = [0, H + x.padding];
+            var Y_AXIS_POS = [0 - y.padding, 0];
+
+            var container = options
+                .container
+                .append('g')
+                .attr('class', 'axis-container')
+                .attr('transform', translate(L, T));
+
+            if (options.showX && !x.hide) {
+                fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+            }
+
+            if (options.showY && !y.hide) {
+                fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            }
+
+            var grid = container
+                .append('g')
+                .attr('class', 'sub-axis-container')
+                .attr('transform', translate(0, 0));
+
+            var nRows = node.$axes.sizeR();
+            var nCols = node.$axes.sizeC();
+
+            node.$axes.iterate((iRow, iCol, subNodes) =>
+            {
+                if (iCol === 0 || (iRow === (nRows - 1))) {
+                    subNodes.forEach((node) =>
+                    {
+                        node.options = _.extend(
+                            {
+                                container: grid,
+                                showX: (iRow === (nRows - 1)),
+                                showY: (iCol === 0)
+                            },
+                            node.options || {});
+
+                        if (node.$axes) {
+                            continueTraverse(node);
+                        }
+                    });
+                }
+            });
+        },
+
+        'WRAP.MULTI_AXES': function(node, continueTraverse) {
+            var options = node.options || {};
+            var padding = node.padding;
+
+            var L = options.left + padding.L;
+            var T = options.top  + padding.T;
+
+            var W = options.width  - (padding.L + padding.R);
+            var H = options.height - (padding.T + padding.B);
 
             var container = options
                 .container
@@ -438,25 +504,18 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell-wrapper')
                 .attr('transform', translate(L, T));
 
-            var kP = 36;
-
-            _(xItems).each((items, lvl) => {
-                var level = lvl;
-                var myW = W / items.length;
-                _(items).each((x, i) => {
-                    var X_AXIS_POS = [myW * i, H + level * kP];
-                    x.scale = x.scaleDim ? node.scaleTo(x.scaleDim, [0, myW]) : null;
-                    fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
-                });
-            });
-
-            _(yItems).each((items, lvl) => {
-                var level = lvl;
-                var myH = H / items.length;
-                _(items).each((y, i) => {
-                    var Y_AXIS_POS = [0 - level * kP, myH * i];
-                    y.scale = y.scaleDim ? node.scaleTo(y.scaleDim, [myH, 0]) : null;
-                    fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            node.$axes.iterate((r, c, subAxesNodes) =>
+            {
+                subAxesNodes.forEach((node) =>
+                {
+                    node.options = _.extend(
+                        {
+                            container: container,
+                            showX: true,
+                            showY: true
+                        },
+                        node.options || {});
+                    continueTraverse(node);
                 });
             });
 

@@ -4,6 +4,8 @@ var TUnitVisitorFactory = (function () {
 
     var createEqualPredicate = (propName, shouldEqualTo) => ((row) => row[propName] === shouldEqualTo);
 
+    var cloneObject = (obj) => JSON.parse(JSON.stringify(obj));
+
     var TFuncMap = {
         'CROSS': function (root, dimX, dimY) {
 
@@ -51,7 +53,7 @@ var TUnitVisitorFactory = (function () {
                 var cellFilter = root.$filter.concat($filterRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
                     // keep arguments order. cloned objects are created
-                    return _.extend({}, sUnit, { $filter: cellFilter });
+                    return _.extend(cloneObject(sUnit), { $filter: cellFilter });
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });
