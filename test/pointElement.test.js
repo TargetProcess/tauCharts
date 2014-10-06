@@ -60,7 +60,7 @@ describe("Point element", function () {
     it("should render point with right cord", function () {
         var dots = getDots();
         expect(dots.length).to.equal(3);
-        expect(position(dots[1])).to.deep.equal({x: '0', y: '800'});
+        expect(position(dots[1])).to.deep.equal({x: '0', y: '600'});
         expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
     });
     it("should render point with right size", function () {

@@ -29,8 +29,23 @@ module.exports = function (grunt) {
             }
         },
         karma: {
-            unit: {
+            options:{
                 configFile: 'config/karma.conf.js'
+            },
+            dev: {
+                reporters: ["progress"],
+                singleRun: false
+            },
+            unit: {
+                reporters: ["dots"]
+            },
+            travis: {
+                preprocessors: { "build/tauCharts.js": "coverage" },
+                reporters: ["coverage", "dots", "coveralls"],
+                coverageReporter: {
+                    type: "lcovonly",
+                    dir: "coverage/"
+                }
             }
         },
         uglify: {
@@ -102,6 +117,6 @@ module.exports = function (grunt) {
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'jshint','compile', 'concat', 'uglify']);
     grunt.registerTask('build', ['compile','concat','uglify', 'shell:gitadd']);
-    grunt.registerTask('travis', ['bowercopy', 'jshint','compile', 'concat', 'uglify','karma']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint','compile', 'concat', 'uglify','karma:travis']);
     grunt.registerTask('watching', ['compile','concat','jshint','watch']);
 };
