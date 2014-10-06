@@ -88,10 +88,10 @@
                 {
                     type: 'COORDS.RECT',
                     showGridLines: 'xy',
-                    padding: { L:32, B:32, R:0, T:0 },
+                    padding: { L:32, B:32, R:8, T:8 },
                     axes: [
-                        {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
-                        {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
+                        {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>', padding: 8},
+                        {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>', padding: 8}
                     ],
                     unit: [
                         {
@@ -230,7 +230,7 @@
             });
 
     rawData = _.filter(rawData, function(r) {
-//        return (r.team === 'Alaska' || r.team === 'Exploited')// && r.project === 'TP3';
+//        return (r.team === 'Alaska' || r.team === 'Exploited') && r.project === 'TP3';
 //        return (r.team === 'Alaska') && r.project === 'TP3';
 //        return (r.team === 'Alaska');
         return true;
