@@ -467,11 +467,9 @@ var TNodeVisitorFactory = (function () {
             var nRows = node.$axes.sizeR();
             var nCols = node.$axes.sizeC();
 
-            node.$axes.iterate((iRow, iCol, subNodes) =>
-            {
+            node.$axes.iterate((iRow, iCol, subNodes) => {
                 if (iCol === 0 || (iRow === (nRows - 1))) {
-                    subNodes.forEach((node) =>
-                    {
+                    subNodes.forEach((node) => {
                         node.options = _.extend(
                             {
                                 container: grid,
@@ -519,7 +517,28 @@ var TNodeVisitorFactory = (function () {
                 });
             });
 
-            var grid = fnDrawGrid.call(container, node, H, W);
+            node.$matrix.iterate((r, c, subNodes) =>
+            {
+                subNodes.forEach((node) =>
+                {
+                    node.options = _.extend({ container: container }, node.options || {});
+                    continueTraverse(node);
+                });
+            });
+        },
+
+        'WRAP.MULTI_GRID': function(node, continueTraverse) {
+            var options = node.options || {};
+            var padding = node.padding;
+
+            var L = options.left + padding.L;
+            var T = options.top  + padding.T;
+
+            var grid = options
+                .container
+                .append('g')
+                .attr('class', 'grid-wrapper')
+                .attr('transform', translate(L, T));
 
             node.$matrix.iterate((r, c, subNodes) =>
             {

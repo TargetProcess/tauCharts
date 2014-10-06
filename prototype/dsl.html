@@ -78,7 +78,7 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            padding: { L:120, B:24, R:8, T:8 },
+            padding: { L:120, B:24, R:0, T:0 },
             func: 'CROSS',
             axes: [
                 {scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>'},
@@ -88,10 +88,10 @@
                 {
                     type: 'COORDS.RECT',
                     showGridLines: 'xy',
-                    padding: { L:36, B:36, R:8, T:8 },
+                    padding: { L:32, B:32, R:0, T:0 },
                     axes: [
-                        {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>', padding: 4},
-                        {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>', padding: 4}
+                        {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
+                        {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
                     ],
                     unit: [
                         {
@@ -228,6 +228,13 @@
                 r.cycleTime = r.name.length;
                 return r;
             });
+
+    rawData = _.filter(rawData, function(r) {
+//        return (r.team === 'Alaska' || r.team === 'Exploited')// && r.project === 'TP3';
+//        return (r.team === 'Alaska') && r.project === 'TP3';
+//        return (r.team === 'Alaska');
+        return true;
+    });
 
     var chart = new tauChart.Chart({
         data: rawData,
