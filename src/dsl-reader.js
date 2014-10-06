@@ -29,6 +29,9 @@ var decorateUnit = function(unit, meta, rawData) {
 
         var type = dimx.scaleType;
         var vals = unit.domain(dimx.scaleDim);
+
+if ('cycleTime' == dimx.scaleDim) console.log(dimx.scaleDim, '\t\t', interval);
+
         return d3.scale[type]().domain(SCALE_STRATEGIES[type](vals))[getRangeMethod(type)](interval, 0.1);
     };
 
@@ -50,39 +53,103 @@ DSLReader.prototype = {
 
         var meta = this.ast.dimensions;
 
-        var multiAxisDecorator = (node) => {
+        var multiAxisDecoratorFasade = (wrapperNode) => {
 
-            if (!node.$axes) {
-                return node;
-            }
+            var multiAxisDecorator = (node) => {
 
-            var options = node.options || {};
-            var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
+                if (!node.$axes) {
+                    return node;
+                }
 
-            var W = options.width  - (padding.L + padding.R);
-            var H = options.height - (padding.T + padding.B);
+                var options = node.options || {};
+                var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
 
-            var nR = node.$axes.sizeR();
-            var nC = node.$axes.sizeC();
+                var W = options.width - (padding.L + padding.R);
+                var H = options.height - (padding.T + padding.B);
 
-            var cellW = W / nC;
-            var cellH = H / nR;
+                var nR = node.$axes.sizeR();
+                var nC = node.$axes.sizeC();
 
-            node.$axes.iterate((iRow, iCol, subNodes) =>
-            {
-                subNodes.forEach((node) =>
-                {
-                    node.options = {
-                        width: cellW,
-                        height: cellH,
-                        top: iRow * cellH,
-                        left: iCol * cellW
-                    };
-                    multiAxisDecorator(node);
+                //var leftPadding = node.padding.L;
+                var leftPadding = (node.$axes.getRC(0, 0)[0] || { padding: { L: 0 } }).padding.L;
+                var sharedWidth = (W - leftPadding);
+
+console.log(node);
+                var cellW = sharedWidth / nC;
+                var cellH = H / nR;
+
+console.log('Width:', options.width);
+console.log('paddL:', padding);
+console.log('W / H:', W);
+console.log('sharedW:', sharedWidth);
+
+                node.$axes.iterate((iRow, iCol, subNodes) => {
+
+                    if (iCol === 0 || (iRow === (nR - 1))) {
+
+                        var xd = (iCol === 0) ? leftPadding: 0;
+                        var ld = (iCol === 0) ? 0 : leftPadding;
+
+                        subNodes.forEach((node) => {
+                            node.options = {
+                                showX: (iRow === (nR - 1)),
+                                showY: (iCol === 0),
+
+                                width: cellW + xd,
+                                height: cellH,
+                                top: iRow * cellH,
+                                left: iCol * cellW + ld
+                            };
+
+                            if (node.$axes) {
+                                multiAxisDecorator(node);
+                            }
+                        });
+                    }
                 });
-            });
 
-            return node;
+                return node;
+            };
+
+            multiAxisDecorator(wrapperNode);
+
+
+            var gridL = 0;
+            var gridT = 0;
+            var axisOffsetTraverser = (node) => {
+
+                if (!node.$axes) {
+                    return node;
+                }
+
+                var padding = node.padding;
+                node.$axes.iterate((iRow, iCol, subNodes) => {
+                    if (iCol === 0 && iRow === 0) {
+                        gridL += padding.L;
+                        gridT += padding.T;
+                        subNodes.forEach((node) => axisOffsetTraverser(node));
+                    }
+                });
+
+                return node;
+            };
+
+            axisOffsetTraverser(wrapperNode);
+
+            var gridW = wrapperNode.options.width - gridL;
+            var gridH = wrapperNode.options.height - gridT;
+
+            var root = wrapperNode.$matrix.getRC(0, 0)[0];
+            root.options = {
+                top: gridT,
+                left: gridL,
+                width: gridW,
+                height: gridH
+            };
+
+            styleDecorator(root);
+
+            return wrapperNode;
         };
 
         var transformationExtractAxes = ((root) => {
@@ -109,6 +176,16 @@ DSLReader.prototype = {
                         if (node.$matrix) {
                             var nodeAxis = _.extend(cloneNodeSettings(node), { type: 'WRAP.AXIS' });
                             multiAxesNodes.push(nodeAxis);
+
+                            node.padding.L = 0;
+
+                            if (c === 0) {
+                                // nodeAxis.padding.L = 60;
+                            }
+                            else {
+                                nodeAxis.padding.L = 0;
+                            }
+
                             traverse(node, nodeAxis);
                         }
                     });
@@ -124,7 +201,16 @@ DSLReader.prototype = {
                 $matrix: new TMatrix([[[root]]])
             };
 
-            return traverse(decorateUnit(wrapperNode, meta, rawData), wrapperNode);
+            traverse(decorateUnit(wrapperNode, meta, rawData), wrapperNode);
+
+            wrapperNode.$matrix = new TMatrix([[[{
+                type: 'WRAP.MULTI_GRID',
+                padding: { L:0, R:0, T:0, B:0 },
+                options: {},
+                $matrix: new TMatrix([[[root]]])
+            }]]]);
+
+            return wrapperNode;
         });
 
         var styleDecorator = styleEngine || ((node) =>
@@ -176,7 +262,8 @@ DSLReader.prototype = {
             left: 0
         };
 
-        return (styleDecorator(multiAxisDecorator(transformationExtractAxes(buildLogicalGraphRecursively(unit)))));
+        // return (styleDecorator(multiAxisDecorator(transformationExtractAxes(buildLogicalGraphRecursively(unit)))));
+        return ((multiAxisDecoratorFasade(transformationExtractAxes(buildLogicalGraphRecursively(unit)))));
     },
 
     traverseToNode: function (refUnit, rawData) {
