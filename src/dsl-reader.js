@@ -30,8 +30,6 @@ var decorateUnit = function(unit, meta, rawData) {
         var type = dimx.scaleType;
         var vals = unit.domain(dimx.scaleDim);
 
-if ('effort' == dimx.scaleDim) console.log(dimx.scaleDim, '\t\t', interval);
-
         return d3.scale[type]().domain(SCALE_STRATEGIES[type](vals))[getRangeMethod(type)](interval, 0.1);
     };
 
@@ -70,45 +68,33 @@ DSLReader.prototype = {
                 var nR = node.$axes.sizeR();
                 var nC = node.$axes.sizeC();
 
-                //var leftPadding = node.padding.L;
-                var leftTopItem = (node.$axes.getRC(0, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
-                var leftBtmItem = (node.$axes.getRC(nR - 1, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
-                var leftPadding = leftTopItem.padding.L;
-                var bttmPadding = leftBtmItem.padding.B;
+                var leftBottomItem = (node.$axes.getRC(nR - 1, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
+                var lPadding = leftBottomItem.padding.L;
+                var bPadding = leftBottomItem.padding.B;
 
-                var sharedWidth = (W - leftPadding);
-                var sharedHeight = (H - bttmPadding);
+                var sharedWidth = (W - lPadding);
+                var sharedHeight = (H - bPadding);
 
-console.log(node);
                 var cellW = sharedWidth / nC;
                 var cellH = sharedHeight / nR;
 
-console.log('Height:', options.height);
-console.log('paddL:', padding);
-console.log('W / H:', W, H);
-                console.log('leftPadding:', leftPadding);
-                console.log('bttmPadding:', bttmPadding);
-                console.log('sharedH:', sharedHeight);
-
                 node.$axes.iterate((iRow, iCol, subNodes) => {
 
-                    if (iCol === 0 || (iRow === (nR - 1))) {
+                    var isHeadCol = (iCol === 0);
+                    var isTailRow = (iRow === (nR - 1));
 
-                        var bd = (iRow === (nR - 1)) ? bttmPadding: 0;
-                        var td = (iCol === 0) ? leftPadding: 0;
-
-                        var lPad = (iCol === 0) ? 0 : leftPadding;
-                        var bPad = (iRow === (nR - 1)) ? 0 : bttmPadding;
+                    if (isHeadCol || isTailRow) {
 
                         subNodes.forEach((node) => {
                             node.options = {
-                                showX: (iRow === (nR - 1)),
-                                showY: (iCol === 0),
+                                showX: isTailRow,
+                                showY: isHeadCol,
 
-                                width: cellW + td,
-                                height: cellH + bd,
-                                top: iRow * cellH + 0 * bPad,
-                                left: iCol * cellW + lPad
+                                width : cellW + (isHeadCol ? lPadding: 0),
+                                height: cellH + (isTailRow ? bPadding: 0),
+
+                                top : iRow * cellH,
+                                left: iCol * cellW + (isHeadCol ? 0 : lPadding)
                             };
 
                             if (node.$axes) {
@@ -152,7 +138,6 @@ console.log('W / H:', W, H);
 
             var root = wrapperNode.$matrix.getRC(0, 0)[0];
             root.options = {
-//                top: gridB,
                 top: 0,
                 left: gridL,
                 width: gridW,
@@ -184,7 +169,10 @@ console.log('W / H:', W, H);
                     var multiAxesNodes = [];
                     wrapperNode.$axes.setRC(r, c, multiAxesNodes);
 
-                    subNodes.forEach((node, i) => {
+                    var isHeadCol = (c === 0);
+                    var isTailRow = (r === (nRows - 1));
+
+                    subNodes.forEach((node) => {
                         if (node.$matrix) {
                             var nodeAxis = _.extend(cloneNodeSettings(node), { type: 'WRAP.AXIS' });
                             multiAxesNodes.push(nodeAxis);
@@ -192,13 +180,8 @@ console.log('W / H:', W, H);
                             node.padding.L = 0;
                             node.padding.B = 0;
 
-                            if (c !== 0) {
-                                nodeAxis.padding.L = 0;
-                            }
-
-                            if (r !== (nRows - 1)) {
-                                nodeAxis.padding.B = 0;
-                            }
+                            nodeAxis.padding.L = (isHeadCol ? nodeAxis.padding.L : 0);
+                            nodeAxis.padding.B = (isTailRow ? nodeAxis.padding.B : 0);
 
                             traverse(node, nodeAxis);
                         }
@@ -217,12 +200,18 @@ console.log('W / H:', W, H);
 
             traverse(decorateUnit(wrapperNode, meta, rawData), wrapperNode);
 
-            wrapperNode.$matrix = new TMatrix([[[{
-                type: 'WRAP.MULTI_GRID',
-                padding: { L:0, R:0, T:0, B:0 },
-                options: {},
-                $matrix: new TMatrix([[[root]]])
-            }]]]);
+            wrapperNode.$matrix = new TMatrix([
+                [
+                    [
+                        {
+                            type: 'WRAP.MULTI_GRID',
+                            padding: {L: 0, R: 0, T: 0, B: 0},
+                            options: {},
+                            $matrix: new TMatrix([[[root]]])
+                        }
+                    ]
+                ]
+            ]);
 
             return wrapperNode;
         });
@@ -276,8 +265,8 @@ console.log('W / H:', W, H);
             left: 0
         };
 
-        // return (styleDecorator(multiAxisDecorator(transformationExtractAxes(buildLogicalGraphRecursively(unit)))));
-        return ((multiAxisDecoratorFasade(transformationExtractAxes(buildLogicalGraphRecursively(unit)))));
+        //return (styleDecorator(buildLogicalGraphRecursively(unit)));
+        return (multiAxisDecoratorFasade(transformationExtractAxes(buildLogicalGraphRecursively(unit))));
     },
 
     traverseToNode: function (refUnit, rawData) {

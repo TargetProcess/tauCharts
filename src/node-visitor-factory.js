@@ -472,9 +472,7 @@ var TNodeVisitorFactory = (function () {
                     subNodes.forEach((node) => {
                         node.options = _.extend(
                             {
-                                container: grid,
-                                showX: (iRow === (nRows - 1)),
-                                showY: (iCol === 0)
+                                container: grid
                             },
                             node.options || {});
 
@@ -508,9 +506,7 @@ var TNodeVisitorFactory = (function () {
                 {
                     node.options = _.extend(
                         {
-                            container: container,
-                            showX: true,
-                            showY: true
+                            container: container
                         },
                         node.options || {});
                     continueTraverse(node);
