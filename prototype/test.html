@@ -56,7 +56,7 @@
 <body>
 <div id="chart-container" class="tau-chart" style="display:inline-block;margin:0px;border: solid 1px;"></div>
 <script>
-    System.baseURL = '/tauCharts/src/dsl/';
+    System.baseURL = '/tauCharts/src/';
     System.import('tau.newCharts').then(function (m) {
         var def = {
             container: '#chart-container',
@@ -95,11 +95,8 @@
             r.cycleTime = r.name.length;
             return r;
         });
-        var chart = new m.Chart({
-            data: rawData,
-            spec: def,
-            plugins: [tau.plugins.tooltip('team', 'cycleTime', 'effort'), tau.plugins.highlighter()]
-        });
+
+        var chart = new m.tauChart.Chart({data: rawData, spec: def, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
     })
 </script>
 </body>
