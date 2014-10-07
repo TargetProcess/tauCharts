@@ -1,3 +1,6 @@
+/*! tauCharts - v0.0.1 - 2014-10-07
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -736,7 +739,7 @@
             var type = dimx.scaleType;
             var vals = unit.domain(dimx.scaleDim);
     
-    if ('cycleTime' == dimx.scaleDim) console.log(dimx.scaleDim, '\t\t', interval);
+    if ('effort' == dimx.scaleDim) console.log(dimx.scaleDim, '\t\t', interval);
     
             return d3.scale[type]().domain(dsl$reader$$SCALE_STRATEGIES[type](vals))[dsl$reader$$getRangeMethod(type)](interval, 0.1);
         };
@@ -777,34 +780,44 @@
                     var nC = node.$axes.sizeC();
     
                     //var leftPadding = node.padding.L;
-                    var leftPadding = (node.$axes.getRC(0, 0)[0] || { padding: { L: 0 } }).padding.L;
+                    var leftTopItem = (node.$axes.getRC(0, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
+                    var leftBtmItem = (node.$axes.getRC(nR - 1, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
+                    var leftPadding = leftTopItem.padding.L;
+                    var bttmPadding = leftBtmItem.padding.B;
+    
                     var sharedWidth = (W - leftPadding);
+                    var sharedHeight = (H - bttmPadding);
     
     console.log(node);
                     var cellW = sharedWidth / nC;
-                    var cellH = H / nR;
+                    var cellH = sharedHeight / nR;
     
-    console.log('Width:', options.width);
+    console.log('Height:', options.height);
     console.log('paddL:', padding);
-    console.log('W / H:', W);
-    console.log('sharedW:', sharedWidth);
+    console.log('W / H:', W, H);
+                    console.log('leftPadding:', leftPadding);
+                    console.log('bttmPadding:', bttmPadding);
+                    console.log('sharedH:', sharedHeight);
     
                     node.$axes.iterate(function(iRow, iCol, subNodes)  {
     
                         if (iCol === 0 || (iRow === (nR - 1))) {
     
-                            var xd = (iCol === 0) ? leftPadding: 0;
-                            var ld = (iCol === 0) ? 0 : leftPadding;
+                            var bd = (iRow === (nR - 1)) ? bttmPadding: 0;
+                            var td = (iCol === 0) ? leftPadding: 0;
+    
+                            var lPad = (iCol === 0) ? 0 : leftPadding;
+                            var bPad = (iRow === (nR - 1)) ? 0 : bttmPadding;
     
                             subNodes.forEach(function(node)  {
                                 node.options = {
                                     showX: (iRow === (nR - 1)),
                                     showY: (iCol === 0),
     
-                                    width: cellW + xd,
-                                    height: cellH,
-                                    top: iRow * cellH,
-                                    left: iCol * cellW + ld
+                                    width: cellW + td,
+                                    height: cellH + bd,
+                                    top: iRow * cellH + 0 * bPad,
+                                    left: iCol * cellW + lPad
                                 };
     
                                 if (node.$axes) {
@@ -821,7 +834,7 @@
     
     
                 var gridL = 0;
-                var gridT = 0;
+                var gridB = 0;
                 var axisOffsetTraverser = function(node)  {
     
                     if (!node.$axes) {
@@ -829,10 +842,11 @@
                     }
     
                     var padding = node.padding;
+                    var nR = node.$axes.sizeR();
                     node.$axes.iterate(function(iRow, iCol, subNodes)  {
-                        if (iCol === 0 && iRow === 0) {
+                        if (iCol === 0 && (iRow === (nR - 1))) {
                             gridL += padding.L;
-                            gridT += padding.T;
+                            gridB += padding.B;
                             subNodes.forEach(function(node)  {return axisOffsetTraverser(node)});
                         }
                     });
@@ -843,11 +857,12 @@
                 axisOffsetTraverser(wrapperNode);
     
                 var gridW = wrapperNode.options.width - gridL;
-                var gridH = wrapperNode.options.height - gridT;
+                var gridH = wrapperNode.options.height - gridB;
     
                 var root = wrapperNode.$matrix.getRC(0, 0)[0];
                 root.options = {
-                    top: gridT,
+    //                top: gridB,
+                    top: 0,
                     left: gridL,
                     width: gridW,
                     height: gridH
@@ -884,12 +899,14 @@
                                 multiAxesNodes.push(nodeAxis);
     
                                 node.padding.L = 0;
+                                node.padding.B = 0;
     
-                                if (c === 0) {
-                                    // nodeAxis.padding.L = 60;
-                                }
-                                else {
+                                if (c !== 0) {
                                     nodeAxis.padding.L = 0;
+                                }
+    
+                                if (r !== (nRows - 1)) {
+                                    nodeAxis.padding.B = 0;
                                 }
     
                                 traverse(node, nodeAxis);
