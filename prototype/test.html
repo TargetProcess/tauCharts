@@ -58,45 +58,22 @@
 <script>
     System.baseURL = '/tauCharts/src/';
     System.import('tau.newCharts').then(function (m) {
-        var def = {
-            container: '#chart-container',
-            dimensions: {
-                project: { scaleType: 'ordinal' },
-                team: { scaleType: 'ordinal' },
-                cycleTime: { scaleType: 'linear' },
-                effort: { scaleType: 'linear' }
-            },
-            W: 1000,
-            H: 800,
-            unit: {
-                padding: { L:24, B:24, R:24, T:24 },
-                type: 'COORDS.RECT',
-                showGridLines: 'xy',
-                axes: [
-                    {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>'},
-                    {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>'}
-                ],
-                unit: [
-                    {
-                        type: 'ELEMENT.POINT',
-                        x: 'cycleTime',
-                        y: 'effort',
-                        color: 'team',
-                        size: 'effort',
-                        shape: null
-                    }
-                ]
-            }
-
-
-        };
-
         var rawData = _(getUserStories()).map(function (r) {
             r.cycleTime = r.name.length;
             return r;
         });
 
-        var chart = new m.tauChart.Chart({data: rawData, spec: def, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
+        var chart = new m.tauChart.Scatterplot({
+            container: '#chart-container',
+            width: 1000,
+            height: 800,
+            data: rawData,
+            plugins: [tau.plugins.tooltip('team', 'effort', 'team'), tau.plugins.highlighter()],
+            x:'cycleTime',
+            y:'effort',
+            color: 'team',
+            size: 'effort'
+        });
     })
 </script>
 </body>

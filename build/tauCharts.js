@@ -1,3 +1,6 @@
+/*! tauCharts - v0.0.1 - 2014-10-07
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -906,9 +909,19 @@
         };
     plugins$$MIXIN$0(ChartTools.prototype,proto$0);proto$0=void 0;return ChartTools;})();
 
-    var tau$base$Chart$$Chart = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+    var charts$tau$chart$$Chart = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
         function Chart(config) {
-            this.config = _.defaults(config, {
+
+            var chartConfig = this.convertConfig(config);
+
+            if (!chartConfig.spec.dimensions) {
+                chartConfig.spec.dimensions = this._autoDetectDimensions(chartConfig.data);
+            } else {
+                var smartDetection = function(data)  {
+                    data[0].keys();
+                };
+            }
+            this.config = _.defaults(chartConfig, {
                 spec: null,
                 data: [],
                 plugins: []
@@ -925,18 +938,76 @@
             render.selectAll('.i-role-datum').call(plugins$$propagateDatumEvents(this._plugins));
         }DP$0(Chart,"prototype",{"configurable":false,"enumerable":false,"writable":false});
 
+        proto$0._autoDetectDimensions = function(data) {
+            function detectType(value) {
+                return _.isNumber(value) ? 'linear' : 'ordinal';
+            }
+            return _.reduce(data, function(dimensions, item) {
+                _.each(item, function (value, key) {
+                    if (dimensions[key]) {
+                        if(dimensions[key].scaleType == detectType(value)) {
+                            dimensions[key].scaleType = 'linear';
+                        } else {
+                            dimensions[key].scaleType = 'ordinal';
+                        }
+                    } else {
+                        dimensions[key] = {scaleType: detectType(value)};
+                    }
+                });
+                return dimensions;
+            }, {});
+        };
+
+        proto$0.convertConfig = function(config) {
+            return config;
+        };
+
         proto$0._render = function(graph) {
             return this.reader.traverseToNode(graph, this.data);
         };
-
-        proto$0.getSvg = function() {
-            return this._chart;
-        };
-
     MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})();
 
+    function charts$tau$scatterplot$$convertAxis(data) {
+        if(!data) {
+            return null;
+        }
+        return {scaleDim: data};
+    }
+    var charts$tau$scatterplot$$Scatterplot = (function(super$0){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var SP$0 = Object.setPrototypeOf||function(o,p){if(PRS$0){o["__proto__"]=p;}else {DP$0(o,"__proto__",{"value":p,"configurable":true,"enumerable":false,"writable":true});}return o};var OC$0 = Object.create;function Scatterplot() {super$0.apply(this, arguments)}if(!PRS$0)MIXIN$0(Scatterplot, super$0);if(super$0!==null)SP$0(Scatterplot,super$0);Scatterplot.prototype = OC$0(super$0!==null?super$0.prototype:null,{"constructor":{"value":Scatterplot,"configurable":true,"writable":true}});DP$0(Scatterplot,"prototype",{"configurable":false,"enumerable":false,"writable":false});var proto$0={};
+        proto$0.convertConfig = function(config) {
+            var chartConfig = _.omit(config, 'spec');
+            chartConfig.spec = {
+                dimensions: config.dimensions,
+                H:config.height,
+                W:config.width,
+                container:config.container,
+                unit:{
+                    axes: [
+                        charts$tau$scatterplot$$convertAxis(config.x),
+                        charts$tau$scatterplot$$convertAxis(config.y)
+                    ],
+                    padding: { L:24, B:24, R:24, T:24 },
+                    type: 'COORDS.RECT',
+                    showGridLines: 'xy',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT',
+                            x: config.x,
+                            y: config.y,
+                            color: config.color,
+                            size: config.size
+                        }
+                    ]
+                }
+
+            };
+            return chartConfig;
+        };
+    MIXIN$0(Scatterplot.prototype,proto$0);proto$0=void 0;return Scatterplot;})(charts$tau$chart$$Chart);
+
     var tau$newCharts$$tauChart = {
-        Chart:tau$base$Chart$$Chart
+        Chart: charts$tau$chart$$Chart,
+        Scatterplot: charts$tau$scatterplot$$Scatterplot
     };
 
     "use strict";

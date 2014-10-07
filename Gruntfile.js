@@ -24,7 +24,20 @@ module.exports = function (grunt) {
         compile: {
             build: {
                 cwd: "src/",
-                src: ["dsl-reader.js","matrix.js","node-visitor-factory.js","plugins.js","tau.base.Chart.js","tau.newCharts.js","unit-visitor-factory.js"],
+
+                src: [
+                    "*.js",
+                    "**/*.js",
+                    "!charts/bar.js",
+                    '!tau.plugins.js',
+                    '!tau.svg.js',
+                    '!charts/line.js',
+                    '!charts/scatterplot.js',
+                    '!tau.charts.js',
+                    '!class.js',
+                    '!tau.data.js',
+                    '!tau.data.types.js'
+                ],
                 dest: "build/<%= pkg.name %>.js"
             }
         },
