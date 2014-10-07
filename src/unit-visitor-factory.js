@@ -29,7 +29,7 @@ var TUnitVisitorFactory = (function () {
 
     var TUnitMap = {
 
-        'COORDS/RECT': function (unit, continueTraverse) {
+        'COORDS.RECT': function (unit, continueTraverse) {
 
             var root = _.defaults(
                 unit,
@@ -67,8 +67,6 @@ var TUnitVisitorFactory = (function () {
             return root;
         }
     };
-
-    TUnitMap['COORDS.RECT'] = TUnitMap['COORDS/RECT'];
 
     return function (unitType) {
         return TUnitMap[unitType] || ((unit) => {

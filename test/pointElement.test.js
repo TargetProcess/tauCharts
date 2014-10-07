@@ -29,7 +29,7 @@ describe("Point element", function () {
                     ],
                     unit: [
                         {
-                            type: 'ELEMENT/POINT',
+                            type: 'ELEMENT.POINT',
                             x: 'x',
                             y: 'y',
                             color: 'color',

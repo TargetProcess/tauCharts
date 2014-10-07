@@ -1,3 +1,6 @@
+/*! tauCharts - v0.0.1 - 2014-10-07
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -92,7 +95,7 @@
     
         var TUnitMap = {
     
-            'COORDS/RECT': function (unit, continueTraverse) {
+            'COORDS.RECT': function (unit, continueTraverse) {
     
                 var root = _.defaults(
                     unit,
@@ -130,8 +133,6 @@
                 return root;
             }
         };
-    
-        TUnitMap['COORDS.RECT'] = TUnitMap['COORDS/RECT'];
     
         return function (unitType) {
             return TUnitMap[unitType] || (function(unit)  {
@@ -265,7 +266,7 @@
                 });
             },
     
-            'ELEMENT/POINT': function (node) {
+            'ELEMENT.POINT': function (node) {
     
                 var filteredData = node.partition();
                 var srcData = node.source();
@@ -314,7 +315,7 @@
                 elements.enter().append('circle').call(update);
             },
     
-            'ELEMENT/INTERVAL': function (node) {
+            'ELEMENT.INTERVAL': function (node) {
     
                 var options = node.options || {};
                 options.xScale = node.scaleTo(node.x, [0, options.width]);
@@ -342,7 +343,7 @@
                 elements.exit().remove();
             },
     
-            'ELEMENT/LINE': function (node) {
+            'ELEMENT.LINE': function (node) {
     
                 var options = node.options || {};
                 options.xScale = node.scaleTo(node.x, [0, options.width]);
@@ -501,8 +502,6 @@
                 });
             }
         };
-    
-        TNodeMap['COORDS/RECT'] = TNodeMap['COORDS.RECT'];
     
         return function (unitType) {
     

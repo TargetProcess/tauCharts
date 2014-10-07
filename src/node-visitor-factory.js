@@ -121,7 +121,7 @@ var TNodeVisitorFactory = (function () {
             });
         },
 
-        'ELEMENT/POINT': function (node) {
+        'ELEMENT.POINT': function (node) {
 
             var filteredData = node.partition();
             var srcData = node.source();
@@ -170,7 +170,7 @@ var TNodeVisitorFactory = (function () {
             elements.enter().append('circle').call(update);
         },
 
-        'ELEMENT/INTERVAL': function (node) {
+        'ELEMENT.INTERVAL': function (node) {
 
             var options = node.options || {};
             options.xScale = node.scaleTo(node.x, [0, options.width]);
@@ -198,7 +198,7 @@ var TNodeVisitorFactory = (function () {
             elements.exit().remove();
         },
 
-        'ELEMENT/LINE': function (node) {
+        'ELEMENT.LINE': function (node) {
 
             var options = node.options || {};
             options.xScale = node.scaleTo(node.x, [0, options.width]);
@@ -357,8 +357,6 @@ var TNodeVisitorFactory = (function () {
             });
         }
     };
-
-    TNodeMap['COORDS/RECT'] = TNodeMap['COORDS.RECT'];
 
     return function (unitType) {
 
