@@ -37,7 +37,8 @@ module.exports = function (grunt) {
                 singleRun: false
             },
             unit: {
-                reporters: ["dots"]
+                reporters: ["dots", "coverage"],
+                preprocessors: { "build/tauCharts.js": "coverage" }
             },
             travis: {
                 preprocessors: { "build/tauCharts.js": "coverage" },
