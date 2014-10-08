@@ -1,4 +1,5 @@
 import {DSLReader} from '../dsl-reader';
+import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 
 export class Chart {
@@ -21,9 +22,11 @@ export class Chart {
         this.plugins = this.config.plugins;
         this.spec = this.config.spec;
         this.data = this.config.data;
-        this.reader = new DSLReader(this.spec);
-        var render = this._render(this.reader.traverse(this.data));
-        this._chart = render.node();
+        this.reader = new DSLReader(this.spec, this.data);
+
+        var logicalGraph = this.reader.buildGraph(this.data);
+        var layoutXGraph = this.reader.applyStyle(logicalGraph, LayoutEngineFactory.get('EXTRACT-AXES'));
+        var render = this.reader.renderGraph(layoutXGraph);
 
         //plugins
         this._plugins = new Plugins(this.config.plugins);
@@ -52,9 +55,5 @@ export class Chart {
 
     convertConfig(config) {
         return config;
-    }
-
-    _render(graph) {
-        return this.reader.traverseToNode(graph, this.data);
     }
 }

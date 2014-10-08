@@ -117,4 +117,51 @@ describe("DSL reader", function () {
 
         checkFacetCells(logicalGraph.$matrix, facet);
     });
+
+    it("should apply style engine to logical graph", function () {
+
+        var reader = new tauChart.__api__.DSLReader(
+            {
+                dimensions: {
+                    project: {scaleType: 'ordinal'},
+                    team: {scaleType: 'ordinal'},
+                    effort: {scaleType: 'linear'}
+                },
+                unit: {
+                    type: 'COORDS.RECT',
+                    axes: [
+                        {scaleDim: 'project'},
+                        null
+                    ],
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            axes: [
+                                {scaleDim: 'cycleTime'},
+                                {scaleDim: 'effort'}
+                            ],
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT',
+                                    x: 'cycleTime',
+                                    y: 'effort'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            data);
+
+        var logicalGraph = reader.buildGraph();
+
+        expect(logicalGraph.$matrix.sizeR()).to.equal(1);
+        expect(logicalGraph.$matrix.sizeC()).to.equal(2);
+
+        var facet = [
+            [{ project: 'TP3' }, { project: 'TP2' }]
+        ];
+
+        checkFacetCells(logicalGraph.$matrix, facet);
+    });
 });
