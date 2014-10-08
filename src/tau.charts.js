@@ -192,6 +192,7 @@
     });
 
     var CHART_PADDINGS = {top: 20, right: 20, bottom: 30, left: 40};
+    var MINI_CHART_PADDINGS = {top: 5, right: 5, bottom: 5, left: 5};
 
     var CHART_HTML =
         '<div class="html html-left"></div>' +
@@ -233,6 +234,23 @@
         }
     });
 
+    /** @class */
+    var MiniLayout = Class.extend({
+        /** @constructs */
+        init: function(selector){
+            var container = d3.select(selector)
+                .classed('tau-chart', true)
+                .html('<svg></svg>');
+
+            this.svg = tau.svg.paddedBox(container.select('svg'), MINI_CHART_PADDINGS);
+            var layout = new tau.svg.Layout(this.svg);
+            this.data = layout.col();
+            this.width = this.data.layout('width');
+            this.height = this.data.layout('height');
+        }
+    });
+
+
     var propagateDatumEvents = function (plugins) {
         return function () {
             this
@@ -251,6 +269,7 @@
         };
     };
 
+
     /**@class */
     /**@extends Chart */
     var BasicChart = Chart.extend({
@@ -267,8 +286,30 @@
         _onScalesDomainsLayoutsConfigured: function(config) {
         },
 
+        renderAxises: function(layout) {
+            new YAxis(this._mapper.binder('y')).render(layout.yAxis);
+            new XAxis(this._mapper.binder('x')).render(layout.xAxis);
+        },
+
+        renderGrid: function(layout) {
+            new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(layout.data);
+        },
+
+        renderPlugins: function(layout) {
+            this._plugins.render(new RenderContext(this._dataSource), new ChartTools(layout, this._mapper));
+
+        },
+
+        createChartLayout: function(selector) {
+            return new ChartLayout(selector);
+        },
+
+        attachEventsForPlugins: function(layout) {
+            layout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+        },
+
         render: function (selector) {
-            var chartLayout = new ChartLayout(selector);
+            var chartLayout = this.createChartLayout(selector);
 
             var scaleX = this._mapper.binder('x');
             scaleX.range([0, chartLayout.width]);
@@ -283,24 +324,37 @@
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);
-                    chartLayout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                    this.attachEventsForPlugins(chartLayout);
                 }.bind(this);
 
                 renderData(data);
+
                 this._dataSource.update(renderData);
 
-                new YAxis(this._mapper.binder('y')).render(chartLayout.yAxis);
-                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
-                new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data);
+                this.renderAxises(chartLayout);
+
+                this.renderGrid(chartLayout);
 
                 tau.svg.bringOnTop(chartLayout.data);
 
-                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(chartLayout, this._mapper));
+                this.renderPlugins(chartLayout);
+
             }.bind(this));
         }
     });
 
-    
+    /** @class MiniChart */
+    var MiniChart = BasicChart.extend({
+        renderAxises: function() {},
+        renderGrid: function() {},
+        renderPlugins: function() {},
+        attachEventsForPlugins: function() {},
+        createChartLayout: function(selector) {
+            return new MiniLayout(selector);
+        }
+
+    });
+
     /** @class ChartTools */
     var ChartTools = Class.extend({
         /**
@@ -352,6 +406,7 @@
          * @returns {BasicChart}
          */
         Base: BasicChart,
+        Mini: MiniChart,
 
         /**
         * Register new chart

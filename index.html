@@ -40,8 +40,23 @@
           type='text/css'>
 </head>
 <body>
+
+<div>
+    <div id="chartMiniScatter" style="border: 1px solid #e4e4e4; width:200px;height:100px;display:inline-block;margin:5px;"> <!-- Magic margin-->
+    </div>
+
+    <div id="chartMiniLine" style="border: 1px solid #e4e4e4; width:200px;height:100px;display:inline-block;margin:5px;"> <!-- Magic margin-->
+    </div>
+
+    <div id="chartMiniBar" style="border: 1px solid #e4e4e4; width:200px;height:100px;display:inline-block;margin:5px;"> <!-- Magic margin-->
+    </div>
+
+
+</div>
+
 <div id="chartScatter" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
 </div>
+
 
 <div id="chartLine" style="width:800px;height:600px;display:inline-block;margin:160px 30px;"> <!-- Magic margin-->
 </div>
@@ -80,8 +95,16 @@
             tau.plugins.header(
                     'Sample scatter plot',
                     'The data is displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. This kind of plot is also called a scatter chart, scattergram, scatter diagram, or scatter graph.')
-    )
-            .render("#chartScatter");
+    ).render("#chartScatter");
+
+    tau.charts
+            .MiniScatterplot(scatterplotData)
+            .map({
+                x: tau.data.map('Gdp').caption('<h4>GDP</h4><p>points</p>'),
+                y: tau.data.map('Happiness').caption('<h4>Happiness</h4><p>points</p>'),
+                color: 'Country'
+            })
+            .render("#chartMiniScatter");
 
     var lineData = tau.data.Array(window.lineData);
 
@@ -103,6 +126,14 @@
                     'A line chart or line graph is a type of chart which displays information as a series of data points called markers connected by straight line segments. It is a basic type of chart common in many fields. It is similar to a scatter plot except that the measurement points are ordered (typically by their x-axis value) and joined with straight line segments. Line Charts show how a particular data changes at equal intervals of time. A line chart is often used to visualize a trend in data over intervals of time – a time series – thus the line is often drawn chronologically.')
     )
             .render("#chartLine");
+
+    tau.charts
+            .MiniLine(lineData)
+            .map({
+                x: tau.data.map('effort').linear(),
+                y: tau.data.map('bugsCount').linear(),
+                color: 'priority'
+            }).render("#chartMiniLine");
 
 
     var stories = getUserStories();
@@ -152,6 +183,14 @@
                     'Stories delivered by Targetprocess teams in 2014',
                     'Stacked one for now.'))
             .render("#chartBar");
+
+    tau.charts
+            .MiniBar(tau.data.Array(data))
+            .map({
+                x: tau.data.map('month', tau.data.types.time).time().format(d3.time.format('%b')),
+                y: 'count',
+                color: 'team'
+            }).render("#chartMiniBar");
 
 
     tau.charts
