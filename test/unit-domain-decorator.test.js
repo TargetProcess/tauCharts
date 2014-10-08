@@ -20,9 +20,7 @@ describe("Unit domain decorator", function () {
     it("should decorate with [source] method", function () {
         var unit = decorator.decorate({});
         expect(unit.source().length).to.equal(3);
-        expect(unit.source(function (r) {
-            return r.project === 'TP2';
-        }).length).to.equal(2);
+        expect(unit.source({ project: 'TP2' }).length).to.equal(2);
     });
 
     it("should decorate with [domain] method", function () {
@@ -48,33 +46,25 @@ describe("Unit domain decorator", function () {
     it("should decorate with [partition] method", function () {
 
         var unit0 = decorator.decorate({
-            $filter: []
+            $where: {}
         });
         var part0 = unit0.partition();
         expect(part0).to.deep.equal(data);
 
         var unit1 = decorator.decorate({
-            $filter: [
-                function (r) {
-                    return r.project === 'TP2'
-                },
-                function (r) {
-                    return r.team === 'Alaska'
-                }
-            ]
+            $where: {
+                project: 'TP2',
+                team: 'Alaska'
+            }
         });
         var part1 = unit1.partition();
         expect(part1).to.deep.equal([data[1]]);
 
         var unit2 = decorator.decorate({
-            $filter: [
-                function (r) {
-                    return r.project === 'Non-Existent_Project'
-                },
-                function (r) {
-                    return r.team === 'Alaska'
-                }
-            ]
+            $where: {
+                project: 'Non-Existent-Project',
+                team: 'Alaska'
+            }
         });
         var part2 = unit2.partition();
         expect(part2).to.deep.equal([]);

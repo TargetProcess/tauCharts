@@ -2,30 +2,35 @@ import {TMatrix} from './matrix';
 
 var TUnitVisitorFactory = (function () {
 
-    var createEqualPredicate = (propName, shouldEqualTo) => ((row) => row[propName] === shouldEqualTo);
-
     var cloneObject = (obj) => JSON.parse(JSON.stringify(obj));
 
-    var TFuncMap = {
+    var FacetAlgebra = {
+
         'CROSS': function (root, dimX, dimY) {
 
             var domainX = root.domain(dimX);
             var domainY = root.domain(dimY).reverse();
 
-            return _(domainY).map((RV) =>
-            {
-                return _(domainX).map((RC) =>
-                {
-                    return [
-                        createEqualPredicate(dimX, RC),
-                        createEqualPredicate(dimY, RV)
-                    ];
+            return _(domainY).map((rowVal) => {
+                return _(domainX).map((colVal) => {
+
+                    var r = {};
+
+                    if (dimX) {
+                        r[dimX] = colVal;
+                    }
+
+                    if (dimY) {
+                        r[dimY] = rowVal;
+                    }
+
+                    return r;
                 });
             });
         }
     };
 
-    var EMPTY_CELL_FILTER = [];
+    var TFuncMap = (opName) => FacetAlgebra[opName] || (() => [[{}]]);
 
     var TUnitMap = {
 
@@ -34,7 +39,7 @@ var TUnitVisitorFactory = (function () {
             var root = _.defaults(
                 unit,
                 {
-                    $filter: EMPTY_CELL_FILTER
+                    $where: {}
                 });
 
             // declare defaults
@@ -44,16 +49,17 @@ var TUnitVisitorFactory = (function () {
                 padding: 0
             }));
 
-            var unitFunc = TFuncMap[root.func] || (() => [[EMPTY_CELL_FILTER]]);
+            var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
+            var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
             var matrixOfPrFilters = new TMatrix(unitFunc(root, root.axes[0].scaleDim, root.axes[1].scaleDim));
             var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
-            matrixOfPrFilters.iterate((row, col, $filterRC) => {
-                var cellFilter = root.$filter.concat($filterRC);
+            matrixOfPrFilters.iterate((row, col, $whereRC) => {
+                var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
                     // keep arguments order. cloned objects are created
-                    return _.extend(cloneObject(sUnit), { $filter: cellFilter });
+                    return _.extend(cloneObject(sUnit), { $where: cellWhere });
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });

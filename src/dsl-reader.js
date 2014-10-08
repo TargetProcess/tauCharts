@@ -10,9 +10,35 @@ var cloneNodeSettings = (node) => {
 
 export class DSLReader {
 
-    constructor (ast) {
-        this.ast = ast;
+    constructor (spec, data) {
+        this.ast = spec;
+        this.spec = spec;
+        this.domain = new UnitDomainDecorator(this.spec.dimensions, data);
     }
+
+    buildGraph() {
+        var buildRecursively = ((unit) => TUnitVisitorFactory(unit.type)(this.domain.decorate(unit), buildRecursively));
+        return buildRecursively(this.spec.unit);
+    }
+
+    applyStyle(graph, styleEngine) {
+        //
+    }
+
+    renderGraph(styledGraph) {
+
+        styledGraph.options.container = d3.select(this.spec.container)
+            .append("svg")
+            .style("border", 'solid 1px')
+            .attr("width", this.ast.W)
+            .attr("height", this.ast.H);
+
+        var renderRecursively = (unit) => TNodeVisitorFactory(unit.type)(this.domain.decorate(unit), renderRecursively);
+
+        return renderRecursively(styledGraph).options.container;
+    }
+
+
 
     traverse (rawData, styleEngine) {
 

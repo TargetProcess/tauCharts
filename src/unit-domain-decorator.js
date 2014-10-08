@@ -5,15 +5,13 @@ var SCALE_STRATEGIES = {
 
 var getRangeMethod = (scaleType) => ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
 
-var metaFilter = (filterPredicates, row) => _.every(filterPredicates, (fnPredicate) => fnPredicate(row));
-
 export class UnitDomainDecorator {
 
     constructor(meta, data) {
         this.meta = meta;
         this.data = data;
 
-        this.fnSource = (filter) => _(data).filter(filter || (() => true));
+        this.fnSource = (whereFilter) => _(data).where(whereFilter || {});
 
         // TODO: memoize
         this.fnDomain = (dim) => _(data).chain().pluck(dim).uniq().value();
@@ -35,7 +33,7 @@ export class UnitDomainDecorator {
         unit.source = this.fnSource;
         unit.domain = this.fnDomain;
         unit.scaleTo = this.fnScaleTo;
-        unit.partition = (() => unit.source(metaFilter.bind(null, unit.$filter)));
+        unit.partition = (() => unit.source(unit.$where));
 
         return unit;
     }

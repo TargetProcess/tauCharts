@@ -99,30 +99,33 @@
 
     var unit$visitor$factory$$TUnitVisitorFactory = (function () {
     
-        var createEqualPredicate = function(propName, shouldEqualTo)  {return function(row)  {return row[propName] === shouldEqualTo}} ;
-    
         var cloneObject = function(obj)  {return JSON.parse(JSON.stringify(obj))};
     
-        var TFuncMap = {
+        var FacetAlgebra = {
+    
             'CROSS': function (root, dimX, dimY) {
     
                 var domainX = root.domain(dimX);
                 var domainY = root.domain(dimY).reverse();
     
-                return _(domainY).map(function(RV) 
-                {
-                    return _(domainX).map(function(RC) 
-                    {
-                        return [
-                            createEqualPredicate(dimX, RC),
-                            createEqualPredicate(dimY, RV)
-                        ];
+                return _(domainY).map(function(rowVal)  {
+                    return _(domainX).map(function(colVal)  {
+                        var r = {};
+                        if (dimX) {
+                            r[dimX] = colVal;
+                        }
+    
+                        if (dimY) {
+                            r[dimY] = rowVal;
+                        }
+    
+                        return r;
                     });
                 });
             }
         };
     
-        var EMPTY_CELL_FILTER = [];
+        var TFuncMap = function(opName)  {return FacetAlgebra[opName] || (function()  {return [[{}]]})};
     
         var TUnitMap = {
     
@@ -131,7 +134,7 @@
                 var root = _.defaults(
                     unit,
                     {
-                        $filter: EMPTY_CELL_FILTER
+                        $where: {}
                     });
     
                 // declare defaults
@@ -141,16 +144,17 @@
                     padding: 0
                 })});
     
-                var unitFunc = TFuncMap[root.func] || (function()  {return [[EMPTY_CELL_FILTER]]});
+                var isFacet = _.any(root.unit, function(n)  {return n.type.indexOf('COORDS.') === 0} );
+                var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
     
                 var matrixOfPrFilters = new matrix$$TMatrix(unitFunc(root, root.axes[0].scaleDim, root.axes[1].scaleDim));
                 var matrixOfUnitNodes = new matrix$$TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
     
-                matrixOfPrFilters.iterate(function(row, col, $filterRC)  {
-                    var cellFilter = root.$filter.concat($filterRC);
+                matrixOfPrFilters.iterate(function(row, col, $whereRC)  {
+                    var cellWhere = _.extend({}, root.$where, $whereRC);
                     var cellNodes = _(root.unit).map(function(sUnit)  {
                         // keep arguments order. cloned objects are created
-                        return _.extend(cloneObject(sUnit), { $filter: cellFilter });
+                        return _.extend(cloneObject(sUnit), { $where: cellWhere });
                     });
                     matrixOfUnitNodes.setRC(row, col, cellNodes);
                 });
@@ -552,15 +556,13 @@
 
     var unit$domain$decorator$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
 
-    var unit$domain$decorator$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
-
     var unit$domain$decorator$$UnitDomainDecorator = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
         function UnitDomainDecorator(meta, data) {var this$0 = this;
             this.meta = meta;
             this.data = data;
     
-            this.fnSource = function(filter)  {return _(data).filter(filter || (function()  {return true}))};
+            this.fnSource = function(whereFilter)  {return _(data).where(whereFilter || {})};
     
             // TODO: memoize
             this.fnDomain = function(dim)  {return _(data).chain().pluck(dim).uniq().value()};
@@ -582,7 +584,7 @@
             unit.source = this.fnSource;
             unit.domain = this.fnDomain;
             unit.scaleTo = this.fnScaleTo;
-            unit.partition = (function()  {return unit.source(unit$domain$decorator$$metaFilter.bind(null, unit.$filter))});
+            unit.partition = (function()  {return unit.source(unit.$where)});
     
             return unit;
         };
@@ -595,9 +597,35 @@
 
     var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
-        function DSLReader (ast) {
-            this.ast = ast;
+        function DSLReader (spec, data) {
+            this.ast = spec;
+            this.spec = spec;
+            this.domain = new unit$domain$decorator$$UnitDomainDecorator(this.spec.dimensions, data);
         }DP$0(DSLReader,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+    
+        proto$0.buildGraph = function() {var this$0 = this;
+            var buildRecursively = (function(unit)  {return unit$visitor$factory$$TUnitVisitorFactory(unit.type)(this$0.domain.decorate(unit), buildRecursively)});
+            return buildRecursively(this.spec.unit);
+        };
+    
+        proto$0.applyStyle = function(graph, styleEngine) {
+            //
+        };
+    
+        proto$0.renderGraph = function(styledGraph) {var this$0 = this;
+    
+            styledGraph.options.container = d3.select(this.spec.container)
+                .append("svg")
+                .style("border", 'solid 1px')
+                .attr("width", this.ast.W)
+                .attr("height", this.ast.H);
+    
+            var renderRecursively = function(unit)  {return node$visitor$factory$$TNodeVisitorFactory(unit.type)(this$0.domain.decorate(unit), renderRecursively)};
+    
+            return renderRecursively(styledGraph).options.container;
+        };
+    
+    
     
         proto$0.traverse = function (rawData, styleEngine) {
     
@@ -1049,7 +1077,8 @@
         Scatterplot: charts$tau$scatterplot$$Scatterplot,
     
         __api__: {
-            UnitDomainDecorator: unit$domain$decorator$$UnitDomainDecorator
+            UnitDomainDecorator: unit$domain$decorator$$UnitDomainDecorator,
+            DSLReader: dsl$reader$$DSLReader
         }
     };
 

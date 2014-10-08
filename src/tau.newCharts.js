@@ -1,6 +1,7 @@
 import {Chart} from './charts/tau.chart';
 import {Scatterplot} from './charts/tau.scatterplot';
 import {UnitDomainDecorator} from './unit-domain-decorator';
+import {DSLReader} from './dsl-reader';
 
 
 var tauChart = {
@@ -8,7 +9,8 @@ var tauChart = {
     Scatterplot: Scatterplot,
 
     __api__: {
-        UnitDomainDecorator: UnitDomainDecorator
+        UnitDomainDecorator: UnitDomainDecorator,
+        DSLReader: DSLReader
     }
 };
 
