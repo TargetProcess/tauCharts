@@ -67,10 +67,18 @@
             container: '#chart-container',
             width: 1000,
             height: 800,
-            data: rawData,
+            data: [
+                {team: 'd', cycleTime: 1, effort: 1, priority: 'low'},
+                {team: 'd', cycleTime: 3, effort: 6, priority: 'low'},
+                {team: 'd', cycleTime: 4, effort: 7, priority: 'medium'},
+                {team: 'k', cycleTime: 5, effort: 8, priority: 'medium'},
+                {team: 'd', cycleTime: 2, effort: 2.5, priority: 'high'},
+                {team: 'l', cycleTime: 2.2, effort: 4, priority: 'high'}
+
+            ],
             plugins: [tau.plugins.tooltip('team', 'effort', 'team'), tau.plugins.highlighter()],
-            x:'cycleTime',
-            y:'effort',
+            x: 'cycleTime',
+            y: 'effort',
             color: 'team',
             size: 'effort'
         });

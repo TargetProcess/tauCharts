@@ -2,7 +2,7 @@ var TNodeVisitorFactory = (function () {
 
     var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 
-    var fnDrawDimAxis = function(x, AXIS_POSITION, CSS_CLASS) {
+    var fnDrawDimAxis = function (x, AXIS_POSITION, CSS_CLASS) {
         var container = this;
         if (x.scaleDim) {
             container
@@ -13,7 +13,7 @@ var TNodeVisitorFactory = (function () {
         }
     };
 
-    var fnDrawGrid = function(node, H, W) {
+    var fnDrawGrid = function (node, H, W) {
 
         var container = this;
 
@@ -63,7 +63,7 @@ var TNodeVisitorFactory = (function () {
         'COORDS.RECT': function (node, continueTraverse) {
 
             var options = node.options || {};
-            var axes = _(node.axes).map(function(axis, i) {
+            var axes = _(node.axes).map(function (axis, i) {
                 var a = _.isArray(axis) ? axis : [axis];
                 a[0] = _.defaults(
                     a[0] || {},
@@ -77,12 +77,12 @@ var TNodeVisitorFactory = (function () {
             var x = axes[0][0];
             var y = axes[1][0];
 
-            var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
+            var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
 
             var L = options.left + padding.L;
-            var T = options.top  + padding.T;
+            var T = options.top + padding.T;
 
-            var W = options.width  - (padding.L + padding.R);
+            var W = options.width - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
             var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
@@ -110,11 +110,9 @@ var TNodeVisitorFactory = (function () {
 
             var grid = fnDrawGrid.call(container, node, H, W);
 
-            node.$matrix.iterate((iRow, iCol, subNodes) =>
-            {
-                subNodes.forEach((node) =>
-                {
-                    node.options = _.extend({ container: grid }, node.options || {});
+            node.$matrix.iterate((iRow, iCol, subNodes) => {
+                subNodes.forEach((node) => {
+                    node.options = _.extend({container: grid}, node.options || {});
 
                     continueTraverse(node);
                 });
@@ -125,16 +123,29 @@ var TNodeVisitorFactory = (function () {
 
             var filteredData = node.partition();
             var srcData = node.source();
+            var defaultRange = ['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'];
+            var getDefaultDomain = function () {
+                return _(srcData).chain().pluck(node.color).uniq().value();
+            };
 
             var options = node.options || {};
             options.xScale = node.scaleTo(node.x, [0, options.width]);
             options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
+            var range, domain, colorDim;
+            colorDim = node.color;
+            if (_.isObject(node.color)) {
+                range = node.color.range || defaultRange;
+                domain = node.color.domain || getDefaultDomain();
+                colorDim = node.color.dimension;
+            } else {
+                range = defaultRange;
+                domain = getDefaultDomain();
+            }
             var color = d3.scale
                 .ordinal()
-                .range(['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'])
-                .domain(_(srcData).chain().pluck(node.color).uniq().value());
-
+                .range(range)
+                .domain(domain);
             var size = d3
                 .scale
                 .linear()
@@ -154,7 +165,7 @@ var TNodeVisitorFactory = (function () {
                         return s;
                     })
                     .attr('class', function (d) {
-                        return 'dot i-role-datum ' + color(d[node.color]);
+                        return 'dot i-role-datum ' + color(d[colorDim]);
                     })
                     .attr('cx', function (d) {
                         return options.xScale(d[node.x]);
@@ -223,9 +234,9 @@ var TNodeVisitorFactory = (function () {
                 .attr("d", line);
         },
 
-        'WRAP.AXIS': function(node, continueTraverse) {
+        'WRAP.AXIS': function (node, continueTraverse) {
             var options = node.options || {};
-            var axes = _(node.axes).map(function(axis, i) {
+            var axes = _(node.axes).map(function (axis, i) {
                 var a = _.isArray(axis) ? axis : [axis];
                 a[0] = _.defaults(
                     a[0] || {},
@@ -239,12 +250,12 @@ var TNodeVisitorFactory = (function () {
             var x = axes[0][0];
             var y = axes[1][0];
 
-            var padding = _.defaults(node.padding || {}, { L:0, B:0, R:0, T:0 });
+            var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
 
             var L = options.left + padding.L;
-            var T = options.top  + padding.T;
+            var T = options.top + padding.T;
 
-            var W = options.width  - (padding.L + padding.R);
+            var W = options.width - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
             var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
@@ -295,14 +306,14 @@ var TNodeVisitorFactory = (function () {
             });
         },
 
-        'WRAP.MULTI_AXES': function(node, continueTraverse) {
+        'WRAP.MULTI_AXES': function (node, continueTraverse) {
             var options = node.options || {};
             var padding = node.padding;
 
             var L = options.left + padding.L;
-            var T = options.top  + padding.T;
+            var T = options.top + padding.T;
 
-            var W = options.width  - (padding.L + padding.R);
+            var W = options.width - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
             var container = options
@@ -311,10 +322,8 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell-wrapper')
                 .attr('transform', translate(L, T));
 
-            node.$axes.iterate((r, c, subAxesNodes) =>
-            {
-                subAxesNodes.forEach((node) =>
-                {
+            node.$axes.iterate((r, c, subAxesNodes) => {
+                subAxesNodes.forEach((node) => {
                     node.options = _.extend(
                         {
                             container: container
@@ -324,22 +333,20 @@ var TNodeVisitorFactory = (function () {
                 });
             });
 
-            node.$matrix.iterate((r, c, subNodes) =>
-            {
-                subNodes.forEach((node) =>
-                {
-                    node.options = _.extend({ container: container }, node.options || {});
+            node.$matrix.iterate((r, c, subNodes) => {
+                subNodes.forEach((node) => {
+                    node.options = _.extend({container: container}, node.options || {});
                     continueTraverse(node);
                 });
             });
         },
 
-        'WRAP.MULTI_GRID': function(node, continueTraverse) {
+        'WRAP.MULTI_GRID': function (node, continueTraverse) {
             var options = node.options || {};
             var padding = node.padding;
 
             var L = options.left + padding.L;
-            var T = options.top  + padding.T;
+            var T = options.top + padding.T;
 
             var grid = options
                 .container
@@ -347,11 +354,9 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'grid-wrapper')
                 .attr('transform', translate(L, T));
 
-            node.$matrix.iterate((r, c, subNodes) =>
-            {
-                subNodes.forEach((node) =>
-                {
-                    node.options = _.extend({ container: grid }, node.options || {});
+            node.$matrix.iterate((r, c, subNodes) => {
+                subNodes.forEach((node) => {
+                    node.options = _.extend({container: grid}, node.options || {});
                     continueTraverse(node);
                 });
             });

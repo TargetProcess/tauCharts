@@ -47,6 +47,7 @@ module.exports = function (grunt) {
             },
             dev: {
                 reporters: ["progress"],
+                browsers:["Chrome"],
                 singleRun: false
             },
             unit: {
