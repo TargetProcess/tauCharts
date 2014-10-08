@@ -8,13 +8,13 @@ var cloneNodeSettings = (node) => {
     return JSON.parse(JSON.stringify(obj));
 };
 
-var DSLReader = function (ast) {
-    this.ast = ast;
-};
+export class DSLReader {
 
-DSLReader.prototype = {
+    constructor (ast) {
+        this.ast = ast;
+    }
 
-    traverse: function (rawData, styleEngine) {
+    traverse (rawData, styleEngine) {
 
         var domainDecorator = new UnitDomainDecorator(this.ast.dimensions, rawData);
 
@@ -234,9 +234,9 @@ DSLReader.prototype = {
 
         //return (styleDecorator(buildLogicalGraphRecursively(unit)));
         return (multiAxisDecoratorFasade(transformationExtractAxes(buildLogicalGraphRecursively(unit))));
-    },
+    }
 
-    traverseToNode: function (refUnit, rawData) {
+    traverseToNode (refUnit, rawData) {
 
         var domainDecorator = new UnitDomainDecorator(this.ast.dimensions, rawData);
 
@@ -257,6 +257,4 @@ DSLReader.prototype = {
 
         return refUnit.options.container;
     }
-};
-
-export {DSLReader};
+}
