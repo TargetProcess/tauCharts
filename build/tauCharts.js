@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-09-23
+/*! tauCharts - v0.0.1 - 2014-10-08
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 // jshint ignore: start
@@ -261,6 +261,7 @@ var Class = function () {
     });
 
     var CHART_PADDINGS = {top: 20, right: 20, bottom: 30, left: 40};
+    var MINI_CHART_PADDINGS = {top: 5, right: 5, bottom: 5, left: 5};
 
     var CHART_HTML =
         '<div class="html html-left"></div>' +
@@ -302,6 +303,23 @@ var Class = function () {
         }
     });
 
+    /** @class */
+    var MiniLayout = Class.extend({
+        /** @constructs */
+        init: function(selector){
+            var container = d3.select(selector)
+                .classed('tau-chart', true)
+                .html('<svg></svg>');
+
+            this.svg = tau.svg.paddedBox(container.select('svg'), MINI_CHART_PADDINGS);
+            var layout = new tau.svg.Layout(this.svg);
+            this.data = layout.col();
+            this.width = this.data.layout('width');
+            this.height = this.data.layout('height');
+        }
+    });
+
+
     var propagateDatumEvents = function (plugins) {
         return function () {
             this
@@ -320,6 +338,7 @@ var Class = function () {
         };
     };
 
+
     /**@class */
     /**@extends Chart */
     var BasicChart = Chart.extend({
@@ -336,8 +355,30 @@ var Class = function () {
         _onScalesDomainsLayoutsConfigured: function(config) {
         },
 
+        renderAxises: function(layout) {
+            new YAxis(this._mapper.binder('y')).render(layout.yAxis);
+            new XAxis(this._mapper.binder('x')).render(layout.xAxis);
+        },
+
+        renderGrid: function(layout) {
+            new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(layout.data);
+        },
+
+        renderPlugins: function(layout) {
+            this._plugins.render(new RenderContext(this._dataSource), new ChartTools(layout, this._mapper));
+
+        },
+
+        createChartLayout: function(selector) {
+            return new ChartLayout(selector);
+        },
+
+        attachEventsForPlugins: function(layout) {
+            layout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+        },
+
         render: function (selector) {
-            var chartLayout = new ChartLayout(selector);
+            var chartLayout = this.createChartLayout(selector);
 
             var scaleX = this._mapper.binder('x');
             scaleX.range([0, chartLayout.width]);
@@ -352,24 +393,37 @@ var Class = function () {
 
                 var renderData = function(data){
                     this._renderData(chartLayout.data, data);
-                    chartLayout.data.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+                    this.attachEventsForPlugins(chartLayout);
                 }.bind(this);
 
                 renderData(data);
+
                 this._dataSource.update(renderData);
 
-                new YAxis(this._mapper.binder('y')).render(chartLayout.yAxis);
-                new XAxis(this._mapper.binder('x')).render(chartLayout.xAxis);
-                new Grid(this._mapper.binder('x'), this._mapper.binder('y')).render(chartLayout.data);
+                this.renderAxises(chartLayout);
+
+                this.renderGrid(chartLayout);
 
                 tau.svg.bringOnTop(chartLayout.data);
 
-                this._plugins.render(new RenderContext(this._dataSource), new ChartTools(chartLayout, this._mapper));
+                this.renderPlugins(chartLayout);
+
             }.bind(this));
         }
     });
 
-    
+    /** @class MiniChart */
+    var MiniChart = BasicChart.extend({
+        renderAxises: function() {},
+        renderGrid: function() {},
+        renderPlugins: function() {},
+        attachEventsForPlugins: function() {},
+        createChartLayout: function(selector) {
+            return new MiniLayout(selector);
+        }
+
+    });
+
     /** @class ChartTools */
     var ChartTools = Class.extend({
         /**
@@ -421,6 +475,7 @@ var Class = function () {
          * @returns {BasicChart}
          */
         Base: BasicChart,
+        Mini: MiniChart,
 
         /**
         * Register new chart
@@ -1031,223 +1086,250 @@ var Class = function () {
 })(tau, Class);
 (function (tau) {
     /**@class */
-    /**@extends BasicChart */
-    var BarChart = tau.charts.Base.extend({
-        _meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1}
-        },
+    function create() {
+        return {
+            _meta: {
+                x: {type: tau.data.types.quantitative},
+                y: {type: tau.data.types.quantitative},
+                color: {type: tau.data.types.categorical, default: 1}
+            },
 
-        map: function (config) {
+            map: function (config) {
 
-            this._super(config);
-            this._mapper.alias('color', 'key');
+                this._super(config);
+                this._mapper.alias('color', 'key');
 
-            return this;
-        },
+                return this;
+            },
 
-        _onScalesDomainsLayoutsConfigured: function (config) {
-            var mapper = this._mapper;
-            var maxValue = 0;
+            _onScalesDomainsLayoutsConfigured: function (config) {
+                var mapper = this._mapper;
+                var maxValue = 0;
 
-            d3.nest()
-                .key(mapper.raw('x'))
-                .rollup(function (leaves) {
-                    var sum = d3.sum(leaves, mapper.raw('y'));
-                    if (sum > maxValue) {
-                        maxValue = sum;
-                    }
-                }).entries(config.data);
+                d3.nest()
+                    .key(mapper.raw('x'))
+                    .rollup(function (leaves) {
+                        var sum = d3.sum(leaves, mapper.raw('y'));
+                        if (sum > maxValue) {
+                            maxValue = sum;
+                        }
+                    }).entries(config.data);
 
-            //REMAP MAX VALUE OF DOMAIN
-            config.y._scale.domain([0, maxValue]);
-        },
+                //REMAP MAX VALUE OF DOMAIN
+                config.y._scale.domain([0, maxValue]);
+            },
 
-        _renderData: function (container, data) {
+            _renderData: function (container, data) {
 
-            var mapper = this._mapper;
+                var mapper = this._mapper;
 
-            var xValues = d3.nest()
-                .key(mapper.raw('x'))
-                .entries(data);
+                var xValues = d3.nest()
+                    .key(mapper.raw('x'))
+                    .entries(data);
 
-            var barWidth = 10;
+                var barWidth = 10;
 
-            var looksGoodBarWidth = Math.round(container.layout('width') / (xValues.length || 1));
+                var looksGoodBarWidth = Math.round(container.layout('width') / (xValues.length || 1));
 
-            if (looksGoodBarWidth < 1) {
-                looksGoodBarWidth = 1;
-            }
+                if (looksGoodBarWidth < 1) {
+                    looksGoodBarWidth = 1;
+                }
 
-            if (barWidth > looksGoodBarWidth) {
-                barWidth = looksGoodBarWidth;
-            }
+                if (barWidth > looksGoodBarWidth) {
+                    barWidth = looksGoodBarWidth;
+                }
 
-            var categories = d3.nest()
-                .key(mapper.raw('color'))
-                .entries(data);
+                var categories = d3.nest()
+                    .key(mapper.raw('color'))
+                    .entries(data);
 
-            var stackData = categories.map(function (category) {
-                return category.values.map(function (d) {
-                    return {x: mapper.raw('x')(d), y: mapper.raw('y')(d), color: category.key};
-                });
-            });
-
-            var arrays = d3.layout.stack()(stackData);
-
-            var stack = d3.merge(arrays);
-
-            var getScale = function (name) {
-                return mapper.binder(name)._scale;
-            };
-
-            var update = function () {
-
-                return this.attr('class', function (d) {
-                    return 'bar i-role-datum ' + getScale('color')(d.color);
-                })
-                    .attr("x", function (d) {
-                        return getScale('x')(d.x) - barWidth / 2;
-                    })
-                    .attr("y", function (d) {
-                        var scale = getScale('y');
-                        return scale(d.y + d.y0);
-                    })
-                    .attr("width", barWidth)
-                    .attr("height", function (d) {
-                        var scale = getScale('y');
-                        return container.layout('height') - scale(d.y);
+                var stackData = categories.map(function (category) {
+                    return category.values.map(function (d) {
+                        return {x: mapper.raw('x')(d), y: mapper.raw('y')(d), color: category.key};
                     });
-            };
+                });
 
-            var elements = container.selectAll('.bar').data(stack);
-            elements.call(update);
-            elements.enter().append('rect').call(update);
-            elements.exit().remove();
-        }
-    });
+                var arrays = d3.layout.stack()(stackData);
+
+                var stack = d3.merge(arrays);
+
+                var getScale = function (name) {
+                    return mapper.binder(name)._scale;
+                };
+
+                var update = function () {
+
+                    return this.attr('class', function (d) {
+                        return 'bar i-role-datum ' + getScale('color')(d.color);
+                    })
+                        .attr("x", function (d) {
+                            return getScale('x')(d.x) - barWidth / 2;
+                        })
+                        .attr("y", function (d) {
+                            var scale = getScale('y');
+                            return scale(d.y + d.y0);
+                        })
+                        .attr("width", barWidth)
+                        .attr("height", function (d) {
+                            var scale = getScale('y');
+                            return container.layout('height') - scale(d.y);
+                        });
+                };
+
+                var elements = container.selectAll('.bar').data(stack);
+                elements.call(update);
+                elements.enter().append('rect').call(update);
+                elements.exit().remove();
+            }
+        };
+    }
+
+    /**@extends BasicChart */
+    var BarChart = tau.charts.Base.extend(create());
+    var MiniBarChart = tau.charts.Mini.extend(create());
 
     tau.charts.add('Bar', function (data) {
         return new BarChart(data);
     });
 
+    tau.charts.add('MiniBar', function (data) {
+        return new MiniBarChart(data);
+    });
+
 })(tau);
 (function(tau) {
-    /**@class */
-    /**@extends BasicChart */
-    var LineChart = tau.charts.Base.extend({
-        _meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1}
-        },
+    function create() {
+        return {
+            _meta: {
+                x: {type: tau.data.types.quantitative},
+                y: {type: tau.data.types.quantitative},
+                color: {type: tau.data.types.categorical, default: 1}
+            },
 
-        map: function (config) {
-            
-            this._super(config);
-            this._mapper.alias('color', 'key');
+            map: function (config) {
 
-            return this;
-        },
+                this._super(config);
+                this._mapper.alias('color', 'key');
 
-        _renderData: function (container, data) {
-            var mapper = this._mapper;
+                return this;
+            },
 
-            // prepare data to build several lines
-            // TODO: provide several data transformers to support more formats
-            // sometime we will have data already nested, for example.
-            var categories = d3.nest()
-                .key(mapper.raw('color'))
-                .entries(data);
+            _renderData: function (container, data) {
+                var mapper = this._mapper;
 
-            var updateLines = function () {
-                this.attr('class', mapper.map('line %color%'));
+                // prepare data to build several lines
+                // TODO: provide several data transformers to support more formats
+                // sometime we will have data already nested, for example.
+                var categories = d3.nest()
+                    .key(mapper.raw('color'))
+                    .entries(data);
 
-                var paths = this.selectAll('path').data(function (d) {
-                    return [d.values];
-                });
+                var updateLines = function () {
+                    this.attr('class', mapper.map('line %color%'));
 
-                // TODO: extract update pattern to some place
-                paths.call(updatePaths);
-                paths.enter().append('path').call(updatePaths);
-                paths.exit().remove();
 
-                var dots = this.selectAll('.dot').data(function (d) {
-                    return d.values;
-                });
-
-                dots.call(updateDots);
-                dots.enter().append('circle').attr('class', 'dot i-role-datum').call(updateDots);
-                dots.exit().remove();
-            };
-
-            //TODO: allow to set interpolation outside?
-            var line = d3.svg.line()
-                //.interpolate('cardinal')
-                .x(mapper.map('x'))
-                .y(mapper.map('y'));
-
-            var updatePaths = function () {
-                this.attr('d', line);
-            };
-
-            var updateDots = function () {
-                // draw circles (to enable mouse interactions)
-                return this
-                    .attr('cx', mapper.map('x'))
-                    .attr('cy', mapper.map('y'))
-                    .attr('r', function () {
-                        return 3;
+                    var paths = this.selectAll('path').data(function (d) {
+                        return [d.values];
                     });
-            };
 
-            var lines = container.selectAll('.line').data(categories);
-            lines.call(updateLines);
-            lines.enter().append('g').call(updateLines);
-            lines.exit().remove();
-        }
-    });
+                    // TODO: extract update pattern to some place
+                    paths.call(updatePaths);
+                    paths.enter().append('path').call(updatePaths);
+                    paths.exit().remove();
+
+                    var dots = this.selectAll('.dot').data(function (d) {
+                        return d.values;
+                    });
+
+                    dots.call(updateDots);
+                    dots.enter().append('circle').attr('class', 'dot i-role-datum').call(updateDots);
+                    dots.exit().remove();
+                };
+
+                //TODO: allow to set interpolation outside?
+                var line = d3.svg.line()
+                    //.interpolate('cardinal')
+                    .x(mapper.map('x'))
+                    .y(mapper.map('y'));
+
+                var updatePaths = function () {
+                    this.attr('d', line);
+                };
+
+                var updateDots = function () {
+                    // draw circles (to enable mouse interactions)
+                    return this
+                        .attr('cx', mapper.map('x'))
+                        .attr('cy', mapper.map('y'))
+                        .attr('r', function () {
+                            return 3;
+                        });
+                };
+
+                var lines = container.selectAll('.line').data(categories);
+                lines.call(updateLines);
+                lines.enter().append('g').call(updateLines);
+                lines.exit().remove();
+            }
+        };
+    }
+
+    /**@extends BasicChart */
+    var LineChart = tau.charts.Base.extend(create());
+    var MiniLineChart = tau.charts.Mini.extend(create());
 
     tau.charts.add('Line', function (data) {
         return new LineChart(data);
     });
 
+    tau.charts.add('MiniLine', function (data) {
+        return new MiniLineChart(data);
+    });
+
 })(tau);
 (function(tau) {
 
     /**@class */
+    function create() {
+        return {
+            _meta: {
+                x: {type: tau.data.types.quantitative},
+                y: {type: tau.data.types.quantitative},
+                color: {type: tau.data.types.categorical, default: 1},
+                size: {type: tau.data.types.quantitative, default: 10}
+            },
+
+            _renderData: function (container, data) {
+                this._mapper.binder('size').range([0, container.layout('width') / 100]);
+                var mapper = this._mapper;
+
+                var update = function () {
+                    return this
+                        .attr('class', mapper.map('dot i-role-datum %color%'))
+                        .attr('r', mapper.map('size'))
+                        .attr('cx', mapper.map('x'))
+                        .attr('cy', mapper.map('y'));
+                };
+
+                var elements = container.selectAll('.dot').data(data);
+
+                elements.call(update);
+                elements.enter().append('circle').call(update);
+                elements.exit().remove();
+            }
+        };
+    }
+
     /**@extends BasicChart */
-    var ScatterPlotChart = tau.charts.Base.extend({
-        _meta: {
-            x: {type: tau.data.types.quantitative},
-            y: {type: tau.data.types.quantitative},
-            color: {type: tau.data.types.categorical, default: 1},
-            size: {type: tau.data.types.quantitative, default: 10}
-        },
-
-        _renderData: function (container, data) {
-            this._mapper.binder('size').range([0, container.layout('width')/100]);
-            var mapper = this._mapper;
-
-            var update = function () {
-                return this
-                    .attr('class', mapper.map('dot i-role-datum %color%'))
-                    .attr('r', mapper.map('size'))
-                    .attr('cx', mapper.map('x'))
-                    .attr('cy', mapper.map('y'));
-            };
-
-            var elements = container.selectAll('.dot').data(data);
-
-            elements.call(update);
-            elements.enter().append('circle').call(update);
-            elements.exit().remove();
-        }
-    });
+    var ScatterPlotChart = tau.charts.Base.extend(create());
+    var MiniScatterPlotChart = tau.charts.Mini.extend(create());
 
     tau.charts.add('Scatterplot', function (data) {
         return new ScatterPlotChart(data);
+    });
+
+    tau.charts.add('MiniScatterplot', function (data) {
+        return new MiniScatterPlotChart(data);
     });
 
 })(tau);
