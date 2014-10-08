@@ -545,39 +545,48 @@
     
     })();
 
-    var dsl$reader$$SCALE_STRATEGIES = {
-    
+    var unit$domain$decorator$$SCALE_STRATEGIES = {
         'ordinal': function(domain)  {return domain},
-    
         'linear': function(domain)  {return d3.extent(domain)}
     };
 
-    var dsl$reader$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
+    var unit$domain$decorator$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
 
-    var dsl$reader$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
+    var unit$domain$decorator$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
 
-    var dsl$reader$$decorateUnit = function(unit, meta, rawData) {
+    var unit$domain$decorator$$UnitDomainDecorator = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
-        unit.source = function(filter)  {return _(rawData).filter(filter || (function()  {return true}))};
+        function UnitDomainDecorator(meta, data) {var this$0 = this;
+            this.meta = meta;
+            this.data = data;
     
-        unit.partition = function()  {return unit.source(dsl$reader$$metaFilter.bind(null, unit.$filter))};
+            this.fnSource = function(filter)  {return _(data).filter(filter || (function()  {return true}))};
     
-        // TODO: memoize
-        unit.domain = function(dim)  {return _(rawData).chain().pluck(dim).uniq().value()};
+            // TODO: memoize
+            this.fnDomain = function(dim)  {return _(data).chain().pluck(dim).uniq().value()};
     
-        unit.scaleTo = function(scaleDim, interval) 
-        {
-            var temp = _.isString(scaleDim) ? { scaleDim: scaleDim } : scaleDim;
-            var dimx = _.defaults(temp, meta[temp.scaleDim]);
+            this.fnScaleTo = function(scaleDim, interval)  {
+                var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
+                var dimx = _.defaults(temp, meta[temp.scaleDim]);
+                var type = dimx.scaleType;
+                var vals = this$0.fnDomain(dimx.scaleDim);
     
-            var type = dimx.scaleType;
-            var vals = unit.domain(dimx.scaleDim);
+                var rangeMethod = unit$domain$decorator$$getRangeMethod(type);
+                var domainParam = unit$domain$decorator$$SCALE_STRATEGIES[type](vals);
     
-            return d3.scale[type]().domain(dsl$reader$$SCALE_STRATEGIES[type](vals))[dsl$reader$$getRangeMethod(type)](interval, 0.1);
+                return d3.scale[type]().domain(domainParam)[rangeMethod](interval, 0.1);
+            };
+        }DP$0(UnitDomainDecorator,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+    
+        proto$0.decorate = function(unit) {
+            unit.source = this.fnSource;
+            unit.domain = this.fnDomain;
+            unit.scaleTo = this.fnScaleTo;
+            unit.partition = (function()  {return unit.source(unit$domain$decorator$$metaFilter.bind(null, unit.$filter))});
+    
+            return unit;
         };
-    
-        return unit;
-    };
+    MIXIN$0(UnitDomainDecorator.prototype,proto$0);proto$0=void 0;return UnitDomainDecorator;})();
 
     var dsl$reader$$cloneNodeSettings = function(node)  {
         var obj = _.omit(node, '$matrix');
@@ -592,7 +601,7 @@
     
         traverse: function (rawData, styleEngine) {
     
-            var meta = this.ast.dimensions;
+            var domainDecorator = new unit$domain$decorator$$UnitDomainDecorator(this.ast.dimensions, rawData);
     
             var multiAxisDecoratorFasade = function(wrapperNode)  {
     
@@ -741,7 +750,7 @@
                     $matrix: new matrix$$TMatrix([[[root]]])
                 };
     
-                traverse(dsl$reader$$decorateUnit(wrapperNode, meta, rawData), wrapperNode);
+                traverse(domainDecorator.decorate(wrapperNode), wrapperNode);
     
                 wrapperNode.$matrix = new matrix$$TMatrix([
                     [
@@ -797,7 +806,7 @@
     
             var buildLogicalGraphRecursively = function(unitRef) 
             {
-                return unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)(dsl$reader$$decorateUnit(unitRef, meta, rawData), buildLogicalGraphRecursively);
+                return unit$visitor$factory$$TUnitVisitorFactory(unitRef.type)(domainDecorator.decorate(unitRef), buildLogicalGraphRecursively);
             };
     
             var unit = this.ast.unit;
@@ -814,9 +823,9 @@
     
         traverseToNode: function (refUnit, rawData) {
     
-            var meta = this.ast.dimensions;
+            var domainDecorator = new unit$domain$decorator$$UnitDomainDecorator(this.ast.dimensions, rawData);
     
-            this.container =  d3
+            this.container = d3
                 .select(this.ast.container)
                 .append("svg")
                 .style("border", 'solid 1px')
@@ -825,9 +834,8 @@
     
             refUnit.options.container = this.container;
     
-            var renderLogicalGraphRecursively = function(unit) 
-            {
-                return node$visitor$factory$$TNodeVisitorFactory(unit.type)(dsl$reader$$decorateUnit(unit, meta, rawData), renderLogicalGraphRecursively);
+            var renderLogicalGraphRecursively = function(unit)  {
+                return node$visitor$factory$$TNodeVisitorFactory(unit.type)(domainDecorator.decorate(unit), renderLogicalGraphRecursively);
             };
     
             renderLogicalGraphRecursively(refUnit);
@@ -1034,48 +1042,7 @@
             };
             return chartConfig;
         };
-    MIXIN$0(Scatterplot.prototype,proto$0);proto$0=void 0;return Scatterplot;})(charts$tau$chart$$Chart);var unit$domain$decorator$$SCALE_STRATEGIES = {
-        'ordinal': function(domain)  {return domain},
-        'linear': function(domain)  {return d3.extent(domain)}
-    };
-
-    var unit$domain$decorator$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
-
-    var unit$domain$decorator$$metaFilter = function(filterPredicates, row)  {return _.every(filterPredicates, function(fnPredicate)  {return fnPredicate(row)})};
-
-    var unit$domain$decorator$$UnitDomainDecorator = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
-    
-        function UnitDomainDecorator(meta, data) {var this$0 = this;
-            this.meta = meta;
-            this.data = data;
-    
-            this.fnSource = function(filter)  {return _(data).filter(filter || (function()  {return true}))};
-    
-            // TODO: memoize
-            this.fnDomain = function(dim)  {return _(data).chain().pluck(dim).uniq().value()};
-    
-            this.fnScaleTo = function(scaleDim, interval)  {
-                var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
-                var dimx = _.defaults(temp, meta[temp.scaleDim]);
-                var type = dimx.scaleType;
-                var vals = this$0.fnDomain(dimx.scaleDim);
-    
-                var rangeMethod = unit$domain$decorator$$getRangeMethod(type);
-                var domainParam = unit$domain$decorator$$SCALE_STRATEGIES[type](vals);
-    
-                return d3.scale[type]().domain(domainParam)[rangeMethod](interval, 0.1);
-            };
-        }DP$0(UnitDomainDecorator,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-    
-        proto$0.decorate = function(unit) {
-            unit.source = this.fnSource;
-            unit.domain = this.fnDomain;
-            unit.scaleTo = this.fnScaleTo;
-            unit.partition = (function()  {return unit.source(unit$domain$decorator$$metaFilter.bind(null, unit.$filter))});
-    
-            return unit;
-        };
-    MIXIN$0(UnitDomainDecorator.prototype,proto$0);proto$0=void 0;return UnitDomainDecorator;})();
+    MIXIN$0(Scatterplot.prototype,proto$0);proto$0=void 0;return Scatterplot;})(charts$tau$chart$$Chart);
 
 
     var tau$newCharts$$tauChart = {

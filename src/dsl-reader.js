@@ -1,40 +1,7 @@
 import {TMatrix} from './matrix';
 import {TUnitVisitorFactory} from './unit-visitor-factory';
 import {TNodeVisitorFactory} from './node-visitor-factory';
-
-var SCALE_STRATEGIES = {
-
-    'ordinal': (domain) => domain,
-
-    'linear': (domain) => d3.extent(domain)
-};
-
-var getRangeMethod = (scaleType) => ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
-
-var metaFilter = (filterPredicates, row) => _.every(filterPredicates, (fnPredicate) => fnPredicate(row));
-
-var decorateUnit = function(unit, meta, rawData) {
-
-    unit.source = (filter) => _(rawData).filter(filter || (() => true));
-
-    unit.partition = () => unit.source(metaFilter.bind(null, unit.$filter));
-
-    // TODO: memoize
-    unit.domain = (dim) => _(rawData).chain().pluck(dim).uniq().value();
-
-    unit.scaleTo = (scaleDim, interval) =>
-    {
-        var temp = _.isString(scaleDim) ? { scaleDim: scaleDim } : scaleDim;
-        var dimx = _.defaults(temp, meta[temp.scaleDim]);
-
-        var type = dimx.scaleType;
-        var vals = unit.domain(dimx.scaleDim);
-
-        return d3.scale[type]().domain(SCALE_STRATEGIES[type](vals))[getRangeMethod(type)](interval, 0.1);
-    };
-
-    return unit;
-};
+import {UnitDomainDecorator} from './unit-domain-decorator';
 
 var cloneNodeSettings = (node) => {
     var obj = _.omit(node, '$matrix');
@@ -49,7 +16,7 @@ DSLReader.prototype = {
 
     traverse: function (rawData, styleEngine) {
 
-        var meta = this.ast.dimensions;
+        var domainDecorator = new UnitDomainDecorator(this.ast.dimensions, rawData);
 
         var multiAxisDecoratorFasade = (wrapperNode) => {
 
@@ -198,7 +165,7 @@ DSLReader.prototype = {
                 $matrix: new TMatrix([[[root]]])
             };
 
-            traverse(decorateUnit(wrapperNode, meta, rawData), wrapperNode);
+            traverse(domainDecorator.decorate(wrapperNode), wrapperNode);
 
             wrapperNode.$matrix = new TMatrix([
                 [
@@ -254,7 +221,7 @@ DSLReader.prototype = {
 
         var buildLogicalGraphRecursively = (unitRef) =>
         {
-            return TUnitVisitorFactory(unitRef.type)(decorateUnit(unitRef, meta, rawData), buildLogicalGraphRecursively);
+            return TUnitVisitorFactory(unitRef.type)(domainDecorator.decorate(unitRef), buildLogicalGraphRecursively);
         };
 
         var unit = this.ast.unit;
@@ -271,9 +238,9 @@ DSLReader.prototype = {
 
     traverseToNode: function (refUnit, rawData) {
 
-        var meta = this.ast.dimensions;
+        var domainDecorator = new UnitDomainDecorator(this.ast.dimensions, rawData);
 
-        this.container =  d3
+        this.container = d3
             .select(this.ast.container)
             .append("svg")
             .style("border", 'solid 1px')
@@ -282,9 +249,8 @@ DSLReader.prototype = {
 
         refUnit.options.container = this.container;
 
-        var renderLogicalGraphRecursively = (unit) =>
-        {
-            return TNodeVisitorFactory(unit.type)(decorateUnit(unit, meta, rawData), renderLogicalGraphRecursively);
+        var renderLogicalGraphRecursively = (unit) => {
+            return TNodeVisitorFactory(unit.type)(domainDecorator.decorate(unit), renderLogicalGraphRecursively);
         };
 
         renderLogicalGraphRecursively(refUnit);
