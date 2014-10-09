@@ -76,3 +76,68 @@ or alias
                     size: getFieldData($size)
                 });
 ```
+Composite and facet
+```javascript
+var def = {
+            container: '#bars-container',
+            W: 800,
+            H: 800,
+            dimensions: {
+                month: { scaleType: 'ordinal' },
+                project: { scaleType: 'ordinal' },
+                team: { scaleType: 'ordinal' },
+                cycleTime: { scaleType: 'linear' },
+                effort: { scaleType: 'linear' },
+                count: { scaleType: 'linear' }
+            },
+            unit: {
+                type: 'COORDS.RECT',
+                func: 'CROSS',
+                padding: { L:80, B:8, R:8, T:8 },
+                axes: [
+                    null,
+                    {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
+                ],
+                unit: [
+                    {
+                        type: 'COORDS.RECT',
+                        padding: { L:36, B:24, R:8, T:8 },
+                        showGridLines: 'xy',
+                        axes: [
+                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
+                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'}
+                        ],
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            },
+                            {
+                                type: 'ELEMENT.INTERVAL',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            },
+                            {
+                                type: 'ELEMENT.LINE',
+                                x: 'month',
+                                y: 'count',
+                                color: null,
+                                size: null,
+                                shape: null
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        var chart = new tauChart.Chart({data: data, spec: def});
+```
+
