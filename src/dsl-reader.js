@@ -7,17 +7,16 @@ import {LayoutEngineFactory} from './layout-engine-factory';
 export class DSLReader {
 
     constructor (spec, data) {
-        this.ast = spec;
         this.spec = spec;
         this.domain = new UnitDomainDecorator(this.spec.dimensions, data);
     }
 
     buildGraph() {
-        var buildRecursively = ((unit) => TUnitVisitorFactory(unit.type)(this.domain.decorate(unit), buildRecursively));
+        var buildRecursively = (unit) => TUnitVisitorFactory(unit.type)(this.domain.decorate(unit), buildRecursively);
         return buildRecursively(this.spec.unit);
     }
 
-    applyStyle(graph, layoutEngine) {
+    calcLayout(graph, layoutEngine) {
 
         graph.options = {
             width: this.spec.W,
@@ -34,8 +33,8 @@ export class DSLReader {
         styledGraph.options.container = d3.select(this.spec.container)
             .append("svg")
             .style("border", 'solid 1px')
-            .attr("width", this.ast.W)
-            .attr("height", this.ast.H);
+            .attr("width", this.spec.W)
+            .attr("height", this.spec.H);
 
         var renderRecursively = (unit) => TNodeVisitorFactory(unit.type)(this.domain.decorate(unit), renderRecursively);
 

@@ -66,10 +66,6 @@ var LayoutEngineTypeMap = {
 
                 var node = applyNodeDefaults(rootNode);
 
-                if (!node.$matrix) {
-                    return node;
-                }
-
                 _.each(node.axes, (a, i) => a.hide = true);
 
                 var nRows = node.$matrix.sizeR();
@@ -130,10 +126,6 @@ var LayoutEngineTypeMap = {
 
             var multiAxisDecorator = (node) => {
 
-                if (!node.$axes) {
-                    return node;
-                }
-
                 var options = node.options;
                 var padding = node.padding;
 
@@ -187,11 +179,6 @@ var LayoutEngineTypeMap = {
             var gridL = 0;
             var gridB = 0;
             var axisOffsetTraverser = (node) => {
-
-                if (!node.$axes) {
-                    return node;
-                }
-
                 var padding = node.padding;
                 var nR = node.$axes.sizeR();
                 node.$axes.iterate((iRow, iCol, subNodes) => {

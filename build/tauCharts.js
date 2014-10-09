@@ -1,6 +1,3 @@
-/*! tauCharts - v0.0.1 - 2014-10-09
-* https://github.com/TargetProcess/tauCharts
-* Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -247,7 +244,9 @@
     
             'COORDS.RECT': function (node, continueTraverse) {
     
-                var options = node.options || {};
+                var options = node.options;
+                var padding = node.padding;
+    
                 var axes = _(node.axes).map(function (axis, i) {
                     var a = _.isArray(axis) ? axis : [axis];
                     a[0] = _.defaults(
@@ -261,8 +260,6 @@
     
                 var x = axes[0][0];
                 var y = axes[1][0];
-    
-                var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
     
                 var L = options.left + padding.L;
                 var T = options.top + padding.T;
@@ -297,8 +294,7 @@
     
                 node.$matrix.iterate(function(iRow, iCol, subNodes)  {
                     subNodes.forEach(function(node)  {
-                        node.options = _.extend({container: grid}, node.options || {});
-    
+                        node.options = _.extend({container: grid}, node.options);
                         continueTraverse(node);
                     });
                 });
@@ -420,7 +416,10 @@
             },
     
             'WRAP.AXIS': function (node, continueTraverse) {
-                var options = node.options || {};
+    
+                var options = node.options;
+                var padding = node.padding;
+    
                 var axes = _(node.axes).map(function (axis, i) {
                     var a = _.isArray(axis) ? axis : [axis];
                     a[0] = _.defaults(
@@ -434,8 +433,6 @@
     
                 var x = axes[0][0];
                 var y = axes[1][0];
-    
-                var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
     
                 var L = options.left + padding.L;
                 var T = options.top + padding.T;
@@ -492,7 +489,7 @@
             },
     
             'WRAP.MULTI_AXES': function (node, continueTraverse) {
-                var options = node.options || {};
+                var options = node.options;
                 var padding = node.padding;
     
                 var L = options.left + padding.L;
@@ -509,25 +506,21 @@
     
                 node.$axes.iterate(function(r, c, subAxesNodes)  {
                     subAxesNodes.forEach(function(node)  {
-                        node.options = _.extend(
-                            {
-                                container: container
-                            },
-                            node.options || {});
+                        node.options = _.extend({container: container}, node.options);
                         continueTraverse(node);
                     });
                 });
     
                 node.$matrix.iterate(function(r, c, subNodes)  {
                     subNodes.forEach(function(node)  {
-                        node.options = _.extend({container: container}, node.options || {});
+                        node.options = _.extend({container: container}, node.options);
                         continueTraverse(node);
                     });
                 });
             },
     
             'WRAP.MULTI_GRID': function (node, continueTraverse) {
-                var options = node.options || {};
+                var options = node.options;
                 var padding = node.padding;
     
                 var L = options.left + padding.L;
@@ -541,7 +534,7 @@
     
                 node.$matrix.iterate(function(r, c, subNodes)  {
                     subNodes.forEach(function(node)  {
-                        node.options = _.extend({container: grid}, node.options || {});
+                        node.options = _.extend({container: grid}, node.options);
                         continueTraverse(node);
                     });
                 });
@@ -666,10 +659,6 @@
     
                     var node = layout$engine$factory$$applyNodeDefaults(rootNode);
     
-                    if (!node.$matrix) {
-                        return node;
-                    }
-    
                     _.each(node.axes, function(a, i)  {return a.hide = true});
     
                     var nRows = node.$matrix.sizeR();
@@ -730,10 +719,6 @@
     
                 var multiAxisDecorator = function(node)  {
     
-                    if (!node.$axes) {
-                        return node;
-                    }
-    
                     var options = node.options;
                     var padding = node.padding;
     
@@ -787,11 +772,6 @@
                 var gridL = 0;
                 var gridB = 0;
                 var axisOffsetTraverser = function(node)  {
-    
-                    if (!node.$axes) {
-                        return node;
-                    }
-    
                     var padding = node.padding;
                     var nR = node.$axes.sizeR();
                     node.$axes.iterate(function(iRow, iCol, subNodes)  {
@@ -838,17 +818,16 @@
     var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
         function DSLReader (spec, data) {
-            this.ast = spec;
             this.spec = spec;
             this.domain = new unit$domain$decorator$$UnitDomainDecorator(this.spec.dimensions, data);
         }DP$0(DSLReader,"prototype",{"configurable":false,"enumerable":false,"writable":false});
     
         proto$0.buildGraph = function() {var this$0 = this;
-            var buildRecursively = (function(unit)  {return unit$visitor$factory$$TUnitVisitorFactory(unit.type)(this$0.domain.decorate(unit), buildRecursively)});
+            var buildRecursively = function(unit)  {return unit$visitor$factory$$TUnitVisitorFactory(unit.type)(this$0.domain.decorate(unit), buildRecursively)};
             return buildRecursively(this.spec.unit);
         };
     
-        proto$0.applyStyle = function(graph, layoutEngine) {
+        proto$0.calcLayout = function(graph, layoutEngine) {
     
             graph.options = {
                 width: this.spec.W,
@@ -865,8 +844,8 @@
             styledGraph.options.container = d3.select(this.spec.container)
                 .append("svg")
                 .style("border", 'solid 1px')
-                .attr("width", this.ast.W)
-                .attr("height", this.ast.H);
+                .attr("width", this.spec.W)
+                .attr("height", this.spec.H);
     
             var renderRecursively = function(unit)  {return node$visitor$factory$$TNodeVisitorFactory(unit.type)(this$0.domain.decorate(unit), renderRecursively)};
     
@@ -985,10 +964,6 @@
     
             if (!chartConfig.spec.dimensions) {
                 chartConfig.spec.dimensions = this._autoDetectDimensions(chartConfig.data);
-            } else {
-                var smartDetection = function(data)  {
-                    data[0].keys();
-                };
             }
             this.config = _.defaults(chartConfig, {
                 spec: null,
@@ -998,25 +973,27 @@
             this.plugins = this.config.plugins;
             this.spec = this.config.spec;
             this.data = this.config.data;
+    
             this.reader = new dsl$reader$$DSLReader(this.spec, this.data);
     
-            var logicalGraph = this.reader.buildGraph(this.data);
-            var layoutXGraph = this.reader.applyStyle(logicalGraph, layout$engine$factory$$LayoutEngineFactory.get('EXTRACT-AXES'));
-            var render = this.reader.renderGraph(layoutXGraph);
+            var logicalGraph = this.reader.buildGraph();
+            var layoutXGraph = this.reader.calcLayout(logicalGraph, layout$engine$factory$$LayoutEngineFactory.get('EXTRACT-AXES'));
+            var layoutCanvas = this.reader.renderGraph(layoutXGraph);
     
             //plugins
             this._plugins = new plugins$$Plugins(this.config.plugins);
-            render.selectAll('.i-role-datum').call(plugins$$propagateDatumEvents(this._plugins));
+            layoutCanvas.selectAll('.i-role-datum').call(plugins$$propagateDatumEvents(this._plugins));
         }DP$0(Chart,"prototype",{"configurable":false,"enumerable":false,"writable":false});
     
         proto$0._autoDetectDimensions = function(data) {
             function detectType(value) {
                 return _.isNumber(value) ? 'linear' : 'ordinal';
             }
+    
             return _.reduce(data, function(dimensions, item) {
                 _.each(item, function (value, key) {
                     if (dimensions[key]) {
-                        if(dimensions[key].scaleType == detectType(value)) {
+                        if (dimensions[key].scaleType == detectType(value)) {
                             dimensions[key].scaleType = 'linear';
                         } else {
                             dimensions[key].scaleType = 'ordinal';

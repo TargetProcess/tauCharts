@@ -62,7 +62,9 @@ var TNodeVisitorFactory = (function () {
 
         'COORDS.RECT': function (node, continueTraverse) {
 
-            var options = node.options || {};
+            var options = node.options;
+            var padding = node.padding;
+
             var axes = _(node.axes).map(function (axis, i) {
                 var a = _.isArray(axis) ? axis : [axis];
                 a[0] = _.defaults(
@@ -76,8 +78,6 @@ var TNodeVisitorFactory = (function () {
 
             var x = axes[0][0];
             var y = axes[1][0];
-
-            var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
 
             var L = options.left + padding.L;
             var T = options.top + padding.T;
@@ -112,8 +112,7 @@ var TNodeVisitorFactory = (function () {
 
             node.$matrix.iterate((iRow, iCol, subNodes) => {
                 subNodes.forEach((node) => {
-                    node.options = _.extend({container: grid}, node.options || {});
-
+                    node.options = _.extend({container: grid}, node.options);
                     continueTraverse(node);
                 });
             });
@@ -235,7 +234,10 @@ var TNodeVisitorFactory = (function () {
         },
 
         'WRAP.AXIS': function (node, continueTraverse) {
-            var options = node.options || {};
+
+            var options = node.options;
+            var padding = node.padding;
+
             var axes = _(node.axes).map(function (axis, i) {
                 var a = _.isArray(axis) ? axis : [axis];
                 a[0] = _.defaults(
@@ -249,8 +251,6 @@ var TNodeVisitorFactory = (function () {
 
             var x = axes[0][0];
             var y = axes[1][0];
-
-            var padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
 
             var L = options.left + padding.L;
             var T = options.top + padding.T;
@@ -307,7 +307,7 @@ var TNodeVisitorFactory = (function () {
         },
 
         'WRAP.MULTI_AXES': function (node, continueTraverse) {
-            var options = node.options || {};
+            var options = node.options;
             var padding = node.padding;
 
             var L = options.left + padding.L;
@@ -324,25 +324,21 @@ var TNodeVisitorFactory = (function () {
 
             node.$axes.iterate((r, c, subAxesNodes) => {
                 subAxesNodes.forEach((node) => {
-                    node.options = _.extend(
-                        {
-                            container: container
-                        },
-                        node.options || {});
+                    node.options = _.extend({container: container}, node.options);
                     continueTraverse(node);
                 });
             });
 
             node.$matrix.iterate((r, c, subNodes) => {
                 subNodes.forEach((node) => {
-                    node.options = _.extend({container: container}, node.options || {});
+                    node.options = _.extend({container: container}, node.options);
                     continueTraverse(node);
                 });
             });
         },
 
         'WRAP.MULTI_GRID': function (node, continueTraverse) {
-            var options = node.options || {};
+            var options = node.options;
             var padding = node.padding;
 
             var L = options.left + padding.L;
@@ -356,7 +352,7 @@ var TNodeVisitorFactory = (function () {
 
             node.$matrix.iterate((r, c, subNodes) => {
                 subNodes.forEach((node) => {
-                    node.options = _.extend({container: grid}, node.options || {});
+                    node.options = _.extend({container: grid}, node.options);
                     continueTraverse(node);
                 });
             });
