@@ -1,3 +1,6 @@
+/*! tauCharts - v0.0.1 - 2014-10-09
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -827,7 +830,7 @@
     var layout$engine$factory$$LayoutEngineFactory = {
     
         get: function(typeName)  {
-            return (layout$engine$factory$$LayoutEngineTypeMap[typeName] || layout$engine$factory$$LayoutEngineTypeMap['DEFAULT']).bind(layout$engine$factory$$this$0);
+            return (layout$engine$factory$$LayoutEngineTypeMap[typeName] || layout$engine$factory$$LayoutEngineTypeMap.DEFAULT).bind(layout$engine$factory$$this$0);
         }
     
     };

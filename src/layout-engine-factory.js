@@ -230,7 +230,7 @@ var LayoutEngineTypeMap = {
 var LayoutEngineFactory = {
 
     get: (typeName) => {
-        return (LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap['DEFAULT']).bind(this);
+        return (LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap.DEFAULT).bind(this);
     }
 
 };
