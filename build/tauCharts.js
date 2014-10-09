@@ -552,18 +552,16 @@
     
     })();
 
-    var unit$domain$decorator$$SCALE_STRATEGIES = {
+    var unit$domain$mixin$$SCALE_STRATEGIES = {
         'ordinal': function(domain)  {return domain},
         'linear': function(domain)  {return d3.extent(domain)}
     };
 
-    var unit$domain$decorator$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
+    var unit$domain$mixin$$getRangeMethod = function(scaleType)  {return (scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound'} ;
 
-    var unit$domain$decorator$$UnitDomainDecorator = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+    var unit$domain$mixin$$UnitDomainMixin = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
-        function UnitDomainDecorator(meta, data) {var this$0 = this;
-            this.meta = meta;
-            this.data = data;
+        function UnitDomainMixin(meta, data) {var this$0 = this;
     
             this.fnSource = function(whereFilter)  {return _(data).where(whereFilter || {})};
     
@@ -576,14 +574,14 @@
                 var type = dimx.scaleType;
                 var vals = this$0.fnDomain(dimx.scaleDim);
     
-                var rangeMethod = unit$domain$decorator$$getRangeMethod(type);
-                var domainParam = unit$domain$decorator$$SCALE_STRATEGIES[type](vals);
+                var rangeMethod = unit$domain$mixin$$getRangeMethod(type);
+                var domainParam = unit$domain$mixin$$SCALE_STRATEGIES[type](vals);
     
                 return d3.scale[type]().domain(domainParam)[rangeMethod](interval, 0.1);
             };
-        }DP$0(UnitDomainDecorator,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+        }DP$0(UnitDomainMixin,"prototype",{"configurable":false,"enumerable":false,"writable":false});
     
-        proto$0.decorate = function(unit) {
+        proto$0.mix = function(unit) {
             unit.source = this.fnSource;
             unit.domain = this.fnDomain;
             unit.scaleTo = this.fnScaleTo;
@@ -591,7 +589,41 @@
     
             return unit;
         };
-    MIXIN$0(UnitDomainDecorator.prototype,proto$0);proto$0=void 0;return UnitDomainDecorator;})();var layout$engine$factory$$this$0 = this;
+    MIXIN$0(UnitDomainMixin.prototype,proto$0);proto$0=void 0;return UnitDomainMixin;})();var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+    
+        function DSLReader (spec, data) {
+            this.spec = spec;
+            this.domain = new unit$domain$mixin$$UnitDomainMixin(this.spec.dimensions, data);
+        }DP$0(DSLReader,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+    
+        proto$0.buildGraph = function() {var this$0 = this;
+            var buildRecursively = function(unit)  {return unit$visitor$factory$$TUnitVisitorFactory(unit.type)(this$0.domain.mix(unit), buildRecursively)};
+            return buildRecursively(this.spec.unit);
+        };
+    
+        proto$0.calcLayout = function(graph, layoutEngine, size) {
+    
+            graph.options = {
+                top: 0,
+                left: 0,
+                width: size.width,
+                height: size.height
+            };
+    
+            return layoutEngine(graph, this.domain);
+        };
+    
+        proto$0.renderGraph = function(styledGraph, target) {var this$0 = this;
+    
+            styledGraph.options.container = target;
+    
+            var renderRecursively = function(unit)  {return node$visitor$factory$$TNodeVisitorFactory(unit.type)(this$0.domain.mix(unit), renderRecursively)};
+    
+            renderRecursively(styledGraph);
+            return styledGraph.options.container;
+        };
+    MIXIN$0(DSLReader.prototype,proto$0);proto$0=void 0;return DSLReader;})();
+    var layout$engine$factory$$this$0 = this;
 
     var layout$engine$factory$$cloneNodeSettings = function(node)  {
         var obj = _.omit(node, '$matrix');
@@ -605,7 +637,7 @@
         return node;
     };
 
-    var layout$engine$factory$$fnDefaultLayoutEngine = function(rootNode, domainDecorator)  {
+    var layout$engine$factory$$fnDefaultLayoutEngine = function(rootNode, domainMixin)  {
     
         var fnTraverseLayout = function(rawNode)  {
     
@@ -651,7 +683,7 @@
     
         'DEFAULT': layout$engine$factory$$fnDefaultLayoutEngine,
     
-        'EXTRACT-AXES': function(rootNode, domainDecorator)  {
+        'EXTRACT-AXES': function(rootNode, domainMixin)  {
     
             var fnExtractAxesTransformation = (function(root)  {
     
@@ -699,7 +731,7 @@
                     $matrix: new matrix$$TMatrix([[[root]]])
                 });
     
-                traverse(domainDecorator.decorate(wrapperNode), wrapperNode);
+                traverse(domainMixin.mix(wrapperNode), wrapperNode);
     
                 wrapperNode.$matrix = new matrix$$TMatrix([
                     [
@@ -798,7 +830,7 @@
                     height: gridH
                 };
     
-                layout$engine$factory$$fnDefaultLayoutEngine(refRoot, domainDecorator);
+                layout$engine$factory$$fnDefaultLayoutEngine(refRoot, domainMixin);
     
                 return wrapperNode;
             };
@@ -815,44 +847,6 @@
     
     };
 
-    var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
-    
-        function DSLReader (spec, data) {
-            this.spec = spec;
-            this.domain = new unit$domain$decorator$$UnitDomainDecorator(this.spec.dimensions, data);
-        }DP$0(DSLReader,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-    
-        proto$0.buildGraph = function() {var this$0 = this;
-            var buildRecursively = function(unit)  {return unit$visitor$factory$$TUnitVisitorFactory(unit.type)(this$0.domain.decorate(unit), buildRecursively)};
-            return buildRecursively(this.spec.unit);
-        };
-    
-        proto$0.calcLayout = function(graph, layoutEngine) {
-    
-            graph.options = {
-                width: this.spec.W,
-                height: this.spec.H,
-                top: 0,
-                left: 0
-            };
-    
-            return layoutEngine(graph, this.domain);
-        };
-    
-        proto$0.renderGraph = function(styledGraph) {var this$0 = this;
-    
-            styledGraph.options.container = d3.select(this.spec.container)
-                .append("svg")
-                .style("border", 'solid 1px')
-                .attr("width", this.spec.W)
-                .attr("height", this.spec.H);
-    
-            var renderRecursively = function(unit)  {return node$visitor$factory$$TNodeVisitorFactory(unit.type)(this$0.domain.decorate(unit), renderRecursively)};
-    
-            renderRecursively(styledGraph);
-            return styledGraph.options.container;
-        };
-    MIXIN$0(DSLReader.prototype,proto$0);proto$0=void 0;return DSLReader;})();
     var plugins$$PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var plugins$$DP$0 = Object.defineProperty;var plugins$$GOPD$0 = Object.getOwnPropertyDescriptor;//plugins
     var plugins$$MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){plugins$$DP$0(t,p,plugins$$GOPD$0(s,p));}}return t};
     /** @class
@@ -977,8 +971,20 @@
             this.reader = new dsl$reader$$DSLReader(this.spec, this.data);
     
             var logicalGraph = this.reader.buildGraph();
-            var layoutXGraph = this.reader.calcLayout(logicalGraph, layout$engine$factory$$LayoutEngineFactory.get('EXTRACT-AXES'));
-            var layoutCanvas = this.reader.renderGraph(layoutXGraph);
+            var layoutXGraph = this.reader.calcLayout(
+                logicalGraph,
+                layout$engine$factory$$LayoutEngineFactory.get('EXTRACT-AXES'),
+                {
+                    width: this.spec.W,
+                    height: this.spec.H
+                });
+            var layoutCanvas = this.reader.renderGraph(
+                layoutXGraph,
+                d3.select(this.spec.container)
+                            .append("svg")
+                            .style("border", 'solid 1px')
+                            .attr("width", this.spec.W)
+                            .attr("height", this.spec.H));
     
             //plugins
             this._plugins = new plugins$$Plugins(this.config.plugins);
@@ -1055,7 +1061,7 @@
         Scatterplot: charts$tau$scatterplot$$Scatterplot,
     
         __api__: {
-            UnitDomainDecorator: unit$domain$decorator$$UnitDomainDecorator,
+            UnitDomainMixin: unit$domain$mixin$$UnitDomainMixin,
             DSLReader: dsl$reader$$DSLReader
         }
     };

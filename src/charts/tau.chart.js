@@ -22,8 +22,20 @@ export class Chart {
         this.reader = new DSLReader(this.spec, this.data);
 
         var logicalGraph = this.reader.buildGraph();
-        var layoutXGraph = this.reader.calcLayout(logicalGraph, LayoutEngineFactory.get('EXTRACT-AXES'));
-        var layoutCanvas = this.reader.renderGraph(layoutXGraph);
+        var layoutXGraph = this.reader.calcLayout(
+            logicalGraph,
+            LayoutEngineFactory.get('EXTRACT-AXES'),
+            {
+                width: this.spec.W,
+                height: this.spec.H
+            });
+        var layoutCanvas = this.reader.renderGraph(
+            layoutXGraph,
+            d3.select(this.spec.container)
+                        .append("svg")
+                        .style("border", 'solid 1px')
+                        .attr("width", this.spec.W)
+                        .attr("height", this.spec.H));
 
         //plugins
         this._plugins = new Plugins(this.config.plugins);

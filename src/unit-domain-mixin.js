@@ -5,11 +5,9 @@ var SCALE_STRATEGIES = {
 
 var getRangeMethod = (scaleType) => ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
 
-export class UnitDomainDecorator {
+export class UnitDomainMixin {
 
     constructor(meta, data) {
-        this.meta = meta;
-        this.data = data;
 
         this.fnSource = (whereFilter) => _(data).where(whereFilter || {});
 
@@ -29,7 +27,7 @@ export class UnitDomainDecorator {
         };
     }
 
-    decorate(unit) {
+    mix(unit) {
         unit.source = this.fnSource;
         unit.domain = this.fnDomain;
         unit.scaleTo = this.fnScaleTo;

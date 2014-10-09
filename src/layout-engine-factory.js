@@ -12,7 +12,7 @@ var applyNodeDefaults = (node) => {
     return node;
 };
 
-var fnDefaultLayoutEngine = (rootNode, domainDecorator) => {
+var fnDefaultLayoutEngine = (rootNode, domainMixin) => {
 
     var fnTraverseLayout = (rawNode) => {
 
@@ -58,7 +58,7 @@ var LayoutEngineTypeMap = {
 
     'DEFAULT': fnDefaultLayoutEngine,
 
-    'EXTRACT-AXES': (rootNode, domainDecorator) => {
+    'EXTRACT-AXES': (rootNode, domainMixin) => {
 
         var fnExtractAxesTransformation = ((root) => {
 
@@ -106,7 +106,7 @@ var LayoutEngineTypeMap = {
                 $matrix: new TMatrix([[[root]]])
             });
 
-            traverse(domainDecorator.decorate(wrapperNode), wrapperNode);
+            traverse(domainMixin.mix(wrapperNode), wrapperNode);
 
             wrapperNode.$matrix = new TMatrix([
                 [
@@ -205,7 +205,7 @@ var LayoutEngineTypeMap = {
                 height: gridH
             };
 
-            fnDefaultLayoutEngine(refRoot, domainDecorator);
+            fnDefaultLayoutEngine(refRoot, domainMixin);
 
             return wrapperNode;
         };
