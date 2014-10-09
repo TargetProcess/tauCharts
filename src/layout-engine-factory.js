@@ -81,7 +81,8 @@ var LayoutEngineTypeMap = {
                     var isHeadCol = (c === 0);
                     var isTailRow = (r === (nRows - 1));
 
-                    subNodes.forEach((node) => {
+                    subNodes.forEach((subNode) => {
+                        var node = applyNodeDefaults(subNode);
                         if (node.$matrix) {
                             var axis = _.extend(cloneNodeSettings(node), { type: 'WRAP.AXIS' });
                             axesMap.push(axis);

@@ -10,6 +10,7 @@ export class Chart {
         if (!chartConfig.spec.dimensions) {
             chartConfig.spec.dimensions = this._autoDetectDimensions(chartConfig.data);
         }
+
         this.config = _.defaults(chartConfig, {
             spec: null,
             data: [],
@@ -20,25 +21,33 @@ export class Chart {
         this.data = this.config.data;
 
         this.reader = new DSLReader(this.spec, this.data);
-
-        var logicalGraph = this.reader.buildGraph();
-        var layoutXGraph = this.reader.calcLayout(
-            logicalGraph,
-            LayoutEngineFactory.get('EXTRACT-AXES'),
-            {
-                width: this.spec.W,
-                height: this.spec.H
-            });
-        var layoutCanvas = this.reader.renderGraph(
-            layoutXGraph,
-            d3.select(this.spec.container)
-                        .append("svg")
-                        .style("border", 'solid 1px')
-                        .attr("width", this.spec.W)
-                        .attr("height", this.spec.H));
+        this.graph = this.reader.buildGraph();
 
         //plugins
         this._plugins = new Plugins(this.config.plugins);
+    }
+
+    renderTo(target, xSize) {
+
+        var size = xSize || {};
+        var container = d3.select(target);
+
+        var h = size.hasOwnProperty('height') ? size.height : container.offsetHeight;
+        var w = size.hasOwnProperty('width') ? size.width : container.offsetWidth;
+
+        var layoutXGraph = this.reader.calcLayout(
+            this.graph,
+            LayoutEngineFactory.get('EXTRACT-AXES'),
+            {
+                width: w,
+                height: h
+            });
+
+        var layoutCanvas = this.reader.renderGraph(
+            layoutXGraph,
+            container.append("svg").style("border", 'solid 1px').attr("width", w).attr("height", h));
+
+        //plugins
         layoutCanvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
     }
 

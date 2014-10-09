@@ -42,8 +42,6 @@ var TUnitVisitorFactory = (function () {
                     $where: {}
                 });
 
-            // declare defaults
-            root.padding = _.defaults(root.padding || {}, { L:0, B:0, R:0, T:0 });
             root.axes = _(root.axes).map((axis, i) => _.defaults(axis || {}, {
                 scaleOrient: (i === 0 ? 'bottom' : 'left'),
                 padding: 0
@@ -75,10 +73,7 @@ var TUnitVisitorFactory = (function () {
     };
 
     return function (unitType) {
-        return TUnitMap[unitType] || ((unit) => {
-            unit.padding = _.defaults(unit.padding || {}, { L:0, B:0, R:0, T:0 });
-            return unit;
-        });
+        return TUnitMap[unitType] || ((unit) => unit);
     };
 
 })();

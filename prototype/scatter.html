@@ -122,9 +122,6 @@
         function drawChart() {
             $('#chart-container').empty();
             var chart = new m.tauChart.Scatterplot({
-                container: '#chart-container',
-                width: 600,
-                height: 600,
                 data: JSON.parse($data.val()),
                 plugins: [tau.plugins.tooltip('team', 'effort', 'team','count'), tau.plugins.highlighter()],
                 x: getFieldData($x),
@@ -132,6 +129,13 @@
                 color: getFieldData($color),
                 size: getFieldData($size)
             });
+
+            chart.renderTo(
+                    '#chart-container',
+                    {
+                        width: 600,
+                        height: 600
+                    });
         }
 
     })

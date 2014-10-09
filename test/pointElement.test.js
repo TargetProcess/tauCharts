@@ -25,11 +25,8 @@ describe("Point element with all params", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        var chart = new tauChart.Chart({
+        new tauChart.Chart({
             spec: {
-                container: element,
-                W: 800,
-                H: 800,
                 unit: {
                     type: 'COORDS.RECT',
                     axes: [
@@ -52,7 +49,7 @@ describe("Point element with all params", function () {
                 }
             },
             data: testData
-        });
+        }).renderTo(element, {width: 800, height: 800});
     });
     afterEach(function () {
         element.parentNode.removeChild(element);
@@ -86,7 +83,7 @@ describe("Point element without color and size params", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        var chart = new tauChart.Chart({
+        new tauChart.Chart({
             spec: {
                 container: element,
                 W: 800,
@@ -111,7 +108,7 @@ describe("Point element without color and size params", function () {
                 }
             },
             data: testData
-        });
+        }).renderTo(element, {width: 800, height: 800});
     });
     afterEach(function () {
         element.parentNode.removeChild(element);
@@ -146,11 +143,8 @@ describe("Point element color was presented as object without domain and range",
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        var chart = new tauChart.Chart({
+        new tauChart.Chart({
             spec: {
-                container: element,
-                W: 800,
-                H: 800,
                 unit: {
                     type: 'COORDS.RECT',
                     axes: [
@@ -172,7 +166,7 @@ describe("Point element color was presented as object without domain and range",
                 }
             },
             data: testData
-        });
+        }).renderTo(element, {width: 800, height: 800});
     });
     afterEach(function () {
         element.parentNode.removeChild(element);
@@ -192,11 +186,8 @@ describe("Point element color was presented as object with domain and range", fu
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        var chart = new tauChart.Chart({
+        new tauChart.Chart({
             spec: {
-                container: element,
-                W: 800,
-                H: 800,
                 unit: {
                     type: 'COORDS.RECT',
                     axes: [
@@ -222,8 +213,7 @@ describe("Point element color was presented as object with domain and range", fu
                 }
             },
             data: testData.concat({x: 3, y: 3, color: 'blue', size: 8})
-
-        });
+        }).renderTo(element, {width: 800, height: 800});
     });
     afterEach(function () {
         element.parentNode.removeChild(element);
