@@ -27,26 +27,15 @@ var TNodeVisitorFactory = (function () {
 
             var gridLines = grid.append('g').attr('class', 'grid-lines');
 
-            if ((linesOptions.indexOf('x') > -1) && node.axes[0]) {
-                var x = node.axes[0];
-                var xGridAxis = d3
-                    .svg
-                    .axis()
-                    .scale(x.scale)
-                    .orient(x.scaleOrient)
-                    .tickSize(H);
-
+            if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
+                var x = node.x;
+                var xGridAxis = d3.svg.axis().scale(x.scale).orient(x.scaleOrient).tickSize(H);
                 gridLines.append('g').call(xGridAxis);
             }
 
-            if ((linesOptions.indexOf('y') > -1) && node.axes[1]) {
-                var y = node.axes[1];
-                var yGridAxis = d3
-                    .svg
-                    .axis()
-                    .scale(y.scale)
-                    .orient(y.scaleOrient)
-                    .tickSize(-W);
+            if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
+                var y = node.y;
+                var yGridAxis = d3.svg.axis().scale(y.scale).orient(y.scaleOrient).tickSize(-W);
 
                 gridLines.append('g').call(yGridAxis);
             }
@@ -65,19 +54,8 @@ var TNodeVisitorFactory = (function () {
             var options = node.options;
             var padding = node.guide.padding;
 
-            var axes = _(node.axes).map(function (axis, i) {
-                var a = _.isArray(axis) ? axis : [axis];
-                a[0] = _.defaults(
-                    a[0] || {},
-                    {
-                        scaleOrient: (i === 0 ? 'bottom' : 'left'),
-                        padding: 0
-                    });
-                return a;
-            });
-
-            var x = axes[0][0];
-            var y = axes[1][0];
+            node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
+            node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
 
             var L = options.left + padding.L;
             var T = options.top + padding.T;
@@ -85,14 +63,14 @@ var TNodeVisitorFactory = (function () {
             var W = options.width - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
-            var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
-            var yScale = y.scaleDim && node.scaleTo(y, [H, 0]);
+            var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
+            var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
 
-            axes[0][0].scale = xScale;
-            axes[1][0].scale = yScale;
+            node.x.scale = xScale;
+            node.y.scale = yScale;
 
-            var X_AXIS_POS = [0, H + x.padding];
-            var Y_AXIS_POS = [0 - y.padding, 0];
+            var X_AXIS_POS = [0, H + node.x.padding];
+            var Y_AXIS_POS = [0 - node.y.padding, 0];
 
             var container = options
                 .container
@@ -100,12 +78,12 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell')
                 .attr('transform', translate(L, T));
 
-            if (!x.hide) {
-                fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+            if (!node.x.hide) {
+                fnDrawDimAxis.call(container, node.x, X_AXIS_POS, 'x axis');
             }
 
-            if (!y.hide) {
-                fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            if (!node.y.hide) {
+                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, 'y axis');
             }
 
             var grid = fnDrawGrid.call(container, node, H, W);
@@ -240,19 +218,11 @@ var TNodeVisitorFactory = (function () {
             var options = node.options;
             var padding = node.guide.padding;
 
-            var axes = _(node.axes).map(function (axis, i) {
-                var a = _.isArray(axis) ? axis : [axis];
-                a[0] = _.defaults(
-                    a[0] || {},
-                    {
-                        scaleOrient: (i === 0 ? 'bottom' : 'left'),
-                        padding: 0
-                    });
-                return a;
-            });
+            node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
+            node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
 
-            var x = axes[0][0];
-            var y = axes[1][0];
+            var x = node.x;
+            var y = node.y;
 
             var L = options.left + padding.L;
             var T = options.top + padding.T;
@@ -263,8 +233,8 @@ var TNodeVisitorFactory = (function () {
             var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
             var yScale = y.scaleDim && node.scaleTo(y, [H, 0]);
 
-            axes[0][0].scale = xScale;
-            axes[1][0].scale = yScale;
+            node.x.scale = xScale;
+            node.y.scale = yScale;
 
             var X_AXIS_POS = [0, H + x.padding];
             var Y_AXIS_POS = [0 - y.padding, 0];

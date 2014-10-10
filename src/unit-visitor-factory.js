@@ -36,21 +36,15 @@ var TUnitVisitorFactory = (function () {
 
         'COORDS.RECT': function (unit, continueTraverse) {
 
-            var root = _.defaults(
-                unit,
-                {
-                    $where: {}
-                });
+            var root = _.defaults(unit, {$where: {}});
 
-            root.axes = _(root.axes).map((axis, i) => _.defaults(axis || {}, {
-                scaleOrient: (i === 0 ? 'bottom' : 'left'),
-                padding: 0
-            }));
+            root.x = _.isObject(root.x) ? root.x : {scaleDim: root.x};
+            root.y = _.isObject(root.y) ? root.y : {scaleDim: root.y};
 
             var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
             var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
-            var matrixOfPrFilters = new TMatrix(unitFunc(root, root.axes[0].scaleDim, root.axes[1].scaleDim));
+            var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x.scaleDim, root.y.scaleDim));
             var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
             matrixOfPrFilters.iterate((row, col, $whereRC) => {

@@ -29,14 +29,8 @@ describe("Point element with all params", function () {
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {
-                            scaleDim: 'x'
-                        },
-                        {
-                            scaleDim: 'y'
-                        }
-                    ],
+                    x: {scaleDim: 'x'},
+                    y: {scaleDim: 'y'},
                     unit: [
                         {
                             type: 'ELEMENT.POINT',
@@ -85,19 +79,10 @@ describe("Point element without color and size params", function () {
         document.body.appendChild(element);
         new tauChart.Chart({
             spec: {
-                container: element,
-                W: 800,
-                H: 800,
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {
-                            scaleDim: 'x'
-                        },
-                        {
-                            scaleDim: 'y'
-                        }
-                    ],
+                    x: {scaleDim: 'x'},
+                    y: {scaleDim: 'y'},
                     unit: [
                         {
                             type: 'ELEMENT.POINT',
@@ -147,14 +132,8 @@ describe("Point element color was presented as object without domain and range",
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {
-                            scaleDim: 'x'
-                        },
-                        {
-                            scaleDim: 'y'
-                        }
-                    ],
+                    x: {scaleDim: 'x'},
+                    y: {scaleDim: 'y'},
                     unit: [
                         {
                             type: 'ELEMENT.POINT',
@@ -190,14 +169,8 @@ describe("Point element color was presented as object with domain and range", fu
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {
-                            scaleDim: 'x'
-                        },
-                        {
-                            scaleDim: 'y'
-                        }
-                    ],
+                    x: {scaleDim: 'x'},
+                    y: {scaleDim: 'y'},
                     unit: [
                         {
                             type: 'ELEMENT.POINT',

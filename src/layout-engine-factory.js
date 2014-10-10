@@ -69,7 +69,7 @@ var LayoutEngineTypeMap = {
 
                 var node = applyNodeDefaults(rootNode);
 
-                _.each(node.axes, (a, i) => a.hide = true);
+                _.each([node.x || {}, node.y || {}], (a) => a.hide = true);
 
                 var nRows = node.$matrix.sizeR();
                 var nCols = node.$matrix.sizeC();
@@ -107,6 +107,8 @@ var LayoutEngineTypeMap = {
             var wrapperNode = applyNodeDefaults({
                 type: 'WRAP.MULTI_AXES',
                 options: cloneNodeSettings(root.options),
+                x: {},
+                y: {},
                 $matrix: new TMatrix([[[root]]])
             });
 
@@ -117,6 +119,8 @@ var LayoutEngineTypeMap = {
                     [
                         applyNodeDefaults({
                             type: 'WRAP.MULTI_GRID',
+                            x: {},
+                            y: {},
                             $matrix: new TMatrix([[[root]]])
                         })
                     ]

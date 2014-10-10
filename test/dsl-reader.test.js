@@ -10,8 +10,8 @@ describe("DSL reader", function () {
         $matrix.iterate(function(r, c, cell) {
             var rect = cell[0];
             expect(rect.type).to.equal('COORDS.RECT');
-            expect(rect.axes[0].scaleDim).to.deep.equal('cycleTime');
-            expect(rect.axes[1].scaleDim).to.deep.equal('effort');
+            expect(rect.x.scaleDim).to.deep.equal('cycleTime');
+            expect(rect.y.scaleDim).to.deep.equal('effort');
             expect(rect.$matrix.sizeR()).to.equal(1);
             expect(rect.$matrix.sizeC()).to.equal(1);
             expect(rect.$where).to.deep.equal(facet[r][c]);
@@ -34,17 +34,13 @@ describe("DSL reader", function () {
                 },
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {scaleDim: 'project'},
-                        {scaleDim: 'team'}
-                    ],
+                    x: 'project',
+                    y: 'team',
                     unit: [
                         {
                             type: 'COORDS.RECT',
-                            axes: [
-                                {scaleDim: 'cycleTime'},
-                                {scaleDim: 'effort'}
-                            ],
+                            x: 'cycleTime',
+                            y: 'effort',
                             unit: [
                                 {
                                     type: 'ELEMENT.POINT',
@@ -82,17 +78,13 @@ describe("DSL reader", function () {
                 },
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {scaleDim: 'project'},
-                        null
-                    ],
+                    x: 'project',
+                    y: null,
                     unit: [
                         {
                             type: 'COORDS.RECT',
-                            axes: [
-                                {scaleDim: 'cycleTime'},
-                                {scaleDim: 'effort'}
-                            ],
+                            x: 'cycleTime',
+                            y: 'effort',
                             unit: [
                                 {
                                     type: 'ELEMENT.POINT',
@@ -129,17 +121,13 @@ describe("DSL reader", function () {
                 },
                 unit: {
                     type: 'COORDS.RECT',
-                    axes: [
-                        {scaleDim: 'project'},
-                        null
-                    ],
+                    x: 'project',
+                    y: null,
                     unit: [
                         {
                             type: 'COORDS.RECT',
-                            axes: [
-                                {scaleDim: 'cycleTime'},
-                                {scaleDim: 'effort'}
-                            ],
+                            x: 'cycleTime',
+                            y: 'effort',
                             unit: [
                                 {
                                     type: 'ELEMENT.POINT',
