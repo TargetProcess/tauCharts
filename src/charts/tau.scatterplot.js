@@ -11,9 +11,6 @@ export class Scatterplot extends Chart {
         var chartConfig = _.omit(config, 'spec');
         chartConfig.spec = {
             dimensions: config.dimensions,
-            H:config.height,
-            W:config.width,
-            container:config.container,
             unit:{
                 type: 'COORDS.RECT',
                 axes: [

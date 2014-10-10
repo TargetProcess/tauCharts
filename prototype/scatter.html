@@ -51,20 +51,34 @@
             width: 640px;
             height: 640px;
         }
+
         input {
             width: 500px;
         }
+
         .blue {
             stroke: blue;
             fill: blue;
         }
+
         .green {
             stroke: green;
             fill: green;
         }
+
         .red {
             stroke: red;
             fill: red;
+        }
+        table {
+            width: 100%;
+        }
+        table td,table th {
+            padding: 10px;
+            border: 1px  solid #000000;
+        }
+        .highClass {
+            background: #377eb8;
         }
     </style>
     <title></title>
@@ -72,7 +86,7 @@
 <body>
 <div style="float: left;padding: 20px">
     <label for="data">data</label><br/>
-    <textarea  style='width:600px;height: 350px'  id="data"></textarea>
+    <textarea style='width:600px;height: 350px' id="data"></textarea>
 </div>
 <div style="float: left; padding: 20px">
     <label>x<input id="x" type="text"/></label><br/><br/>
@@ -80,55 +94,105 @@
     <label> color <input id="color" type="text"/></label><br/><br/>
     "String" or <a id="colorSettings">"{dimension: 'team',domain: ['d', 'k', 'l'],range: ['red', 'green', 'blue']}"</a>
     <br/><br/>
-    <label >size <input id="size" type="text"/></label><br/><br/>
+    <label>size <input id="size" type="text"/></label><br/><br/>
 </div>
 <br style="clear: both;"/>
 
-<button id="update">Update chart</button>
-<br/><br/>
-<div id="chart-container" class="tau-chart" style="display:inline-block;margin:0;border: solid 1px;"></div>
+<div id="chart-container" class="tau-chart" style="display:inline-block;margin:0;border: solid 1px; float: left"></div>
+<div style="float: left; padding-left: 100px">
+    <table id="table"></table>
+</div>
 <script>
+    /** @class Tooltip
+     * @extends Plugin */
+    /* Usage
+     .plugins(tau.plugins.tooltip('effort', 'priority'))
+     accepts a list of data fields names as properties
+     */
+    var Tooltip = {
+
+        init: function (keyValues){
+           this.keyValues = keyValues;
+        },
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseover: function (context, tools) {
+            this.keyValues[JSON.stringify(context.datum)].addClass('highClass');
+           // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
+        },
+
+
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseout: function (context, tools) {
+            $('tr').removeClass('highClass');
+        }
+    };
+
+    tau.plugins.add('tableHighlight', Tooltip);
     System.baseURL = '/tauCharts/src/';
     System.import('tau.newCharts').then(function (m) {
         var defData = [
             {team: 'd', cycleTime: 1, effort: 1, count: 1, priority: 'low'},
             {team: 'd', cycleTime: 3, effort: 6, count: 5, priority: 'low'},
-            {team: 'd', cycleTime: 4, effort: 7, count: 21, priority: 'medium'},
+            {team: 'd', cycleTime: 4, effort: 7, count: 8, priority: 'medium'},
             {team: 'k', cycleTime: 5, effort: 8, count: 2, priority: 'medium'},
             {team: 'd', cycleTime: 2, effort: 2.5, count: 3, priority: 'high'},
             {team: 'l', cycleTime: 2.2, effort: 4, count: 5, priority: 'high'}
 
         ];
+
         function getFieldData($field) {
             try {
-               return JSON.parse($field.val())
-            } catch(e) {
+                return JSON.parse($field.val())
+            } catch (e) {
                 return $field.val();
             }
 
         }
+
         var $color = $('#color').val('team');
-        var $size = $('#size').val('effort');
+        var $size = $('#size').val('count');
         var $y = $('#y').val('cycleTime');
         var $x = $('#x').val('effort');
         var $data = $('#data').val(JSON.stringify(defData));
-        $('#colorSettings').click(function(){
-           return $color.val(JSON.stringify({dimension: 'team',domain: ['d', 'k', 'l'],range: ['red', 'green', 'blue']}))
+        $('#colorSettings').click(function () {
+            return $color.val(JSON.stringify({
+                dimension: 'team',
+                domain: ['d', 'k', 'l'],
+                range: ['red', 'green', 'blue']
+            }))
         });
-        $('#update').click(function(){
+        $('textarea,input').on('input', function () {
+            try {
+                drawChart();
+            } catch (e) {
+
+            }
+        });
+        try {
             drawChart();
-        });
-        drawChart();
+        } catch (e) {
+
+        }
+
         function drawChart() {
+            var data = JSON.parse($data.val());
             $('#chart-container').empty();
+            var keyValues = generateTable(data);
             var chart = new m.tauChart.Scatterplot({
-                data: JSON.parse($data.val()),
-                plugins: [tau.plugins.tooltip('team', 'effort', 'team','count'), tau.plugins.highlighter()],
+                data: data,
+                plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(),  tau.plugins.tableHighlight(keyValues)],
                 x: getFieldData($x),
                 y: getFieldData($y),
                 color: getFieldData($color),
                 size: getFieldData($size)
             });
+
 
             chart.renderTo(
                     '#chart-container',
@@ -136,6 +200,32 @@
                         width: 600,
                         height: 600
                     });
+        }
+
+        function generateTable(data) {
+            var headers = Object.keys(data[0]);
+            var rows = data.map(function (item, key) {
+                var map = headers.map(function (key) {
+                    return item[key];
+                });
+                map['key'] = JSON.stringify(item);
+                return map;
+            });
+            var $table = $('#table');
+            $table.empty();
+            var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
+            $table.append(rowHtml);
+            var keyValue = {};
+            var s = _.each(rows, function (arr) {
+                var rowHtml = '<tr >';
+                rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
+                keyValue[arr.key] = $(rowHtml);
+                $table.append(keyValue[arr.key]);
+            });
+
+
+
+            return keyValue;
         }
 
     })

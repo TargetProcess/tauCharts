@@ -145,13 +145,15 @@ var TNodeVisitorFactory = (function () {
                 .ordinal()
                 .range(range)
                 .domain(domain);
+            var maxAxis = _.max([options.width, options.height]);
+            var sizeValues = _(srcData).chain().pluck(node.size);
             var size = d3
                 .scale
                 .linear()
-                .range([0, options.width / 100])
+                .range([maxAxis/200, maxAxis/100])
                 .domain([
-                    0,
-                    _(srcData).chain().pluck(node.size).max().value()
+                    sizeValues.min().value(),
+                    sizeValues.max().value()
                 ]);
 
             var update = function () {
@@ -159,7 +161,7 @@ var TNodeVisitorFactory = (function () {
                     .attr('r', function (d) {
                         var s = size(d[node.size]);
                         if (_.isNaN(s)) {
-                            s = options.width / 100;
+                            s = maxAxis / 100;
                         }
                         return s;
                     })

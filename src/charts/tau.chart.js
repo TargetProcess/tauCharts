@@ -60,7 +60,7 @@ export class Chart {
             _.each(item, function (value, key) {
                 if (dimensions[key]) {
                     if (dimensions[key].scaleType == detectType(value)) {
-                        dimensions[key].scaleType = 'linear';
+                        dimensions[key].scaleType = detectType(value);
                     } else {
                         dimensions[key].scaleType = 'ordinal';
                     }
