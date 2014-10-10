@@ -13,12 +13,10 @@ export class Scatterplot extends Chart {
             dimensions: config.dimensions,
             unit:{
                 type: 'COORDS.RECT',
-                axes: [
-                    convertAxis(config.x),
-                    convertAxis(config.y)
-                ],
+                x: convertAxis(config.x),
+                y: convertAxis(config.y),
                 guide: {
-                    padding: { L:24, B:24, R:24, T:24 },
+                    padding: { l:24, b:24, r:24, t:24 },
                     showGridLines: 'xy'
                 },
                 unit: [

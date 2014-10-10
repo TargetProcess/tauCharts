@@ -229,11 +229,11 @@
                 node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
                 node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
     
-                var L = options.left + padding.L;
-                var T = options.top + padding.T;
+                var L = options.left + padding.l;
+                var T = options.top + padding.t;
     
-                var W = options.width - (padding.L + padding.R);
-                var H = options.height - (padding.T + padding.B);
+                var W = options.width - (padding.l + padding.r);
+                var H = options.height - (padding.t + padding.b);
     
                 var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
                 var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
@@ -393,11 +393,11 @@
                 node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
                 node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
     
-                var L = options.left + padding.L;
-                var T = options.top + padding.T;
+                var L = options.left + padding.l;
+                var T = options.top + padding.t;
     
-                var W = options.width - (padding.L + padding.R);
-                var H = options.height - (padding.T + padding.B);
+                var W = options.width - (padding.l + padding.r);
+                var H = options.height - (padding.t + padding.b);
     
                 var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
                 var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
@@ -451,11 +451,11 @@
                 var options = node.options;
                 var padding = node.guide.padding;
     
-                var L = options.left + padding.L;
-                var T = options.top + padding.T;
+                var L = options.left + padding.l;
+                var T = options.top + padding.t;
     
-                var W = options.width - (padding.L + padding.R);
-                var H = options.height - (padding.T + padding.B);
+                var W = options.width - (padding.l + padding.r);
+                var H = options.height - (padding.t + padding.b);
     
                 var container = options
                     .container
@@ -482,8 +482,8 @@
                 var options = node.options;
                 var padding = node.guide.padding;
     
-                var L = options.left + padding.L;
-                var T = options.top + padding.T;
+                var L = options.left + padding.l;
+                var T = options.top + padding.t;
     
                 var grid = options
                     .container
@@ -592,7 +592,7 @@
     var layout$engine$factory$$applyNodeDefaults = function(node)  {
         node.options = node.options || {};
         node.guide = node.guide || {};
-        node.guide.padding = _.defaults(node.guide.padding || {}, {L: 0, B: 0, R: 0, T: 0});
+        node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
         node.guide.x = _.defaults(node.guide.x || {}, {label: '', padding: 0, cssClass: ''});
         node.guide.y = _.defaults(node.guide.y || {}, {label: '', padding: 0, cssClass: ''});
     
@@ -612,8 +612,8 @@
             var options = node.options;
             var padding = node.guide.padding;
     
-            var innerW = options.width - (padding.L + padding.R);
-            var innerH = options.height - (padding.T + padding.B);
+            var innerW = options.width - (padding.l + padding.r);
+            var innerH = options.height - (padding.t + padding.b);
     
             var nRows = node.$matrix.sizeR();
             var nCols = node.$matrix.sizeC();
@@ -691,11 +691,11 @@
                                 var axis = _.extend(layout$engine$factory$$cloneNodeSettings(node), { type: 'WRAP.AXIS' });
                                 axesMap.push(axis);
     
-                                node.guide.padding.L = 0;
-                                node.guide.padding.B = 0;
+                                node.guide.padding.l = 0;
+                                node.guide.padding.b = 0;
     
-                                axis.guide.padding.L = (isHeadCol ? axis.guide.padding.L : 0);
-                                axis.guide.padding.B = (isTailRow ? axis.guide.padding.B : 0);
+                                axis.guide.padding.l = (isHeadCol ? axis.guide.padding.l : 0);
+                                axis.guide.padding.b = (isTailRow ? axis.guide.padding.b : 0);
     
                                 traverse(node, axis);
                             }
@@ -738,15 +738,15 @@
                     var options = node.options;
                     var padding = node.guide.padding;
     
-                    var innerW = options.width - (padding.L + padding.R);
-                    var innerH = options.height - (padding.T + padding.B);
+                    var innerW = options.width - (padding.l + padding.r);
+                    var innerH = options.height - (padding.t + padding.b);
     
                     var nR = node.$axes.sizeR();
                     var nC = node.$axes.sizeC();
     
                     var leftBottomItem = layout$engine$factory$$applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
-                    var lPadding = leftBottomItem.guide.padding.L;
-                    var bPadding = leftBottomItem.guide.padding.B;
+                    var lPadding = leftBottomItem.guide.padding.l;
+                    var bPadding = leftBottomItem.guide.padding.b;
     
                     var sharedWidth = (innerW - lPadding);
                     var sharedHeight = (innerH - bPadding);
@@ -792,8 +792,8 @@
                     var nR = node.$axes.sizeR();
                     node.$axes.iterate(function(iRow, iCol, subNodes)  {
                         if (iCol === 0 && (iRow === (nR - 1))) {
-                            gridL += padding.L;
-                            gridB += padding.B;
+                            gridL += padding.l;
+                            gridB += padding.b;
                             subNodes.forEach(function(node)  {return axisOffsetTraverser(node)});
                         }
                     });
@@ -1023,12 +1023,10 @@
                 dimensions: config.dimensions,
                 unit:{
                     type: 'COORDS.RECT',
-                    axes: [
-                        charts$tau$scatterplot$$convertAxis(config.x),
-                        charts$tau$scatterplot$$convertAxis(config.y)
-                    ],
+                    x: charts$tau$scatterplot$$convertAxis(config.x),
+                    y: charts$tau$scatterplot$$convertAxis(config.y),
                     guide: {
-                        padding: { L:24, B:24, R:24, T:24 },
+                        padding: { l:24, b:24, r:24, t:24 },
                         showGridLines: 'xy'
                     },
                     unit: [

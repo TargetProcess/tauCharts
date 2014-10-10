@@ -57,11 +57,11 @@ var TNodeVisitorFactory = (function () {
             node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
             node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
 
-            var L = options.left + padding.L;
-            var T = options.top + padding.T;
+            var L = options.left + padding.l;
+            var T = options.top + padding.t;
 
-            var W = options.width - (padding.L + padding.R);
-            var H = options.height - (padding.T + padding.B);
+            var W = options.width - (padding.l + padding.r);
+            var H = options.height - (padding.t + padding.b);
 
             var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
             var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
@@ -221,11 +221,11 @@ var TNodeVisitorFactory = (function () {
             node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
             node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
 
-            var L = options.left + padding.L;
-            var T = options.top + padding.T;
+            var L = options.left + padding.l;
+            var T = options.top + padding.t;
 
-            var W = options.width - (padding.L + padding.R);
-            var H = options.height - (padding.T + padding.B);
+            var W = options.width - (padding.l + padding.r);
+            var H = options.height - (padding.t + padding.b);
 
             var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
             var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
@@ -279,11 +279,11 @@ var TNodeVisitorFactory = (function () {
             var options = node.options;
             var padding = node.guide.padding;
 
-            var L = options.left + padding.L;
-            var T = options.top + padding.T;
+            var L = options.left + padding.l;
+            var T = options.top + padding.t;
 
-            var W = options.width - (padding.L + padding.R);
-            var H = options.height - (padding.T + padding.B);
+            var W = options.width - (padding.l + padding.r);
+            var H = options.height - (padding.t + padding.b);
 
             var container = options
                 .container
@@ -310,8 +310,8 @@ var TNodeVisitorFactory = (function () {
             var options = node.options;
             var padding = node.guide.padding;
 
-            var L = options.left + padding.L;
-            var T = options.top + padding.T;
+            var L = options.left + padding.l;
+            var T = options.top + padding.t;
 
             var grid = options
                 .container

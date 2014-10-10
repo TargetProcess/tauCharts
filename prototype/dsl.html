@@ -80,7 +80,7 @@
         unit: {
             type: 'COORDS.RECT',
             guide: {
-                padding: {L: 120, B: 24, R: 0, T: 0},
+                padding: {l: 120, b: 24, r: 0, t: 0},
                 x: {label: '<h4>Projects</h4>'},
                 y: {label: '<h4>Teams</h4>'}
             },
@@ -91,7 +91,7 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { L:32, B:32, R:8, T:8 },
+                        padding: { l:32, b:32, r:8, t:8 },
                         x: {padding: 8, label: 'cycle time'},
                         y: {padding: 8, label: 'effort'}
                     },
@@ -123,7 +123,7 @@
         unit: {
             type: 'COORDS.RECT',
             guide: {
-                padding: {L: 0, B: 0, R: 0, T: 0},
+                padding: {l: 0, b: 0, r: 0, t: 0},
                 split: true
             },
             x: null,
@@ -133,13 +133,18 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { L:220, B:24, R:8, T:8 }
+                        padding: { l:220, b:24, r:8, t:8 }
                     },
                     x: 'effort',
                     y: 'name',
                     unit: [
                         {
                             type: 'ELEMENT.LINE',
+                            x: 'effort',
+                            y: 'name'
+                        },
+                        {
+                            type: 'ELEMENT.POINT',
                             x: 'effort',
                             y: 'name'
                         }
@@ -149,7 +154,7 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { L:220, B:24, R:8, T:8 }
+                        padding: { l:220, b:24, r:8, t:8 }
                     },
                     y: 'name',
                     x: 'cycleTime',
@@ -176,7 +181,7 @@
             type: 'COORDS.RECT',
             guide: {
                 showGridLines: 'xy',
-                padding: { L:36, B:36, R:8, T:8 },
+                padding: { l:36, b:36, r:8, t:8 },
                 x: {padding: 8},
                 y: {padding: 8}
             },
@@ -205,7 +210,7 @@
         unit: {
             type: 'COORDS.RECT',
             guide: {
-                padding: { L:36, B:2, R:0, T:2 },
+                padding: { l:36, b:2, r:0, t:2 },
                 y: {label: '<h4>Projects</h4>'}
             },
             x: null,
@@ -214,7 +219,7 @@
                 {
                     type: 'COORDS.RECT',
                     guide: {
-                        padding: { L:120, B:4, R:8, T:4 },
+                        padding: { l:120, b:4, r:8, t:4 },
                         y: {label: '<h4>Teams</h4>'}
                     },
                     x: null,
@@ -224,7 +229,7 @@
                             type: 'COORDS.RECT',
                             guide: {
                                 showGridLines: 'xy',
-                                padding: { L:36, B:20, R:8, T:4 },
+                                padding: { l:36, b:20, r:8, t:4 },
                                 x: {label: '<h4>cycle time</h4>', padding: 4},
                                 y: {label: '<h4>effort</h4>', padding: 4}
                             },
@@ -309,7 +314,7 @@
             unit: {
                 type: 'COORDS.RECT',
                 guide: {
-                    padding: { L:80, B:8, R:8, T:8 }
+                    padding: { l:80, b:8, r:8, t:8 }
                 },
                 x: null,
                 y: 'team',
@@ -317,7 +322,7 @@
                     {
                         type: 'COORDS.RECT',
                         guide: {
-                            padding: { L:36, B:24, R:8, T:8 },
+                            padding: { l:36, b:24, r:8, t:8 },
                             showGridLines: 'xy',
                             x: {label: '<h4>Month</h4>'},
                             y: {label: '<h4>Count</h4>'}
