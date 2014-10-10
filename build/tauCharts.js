@@ -621,15 +621,32 @@
             var cellW = innerW / nCols;
             var cellH = innerH / nRows;
     
+            var calcLayoutStrategy;
+            if (node.guide.split) {
+                calcLayoutStrategy = {
+                    calcHeight: (function(cellHeight, rowIndex, elIndex, lenIndex)  {return cellHeight / lenIndex}),
+                    calcTop: (function(cellHeight, rowIndex, elIndex, lenIndex)  {return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex})
+                };
+            }
+            else {
+                calcLayoutStrategy = {
+                    calcHeight: (function(cellHeight, rowIndex, elIndex, lenIndex)  {return cellHeight}),
+                    calcTop: (function(cellHeight, rowIndex, elIndex, lenIndex)  {return rowIndex * cellH})
+                };
+            }
+    
             node.$matrix.iterate(function(iRow, iCol, subNodes)  {
+    
+                var len = subNodes.length;
+    
                 _.each(
                     subNodes,
-                    function(node)  {
+                    function(node, i)  {
                         node.options = {
                             width: cellW,
-                            height: cellH,
-                            top: iRow * cellH,
-                            left: iCol * cellW
+                            left: iCol * cellW,
+                            height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
+                            top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
                         };
                         fnTraverseLayout(node);
                     });
@@ -953,7 +970,7 @@
     
             var layoutXGraph = this.reader.calcLayout(
                 this.graph,
-                layout$engine$factory$$LayoutEngineFactory.get('EXTRACT-AXES'),
+                layout$engine$factory$$LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES'),
                 {
                     width: w,
                     height: h

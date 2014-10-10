@@ -37,15 +37,32 @@ var fnDefaultLayoutEngine = (rootNode, domainMixin) => {
         var cellW = innerW / nCols;
         var cellH = innerH / nRows;
 
+        var calcLayoutStrategy;
+        if (node.guide.split) {
+            calcLayoutStrategy = {
+                calcHeight: ((cellHeight, rowIndex, elIndex, lenIndex) => cellHeight / lenIndex),
+                calcTop: ((cellHeight, rowIndex, elIndex, lenIndex) => (rowIndex + 1) * (cellHeight / lenIndex) * elIndex)
+            };
+        }
+        else {
+            calcLayoutStrategy = {
+                calcHeight: ((cellHeight, rowIndex, elIndex, lenIndex) => cellHeight),
+                calcTop: ((cellHeight, rowIndex, elIndex, lenIndex) => rowIndex * cellH)
+            };
+        }
+
         node.$matrix.iterate((iRow, iCol, subNodes) => {
+
+            var len = subNodes.length;
+
             _.each(
                 subNodes,
-                (node) => {
+                (node, i) => {
                     node.options = {
                         width: cellW,
-                        height: cellH,
-                        top: iRow * cellH,
-                        left: iCol * cellW
+                        left: iCol * cellW,
+                        height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
+                        top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
                     };
                     fnTraverseLayout(node);
                 });

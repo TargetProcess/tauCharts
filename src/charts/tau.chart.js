@@ -37,7 +37,7 @@ export class Chart {
 
         var layoutXGraph = this.reader.calcLayout(
             this.graph,
-            LayoutEngineFactory.get('EXTRACT-AXES'),
+            LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES'),
             {
                 width: w,
                 height: h
