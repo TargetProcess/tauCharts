@@ -4,9 +4,10 @@ var COORDS = {
         var isFacet = (subUnits[0].type === 'COORDS.RECT');
         return {
             type: 'COORDS.RECT',
-            func: (isFacet ? 'CROSS' : ''),
-            showGridLines: (isFacet ? '' : 'xy'),
-            padding: {L: 64, B: 32, R: 8, T: 8},
+            guide: {
+                showGridLines: (isFacet ? '' : 'xy'),
+                padding: {L: 64, B: 32, R: 8, T: 8}
+            },
             axes: dim,
             unit: subUnits
         };

@@ -7,7 +7,10 @@ var cloneNodeSettings = (node) => {
 
 var applyNodeDefaults = (node) => {
     node.options = node.options || {};
-    node.padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
+    node.guide = node.guide || {};
+    node.guide.padding = _.defaults(
+        node.guide.padding || {},
+        {L: 0, B: 0, R: 0, T: 0});
 
     return node;
 };
@@ -23,7 +26,7 @@ var fnDefaultLayoutEngine = (rootNode, domainMixin) => {
         }
 
         var options = node.options;
-        var padding = node.padding;
+        var padding = node.guide.padding;
 
         var innerW = options.width - (padding.L + padding.R);
         var innerH = options.height - (padding.T + padding.B);
@@ -87,11 +90,11 @@ var LayoutEngineTypeMap = {
                             var axis = _.extend(cloneNodeSettings(node), { type: 'WRAP.AXIS' });
                             axesMap.push(axis);
 
-                            node.padding.L = 0;
-                            node.padding.B = 0;
+                            node.guide.padding.L = 0;
+                            node.guide.padding.B = 0;
 
-                            axis.padding.L = (isHeadCol ? axis.padding.L : 0);
-                            axis.padding.B = (isTailRow ? axis.padding.B : 0);
+                            axis.guide.padding.L = (isHeadCol ? axis.guide.padding.L : 0);
+                            axis.guide.padding.B = (isTailRow ? axis.guide.padding.B : 0);
 
                             traverse(node, axis);
                         }
@@ -128,7 +131,7 @@ var LayoutEngineTypeMap = {
             var multiAxisDecorator = (node) => {
 
                 var options = node.options;
-                var padding = node.padding;
+                var padding = node.guide.padding;
 
                 var innerW = options.width - (padding.L + padding.R);
                 var innerH = options.height - (padding.T + padding.B);
@@ -136,9 +139,9 @@ var LayoutEngineTypeMap = {
                 var nR = node.$axes.sizeR();
                 var nC = node.$axes.sizeC();
 
-                var leftBottomItem = (node.$axes.getRC(nR - 1, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
-                var lPadding = leftBottomItem.padding.L;
-                var bPadding = leftBottomItem.padding.B;
+                var leftBottomItem = applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
+                var lPadding = leftBottomItem.guide.padding.L;
+                var bPadding = leftBottomItem.guide.padding.B;
 
                 var sharedWidth = (innerW - lPadding);
                 var sharedHeight = (innerH - bPadding);
@@ -180,7 +183,7 @@ var LayoutEngineTypeMap = {
             var gridL = 0;
             var gridB = 0;
             var axisOffsetTraverser = (node) => {
-                var padding = node.padding;
+                var padding = node.guide.padding;
                 var nR = node.$axes.sizeR();
                 node.$axes.iterate((iRow, iCol, subNodes) => {
                     if (iCol === 0 && (iRow === (nR - 1))) {

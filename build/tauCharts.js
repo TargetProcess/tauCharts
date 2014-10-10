@@ -13,9 +13,10 @@
             var isFacet = (subUnits[0].type === 'COORDS.RECT');
             return {
                 type: 'COORDS.RECT',
-                func: (isFacet ? 'CROSS' : ''),
-                showGridLines: (isFacet ? '' : 'xy'),
-                padding: {L: 64, B: 32, R: 8, T: 8},
+                guide: {
+                    showGridLines: (isFacet ? '' : 'xy'),
+                    padding: {L: 64, B: 32, R: 8, T: 8}
+                },
                 axes: dim,
                 unit: subUnits
             };
@@ -199,7 +200,7 @@
                 .attr('class', 'grid')
                 .attr('transform', translate(0, 0));
     
-            var linesOptions = (node.showGridLines || '').toLowerCase();
+            var linesOptions = (node.guide.showGridLines || '').toLowerCase();
             if (linesOptions.length > 0) {
     
                 var gridLines = grid.append('g').attr('class', 'grid-lines');
@@ -240,7 +241,7 @@
             'COORDS.RECT': function (node, continueTraverse) {
     
                 var options = node.options;
-                var padding = node.padding;
+                var padding = node.guide.padding;
     
                 var axes = _(node.axes).map(function (axis, i) {
                     var a = _.isArray(axis) ? axis : [axis];
@@ -413,7 +414,7 @@
             'WRAP.AXIS': function (node, continueTraverse) {
     
                 var options = node.options;
-                var padding = node.padding;
+                var padding = node.guide.padding;
     
                 var axes = _(node.axes).map(function (axis, i) {
                     var a = _.isArray(axis) ? axis : [axis];
@@ -485,7 +486,7 @@
     
             'WRAP.MULTI_AXES': function (node, continueTraverse) {
                 var options = node.options;
-                var padding = node.padding;
+                var padding = node.guide.padding;
     
                 var L = options.left + padding.L;
                 var T = options.top + padding.T;
@@ -516,7 +517,7 @@
     
             'WRAP.MULTI_GRID': function (node, continueTraverse) {
                 var options = node.options;
-                var padding = node.padding;
+                var padding = node.guide.padding;
     
                 var L = options.left + padding.L;
                 var T = options.top + padding.T;
@@ -627,7 +628,10 @@
 
     var layout$engine$factory$$applyNodeDefaults = function(node)  {
         node.options = node.options || {};
-        node.padding = _.defaults(node.padding || {}, {L: 0, B: 0, R: 0, T: 0});
+        node.guide = node.guide || {};
+        node.guide.padding = _.defaults(
+            node.guide.padding || {},
+            {L: 0, B: 0, R: 0, T: 0});
     
         return node;
     };
@@ -643,7 +647,7 @@
             }
     
             var options = node.options;
-            var padding = node.padding;
+            var padding = node.guide.padding;
     
             var innerW = options.width - (padding.L + padding.R);
             var innerH = options.height - (padding.T + padding.B);
@@ -707,11 +711,11 @@
                                 var axis = _.extend(layout$engine$factory$$cloneNodeSettings(node), { type: 'WRAP.AXIS' });
                                 axesMap.push(axis);
     
-                                node.padding.L = 0;
-                                node.padding.B = 0;
+                                node.guide.padding.L = 0;
+                                node.guide.padding.B = 0;
     
-                                axis.padding.L = (isHeadCol ? axis.padding.L : 0);
-                                axis.padding.B = (isTailRow ? axis.padding.B : 0);
+                                axis.guide.padding.L = (isHeadCol ? axis.guide.padding.L : 0);
+                                axis.guide.padding.B = (isTailRow ? axis.guide.padding.B : 0);
     
                                 traverse(node, axis);
                             }
@@ -748,7 +752,7 @@
                 var multiAxisDecorator = function(node)  {
     
                     var options = node.options;
-                    var padding = node.padding;
+                    var padding = node.guide.padding;
     
                     var innerW = options.width - (padding.L + padding.R);
                     var innerH = options.height - (padding.T + padding.B);
@@ -756,9 +760,9 @@
                     var nR = node.$axes.sizeR();
                     var nC = node.$axes.sizeC();
     
-                    var leftBottomItem = (node.$axes.getRC(nR - 1, 0)[0] || { padding: { L:0, T:0, R:0, B:0 } });
-                    var lPadding = leftBottomItem.padding.L;
-                    var bPadding = leftBottomItem.padding.B;
+                    var leftBottomItem = layout$engine$factory$$applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
+                    var lPadding = leftBottomItem.guide.padding.L;
+                    var bPadding = leftBottomItem.guide.padding.B;
     
                     var sharedWidth = (innerW - lPadding);
                     var sharedHeight = (innerH - bPadding);
@@ -800,7 +804,7 @@
                 var gridL = 0;
                 var gridB = 0;
                 var axisOffsetTraverser = function(node)  {
-                    var padding = node.padding;
+                    var padding = node.guide.padding;
                     var nR = node.$axes.sizeR();
                     node.$axes.iterate(function(iRow, iCol, subNodes)  {
                         if (iCol === 0 && (iRow === (nR - 1))) {
@@ -1037,13 +1041,15 @@
                 W:config.width,
                 container:config.container,
                 unit:{
+                    type: 'COORDS.RECT',
                     axes: [
                         charts$tau$scatterplot$$convertAxis(config.x),
                         charts$tau$scatterplot$$convertAxis(config.y)
                     ],
-                    padding: { L:24, B:24, R:24, T:24 },
-                    type: 'COORDS.RECT',
-                    showGridLines: 'xy',
+                    guide: {
+                        padding: { L:24, B:24, R:24, T:24 },
+                        showGridLines: 'xy'
+                    },
                     unit: [
                         {
                             type: 'ELEMENT.POINT',

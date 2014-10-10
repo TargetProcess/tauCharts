@@ -22,7 +22,7 @@ var TNodeVisitorFactory = (function () {
             .attr('class', 'grid')
             .attr('transform', translate(0, 0));
 
-        var linesOptions = (node.showGridLines || '').toLowerCase();
+        var linesOptions = (node.guide.showGridLines || '').toLowerCase();
         if (linesOptions.length > 0) {
 
             var gridLines = grid.append('g').attr('class', 'grid-lines');
@@ -63,7 +63,7 @@ var TNodeVisitorFactory = (function () {
         'COORDS.RECT': function (node, continueTraverse) {
 
             var options = node.options;
-            var padding = node.padding;
+            var padding = node.guide.padding;
 
             var axes = _(node.axes).map(function (axis, i) {
                 var a = _.isArray(axis) ? axis : [axis];
@@ -236,7 +236,7 @@ var TNodeVisitorFactory = (function () {
         'WRAP.AXIS': function (node, continueTraverse) {
 
             var options = node.options;
-            var padding = node.padding;
+            var padding = node.guide.padding;
 
             var axes = _(node.axes).map(function (axis, i) {
                 var a = _.isArray(axis) ? axis : [axis];
@@ -308,7 +308,7 @@ var TNodeVisitorFactory = (function () {
 
         'WRAP.MULTI_AXES': function (node, continueTraverse) {
             var options = node.options;
-            var padding = node.padding;
+            var padding = node.guide.padding;
 
             var L = options.left + padding.L;
             var T = options.top + padding.T;
@@ -339,7 +339,7 @@ var TNodeVisitorFactory = (function () {
 
         'WRAP.MULTI_GRID': function (node, continueTraverse) {
             var options = node.options;
-            var padding = node.padding;
+            var padding = node.guide.padding;
 
             var L = options.left + padding.L;
             var T = options.top + padding.T;

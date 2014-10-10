@@ -15,13 +15,15 @@ export class Scatterplot extends Chart {
             W:config.width,
             container:config.container,
             unit:{
+                type: 'COORDS.RECT',
                 axes: [
                     convertAxis(config.x),
                     convertAxis(config.y)
                 ],
-                padding: { L:24, B:24, R:24, T:24 },
-                type: 'COORDS.RECT',
-                showGridLines: 'xy',
+                guide: {
+                    padding: { L:24, B:24, R:24, T:24 },
+                    showGridLines: 'xy'
+                },
                 unit: [
                     {
                         type: 'ELEMENT.POINT',

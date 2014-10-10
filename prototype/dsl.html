@@ -77,7 +77,9 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            padding: { L:120, B:24, R:0, T:0 },
+            guide: {
+                padding: { L:120, B:24, R:0, T:0 }
+            },
             axes: [
                 {scaleDim: 'project', scaleType: 'ordinal', label: '<h4>Projects</h4>'},
                 {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>'}
@@ -85,8 +87,10 @@
             unit: [
                 {
                     type: 'COORDS.RECT',
-                    showGridLines: 'xy',
-                    padding: { L:32, B:32, R:8, T:8 },
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { L:32, B:32, R:8, T:8 }
+                    },
                     axes: [
                         {scaleDim: 'cycleTime', scaleType: 'linear', label: '<h4>cycle time</h4>', padding: 8},
                         {scaleDim: 'effort', scaleType: 'linear', label: '<h4>effort</h4>', padding: 8}
@@ -115,8 +119,10 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            showGridLines: 'xy',
-            padding: { L:36, B:36, R:8, T:8 },
+            guide: {
+                showGridLines: 'xy',
+                padding: { L:36, B:36, R:8, T:8 }
+            },
             axes: [
                 {
                     scaleDim: 'cycleTime',
@@ -155,7 +161,9 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            padding: { L:36, B:2, R:0, T:2 },
+            guide: {
+                padding: { L:36, B:2, R:0, T:2 }
+            },
             axes: [
                 null,
                 {
@@ -167,8 +175,9 @@
             unit: [
                 {
                     type: 'COORDS.RECT',
-                    func: 'CROSS',
-                    padding: { L:120, B:4, R:8, T:4 },
+                    guide: {
+                        padding: { L:120, B:4, R:8, T:4 }
+                    },
                     axes: [
                         null,
                         {
@@ -180,8 +189,10 @@
                     unit: [
                         {
                             type: 'COORDS.RECT',
-                            showGridLines: 'xy',
-                            padding: { L:36, B:20, R:8, T:4 },
+                            guide: {
+                                showGridLines: 'xy',
+                                padding: { L:36, B:20, R:8, T:4 }
+                            },
                             axes: [
                                 {
                                     scaleDim: 'cycleTime',
@@ -251,7 +262,9 @@
             },
             unit: {
                 type: 'COORDS.RECT',
-                padding: { L:80, B:8, R:8, T:8 },
+                guide: {
+                    padding: { L:80, B:8, R:8, T:8 }
+                },
                 axes: [
                     null,
                     {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
@@ -259,11 +272,13 @@
                 unit: [
                     {
                         type: 'COORDS.RECT',
-                        padding: { L:36, B:24, R:8, T:8 },
-                        showGridLines: 'xy',
+                        guide: {
+                            padding: { L:36, B:24, R:8, T:8 },
+                            showGridLines: 'xy'
+                        },
                         axes: [
-                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>', bubble:true},
-                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>', bubble:true}
+                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
+                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'}
                         ],
                         unit: [
                             {
