@@ -8,9 +8,9 @@ var cloneNodeSettings = (node) => {
 var applyNodeDefaults = (node) => {
     node.options = node.options || {};
     node.guide = node.guide || {};
-    node.guide.padding = _.defaults(
-        node.guide.padding || {},
-        {L: 0, B: 0, R: 0, T: 0});
+    node.guide.padding = _.defaults(node.guide.padding || {}, {L: 0, B: 0, R: 0, T: 0});
+    node.guide.x = _.defaults(node.guide.x || {}, {label: '', padding: 0, cssClass: ''});
+    node.guide.y = _.defaults(node.guide.y || {}, {label: '', padding: 0, cssClass: ''});
 
     return node;
 };

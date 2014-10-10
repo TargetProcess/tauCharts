@@ -87,10 +87,12 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { L:32, B:32, R:8, T:8 }
+                        padding: { L:32, B:32, R:8, T:8 },
+                        x: {padding: 8, label: 'cycle time'},
+                        y: {padding: 8, label: 'effort'}
                     },
-                    x: {scaleDim: 'cycleTime', label: '<h4>cycle time</h4>', padding: 8},
-                    y: {scaleDim: 'effort', label: '<h4>effort</h4>', padding: 8},
+                    x: 'cycleTime',
+                    y: 'effort',
                     unit: [
                         {
                             type: 'ELEMENT.POINT',

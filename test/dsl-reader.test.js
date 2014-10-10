@@ -110,7 +110,7 @@ describe("DSL reader", function () {
         checkFacetCells(logicalGraph.$matrix, facet);
     });
 
-    it("should apply style engine to logical graph", function () {
+    it("should build logical graph for empty facet (0 * 0 axes)", function () {
 
         var reader = new tauChart.__api__.DSLReader(
             {
@@ -121,7 +121,7 @@ describe("DSL reader", function () {
                 },
                 unit: {
                     type: 'COORDS.RECT',
-                    x: 'project',
+                    x: null,
                     y: null,
                     unit: [
                         {
@@ -144,11 +144,10 @@ describe("DSL reader", function () {
         var logicalGraph = reader.buildGraph();
 
         expect(logicalGraph.$matrix.sizeR()).to.equal(1);
-        expect(logicalGraph.$matrix.sizeC()).to.equal(2);
+        expect(logicalGraph.$matrix.sizeC()).to.equal(1);
 
-        var facet = [
-            [{ project: 'TP3' }, { project: 'TP2' }]
-        ];
+        var EMPTY_WHERE_EXPRESSION = {};
+        var facet = [[EMPTY_WHERE_EXPRESSION]];
 
         checkFacetCells(logicalGraph.$matrix, facet);
     });

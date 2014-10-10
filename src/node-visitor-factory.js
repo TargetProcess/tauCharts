@@ -69,8 +69,8 @@ var TNodeVisitorFactory = (function () {
             node.x.scale = xScale;
             node.y.scale = yScale;
 
-            var X_AXIS_POS = [0, H + node.x.padding];
-            var Y_AXIS_POS = [0 - node.y.padding, 0];
+            var X_AXIS_POS = [0, H + node.guide.x.padding];
+            var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
 
             var container = options
                 .container
@@ -221,23 +221,20 @@ var TNodeVisitorFactory = (function () {
             node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
             node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
 
-            var x = node.x;
-            var y = node.y;
-
             var L = options.left + padding.L;
             var T = options.top + padding.T;
 
             var W = options.width - (padding.L + padding.R);
             var H = options.height - (padding.T + padding.B);
 
-            var xScale = x.scaleDim && node.scaleTo(x, [0, W]);
-            var yScale = y.scaleDim && node.scaleTo(y, [H, 0]);
+            var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
+            var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
 
             node.x.scale = xScale;
             node.y.scale = yScale;
 
-            var X_AXIS_POS = [0, H + x.padding];
-            var Y_AXIS_POS = [0 - y.padding, 0];
+            var X_AXIS_POS = [0, H + node.guide.x.padding];
+            var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
 
             var container = options
                 .container
@@ -245,12 +242,12 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'axis-container')
                 .attr('transform', translate(L, T));
 
-            if (options.showX && !x.hide) {
-                fnDrawDimAxis.call(container, x, X_AXIS_POS, 'x axis');
+            if (options.showX && !node.x.hide) {
+                fnDrawDimAxis.call(container, node.x, X_AXIS_POS, 'x axis');
             }
 
-            if (options.showY && !y.hide) {
-                fnDrawDimAxis.call(container, y, Y_AXIS_POS, 'y axis');
+            if (options.showY && !node.y.hide) {
+                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, 'y axis');
             }
 
             var grid = container
