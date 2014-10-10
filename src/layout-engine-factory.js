@@ -9,8 +9,14 @@ var applyNodeDefaults = (node) => {
     node.options = node.options || {};
     node.guide = node.guide || {};
     node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
-    node.guide.x = _.defaults(node.guide.x || {}, {label: '', padding: 0, cssClass: ''});
-    node.guide.y = _.defaults(node.guide.y || {}, {label: '', padding: 0, cssClass: ''});
+
+    node.guide.x = _.defaults(node.guide.x || {}, {label: '', padding: 0, cssClass: 'x axis', scaleOrient: 'bottom'});
+    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : { text: node.guide.x.label };
+    node.guide.x.label = _.defaults(node.guide.x.label, { padding: 32, rotate: 0 });
+
+    node.guide.y = _.defaults(node.guide.y || {}, {label: '', padding: 0, cssClass: 'y axis', scaleOrient: 'left'});
+    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : { text: node.guide.y.label };
+    node.guide.y.label = _.defaults(node.guide.y.label, { padding: 32, rotate: -90 });
 
     return node;
 };

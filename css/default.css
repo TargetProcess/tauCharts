@@ -319,7 +319,7 @@ svg .grid line {
 }
 svg .label {
   font-size: 11px;
-  display: none;
+  /*display: none;*/
 }
 
 /* Axis Labels */
@@ -589,4 +589,8 @@ header p {
   background-color: transparent;
   border: 1px solid #666666;
   padding: 0;
+}
+
+.tick text {
+    font-size: 11px;
 }

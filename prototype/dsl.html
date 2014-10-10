@@ -80,9 +80,9 @@
         unit: {
             type: 'COORDS.RECT',
             guide: {
-                padding: {l: 120, b: 24, r: 0, t: 0},
-                x: {label: '<h4>Projects</h4>'},
-                y: {label: '<h4>Teams</h4>'}
+                padding: {l: 152, b: 48, r: 0, t: 0},
+                x: {label: { text: 'Projects', padding: 32}},
+                y: {label: { text: 'Teams', padding: 120}}
             },
             x: 'project',
             y: 'team',
@@ -91,8 +91,8 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { l:32, b:32, r:8, t:8 },
-                        x: {padding: 8, label: 'cycle time'},
+                        padding: { l:54, b:28, r:8, t:8 },
+                        x: {padding: 8, label: ''},
                         y: {padding: 8, label: 'effort'}
                     },
                     x: 'cycleTime',
@@ -133,7 +133,8 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { l:220, b:24, r:8, t:8 }
+                        padding: { l:220, b:36, r:8, t:8 },
+                        x: {label: 'Effort'}
                     },
                     x: 'effort',
                     y: 'name',
@@ -154,7 +155,8 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { l:220, b:24, r:8, t:8 }
+                        padding: { l:220, b:36, r:8, t:8 },
+                        x: {label: 'Cycle Time'}
                     },
                     y: 'name',
                     x: 'cycleTime',
@@ -181,9 +183,9 @@
             type: 'COORDS.RECT',
             guide: {
                 showGridLines: 'xy',
-                padding: { l:36, b:36, r:8, t:8 },
-                x: {padding: 8},
-                y: {padding: 8}
+                padding: { l:56, b:46, r:8, t:8 },
+                x: {padding: 8, label: 'Cycle Time'},
+                y: {padding: 8, label: 'Effort'}
             },
             x: 'cycleTime',
             y: 'effort',
@@ -314,7 +316,8 @@
             unit: {
                 type: 'COORDS.RECT',
                 guide: {
-                    padding: { l:80, b:8, r:8, t:8 }
+                    padding: { l:104, b:8, r:8, t:8 },
+                    y: {label: { text: 'TargetProcess Teams', padding: 80 }}
                 },
                 x: null,
                 y: 'team',
@@ -322,10 +325,10 @@
                     {
                         type: 'COORDS.RECT',
                         guide: {
-                            padding: { l:36, b:24, r:8, t:8 },
+                            padding: { l:56, b:32, r:8, t:8 },
                             showGridLines: 'xy',
-                            x: {label: '<h4>Month</h4>'},
-                            y: {label: '<h4>Count</h4>'}
+                            x: {label: 'Month'},
+                            y: {label: { text: 'Count', padding: 36 }}
                         },
                         x: 'month',
                         y: 'count',

@@ -1,15 +1,39 @@
 var TNodeVisitorFactory = (function () {
 
     var translate = (left, top) => 'translate(' + left + ',' + top + ')';
+    var rotate = (angle) => 'rotate(' + angle + ')';
+    var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
 
-    var fnDrawDimAxis = function (x, AXIS_POSITION, CSS_CLASS) {
+    var fnDrawDimAxis = function (x, AXIS_POSITION) {
         var container = this;
         if (x.scaleDim) {
-            container
+            var axisScale = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient);
+            var nodeScale = container
                 .append('g')
-                .attr('class', CSS_CLASS)
+                .attr('class', x.guide.cssClass)
                 .attr('transform', translate.apply(null, AXIS_POSITION))
-                .call(d3.svg.axis().scale(x.scale).orient(x.scaleOrient));
+                .call(axisScale);
+
+            if ('h' === getOrientation(x.guide.scaleOrient)) {
+                nodeScale
+                    .append('text')
+                    .attr('transform', rotate(x.guide.label.rotate))
+                    .attr('class', 'label')
+                    .attr('x', x.guide.size * 0.5)
+                    .attr('y', x.guide.label.padding)
+                    .style('text-anchor', 'middle')
+                    .text(x.guide.label.text);
+            }
+            else {
+                nodeScale
+                    .append('text')
+                    .attr('transform', rotate(x.guide.label.rotate))
+                    .attr('class', 'label')
+                    .attr('x', -x.guide.size * 0.5)
+                    .attr('y', -x.guide.label.padding)
+                    .style('text-anchor', 'middle')
+                    .text(x.guide.label.text);
+            }
         }
     };
 
@@ -29,13 +53,13 @@ var TNodeVisitorFactory = (function () {
 
             if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                 var x = node.x;
-                var xGridAxis = d3.svg.axis().scale(x.scale).orient(x.scaleOrient).tickSize(H);
+                var xGridAxis = d3.svg.axis().scale(x.scale).orient(node.guide.x.scaleOrient).tickSize(H);
                 gridLines.append('g').call(xGridAxis);
             }
 
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
-                var yGridAxis = d3.svg.axis().scale(y.scale).orient(y.scaleOrient).tickSize(-W);
+                var yGridAxis = d3.svg.axis().scale(y.scale).orient(node.guide.y.scaleOrient).tickSize(-W);
 
                 gridLines.append('g').call(yGridAxis);
             }
@@ -54,8 +78,8 @@ var TNodeVisitorFactory = (function () {
             var options = node.options;
             var padding = node.guide.padding;
 
-            node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
-            node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
+            node.x.guide = node.guide.x;
+            node.y.guide = node.guide.y;
 
             var L = options.left + padding.l;
             var T = options.top + padding.t;
@@ -63,11 +87,11 @@ var TNodeVisitorFactory = (function () {
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
 
-            var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
-            var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
+            node.x.scale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
+            node.y.scale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
 
-            node.x.scale = xScale;
-            node.y.scale = yScale;
+            node.x.guide.size = W;
+            node.y.guide.size = H;
 
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
@@ -79,11 +103,11 @@ var TNodeVisitorFactory = (function () {
                 .attr('transform', translate(L, T));
 
             if (!node.x.hide) {
-                fnDrawDimAxis.call(container, node.x, X_AXIS_POS, 'x axis');
+                fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
             }
 
             if (!node.y.hide) {
-                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, 'y axis');
+                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
             }
 
             var grid = fnDrawGrid.call(container, node, H, W);
@@ -218,8 +242,8 @@ var TNodeVisitorFactory = (function () {
             var options = node.options;
             var padding = node.guide.padding;
 
-            node.x = _.defaults(node.x, {padding: 0, scaleOrient: 'bottom'});
-            node.y = _.defaults(node.y, {padding: 0, scaleOrient: 'left'});
+            node.x.guide = node.guide.x;
+            node.y.guide = node.guide.y;
 
             var L = options.left + padding.l;
             var T = options.top + padding.t;
@@ -227,11 +251,11 @@ var TNodeVisitorFactory = (function () {
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
 
-            var xScale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
-            var yScale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
+            node.x.guide.size = W;
+            node.y.guide.size = H;
 
-            node.x.scale = xScale;
-            node.y.scale = yScale;
+            node.x.scale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
+            node.y.scale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
 
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
@@ -243,11 +267,11 @@ var TNodeVisitorFactory = (function () {
                 .attr('transform', translate(L, T));
 
             if (options.showX && !node.x.hide) {
-                fnDrawDimAxis.call(container, node.x, X_AXIS_POS, 'x axis');
+                fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
             }
 
             if (options.showY && !node.y.hide) {
-                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, 'y axis');
+                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
             }
 
             var grid = container
