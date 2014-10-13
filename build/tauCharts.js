@@ -150,8 +150,14 @@
                 matrixOfPrFilters.iterate(function(row, col, $whereRC)  {
                     var cellWhere = _.extend({}, root.$where, $whereRC);
                     var cellNodes = _(root.unit).map(function(sUnit)  {
-                        // keep arguments order. cloned objects are created
-                        return _.extend(utils$$Utils.clone(sUnit), { $where: cellWhere });
+                        return _.extend(
+                            _.defaults(
+                                utils$$Utils.clone(sUnit),
+                                {
+                                    x: root.x.scaleDim,
+                                    y: root.y.scaleDim
+                                }),
+                            { $where: cellWhere });
                     });
                     matrixOfUnitNodes.setRC(row, col, cellNodes);
                 });

@@ -42,9 +42,7 @@ describe("DSL reader", function () {
                         y: 'effort',
                         unit: [
                             {
-                                type: 'ELEMENT.POINT',
-                                x: 'cycleTime',
-                                y: 'effort'
+                                type: 'ELEMENT.POINT'
                             }
                         ]
                     }
@@ -116,7 +114,7 @@ describe("DSL reader", function () {
         checkFacetCells(logicalGraph.$matrix, facet);
     });
 
-    it("should build logical graph for empty facet (0 * 0 axes)", function () {
+    it("should build logical graph for empty facet (container 0 * 0 axes)", function () {
 
         var reader = new tauChart.__api__.DSLReader(
             {
@@ -136,9 +134,7 @@ describe("DSL reader", function () {
                             y: 'effort',
                             unit: [
                                 {
-                                    type: 'ELEMENT.POINT',
-                                    x: 'cycleTime',
-                                    y: 'effort'
+                                    type: 'ELEMENT.POINT'
                                 }
                             ]
                         }
