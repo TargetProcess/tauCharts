@@ -23,7 +23,7 @@ var applyNodeDefaults = (node) => {
         cssClass: 'y axis',
         scaleOrient: 'left',
         rotate: 0,
-        textAnchor: 'middle'
+        textAnchor: 'end'
     });
     node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
     node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
