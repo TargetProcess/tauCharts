@@ -1104,7 +1104,8 @@
     
         __api__: {
             UnitDomainMixin: unit$domain$mixin$$UnitDomainMixin,
-            DSLReader: dsl$reader$$DSLReader
+            DSLReader: dsl$reader$$DSLReader,
+            LayoutEngineFactory: layout$engine$factory$$LayoutEngineFactory
         }
     };
 

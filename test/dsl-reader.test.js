@@ -29,7 +29,8 @@ describe("DSL reader", function () {
             dimensions: {
                 project: {scaleType: 'ordinal'},
                 team: {scaleType: 'ordinal'},
-                effort: {scaleType: 'linear'}
+                effort: {scaleType: 'linear'},
+                cycleTime: {scaleType: 'linear'}
             },
             unit: {
                 type: 'COORDS.RECT',
@@ -78,7 +79,8 @@ describe("DSL reader", function () {
                 dimensions: {
                     project: {scaleType: 'ordinal'},
                     team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'}
+                    effort: {scaleType: 'linear'},
+                    cycleTime: {scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -121,7 +123,8 @@ describe("DSL reader", function () {
                 dimensions: {
                     project: {scaleType: 'ordinal'},
                     team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'}
+                    effort: {scaleType: 'linear'},
+                    cycleTime: {scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
