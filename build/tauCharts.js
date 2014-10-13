@@ -7,41 +7,6 @@
         this.tauChart = definition();
     }
 })(function() {
-    var dsl$lang$$COORDS = {
-        RECT: function(dim, tail) {
-            var subUnits = _.isArray(tail) ? tail : [tail];
-            var isFacet = (subUnits[0].type === 'COORDS.RECT');
-            return {
-                type: 'COORDS.RECT',
-                guide: {
-                    showGridLines: (isFacet ? '' : 'xy'),
-                    padding: {L: 64, B: 32, R: 8, T: 8}
-                },
-                axes: dim,
-                unit: subUnits
-            };
-        }
-    };
-
-    var dsl$lang$$DIM = function(x, y) {
-        return [
-            x ? {scaleDim: x} : null,
-            y ? {scaleDim: y} : null
-        ];
-    };
-
-    var dsl$lang$$ELEMENT = {
-        POINT: function (x, y, color, size) {
-            return {
-                type: 'ELEMENT.POINT',
-                x: x,
-                y: y,
-                color: color,
-                size: size
-            };
-        }
-    };
-
     var utils$$Utils = {
         clone: function(obj)  {return JSON.parse(JSON.stringify(obj))}
     };

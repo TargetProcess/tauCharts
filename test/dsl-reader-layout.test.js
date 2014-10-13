@@ -32,6 +32,9 @@ describe("DSL reader", function () {
                     type: 'COORDS.RECT',
                     x: 'cycleTime',
                     y: 'effort',
+                    guide: {
+                        showGridLines: 'xy'
+                    },
                     unit: [
                         {
                             type: 'ELEMENT.UNKNOWN'
