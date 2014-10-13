@@ -1,4 +1,4 @@
-describe("DSL reader", function () {
+describe("DSL reader buildGraph()", function () {
 
     var data = [
         {"cycleTime": 10, "effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3"},
