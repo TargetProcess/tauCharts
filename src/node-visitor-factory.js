@@ -14,6 +14,11 @@ var TNodeVisitorFactory = (function () {
                 .attr('transform', translate.apply(null, AXIS_POSITION))
                 .call(axisScale);
 
+            nodeScale
+                .selectAll('.tick text')
+                .attr('transform', rotate(x.guide.rotate))
+                .style('text-anchor', x.guide.textAnchor);
+
             if ('h' === getOrientation(x.guide.scaleOrient)) {
                 nodeScale
                     .append('text')
@@ -21,7 +26,7 @@ var TNodeVisitorFactory = (function () {
                     .attr('class', 'label')
                     .attr('x', x.guide.size * 0.5)
                     .attr('y', x.guide.label.padding)
-                    .style('text-anchor', 'middle')
+                    .style('text-anchor', x.guide.label.textAnchor)
                     .text(x.guide.label.text);
             }
             else {
@@ -31,7 +36,7 @@ var TNodeVisitorFactory = (function () {
                     .attr('class', 'label')
                     .attr('x', -x.guide.size * 0.5)
                     .attr('y', -x.guide.label.padding)
-                    .style('text-anchor', 'middle')
+                    .style('text-anchor', x.guide.label.textAnchor)
                     .text(x.guide.label.text);
             }
         }
@@ -102,11 +107,11 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'cell')
                 .attr('transform', translate(L, T));
 
-            if (!node.x.hide) {
+            if (!node.x.guide.hide) {
                 fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
             }
 
-            if (!node.y.hide) {
+            if (!node.y.guide.hide) {
                 fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
             }
 
@@ -266,11 +271,11 @@ var TNodeVisitorFactory = (function () {
                 .attr('class', 'axis-container')
                 .attr('transform', translate(L, T));
 
-            if (options.showX && !node.x.hide) {
+            if (options.showX && !node.x.guide.hide) {
                 fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
             }
 
-            if (options.showY && !node.y.hide) {
+            if (options.showY && !node.y.guide.hide) {
                 fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
             }
 

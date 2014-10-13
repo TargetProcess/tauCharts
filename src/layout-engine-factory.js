@@ -6,13 +6,27 @@ var applyNodeDefaults = (node) => {
     node.guide = node.guide || {};
     node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
 
-    node.guide.x = _.defaults(node.guide.x || {}, {label: '', padding: 0, cssClass: 'x axis', scaleOrient: 'bottom'});
-    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : { text: node.guide.x.label };
-    node.guide.x.label = _.defaults(node.guide.x.label, { padding: 32, rotate: 0 });
+    node.guide.x = _.defaults(node.guide.x || {}, {
+        label: '',
+        padding: 0,
+        cssClass: 'x axis',
+        scaleOrient: 'bottom',
+        rotate: 0,
+        textAnchor: 'middle'
+    });
+    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
+    node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
 
-    node.guide.y = _.defaults(node.guide.y || {}, {label: '', padding: 0, cssClass: 'y axis', scaleOrient: 'left'});
-    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : { text: node.guide.y.label };
-    node.guide.y.label = _.defaults(node.guide.y.label, { padding: 32, rotate: -90 });
+    node.guide.y = _.defaults(node.guide.y || {}, {
+        label: '',
+        padding: 0,
+        cssClass: 'y axis',
+        scaleOrient: 'left',
+        rotate: 0,
+        textAnchor: 'middle'
+    });
+    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
+    node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
 
     return node;
 };
@@ -88,7 +102,7 @@ var LayoutEngineTypeMap = {
 
                 var node = applyNodeDefaults(rootNode);
 
-                _.each([node.x || {}, node.y || {}], (a) => a.hide = true);
+                _.each([node.guide.x || {}, node.guide.y || {}], (a) => a.hide = true);
 
                 var nRows = node.$matrix.sizeR();
                 var nCols = node.$matrix.sizeC();

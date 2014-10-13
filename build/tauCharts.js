@@ -188,6 +188,11 @@
                     .attr('transform', translate.apply(null, AXIS_POSITION))
                     .call(axisScale);
     
+                nodeScale
+                    .selectAll('.tick text')
+                    .attr('transform', rotate(x.guide.rotate))
+                    .style('text-anchor', x.guide.textAnchor);
+    
                 if ('h' === getOrientation(x.guide.scaleOrient)) {
                     nodeScale
                         .append('text')
@@ -195,7 +200,7 @@
                         .attr('class', 'label')
                         .attr('x', x.guide.size * 0.5)
                         .attr('y', x.guide.label.padding)
-                        .style('text-anchor', 'middle')
+                        .style('text-anchor', x.guide.label.textAnchor)
                         .text(x.guide.label.text);
                 }
                 else {
@@ -205,7 +210,7 @@
                         .attr('class', 'label')
                         .attr('x', -x.guide.size * 0.5)
                         .attr('y', -x.guide.label.padding)
-                        .style('text-anchor', 'middle')
+                        .style('text-anchor', x.guide.label.textAnchor)
                         .text(x.guide.label.text);
                 }
             }
@@ -276,11 +281,11 @@
                     .attr('class', 'cell')
                     .attr('transform', translate(L, T));
     
-                if (!node.x.hide) {
+                if (!node.x.guide.hide) {
                     fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
                 }
     
-                if (!node.y.hide) {
+                if (!node.y.guide.hide) {
                     fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
                 }
     
@@ -440,11 +445,11 @@
                     .attr('class', 'axis-container')
                     .attr('transform', translate(L, T));
     
-                if (options.showX && !node.x.hide) {
+                if (options.showX && !node.x.guide.hide) {
                     fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
                 }
     
-                if (options.showY && !node.y.hide) {
+                if (options.showY && !node.y.guide.hide) {
                     fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
                 }
     
@@ -615,13 +620,27 @@
         node.guide = node.guide || {};
         node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
     
-        node.guide.x = _.defaults(node.guide.x || {}, {label: '', padding: 0, cssClass: 'x axis', scaleOrient: 'bottom'});
-        node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : { text: node.guide.x.label };
-        node.guide.x.label = _.defaults(node.guide.x.label, { padding: 32, rotate: 0 });
+        node.guide.x = _.defaults(node.guide.x || {}, {
+            label: '',
+            padding: 0,
+            cssClass: 'x axis',
+            scaleOrient: 'bottom',
+            rotate: 0,
+            textAnchor: 'middle'
+        });
+        node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
+        node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
     
-        node.guide.y = _.defaults(node.guide.y || {}, {label: '', padding: 0, cssClass: 'y axis', scaleOrient: 'left'});
-        node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : { text: node.guide.y.label };
-        node.guide.y.label = _.defaults(node.guide.y.label, { padding: 32, rotate: -90 });
+        node.guide.y = _.defaults(node.guide.y || {}, {
+            label: '',
+            padding: 0,
+            cssClass: 'y axis',
+            scaleOrient: 'left',
+            rotate: 0,
+            textAnchor: 'middle'
+        });
+        node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
+        node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
     
         return node;
     };
@@ -697,7 +716,7 @@
     
                     var node = layout$engine$factory$$applyNodeDefaults(rootNode);
     
-                    _.each([node.x || {}, node.y || {}], function(a)  {return a.hide = true});
+                    _.each([node.guide.x || {}, node.guide.y || {}], function(a)  {return a.hide = true});
     
                     var nRows = node.$matrix.sizeR();
                     var nCols = node.$matrix.sizeC();
