@@ -3,10 +3,12 @@ import {TUnitVisitorFactory} from './unit-visitor-factory';
 import {TNodeVisitorFactory} from './node-visitor-factory';
 import {UnitDomainMixin} from './unit-domain-mixin';
 
+var cloneObject = (obj) => JSON.parse(JSON.stringify(obj));
+
 export class DSLReader {
 
     constructor (spec, data) {
-        this.spec = spec;
+        this.spec = cloneObject(spec);
         this.domain = new UnitDomainMixin(this.spec.dimensions, data);
     }
 

@@ -25,36 +25,42 @@ describe("DSL reader", function () {
 
     it("should build logical graph (facet with 2 axes)", function () {
 
-        var reader = new tauChart.__api__.DSLReader(
-            {
-                dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'}
-                },
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'project',
-                    y: 'team',
-                    unit: [
-                        {
-                            type: 'COORDS.RECT',
-                            x: 'cycleTime',
-                            y: 'effort',
-                            unit: [
-                                {
-                                    type: 'ELEMENT.POINT',
-                                    x: 'cycleTime',
-                                    y: 'effort'
-                                }
-                            ]
-                        }
-                    ]
-                }
+        var spec = {
+            dimensions: {
+                project: {scaleType: 'ordinal'},
+                team: {scaleType: 'ordinal'},
+                effort: {scaleType: 'linear'}
             },
-            data);
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'project',
+                y: 'team',
+                unit: [
+                    {
+                        type: 'COORDS.RECT',
+                        x: 'cycleTime',
+                        y: 'effort',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT',
+                                x: 'cycleTime',
+                                y: 'effort'
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        var originalSpecState = JSON.stringify(spec);
+
+        var reader = new tauChart.__api__.DSLReader(spec, data);
 
         var logicalGraph = reader.buildGraph();
+
+        var specStateAfterBuild = JSON.stringify(spec);
+
+        expect(specStateAfterBuild).to.equal(originalSpecState);
 
         expect(logicalGraph.$matrix.sizeR()).to.equal(2);
         expect(logicalGraph.$matrix.sizeC()).to.equal(2);
