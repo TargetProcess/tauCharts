@@ -1,9 +1,5 @@
+import {Utils} from './utils';
 import {TMatrix} from './matrix';
-
-var cloneNodeSettings = (node) => {
-    var obj = _.omit(node, '$matrix');
-    return JSON.parse(JSON.stringify(obj));
-};
 
 var applyNodeDefaults = (node) => {
     node.options = node.options || {};
@@ -110,7 +106,7 @@ var LayoutEngineTypeMap = {
                     subNodes.forEach((subNode) => {
                         var node = applyNodeDefaults(subNode);
                         if (node.$matrix) {
-                            var axis = _.extend(cloneNodeSettings(node), { type: 'WRAP.AXIS' });
+                            var axis = _.extend(Utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
                             axesMap.push(axis);
 
                             node.guide.padding.l = 0;
@@ -129,7 +125,7 @@ var LayoutEngineTypeMap = {
 
             var wrapperNode = applyNodeDefaults({
                 type: 'WRAP.MULTI_AXES',
-                options: cloneNodeSettings(root.options),
+                options: Utils.clone(root.options),
                 x: {},
                 y: {},
                 $matrix: new TMatrix([[[root]]])

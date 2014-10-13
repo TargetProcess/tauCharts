@@ -1,8 +1,7 @@
+import {Utils} from './utils';
 import {TMatrix} from './matrix';
 
 var TUnitVisitorFactory = (function () {
-
-    var cloneObject = (obj) => JSON.parse(JSON.stringify(obj));
 
     var FacetAlgebra = {
 
@@ -51,7 +50,7 @@ var TUnitVisitorFactory = (function () {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
                     // keep arguments order. cloned objects are created
-                    return _.extend(cloneObject(sUnit), { $where: cellWhere });
+                    return _.extend(Utils.clone(sUnit), { $where: cellWhere });
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });

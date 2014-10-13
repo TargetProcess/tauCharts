@@ -42,6 +42,10 @@
         }
     };
 
+    var utils$$Utils = {
+        clone: function(obj)  {return JSON.parse(JSON.stringify(obj))}
+    };
+
     var matrix$$TMatrix = (function () {
     
         var Matrix = function (r, c) {
@@ -100,8 +104,6 @@
 
     var unit$visitor$factory$$TUnitVisitorFactory = (function () {
     
-        var cloneObject = function(obj)  {return JSON.parse(JSON.stringify(obj))};
-    
         var FacetAlgebra = {
     
             'CROSS': function (root, dimX, dimY) {
@@ -149,7 +151,7 @@
                     var cellWhere = _.extend({}, root.$where, $whereRC);
                     var cellNodes = _(root.unit).map(function(sUnit)  {
                         // keep arguments order. cloned objects are created
-                        return _.extend(cloneObject(sUnit), { $where: cellWhere });
+                        return _.extend(utils$$Utils.clone(sUnit), { $where: cellWhere });
                     });
                     matrixOfUnitNodes.setRC(row, col, cellNodes);
                 });
@@ -572,14 +574,10 @@
     
             return unit;
         };
-    MIXIN$0(UnitDomainMixin.prototype,proto$0);proto$0=void 0;return UnitDomainMixin;})();
-
-    var dsl$reader$$cloneObject = function(obj)  {return JSON.parse(JSON.stringify(obj))};
-
-    var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+    MIXIN$0(UnitDomainMixin.prototype,proto$0);proto$0=void 0;return UnitDomainMixin;})();var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
         function DSLReader (spec, data) {
-            this.spec = dsl$reader$$cloneObject(spec);
+            this.spec = utils$$Utils.clone(spec);
             this.domain = new unit$domain$mixin$$UnitDomainMixin(this.spec.dimensions, data);
         }DP$0(DSLReader,"prototype",{"configurable":false,"enumerable":false,"writable":false});
     
@@ -611,11 +609,6 @@
         };
     MIXIN$0(DSLReader.prototype,proto$0);proto$0=void 0;return DSLReader;})();
     var layout$engine$factory$$this$0 = this;
-
-    var layout$engine$factory$$cloneNodeSettings = function(node)  {
-        var obj = _.omit(node, '$matrix');
-        return JSON.parse(JSON.stringify(obj));
-    };
 
     var layout$engine$factory$$applyNodeDefaults = function(node)  {
         node.options = node.options || {};
@@ -722,7 +715,7 @@
                         subNodes.forEach(function(subNode)  {
                             var node = layout$engine$factory$$applyNodeDefaults(subNode);
                             if (node.$matrix) {
-                                var axis = _.extend(layout$engine$factory$$cloneNodeSettings(node), { type: 'WRAP.AXIS' });
+                                var axis = _.extend(utils$$Utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
                                 axesMap.push(axis);
     
                                 node.guide.padding.l = 0;
@@ -741,7 +734,7 @@
     
                 var wrapperNode = layout$engine$factory$$applyNodeDefaults({
                     type: 'WRAP.MULTI_AXES',
-                    options: layout$engine$factory$$cloneNodeSettings(root.options),
+                    options: utils$$Utils.clone(root.options),
                     x: {},
                     y: {},
                     $matrix: new matrix$$TMatrix([[[root]]])
