@@ -108,7 +108,8 @@ module.exports = function (grunt) {
                     "jquery.js":"jquery/dist/jquery.js",
                     "traceur.js":"traceur/traceur.js",
                     "es6-module-loader.js":"es6-module-loader/dist/es6-module-loader.src.js",
-                    "js-schema.js":"js-schema/js-schema.debug.js"
+                    "js-schema.js":"js-schema/js-schema.debug.js",
+                    "es5-shim.js":"es5-shim/es5-shim.js"
                 }
             }
         },

@@ -9,6 +9,7 @@ module.exports = function(config) {
 
         // list of files / patterns to load in the browser
         files: [
+            'libs/es5-shim.js',
             'libs/underscore.js',
             'libs/js-schema.js',
             'libs/d3.js',
