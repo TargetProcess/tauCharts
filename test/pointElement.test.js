@@ -25,7 +25,7 @@ describe("Point element with all params", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Chart({
+        var chart = new tauChart.Chart({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
@@ -43,7 +43,12 @@ describe("Point element with all params", function () {
                 }
             },
             data: testData
-        }).renderTo(element, {width: 800, height: 800});
+        });
+        chart.renderTo(element, {width: 800, height: 800});
+        if(schemes.scatterplot(chart.config.spec) ) {
+            throw new Error('spec is broken')
+        }
+
     });
     afterEach(function () {
         element.parentNode.removeChild(element);

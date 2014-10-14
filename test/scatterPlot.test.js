@@ -12,5 +12,7 @@ describe('scatter plot chart', function () {
             color:'color',
             size:'size'
         });
+        assert.ok(!schemes.scatterplot.errors(scatter.config.spec), 'spec right');
+
     })
 });
