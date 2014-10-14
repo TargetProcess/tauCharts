@@ -1,3 +1,6 @@
+/*! tauCharts - v0.0.1 - 2014-10-14
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed MIT */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
