@@ -49,6 +49,7 @@ export class Chart {
 
         //plugins
         layoutCanvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+        this._plugins.render(layoutCanvas);
     }
 
     _autoDetectDimensions(data) {

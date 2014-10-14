@@ -2,10 +2,12 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
-
+    <!--  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>-->
+    <script src="../libs/underscore.js"></script>
+    <script src="../libs/jquery.js"></script>
+    <script src="../libs/d3.js"></script>
     <!-- src -->
     <script src="../src/class.js"></script>
     <script src="../src/tau.data.js"></script>
@@ -69,14 +71,21 @@
             stroke: red;
             fill: red;
         }
+
         table {
             width: 100%;
         }
-        table td,table th {
+
+        table td, table th {
             padding: 10px;
-            border: 1px  solid #000000;
+            border: 1px solid #000000;
         }
-        .highClass {
+
+        tr {
+            cursor: pointer;
+        }
+
+        .highClass, tr:hover {
             background: #377eb8;
         }
     </style>
@@ -110,18 +119,65 @@
      */
     var Tooltip = {
 
-        init: function (keyValues){
-           this.keyValues = keyValues;
+        init: function (data) {
+            function generateTable(data) {
+                var headers = Object.keys(data[0]);
+                var rows = data.map(function (item, key) {
+                    var map = headers.map(function (key) {
+                        return item[key];
+                    });
+                    map['key'] = JSON.stringify(item);
+                    return map;
+                });
+                var $table = $('#table');
+                $table.empty();
+                var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
+                $table.append(rowHtml);
+                var keyValue = {};
+                var s = _.each(rows, function (arr, index) {
+                    var rowHtml = '<tr >';
+                    rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
+                    keyValue[arr.key] = {
+                        $el: $(rowHtml),
+                        index: index
+                    };
+
+
+                    $table.append(keyValue[arr.key].$el);
+                });
+
+
+                //debugger
+                return {
+                    keyValues: keyValue,
+                    $table: $table
+                };
+            }
+
+            var generateTable2 = generateTable(data);
+            this.keyValues = generateTable2.keyValues;
+            this.table = generateTable2.$table;
         },
         /**
          * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
         mouseover: function (context, tools) {
-            this.keyValues[JSON.stringify(context.datum)].addClass('highClass');
-           // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
+            this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
+            // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
         },
-
+        render: function (context) {
+            var $points = $(context.node()).find('circle');
+            this.table.find('tr')
+                    .on('mouseover', function () {
+                        $points.get(($(this).index() - 1)).classList.add('highlighted');
+                    })
+                    .on('mouseleave', function () {
+                        $points.each(function () {
+                            this.classList.remove('highlighted');
+                        });
+                    });
+        },
 
         /**
          * @param {ElementContext} context
@@ -170,13 +226,15 @@
             try {
                 drawChart();
             } catch (e) {
-
+                $('#chart-container').empty();
+                console.error(e);
             }
         });
         try {
             drawChart();
         } catch (e) {
-
+            $('#chart-container').empty();
+            console.error(e);
         }
 
         function drawChart() {
@@ -185,7 +243,7 @@
             var keyValues = generateTable(data);
             var chart = new m.tauChart.Scatterplot({
                 data: data,
-                plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(),  tau.plugins.tableHighlight(keyValues)],
+                plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
                 x: getFieldData($x),
                 y: getFieldData($y),
                 color: getFieldData($color),
@@ -221,7 +279,6 @@
                 keyValue[arr.key] = $(rowHtml);
                 $table.append(keyValue[arr.key]);
             });
-
 
 
             return keyValue;

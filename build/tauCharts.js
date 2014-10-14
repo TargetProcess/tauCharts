@@ -1003,6 +1003,7 @@
 
             //plugins
             layoutCanvas.selectAll('.i-role-datum').call(plugins$$propagateDatumEvents(this._plugins));
+            this._plugins.render(layoutCanvas);
         };
 
         proto$0._autoDetectDimensions = function(data) {
