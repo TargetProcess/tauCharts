@@ -1,7 +1,7 @@
 import {Chart} from './tau.chart';
 
 function convertAxis(data) {
-    if(!data) {
+    if (!data) {
         return null;
     }
     return {scaleDim: data};
@@ -11,13 +11,15 @@ export class Scatterplot extends Chart {
         var chartConfig = _.omit(config, 'spec');
         chartConfig.spec = {
             dimensions: config.dimensions,
-            unit:{
+            unit: {
                 type: 'COORDS.RECT',
                 x: convertAxis(config.x),
                 y: convertAxis(config.y),
-                guide: {
-                    padding: { l:24, b:24, r:24, t:24 },
-                    showGridLines: 'xy'
+                guide: config.guide || {
+                    padding: {l: 54, b: 24, r: 24, t: 24},
+                    showGridLines: 'xy',
+                    x: {label: config.x},
+                    y: {label: config.y}
                 },
                 unit: [
                     {
