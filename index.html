@@ -34,7 +34,6 @@
 
     <!-- css -->
     <link href="css/default.css" rel="stylesheet"/>
-    <link href="css/oldschool.css" rel="stylesheet"/>
     <link href="//fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
     <link href='//fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
           type='text/css'>
@@ -84,7 +83,7 @@
             .render("#chartScatter");
 
     var lineData = tau.data.Array(window.lineData);
-
+    lineData.push({effort:-1;})
     tau.charts
             .Line(lineData)
             .map({
