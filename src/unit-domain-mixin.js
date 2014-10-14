@@ -1,9 +1,14 @@
-var SCALE_STRATEGIES = {
-    'ordinal': (domain) => domain,
-    'linear': (domain) => d3.extent(domain)
-};
+var rangeMethods = {
 
-var getRangeMethod = (scaleType) => ((scaleType === 'ordinal') ? 'rangeRoundBands' : 'rangeRound');
+    'ordinal': (inputValues, interval) => {
+        return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
+    },
+
+    'linear': (inputValues, interval) => {
+        var domainParam = d3.extent(inputValues);
+        return d3.scale.linear().domain(domainParam).rangeRound(interval);
+    }
+};
 
 export class UnitDomainMixin {
 
@@ -17,13 +22,7 @@ export class UnitDomainMixin {
         this.fnScaleTo = (scaleDim, interval) => {
             var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
             var dimx = _.defaults(temp, meta[temp.scaleDim]);
-            var type = dimx.scaleType;
-            var vals = this.fnDomain(dimx.scaleDim);
-
-            var rangeMethod = getRangeMethod(type);
-            var domainParam = SCALE_STRATEGIES[type](vals);
-
-            return d3.scale[type]().domain(domainParam)[rangeMethod](interval, 0.1);
+            return rangeMethods[dimx.scaleType](this.fnDomain(dimx.scaleDim), interval);
         };
     }
 

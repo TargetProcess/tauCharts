@@ -34,8 +34,8 @@ describe("Unit domain decorator", function () {
     it("should decorate with [scaleTo] method", function () {
         var unit = decorator.mix({});
         var scaleProject = unit.scaleTo('project', [0, 10]);
-        expect(scaleProject('TP2')).to.equal(5);
-        expect(scaleProject('TP3')).to.equal(1);
+        expect(scaleProject('TP2')).to.equal(7.5);
+        expect(scaleProject('TP3')).to.equal(2.5);
 
         var scaleEffort = unit.scaleTo('effort', [0, 10]);
         expect(scaleEffort(0)).to.equal(0);

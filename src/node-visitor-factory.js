@@ -4,7 +4,7 @@ var TNodeVisitorFactory = (function () {
     var rotate = (angle) => 'rotate(' + angle + ')';
     var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
 
-    var fnDrawDimAxis = function (x, AXIS_POSITION) {
+    var fnDrawDimAxis = function (x, AXIS_POSITION, sectorSize) {
         var container = this;
         if (x.scaleDim) {
             var axisScale = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient);
@@ -20,6 +20,14 @@ var TNodeVisitorFactory = (function () {
                 .style('text-anchor', x.guide.textAnchor);
 
             if ('h' === getOrientation(x.guide.scaleOrient)) {
+
+                if (x.scaleType === 'ordinal') {
+                    nodeScale
+                        .selectAll('.tick line')
+                        .attr('x1', sectorSize / 2)
+                        .attr('x2', sectorSize / 2);
+                }
+
                 nodeScale
                     .append('text')
                     .attr('transform', rotate(x.guide.label.rotate))
@@ -30,6 +38,14 @@ var TNodeVisitorFactory = (function () {
                     .text(x.guide.label.text);
             }
             else {
+
+                if (x.scaleType === 'ordinal') {
+                    nodeScale
+                        .selectAll('.tick line')
+                        .attr('y1', -sectorSize / 2)
+                        .attr('y2', -sectorSize / 2);
+                }
+
                 nodeScale
                     .append('text')
                     .attr('transform', rotate(x.guide.label.rotate))
@@ -60,13 +76,26 @@ var TNodeVisitorFactory = (function () {
                 var x = node.x;
                 var xGridAxis = d3.svg.axis().scale(x.scale).orient(node.guide.x.scaleOrient).tickSize(H);
                 gridLines.append('g').call(xGridAxis);
+                if (x.scaleType === 'ordinal') {
+                    let sectorSize = W / node.domain(x.scaleDim).length;
+                    gridLines
+                        .selectAll('.tick line')
+                        .attr('x1', sectorSize / 2)
+                        .attr('x2', sectorSize / 2);
+                }
             }
 
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
                 var yGridAxis = d3.svg.axis().scale(y.scale).orient(node.guide.y.scaleOrient).tickSize(-W);
-
                 gridLines.append('g').call(yGridAxis);
+                if (y.scaleType === 'ordinal') {
+                    let sectorSize = H / node.domain(y.scaleDim).length;
+                    gridLines
+                        .selectAll('.tick line')
+                        .attr('y1', -sectorSize / 2)
+                        .attr('y2', -sectorSize / 2);
+                }
             }
 
             // TODO: make own axes and grid instead of using d3's in such tricky way
@@ -108,11 +137,13 @@ var TNodeVisitorFactory = (function () {
                 .attr('transform', translate(L, T));
 
             if (!node.x.guide.hide) {
-                fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
+                var domainXLength = node.domain(node.x.scaleDim).length;
+                fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength);
             }
 
             if (!node.y.guide.hide) {
-                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
+                var domainYLength = node.domain(node.y.scaleDim).length;
+                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength);
             }
 
             var grid = fnDrawGrid.call(container, node, H, W);
@@ -193,6 +224,7 @@ var TNodeVisitorFactory = (function () {
         'ELEMENT.INTERVAL': function (node) {
 
             var options = node.options || {};
+            var barWidth = options.width / (node.domain(node.x).length) - 8;
             options.xScale = node.scaleTo(node.x, [0, options.width]);
             options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
@@ -200,9 +232,9 @@ var TNodeVisitorFactory = (function () {
                 return this
                     .attr('class', 'i-role-datum  bar')
                     .attr('x', function (d) {
-                        return options.xScale(d[node.x]);
+                        return options.xScale(d[node.x]) - barWidth / 2;
                     })
-                    .attr('width', options.xScale.rangeBand())
+                    .attr('width', barWidth)
                     .attr('y', function (d) {
                         return options.yScale(d[node.y]);
                     })
@@ -273,11 +305,13 @@ var TNodeVisitorFactory = (function () {
                 .attr('transform', translate(L, T));
 
             if (options.showX && !node.x.guide.hide) {
-                fnDrawDimAxis.call(container, node.x, X_AXIS_POS);
+                var domainXLength = node.domain(node.x.scaleDim).length;
+                fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength);
             }
 
             if (options.showY && !node.y.guide.hide) {
-                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS);
+                var domainYLength = node.domain(node.y.scaleDim).length;
+                fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength);
             }
 
             var grid = container
