@@ -6,7 +6,7 @@ var rangeMethods = {
 
     'linear': (inputValues, interval) => {
         var domainParam = d3.extent(inputValues);
-        return d3.scale.linear().domain(domainParam).rangeRound(interval);
+        return d3.scale.linear().domain(domainParam).nice().rangeRound(interval, 1);
     }
 };
 

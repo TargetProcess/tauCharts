@@ -9,6 +9,7 @@ var applyNodeDefaults = (node) => {
     node.guide.x = _.defaults(node.guide.x || {}, {
         label: '',
         padding: 0,
+        density: 30,
         cssClass: 'x axis',
         scaleOrient: 'bottom',
         rotate: 0,
@@ -20,6 +21,7 @@ var applyNodeDefaults = (node) => {
     node.guide.y = _.defaults(node.guide.y || {}, {
         label: '',
         padding: 0,
+        density: 30,
         cssClass: 'y axis',
         scaleOrient: 'left',
         rotate: 0,

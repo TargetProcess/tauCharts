@@ -149,10 +149,14 @@
         var rotate = function(angle)  {return 'rotate(' + angle + ')'};
         var getOrientation = function(scaleOrient)  {return _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v'};
     
-        var fnDrawDimAxis = function (x, AXIS_POSITION, sectorSize) {
+        var fnDrawDimAxis = function (x, AXIS_POSITION, sectorSize, size) {
             var container = this;
             if (x.scaleDim) {
+    
                 var axisScale = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient);
+    
+                axisScale.ticks(_.max([Math.round(size / x.guide.density), 4]));
+    
                 var nodeScale = container
                     .append('g')
                     .attr('class', x.guide.cssClass)
@@ -220,6 +224,9 @@
                 if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                     var x = node.x;
                     var xGridAxis = d3.svg.axis().scale(x.scale).orient(node.guide.x.scaleOrient).tickSize(H);
+    
+                    xGridAxis.ticks(_.max([Math.round(W / node.guide.x.density), 4]));
+    
                     gridLines.append('g').call(xGridAxis);
                     if (x.scaleType === 'ordinal') {
                         var sectorSize = W / node.domain(x.scaleDim).length;
@@ -233,6 +240,9 @@
                 if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                     var y = node.y;
                     var yGridAxis = d3.svg.axis().scale(y.scale).orient(node.guide.y.scaleOrient).tickSize(-W);
+    
+                    yGridAxis.ticks(_.max([Math.round(H / node.guide.y.density), 4]));
+    
                     gridLines.append('g').call(yGridAxis);
                     if (y.scaleType === 'ordinal') {
                         var sectorSize$0 = H / node.domain(y.scaleDim).length;
@@ -283,12 +293,12 @@
     
                 if (!node.x.guide.hide) {
                     var domainXLength = node.domain(node.x.scaleDim).length;
-                    fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength);
+                    fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength, W);
                 }
     
                 if (!node.y.guide.hide) {
                     var domainYLength = node.domain(node.y.scaleDim).length;
-                    fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength);
+                    fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength, H);
                 }
     
                 var grid = fnDrawGrid.call(container, node, H, W);
@@ -451,12 +461,12 @@
     
                 if (options.showX && !node.x.guide.hide) {
                     var domainXLength = node.domain(node.x.scaleDim).length;
-                    fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength);
+                    fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength, W);
                 }
     
                 if (options.showY && !node.y.guide.hide) {
                     var domainYLength = node.domain(node.y.scaleDim).length;
-                    fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength);
+                    fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength, H);
                 }
     
                 var grid = container
@@ -556,7 +566,7 @@
     
         'linear': function(inputValues, interval)  {
             var domainParam = d3.extent(inputValues);
-            return d3.scale.linear().domain(domainParam).rangeRound(interval);
+            return d3.scale.linear().domain(domainParam).nice().rangeRound(interval, 1);
         }
     };
 
@@ -628,6 +638,7 @@
         node.guide.x = _.defaults(node.guide.x || {}, {
             label: '',
             padding: 0,
+            density: 30,
             cssClass: 'x axis',
             scaleOrient: 'bottom',
             rotate: 0,
@@ -639,6 +650,7 @@
         node.guide.y = _.defaults(node.guide.y || {}, {
             label: '',
             padding: 0,
+            density: 30,
             cssClass: 'y axis',
             scaleOrient: 'left',
             rotate: 0,

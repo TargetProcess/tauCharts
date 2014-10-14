@@ -137,7 +137,7 @@
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { l:54, b:28, r:8, t:8 },
+                        padding: { l:54, b:28, r:16, t:16 },
                         x: {padding: 8, label: ''},
                         y: {padding: 8, label: 'effort'}
                     },
@@ -250,8 +250,8 @@
         unit: {
             type: 'COORDS.RECT',
             guide: {
-                padding: { l:36, b:2, r:0, t:2 },
-                y: {label: '<h4>Projects</h4>'}
+                padding: { l:46, b:32, r:0, t:2 },
+                y: {label: 'Projects'}
             },
             x: null,
             y: 'project',
@@ -260,7 +260,7 @@
                     type: 'COORDS.RECT',
                     guide: {
                         padding: { l:120, b:4, r:8, t:4 },
-                        y: {label: '<h4>Teams</h4>'}
+                        y: {label: { text: 'Teams', padding: 100 }}
                     },
                     x: null,
                     y: 'team',
@@ -269,9 +269,9 @@
                             type: 'COORDS.RECT',
                             guide: {
                                 showGridLines: 'xy',
-                                padding: { l:36, b:20, r:8, t:4 },
-                                x: {label: '<h4>cycle time</h4>', padding: 4},
-                                y: {label: '<h4>effort</h4>', padding: 4}
+                                padding: { l:48, b:0, r:8, t:4 },
+                                x: {label: 'cycle time', padding: 4},
+                                y: {label: 'effort', padding: 4}
                             },
                             x: 'cycleTime',
                             y: 'effort',
@@ -279,8 +279,7 @@
                                 {
                                     type: 'ELEMENT.POINT',
                                     color: 'effort',
-                                    size: 'cycleTime',
-                                    shape: null
+                                    size: 'cycleTime'
                                 }
                             ]
                         }
@@ -336,7 +335,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#complex-container', {width: 800, height: 800});
+            }).renderTo('#complex-container', {width: 800, height: 1604});
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
