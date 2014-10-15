@@ -79,11 +79,13 @@ var TNodeVisitorFactory = (function () {
 
             if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                 var x = node.x;
-                var xGridAxis = d3.svg.axis().scale(x.scale).orient(node.guide.x.scaleOrient).tickSize(H);
+                var xGridAxis = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient).tickSize(H);
 
-                xGridAxis.ticks(_.max([Math.round(W / node.guide.x.density), 4]));
+                xGridAxis.ticks(_.max([Math.round(W / x.guide.density), 4]));
 
-                gridLines.append('g').call(xGridAxis);
+                var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x');
+                xGridLines.call(xGridAxis);
+
                 if (x.scaleType === 'ordinal') {
                     let sectorSize = W / node.domain(x.scaleDim).length;
                     gridLines
@@ -95,14 +97,15 @@ var TNodeVisitorFactory = (function () {
 
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
-                var yGridAxis = d3.svg.axis().scale(y.scale).orient(node.guide.y.scaleOrient).tickSize(-W);
+                var yGridAxis = d3.svg.axis().scale(y.scale).orient(y.guide.scaleOrient).tickSize(-W);
 
-                yGridAxis.ticks(_.max([Math.round(H / node.guide.y.density), 4]));
+                yGridAxis.ticks(_.max([Math.round(H / y.guide.density), 4]));
 
-                gridLines.append('g').call(yGridAxis);
+                var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y');
+                yGridLines.call(yGridAxis);
                 if (y.scaleType === 'ordinal') {
                     let sectorSize = H / node.domain(y.scaleDim).length;
-                    gridLines
+                    yGridLines
                         .selectAll('.tick line')
                         .attr('y1', -sectorSize / 2)
                         .attr('y2', -sectorSize / 2);

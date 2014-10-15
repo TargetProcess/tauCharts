@@ -58,6 +58,322 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
             .throw("Unknown unit type: ELEMENT.UNKNOWN");
     });
 
+    it("should render axes correctly (x:category, y:category)", function () {
+
+        var api = tauChart.__api__;
+        var reader = new api.DSLReader(
+            {
+                dimensions: {
+                    project: {scaleType: 'ordinal'},
+                    team: {scaleType: 'ordinal'},
+                    effort: {scaleType: 'linear'},
+                    cycleTime: {scaleType: 'linear'}
+                },
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'project',
+                    y: 'team',
+                    guide: {
+                        showGridLines: 'xy'
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            },
+            data);
+
+        var logicXGraph = reader.buildGraph();
+        var layoutGraph = reader.calcLayout(
+            logicXGraph,
+            api.LayoutEngineFactory.get('DEFAULT'),
+            {
+                width: 200,
+                height: 100
+            });
+
+        var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+
+        var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
+        expect(xAxisTickLines.length).to.equal(2);
+        xAxisTickLines.forEach(function(el) {
+            var expectedXCoord = '50';
+            expect(el.getAttribute('x1')).to.equal(expectedXCoord);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoord);
+        });
+
+        var yAxisTickLines = layoutCanvas.selectAll('.cell .y.axis .tick line')[0];
+        expect(yAxisTickLines.length).to.equal(2);
+        yAxisTickLines.forEach(function(el) {
+            var expectedYCoord = '-25';
+            expect(el.getAttribute('y1')).to.equal(expectedYCoord);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoord);
+        });
+
+        var xGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-x .tick line')[0];
+        expect(xGridTickLines.length).to.equal(2);
+        xGridTickLines.forEach(function(el) {
+            var expectedXCoords = '50';
+            expect(el.getAttribute('x1')).to.equal(expectedXCoords);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoords);
+
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal('100');
+        });
+
+        var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
+        expect(yGridTickLines.length).to.equal(2);
+        yGridTickLines.forEach(function(el) {
+            var expectedYCoords = '-25';
+
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal('200');
+
+            expect(el.getAttribute('y1')).to.equal(expectedYCoords);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoords);
+        });
+    });
+
+    it("should render axes correctly (x:quantitative, y:category)", function () {
+
+        var api = tauChart.__api__;
+        var reader = new api.DSLReader(
+            {
+                dimensions: {
+                    project: {scaleType: 'ordinal'},
+                    team: {scaleType: 'ordinal'},
+                    effort: {scaleType: 'linear'},
+                    cycleTime: {scaleType: 'linear'}
+                },
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'effort',
+                    y: 'team',
+                    guide: {
+                        showGridLines: 'xy',
+                        x: { density: 40 }
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            },
+            data);
+
+        var logicXGraph = reader.buildGraph();
+        var layoutGraph = reader.calcLayout(
+            logicXGraph,
+            api.LayoutEngineFactory.get('DEFAULT'),
+            {
+                width: 200,
+                height: 100
+            });
+
+        var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+
+        var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
+        expect(xAxisTickLines.length).to.equal(5);
+        xAxisTickLines.forEach(function(el) {
+            var expectedXCoord = '0';
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoord);
+        });
+
+        var yAxisTickLines = layoutCanvas.selectAll('.cell .y.axis .tick line')[0];
+        expect(yAxisTickLines.length).to.equal(2);
+        yAxisTickLines.forEach(function(el) {
+            var expectedYCoord = '-25';
+            expect(el.getAttribute('y1')).to.equal(expectedYCoord);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoord);
+        });
+
+        var xGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-x .tick line')[0];
+        expect(xGridTickLines.length).to.equal(5);
+        xGridTickLines.forEach(function(el) {
+            var expectedXCoords = '0';
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoords);
+
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal('100');
+        });
+
+        var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
+        expect(yGridTickLines.length).to.equal(2);
+        yGridTickLines.forEach(function(el) {
+            var expectedYCoords = '-25';
+
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal('200');
+
+            expect(el.getAttribute('y1')).to.equal(expectedYCoords);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoords);
+        });
+    });
+
+    it("should render axes correctly (x:category, y:quantitative)", function () {
+
+        var api = tauChart.__api__;
+        var reader = new api.DSLReader(
+            {
+                dimensions: {
+                    project: {scaleType: 'ordinal'},
+                    team: {scaleType: 'ordinal'},
+                    effort: {scaleType: 'linear'},
+                    cycleTime: {scaleType: 'linear'}
+                },
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'team',
+                    y: 'effort',
+                    guide: {
+                        showGridLines: 'xy',
+                        y: { density: 20 }
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            },
+            data);
+
+        var logicXGraph = reader.buildGraph();
+        var layoutGraph = reader.calcLayout(
+            logicXGraph,
+            api.LayoutEngineFactory.get('DEFAULT'),
+            {
+                width: 200,
+                height: 100
+            });
+
+        var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+
+        var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
+        expect(xAxisTickLines.length).to.equal(2);
+        xAxisTickLines.forEach(function(el) {
+            var expectedXCoord = '50';
+            expect(el.getAttribute('x1')).to.equal(expectedXCoord);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoord);
+        });
+
+        var yAxisTickLines = layoutCanvas.selectAll('.cell .y.axis .tick line')[0];
+        expect(yAxisTickLines.length).to.equal(5);
+        yAxisTickLines.forEach(function(el) {
+            var expectedYCoord = '0';
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoord);
+        });
+
+        var xGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-x .tick line')[0];
+        expect(xGridTickLines.length).to.equal(2);
+        xGridTickLines.forEach(function(el) {
+            var expectedXCoords = '50';
+            expect(el.getAttribute('x1')).to.equal(expectedXCoords);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoords);
+
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal('100');
+        });
+
+        var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
+        expect(yGridTickLines.length).to.equal(5);
+        yGridTickLines.forEach(function(el) {
+            var expectedYCoords = '0';
+
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal('200');
+
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoords);
+        });
+    });
+
+    it("should render axes correctly (x:quantitative, y:quantitative)", function () {
+
+        var api = tauChart.__api__;
+        var reader = new api.DSLReader(
+            {
+                dimensions: {
+                    project: {scaleType: 'ordinal'},
+                    team: {scaleType: 'ordinal'},
+                    effort: {scaleType: 'linear'},
+                    cycleTime: {scaleType: 'linear'}
+                },
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'cycleTime',
+                    y: 'effort',
+                    guide: {
+                        showGridLines: 'xy',
+                        x: { density: 100 },
+                        y: { density: 50 }
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            },
+            data);
+
+        var logicXGraph = reader.buildGraph();
+        var layoutGraph = reader.calcLayout(
+            logicXGraph,
+            api.LayoutEngineFactory.get('DEFAULT'),
+            {
+                width: 200,
+                height: 100
+            });
+
+        var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+
+        var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
+        expect(xAxisTickLines.length).to.equal(5);
+        xAxisTickLines.forEach(function(el) {
+            var expectedXCoord = '0';
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoord);
+        });
+
+        var yAxisTickLines = layoutCanvas.selectAll('.cell .y.axis .tick line')[0];
+        expect(yAxisTickLines.length).to.equal(5);
+        yAxisTickLines.forEach(function(el) {
+            var expectedYCoord = '0';
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoord);
+        });
+
+        var xGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-x .tick line')[0];
+        expect(xGridTickLines.length).to.equal(5);
+        xGridTickLines.forEach(function(el) {
+            var expectedXCoords = '0';
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal(expectedXCoords);
+
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal('100');
+        });
+
+        var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
+        expect(yGridTickLines.length).to.equal(5);
+        yGridTickLines.forEach(function(el) {
+            var expectedYCoords = '0';
+
+            expect(el.getAttribute('x1')).to.equal(null);
+            expect(el.getAttribute('x2')).to.equal('200');
+
+            expect(el.getAttribute('y1')).to.equal(null);
+            expect(el.getAttribute('y2')).to.equal(expectedYCoords);
+        });
+    });
+
     it("should calc layout for logical graph (- split)", function () {
 
         var api = tauChart.__api__;
