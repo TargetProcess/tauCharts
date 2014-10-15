@@ -14,15 +14,30 @@ export class UnitDomainMixin {
 
     constructor(meta, data) {
 
-        this.fnSource = (whereFilter) => _(data).where(whereFilter || {});
+        var getIdMapper = (dim) => {
+            var d = meta[dim] || {};
+            return d.id || ((x) => x);
+        };
 
-        // TODO: memoize
-        this.fnDomain = (dim) => _(data).chain().pluck(dim).uniq().value();
+        this.fnSource = (whereFilter) => {
+
+            var predicates = _.map(
+                whereFilter,
+                (v, k) => (row) => getIdMapper(k)(row[k]) === v);
+
+            return _(data).filter((row) => _.every(predicates, ((p) => p(row))));
+        };
+
+        this.fnDomain = (dim, fnNameMapper) => {
+            var fnMapperId = getIdMapper(dim);
+            var fnMapperName = fnNameMapper || fnMapperId;
+            return _(data).chain().pluck(dim).uniq(fnMapperId).map(fnMapperName).value();
+        };
 
         this.fnScaleTo = (scaleDim, interval) => {
             var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
             var dimx = _.defaults(temp, meta[temp.scaleDim]);
-            return rangeMethods[dimx.scaleType](this.fnDomain(dimx.scaleDim), interval);
+            return rangeMethods[dimx.scaleType](this.fnDomain(dimx.scaleDim, dimx.name), interval);
         };
     }
 

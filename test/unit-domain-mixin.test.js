@@ -1,9 +1,9 @@
 describe("Unit domain decorator", function () {
 
     var data = [
-        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3"},
-        {"effort": 0.0000, "name": "Follow", "team": "Alaska", "project": "TP2"},
-        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2"}
+        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": { id: 1, name: 'low'}},
+        {"effort": 0.0000, "name": "Follow", "team": "Alaska", "project": "TP2", "priority": { id: 2, name: 'medium'}},
+        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": { id: 3, name: 'high'}}
     ];
 
     var decorator;
@@ -12,7 +12,12 @@ describe("Unit domain decorator", function () {
             {
                 project: {scaleType: 'ordinal'},
                 team: {scaleType: 'ordinal'},
-                effort: {scaleType: 'linear'}
+                effort: {scaleType: 'linear'},
+                priority: {
+                    scaleType: 'ordinal',
+                    id: function(x) { return x.id },
+                    name: function(x) { return x.name }
+                }
             },
             data);
     });
@@ -21,6 +26,7 @@ describe("Unit domain decorator", function () {
         var unit = decorator.mix({});
         expect(unit.source().length).to.equal(3);
         expect(unit.source({ project: 'TP2' }).length).to.equal(2);
+        expect(unit.source({ priority: 1 }).length).to.equal(1);
     });
 
     it("should decorate with [domain] method", function () {
@@ -29,6 +35,8 @@ describe("Unit domain decorator", function () {
         expect(unit.domain('team').sort()).to.deep.equal(['Alaska', 'Exploited']);
         expect(unit.domain('name').sort()).to.deep.equal(['Errors', 'Follow', 'Report']);
         expect(unit.domain('effort').sort()).to.deep.equal([0, 1, 2]);
+
+        expect(unit.domain('priority')).to.deep.equal([1, 2, 3]);
     });
 
     it("should decorate with [scaleTo] method", function () {
