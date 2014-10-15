@@ -15,129 +15,48 @@ Usage:
 
 see [prototype](https://github.com/TargetProcess/tauCharts/tree/master/prototype) for examples of usage
 
-example
-scatterplot
-```javascript
- var scatter = {
-        container: '#simple-container',
-        W: 800,
-        H: 800,
-        dimensions: {
-            project: { scaleType: 'ordinal' },
-            team: { scaleType: 'ordinal' },
-            cycleTime: { scaleType: 'linear' },
-            effort: { scaleType: 'linear' }
-        },
-        unit: {
-            type: 'COORDS.RECT',
-            showGridLines: 'xy',
-            padding: { L:36, B:36, R:8, T:8 },
-            axes: [
-                {
-                    scaleDim: 'cycleTime',
-                    scaleType: 'linear',
-                    label: '<h4>cycle time</h4>',
-                    padding: 8,
-                    bubble: true
-                },
-                {
-                    scaleDim: 'effort',
-                    scaleType: 'linear',
-                    label: '<h4>effort</h4>',
-                    padding: 8,
-                    bubble: true
-                }
-            ],
-            unit: [
-                {
-                    type: 'ELEMENT.POINT',
-                    x: 'cycleTime',
-                    y: 'effort',
-                    color: 'effort',
-                    size: 'cycleTime',
-                    shape: null
-                }
-            ]
-        }
-    };
-    var chart = new tauChart.Chart({data: data, spec: scatter, plugins: [tau.plugins.tooltip('team', 'count', 'month'), tau.plugins.highlighter()]});
+##Custom colors for encoding color value 
+You can set custom colors for encoding color value or use bundles some fantastic categorical color scales by [http://colorbrewer2.org/](Cynthia Brewer).
+If you want use colorbrewer, you should include following code in your pages
+```HTML
+ <link href="path_to_tauCharts/css/colorbrewer.css" rel="stylesheet"/>
+ <script src="path_to_tauCharts/src/addons/color-brewer.js"></script>
 ```
-or alias
+and for define color should use 
 ```javascript
-     var chart = new m.tauChart.Scatterplot({
-                    container: '#chart-container',
-                    width: 600,
-                    height: 600,
-                    data: JSON.parse($data.val()),
-                    plugins: [tau.plugins.tooltip('team', 'effort', 'team','count'), tau.plugins.highlighter()],
-                    x: getFieldData($x),
-                    y: getFieldData($y),
-                    color: getFieldData($color),
-                    size: getFieldData($size)
-                });
+var spec = {
+  unit:[{
+       type: 'ELEMENT.INTERVAL',
+       x: 'month',
+       y: 'count',
+       color: {dimension:'team', brewer:tauBrewer(YlGnBu,9)}
+   }]
+};
 ```
-Composite and facet
+if you want use custom bandles you can define following method
 ```javascript
-var def = {
-            container: '#bars-container',
-            W: 800,
-            H: 800,
-            dimensions: {
-                month: { scaleType: 'ordinal' },
-                project: { scaleType: 'ordinal' },
-                team: { scaleType: 'ordinal' },
-                cycleTime: { scaleType: 'linear' },
-                effort: { scaleType: 'linear' },
-                count: { scaleType: 'linear' }
-            },
-            unit: {
-                type: 'COORDS.RECT',
-                func: 'CROSS',
-                padding: { L:80, B:8, R:8, T:8 },
-                axes: [
-                    null,
-                    {scaleDim: 'team', scaleType: 'ordinal', label: '<h4>Teams</h4>', rotate: 45}
-                ],
-                unit: [
-                    {
-                        type: 'COORDS.RECT',
-                        padding: { L:36, B:24, R:8, T:8 },
-                        showGridLines: 'xy',
-                        axes: [
-                            {scaleDim: 'month', scaleType: 'ordinal', label: '<h4>effort</h4>'},
-                            {scaleDim: 'count', scaleType: 'linear', label: '<h4>cycle time</h4>'}
-                        ],
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT',
-                                x: 'month',
-                                y: 'count',
-                                color: null,
-                                size: null,
-                                shape: null
-                            },
-                            {
-                                type: 'ELEMENT.INTERVAL',
-                                x: 'month',
-                                y: 'count',
-                                color: null,
-                                size: null,
-                                shape: null
-                            },
-                            {
-                                type: 'ELEMENT.LINE',
-                                x: 'month',
-                                y: 'count',
-                                color: null,
-                                size: null,
-                                shape: null
-                            }
-                        ]
-                    }
-                ]
-            }
-        };
-
-        var chart = new tauChart.Chart({data: data, spec: def});
+var spec = {
+  unit:[{
+       type: 'ELEMENT.INTERVAL',
+       x: 'month',
+       y: 'count',
+       color: {dimension:'team', brewer:['myColorCssClass1','myColorCssClass2','myColorCssClass3']}
+   }]
+};
 ```
-
+or if you want have mapping from your domain
+```javascript
+var spec = {
+  unit:[{
+       type: 'ELEMENT.INTERVAL',
+       x: 'month',
+       y: 'count',
+       color: {dimension:'team', brewer:{
+        NewTeam:'myColorCssClass1',
+        Alaska:'myColorCssClass2',
+        oldTeam:'myColorCssClass3'
+       }
+       }
+   }]
+};
+```
