@@ -41,6 +41,7 @@
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
+    <link href="../css/colorbrewer.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
           type='text/css'>
@@ -102,7 +103,8 @@
     <label>x<input id="x" type="text"/></label><br/><br/>
     <label>y <input id="y" type="text"/></label><br/><br/>
     <label> color <input id="color" type="text"/></label><br/><br/>
-    "String" or <a id="colorSettings">"{dimension: 'team',domain: ['d', 'k', 'l'],range: ['red', 'green', 'blue']}"</a>
+    "String" or <a id="colorSettings">"{dimension: 'team', brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}}"</a>
+    <label for="brewer">Use brewer<input style="width:20px" id="brewer" type="checkbox"/></label> <label for="hue">Hue<input style="width:50px" id="hue" type="text"/></label> <label for="number">Number<input style="width:50px" id="number" type="number"/></label>
     <br/><br/>
     <label>size <input id="size" type="text"/></label><br/><br/>
 </div>
@@ -220,8 +222,7 @@
         $('#colorSettings').click(function () {
             return $color.val(JSON.stringify({
                 dimension: 'team',
-                domain: ['d', 'k', 'l'],
-                range: ['red', 'green', 'blue']
+                brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
             }))
         });
         $('textarea,input').on('input', function () {
@@ -242,13 +243,18 @@
         function drawChart() {
             var data = JSON.parse($data.val());
             $('#chart-container').empty();
-            var keyValues = generateTable(data);
+            var color;
+            if ($('#brewer').prop('checked')) {
+                color = {dimension: getFieldData($color), brewer: tauBrewer(getFieldData($('#hue')),getFieldData($('#number')))}
+            } else {
+                color = getFieldData($color)
+            }
             var chart = new m.tauChart.Scatterplot({
                 data: data,
                 plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
                 x: getFieldData($x),
                 y: getFieldData($y),
-                color: getFieldData($color),
+                color: color,
                 size: getFieldData($size)
             });
 
