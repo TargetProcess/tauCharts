@@ -8,8 +8,8 @@
   },
   "licenses": [
     {
-      "type": "MIT",
-      "url": "https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt"
+      "type": "Creative Commons",
+      "url": "https://github.com/TargetProcess/tauCharts/blob/master/LICENSE.txt"
     }
   ],
   "dependencies": {
