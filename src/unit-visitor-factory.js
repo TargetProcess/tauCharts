@@ -1,4 +1,4 @@
-import {Utils} from './utils';
+import {utils} from './utils';
 import {TMatrix} from './matrix';
 
 var TUnitVisitorFactory = (function () {
@@ -51,7 +51,7 @@ var TUnitVisitorFactory = (function () {
                 var cellNodes = _(root.unit).map((sUnit) => {
                     return _.extend(
                         _.defaults(
-                            Utils.clone(sUnit),
+                            utils.clone(sUnit),
                             {
                                 x: root.x.scaleDim,
                                 y: root.y.scaleDim

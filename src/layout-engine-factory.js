@@ -1,4 +1,4 @@
-import {Utils} from './utils';
+import {utils} from './utils';
 import {TMatrix} from './matrix';
 
 var applyNodeDefaults = (node) => {
@@ -122,7 +122,7 @@ var LayoutEngineTypeMap = {
                     subNodes.forEach((subNode) => {
                         var node = applyNodeDefaults(subNode);
                         if (node.$matrix) {
-                            var axis = _.extend(Utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
+                            var axis = _.extend(utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
                             axesMap.push(axis);
 
                             node.guide.padding.l = 0;
@@ -141,7 +141,7 @@ var LayoutEngineTypeMap = {
 
             var wrapperNode = applyNodeDefaults({
                 type: 'WRAP.MULTI_AXES',
-                options: Utils.clone(root.options),
+                options: utils.clone(root.options),
                 x: {},
                 y: {},
                 $matrix: new TMatrix([[[root]]])

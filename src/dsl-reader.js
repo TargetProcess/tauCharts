@@ -1,4 +1,4 @@
-import {Utils} from './utils';
+import {utils} from './utils';
 import {TMatrix} from './matrix';
 import {TUnitVisitorFactory} from './unit-visitor-factory';
 import {TNodeVisitorFactory} from './node-visitor-factory';
@@ -7,7 +7,7 @@ import {UnitDomainMixin} from './unit-domain-mixin';
 export class DSLReader {
 
     constructor (spec, data) {
-        this.spec = Utils.clone(spec);
+        this.spec = utils.clone(spec);
         this.domain = new UnitDomainMixin(this.spec.dimensions, data);
     }
 

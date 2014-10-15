@@ -14,6 +14,7 @@ module.exports = function(config) {
             'libs/js-schema.js',
             'libs/d3.js',
             'build/tauCharts.js',
+            'src/addons/color-brewer.js',
             'test/*.js'
         ],
         // test results reporter to use

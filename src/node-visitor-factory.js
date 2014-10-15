@@ -1,3 +1,4 @@
+import {utils} from './utils';
 var TNodeVisitorFactory = (function () {
 
     var translate = (left, top) => 'translate(' + left + ',' + top + ')';
@@ -180,14 +181,19 @@ var TNodeVisitorFactory = (function () {
             options.yScale = node.scaleTo(node.y, [options.height, 0]);
 
             var range, domain, colorDim;
-            colorDim = node.color;
-            if (_.isObject(node.color)) {
-                range = node.color.range || defaultRange;
-                domain = node.color.domain || getDefaultDomain();
-                colorDim = node.color.dimension;
-            } else {
+            var colorParam = node.color || '';
+            colorDim = colorParam;
+            if (utils.type(colorParam) === 'string') {
                 range = defaultRange;
                 domain = getDefaultDomain();
+            } else if (utils.isArray(colorParam.brewer)) {
+                range = colorParam.brewer;
+                domain = colorParam.domain || getDefaultDomain();
+                colorDim = colorParam.dimension;
+            } else {
+                domain = Object.keys(colorParam.brewer);
+                range = domain.map((key) => colorParam.brewer[key]);
+                colorDim = colorParam.dimension;
             }
             var color = d3.scale
                 .ordinal()

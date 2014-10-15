@@ -33,6 +33,7 @@ module.exports = function (grunt) {
                     '!tau.svg.js',
                     '!charts/line.js',
                     '!charts/scatterplot.js',
+                    '!addons/*.js',
                     '!tau.charts.js',
                     '!class.js',
                     '!tau.data.js',

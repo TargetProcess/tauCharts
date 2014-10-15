@@ -45,7 +45,7 @@ describe("Point element with all params", function () {
             data: testData
         });
         chart.renderTo(element, {width: 800, height: 800});
-        if(schemes.scatterplot(chart.config.spec) ) {
+        if (schemes.scatterplot(chart.config.spec)) {
             throw new Error('spec is broken')
         }
 
@@ -127,45 +127,8 @@ describe("Point element without color and size params", function () {
         assert.equal(size1, size2, 'size should same');
     });
 });
-describe("Point element color was presented as object without domain and range", function () {
-    var element;
 
-    beforeEach(function () {
-        element = document.createElement('div');
-        document.body.appendChild(element);
-        new tauChart.Chart({
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
-                    unit: [
-                        {
-                            type: 'ELEMENT.POINT',
-                            x: 'x',
-                            y: 'y',
-                            color: {dimension: 'color'}
-                        }
-                    ]
-                }
-            },
-            data: testData
-        }).renderTo(element, {width: 800, height: 800});
-    });
-    afterEach(function () {
-        element.parentNode.removeChild(element);
-    });
-
-    it("should render point with right color", function () {
-        var dots = getDots();
-        var size1 = attrib(dots[0], 'class');
-        var size2 = attrib(dots[1], 'class');
-        var size3 = attrib(dots[2], 'class');
-        assert.equal(size2, size3, 'size should same');
-        assert.notEqual(size1, size2, 'size shouldn\'t same');
-    });
-});
-describe("Point element color was presented as object with domain and range", function () {
+describe("Point element color was presented  with brewer as object", function () {
     var element;
     beforeEach(function () {
         element = document.createElement('div');
@@ -183,8 +146,11 @@ describe("Point element color was presented as object with domain and range", fu
                             y: 'y',
                             color: {
                                 dimension: 'color',
-                                domain: ['red', 'green', 'blue'],
-                                range: ['red', 'green', 'blue']
+                                brewer: {
+                                    red: 'red',
+                                    green: 'green',
+                                    blue: 'blue'
+                                }
                             }
                         }
                     ]
@@ -203,5 +169,45 @@ describe("Point element color was presented as object with domain and range", fu
         assert.ok(hasClass(dots[1], 'green'), 'has green class');
         assert.ok(hasClass(dots[2], 'green'), 'has green class');
         assert.ok(hasClass(dots[3], 'blue'), 'has blue class');
+    });
+});
+
+describe("Point element color was presented  with brewer as array", function () {
+    var element;
+    beforeEach(function () {
+        element = document.createElement('div');
+        document.body.appendChild(element);
+        new tauChart.Chart({
+            spec: {
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: {scaleDim: 'x'},
+                    y: {scaleDim: 'y'},
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT',
+                            x: 'x',
+                            y: 'y',
+                            color: {
+                                dimension: 'color',
+                                brewer: tauBrewer('YlGn', 3)
+                            }
+                        }
+                    ]
+                }
+            },
+            data: testData.concat({x: 3, y: 3, color: 'blue', size: 8})
+        }).renderTo(element, {width: 800, height: 800});
+    });
+    afterEach(function () {
+        element.parentNode.removeChild(element);
+    });
+
+    it("should render point with right color", function () {
+       var dots = getDots();
+       assert.ok(hasClass(dots[0], 'YlGn q1-3'), 'has brewer class');
+       assert.ok(hasClass(dots[1], 'YlGn q2-3'), 'has brewer class');
+       assert.ok(hasClass(dots[2], 'YlGn q2-3'), 'has brewer class');
+       assert.ok(hasClass(dots[3], 'YlGn q0-3'), 'has brewer class');
     });
 });
