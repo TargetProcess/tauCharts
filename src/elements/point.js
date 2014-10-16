@@ -32,7 +32,7 @@ var point = function (node) {
                 return s;
             })
             .attr('class', function (d) {
-                return 'dot i-role-datum ' + color(d);
+                return 'dot i-role-datum ' + color.get(d[color.dimension]);
             })
             .attr('cx', function (d) {
                 return options.xScale(d[node.x]);

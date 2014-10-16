@@ -133,12 +133,15 @@ var generateColor = function (node) {
         range = domain.map((key) => colorParam.brewer[key]);
         colorDim = colorParam.dimension;
     }
-    return (d) => {
-       return d3.scale
-            .ordinal()
-            .range(range)
-            .domain(domain)(d[colorDim]);
-    };
+    return {
+        get: (d) => {
+            return d3.scale
+                .ordinal()
+                .range(range)
+                .domain(domain)(d);
+        },
+        dimension:colorDim
+    }
 };
 /* jshint ignore:start */
 var utilsDraw = {

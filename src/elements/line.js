@@ -4,15 +4,17 @@ var line = function (node) {
     var options = node.options || {};
     options.xScale = node.scaleTo(node.x, [0, options.width]);
     options.yScale = node.scaleTo(node.y, [options.height, 0]);
+    var color = utilsDraw.generateColor(node);
     var categories = d3.nest()
         .key(function(d){
-            return node.color && d[node.color];
+            return d[color.dimension];
         })
         .entries(node.partition());
-    var color = utilsDraw.generateColor(node);
+
+
     var updateLines = function () {
         this.attr('class', function(d){
-            return 'line ' + color(d);
+            return 'line ' + color.get(d.key);
         });
         var paths = this.selectAll('path').data(function (d) {
             return [d.values];
