@@ -11,7 +11,10 @@ describe("Unit domain decorator", function () {
         decorator = new tauChart.__api__.UnitDomainMixin(
             {
                 project: {scaleType: 'ordinal'},
-                team: {scaleType: 'ordinal'},
+                team: {
+                    scaleType: 'ordinal',
+                    sort: 1
+                },
                 effort: {scaleType: 'linear'},
                 priority: {
                     scaleType: 'ordinal',
@@ -21,14 +24,14 @@ describe("Unit domain decorator", function () {
                 },
                 'business value': {
                     scaleType: 'ordinal',
-                    id: function(x) { return x.value },
-                    name: function(x) { return x.title },
-                    sort: 1
+                    id: 'value',
+                    name: 'title',
+                    sort: 'ASC'
                 },
                 role: {
                     scaleType: 'ordinal',
                     index: ['Product Owner', 'Feature Owner', 'QA', 'Developer'],
-                    sort: -1
+                    sort: 'desc'
                 }
             },
             data);
@@ -45,7 +48,7 @@ describe("Unit domain decorator", function () {
     it("should decorate with [domain] method", function () {
         var unit = decorator.mix({});
         expect(unit.domain('project').sort()).to.deep.equal(['TP2', 'TP3']);
-        expect(unit.domain('team').sort()).to.deep.equal(['Alaska', 'Exploited']);
+        expect(unit.domain('team')).to.deep.equal(['Alaska', 'Exploited']);
         expect(unit.domain('name').sort()).to.deep.equal(['Errors', 'Follow', 'Report']);
         expect(unit.domain('effort').sort()).to.deep.equal([0, 1, 2]);
 

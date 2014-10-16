@@ -16,12 +16,21 @@ export class UnitDomainMixin {
 
         var getIdMapper = (dim) => {
             var d = meta[dim] || {};
-            return d.id || ((x) => x);
+            var prop = d.id || ((x) => x);
+            return _.isFunction(prop) ? prop : ((row) => row[prop]);
+        };
+
+        var sortAliases = {
+            asc: 1,
+            desc: -1,
+            '-1': -1,
+            '1': 1
         };
 
         var getSortOrder = (dim) => {
             var d = meta[dim] || {};
-            return d.sort || 0;
+            var s = (d.sort || '').toString().toLowerCase();
+            return sortAliases[s] || 0;
         };
 
         var getIndex = (dim) => {

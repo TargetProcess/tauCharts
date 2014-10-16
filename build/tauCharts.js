@@ -610,12 +610,21 @@
     
             var getIdMapper = function(dim)  {
                 var d = meta[dim] || {};
-                return d.id || (function(x)  {return x});
+                var prop = d.id || (function(x)  {return x});
+                return _.isFunction(prop) ? prop : (function(row)  {return row[prop]});
+            };
+    
+            var sortAliases = {
+                asc: 1,
+                desc: -1,
+                '-1': -1,
+                '1': 1
             };
     
             var getSortOrder = function(dim)  {
                 var d = meta[dim] || {};
-                return d.sort || 0;
+                var s = (d.sort || '').toString().toLowerCase();
+                return sortAliases[s] || 0;
             };
     
             var getIndex = function(dim)  {
