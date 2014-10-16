@@ -6,8 +6,8 @@ function convertAxis(data) {
     }
     return {scaleDim: data};
 }
-export class Scatterplot extends Chartillo {
-    convertConfig(config) {
+var typesChart = {
+    'scatterplot': (config)=> {
         var chartConfig = _.omit(config, 'spec');
         chartConfig.spec = {
             dimensions: config.dimensions,
@@ -34,5 +34,11 @@ export class Scatterplot extends Chartillo {
 
         };
         return chartConfig;
+    }
+};
+
+export class Chart extends Chartillo {
+    convertConfig(config) {
+        return typesChart[config.type](config);
     }
 }

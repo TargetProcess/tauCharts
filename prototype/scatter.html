@@ -251,6 +251,7 @@
             }
             var chart = new m.tauChart.Chart({
                 data: data,
+                type:'scatterplot',
                 plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
                 x: getFieldData($x),
                 y: getFieldData($y),

@@ -6,6 +6,7 @@ describe('scatter plot chart', function () {
     ];
     it('should convert to common config', function () {
         var scatter = new tauChart.Chart({
+            type:'scatterplot',
             data:testData,
             x:'x',
             y:'y',
