@@ -367,7 +367,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#chart-container', {width: 800, height: 800});
+            }).renderTo('#chart-container');
 
     new tauChart.Plot(
             {
@@ -377,7 +377,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#chart-priority-container', {width: 800, height: 800});
+            }).renderTo('#chart-priority-container');
 
     new tauChart.Plot(
             {
@@ -388,7 +388,7 @@
                     tau.plugins.tooltip('name', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#facet-of-facets-container', {width: 800, height: 800});
+            }).renderTo('#facet-of-facets-container');
 
     var scatterChart = new tauChart.Plot(
             {
@@ -398,7 +398,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#simple-container', {width: 800, height: 800});
+            }).renderTo('#simple-container');
 
     var complexChart = new tauChart.Plot(
             {
@@ -408,7 +408,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#complex-container', {width: 800, height: 1604});
+            }).renderTo('#complex-container');
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
@@ -464,7 +464,7 @@
                         tau.plugins.tooltip('team', 'count', 'month'),
                         tau.plugins.highlighter()
                     ]
-                }).renderTo('#bars-container', {width: 800, height: 800});
+                }).renderTo('#bars-container');
     });
 
 </script>

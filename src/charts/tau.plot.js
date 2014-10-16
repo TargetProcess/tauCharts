@@ -29,23 +29,26 @@ export class Plot {
 
     renderTo(target, xSize) {
 
-        var size = xSize || {};
         var container = d3.select(target);
+        var containerNode = container[0][0];
 
-        var h = size.hasOwnProperty('height') ? size.height : container.offsetHeight;
-        var w = size.hasOwnProperty('width') ? size.width : container.offsetWidth;
+        var size = _.defaults(xSize || {}, {
+            height : containerNode.offsetHeight,
+            width : containerNode.offsetWidth
+        });
 
         var layoutXGraph = this.reader.calcLayout(
             this.graph,
             LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES'),
-            {
-                width: w,
-                height: h
-            });
+            size);
 
         var layoutCanvas = this.reader.renderGraph(
             layoutXGraph,
-            container.append("svg").style("border", 'solid 1px').attr("width", w).attr("height", h));
+            container
+                .append("svg")
+                .style("border", 'solid 1px')
+                .attr("width", size.width)
+                .attr("height", size.height));
 
         //plugins
         layoutCanvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
