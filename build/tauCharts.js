@@ -304,7 +304,7 @@
                     .domain(domain)(d);
             },
             dimension:colorDim
-        }
+        };
     };
     /* jshint ignore:start */
     var utils$utils$draw$$utilsDraw = {

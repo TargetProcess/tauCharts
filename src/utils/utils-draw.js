@@ -141,7 +141,7 @@ var generateColor = function (node) {
                 .domain(domain)(d);
         },
         dimension:colorDim
-    }
+    };
 };
 /* jshint ignore:start */
 var utilsDraw = {
