@@ -1,9 +1,9 @@
 describe("Unit domain decorator", function () {
 
     var data = [
-        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}},
-        {"effort": 0.0000, "name": "Follow", "team": "Alaska"   , "project": "TP2", "priority": {id:2, name:'medium'}, "business value": {value:1, title:'Nice to have'}},
-        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}}
+        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}   , role:'Feature Owner'},
+        {"effort": 0.0000, "name": "Follow", "team": "Alaska"   , "project": "TP2", "priority": {id:2, name:'medium'}, "business value": {value:1, title:'Nice to have'}, role:'Some Unknown role'},
+        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}, role:'QA'}
     ];
 
     var decorator;
@@ -24,6 +24,11 @@ describe("Unit domain decorator", function () {
                     id: function(x) { return x.value },
                     name: function(x) { return x.title },
                     sort: 1
+                },
+                role: {
+                    scaleType: 'ordinal',
+                    index: ['Product Owner', 'Feature Owner', 'QA', 'Developer'],
+                    sort: -1
                 }
             },
             data);
@@ -49,6 +54,8 @@ describe("Unit domain decorator", function () {
 
         expect(unit.domain('business value')).to.deep.equal([1, 3]);
         expect(unit.domain('business value', function(x) { return x.title })).to.deep.equal(['Nice to have', 'Must Have']);
+
+        expect(unit.domain('role')).to.deep.equal(['Some Unknown role', 'Developer', 'QA', 'Feature Owner', 'Product Owner']);
     });
 
     it("should decorate with [scaleTo] method", function () {
@@ -68,8 +75,7 @@ describe("Unit domain decorator", function () {
         var unit0 = decorator.mix({
             $where: {}
         });
-        var part0 = unit0.partition();
-        expect(part0).to.deep.equal(data);
+        expect(unit0.partition()).to.deep.equal(data);
 
         var unit1 = decorator.mix({
             $where: {
@@ -77,8 +83,7 @@ describe("Unit domain decorator", function () {
                 team: 'Alaska'
             }
         });
-        var part1 = unit1.partition();
-        expect(part1).to.deep.equal([data[1]]);
+        expect(unit1.partition()).to.deep.equal([data[1]]);
 
         var unit2 = decorator.mix({
             $where: {
@@ -86,7 +91,28 @@ describe("Unit domain decorator", function () {
                 team: 'Alaska'
             }
         });
-        var part2 = unit2.partition();
-        expect(part2).to.deep.equal([]);
+        expect(unit2.partition()).to.deep.equal([]);
+
+        var unit3 = decorator.mix({
+            $where: {
+                priority: 1,
+                'business value': 3
+            }
+        });
+        expect(unit3.partition()).to.deep.equal([data[0]]);
+
+        var unit4 = decorator.mix({
+            $where: {
+                role: 'QA'
+            }
+        });
+        expect(unit4.partition()).to.deep.equal([data[2]]);
+
+        var unit5 = decorator.mix({
+            $where: {
+                role: 'Some Unknown role'
+            }
+        });
+        expect(unit5.partition()).to.deep.equal([data[1]]);
     });
 });
