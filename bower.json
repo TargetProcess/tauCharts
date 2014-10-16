@@ -18,9 +18,13 @@
     "prototype"
   ],
   "dependencies": {
-    "d3": "~3.4.3"
+    "d3": "~3.4.3",
+    "underscore": "~1.6.0"
   },
-  "devDependencies": {
-    "qunit": "~1.14.0"
+  "devDependencies":{
+    "jquery": "2.1.1",
+    "es6-module-loader":"0.9.2",
+    "js-schema":"0.7.0",
+    "es5-shim": "latest"
   }
 }

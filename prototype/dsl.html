@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+
+    <!-- src -->
+    <script src="../src/class.js"></script>
+    <script src="../src/tau.data.js"></script>
+    <script src="../src/tau.data.types.js"></script>
+    <script src="../src/tau.svg.js"></script>
+    <script src="../src/tau.charts.js"></script>
+    <script src="../src/charts/line.js"></script>
+    <script src="../src/charts/scatterplot.js"></script>
+    <script src="../src/charts/bar.js"></script>
+    <script src="../src/tau.plugins.js"></script>
+
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/highlighter.js"></script>
+    <script src="../plugins/projection.js"></script>
+    <script src="../plugins/datatable.js"></script>
+    <script src="../plugins/header.js"></script>
+    <script src="../plugins/trend.js"></script>
+    <script src="../plugins/jittering.js"></script>
+
+    <!-- test data -->
+    <script src="data.js"></script>
+
+    <script src="countries.js"></script>
+    <script src="tpStories.js"></script>
+    <script src="dataTp.js"></script>
+    <script src="../build/tauCharts.js"></script>
+    <!-- css -->
+    <link href="../css/default.css" rel="stylesheet"/>
+    <link href="../css/graphic-elements.css" rel="stylesheet"/>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+          type='text/css'>
+    <style>
+        .axes.nest .axis.nest text {
+            font-size: 10px;
+        }
+        .bar {
+            fill: steelblue;
+        }
+        .cc {
+            display:inline-block;
+            margin:2px 2px 2px 2px;
+            float:left;
+            width: 800px;
+            height: 800px;
+        }
+    </style>
+    <script>
+        var COORDS = {
+            RECT: function(dim, tail) {
+                var subUnits = _.isArray(tail) ? tail : [tail];
+                var isFacet = (subUnits[0].type === 'COORDS.RECT');
+                return {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: (isFacet ? '' : 'xy'),
+                        padding: {L: 64, B: 32, R: 8, T: 8}
+                    },
+                    axes: dim,
+                    unit: subUnits
+                };
+            }
+        };
+
+        var DIM = function(x, y) {
+            return [
+                x ? {scaleDim: x} : null,
+                y ? {scaleDim: y} : null
+            ];
+        };
+
+        var ELEMENT = {
+            POINT: function (x, y, color, size) {
+                return {
+                    type: 'ELEMENT.POINT',
+                    x: x,
+                    y: y,
+                    color: color,
+                    size: size
+                };
+            }
+        };
+
+//{
+//    dimensions: {
+//        project: { scaleType: 'ordinal' },
+//        team: { scaleType: 'ordinal' },
+//        cycleTime: { scaleType: 'linear' },
+//        effort: { scaleType: 'linear' }
+//    },
+//    data: [],
+//    unit: COORDS.RECT(DIM('project', 'team'), COORDS.RECT(DIM('cycleTime', 'effort'), ELEMENT.POINT('cycleTime', 'effort')))
+//}
+    </script>
+</head>
+<body>
+
+<div id="chart-container" class="cc"></div>
+
+<div id="chart-priority-container" class="cc"></div>
+
+<div id="facet-of-facets-container" class="cc"></div>
+
+<div id="simple-container" class="cc"></div>
+
+<div id="complex-container" class="cc"></div>
+
+<div id="bars-container" class="cc"></div>
+
+<script>
+
+    var facet2x2 = {
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: {l: 152, b: 48, r: 0, t: 0},
+                x: {label: { text: 'Projects', padding: 32}},
+                y: {label: { text: 'Teams', padding: 120}}
+            },
+            x: 'project',
+            y: 'team',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { l:54, b:28, r:16, t:16 },
+                        x: {padding: 8, label: ''},
+                        y: {padding: 8, label: 'effort'}
+                    },
+                    x: 'cycleTime',
+                    y: 'effort',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT',
+                            color: 'effort',
+                            size: 'cycleTime',
+                            shape: null
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var facetPriority = {
+        dimensions: {
+            priority: {
+                scaleType: 'ordinal',
+                id: 'key',
+                name: 'val',
+                sort: 'desc'
+            },
+            severity: {
+                scaleType: 'ordinal',
+                index: ['Must Have', 'Nice to have']
+            },
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: {l: 120, b: 48, r: 0, t: 0},
+                x: {label: {text: 'Projects', padding: 32}},
+                y: {label: {text: 'Severity', padding: 100}}
+            },
+            x: 'project',
+            y: 'severity',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: {l: 54, b: 28, r: 16, t: 16},
+                        x: {padding: 8, label: ''},
+                        y: {padding: 8, label: 'effort'}
+                    },
+                    x: 'priority',
+                    y: 'effort',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }]
+        }
+    };
+
+    var facetOfFacets = {
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' },
+            name: { scaleType: 'ordinal' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: {l: 0, b: 0, r: 0, t: 0},
+                split: true
+            },
+            x: null,
+            y: null,
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { l:46, b:4, r:8, t:8 },
+                        y: {label: 'Effort'},
+                        x: {rotate: 90, textAnchor: 'start', hide: true}
+                    },
+                    y: 'effort',
+                    x: 'name',
+                    unit: [
+                        {
+                            type: 'ELEMENT.INTERVAL'
+                        }
+                    ]
+                },
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { l:46, b:220, r:8, t:8 },
+                        y: {label: 'Cycle Time'},
+                        x: {rotate: 45, textAnchor: 'start'}
+                    },
+                    x: 'name',
+                    y: 'cycleTime',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        },
+                        {
+                            type: 'ELEMENT.LINE'
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var scatter = {
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                showGridLines: 'xy',
+                padding: { l:56, b:46, r:8, t:8 },
+                x: {padding: 8, label: 'Cycle Time'},
+                y: {padding: 8, label: 'Effort'}
+            },
+            x: 'cycleTime',
+            y: 'effort',
+            unit: [
+                {
+                    type: 'ELEMENT.POINT',
+                    color: 'effort',
+                    size: 'cycleTime',
+                    shape: null
+                }
+            ]
+        }
+    };
+
+    var facet3x1 = {
+        dimensions: {
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: { l:46, b:32, r:0, t:2 },
+                y: {label: 'Projects'}
+            },
+            x: null,
+            y: 'project',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        padding: { l:120, b:4, r:8, t:4 },
+                        y: {label: { text: 'Teams', padding: 100 }}
+                    },
+                    x: null,
+                    y: 'team',
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            guide: {
+                                showGridLines: 'xy',
+                                padding: { l:48, b:0, r:8, t:4 },
+                                x: {label: 'cycle time', padding: 4},
+                                y: {label: 'effort', padding: 4}
+                            },
+                            x: 'cycleTime',
+                            y: 'effort',
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT',
+                                    color: 'effort',
+                                    size: 'cycleTime'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var rawData = _.map(
+            getUserStories(),
+            function (r, i) {
+                r.cycleTime = r.name.length;
+                var k = i % 2;
+                r.priority = {
+                    key: k,
+                    val: k ? 'High': 'Low'
+                };
+
+                r.priorityName = k ? 'High': 'Low';
+
+                r.severity = k ? 'Must Have': 'Nice to have';
+
+                if (i === 7) {
+                    r.severity = 'Out of index';
+                }
+
+                return r;
+            });
+
+    new tauChart.Plot(
+            {
+                data: rawData,
+                spec: facet2x2,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#chart-container');
+
+    new tauChart.Plot(
+            {
+                data: rawData,
+                spec: facetPriority,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#chart-priority-container');
+
+    new tauChart.Plot(
+            {
+                data: _(rawData).filter(function(x, i) { return i < 10; }),
+                spec: facetOfFacets,
+                layoutEngine: 'DEFAULT',
+                plugins: [
+                    tau.plugins.tooltip('name', 'cycleTime', 'effort'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#facet-of-facets-container');
+
+    var scatterChart = new tauChart.Plot(
+            {
+                data: rawData,
+                spec: scatter,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#simple-container');
+
+    var complexChart = new tauChart.Plot(
+            {
+                data: rawData,
+                spec: facet3x1,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#complex-container');
+
+    getCountOfEntitiesByTeamOnMonth().then(function (data) {
+
+        var facet2x1 = {
+            dimensions: {
+                month: { scaleType: 'ordinal' },
+                project: { scaleType: 'ordinal' },
+                team: { scaleType: 'ordinal' },
+                cycleTime: { scaleType: 'linear' },
+                effort: { scaleType: 'linear' },
+                count: { scaleType: 'linear' }
+            },
+            unit: {
+                type: 'COORDS.RECT',
+                guide: {
+                    padding: { l:104, b:8, r:8, t:8 },
+                    y: {label: { text: 'TargetProcess Teams', padding: 80 }}
+                },
+                x: null,
+                y: 'team',
+                unit: [
+                    {
+                        type: 'COORDS.RECT',
+                        guide: {
+                            padding: { l:56, b:32, r:8, t:8 },
+                            showGridLines: 'xy',
+                            x: {label: 'Month'},
+                            y: {label: { text: 'Count', padding: 36 }}
+                        },
+                        x: 'month',
+                        y: 'count',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT'
+                            },
+                            {
+                                type: 'ELEMENT.INTERVAL'
+                            },
+                            {
+                                type: 'ELEMENT.LINE'
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        new tauChart.Plot(
+                {
+                    data: data,
+                    spec: facet2x1,
+                    plugins: [
+                        tau.plugins.tooltip('team', 'count', 'month'),
+                        tau.plugins.highlighter()
+                    ]
+                }).renderTo('#bars-container');
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+/* Colors */
+.color10-1 {
+    stroke: #e41a1c;
+    fill: #e41a1c;
+}
+
+.color10-2 {
+    stroke: #377eb8;
+    fill: #377eb8;
+}
+
+.color10-3 {
+    stroke: #4daf4a;
+    fill: #4daf4a;
+}
+
+.color10-4 {
+    stroke: #984ea3;
+    fill: #984ea3;
+}
+
+.color10-5 {
+    stroke: #ff7f00;
+    fill: #ff7f00;
+}
+
+.color10-6 {
+    stroke: #e9e964;
+    fill: #e9e964;
+}
+
+.color10-7 {
+    stroke: #a65628;
+    fill: #a65628;
+}
+
+.color10-8 {
+    stroke: #f781bf;
+    fill: #f781bf;
+}
+
+.color10-9 {
+    stroke: #999999;
+    fill: #999999;
+}
+
+.color10-10 {
+    stroke: #222222;
+    fill: #222222;
+}
+
+.line.color10-1 .dot {
+    stroke: #e41a1c;
+    fill: #e41a1c;
+}
+
+.line.color10-2 .dot {
+    stroke: #377eb8;
+    fill: #377eb8;
+}
+
+.line.color10-3 .dot {
+    stroke: #4daf4a;
+    fill: #4daf4a;
+}
+
+.line.color10-4 .dot {
+    stroke: #984ea3;
+    fill: #984ea3;
+}
+
+.line.color10-5 .dot {
+    stroke: #ff7f00;
+    fill: #ff7f00;
+}
+
+.line.color10-6 .dot {
+    stroke: #e9e964;
+    fill: #e9e964;
+}
+
+.line.color10-7 .dot {
+    stroke: #a65628;
+    fill: #a65628;
+}
+
+.line.color10-8 .dot {
+    stroke: #f781bf;
+    fill: #f781bf;
+}
+
+.line.color10-9 .dot {
+    stroke: #999999;
+    fill: #999999;
+}
+
+.line.color10-10 .dot {
+    stroke: #222222;
+    fill: #222222;
+}
+
+.legend li.color10-1:before {
+    background-color: #e41a1c;
+}
+
+.legend li.color10-2:before {
+    background-color: #377eb8;
+}
+
+.legend li.color10-3:before {
+    background-color: #4daf4a;
+}
+
+.legend li.color10-4:before {
+    background-color: #984ea3;
+}
+
+.legend li.color10-5:before {
+    background-color: #ff7f00;
+}
+
+.legend li.color10-6:before {
+    background-color: #e9e964;
+}
+
+.legend li.color10-7:before {
+    background-color: #a65628;
+}
+
+.legend li.color10-8:before {
+    background-color: #f781bf;
+}
+
+.legend li.color10-9:before {
+    background-color: #999999;
+}
+
+.legend li.color10-10:before {
+    background-color: #222222;
+}
+
+.legend li.disabled.color10-1:before {
+    border-color: #e41a1c;
+}
+
+.legend li.disabled.color10-2:before {
+    border-color: #377eb8;
+}
+
+.legend li.disabled.color10-3:before {
+    border-color: #4daf4a;
+}
+
+.legend li.disabled.color10-4:before {
+    border-color: #984ea3;
+}
+
+.legend li.disabled.color10-5:before {
+    border-color: #ff7f00;
+}
+
+.legend li.disabled.color10-6:before {
+    border-color: #e9e964;
+}
+
+.legend li.disabled.color10-7:before {
+    border-color: #a65628;
+}
+
+.legend li.disabled.color10-8:before {
+    border-color: #f781bf;
+}
+
+.legend li.disabled.color10-9:before {
+    border-color: #999999;
+}
+
+.legend li.disabled.color10-10:before {
+    border-color: #222222;
+}
+
+/* Links */
+a {
+    color: #3962ff;
+    border-bottom: 1px solid rgba(57, 98, 255, 0.3);
+    text-decoration: none;
+}
+a:hover {
+    color: #e17152;
+    border-bottom: 1px solid rgba(225, 113, 82, 0.3);
+}
+
+/* Charts */
+.tau-chart {
+    overflow: visible;
+    position: relative;
+}
+.tau-chart svg {
+    width: 100%;
+    height: 100%;
+}
+
+.html {
+    position: absolute;
+    display: inline-table;
+}
+
+.html-left {
+    top: 0;
+    right: 100%;
+    height: 100%;
+}
+
+.html-right {
+    top: 0;
+    left: 100%;
+    height: 100%;
+}
+
+.html-above {
+    left: 0;
+    bottom: 100%;
+    width: 100%;
+}
+
+.html-below {
+    left: 0;
+    top: 100%;
+    width: 100%;
+}
+
+/* Axises and Grid */
+svg {
+    position: relative;
+    z-index: 800;
+}
+svg .axis line, svg .axis path {
+    stroke-width: 1;
+    fill: none;
+    stroke: #bdc3cd;
+    shape-rendering: crispEdges;
+}
+svg .grid path {
+    fill: none;
+    shape-rendering: crispEdges;
+}
+svg .grid line {
+    stroke-width: 1;
+    fill: none;
+    stroke: rgba(189, 195, 205, 0.5);
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
+}
+svg .label {
+    font-size: 11px;
+    /*display: none;*/
+}
+
+/* Axis Labels */
+.html-chart {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+.html-chart .axis {
+    position: absolute;
+    z-index: 700;
+}
+.html-chart .axis:after {
+    content: "\2192";
+    margin-left: 5px;
+}
+.html-chart .axis:first-letter {
+    text-transform: uppercase;
+}
+.html-chart .axis.y {
+    top: 50%;
+    left: -49%;
+    width: 100%;
+    text-align: center;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
+.html-chart .axis.x {
+    top: 97%;
+    width: 100%;
+    text-align: center;
+}
+.html-chart .axis h4 {
+    font: 700 12px Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-left: 50px;
+}
+.html-chart .axis h4:after {
+    content: ",";
+    margin-right: 5px;
+}
+.html-chart .axis p {
+    display: inline-block;
+}
+
+/* Scatterplot */
+.dot {
+    opacity: 0.6;
+    transition: stroke-width 0.1s ease, opacity 0.1s ease;
+    stroke-width: 0;
+    cursor: pointer;
+}
+.bar {
+    fill: steelblue;
+}
+/* Linechart */
+.line {
+    fill: none !important;
+    stroke-width: 1.5px;
+}
+svg .grid .line path {
+    shape-rendering:geometricPrecision;
+}
+
+/* PLUGINS */
+/* Header */
+header {
+    margin: 0px 25px 20px;
+}
+header h1 {
+    font: 700 24px "Roboto", sans-serif;
+    margin: 0 0 10px;
+}
+header p {
+    margin-left: 0px;
+}
+
+/* Highlighter */
+.dot.highlighted {
+    stroke-width: 6;
+    stroke-opacity: 0.4;
+    opacity: 1;
+}
+
+/* Jittering */
+.jittering {
+    padding: 15px 20px;
+    border-radius: 2px;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    margin: 20px 0 0 20px;
+    white-space: nowrap;
+    text-align: center;
+}
+.jittering label {
+    cursor: pointer;
+}
+.jittering label input {
+    margin-right: 4px;
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    z-index: 900;
+    font-size: 11px;
+    padding: 7px 10px 8px;
+    border-radius: 5px;
+    background: white;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+}
+.tooltip em {
+    font-style: normal;
+    color: #999999;
+    display: inline-block;
+    min-width: 45px;
+}
+
+/* Projections */
+.projections line {
+    stroke-width: 1;
+    opacity: 0.6;
+}
+.projections text {
+    stroke: none;
+}
+.projections .x text {
+    text-anchor: end;
+}
+.projections .y text {
+    text-anchor: middle;
+}
+
+/* Datatable */
+.datatable {
+    padding: 15px 20px;
+    border-radius: 2px;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    margin: 20px 0 0 20px;
+    white-space: nowrap;
+    text-align: center;
+}
+.datatable div {
+    display: none;
+    background: white;
+    width: 300px;
+    position: absolute;
+    z-index: 2;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+    margin-left: -20px;
+    margin-top: 15px;
+}
+.datatable div table {
+    width: 100%;
+}
+.datatable div table thead {
+    display: table;
+    width: 100%;
+}
+.datatable div table tbody {
+    display: block;
+    width: 100%;
+    height: 300px;
+    overflow: scroll;
+}
+.datatable div table tr {
+    display: table;
+    width: 100%;
+    white-space: nowrap;
+}
+.datatable div table tr:hover {
+    background-color: rgba(57, 98, 255, 0.05);
+}
+.datatable div table th {
+    padding: 10px 0;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(189, 195, 205, 0.5);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    white-space: nowrap;
+}
+.datatable div table th:first-child {
+    padding-left: 4%;
+}
+.datatable div table.col-1 th, .datatable div table.col-1 td {
+    width: 96%;
+}
+.datatable div table.col-2 th, .datatable div table.col-2 td {
+    width: 48%;
+}
+.datatable div table.col-3 th, .datatable div table.col-3 td {
+    width: 32%;
+}
+.datatable div table.col-4 th, .datatable div table.col-4 td {
+    width: 24%;
+}
+.datatable div table.col-5 th, .datatable div table.col-5 td {
+    width: 19.2%;
+}
+.datatable div table.col-6 th, .datatable div table.col-6 td {
+    width: 16%;
+}
+.datatable div table.col-7 th, .datatable div table.col-7 td {
+    width: 13.71429%;
+}
+.datatable div table.col-8 th, .datatable div table.col-8 td {
+    width: 12%;
+}
+.datatable div table.col-9 th, .datatable div table.col-9 td {
+    width: 10.66667%;
+}
+.datatable div table.col-10 th, .datatable div table.col-10 td {
+    width: 9.6%;
+}
+.datatable div table td {
+    padding: 2px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    white-space: nowrap;
+}
+.datatable div table td:first-child {
+    padding-left: 4%;
+}
+.datatable.show {
+    box-shadow: inset 0px 2px 4px 0px rgba(0, 0, 0, 0.2), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    background-color: rgba(57, 98, 255, 0.05);
+}
+.datatable.show div {
+    display: block;
+}
+
+/* Legend */
+.legend {
+    padding: 20px 20px 15px;
+    border-radius: 2px;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    margin: 20px 0 0 20px;
+    max-height: 300px;
+    overflow: auto;
+}
+.legend li {
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+.legend li:before {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    content: "";
+    padding: 1px;
+    vertical-align: middle;
+    margin-right: 5px;
+    border-radius: 2px;
+    margin-top: -2px;
+}
+.legend li.disabled:before {
+    background-color: transparent;
+    border: 1px solid #666666;
+    padding: 0;
+}
+
+.tick text {
+    font-size: 11px;
+}

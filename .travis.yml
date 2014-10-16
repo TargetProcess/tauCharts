@@ -1,8 +1,6 @@
 notifications:
   slack: targetprocess:CYr0iktt6KWYPpJp3iZnMXoI
 language: node_js
-before_script: grunt
+before_script: grunt travis
 node_js:
     - "0.10"
-script:
-   phantomjs test/runner.js test/index.html
