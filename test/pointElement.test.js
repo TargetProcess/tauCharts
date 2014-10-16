@@ -205,9 +205,9 @@ describe("Point element color was presented  with brewer as array", function () 
 
     it("should render point with right color", function () {
        var dots = getDots();
-       assert.ok(hasClass(dots[0], 'YlGn q1-3'), 'has brewer class');
-       assert.ok(hasClass(dots[1], 'YlGn q2-3'), 'has brewer class');
-       assert.ok(hasClass(dots[2], 'YlGn q2-3'), 'has brewer class');
-       assert.ok(hasClass(dots[3], 'YlGn q0-3'), 'has brewer class');
+       assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
+       assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
+       assert.ok(hasClass(dots[2], 'YlGn q1-3'), 'has brewer class');
+       assert.ok(hasClass(dots[3], 'YlGn q2-3'), 'has brewer class');
     });
 });

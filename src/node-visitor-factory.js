@@ -1,8 +1,5 @@
 import {nodeMap} from './node-map';
 var TNodeVisitorFactory = (function () {
-
-
-
     return function (unitType) {
 
         if (!nodeMap.hasOwnProperty(unitType)) {

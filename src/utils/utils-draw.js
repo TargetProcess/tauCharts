@@ -1,3 +1,4 @@
+import {utils} from '../utils/utils';
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
@@ -115,13 +116,38 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
+var generateColor = function (node) {
+    var defaultRange = ['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'];
+    var range, domain, colorDim;
+    var colorParam = node.color || '';
+    colorDim = colorParam;
+    if (utils.type(colorParam) === 'string') {
+        range = defaultRange;
+        domain = node.domain(colorDim);
+    } else if (utils.isArray(colorParam.brewer)) {
+        range = colorParam.brewer;
+        colorDim = colorParam.dimension;
+        domain = node.domain(colorDim);
+    } else {
+        domain = Object.keys(colorParam.brewer);
+        range = domain.map((key) => colorParam.brewer[key]);
+        colorDim = colorParam.dimension;
+    }
+    return (d) => {
+       return d3.scale
+            .ordinal()
+            .range(range)
+            .domain(domain)(d[colorDim]);
+    };
+};
 /* jshint ignore:start */
 var utilsDraw = {
     translate,
     rotate,
     getOrientation,
     fnDrawDimAxis,
-    fnDrawGrid
+    fnDrawGrid,
+    generateColor
 };
 /* jshint ignore:end */
 

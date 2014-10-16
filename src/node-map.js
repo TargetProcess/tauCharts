@@ -1,79 +1,13 @@
 import {coords} from './elements/coords';
+import {line} from './elements/line';
+import {point} from './elements/point';
 import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 var nodeMap = {
 
     'COORDS.RECT': coords,
 
-    'ELEMENT.POINT': function (node) {
-
-        var filteredData = node.partition();
-        var srcData = node.source();
-        var defaultRange = ['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'];
-        var getDefaultDomain = function () {
-            return _(srcData).chain().pluck(node.color).uniq().value();
-        };
-
-        var options = node.options || {};
-        options.xScale = node.scaleTo(node.x, [0, options.width]);
-        options.yScale = node.scaleTo(node.y, [options.height, 0]);
-
-        var range, domain, colorDim;
-        var colorParam = node.color || '';
-        colorDim = colorParam;
-        if (utils.type(colorParam) === 'string') {
-            range = defaultRange;
-            domain = getDefaultDomain();
-        } else if (utils.isArray(colorParam.brewer)) {
-            range = colorParam.brewer;
-            domain = colorParam.domain || getDefaultDomain();
-            colorDim = colorParam.dimension;
-        } else {
-            domain = Object.keys(colorParam.brewer);
-            range = domain.map((key) => colorParam.brewer[key]);
-            colorDim = colorParam.dimension;
-        }
-        var color = d3.scale
-            .ordinal()
-            .range(range)
-            .domain(domain);
-        var maxAxis = _.max([options.width, options.height]);
-        var sizeValues = _(srcData).chain().pluck(node.size).map((value)=>parseInt(value, 10));
-
-        var size = d3
-            .scale
-            .linear()
-            .range([maxAxis / 200, maxAxis / 100])
-            .domain([
-                sizeValues.min().value(),
-                sizeValues.max().value()
-            ]);
-
-        var update = function () {
-            return this
-                .attr('r', function (d) {
-                    var s = size(d[node.size]);
-                    if (!_.isFinite(s)) {
-                        s = maxAxis / 100;
-                    }
-                    return s;
-                })
-                .attr('class', function (d) {
-                    return 'dot i-role-datum ' + color(d[colorDim]);
-                })
-                .attr('cx', function (d) {
-                    return options.xScale(d[node.x]);
-                })
-                .attr('cy', function (d) {
-                    return options.yScale(d[node.y]);
-                });
-        };
-
-        var elements = options.container.selectAll('.dot').data(filteredData);
-        elements.call(update);
-        elements.exit().remove();
-        elements.enter().append('circle').call(update);
-    },
+    'ELEMENT.POINT': point,
 
     'ELEMENT.INTERVAL': function (node) {
 
@@ -104,30 +38,7 @@ var nodeMap = {
         elements.exit().remove();
     },
 
-    'ELEMENT.LINE': function (node) {
-
-        var options = node.options || {};
-        options.xScale = node.scaleTo(node.x, [0, options.width]);
-        options.yScale = node.scaleTo(node.y, [options.height, 0]);
-
-        var line = d3
-            .svg
-            .line()
-            .x(function (d) {
-                return options.xScale(d[node.x]);
-            })
-            .y(function (d) {
-                return options.yScale(d[node.y]);
-            });
-
-        options.container
-            .append('g')
-            .attr("class", "line")
-            .attr('stroke', '#4daf4a')
-            .append("path")
-            .datum(node.partition())
-            .attr("d", line);
-    },
+    'ELEMENT.LINE': line,
 
     'WRAP.AXIS': function (node, continueTraverse) {
 

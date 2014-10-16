@@ -318,6 +318,9 @@ svg .label {
     fill: none !important;
     stroke-width: 1.5px;
 }
+svg .grid .line path {
+    shape-rendering:geometricPrecision;
+}
 
 /* PLUGINS */
 /* Header */
