@@ -362,22 +362,22 @@
     new tauChart.Chartillo(
             {
                 data: rawData,
-                spec: facetPriority,
-                plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
-                    tau.plugins.highlighter()
-                ]
-            }).renderTo('#chart-priority-container', {width: 800, height: 800});
-
-    new tauChart.Chart(
-            {
-                data: rawData,
                 spec: facet2x2,
                 plugins: [
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
             }).renderTo('#chart-container', {width: 800, height: 800});
+
+    new tauChart.Chartillo(
+            {
+                data: rawData,
+                spec: facetPriority,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#chart-priority-container', {width: 800, height: 800});
 
     new tauChart.Chartillo(
             {
