@@ -1,4 +1,4 @@
-import {utils} from './utils';
+import {utils} from './utils/utils';
 import {TMatrix} from './matrix';
 
 var TUnitVisitorFactory = (function () {

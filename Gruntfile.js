@@ -97,7 +97,7 @@ module.exports = function (grunt) {
         },
         bowercopy: {
             options: {
-                clean: true
+               // clean: true
             },
             libs: {
                 options: {

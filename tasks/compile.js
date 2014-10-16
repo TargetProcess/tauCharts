@@ -15,6 +15,8 @@ module.exports = function (grunt) {
         var tmpDir = 'tmp_dir';
         grunt.file.mkdir(tmpDir);
         grunt.file.mkdir(tmpDir + '/' + 'charts');
+        grunt.file.mkdir(tmpDir + '/' + 'utils');
+        grunt.file.mkdir(tmpDir + '/' + 'elements');
         this.filesSrc.forEach(function (filename) {
             var result = es6tr.run({
                 filename: this.data.cwd + filename,
