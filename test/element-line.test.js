@@ -11,7 +11,7 @@ describe("ELEMENT.LINE", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Chart({
+        new tauChart.Chartillo({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',

@@ -2,7 +2,7 @@ import {DSLReader} from '../dsl-reader';
 import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 
-export class Chart {
+export class Chartillo {
     constructor(config) {
 
         var chartConfig = this.convertConfig(config);

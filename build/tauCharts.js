@@ -400,18 +400,18 @@
 
     };
     var elements$point$$point = function (node) {
-    
+
         var filteredData = node.partition();
         var srcData = node.source();
         var options = node.options || {};
         options.xScale = node.scaleTo(node.x, [0, options.width]);
         options.yScale = node.scaleTo(node.y, [options.height, 0]);
-    
-    
+
+
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
         var maxAxis = _.max([options.width, options.height]);
         var sizeValues = _(srcData).chain().pluck(node.size).map(function(value){return parseInt(value, 10)});
-    
+
         var size = d3
             .scale
             .linear()
@@ -420,7 +420,7 @@
                 sizeValues.min().value(),
                 sizeValues.max().value()
             ]);
-    
+
         var update = function () {
             return this
                 .attr('r', function (d) {
@@ -440,7 +440,7 @@
                     return options.yScale(d[node.y]);
                 });
         };
-    
+
         var elements = options.container.selectAll('.dot').data(filteredData);
         elements.call(update);
         elements.exit().remove();
@@ -631,12 +631,26 @@
 
             var getIdMapper = function(dim)  {
                 var d = meta[dim] || {};
-                return d.id || (function(x)  {return x});
+                var prop = d.id || (function(x)  {return x});
+                return _.isFunction(prop) ? prop : (function(row)  {return row[prop]});
+            };
+
+            var sortAliases = {
+                asc: 1,
+                desc: -1,
+                '-1': -1,
+                '1': 1
             };
 
             var getSortOrder = function(dim)  {
                 var d = meta[dim] || {};
-                return d.sort || 0;
+                var s = (d.sort || '').toString().toLowerCase();
+                return sortAliases[s] || 0;
+            };
+
+            var getIndex = function(dim)  {
+                var d = meta[dim] || {};
+                return d.index || null;
             };
 
             this.fnSource = function(whereFilter)  {
@@ -649,10 +663,16 @@
                 var domain = _(data).chain().pluck(dim).uniq(fnMapperId).value();
 
                 var sortOrder = getSortOrder(dim);
-                var domainAsc = (sortOrder !== 0) ? _.sortBy(domain, fnMapperId) : domain;
+                var metaIndex = getIndex(dim);
+                var domainAsc;
+                if (metaIndex === null) {
+                    domainAsc = (sortOrder !== 0) ? _.sortBy(domain, fnMapperId) : domain;
+                }
+                else {
+                    domainAsc = _.union(metaIndex, domain);
+                }
 
                 var domainSorted = (sortOrder === -1) ? domainAsc.reverse() : domainAsc;
-
                 return domainSorted.map(fnNameMapper || fnMapperId);
             };
 
@@ -1075,8 +1095,8 @@
         };
     plugins$$MIXIN$0(ChartTools.prototype,proto$0);proto$0=void 0;return ChartTools;})();
 
-    var charts$tau$chart$$Chart = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
-        function Chart(config) {
+    var charts$tau$chartillo$$Chartillo = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+        function Chartillo(config) {
 
             var chartConfig = this.convertConfig(config);
 
@@ -1098,7 +1118,7 @@
 
             //plugins
             this._plugins = new plugins$$Plugins(this.config.plugins);
-        }DP$0(Chart,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+        }DP$0(Chartillo,"prototype",{"configurable":false,"enumerable":false,"writable":false});
 
         proto$0.renderTo = function(target, xSize) {
 
@@ -1149,7 +1169,7 @@
         proto$0.convertConfig = function(config) {
             return config;
         };
-    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})();
+    MIXIN$0(Chartillo.prototype,proto$0);proto$0=void 0;return Chartillo;})();
 
     function charts$tau$scatterplot$$convertAxis(data) {
         if (!data) {
@@ -1186,12 +1206,12 @@
             };
             return chartConfig;
         };
-    MIXIN$0(Scatterplot.prototype,proto$0);proto$0=void 0;return Scatterplot;})(charts$tau$chart$$Chart);
+    MIXIN$0(Scatterplot.prototype,proto$0);proto$0=void 0;return Scatterplot;})(charts$tau$chartillo$$Chartillo);
 
 
     var tau$newCharts$$tauChart = {
-        Chart: charts$tau$chart$$Chart,
-        Scatterplot: charts$tau$scatterplot$$Scatterplot,
+        Chartillo: charts$tau$chartillo$$Chartillo,
+        Chart: charts$tau$scatterplot$$Scatterplot,
 
         __api__: {
             UnitDomainMixin: unit$domain$mixin$$UnitDomainMixin,

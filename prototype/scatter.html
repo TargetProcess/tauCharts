@@ -249,7 +249,7 @@
             } else {
                 color = getFieldData($color)
             }
-            var chart = new m.tauChart.Scatterplot({
+            var chart = new m.tauChart.Chart({
                 data: data,
                 plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
                 x: getFieldData($x),

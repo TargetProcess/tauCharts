@@ -297,7 +297,7 @@
                 return r;
             });
 
-    new tauChart.Chart(
+    new tauChart.Chartillo(
             {
                 data: rawData,
                 spec: facet2x2,
@@ -307,7 +307,7 @@
                 ]
             }).renderTo('#chart-container', {width: 800, height: 800});
 
-    new tauChart.Chart(
+    new tauChart.Chartillo(
             {
                 data: _(rawData).filter(function(x, i) { return i < 10; }),
                 spec: facetOfFacets,
@@ -318,7 +318,7 @@
                 ]
             }).renderTo('#facet-of-facets-container', {width: 800, height: 800});
 
-    var scatterChart = new tauChart.Chart(
+    var scatterChart = new tauChart.Chartillo(
             {
                 data: rawData,
                 spec: scatter,
@@ -328,7 +328,7 @@
                 ]
             }).renderTo('#simple-container', {width: 800, height: 800});
 
-    var complexChart = new tauChart.Chart(
+    var complexChart = new tauChart.Chartillo(
             {
                 data: rawData,
                 spec: facet3x1,
@@ -384,7 +384,7 @@
             }
         };
 
-        new tauChart.Chart(
+        new tauChart.Chartillo(
                 {
                     data: data,
                     spec: facet2x1,

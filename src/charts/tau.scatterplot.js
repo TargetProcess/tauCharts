@@ -1,4 +1,4 @@
-import {Chart} from './tau.chart';
+import {Chartillo} from './tau.chartillo';
 
 function convertAxis(data) {
     if (!data) {
@@ -6,7 +6,7 @@ function convertAxis(data) {
     }
     return {scaleDim: data};
 }
-export class Scatterplot extends Chart {
+export class Scatterplot extends Chartillo {
     convertConfig(config) {
         var chartConfig = _.omit(config, 'spec');
         chartConfig.spec = {

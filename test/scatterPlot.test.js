@@ -5,7 +5,7 @@ describe('scatter plot chart', function () {
         {x: 2, y: 2, color: 'green', size: 8}
     ];
     it('should convert to common config', function () {
-        var scatter = new tauChart.Scatterplot({
+        var scatter = new tauChart.Chart({
             data:testData,
             x:'x',
             y:'y',
