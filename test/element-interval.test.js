@@ -11,7 +11,7 @@ describe("ELEMENT.INTERVAL", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Chartillo({
+        new tauChart.Plot({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',

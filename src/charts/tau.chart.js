@@ -1,4 +1,4 @@
-import {Chartillo} from './tau.chartillo';
+import {Plot} from './tau.plot';
 
 function convertAxis(data) {
     if (!data) {
@@ -43,7 +43,7 @@ var typesChart = {
     }
 };
 
-export class Chart extends Chartillo {
+export class Chart extends Plot {
     convertConfig(config) {
         return typesChart[config.type](config);
     }

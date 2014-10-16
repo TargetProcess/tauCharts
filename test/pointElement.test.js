@@ -25,7 +25,7 @@ describe("Point element with all params", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        var chart = new tauChart.Chartillo({
+        var chart = new tauChart.Plot({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
@@ -82,7 +82,7 @@ describe("Point element without color and size params", function () {
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Chartillo({
+        new tauChart.Plot({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
@@ -133,7 +133,7 @@ describe("Point element color was presented  with brewer as object", function ()
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Chartillo({
+        new tauChart.Plot({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
@@ -177,7 +177,7 @@ describe("Point element color was presented  with brewer as array", function () 
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Chartillo({
+        new tauChart.Plot({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
