@@ -71,6 +71,24 @@ describe("Unit domain decorator", function () {
         expect(scaleEffort(0)).to.equal(0);
         expect(scaleEffort(1)).to.equal(5);
         expect(scaleEffort(2)).to.equal(10);
+
+        var scalePriority = unit.scaleTo('priority', [0, 90]);
+        expect(scalePriority(data[2].priority)).to.equal(15);
+        expect(scalePriority(data[1].priority)).to.equal(45);
+        expect(scalePriority(data[0].priority)).to.equal(75);
+        assert.equal(scalePriority.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
+
+        var propName = 'business value';
+        var scaleBV = unit.scaleTo(propName, [0, 100]);
+        expect(scaleBV(data[1][propName])).to.equal(25);
+        expect(scaleBV(data[0][propName])).to.equal(75);
+        assert.equal(scaleBV.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
+
+        var scaleRole = unit.scaleTo('role', [0, 100]);
+        expect(scaleRole('Some Unknown role')).to.equal(10);
+        expect(scaleRole('QA')).to.equal(50);
+        expect(scaleRole('Product Owner')).to.equal(90);
+        assert.equal(scaleRole.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
     });
 
     it("should decorate with [partition] method", function () {

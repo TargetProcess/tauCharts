@@ -107,6 +107,8 @@
 
 <div id="chart-container" class="cc"></div>
 
+<div id="chart-priority-container" class="cc"></div>
+
 <div id="facet-of-facets-container" class="cc"></div>
 
 <div id="simple-container" class="cc"></div>
@@ -154,6 +156,52 @@
                     ]
                 }
             ]
+        }
+    };
+
+    var facetPriority = {
+        dimensions: {
+            priority: {
+                scaleType: 'ordinal',
+                id: 'key',
+                name: 'val',
+                sort: 'desc'
+            },
+            severity: {
+                scaleType: 'ordinal',
+                index: ['Must Have', 'Nice to have']
+            },
+            project: { scaleType: 'ordinal' },
+            team: { scaleType: 'ordinal' },
+            cycleTime: { scaleType: 'linear' },
+            effort: { scaleType: 'linear' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: {l: 120, b: 48, r: 0, t: 0},
+                x: {label: {text: 'Projects', padding: 32}},
+                y: {label: {text: 'Severity', padding: 100}}
+            },
+            x: 'project',
+            y: 'severity',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: {l: 54, b: 28, r: 16, t: 16},
+                        x: {padding: 8, label: ''},
+                        y: {padding: 8, label: 'effort'}
+                    },
+                    x: 'priority',
+                    y: 'effort',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }]
         }
     };
 
@@ -292,12 +340,36 @@
 
     var rawData = _.map(
             getUserStories(),
-            function (r) {
+            function (r, i) {
                 r.cycleTime = r.name.length;
+                var k = i % 2;
+                r.priority = {
+                    key: k,
+                    val: k ? 'High': 'Low'
+                };
+
+                r.priorityName = k ? 'High': 'Low';
+
+                r.severity = k ? 'Must Have': 'Nice to have';
+
+                if (i === 7) {
+                    r.severity = 'Out of index';
+                }
+
                 return r;
             });
 
     new tauChart.Chartillo(
+            {
+                data: rawData,
+                spec: facetPriority,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#chart-priority-container', {width: 800, height: 800});
+
+    new tauChart.Chart(
             {
                 data: rawData,
                 spec: facet2x2,

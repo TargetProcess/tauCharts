@@ -14,10 +14,14 @@ export class UnitDomainMixin {
 
     constructor(meta, data) {
 
+        var getPropMapper = (prop) => {
+            return !prop ? ((propObj) => propObj) : (_.isFunction(prop) ? prop : ((propObj) => propObj[prop]));
+        };
+
         var getIdMapper = (dim) => {
             var d = meta[dim] || {};
             var prop = d.id || ((x) => x);
-            return _.isFunction(prop) ? prop : ((row) => row[prop]);
+            return getPropMapper(prop);
         };
 
         var sortAliases = {
@@ -64,7 +68,19 @@ export class UnitDomainMixin {
         this.fnScaleTo = (scaleDim, interval) => {
             var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
             var dimx = _.defaults(temp, meta[temp.scaleDim]);
-            return rangeMethods[dimx.scaleType](this.fnDomain(dimx.scaleDim, dimx.name), interval);
+            var fMap = getPropMapper(dimx.name);
+            var func = rangeMethods[dimx.scaleType](
+                this.fnDomain(dimx.scaleDim, fMap),
+                interval);
+
+            var wrap = (domainPropObject) => func(fMap(domainPropObject));
+            // have to copy properties since d3 produce Function with methods
+            for (var p in func) {
+                if (func.hasOwnProperty(p)) {
+                    wrap[p] = func[p];
+                }
+            }
+            return wrap;
         };
     }
 
