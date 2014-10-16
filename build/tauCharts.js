@@ -1116,8 +1116,8 @@
         };
     plugins$$MIXIN$0(ChartTools.prototype,proto$0);proto$0=void 0;return ChartTools;})();
 
-    var charts$tau$chartillo$$Chartillo = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
-        function Chartillo(config) {
+    var charts$tau$plot$$Plot = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
+        function Plot(config) {
 
             var chartConfig = this.convertConfig(config);
 
@@ -1139,7 +1139,7 @@
 
             //plugins
             this._plugins = new plugins$$Plugins(this.config.plugins);
-        }DP$0(Chartillo,"prototype",{"configurable":false,"enumerable":false,"writable":false});
+        }DP$0(Plot,"prototype",{"configurable":false,"enumerable":false,"writable":false});
 
         proto$0.renderTo = function(target, xSize) {
 
@@ -1190,7 +1190,7 @@
         proto$0.convertConfig = function(config) {
             return config;
         };
-    MIXIN$0(Chartillo.prototype,proto$0);proto$0=void 0;return Chartillo;})();
+    MIXIN$0(Plot.prototype,proto$0);proto$0=void 0;return Plot;})();
 
     function charts$tau$chart$$convertAxis(data) {
         if (!data) {
@@ -1242,11 +1242,11 @@
         proto$0.convertConfig = function(config) {
             return charts$tau$chart$$typesChart[config.type](config);
         };
-    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})(charts$tau$chartillo$$Chartillo);
+    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})(charts$tau$plot$$Plot);
 
 
     var tau$newCharts$$tauChart = {
-        Chartillo: charts$tau$chartillo$$Chartillo,
+        Plot: charts$tau$plot$$Plot,
         Chart: charts$tau$chart$$Chart,
         __api__: {
             UnitDomainMixin: unit$domain$mixin$$UnitDomainMixin,

@@ -7,6 +7,12 @@ var schemes = {};
         x: [String],
         y: [String]
     });
+    var line = schema({
+        color: [null, String],
+        type: "ELEMENT.LINE",
+        x: [String],
+        y: [String]
+    });
     var dimension = schema({
         scaleType: String
     });
@@ -28,7 +34,19 @@ var schemes = {};
 
         })
     });
+    var line = schema({
+        dimensions: dimensions,
+        unit: schema({
+            guide: undefined,
+            x: scaleDim,
+            y: scaleDim,
+            type: "COORDS.RECT",
+            unit: Array.of(line)
+
+        })
+    });
     schemes.point = point;
+    schemes.line = line;
     schemes.scatterplot = scatterplot
 }(schemes));
 

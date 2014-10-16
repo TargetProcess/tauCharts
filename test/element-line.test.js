@@ -1,37 +1,49 @@
 describe("ELEMENT.LINE", function () {
 
     var testData = [
-        {x: 'a', y: 1, color: 'red', size: 6},
-        {x: 'b', y: 0.5, color: 'green', size: 6},
-        {x: 'c', y: 2, color: 'green', size: 8}
+        {x: 1, y: 1, color: 'red'},
+        {x: 1, y: 2, color: 'red'},
+        {x: 2, y: 0.5, color: 'green'},
+        {x: 2, y: 2, color: 'green'}
     ];
 
     var element;
+    var chart;
 
     beforeEach(function () {
         element = document.createElement('div');
         document.body.appendChild(element);
-        new tauChart.Plot({
+        chart = new tauChart.Plot({
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
                     x: {scaleDim: 'x'},
                     y: {scaleDim: 'y'},
+                    guide:{
+
+                    },
                     unit: [
                         {
-                            type: 'ELEMENT.LINE'
+                            type: 'ELEMENT.LINE',
+                            color: 'color',
+                            x: 'x',
+                            y: 'y'
                         }
                     ]
                 }
             },
             data: testData
-        }).renderTo(element, {width: 800, height: 800});
+        });
+        chart.renderTo(element, {width: 800, height: 800});
     });
     afterEach(function () {
         element.parentNode.removeChild(element);
     });
 
-    it("should render bar element", function () {
-        expect(1).to.equal(1);
+    it("should render two line element", function () {
+        var lines = getLine();
+        assert.ok(schemes.line(chart.config.spec),'spec is right');
+        expect(lines.length).to.equal(2);
+        assert.notEqual(attrib(lines[0], 'class'), attrib(lines[1], 'class'), 'should different class');
     });
 });
