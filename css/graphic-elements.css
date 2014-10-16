@@ -312,7 +312,9 @@ svg .label {
     stroke-width: 0;
     cursor: pointer;
 }
-
+.bar {
+    fill: steelblue;
+}
 /* Linechart */
 .line {
     fill: none !important;

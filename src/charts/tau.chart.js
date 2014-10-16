@@ -40,6 +40,9 @@ var typesChart = {
     },
     'line':(config) => {
         return generateSimpleConfig('ELEMENT.LINE',config);
+    },
+    'bar':(config) => {
+        return generateSimpleConfig('ELEMENT.INTERVAL',config);
     }
 };
 
