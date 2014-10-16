@@ -1,6 +1,3 @@
-/*! tauCharts - v0.0.1 - 2014-10-15
-* https://github.com/TargetProcess/tauCharts
-* Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -606,19 +603,26 @@
                 return d.id || (function(x)  {return x});
             };
     
+            var getSortOrder = function(dim)  {
+                var d = meta[dim] || {};
+                return d.sort || 0;
+            };
+    
             this.fnSource = function(whereFilter)  {
-    
-                var predicates = _.map(
-                    whereFilter,
-                    function(v, k)  {return function(row)  {return getIdMapper(k)(row[k]) === v}});
-    
+                var predicates = _.map(whereFilter, function(v, k)  {return function(row)  {return getIdMapper(k)(row[k]) === v}});
                 return _(data).filter(function(row)  {return _.every(predicates, (function(p)  {return p(row)}))});
             };
     
             this.fnDomain = function(dim, fnNameMapper)  {
                 var fnMapperId = getIdMapper(dim);
-                var fnMapperName = fnNameMapper || fnMapperId;
-                return _(data).chain().pluck(dim).uniq(fnMapperId).map(fnMapperName).value();
+                var domain = _(data).chain().pluck(dim).uniq(fnMapperId).value();
+    
+                var sortOrder = getSortOrder(dim);
+                var domainAsc = (sortOrder !== 0) ? _.sortBy(domain, fnMapperId) : domain;
+    
+                var domainSorted = (sortOrder === -1) ? domainAsc.reverse() : domainAsc;
+    
+                return domainSorted.map(fnNameMapper || fnMapperId);
             };
     
             this.fnScaleTo = function(scaleDim, interval)  {

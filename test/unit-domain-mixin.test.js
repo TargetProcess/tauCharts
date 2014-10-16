@@ -1,9 +1,9 @@
 describe("Unit domain decorator", function () {
 
     var data = [
-        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": { id: 1, name: 'low'}},
-        {"effort": 0.0000, "name": "Follow", "team": "Alaska", "project": "TP2", "priority": { id: 2, name: 'medium'}},
-        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": { id: 3, name: 'high'}}
+        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}},
+        {"effort": 0.0000, "name": "Follow", "team": "Alaska"   , "project": "TP2", "priority": {id:2, name:'medium'}, "business value": {value:1, title:'Nice to have'}},
+        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}}
     ];
 
     var decorator;
@@ -16,7 +16,14 @@ describe("Unit domain decorator", function () {
                 priority: {
                     scaleType: 'ordinal',
                     id: function(x) { return x.id },
-                    name: function(x) { return x.name }
+                    name: function(x) { return x.name },
+                    sort: -1
+                },
+                'business value': {
+                    scaleType: 'ordinal',
+                    id: function(x) { return x.value },
+                    name: function(x) { return x.title },
+                    sort: 1
                 }
             },
             data);
@@ -27,6 +34,7 @@ describe("Unit domain decorator", function () {
         expect(unit.source().length).to.equal(3);
         expect(unit.source({ project: 'TP2' }).length).to.equal(2);
         expect(unit.source({ priority: 1 }).length).to.equal(1);
+        expect(unit.source({ 'business value': 1 }).length).to.equal(2);
     });
 
     it("should decorate with [domain] method", function () {
@@ -36,7 +44,11 @@ describe("Unit domain decorator", function () {
         expect(unit.domain('name').sort()).to.deep.equal(['Errors', 'Follow', 'Report']);
         expect(unit.domain('effort').sort()).to.deep.equal([0, 1, 2]);
 
-        expect(unit.domain('priority')).to.deep.equal([1, 2, 3]);
+        expect(unit.domain('priority')).to.deep.equal([3, 2, 1]);
+        expect(unit.domain('priority', function(x) { return x.name })).to.deep.equal(['high', 'medium', 'low']);
+
+        expect(unit.domain('business value')).to.deep.equal([1, 3]);
+        expect(unit.domain('business value', function(x) { return x.title })).to.deep.equal(['Nice to have', 'Must Have']);
     });
 
     it("should decorate with [scaleTo] method", function () {

@@ -19,19 +19,26 @@ export class UnitDomainMixin {
             return d.id || ((x) => x);
         };
 
+        var getSortOrder = (dim) => {
+            var d = meta[dim] || {};
+            return d.sort || 0;
+        };
+
         this.fnSource = (whereFilter) => {
-
-            var predicates = _.map(
-                whereFilter,
-                (v, k) => (row) => getIdMapper(k)(row[k]) === v);
-
+            var predicates = _.map(whereFilter, (v, k) => (row) => getIdMapper(k)(row[k]) === v);
             return _(data).filter((row) => _.every(predicates, ((p) => p(row))));
         };
 
         this.fnDomain = (dim, fnNameMapper) => {
             var fnMapperId = getIdMapper(dim);
-            var fnMapperName = fnNameMapper || fnMapperId;
-            return _(data).chain().pluck(dim).uniq(fnMapperId).map(fnMapperName).value();
+            var domain = _(data).chain().pluck(dim).uniq(fnMapperId).value();
+
+            var sortOrder = getSortOrder(dim);
+            var domainAsc = (sortOrder !== 0) ? _.sortBy(domain, fnMapperId) : domain;
+
+            var domainSorted = (sortOrder === -1) ? domainAsc.reverse() : domainAsc;
+
+            return domainSorted.map(fnNameMapper || fnMapperId);
         };
 
         this.fnScaleTo = (scaleDim, interval) => {
