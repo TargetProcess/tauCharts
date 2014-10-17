@@ -1,6 +1,6 @@
 {
-  "generator": "site",
-  "title": "TauCharts is a javascript graph library.",
-  "description": null,
-  "plugins": []
+    "generator": "site",
+    "title": "TauCharts is a javascript graph library.",
+    "description": null,
+    "plugins": []
 }
