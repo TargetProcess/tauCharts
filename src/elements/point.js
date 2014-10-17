@@ -5,8 +5,8 @@ var point = function (node) {
     var filteredData = node.partition();
     var srcData = node.source();
     var options = node.options || {};
-    options.xScale = node.scaleTo(node.x, [0, options.width]);
-    options.yScale = node.scaleTo(node.y, [options.height, 0]);
+    options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+    options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
 
 
     var color = utilsDraw.generateColor(node);
@@ -35,10 +35,10 @@ var point = function (node) {
                 return 'dot i-role-datum ' + color.get(d[color.dimension]);
             })
             .attr('cx', function (d) {
-                return options.xScale(d[node.x]);
+                return options.xScale(d[node.x.scaleDim]);
             })
             .attr('cy', function (d) {
-                return options.yScale(d[node.y]);
+                return options.yScale(d[node.y.scaleDim]);
             });
     };
 

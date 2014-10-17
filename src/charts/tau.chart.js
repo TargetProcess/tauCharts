@@ -4,8 +4,14 @@ function convertAxis(data) {
     if (!data) {
         return null;
     }
-    return {scaleDim: data};
+
+    if (_.isString(data)) {
+        return {scaleDim: data};
+    }
+
+    return data;
 }
+
 function generateSimpleConfig(type, config) {
     var chartConfig = _.omit(config, 'spec');
     chartConfig.spec = {

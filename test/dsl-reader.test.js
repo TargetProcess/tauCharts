@@ -18,8 +18,8 @@ describe("DSL reader buildGraph()", function () {
 
             var point = rect.$matrix.getRC(0, 0)[0];
             expect(point.type).to.equal('ELEMENT.POINT');
-            expect(point.x).to.equal('cycleTime');
-            expect(point.y).to.equal('effort');
+            expect(point.x.scaleDim).to.equal('cycleTime');
+            expect(point.y.scaleDim).to.equal('effort');
         });
     };
 

@@ -31,14 +31,18 @@ var TUnitVisitorFactory = (function () {
 
     var TFuncMap = (opName) => FacetAlgebra[opName] || (() => [[{}]]);
 
+    var objectify = (param) => {
+        return _.isObject(param) ? param : {scaleDim: param};
+    };
+
     var TUnitMap = {
 
         'COORDS.RECT': function (unit, continueTraverse) {
 
             var root = _.defaults(unit, {$where: {}});
 
-            root.x = _.isObject(root.x) ? root.x : {scaleDim: root.x};
-            root.y = _.isObject(root.y) ? root.y : {scaleDim: root.y};
+            root.x = objectify(root.x);
+            root.y = objectify(root.y);
 
             var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
             var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
@@ -49,14 +53,10 @@ var TUnitVisitorFactory = (function () {
             matrixOfPrFilters.iterate((row, col, $whereRC) => {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
-                    return _.extend(
-                        _.defaults(
-                            utils.clone(sUnit),
-                            {
-                                x: root.x.scaleDim,
-                                y: root.y.scaleDim
-                            }),
-                        { $where: cellWhere });
+                    var defaultedUnit = _.defaults(utils.clone(sUnit), { x: root.x, y: root.y });
+                    defaultedUnit.x = objectify(defaultedUnit.x);
+                    defaultedUnit.y = objectify(defaultedUnit.y);
+                    return _.extend(defaultedUnit, { $where: cellWhere });
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });

@@ -2,8 +2,8 @@ import {utilsDraw} from '../utils/utils-draw';
 var line = function (node) {
 
     var options = node.options || {};
-    options.xScale = node.scaleTo(node.x, [0, options.width]);
-    options.yScale = node.scaleTo(node.y, [options.height, 0]);
+    options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+    options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
     var color = utilsDraw.generateColor(node);
     var categories = d3.nest()
         .key(function(d){
@@ -25,8 +25,8 @@ var line = function (node) {
     };
 
     var line = d3.svg.line()
-        .x((d) => options.xScale(d[node.x]))
-        .y((d) => options.yScale(d[node.y]));
+        .x((d) => options.xScale(d[node.x.scaleDim]))
+        .y((d) => options.yScale(d[node.y.scaleDim]));
 
     var updatePaths = function () {
         this.attr('d', line);

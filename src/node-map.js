@@ -12,22 +12,22 @@ var nodeMap = {
     'ELEMENT.INTERVAL': function (node) {
 
         var options = node.options || {};
-        var barWidth = options.width / (node.domain(node.x).length) - 8;
-        options.xScale = node.scaleTo(node.x, [0, options.width]);
-        options.yScale = node.scaleTo(node.y, [options.height, 0]);
+        var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
+        options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+        options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
 
         var update = function () {
             return this
                 .attr('class', 'i-role-datum  bar')
                 .attr('x', function (d) {
-                    return options.xScale(d[node.x]) - barWidth / 2;
+                    return options.xScale(d[node.x.scaleDim]) - barWidth / 2;
                 })
                 .attr('width', barWidth)
                 .attr('y', function (d) {
-                    return options.yScale(d[node.y]);
+                    return options.yScale(d[node.y.scaleDim]);
                 })
                 .attr('height', function (d) {
-                    return options.height - options.yScale(d[node.y]);
+                    return options.height - options.yScale(d[node.y.scaleDim]);
                 });
         };
 
