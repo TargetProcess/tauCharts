@@ -1,0 +1,12 @@
+{
+  "generator": "site",
+  "title": "TauCharts is a javascript graph library.",
+  "description": null,
+  "theme": "theme",
+  "pluginsConfig": {
+    "fontSettings": {
+      "theme": "white",
+      "family": "sans"
+    }
+  }
+}
