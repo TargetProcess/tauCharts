@@ -1,4 +1,6 @@
 tauCharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts)
+
+[![Build Status](https://www.gitbook.io/button/status/book/mdubakov/taucharts-guide)](https://www.gitbook.io/book/mdubakov/taucharts-guide/activity)
 =========
 
 tauCharts is a JavaScript charting library based on D3. Designed with passion.
