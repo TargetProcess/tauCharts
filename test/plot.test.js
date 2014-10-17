@@ -1,38 +1,53 @@
 describe("tauChart.Plot", function () {
 
-    var spec = {
-        dimensions: {
-            x: {scaleType: 'linear'},
-            y: {scaleType: 'linear'}
-        },
-        spec: {
-            unit: {
-                type: 'COORDS.RECT',
-                x: {scaleDim: 'x'},
-                y: {scaleDim: 'y'},
-                unit: [
-                    {
-                        type: 'ELEMENT.POINT',
-                        x: 'x',
-                        y: 'y'
-                    }
-                ]
-            }
-        },
-        data: [
-            {x: 1, y: 2}
-        ]
-    };
-
+    var spec;
     var div;
     beforeEach(function () {
         div = document.createElement('div');
-        div.innerHTML = '<div id="test-div" style="width: 800px; height: 600px"></div>';
+        div.innerHTML = '<div id="test-div" style="width: 800px; height: 600px">NODATA</div>';
         document.body.appendChild(div);
+
+        spec = {
+            dimensions: {
+                x: {scaleType: 'linear'},
+                y: {scaleType: 'linear'}
+            },
+            spec: {
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: {scaleDim: 'x'},
+                    y: {scaleDim: 'y'},
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT',
+                            x: 'x',
+                            y: 'y'
+                        }
+                    ]
+                }
+            },
+            data: [
+                {x: 1, y: 2}
+            ]
+        };
     });
 
     afterEach(function () {
         div.parentNode.removeChild(div);
+    });
+
+    it("should render default content if no data provided", function () {
+
+        var testDiv = document.getElementById('test-div');
+        spec.data = [];
+        new tauChart.Plot(spec)
+            .renderTo(testDiv);
+
+        expect(testDiv.innerHTML).to.equal('NODATA');
+    });
+
+    it("should throw exception if target not found", function () {
+        expect(function() { new tauChart.Plot(spec).renderTo('#unknown-test-div') }).throw('Target element not found');
     });
 
     it("should render to target with size (where target = element)", function () {

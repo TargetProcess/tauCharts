@@ -20,9 +20,6 @@ export class Plot {
         this.spec = this.config.spec;
         this.data = this.config.data;
 
-        this.reader = new DSLReader(this.spec, this.data);
-        this.graph = this.reader.buildGraph();
-
         //plugins
         this._plugins = new Plugins(this.config.plugins);
     }
@@ -32,27 +29,36 @@ export class Plot {
         var container = d3.select(target);
         var containerNode = container[0][0];
 
+        if (containerNode === null) {
+            throw new Error('Target element not found');
+        }
+
         var size = _.defaults(xSize || {}, {
             height : containerNode.offsetHeight,
             width : containerNode.offsetWidth
         });
 
-        var layoutXGraph = this.reader.calcLayout(
-            this.graph,
-            LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES'),
-            size);
+        if (this.data.length === 0) {
+            // empty data source
+            return;
+        }
 
-        var layoutCanvas = this.reader.renderGraph(
-            layoutXGraph,
-            container
-                .append("svg")
-                .style("border", 'solid 1px')
-                .attr("width", size.width)
-                .attr("height", size.height));
+        containerNode.innerHTML = '';
+
+        var svgContainer = container
+            .append("svg")
+            .attr("width", size.width)
+            .attr("height", size.height);
+
+        var reader = new DSLReader(this.spec, this.data);
+        var xGraph = reader.buildGraph();
+        var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES');
+        var layout = reader.calcLayout(xGraph, engine, size);
+        var canvas = reader.renderGraph(layout, svgContainer);
 
         //plugins
-        layoutCanvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
-        this._plugins.render(layoutCanvas);
+        canvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+        this._plugins.render(canvas);
     }
 
     _autoDetectDimensions(data) {

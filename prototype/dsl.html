@@ -53,6 +53,16 @@
             float:left;
             width: 800px;
             height: 800px;
+            border: dotted 1px #000;
+        }
+
+        .cc-empty {
+            width: 260px;
+            height: 260px;
+            position: relative;
+            left: 33%;
+            top:33%;
+            background-image: url("http://siliconangle.com/files/2013/02/no-data.png");
         }
     </style>
     <script>
@@ -105,17 +115,33 @@
 </head>
 <body>
 
-<div id="chart-container" class="cc"></div>
+<div id="chart-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
 
-<div id="chart-priority-container" class="cc"></div>
+<div id="chart-priority-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
 
-<div id="facet-of-facets-container" class="cc"></div>
+<div id="facet-of-facets-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
 
-<div id="simple-container" class="cc"></div>
+<div id="simple-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
 
-<div id="complex-container" class="cc"></div>
+<div id="complex-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
 
-<div id="bars-container" class="cc"></div>
+<div id="bars-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
+<div id="no-data-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
 
 <script>
 
@@ -369,6 +395,7 @@
                 ]
             }).renderTo('#chart-container');
 
+
     new tauChart.Plot(
             {
                 data: rawData,
@@ -403,6 +430,16 @@
     var complexChart = new tauChart.Plot(
             {
                 data: rawData,
+                spec: facet3x1,
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#complex-container');
+
+    var noDataChart = new tauChart.Plot(
+            {
+                data: [],
                 spec: facet3x1,
                 plugins: [
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
