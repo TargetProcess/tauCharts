@@ -6,10 +6,11 @@ var utilsDom =  {
         return window.getComputedStyle(el, undefined).getPropertyValue(prop);
     },
     getContainerSize : function(el) {
-        var padding = 2 * parseInt(this.getStyle(el, 'padding'), 10);
+        var padding = 2 * parseInt(this.getStyle(el, 'padding') || 0, 10);
+        var rect = el.getBoundingClientRect();
         return {
-            width: el.clientWidth - padding,
-            height: el.clientHeight - padding
+            width: rect.width - padding,
+            height: rect.height - padding
         };
     }
 };
