@@ -1,6 +1,7 @@
 import {DSLReader} from '../dsl-reader';
 import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
+import {utilsDom} from '../utils/utils-dom';
 
 export class Plot {
     constructor(config) {
@@ -33,10 +34,8 @@ export class Plot {
             throw new Error('Target element not found');
         }
 
-        var size = _.defaults(xSize || {}, {
-            height : containerNode.offsetHeight,
-            width : containerNode.offsetWidth
-        });
+        //todo don't compute width if width or height were passed
+        var size = _.defaults(xSize || {}, utilsDom.getContainerSize(containerNode));
 
         if (this.data.length === 0) {
             // empty data source

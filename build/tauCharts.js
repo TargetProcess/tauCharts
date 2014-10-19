@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-10-17
+/*! tauCharts - v0.0.1 - 2014-10-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function(definition) {
@@ -1116,6 +1116,18 @@
         };
     plugins$$MIXIN$0(ChartTools.prototype,proto$0);proto$0=void 0;return ChartTools;})();
 
+    var utils$utils$dom$$utilsDom =  {
+        getStyle: function (el, prop) {
+            return window.getComputedStyle(el, undefined).getPropertyValue(prop);
+        },
+        getContainerSize : function(el) {
+            var padding = 2 * parseInt(this.getStyle(el, 'padding'), 10);
+            return {
+                width: el.clientWidth - padding,
+                height: el.clientHeight - padding
+            };
+        }
+    };
     var charts$tau$plot$$Plot = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
         function Plot(config) {
 
@@ -1147,10 +1159,8 @@
                 throw new Error('Target element not found');
             }
 
-            var size = _.defaults(xSize || {}, {
-                height : containerNode.offsetHeight,
-                width : containerNode.offsetWidth
-            });
+            //todo don't compute width if width or height were passed
+            var size = _.defaults(xSize || {}, utils$utils$dom$$utilsDom.getContainerSize(containerNode));
 
             if (this.data.length === 0) {
                 // empty data source
