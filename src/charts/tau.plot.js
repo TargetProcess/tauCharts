@@ -46,6 +46,7 @@ export class Plot {
 
         var svgContainer = container
             .append("svg")
+            .attr("class", "tau-chart")
             .attr("width", size.width)
             .attr("height", size.height);
 

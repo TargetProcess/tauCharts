@@ -1,3 +1,6 @@
+.tau-chart {
+    display:block;
+}
 /* Colors */
 .color10-1 {
     stroke: #e41a1c;
@@ -192,6 +195,7 @@ a:hover {
 
 /* Charts */
 .tau-chart {
+    display: block;
     overflow: visible;
     position: relative;
 }

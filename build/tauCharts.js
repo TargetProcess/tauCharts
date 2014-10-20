@@ -1,4 +1,4 @@
-/*! tauCharts - v0.0.1 - 2014-10-19
+/*! tauCharts - v0.0.1 - 2014-10-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function(definition) {
@@ -1172,6 +1172,7 @@
 
             var svgContainer = container
                 .append("svg")
+                .attr("class", "tau-chart")
                 .attr("width", size.width)
                 .attr("height", size.height);
 
