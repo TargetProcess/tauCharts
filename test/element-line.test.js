@@ -17,8 +17,8 @@ describe("ELEMENT.LINE", function () {
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
+                    x: 'x',
+                    y: 'y',
                     guide:{
 
                     },

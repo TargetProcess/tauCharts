@@ -31,31 +31,22 @@ var TUnitVisitorFactory = (function () {
 
     var TFuncMap = (opName) => FacetAlgebra[opName] || (() => [[{}]]);
 
-    var objectify = (param) => {
-        return _.isObject(param) ? param : {scaleDim: param};
-    };
-
     var TUnitMap = {
 
         'COORDS.RECT': function (unit, continueTraverse) {
 
             var root = _.defaults(unit, {$where: {}});
 
-            root.x = objectify(root.x);
-            root.y = objectify(root.y);
-
             var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
             var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
-            var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x.scaleDim, root.y.scaleDim));
+            var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.y));
             var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
             matrixOfPrFilters.iterate((row, col, $whereRC) => {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
                     var defaultedUnit = _.defaults(utils.clone(sUnit), { x: root.x, y: root.y });
-                    defaultedUnit.x = objectify(defaultedUnit.x);
-                    defaultedUnit.y = objectify(defaultedUnit.y);
                     return _.extend(defaultedUnit, { $where: cellWhere });
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);

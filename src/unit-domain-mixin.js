@@ -42,6 +42,16 @@ export class UnitDomainMixin {
             return d.index || null;
         };
 
+        this.fnDimension = (dimensionName, subUnit) => {
+            var unit = (subUnit || {}).dimensions || {};
+            var xRoot = meta[dimensionName] || {};
+            var xNode = unit[dimensionName] || {};
+            return {
+                scaleDim: dimensionName,
+                scaleType: xNode.scaleType || xRoot.scaleType
+            };
+        };
+
         this.fnSource = (whereFilter) => {
             var predicates = _.map(whereFilter, (v, k) => (row) => getIdMapper(k)(row[k]) === v);
             return _(data).filter((row) => _.every(predicates, ((p) => p(row))));
@@ -66,11 +76,11 @@ export class UnitDomainMixin {
         };
 
         this.fnScaleTo = (scaleDim, interval) => {
-            var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
-            var dimx = _.defaults(temp, meta[temp.scaleDim]);
+            //var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
+            var dimx = _.defaults({}, meta[scaleDim]);
             var fMap = getPropMapper(dimx.name);
             var func = rangeMethods[dimx.scaleType](
-                this.fnDomain(dimx.scaleDim, fMap),
+                this.fnDomain(scaleDim, fMap),
                 interval);
 
             var wrap = (domainPropObject) => func(fMap(domainPropObject));
@@ -85,6 +95,7 @@ export class UnitDomainMixin {
     }
 
     mix(unit) {
+        unit.dimension = this.fnDimension;
         unit.source = this.fnSource;
         unit.domain = this.fnDomain;
         unit.scaleTo = this.fnScaleTo;

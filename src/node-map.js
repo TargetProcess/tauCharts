@@ -5,11 +5,24 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 var nodeMap = {
 
-    'COORDS.RECT': coords,
+    'COORDS.RECT': (node, continueTraverse) => {
+        node.x = node.dimension(node.x, node);
+        node.y = node.dimension(node.y, node);
+        coords(node, continueTraverse);
+    },
 
-    'ELEMENT.POINT': point,
+    'ELEMENT.POINT': (node) => {
+        node.x = node.dimension(node.x, node);
+        node.y = node.dimension(node.y, node);
+        // node.color = node.dimension(node.color, node);
+        // node.size = node.dimension(node.size, node);
+        point(node);
+    },
 
     'ELEMENT.INTERVAL': function (node) {
+
+        node.x = node.dimension(node.x, node);
+        node.y = node.dimension(node.y, node);
 
         var options = node.options || {};
         var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
@@ -38,9 +51,17 @@ var nodeMap = {
         elements.exit().remove();
     },
 
-    'ELEMENT.LINE': line,
+    'ELEMENT.LINE': (node) => {
+        node.x = node.dimension(node.x, node);
+        node.y = node.dimension(node.y, node);
+        // node.color = node.dimension(node.color, node);
+        line(node);
+    },
 
     'WRAP.AXIS': function (node, continueTraverse) {
+
+        node.x = node.dimension(node.x, node);
+        node.y = node.dimension(node.y, node);
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -57,8 +78,8 @@ var nodeMap = {
         node.x.guide.size = W;
         node.y.guide.size = H;
 
-        node.x.scale = node.x.scaleDim && node.scaleTo(node.x, [0, W]);
-        node.y.scale = node.y.scaleDim && node.scaleTo(node.y, [H, 0]);
+        node.x.scale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
+        node.y.scale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
 
         var X_AXIS_POS = [0, H + node.guide.x.padding];
         var Y_AXIS_POS = [0 - node.guide.y.padding, 0];

@@ -5,10 +5,6 @@ function convertAxis(data) {
         return null;
     }
 
-    if (_.isString(data)) {
-        return {scaleDim: data};
-    }
-
     return data;
 }
 

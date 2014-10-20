@@ -15,8 +15,8 @@ describe("Point element with all params", function () {
                 unit: {
                     guide:{},
                     type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
+                    x: 'x',
+                    y: 'y',
                     unit: [
                         {
                             type: 'ELEMENT.POINT',
@@ -39,7 +39,7 @@ describe("Point element with all params", function () {
     });
     it("should right spec", function () {
         assert.ok(schemes.scatterplot(chart.config.spec), 'spec is right');
-    })
+    });
     it("should render point with right cord", function () {
         var dots = getDots();
         expect(dots.length).to.equal(3);
@@ -72,8 +72,8 @@ describe("Point element without color and size params", function () {
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
+                    x: 'x',
+                    y: 'y',
                     unit: [
                         {
                             type: 'ELEMENT.POINT',
@@ -123,8 +123,8 @@ describe("Point element color was presented  with brewer as object", function ()
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
+                    x: 'x',
+                    y: 'y',
                     unit: [
                         {
                             type: 'ELEMENT.POINT',
@@ -167,8 +167,8 @@ describe("Point element color was presented  with brewer as array", function () 
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
+                    x: 'x',
+                    y: 'y',
                     unit: [
                         {
                             type: 'ELEMENT.POINT',

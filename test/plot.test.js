@@ -15,8 +15,8 @@ describe("tauChart.Plot", function () {
             spec: {
                 unit: {
                     type: 'COORDS.RECT',
-                    x: {scaleDim: 'x'},
-                    y: {scaleDim: 'y'},
+                    x: 'x',
+                    y: 'y',
                     unit: [
                         {
                             type: 'ELEMENT.POINT',

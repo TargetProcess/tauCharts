@@ -10,16 +10,16 @@ describe("DSL reader buildGraph()", function () {
         $matrix.iterate(function(r, c, cell) {
             var rect = cell[0];
             expect(rect.type).to.equal('COORDS.RECT');
-            expect(rect.x.scaleDim).to.deep.equal('cycleTime');
-            expect(rect.y.scaleDim).to.deep.equal('effort');
+            expect(rect.x).to.deep.equal('cycleTime');
+            expect(rect.y).to.deep.equal('effort');
             expect(rect.$matrix.sizeR()).to.equal(1);
             expect(rect.$matrix.sizeC()).to.equal(1);
             expect(rect.$where).to.deep.equal(facet[r][c]);
 
             var point = rect.$matrix.getRC(0, 0)[0];
             expect(point.type).to.equal('ELEMENT.POINT');
-            expect(point.x.scaleDim).to.equal('cycleTime');
-            expect(point.y.scaleDim).to.equal('effort');
+            expect(point.x).to.equal('cycleTime');
+            expect(point.y).to.equal('effort');
         });
     };
 

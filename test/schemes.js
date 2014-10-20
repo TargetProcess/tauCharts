@@ -1,5 +1,6 @@
 var schemes = {};
 (function (schemes) {
+
     var point = schema({
         color: [null, String],
         size: [null, String],
@@ -7,40 +8,41 @@ var schemes = {};
         x: [String],
         y: [String]
     });
+
     var line = schema({
         color: [null, String],
         type: "ELEMENT.LINE",
         x: [String],
         y: [String]
     });
+
     var dimension = schema({
         type: String,
         scaleType: String
-    });
-    var scaleDim = schema({
-        scaleDim: String
     });
 
     var dimensions = {
         '*': [null, dimension]
     };
+
     var scatterplot = schema({
         dimensions: dimensions,
         unit: schema({
             guide: undefined,
-            x: scaleDim,
-            y: scaleDim,
+            x: [null, String],
+            y: [null, String],
             type: "COORDS.RECT",
             unit: Array.of(point)
 
         })
     });
+
     var line = schema({
         dimensions: dimensions,
         unit: schema({
             guide: undefined,
-            x: scaleDim,
-            y: scaleDim,
+            x: [null, String],
+            y: [null, String],
             type: "COORDS.RECT",
             unit: Array.of(line)
 
