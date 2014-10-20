@@ -103,10 +103,10 @@
 
 //{
 //    dimensions: {
-//        project: { scaleType: 'ordinal' },
-//        team: { scaleType: 'ordinal' },
-//        cycleTime: { scaleType: 'linear' },
-//        effort: { scaleType: 'linear' }
+//        project: { type: 'categorical' },
+//        team: { type: 'categorical' },
+//        cycleTime: { type: 'quantitative' },
+//        effort: { type: 'quantitative' }
 //    },
 //    data: [],
 //    unit: COORDS.RECT(DIM('project', 'team'), COORDS.RECT(DIM('cycleTime', 'effort'), ELEMENT.POINT('cycleTime', 'effort')))
@@ -147,10 +147,10 @@
 
     var facet2x2 = {
         dimensions: {
-            project: { scaleType: 'ordinal' },
-            team: { scaleType: 'ordinal' },
-            cycleTime: { scaleType: 'linear' },
-            effort: { scaleType: 'linear' }
+            project: { type: 'categorical' },
+            team: { type: 'categorical' },
+            cycleTime: { type: 'quantitative' },
+            effort: { type: 'quantitative' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -188,19 +188,19 @@
     var facetPriority = {
         dimensions: {
             priority: {
-                scaleType: 'ordinal',
+                type: 'categorical',
                 id: 'key',
                 name: 'val',
                 sort: 'desc'
             },
             severity: {
-                scaleType: 'ordinal',
+                type: 'categorical',
                 index: ['Must Have', 'Nice to have']
             },
-            project: { scaleType: 'ordinal' },
-            team: { scaleType: 'ordinal' },
-            cycleTime: { scaleType: 'linear' },
-            effort: { scaleType: 'linear' }
+            project: { type: 'categorical' },
+            team: { type: 'categorical' },
+            cycleTime: { type: 'quantitative' },
+            effort: { type: 'quantitative' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -233,11 +233,11 @@
 
     var facetOfFacets = {
         dimensions: {
-            project: { scaleType: 'ordinal' },
-            team: { scaleType: 'ordinal' },
-            cycleTime: { scaleType: 'linear' },
-            effort: { scaleType: 'linear' },
-            name: { scaleType: 'ordinal' }
+            project: { type: 'categorical' },
+            team: { type: 'categorical' },
+            cycleTime: { type: 'quantitative' },
+            effort: { type: 'quantitative' },
+            name: { type: 'categorical' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -289,10 +289,10 @@
 
     var scatter = {
         dimensions: {
-            project: { scaleType: 'ordinal' },
-            team: { scaleType: 'ordinal' },
-            cycleTime: { scaleType: 'linear' },
-            effort: { scaleType: 'linear' }
+            project: { type: 'categorical' },
+            team: { type: 'categorical' },
+            cycleTime: { type: 'quantitative' },
+            effort: { type: 'quantitative' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -317,10 +317,10 @@
 
     var facet3x1 = {
         dimensions: {
-            project: { scaleType: 'ordinal' },
-            team: { scaleType: 'ordinal' },
-            cycleTime: { scaleType: 'linear' },
-            effort: { scaleType: 'linear' }
+            project: { type: 'categorical' },
+            team: { type: 'categorical' },
+            cycleTime: { type: 'quantitative' },
+            effort: { type: 'quantitative' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -451,12 +451,12 @@
 
         var facet2x1 = {
             dimensions: {
-                month: { scaleType: 'ordinal' },
-                project: { scaleType: 'ordinal' },
-                team: { scaleType: 'ordinal' },
-                cycleTime: { scaleType: 'linear' },
-                effort: { scaleType: 'linear' },
-                count: { scaleType: 'linear' }
+                month: { type: 'categorical' },
+                project: { type: 'categorical' },
+                team: { type: 'categorical' },
+                cycleTime: { type: 'quantitative' },
+                effort: { type: 'quantitative' },
+                count: { type: 'quantitative' }
             },
             unit: {
                 type: 'COORDS.RECT',

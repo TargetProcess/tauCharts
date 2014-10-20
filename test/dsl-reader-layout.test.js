@@ -23,10 +23,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -64,10 +64,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -142,10 +142,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -221,10 +221,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -300,10 +300,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -380,10 +380,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -462,10 +462,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {scaleType: 'ordinal'},
-                    team: {scaleType: 'ordinal'},
-                    effort: {scaleType: 'linear'},
-                    cycleTime: {scaleType: 'linear'}
+                    project: {type: 'categorical', scaleType: 'ordinal'},
+                    team: {type: 'categorical', scaleType: 'ordinal'},
+                    effort: {type: 'quantitative', scaleType: 'linear'},
+                    cycleTime: {type: 'quantitative', scaleType: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',

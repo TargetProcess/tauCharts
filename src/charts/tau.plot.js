@@ -8,15 +8,14 @@ export class Plot {
 
         var chartConfig = this.convertConfig(config);
 
-        if (!chartConfig.spec.dimensions) {
-            chartConfig.spec.dimensions = this._autoDetectDimensions(chartConfig.data);
-        }
-
         this.config = _.defaults(chartConfig, {
             spec: null,
             data: [],
             plugins: []
         });
+
+        chartConfig.spec.dimensions = this._normalizeDimensions(chartConfig.spec.dimensions, chartConfig.data);
+
         this.plugins = this.config.plugins;
         this.spec = this.config.spec;
         this.data = this.config.data;
@@ -62,24 +61,56 @@ export class Plot {
     }
 
     _autoDetectDimensions(data) {
-        function detectType(value) {
-            return _.isNumber(value) ? 'linear' : 'ordinal';
-        }
 
-        return _.reduce(data, (dimensions, item)=> {
-            _.each(item, function (value, key) {
-                if (dimensions[key]) {
-                    if (dimensions[key].scaleType == detectType(value)) {
-                        dimensions[key].scaleType = detectType(value);
-                    } else {
-                        dimensions[key].scaleType = 'ordinal';
-                    }
-                } else {
-                    dimensions[key] = {scaleType: detectType(value)};
-                }
-            });
-            return dimensions;
-        }, {});
+        var detectType = (propertyValue) => {
+            var type;
+            if (_.isObject(propertyValue)) {
+                type = 'qualitative';
+            }
+            else if (_.isNumber(propertyValue)) {
+                type = 'quantitative';
+            }
+            else {
+                type = 'categorical';
+            }
+
+            return type;
+        };
+
+        return _.reduce(
+            data,
+            (dimMemo, rowItem) => {
+
+                _.each(rowItem, (val, key) => {
+                    var assumedType = detectType(val);
+                    dimMemo[key] = dimMemo[key] || {type: assumedType};
+                    dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'categorical';
+                });
+
+                return dimMemo;
+            },
+            {});
+    }
+
+    _autoAssignScales(dimensions) {
+
+        var scaleMap = {
+            categorical: 'ordinal',
+            qualitative: 'ordinal',
+            quantitative:'linear'
+        };
+
+        _.each(dimensions, (val, key) => {
+            var t = val.type.toLowerCase();
+            val.scaleType = val.scaleType || scaleMap[t];
+        });
+
+        return dimensions;
+    }
+
+    _normalizeDimensions(dimensions, data) {
+        var dims = (dimensions) ? dimensions : this._autoDetectDimensions(data);
+        return this._autoAssignScales(dims);
     }
 
     convertConfig(config) {

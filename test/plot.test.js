@@ -9,8 +9,8 @@ describe("tauChart.Plot", function () {
 
         spec = {
             dimensions: {
-                x: {scaleType: 'linear'},
-                y: {scaleType: 'linear'}
+                x: {type: 'quantitative'},
+                y: {type: 'quantitative'}
             },
             spec: {
                 unit: {
