@@ -30,18 +30,18 @@ export class UnitDomainMixin {
 
             var map = {
 
-                categorical: (dim, fnMapperId, domain) => {
+                category: (dim, fnMapperId, domain) => {
                     return domain;
                 },
 
-                qualitative: (dim, fnMapperId, domain) => {
+                order: (dim, fnMapperId, domain) => {
                     var metaOrder = getOrder(dim);
                     return (metaOrder) ?
                         _.union(metaOrder, domain) : // arguments order is important
                         _.sortBy(domain, fnMapperId);
                 },
 
-                quantitative: (dim, fnMapperId, domain) => {
+                measure: (dim, fnMapperId, domain) => {
                     return _.sortBy(domain, fnMapperId);
                 },
 
@@ -55,16 +55,16 @@ export class UnitDomainMixin {
 
             var map = {
 
-                categorical: getDomainSortStrategy('categorical'),
+                category: getDomainSortStrategy('category'),
 
-                qualitative: (dim, fnMapperId, domain) => {
+                order: (dim, fnMapperId, domain) => {
                     var metaOrder = getOrder(dim);
                     return (metaOrder) ?
                         _.union(domain, metaOrder) : // arguments order is important
                         domain;
                 },
 
-                quantitative: getDomainSortStrategy('quantitative'),
+                measure: getDomainSortStrategy('measure'),
 
                 'as-is': getDomainSortStrategy('as-is')
             };

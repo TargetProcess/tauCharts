@@ -634,18 +634,18 @@
     
                 var map = {
     
-                    categorical: function(dim, fnMapperId, domain)  {
+                    category: function(dim, fnMapperId, domain)  {
                         return domain;
                     },
     
-                    qualitative: function(dim, fnMapperId, domain)  {
+                    order: function(dim, fnMapperId, domain)  {
                         var metaOrder = getOrder(dim);
                         return (metaOrder) ?
                             _.union(metaOrder, domain) : // arguments order is important
                             _.sortBy(domain, fnMapperId);
                     },
     
-                    quantitative: function(dim, fnMapperId, domain)  {
+                    measure: function(dim, fnMapperId, domain)  {
                         return _.sortBy(domain, fnMapperId);
                     },
     
@@ -659,16 +659,16 @@
     
                 var map = {
     
-                    categorical: getDomainSortStrategy('categorical'),
+                    category: getDomainSortStrategy('category'),
     
-                    qualitative: function(dim, fnMapperId, domain)  {
+                    order: function(dim, fnMapperId, domain)  {
                         var metaOrder = getOrder(dim);
                         return (metaOrder) ?
                             _.union(domain, metaOrder) : // arguments order is important
                             domain;
                     },
     
-                    quantitative: getDomainSortStrategy('quantitative'),
+                    measure: getDomainSortStrategy('measure'),
     
                     'as-is': getDomainSortStrategy('as-is')
                 };
@@ -1218,13 +1218,13 @@
             var detectType = function(propertyValue)  {
                 var type;
                 if (_.isObject(propertyValue)) {
-                    type = 'qualitative';
+                    type = 'order';
                 }
                 else if (_.isNumber(propertyValue)) {
-                    type = 'quantitative';
+                    type = 'measure';
                 }
                 else {
-                    type = 'categorical';
+                    type = 'category';
                 }
     
                 return type;
@@ -1237,7 +1237,7 @@
                     _.each(rowItem, function(val, key)  {
                         var assumedType = detectType(val);
                         dimMemo[key] = dimMemo[key] || {type: assumedType};
-                        dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'categorical';
+                        dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'category';
                     });
     
                     return dimMemo;
@@ -1248,9 +1248,9 @@
         proto$0._autoAssignScales = function(dimensions) {
     
             var scaleMap = {
-                categorical: 'ordinal',
-                qualitative: 'ordinal',
-                quantitative:'linear'
+                category: 'ordinal',
+                order: 'ordinal',
+                measure:'linear'
             };
     
             _.each(dimensions, function(val, key)  {

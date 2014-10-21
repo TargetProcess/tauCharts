@@ -65,13 +65,13 @@ export class Plot {
         var detectType = (propertyValue) => {
             var type;
             if (_.isObject(propertyValue)) {
-                type = 'qualitative';
+                type = 'order';
             }
             else if (_.isNumber(propertyValue)) {
-                type = 'quantitative';
+                type = 'measure';
             }
             else {
-                type = 'categorical';
+                type = 'category';
             }
 
             return type;
@@ -84,7 +84,7 @@ export class Plot {
                 _.each(rowItem, (val, key) => {
                     var assumedType = detectType(val);
                     dimMemo[key] = dimMemo[key] || {type: assumedType};
-                    dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'categorical';
+                    dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'category';
                 });
 
                 return dimMemo;
@@ -95,9 +95,9 @@ export class Plot {
     _autoAssignScales(dimensions) {
 
         var scaleMap = {
-            categorical: 'ordinal',
-            qualitative: 'ordinal',
-            quantitative:'linear'
+            category: 'ordinal',
+            order: 'ordinal',
+            measure:'linear'
         };
 
         _.each(dimensions, (val, key) => {

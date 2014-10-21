@@ -10,22 +10,22 @@ describe("Unit domain decorator", function () {
     beforeEach(function () {
         decorator = new tauChart.__api__.UnitDomainMixin(
             {
-                name : {type: 'categorical', scale: 'ordinal'},
-                project : {type: 'categorical', scale: 'ordinal'},
-                team    : {type: 'categorical', scale: 'ordinal'},
-                effort  : {type: 'quantitative', scale: 'linear'},
+                name : {type: 'category', scale: 'ordinal'},
+                project : {type: 'category', scale: 'ordinal'},
+                team    : {type: 'category', scale: 'ordinal'},
+                effort  : {type: 'measure', scale: 'linear'},
                 priority: {
-                    type    : 'qualitative',
+                    type    : 'order',
                     scale   : 'ordinal',
                     value   : 'id'
                 },
                 'business value': {
-                    type    : 'categorical',
+                    type    : 'category',
                     scale   : 'ordinal',
                     value   : 'value'
                 },
                 role: {
-                    type    : 'qualitative',
+                    type    : 'order',
                     scale   : 'ordinal',
                     order   : ['Product Owner', 'Feature Owner', 'QA', 'Developer']
                 }

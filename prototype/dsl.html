@@ -103,10 +103,10 @@
 
 //{
 //    dimensions: {
-//        project: { type: 'categorical' },
-//        team: { type: 'categorical' },
-//        cycleTime: { type: 'quantitative' },
-//        effort: { type: 'quantitative' }
+//        project: { type: 'category' },
+//        team: { type: 'category' },
+//        cycleTime: { type: 'measure' },
+//        effort: { type: 'measure' }
 //    },
 //    data: [],
 //    unit: COORDS.RECT(DIM('project', 'team'), COORDS.RECT(DIM('cycleTime', 'effort'), ELEMENT.POINT('cycleTime', 'effort')))
@@ -147,10 +147,10 @@
 
     var facet2x2 = {
         dimensions: {
-            project: { type: 'categorical' },
-            team: { type: 'categorical' },
-            cycleTime: { type: 'quantitative' },
-            effort: { type: 'quantitative' }
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -188,17 +188,17 @@
     var facetPriority = {
         dimensions: {
             priority: {
-                type: 'categorical',
+                type: 'category',
                 value: 'key'
             },
             severity: {
-                type: 'qualitative',
+                type: 'order',
                 order: ['Must Have', 'Nice to have']
             },
-            project: { type: 'categorical' },
-            team: { type: 'categorical' },
-            cycleTime: { type: 'quantitative' },
-            effort: { type: 'quantitative' }
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -232,11 +232,11 @@
 
     var facetOfFacets = {
         dimensions: {
-            project: { type: 'categorical' },
-            team: { type: 'categorical' },
-            cycleTime: { type: 'quantitative' },
-            effort: { type: 'quantitative' },
-            name: { type: 'categorical' }
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' },
+            name: { type: 'category' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -288,10 +288,10 @@
 
     var scatter = {
         dimensions: {
-            project: { type: 'categorical' },
-            team: { type: 'categorical' },
-            cycleTime: { type: 'quantitative' },
-            effort: { type: 'quantitative' }
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -316,10 +316,10 @@
 
     var facet3x1 = {
         dimensions: {
-            project: { type: 'categorical' },
-            team: { type: 'categorical' },
-            cycleTime: { type: 'quantitative' },
-            effort: { type: 'quantitative' }
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
         },
         unit: {
             type: 'COORDS.RECT',
@@ -450,12 +450,12 @@
 
         var facet2x1 = {
             dimensions: {
-                month: { type: 'categorical' },
-                project: { type: 'categorical' },
-                team: { type: 'categorical' },
-                cycleTime: { type: 'quantitative' },
-                effort: { type: 'quantitative' },
-                count: { type: 'quantitative' }
+                month: { type: 'category' },
+                project: { type: 'category' },
+                team: { type: 'category' },
+                cycleTime: { type: 'measure' },
+                effort: { type: 'measure' },
+                count: { type: 'measure' }
             },
             unit: {
                 type: 'COORDS.RECT',

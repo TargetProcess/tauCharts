@@ -27,10 +27,10 @@ describe("DSL reader buildGraph()", function () {
 
         var spec = {
             dimensions: {
-                project: {type: 'categorical'},
-                team: {type: 'categorical'},
-                effort: {type: 'quantitative'},
-                cycleTime: {type: 'quantitative'}
+                project: {type: 'category'},
+                team: {type: 'category'},
+                effort: {type: 'measure'},
+                cycleTime: {type: 'measure'}
             },
             unit: {
                 type: 'COORDS.RECT',
@@ -77,10 +77,10 @@ describe("DSL reader buildGraph()", function () {
         var reader = new tauChart.__api__.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical'},
-                    team: {type: 'categorical'},
-                    effort: {type: 'quantitative'},
-                    cycleTime: {type: 'quantitative'}
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    effort: {type: 'measure'},
+                    cycleTime: {type: 'measure'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -121,10 +121,10 @@ describe("DSL reader buildGraph()", function () {
         var reader = new tauChart.__api__.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical'},
-                    team: {type: 'categorical'},
-                    effort: {type: 'quantitative'},
-                    cycleTime: {type: 'quantitative'}
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    effort: {type: 'measure'},
+                    cycleTime: {type: 'measure'}
                 },
                 unit: {
                     type: 'COORDS.RECT',

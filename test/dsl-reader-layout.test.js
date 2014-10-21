@@ -23,10 +23,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -64,10 +64,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -136,16 +136,16 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         });
     });
 
-    it("should render axes correctly (x:quantitative, y:category)", function () {
+    it("should render axes correctly (x:measure, y:category)", function () {
 
         var api = tauChart.__api__;
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -215,16 +215,16 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         });
     });
 
-    it("should render axes correctly (x:category, y:quantitative)", function () {
+    it("should render axes correctly (x:category, y:measure)", function () {
 
         var api = tauChart.__api__;
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -294,16 +294,16 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         });
     });
 
-    it("should render axes correctly (x:quantitative, y:quantitative)", function () {
+    it("should render axes correctly (x:measure, y:measure)", function () {
 
         var api = tauChart.__api__;
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -380,10 +380,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
@@ -462,10 +462,10 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         var reader = new api.DSLReader(
             {
                 dimensions: {
-                    project: {type: 'categorical', scale: 'ordinal'},
-                    team: {type: 'categorical', scale: 'ordinal'},
-                    effort: {type: 'quantitative', scale: 'linear'},
-                    cycleTime: {type: 'quantitative', scale: 'linear'}
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
                 unit: {
                     type: 'COORDS.RECT',
