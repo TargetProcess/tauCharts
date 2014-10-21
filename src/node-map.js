@@ -14,48 +14,40 @@ var nodeMap = {
     'ELEMENT.POINT': (node) => {
         node.x = node.dimension(node.x, node);
         node.y = node.dimension(node.y, node);
-        // node.color = node.dimension(node.color, node);
-        // node.size = node.dimension(node.size, node);
+        node.color = node.dimension(node.color, node);
+        node.size = node.dimension(node.size, node);
         point(node);
-    },
-
-    'ELEMENT.INTERVAL': function (node) {
-
-        node.x = node.dimension(node.x, node);
-        node.y = node.dimension(node.y, node);
-
-        var options = node.options || {};
-        var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
-        options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-        options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
-
-        var update = function () {
-            return this
-                .attr('class', 'i-role-datum  bar')
-                .attr('x', function (d) {
-                    return options.xScale(d[node.x.scaleDim]) - barWidth / 2;
-                })
-                .attr('width', barWidth)
-                .attr('y', function (d) {
-                    return options.yScale(d[node.y.scaleDim]);
-                })
-                .attr('height', function (d) {
-                    return options.height - options.yScale(d[node.y.scaleDim]);
-                });
-        };
-
-
-        var elements = options.container.selectAll(".bar").data(node.partition());
-        elements.call(update);
-        elements.enter().append('rect').call(update);
-        elements.exit().remove();
     },
 
     'ELEMENT.LINE': (node) => {
         node.x = node.dimension(node.x, node);
         node.y = node.dimension(node.y, node);
-        // node.color = node.dimension(node.color, node);
+        node.color = node.dimension(node.color, node);
         line(node);
+    },
+
+    'ELEMENT.INTERVAL': function (node) {
+        node.x = node.dimension(node.x, node);
+        node.y = node.dimension(node.y, node);
+
+        var options = node.options;
+        var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
+        var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+        var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+
+        var update = function () {
+            return this
+                .attr('class', 'i-role-datum  bar')
+                .attr('x', (d) => xScale(d[node.x.scaleDim]) - barWidth / 2)
+                .attr('y', (d) => yScale(d[node.y.scaleDim]))
+                .attr('width', barWidth)
+                .attr('height', (d) => options.height - yScale(d[node.y.scaleDim]));
+        };
+
+        var elements = options.container.selectAll(".bar").data(node.partition());
+        elements.call(update);
+        elements.enter().append('rect').call(update);
+        elements.exit().remove();
     },
 
     'WRAP.AXIS': function (node, continueTraverse) {

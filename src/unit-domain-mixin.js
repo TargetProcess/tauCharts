@@ -76,7 +76,6 @@ export class UnitDomainMixin {
         };
 
         this.fnScaleTo = (scaleDim, interval) => {
-            //var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
             var dimx = _.defaults({}, meta[scaleDim]);
             var fMap = getPropMapper(dimx.name);
             var func = rangeMethods[dimx.scaleType](

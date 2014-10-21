@@ -116,23 +116,25 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
+
 var generateColor = function (node) {
-    var defaultRange = ['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'];
-    var range, domain, colorDim;
-    var colorParam = node.color || '';
-    colorDim = colorParam;
-    if (utils.type(colorParam) === 'string') {
-        range = defaultRange;
+    var defaultRange = _.times(10, (i) => 'color10-' + (1 + i));
+    var range, domain;
+    var colorGuide = (node.guide || {}).color || {};
+    var colorParam = node.color;
+
+    var colorDim = colorParam.scaleDim;
+    var brewer = colorGuide.brewer || defaultRange;
+
+    if (utils.isArray(brewer)) {
         domain = node.domain(colorDim);
-    } else if (utils.isArray(colorParam.brewer)) {
-        range = colorParam.brewer;
-        colorDim = colorParam.dimension;
-        domain = node.domain(colorDim);
-    } else {
-        domain = Object.keys(colorParam.brewer);
-        range = domain.map((key) => colorParam.brewer[key]);
-        colorDim = colorParam.dimension;
+        range = brewer;
     }
+    else {
+        domain = Object.keys(brewer);
+        range = domain.map((key) => brewer[key]);
+    }
+
     return {
         get: (d) => {
             return d3.scale

@@ -267,23 +267,25 @@
     
         return grid;
     };
+
     var utils$utils$draw$$generateColor = function (node) {
-        var defaultRange = ['color10-1', 'color10-2', 'color10-3', 'color10-4', 'color10-5', 'color10-6', 'color10-7', 'color10-8', 'color10-9', 'color10-10'];
-        var range, domain, colorDim;
-        var colorParam = node.color || '';
-        colorDim = colorParam;
-        if (utils$utils$$utils.type(colorParam) === 'string') {
-            range = defaultRange;
+        var defaultRange = _.times(10, function(i)  {return 'color10-' + (1 + i)});
+        var range, domain;
+        var colorGuide = (node.guide || {}).color || {};
+        var colorParam = node.color;
+    
+        var colorDim = colorParam.scaleDim;
+        var brewer = colorGuide.brewer || defaultRange;
+    
+        if (utils$utils$$utils.isArray(brewer)) {
             domain = node.domain(colorDim);
-        } else if (utils$utils$$utils.isArray(colorParam.brewer)) {
-            range = colorParam.brewer;
-            colorDim = colorParam.dimension;
-            domain = node.domain(colorDim);
-        } else {
-            domain = Object.keys(colorParam.brewer);
-            range = domain.map(function(key)  {return colorParam.brewer[key]});
-            colorDim = colorParam.dimension;
+            range = brewer;
         }
+        else {
+            domain = Object.keys(brewer);
+            range = domain.map(function(key)  {return brewer[key]});
+        }
+    
         return {
             get: function(d)  {
                 return d3.scale
@@ -353,85 +355,71 @@
     };
     var elements$line$$line = function (node) {
     
-        var options = node.options || {};
-        options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-        options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+        var options = node.options;
+        var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+        var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
-        var categories = d3.nest()
-            .key(function(d){
-                return d[color.dimension];
-            })
+    
+        var categories = d3
+            .nest()
+            .key(function(d)  {return d[color.dimension]})
             .entries(node.partition());
     
-    
         var updateLines = function () {
-            this.attr('class', function(d){
-                return 'line ' + color.get(d.key);
-            });
-            var paths = this.selectAll('path').data(function (d) {
-                return [d.values];
-            });
+            this.attr('class', function(d)  {return 'line ' + color.get(d.key)});
+            var paths = this.selectAll('path').data(function(d)  {return [d.values]});
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);
             paths.exit().remove();
         };
     
-        var line = d3.svg.line()
-            .x(function(d)  {return options.xScale(d[node.x.scaleDim])})
-            .y(function(d)  {return options.yScale(d[node.y.scaleDim])});
+        var line = d3
+            .svg
+            .line()
+            .x(function(d)  {return xScale(d[node.x.scaleDim])})
+            .y(function(d)  {return yScale(d[node.y.scaleDim])});
     
         var updatePaths = function () {
             this.attr('d', line);
         };
     
-    
-    
         var lines = options.container.selectAll('.line').data(categories);
         lines.call(updateLines);
         lines.enter().append('g').call(updateLines);
         lines.exit().remove();
-    
     };
     var elements$point$$point = function (node) {
     
         var filteredData = node.partition();
-        var srcData = node.source();
-        var options = node.options || {};
-        options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-        options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
-    
+        var options = node.options;
+        var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+        var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
     
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
         var maxAxis = _.max([options.width, options.height]);
-        var sizeValues = _(srcData).chain().pluck(node.size).map(function(value){return parseInt(value, 10)});
+        var sizeValues = node.domain(node.size.scaleDim);
     
         var size = d3
             .scale
             .linear()
             .range([maxAxis / 200, maxAxis / 100])
             .domain([
-                sizeValues.min().value(),
-                sizeValues.max().value()
+                Math.min.apply(null, sizeValues),
+                Math.max.apply(null, sizeValues)
             ]);
     
         var update = function () {
             return this
                 .attr('r', function (d) {
-                    var s = size(d[node.size]);
+                    var s = size(d[node.size.scaleDim]);
                     if (!_.isFinite(s)) {
                         s = maxAxis / 100;
                     }
                     return s;
                 })
-                .attr('class', function (d) {
-                    return 'dot i-role-datum ' + color.get(d[color.dimension]);
-                })
-                .attr('cx', function (d) {
-                    return options.xScale(d[node.x.scaleDim]);
-                })
-                .attr('cy', function (d) {
-                    return options.yScale(d[node.y.scaleDim]);
-                });
+                .attr('class', function(d)  {return 'dot i-role-datum ' + color.get(d[color.dimension])})
+                .attr('cx', function(d)  {return xScale(d[node.x.scaleDim])})
+                .attr('cy', function(d)  {return yScale(d[node.y.scaleDim])});
         };
     
         var elements = options.container.selectAll('.dot').data(filteredData);
@@ -451,48 +439,40 @@
         'ELEMENT.POINT': function(node)  {
             node.x = node.dimension(node.x, node);
             node.y = node.dimension(node.y, node);
-            // node.color = node.dimension(node.color, node);
-            // node.size = node.dimension(node.size, node);
+            node.color = node.dimension(node.color, node);
+            node.size = node.dimension(node.size, node);
             elements$point$$point(node);
-        },
-    
-        'ELEMENT.INTERVAL': function (node) {
-    
-            node.x = node.dimension(node.x, node);
-            node.y = node.dimension(node.y, node);
-    
-            var options = node.options || {};
-            var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
-            options.xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-            options.yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
-    
-            var update = function () {
-                return this
-                    .attr('class', 'i-role-datum  bar')
-                    .attr('x', function (d) {
-                        return options.xScale(d[node.x.scaleDim]) - barWidth / 2;
-                    })
-                    .attr('width', barWidth)
-                    .attr('y', function (d) {
-                        return options.yScale(d[node.y.scaleDim]);
-                    })
-                    .attr('height', function (d) {
-                        return options.height - options.yScale(d[node.y.scaleDim]);
-                    });
-            };
-    
-    
-            var elements = options.container.selectAll(".bar").data(node.partition());
-            elements.call(update);
-            elements.enter().append('rect').call(update);
-            elements.exit().remove();
         },
     
         'ELEMENT.LINE': function(node)  {
             node.x = node.dimension(node.x, node);
             node.y = node.dimension(node.y, node);
-            // node.color = node.dimension(node.color, node);
+            node.color = node.dimension(node.color, node);
             elements$line$$line(node);
+        },
+    
+        'ELEMENT.INTERVAL': function (node) {
+            node.x = node.dimension(node.x, node);
+            node.y = node.dimension(node.y, node);
+    
+            var options = node.options;
+            var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
+            var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
+            var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+    
+            var update = function () {
+                return this
+                    .attr('class', 'i-role-datum  bar')
+                    .attr('x', function(d)  {return xScale(d[node.x.scaleDim]) - barWidth / 2})
+                    .attr('y', function(d)  {return yScale(d[node.y.scaleDim])})
+                    .attr('width', barWidth)
+                    .attr('height', function(d)  {return options.height - yScale(d[node.y.scaleDim])});
+            };
+    
+            var elements = options.container.selectAll(".bar").data(node.partition());
+            elements.call(update);
+            elements.enter().append('rect').call(update);
+            elements.exit().remove();
         },
     
         'WRAP.AXIS': function (node, continueTraverse) {
@@ -705,7 +685,6 @@
             };
     
             this.fnScaleTo = function(scaleDim, interval)  {
-                //var temp = _.isString(scaleDim) ? {scaleDim: scaleDim} : scaleDim;
                 var dimx = _.defaults({}, meta[scaleDim]);
                 var fMap = getPropMapper(dimx.name);
                 var func = unit$domain$mixin$$rangeMethods[dimx.scaleType](

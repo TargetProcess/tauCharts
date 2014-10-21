@@ -130,12 +130,10 @@ describe("Point element color was presented  with brewer as object", function ()
                             type: 'ELEMENT.POINT',
                             x: 'x',
                             y: 'y',
-                            color: {
-                                dimension: 'color',
-                                brewer: {
-                                    red: 'red',
-                                    green: 'green',
-                                    blue: 'blue'
+                            color: 'color',
+                            guide: {
+                                color: {
+                                    brewer: { red: 'red', green: 'green', blue: 'blue' }
                                 }
                             }
                         }
@@ -174,9 +172,9 @@ describe("Point element color was presented  with brewer as array", function () 
                             type: 'ELEMENT.POINT',
                             x: 'x',
                             y: 'y',
-                            color: {
-                                dimension: 'color',
-                                brewer: tauBrewer('YlGn', 3)
+                            color: 'color',
+                            guide: {
+                                color: { brewer: tauBrewer('YlGn', 3) }
                             }
                         }
                     ]
