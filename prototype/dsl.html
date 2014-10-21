@@ -189,13 +189,11 @@
         dimensions: {
             priority: {
                 type: 'categorical',
-                id: 'key',
-                name: 'val',
-                sort: 'desc'
+                value: 'key'
             },
             severity: {
-                type: 'categorical',
-                index: ['Must Have', 'Nice to have']
+                type: 'qualitative',
+                order: ['Must Have', 'Nice to have']
             },
             project: { type: 'categorical' },
             team: { type: 'categorical' },
@@ -227,7 +225,8 @@
                             type: 'ELEMENT.POINT'
                         }
                     ]
-                }]
+                }
+            ]
         }
     };
 

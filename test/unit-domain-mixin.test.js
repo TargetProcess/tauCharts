@@ -10,36 +10,24 @@ describe("Unit domain decorator", function () {
     beforeEach(function () {
         decorator = new tauChart.__api__.UnitDomainMixin(
             {
-                project: {type: 'categorical', scale: 'ordinal'},
-                team: {
-                    scale: 'ordinal',
-                    type: 'categorical',
-                    sort: 1
-                },
-                effort: {type: 'quantitative', scale: 'linear'},
+                name : {type: 'categorical', scale: 'ordinal'},
+                project : {type: 'categorical', scale: 'ordinal'},
+                team    : {type: 'categorical', scale: 'ordinal'},
+                effort  : {type: 'quantitative', scale: 'linear'},
                 priority: {
-                    scale: 'ordinal',
-                    type: 'categorical',
-                    id: function (x) {
-                        return x.id
-                    },
-                    name: function (x) {
-                        return x.name
-                    },
-                    sort: -1
+                    type    : 'qualitative',
+                    scale   : 'ordinal',
+                    value   : 'id'
                 },
                 'business value': {
-                    scale: 'ordinal',
-                    type: 'categorical',
-                    id: 'value',
-                    name: 'title',
-                    sort: 'ASC'
+                    type    : 'categorical',
+                    scale   : 'ordinal',
+                    value   : 'value'
                 },
                 role: {
-                    scale: 'ordinal',
-                    type: 'categorical',
-                    index: ['Product Owner', 'Feature Owner', 'QA', 'Developer'],
-                    sort: 'desc'
+                    type    : 'qualitative',
+                    scale   : 'ordinal',
+                    order   : ['Product Owner', 'Feature Owner', 'QA', 'Developer']
                 }
             },
             data);
@@ -55,18 +43,20 @@ describe("Unit domain decorator", function () {
 
     it("should decorate with [domain] method", function () {
         var unit = decorator.mix({});
-        expect(unit.domain('project').sort()).to.deep.equal(['TP2', 'TP3']);
-        expect(unit.domain('team')).to.deep.equal(['Alaska', 'Exploited']);
-        expect(unit.domain('name').sort()).to.deep.equal(['Errors', 'Follow', 'Report']);
-        expect(unit.domain('effort').sort()).to.deep.equal([0, 1, 2]);
+        expect(unit.domain('project')).to.deep.equal(['TP3', 'TP2']);
+        expect(unit.domain('team')).to.deep.equal(['Exploited', 'Alaska']);
+        expect(unit.domain('name')).to.deep.equal(['Report', 'Follow', 'Errors']);
 
-        expect(unit.domain('priority')).to.deep.equal([3, 2, 1]);
-        expect(unit.domain('priority', function(x) { return x.name })).to.deep.equal(['high', 'medium', 'low']);
+        expect(unit.domain('effort')).to.deep.equal([0, 1, 2]);
 
-        expect(unit.domain('business value')).to.deep.equal([1, 3]);
-        expect(unit.domain('business value', function(x) { return x.title })).to.deep.equal(['Nice to have', 'Must Have']);
+        expect(unit.domain('priority')).to.deep.equal([1, 2, 3]);
 
-        expect(unit.domain('role')).to.deep.equal(['Some Unknown role', 'Developer', 'QA', 'Feature Owner', 'Product Owner']);
+        expect(unit.domain('business value')).to.deep.equal([3, 1]);
+
+        expect(unit.domain('role'))
+            .to
+            .deep
+            .equal(['Product Owner', 'Feature Owner', 'QA', 'Developer', 'Some Unknown role']);
     });
 
     it("should decorate with [scaleTo] method", function () {
@@ -80,22 +70,27 @@ describe("Unit domain decorator", function () {
         expect(scaleEffort(1)).to.equal(5);
         expect(scaleEffort(2)).to.equal(10);
 
-        var scalePriority = unit.scaleTo('priority', [0, 90]);
-        expect(scalePriority(data[2].priority)).to.equal(15);
+        var scalePriority = unit.scaleTo('priority', [0, 90], 'name');
+        expect(scalePriority(data[0].priority)).to.equal(15);
         expect(scalePriority(data[1].priority)).to.equal(45);
-        expect(scalePriority(data[0].priority)).to.equal(75);
+        expect(scalePriority(data[2].priority)).to.equal(75);
         assert.equal(scalePriority.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
 
         var propName = 'business value';
-        var scaleBV = unit.scaleTo(propName, [0, 100]);
-        expect(scaleBV(data[1][propName])).to.equal(25);
-        expect(scaleBV(data[0][propName])).to.equal(75);
+        var scaleBV = unit.scaleTo(propName, [0, 100], 'title');
+        expect(scaleBV(data[0][propName])).to.equal(25);
+        expect(scaleBV(data[1][propName])).to.equal(75);
         assert.equal(scaleBV.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
 
         var scaleRole = unit.scaleTo('role', [0, 100]);
-        expect(scaleRole('Some Unknown role')).to.equal(10);
+
+        expect(scaleRole('Feature Owner')).to.equal(10);
+        expect(scaleRole('Some Unknown role')).to.equal(30);
         expect(scaleRole('QA')).to.equal(50);
-        expect(scaleRole('Product Owner')).to.equal(90);
+
+        expect(scaleRole('Product Owner')).to.equal(70);
+        expect(scaleRole('Developer')).to.equal(90);
+
         assert.equal(scaleRole.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
     });
 

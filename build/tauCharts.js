@@ -616,34 +616,64 @@
 
     var unit$domain$mixin$$UnitDomainMixin = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
     
-        function UnitDomainMixin(meta, data) {var this$0 = this;
+        function UnitDomainMixin(meta, data) {
     
-            var getPropMapper = function(prop)  {
-                return !prop ? (function(propObj)  {return propObj}) : (_.isFunction(prop) ? prop : (function(propObj)  {return propObj[prop]}));
-            };
+            var getPropMapper = function(prop)  {return function(propObj)  {return propObj[prop]}} ;
     
-            var getIdMapper = function(dim)  {
+            var getValueMapper = function(dim)  {
                 var d = meta[dim] || {};
-                var prop = d.id || (function(x)  {return x});
-                return getPropMapper(prop);
+                return d.value ? getPropMapper(d.value) : (function(x)  {return x});
             };
     
-            var sortAliases = {
-                asc: 1,
-                desc: -1,
-                '-1': -1,
-                '1': 1
-            };
-    
-            var getSortOrder = function(dim)  {
+            var getOrder = function(dim)  {
                 var d = meta[dim] || {};
-                var s = (d.sort || '').toString().toLowerCase();
-                return sortAliases[s] || 0;
+                return d.order || null;
             };
     
-            var getIndex = function(dim)  {
-                var d = meta[dim] || {};
-                return d.index || null;
+            var getDomainSortStrategy = function(type)  {
+    
+                var map = {
+    
+                    categorical: function(dim, fnMapperId, domain)  {
+                        return domain;
+                    },
+    
+                    qualitative: function(dim, fnMapperId, domain)  {
+                        var metaOrder = getOrder(dim);
+                        return (metaOrder) ?
+                            _.union(metaOrder, domain) : // arguments order is important
+                            _.sortBy(domain, fnMapperId);
+                    },
+    
+                    quantitative: function(dim, fnMapperId, domain)  {
+                        return _.sortBy(domain, fnMapperId);
+                    },
+    
+                    'as-is': (function(dim, fnMapperId, domain)  {return domain})
+                };
+    
+                return map[type] || map['as-is'];
+            };
+    
+            var getScaleSortStrategy = function(type)  {
+    
+                var map = {
+    
+                    categorical: getDomainSortStrategy('categorical'),
+    
+                    qualitative: function(dim, fnMapperId, domain)  {
+                        var metaOrder = getOrder(dim);
+                        return (metaOrder) ?
+                            _.union(domain, metaOrder) : // arguments order is important
+                            domain;
+                    },
+    
+                    quantitative: getDomainSortStrategy('quantitative'),
+    
+                    'as-is': getDomainSortStrategy('as-is')
+                };
+    
+                return map[type] || map['as-is'];
             };
     
             this.fnDimension = function(dimensionName, subUnit)  {
@@ -657,34 +687,37 @@
             };
     
             this.fnSource = function(whereFilter)  {
-                var predicates = _.map(whereFilter, function(v, k)  {return function(row)  {return getIdMapper(k)(row[k]) === v}});
+                var predicates = _.map(whereFilter, function(v, k)  {return function(row)  {return getValueMapper(k)(row[k]) === v}});
                 return _(data).filter(function(row)  {return _.every(predicates, (function(p)  {return p(row)}))});
             };
     
-            this.fnDomain = function(dim, fnNameMapper)  {
-                var fnMapperId = getIdMapper(dim);
-                var domain = _(data).chain().pluck(dim).uniq(fnMapperId).value();
+            var _domain = function(dim, fnSort)  {
     
-                var sortOrder = getSortOrder(dim);
-                var metaIndex = getIndex(dim);
-                var domainAsc;
-                if (metaIndex === null) {
-                    domainAsc = (sortOrder !== 0) ? _.sortBy(domain, fnMapperId) : domain;
-                }
-                else {
-                    domainAsc = _.union(metaIndex, domain);
+                if (!meta[dim]) {
+                    return [null];
                 }
     
-                var domainSorted = (sortOrder === -1) ? domainAsc.reverse() : domainAsc;
-                return domainSorted.map(fnNameMapper || fnMapperId);
+                var fnMapperId = getValueMapper(dim);
+                var uniqValues = _(data).chain().pluck(dim).uniq(fnMapperId).value();
+    
+                return fnSort(dim, fnMapperId, uniqValues);
             };
     
-            this.fnScaleTo = function(scaleDim, interval)  {
+            this.fnDomain = function(dim)  {
+                var fnMapperId = getValueMapper(dim);
+                var type = (meta[dim] || {}).type;
+                var domainSortedAsc = _domain(dim, getDomainSortStrategy(type));
+                return domainSortedAsc.map(fnMapperId);
+            };
+    
+            this.fnScaleTo = function(scaleDim, interval, propertyPath)  {
                 var dimx = _.defaults({}, meta[scaleDim]);
-                var fMap = getPropMapper(dimx.name);
-                var func = unit$domain$mixin$$rangeMethods[dimx.scale](
-                    this$0.fnDomain(scaleDim, fMap),
-                    interval);
+                var fMap = propertyPath ? getPropMapper(propertyPath) : getValueMapper(scaleDim);
+    
+                var type = (meta[scaleDim] || {}).type;
+                var vals = _domain(scaleDim, getScaleSortStrategy(type)).map(fMap);
+    
+                var func = unit$domain$mixin$$rangeMethods[dimx.scale](vals, interval);
     
                 var wrap = function(domainPropObject)  {return func(fMap(domainPropObject))};
                 // have to copy properties since d3 produce Function with methods
