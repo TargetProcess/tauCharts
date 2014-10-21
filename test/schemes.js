@@ -18,7 +18,7 @@ var schemes = {};
 
     var dimension = schema({
         type: String,
-        scaleType: String
+        scale: String
     });
 
     var dimensions = {

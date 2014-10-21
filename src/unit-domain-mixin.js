@@ -48,7 +48,7 @@ export class UnitDomainMixin {
             var xNode = unit[dimensionName] || {};
             return {
                 scaleDim: dimensionName,
-                scaleType: xNode.scaleType || xRoot.scaleType
+                scaleType: xNode.scale || xRoot.scale
             };
         };
 
@@ -78,7 +78,7 @@ export class UnitDomainMixin {
         this.fnScaleTo = (scaleDim, interval) => {
             var dimx = _.defaults({}, meta[scaleDim]);
             var fMap = getPropMapper(dimx.name);
-            var func = rangeMethods[dimx.scaleType](
+            var func = rangeMethods[dimx.scale](
                 this.fnDomain(scaleDim, fMap),
                 interval);
 

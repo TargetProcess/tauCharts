@@ -13,8 +13,8 @@ var coords = function (node, continueTraverse) {
     var W = options.width - (padding.l + padding.r);
     var H = options.height - (padding.t + padding.b);
 
-    node.x.scale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
-    node.y.scale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
+    node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
+    node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
 
     node.x.guide.size = W;
     node.y.guide.size = H;

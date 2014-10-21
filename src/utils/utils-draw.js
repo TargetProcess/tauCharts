@@ -7,7 +7,7 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, sectorSize, size) {
     var container = this;
     if (x.scaleDim) {
 
-        var axisScale = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient);
+        var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient);
 
         axisScale.ticks(_.max([Math.round(size / x.guide.density), 4]));
 
@@ -77,7 +77,7 @@ var fnDrawGrid = function (node, H, W) {
 
         if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
             var x = node.x;
-            var xGridAxis = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient).tickSize(H);
+            var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H);
 
             xGridAxis.ticks(_.max([Math.round(W / x.guide.density), 4]));
 
@@ -95,7 +95,7 @@ var fnDrawGrid = function (node, H, W) {
 
         if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
             var y = node.y;
-            var yGridAxis = d3.svg.axis().scale(y.scale).orient(y.guide.scaleOrient).tickSize(-W);
+            var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W);
 
             yGridAxis.ticks(_.max([Math.round(H / y.guide.density), 4]));
 
@@ -136,12 +136,7 @@ var generateColor = function (node) {
     }
 
     return {
-        get: (d) => {
-            return d3.scale
-                .ordinal()
-                .range(range)
-                .domain(domain)(d);
-        },
+        get: (d) => d3.scale.ordinal().range(range).domain(domain)(d),
         dimension:colorDim
     };
 };

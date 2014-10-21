@@ -102,7 +102,7 @@ export class Plot {
 
         _.each(dimensions, (val, key) => {
             var t = val.type.toLowerCase();
-            val.scaleType = val.scaleType || scaleMap[t];
+            val.scale = val.scale || scaleMap[t];
         });
 
         return dimensions;

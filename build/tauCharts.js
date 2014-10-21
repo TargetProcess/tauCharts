@@ -158,7 +158,7 @@
         var container = this;
         if (x.scaleDim) {
     
-            var axisScale = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient);
+            var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient);
     
             axisScale.ticks(_.max([Math.round(size / x.guide.density), 4]));
     
@@ -228,7 +228,7 @@
     
             if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                 var x = node.x;
-                var xGridAxis = d3.svg.axis().scale(x.scale).orient(x.guide.scaleOrient).tickSize(H);
+                var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H);
     
                 xGridAxis.ticks(_.max([Math.round(W / x.guide.density), 4]));
     
@@ -246,7 +246,7 @@
     
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
-                var yGridAxis = d3.svg.axis().scale(y.scale).orient(y.guide.scaleOrient).tickSize(-W);
+                var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W);
     
                 yGridAxis.ticks(_.max([Math.round(H / y.guide.density), 4]));
     
@@ -287,12 +287,7 @@
         }
     
         return {
-            get: function(d)  {
-                return d3.scale
-                    .ordinal()
-                    .range(range)
-                    .domain(domain)(d);
-            },
+            get: function(d)  {return d3.scale.ordinal().range(range).domain(domain)(d)},
             dimension:colorDim
         };
     };
@@ -319,8 +314,8 @@
         var W = options.width - (padding.l + padding.r);
         var H = options.height - (padding.t + padding.b);
     
-        node.x.scale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
-        node.y.scale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
+        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
+        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
     
         node.x.guide.size = W;
         node.y.guide.size = H;
@@ -495,8 +490,8 @@
             node.x.guide.size = W;
             node.y.guide.size = H;
     
-            node.x.scale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
-            node.y.scale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
+            node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W]);
+            node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0]);
     
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
@@ -657,7 +652,7 @@
                 var xNode = unit[dimensionName] || {};
                 return {
                     scaleDim: dimensionName,
-                    scaleType: xNode.scaleType || xRoot.scaleType
+                    scaleType: xNode.scale || xRoot.scale
                 };
             };
     
@@ -687,7 +682,7 @@
             this.fnScaleTo = function(scaleDim, interval)  {
                 var dimx = _.defaults({}, meta[scaleDim]);
                 var fMap = getPropMapper(dimx.name);
-                var func = unit$domain$mixin$$rangeMethods[dimx.scaleType](
+                var func = unit$domain$mixin$$rangeMethods[dimx.scale](
                     this$0.fnDomain(scaleDim, fMap),
                     interval);
     
@@ -1227,7 +1222,7 @@
     
             _.each(dimensions, function(val, key)  {
                 var t = val.type.toLowerCase();
-                val.scaleType = val.scaleType || scaleMap[t];
+                val.scale = val.scale || scaleMap[t];
             });
     
             return dimensions;
