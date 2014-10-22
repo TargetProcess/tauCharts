@@ -70,14 +70,14 @@ describe("Unit domain decorator", function () {
         expect(scaleEffort(1)).to.equal(5);
         expect(scaleEffort(2)).to.equal(10);
 
-        var scalePriority = unit.scaleTo('priority', [0, 90], 'name');
+        var scalePriority = unit.scaleTo('priority', [0, 90], {map:'name'});
         expect(scalePriority(data[0].priority)).to.equal(15);
         expect(scalePriority(data[1].priority)).to.equal(45);
         expect(scalePriority(data[2].priority)).to.equal(75);
         assert.equal(scalePriority.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
 
         var propName = 'business value';
-        var scaleBV = unit.scaleTo(propName, [0, 100], 'title');
+        var scaleBV = unit.scaleTo(propName, [0, 100], {map:'title'});
         expect(scaleBV(data[0][propName])).to.equal(25);
         expect(scaleBV(data[1][propName])).to.equal(75);
         assert.equal(scaleBV.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');

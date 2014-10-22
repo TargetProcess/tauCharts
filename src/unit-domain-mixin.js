@@ -1,12 +1,18 @@
 var rangeMethods = {
 
-    'ordinal': (inputValues, interval) => {
+    'ordinal': (inputValues, interval, props) => {
         return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
     },
 
-    'linear': (inputValues, interval) => {
+    'linear': (inputValues, interval, props) => {
         var domainParam = d3.extent(inputValues);
-        return d3.scale.linear().domain(domainParam).nice().rangeRound(interval, 1);
+        var min = _.isNumber(props.min) ? props.min : domainParam[0];
+        var max = _.isNumber(props.max) ? props.max : domainParam[1];
+        var range = [
+            Math.min(min, domainParam[0]),
+            Math.max(max, domainParam[1])
+        ];
+        return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
     }
 };
 
@@ -106,14 +112,15 @@ export class UnitDomainMixin {
             return domainSortedAsc.map(fnMapperId);
         };
 
-        this.fnScaleTo = (scaleDim, interval, propertyPath) => {
+        this.fnScaleTo = (scaleDim, interval, props) => {
+            var propertyObj = props || {};
             var dimx = _.defaults({}, meta[scaleDim]);
-            var fMap = propertyPath ? getPropMapper(propertyPath) : getValueMapper(scaleDim);
+            var fMap = propertyObj.map ? getPropMapper(propertyObj.map) : getValueMapper(scaleDim);
 
             var type = (meta[scaleDim] || {}).type;
             var vals = _domain(scaleDim, getScaleSortStrategy(type)).map(fMap);
 
-            var func = rangeMethods[dimx.scale](vals, interval);
+            var func = rangeMethods[dimx.scale](vals, interval, propertyObj);
 
             var wrap = (domainPropObject) => func(fMap(domainPropObject));
             // have to copy properties since d3 produce Function with methods
