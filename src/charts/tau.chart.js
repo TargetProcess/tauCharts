@@ -10,6 +10,7 @@ function convertAxis(data) {
 
 function generateSimpleConfig(type, config) {
     var chartConfig = _.omit(config, 'spec');
+    var colorGuide = config.guide && config.guide.color || {};
     chartConfig.spec = {
         dimensions: config.dimensions,
         unit: {
@@ -28,7 +29,10 @@ function generateSimpleConfig(type, config) {
                     x: config.x,
                     y: config.y,
                     color: config.color,
-                    size: config.size
+                    size: config.size,
+                    guide: {
+                        color:  colorGuide
+                    }
                 }
             ]
         }
@@ -38,13 +42,13 @@ function generateSimpleConfig(type, config) {
 }
 var typesChart = {
     'scatterplot': (config)=> {
-        return generateSimpleConfig('ELEMENT.POINT',config);
+        return generateSimpleConfig('ELEMENT.POINT', config);
     },
-    'line':(config) => {
-        return generateSimpleConfig('ELEMENT.LINE',config);
+    'line': (config) => {
+        return generateSimpleConfig('ELEMENT.LINE', config);
     },
-    'bar':(config) => {
-        return generateSimpleConfig('ELEMENT.INTERVAL',config);
+    'bar': (config) => {
+        return generateSimpleConfig('ELEMENT.INTERVAL', config);
     }
 };
 

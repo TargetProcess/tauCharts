@@ -2,9 +2,9 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-      <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
-      <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-      <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
     <!--<script src="../libs/underscore.js"></script>
     <script src="../libs/jquery.js"></script>
     <script src="../libs/d3.js"></script>-->
@@ -203,7 +203,7 @@ var Tooltip = {
 };
 
 tau.plugins.add('tableHighlight', Tooltip);
-System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/,'$1src/');
+System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
 System.import('tau.newCharts').then(function (m) {
     var defData = [
         {"team": "d", "cycleTime": 1, "effort": 1, "count": 1, "priority": "low"}, {
@@ -266,7 +266,7 @@ System.import('tau.newCharts').then(function (m) {
             brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
         }))
     });
-    $('select,input[type=checkbox]').change(function(){
+    $('select,input[type=checkbox]').change(function () {
         try {
             drawChart();
         } catch (e) {
@@ -307,7 +307,10 @@ System.import('tau.newCharts').then(function (m) {
             plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
             x: getFieldData($x),
             y: getFieldData($y),
-            color: color,
+            guide: {
+                color: color
+            },
+            color: 'team',
             size: getFieldData($size)
         });
 
