@@ -31,6 +31,12 @@ var TUnitVisitorFactory = (function () {
 
     var TFuncMap = (opName) => FacetAlgebra[opName] || (() => [[{}]]);
 
+    var inheritRootProps = (unit, root) => {
+        var r = _.defaults(utils.clone(unit), {x: root.x, y: root.y, guide: {}});
+        r.guide = _.extend(utils.clone(root.guide || {}), r.guide);
+        return r;
+    };
+
     var TUnitMap = {
 
         'COORDS.RECT': function (unit, continueTraverse) {
@@ -46,8 +52,7 @@ var TUnitVisitorFactory = (function () {
             matrixOfPrFilters.iterate((row, col, $whereRC) => {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
-                    var defaultedUnit = _.defaults(utils.clone(sUnit), { x: root.x, y: root.y });
-                    return _.extend(defaultedUnit, { $where: cellWhere });
+                    return _.extend(inheritRootProps(sUnit, root), {$where: cellWhere});
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });

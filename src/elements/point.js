@@ -2,10 +2,10 @@ import {utils} from '../utils/utils';
 import {utilsDraw} from '../utils/utils-draw';
 var point = function (node) {
 
-    var filteredData = node.partition();
     var options = node.options;
-    var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-    var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+
+    var xScale = options.xScale;
+    var yScale = options.yScale;
 
     var color = utilsDraw.generateColor(node);
     var maxAxis = _.max([options.width, options.height]);
@@ -22,19 +22,16 @@ var point = function (node) {
 
     var update = function () {
         return this
-            .attr('r', function (d) {
+            .attr('r', (d) => {
                 var s = size(d[node.size.scaleDim]);
-                if (!_.isFinite(s)) {
-                    s = maxAxis / 100;
-                }
-                return s;
+                return (!_.isFinite(s)) ? maxAxis / 100 : s;
             })
             .attr('class', (d) => 'dot i-role-datum ' + color.get(d[color.dimension]))
             .attr('cx', (d) => xScale(d[node.x.scaleDim]))
             .attr('cy', (d) => yScale(d[node.y.scaleDim]));
     };
 
-    var elements = options.container.selectAll('.dot').data(filteredData);
+    var elements = options.container.selectAll('.dot').data(node.partition());
     elements.call(update);
     elements.exit().remove();
     elements.enter().append('circle').call(update);

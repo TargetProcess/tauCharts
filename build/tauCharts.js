@@ -116,6 +116,12 @@
     
         var TFuncMap = function(opName)  {return FacetAlgebra[opName] || (function()  {return [[{}]]})};
     
+        var inheritRootProps = function(unit, root)  {
+            var r = _.defaults(utils$utils$$utils.clone(unit), {x: root.x, y: root.y, guide: {}});
+            r.guide = _.extend(utils$utils$$utils.clone(root.guide || {}), r.guide);
+            return r;
+        };
+    
         var TUnitMap = {
     
             'COORDS.RECT': function (unit, continueTraverse) {
@@ -131,8 +137,7 @@
                 matrixOfPrFilters.iterate(function(row, col, $whereRC)  {
                     var cellWhere = _.extend({}, root.$where, $whereRC);
                     var cellNodes = _(root.unit).map(function(sUnit)  {
-                        var defaultedUnit = _.defaults(utils$utils$$utils.clone(sUnit), { x: root.x, y: root.y });
-                        return _.extend(defaultedUnit, { $where: cellWhere });
+                        return _.extend(inheritRootProps(sUnit, root), {$where: cellWhere});
                     });
                     matrixOfUnitNodes.setRC(row, col, cellNodes);
                 });
@@ -317,8 +322,19 @@
         var W = options.width - (padding.l + padding.r);
         var H = options.height - (padding.t + padding.b);
     
-        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide.tickLabel);
-        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide.tickLabel);
+        var tickX = {
+            map: node.x.guide.tickLabel,
+            min: node.x.guide.tickMin,
+            max: node.x.guide.tickMax
+        };
+        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
+    
+        var tickY = {
+            map: node.y.guide.tickLabel,
+            min: node.y.guide.tickMin,
+            max: node.y.guide.tickMax
+        };
+        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
     
         node.x.guide.size = W;
         node.y.guide.size = H;
@@ -354,8 +370,10 @@
     var elements$line$$line = function (node) {
     
         var options = node.options;
-        var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-        var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+    
+        var xScale = options.xScale;
+        var yScale = options.yScale;
+    
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
     
         var categories = d3
@@ -388,10 +406,10 @@
     };
     var elements$point$$point = function (node) {
     
-        var filteredData = node.partition();
         var options = node.options;
-        var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-        var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+    
+        var xScale = options.xScale;
+        var yScale = options.yScale;
     
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
         var maxAxis = _.max([options.width, options.height]);
@@ -408,22 +426,73 @@
     
         var update = function () {
             return this
-                .attr('r', function (d) {
+                .attr('r', function(d)  {
                     var s = size(d[node.size.scaleDim]);
-                    if (!_.isFinite(s)) {
-                        s = maxAxis / 100;
-                    }
-                    return s;
+                    return (!_.isFinite(s)) ? maxAxis / 100 : s;
                 })
                 .attr('class', function(d)  {return 'dot i-role-datum ' + color.get(d[color.dimension])})
                 .attr('cx', function(d)  {return xScale(d[node.x.scaleDim])})
                 .attr('cy', function(d)  {return yScale(d[node.y.scaleDim])});
         };
     
-        var elements = options.container.selectAll('.dot').data(filteredData);
+        var elements = options.container.selectAll('.dot').data(node.partition());
         elements.call(update);
         elements.exit().remove();
         elements.enter().append('circle').call(update);
+    };
+
+    var elements$interval$$interval = function (node) {
+    
+        var options = node.options;
+        var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
+    
+        var xScale = options.xScale;
+        var yScale = options.yScale;
+    
+        var update = function () {
+            return this
+                .attr('class', 'i-role-datum  bar')
+                .attr('x', function(d)  {return xScale(d[node.x.scaleDim]) - barWidth / 2})
+                .attr('y', function(d)  {return yScale(d[node.y.scaleDim])})
+                .attr('width', barWidth)
+                .attr('height', function(d)  {return options.height - yScale(d[node.y.scaleDim])});
+        };
+    
+        var elements = options.container.selectAll(".bar").data(node.partition());
+        elements.call(update);
+        elements.enter().append('rect').call(update);
+        elements.exit().remove();
+    };
+
+    var node$map$$setupElementNode = function(node, dimensions)  {
+    
+        dimensions.forEach(function(dimName)  {
+            node[dimName] = node.dimension(node[dimName], node);
+        });
+    
+        var options = node.options;
+    
+        var W = options.width;
+        var H = options.height;
+    
+        node.x.guide = node.guide.x;
+        node.y.guide = node.guide.y;
+    
+        var tickX = {
+            map: node.x.guide.tickLabel,
+            min: node.x.guide.tickMin,
+            max: node.x.guide.tickMax
+        };
+        node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
+    
+        var tickY = {
+            map: node.y.guide.tickLabel,
+            min: node.y.guide.tickMin,
+            max: node.y.guide.tickMax
+        };
+        node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
+    
+        return node;
     };
 
     var node$map$$nodeMap = {
@@ -435,42 +504,15 @@
         },
     
         'ELEMENT.POINT': function(node)  {
-            node.x = node.dimension(node.x, node);
-            node.y = node.dimension(node.y, node);
-            node.color = node.dimension(node.color, node);
-            node.size = node.dimension(node.size, node);
-            elements$point$$point(node);
+            elements$point$$point(node$map$$setupElementNode(node, ['x', 'y', 'color', 'size']));
         },
     
         'ELEMENT.LINE': function(node)  {
-            node.x = node.dimension(node.x, node);
-            node.y = node.dimension(node.y, node);
-            node.color = node.dimension(node.color, node);
-            elements$line$$line(node);
+            elements$line$$line(node$map$$setupElementNode(node, ['x', 'y', 'color']));
         },
     
         'ELEMENT.INTERVAL': function (node) {
-            node.x = node.dimension(node.x, node);
-            node.y = node.dimension(node.y, node);
-    
-            var options = node.options;
-            var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
-            var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-            var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
-    
-            var update = function () {
-                return this
-                    .attr('class', 'i-role-datum  bar')
-                    .attr('x', function(d)  {return xScale(d[node.x.scaleDim]) - barWidth / 2})
-                    .attr('y', function(d)  {return yScale(d[node.y.scaleDim])})
-                    .attr('width', barWidth)
-                    .attr('height', function(d)  {return options.height - yScale(d[node.y.scaleDim])});
-            };
-    
-            var elements = options.container.selectAll(".bar").data(node.partition());
-            elements.call(update);
-            elements.enter().append('rect').call(update);
-            elements.exit().remove();
+            elements$interval$$interval(node$map$$setupElementNode(node, ['x', 'y']));
         },
     
         'WRAP.AXIS': function (node, continueTraverse) {
@@ -493,8 +535,19 @@
             node.x.guide.size = W;
             node.y.guide.size = H;
     
-            node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide.tickLabel);
-            node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide.tickLabel);
+            var tickX = {
+                map: node.x.guide.tickLabel,
+                min: node.x.guide.tickMin,
+                max: node.x.guide.tickMax
+            };
+            node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
+    
+            var tickY = {
+                map: node.y.guide.tickLabel,
+                min: node.y.guide.tickMin,
+                max: node.y.guide.tickMax
+            };
+            node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
     
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
@@ -607,13 +660,19 @@
 
     var unit$domain$mixin$$rangeMethods = {
     
-        'ordinal': function(inputValues, interval)  {
+        'ordinal': function(inputValues, interval, props)  {
             return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
         },
     
-        'linear': function(inputValues, interval)  {
+        'linear': function(inputValues, interval, props)  {
             var domainParam = d3.extent(inputValues);
-            return d3.scale.linear().domain(domainParam).nice().rangeRound(interval, 1);
+            var min = _.isNumber(props.min) ? props.min : domainParam[0];
+            var max = _.isNumber(props.max) ? props.max : domainParam[1];
+            var range = [
+                Math.min(min, domainParam[0]),
+                Math.max(max, domainParam[1])
+            ];
+            return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
         }
     };
 
@@ -713,14 +772,15 @@
                 return domainSortedAsc.map(fnMapperId);
             };
     
-            this.fnScaleTo = function(scaleDim, interval, propertyPath)  {
+            this.fnScaleTo = function(scaleDim, interval, props)  {
+                var propertyObj = props || {};
                 var dimx = _.defaults({}, meta[scaleDim]);
-                var fMap = propertyPath ? getPropMapper(propertyPath) : getValueMapper(scaleDim);
+                var fMap = propertyObj.map ? getPropMapper(propertyObj.map) : getValueMapper(scaleDim);
     
                 var type = (meta[scaleDim] || {}).type;
                 var vals = _domain(scaleDim, getScaleSortStrategy(type)).map(fMap);
     
-                var func = unit$domain$mixin$$rangeMethods[dimx.scale](vals, interval);
+                var func = unit$domain$mixin$$rangeMethods[dimx.scale](vals, interval, propertyObj);
     
                 var wrap = function(domainPropObject)  {return func(fMap(domainPropObject))};
                 // have to copy properties since d3 produce Function with methods

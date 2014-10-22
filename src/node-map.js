@@ -1,8 +1,41 @@
 import {coords} from './elements/coords';
 import {line} from './elements/line';
 import {point} from './elements/point';
+import {interval} from './elements/interval';
 import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
+
+var setupElementNode = (node, dimensions) => {
+
+    dimensions.forEach((dimName) => {
+        node[dimName] = node.dimension(node[dimName], node);
+    });
+
+    var options = node.options;
+
+    var W = options.width;
+    var H = options.height;
+
+    node.x.guide = node.guide.x;
+    node.y.guide = node.guide.y;
+
+    var tickX = {
+        map: node.x.guide.tickLabel,
+        min: node.x.guide.tickMin,
+        max: node.x.guide.tickMax
+    };
+    node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
+
+    var tickY = {
+        map: node.y.guide.tickLabel,
+        min: node.y.guide.tickMin,
+        max: node.y.guide.tickMax
+    };
+    node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
+
+    return node;
+};
+
 var nodeMap = {
 
     'COORDS.RECT': (node, continueTraverse) => {
@@ -12,42 +45,15 @@ var nodeMap = {
     },
 
     'ELEMENT.POINT': (node) => {
-        node.x = node.dimension(node.x, node);
-        node.y = node.dimension(node.y, node);
-        node.color = node.dimension(node.color, node);
-        node.size = node.dimension(node.size, node);
-        point(node);
+        point(setupElementNode(node, ['x', 'y', 'color', 'size']));
     },
 
     'ELEMENT.LINE': (node) => {
-        node.x = node.dimension(node.x, node);
-        node.y = node.dimension(node.y, node);
-        node.color = node.dimension(node.color, node);
-        line(node);
+        line(setupElementNode(node, ['x', 'y', 'color']));
     },
 
     'ELEMENT.INTERVAL': function (node) {
-        node.x = node.dimension(node.x, node);
-        node.y = node.dimension(node.y, node);
-
-        var options = node.options;
-        var barWidth = options.width / (node.domain(node.x.scaleDim).length) - 8;
-        var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-        var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
-
-        var update = function () {
-            return this
-                .attr('class', 'i-role-datum  bar')
-                .attr('x', (d) => xScale(d[node.x.scaleDim]) - barWidth / 2)
-                .attr('y', (d) => yScale(d[node.y.scaleDim]))
-                .attr('width', barWidth)
-                .attr('height', (d) => options.height - yScale(d[node.y.scaleDim]));
-        };
-
-        var elements = options.container.selectAll(".bar").data(node.partition());
-        elements.call(update);
-        elements.enter().append('rect').call(update);
-        elements.exit().remove();
+        interval(setupElementNode(node, ['x', 'y']));
     },
 
     'WRAP.AXIS': function (node, continueTraverse) {

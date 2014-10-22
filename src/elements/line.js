@@ -2,8 +2,10 @@ import {utilsDraw} from '../utils/utils-draw';
 var line = function (node) {
 
     var options = node.options;
-    var xScale = node.scaleTo(node.x.scaleDim, [0, options.width]);
-    var yScale = node.scaleTo(node.y.scaleDim, [options.height, 0]);
+
+    var xScale = options.xScale;
+    var yScale = options.yScale;
+
     var color = utilsDraw.generateColor(node);
 
     var categories = d3

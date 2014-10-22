@@ -240,46 +240,39 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            guide: {
-                padding: {l: 0, b: 0, r: 0, t: 0},
-                split: true
-            },
-            x: null,
-            y: null,
+//            guide: {
+//                padding: {l: 0, b: 0, r: 0, t: 0}
+//            },
+//            x: null,
+//            y: null,
             unit: [
                 {
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { l:46, b:4, r:8, t:8 },
-                        y: {label: 'Effort'},
+                        padding: { l:72, b:224, r:8, t:8 },
+                        y: {label: { text: 'Effort', padding:52}, tickMin: 0, tickMax: 100},
                         x: {rotate: 90, textAnchor: 'start', hide: true}
                     },
                     y: 'effort',
                     x: 'name',
                     unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL'
-                        }
+                        {type: 'ELEMENT.INTERVAL'}
                     ]
                 },
                 {
                     type: 'COORDS.RECT',
                     guide: {
                         showGridLines: 'xy',
-                        padding: { l:46, b:220, r:8, t:8 },
-                        y: {label: 'Cycle Time'},
+                        padding: { l:72, b:224, r:8, t:8 },
+                        y: {label: 'Cycle Time', tickMin: 0, tickMax: 100},
                         x: {rotate: 45, textAnchor: 'start'}
                     },
                     x: 'name',
                     y: 'cycleTime',
                     unit: [
-                        {
-                            type: 'ELEMENT.POINT'
-                        },
-                        {
-                            type: 'ELEMENT.LINE'
-                        }
+                        {type: 'ELEMENT.POINT'},
+                        {type: 'ELEMENT.LINE'}
                     ]
                 }
             ]
