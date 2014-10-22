@@ -70,8 +70,8 @@ var nodeMap = {
         node.x.guide.size = W;
         node.y.guide.size = H;
 
-        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide.name);
-        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide.name);
+        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide.tickLabel);
+        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide.tickLabel);
 
         var X_AXIS_POS = [0, H + node.guide.x.padding];
         var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
