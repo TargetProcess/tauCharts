@@ -1,5 +1,6 @@
 import {utils} from '../utils/utils';
 import {utilsDraw} from '../utils/utils-draw';
+import {CSS_PREFIX} from '../const';
 var point = function (node) {
 
     var options = node.options;
@@ -26,7 +27,9 @@ var point = function (node) {
                 var s = size(d[node.size.scaleDim]);
                 return (!_.isFinite(s)) ? maxAxis / 100 : s;
             })
-            .attr('class', (d) => 'dot i-role-datum ' + color.get(d[color.dimension]))
+            .attr('class', (d) => {
+                return CSS_PREFIX + 'dot' + ' dot i-role-datum ' + color.get(d[color.dimension]);
+            })
             .attr('cx', (d) => xScale(d[node.x.scaleDim]))
             .attr('cy', (d) => yScale(d[node.y.scaleDim]));
     };

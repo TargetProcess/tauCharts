@@ -2,6 +2,7 @@ import {DSLReader} from '../dsl-reader';
 import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utilsDom} from '../utils/utils-dom';
+import {CSS_PREFIX} from '../const';
 
 export class Plot {
     constructor(config) {
@@ -45,7 +46,7 @@ export class Plot {
 
         var svgContainer = container
             .append("svg")
-            .attr("class", "tau-chart")
+            .attr("class", "tau-chart " + CSS_PREFIX + 'svg')
             .attr("width", size.width)
             .attr("height", size.height);
 

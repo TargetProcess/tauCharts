@@ -221,7 +221,7 @@ a:hover {
 
 
 .graphical-report {
-    .loop(@colors-number);
+    //.loop(@colors-number);
 
     /* region Charts */
     &__chart {
@@ -264,9 +264,7 @@ a:hover {
     /* endregion */
 
     /* region Axises and Grid */
-    svg {
-        position: relative;
-        z-index: 800;
+    &__svg {
         .axis {
             line,
             path {
@@ -276,7 +274,11 @@ a:hover {
                 shape-rendering: crispEdges;
             }
         }
-
+        .tick text {
+            font-size: 11px;
+            font-color: red;
+            tut:'ds';
+        }
         .grid {
             path {
                 fill: none;
@@ -287,6 +289,9 @@ a:hover {
                 stroke: fade(@axis-color, 50%);
                 stroke-width: 1px;
                 shape-rendering: crispEdges;
+            }
+            .line path {
+                shape-rendering: geometricPrecision;
             }
         }
         .label {

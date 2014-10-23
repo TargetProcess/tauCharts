@@ -1,5 +1,6 @@
 import {utils} from '../utils/utils';
 import {utilsDraw} from '../utils/utils-draw';
+import {CSS_PREFIX} from '../const';
 
 var interval = function (node) {
 
@@ -11,7 +12,7 @@ var interval = function (node) {
 
     var update = function () {
         return this
-            .attr('class', 'i-role-datum  bar')
+            .attr('class', 'i-role-datum bar ' + CSS_PREFIX + 'bar')
             .attr('x', (d) => xScale(d[node.x.scaleDim]) - barWidth / 2)
             .attr('y', (d) => yScale(d[node.y.scaleDim]))
             .attr('width', barWidth)

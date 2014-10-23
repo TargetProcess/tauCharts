@@ -1,4 +1,5 @@
 import {utilsDraw} from '../utils/utils-draw';
+import {CSS_PREFIX} from '../const';
 var coords = function (node, continueTraverse) {
 
     var options = node.options;
@@ -36,7 +37,7 @@ var coords = function (node, continueTraverse) {
     var container = options
         .container
         .append('g')
-        .attr('class', 'cell')
+        .attr('class', CSS_PREFIX + 'cell ' + 'cell')
         .attr('transform', utilsDraw.translate(L, T));
 
     if (!node.x.guide.hide) {

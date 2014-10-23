@@ -95,6 +95,16 @@ module.exports = function (grunt) {
                 }
             }
         },
+        less: {
+            development: {
+                options: {
+                    paths: ["less"]
+                },
+                files: {
+                    "css/graphic-elements.css": "less/graphic-elements.less"
+                }
+            }
+        },
         bowercopy: {
             options: {
                // clean: true
@@ -127,6 +137,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-bowercopy');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-shell');
@@ -134,7 +145,7 @@ module.exports = function (grunt) {
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'jshint','compile', 'concat', 'uglify']);
-    grunt.registerTask('build', ['compile','concat','uglify', 'shell:gitadd']);
+    grunt.registerTask('build', ['less','compile','concat','uglify', 'shell:gitadd']);
     grunt.registerTask('travis', ['bowercopy', 'jshint','compile', 'concat', 'uglify','karma:travis']);
-    grunt.registerTask('watching', ['bowercopy','compile','concat','jshint','watch']);
+    grunt.registerTask('watching', ['less','bowercopy','compile','concat','jshint','watch']);
 };

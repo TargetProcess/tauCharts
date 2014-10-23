@@ -1,4 +1,5 @@
 import {utilsDraw} from '../utils/utils-draw';
+import {CSS_PREFIX} from '../const';
 var line = function (node) {
 
     var options = node.options;
@@ -14,7 +15,9 @@ var line = function (node) {
         .entries(node.partition());
 
     var updateLines = function () {
-        this.attr('class', (d) => 'line ' + color.get(d.key));
+        this.attr('class', (d) => {
+            return CSS_PREFIX + 'line' + ' line ' + color.get(d.key);
+        });
         var paths = this.selectAll('path').data((d) => [d.values]);
         paths.call(updatePaths);
         paths.enter().append('path').call(updatePaths);
