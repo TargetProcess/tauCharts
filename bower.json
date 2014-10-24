@@ -9,13 +9,14 @@
   ],
   "main": [
 	"build/tauCharts.js",
-	"build/tauCharts.min.js"
+	"build/css/graphic-elements.css"
   ],
   "license": "MIT",
   "private": false,
   "ignore": [
     "**/.*",
-    "prototype"
+    "test",
+    "config"
   ],
   "dependencies": {
     "d3": "~3.4.3",

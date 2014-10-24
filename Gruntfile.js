@@ -6,10 +6,10 @@ module.exports = function (grunt) {
         // Metadata.
         pkg: grunt.file.readJSON('package.json'),
         banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-            '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-            '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-            '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-            ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
+        '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
+        '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
+        '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
+        ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
         // Task configuration.
         concat: {
             options: {
@@ -43,20 +43,20 @@ module.exports = function (grunt) {
             }
         },
         karma: {
-            options:{
+            options: {
                 configFile: 'config/karma.conf.js'
             },
             dev: {
                 reporters: ["progress"],
-                browsers:["Chrome"],
+                browsers: ["Chrome"],
                 singleRun: false
             },
             unit: {
                 reporters: ["dots", "coverage"],
-                preprocessors: { "build/tauCharts.js": "coverage" }
+                preprocessors: {"build/tauCharts.js": "coverage"}
             },
             travis: {
-                preprocessors: { "build/tauCharts.js": "coverage" },
+                preprocessors: {"build/tauCharts.js": "coverage"},
                 reporters: ["coverage", "dots", "coveralls"],
                 coverageReporter: {
                     type: "lcovonly",
@@ -71,6 +71,32 @@ module.exports = function (grunt) {
             dist: {
                 src: '<%= concat.dist.dest %>',
                 dest: 'build/<%= pkg.name %>.min.js'
+            },
+            addons: {
+                src: 'src/addons/color-brewer.js',
+                dest: 'build/color-brewer.min.js'
+            }
+        },
+        cssmin: {
+            build: {
+                files: [{
+                    expand: true,
+                    src: ['css/graphic-elements.css', 'css/colorbrewer.css'],
+                    dest: 'build',
+                    ext: '.min.css'
+                }]
+            }
+        },
+        copy: {
+            build: {
+                files: [{
+                    expand: true,
+                    src: ['css/graphic-elements.css', 'css/colorbrewer.css'],
+                    dest: 'build'
+                }, {
+                    src: 'src/addons/color-brewer.js',
+                    dest: 'build/color-brewer.js'
+                }]
             }
         },
         shell: {
@@ -107,7 +133,7 @@ module.exports = function (grunt) {
         },
         bowercopy: {
             options: {
-               // clean: true
+                // clean: true
             },
             libs: {
                 options: {
@@ -116,17 +142,17 @@ module.exports = function (grunt) {
                 files: {
                     "d3.js": "d3/d3.js",
                     "underscore.js": "underscore/underscore.js",
-                    "jquery.js":"jquery/dist/jquery.js",
-                    "traceur.js":"traceur/traceur.js",
-                    "es6-module-loader.js":"es6-module-loader/dist/es6-module-loader.src.js",
-                    "js-schema.js":"js-schema/js-schema.debug.js",
-                    "es5-shim.js":"es5-shim/es5-shim.js"
+                    "jquery.js": "jquery/dist/jquery.js",
+                    "traceur.js": "traceur/traceur.js",
+                    "es6-module-loader.js": "es6-module-loader/dist/es6-module-loader.src.js",
+                    "js-schema.js": "js-schema/js-schema.debug.js",
+                    "es5-shim.js": "es5-shim/es5-shim.js"
                 }
             }
         },
         watch: {
             files: '<%= jshint.all.src %>',
-            tasks: ['jshint','compile']
+            tasks: ['jshint', 'compile']
         }
     });
     // load local tasks
@@ -137,6 +163,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-bowercopy');
     grunt.loadNpmTasks('grunt-karma');
@@ -144,8 +172,8 @@ module.exports = function (grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['bowercopy', 'jshint','compile', 'concat', 'uglify']);
-    grunt.registerTask('build', ['less','compile','concat','uglify', 'shell:gitadd']);
-    grunt.registerTask('travis', ['bowercopy', 'jshint','compile', 'concat', 'uglify','karma:travis']);
-    grunt.registerTask('watching', ['less','bowercopy','compile','concat','jshint','watch']);
+    grunt.registerTask('default', ['bowercopy', 'jshint', 'compile', 'concat', 'uglify']);
+    grunt.registerTask('build', ['less', 'copy', 'cssmin', 'compile', 'concat', 'uglify', 'shell:gitadd']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile', 'concat', 'uglify', 'karma:travis']);
+    grunt.registerTask('watching', ['less', 'bowercopy', 'compile', 'concat', 'jshint', 'watch']);
 };
