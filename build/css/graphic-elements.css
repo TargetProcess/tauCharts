@@ -114,8 +114,6 @@
 }
 .graphical-report__svg .tick text {
   font-size: 11px;
-  font-color: red;
-  tut: 'ds';
 }
 .graphical-report__svg .grid path {
   fill: none;
