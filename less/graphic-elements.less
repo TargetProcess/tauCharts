@@ -296,7 +296,6 @@ a:hover {
         }
         .label {
             font-size: 11px;
-            display: none;
         }
     }
 
@@ -352,6 +351,7 @@ a:hover {
     /* region Scatterplot  */
     &__dot {
         opacity: 0.6;
+        transition: stroke-width 0.1s ease, opacity 0.1s ease;
         transition: stroke-width 0.1s ease, opacity 0.1s ease;
         stroke-width: 0;
         cursor: pointer;

@@ -240,7 +240,6 @@ a:hover {
 }
 .graphical-report__svg .label {
   font-size: 11px;
-  display: none;
 }
 .graphical-report__html-chart {
   width: 100%;
