@@ -1406,7 +1406,7 @@
     
             var svgContainer = container
                 .append("svg")
-                .attr("class", "tau-chart " + const$$CSS_PREFIX + 'svg')
+                .attr("class", const$$CSS_PREFIX + 'svg')
                 .attr("width", size.width)
                 .attr("height", size.height);
     

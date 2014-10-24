@@ -183,12 +183,10 @@
   border-bottom: 1px solid rgba(225, 113, 82, 0.3);
 }
 .graphical-report__chart {
-  overflow: visible;
-  position: relative;
-}
-.graphical-report__chart svg {
-  width: 100%;
+  position: absolute;
   height: 100%;
+  width: 100%;
+  overflow: auto;
 }
 .graphical-report__html {
   position: absolute;
