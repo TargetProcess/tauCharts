@@ -31,9 +31,9 @@ var TUnitVisitorFactory = (function () {
 
     var TFuncMap = (opName) => FacetAlgebra[opName] || (() => [[{}]]);
 
-    var inheritRootProps = (unit, root) => {
-        var r = _.defaults(utils.clone(unit), {x: root.x, y: root.y, guide: {}});
-        r.guide = _.extend(utils.clone(root.guide || {}), r.guide);
+    var inheritRootProps = (unit, root, props) => {
+        var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
+        r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
         return r;
     };
 
@@ -52,7 +52,31 @@ var TUnitVisitorFactory = (function () {
             matrixOfPrFilters.iterate((row, col, $whereRC) => {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map((sUnit) => {
-                    return _.extend(inheritRootProps(sUnit, root), {$where: cellWhere});
+                    return _.extend(inheritRootProps(sUnit, root, ['x', 'y']), {$where: cellWhere});
+                });
+                matrixOfUnitNodes.setRC(row, col, cellNodes);
+            });
+
+            root.$matrix = matrixOfUnitNodes;
+
+            matrixOfUnitNodes.iterate((r, c, cellNodes) => {
+                _.each(cellNodes, (refSubNode) => continueTraverse(refSubNode));
+            });
+
+            return root;
+        },
+
+        'COORDS.PARALLEL': function (unit, continueTraverse) {
+
+            var root = _.defaults(unit, {$where: {}});
+
+            var matrixOfPrFilters = new TMatrix(1, 1);
+            var matrixOfUnitNodes = new TMatrix(1, 1);
+
+            matrixOfPrFilters.iterate((row, col) => {
+                var cellWhere = _.extend({}, root.$where);
+                var cellNodes = _(root.unit).map((sUnit) => {
+                    return _.extend(inheritRootProps(sUnit, root, ['x']), {$where: cellWhere});
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });

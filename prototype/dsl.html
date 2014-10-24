@@ -119,6 +119,10 @@
     <div class="cc-empty"></div>
 </div>
 
+<div id="parallel-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
 <div id="chart-priority-container" class="cc">
     <div class="cc-empty"></div>
 </div>
@@ -355,6 +359,47 @@
             ]
         }
     };
+
+    var parallelChart = new tauChart.Plot(
+            {
+                layoutEngine: 'DEFAULT',
+                data: [
+                    {car: "Toyota Prius+",       co2:  96, hp:  99, mpg: 3.8},
+                    {car: "Volvo S60",           co2: 135, hp: 150, mpg: 7.4},
+                    {car: "BMV X5",              co2: 197, hp: 306, mpg: 11.2},
+                    {car: "Infinity FX",         co2: 238, hp: 238, mpg: 11.2},
+                    {car: "Mercedes Vito",       co2: 203, hp:  95, mpg: 9.4},
+                    {car: "Peugeot 3008",        co2: 155, hp: 120, mpg: 9.2},
+                    {car: "Subaru Forester",     co2: 186, hp: 150, mpg: 10.4},
+                    {car: "Lexus RX",            co2: 233, hp: 188, mpg: 13.3},
+                    {car: "Bentley Continental", co2: 246, hp: 507, mpg: 15.4}
+                ],
+                spec: {
+                    dimensions: {
+                        co2: { type: 'measure' },
+                        mpg: { type: 'measure' },
+                        hp: { type: 'measure' }
+                    },
+                    unit: {
+                        type: 'COORDS.PARALLEL',
+                        guide: {
+                            padding: {l:40, r:0, t:8, b:8}
+                        },
+                        x: [
+                            'co2',
+                            'mpg',
+                            'hp'
+                        ],
+                        unit: [
+                            {
+                                type: 'PARALLEL/ELEMENT.LINE',
+                                color: 'car'
+                            }
+                        ]
+                    }
+                },
+                plugins: []
+            }).renderTo('#parallel-container');
 
     var rawData = _.map(
             getUserStories(),
