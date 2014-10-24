@@ -23,7 +23,6 @@
 //    &
 //}
 
-
 /* region css */
 /* Colors */
 .color10-1 {
@@ -76,9 +75,152 @@
     fill: #222222;
 }
 
+.line.color10-1 .dot {
+    stroke: #e41a1c;
+    fill: #e41a1c;
+}
+
+.line.color10-2 .dot {
+    stroke: #377eb8;
+    fill: #377eb8;
+}
+
+.line.color10-3 .dot {
+    stroke: #4daf4a;
+    fill: #4daf4a;
+}
+
+.line.color10-4 .dot {
+    stroke: #984ea3;
+    fill: #984ea3;
+}
+
+.line.color10-5 .dot {
+    stroke: #ff7f00;
+    fill: #ff7f00;
+}
+
+.line.color10-6 .dot {
+    stroke: #e9e964;
+    fill: #e9e964;
+}
+
+.line.color10-7 .dot {
+    stroke: #a65628;
+    fill: #a65628;
+}
+
+.line.color10-8 .dot {
+    stroke: #f781bf;
+    fill: #f781bf;
+}
+
+.line.color10-9 .dot {
+    stroke: #999999;
+    fill: #999999;
+}
+
+.line.color10-10 .dot {
+    stroke: #222222;
+    fill: #222222;
+}
+
+.legend li.color10-1:before {
+    background-color: #e41a1c;
+}
+
+.legend li.color10-2:before {
+    background-color: #377eb8;
+}
+
+.legend li.color10-3:before {
+    background-color: #4daf4a;
+}
+
+.legend li.color10-4:before {
+    background-color: #984ea3;
+}
+
+.legend li.color10-5:before {
+    background-color: #ff7f00;
+}
+
+.legend li.color10-6:before {
+    background-color: #e9e964;
+}
+
+.legend li.color10-7:before {
+    background-color: #a65628;
+}
+
+.legend li.color10-8:before {
+    background-color: #f781bf;
+}
+
+.legend li.color10-9:before {
+    background-color: #999999;
+}
+
+.legend li.color10-10:before {
+    background-color: #222222;
+}
+
+.legend li.disabled.color10-1:before {
+    border-color: #e41a1c;
+}
+
+.legend li.disabled.color10-2:before {
+    border-color: #377eb8;
+}
+
+.legend li.disabled.color10-3:before {
+    border-color: #4daf4a;
+}
+
+.legend li.disabled.color10-4:before {
+    border-color: #984ea3;
+}
+
+.legend li.disabled.color10-5:before {
+    border-color: #ff7f00;
+}
+
+.legend li.disabled.color10-6:before {
+    border-color: #e9e964;
+}
+
+.legend li.disabled.color10-7:before {
+    border-color: #a65628;
+}
+
+.legend li.disabled.color10-8:before {
+    border-color: #f781bf;
+}
+
+.legend li.disabled.color10-9:before {
+    border-color: #999999;
+}
+
+.legend li.disabled.color10-10:before {
+    border-color: #222222;
+}
+
+/*endregion*/
 
 .graphical-report {
-    //.loop(@colors-number);
+    /* region Links */
+    a {
+        color: @link-color;
+        border-bottom: 1px solid fade(@link-color, 30%);
+        text-decoration: none;
+
+        &:hover {
+            color: @link-hover-color;
+            border-bottom: 1px solid fade(@link-hover-color, 30%);
+        }
+    }
+
+    /* endregion */
 
     /* region Charts */
     &__chart {
@@ -122,7 +264,6 @@
 
     /* region Axises and Grid */
     &__svg {
-        display: block;
         .axis {
             line,
             path {
@@ -134,6 +275,8 @@
         }
         .tick text {
             font-size: 11px;
+            font-color: red;
+            tut: 'ds';
         }
         .grid {
             path {
