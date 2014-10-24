@@ -162,6 +162,8 @@ a:hover {
   /* endregion */
   /* region Linechart  */
   /* endregion */
+  /* region Bar  */
+  /* endregion */
   /* region PLUGINS  */
   /* region Header  */
   /* endregion */
@@ -292,6 +294,9 @@ a:hover {
 .graphical-report__line {
   fill: none !important;
   stroke-width: 1.5px;
+}
+.graphical-report__bar {
+  fill: steelblue;
 }
 .graphical-report header {
   margin: 0px 25px 20px;
