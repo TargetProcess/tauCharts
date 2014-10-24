@@ -12,7 +12,7 @@
 	"build/tauCharts.min.js"
   ],
   "license": "MIT",
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "prototype"
