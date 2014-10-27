@@ -60,7 +60,7 @@ var nodeMap = {
     },
 
     'ELEMENT.INTERVAL': function (node) {
-        interval(setupElementNode(node, ['x', 'y']));
+        interval(setupElementNode(node, ['x', 'y', 'color']));
     },
 
     'WRAP.AXIS': function (node, continueTraverse) {

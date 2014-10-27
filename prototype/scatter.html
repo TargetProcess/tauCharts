@@ -206,44 +206,12 @@ tau.plugins.add('tableHighlight', Tooltip);
 System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
 System.import('tau.newCharts').then(function (m) {
     var defData = [
-        {"team": "d", "cycleTime": 1, "effort": 1, "count": 1, "priority": "low"}, {
-            "team": "d",
-            "cycleTime": 2,
-            "effort": 2,
-            "count": 5,
-            "priority": "low"
-        }, {"team": "d", "cycleTime": 3, "effort": 3, "count": 8, "priority": "medium"}, {
-            "team": "d",
-            "cycleTime": 4,
-            "effort": 4,
-            "count": 3,
-            "priority": "high"
-        }, {"team": "l", "cycleTime": 2, "effort": 1, "count": 1, "priority": "low"}, {
-            "team": "l",
-            "cycleTime": 3,
-            "effort": 2,
-            "count": 5,
-            "priority": "low"
-        }, {"team": "l", "cycleTime": 4, "effort": 3, "count": 8, "priority": "medium"}, {
-            "team": "l",
-            "cycleTime": 5,
-            "effort": 4,
-            "count": 3,
-            "priority": "high"
-        },
-        {"team": "k", "cycleTime": 2, "effort": 4, "count": 1, "priority": "low"}, {
-            "team": "k",
-            "cycleTime": 3,
-            "effort": 5,
-            "count": 5,
-            "priority": "low"
-        }, {"team": "k", "cycleTime": 4, "effort": 6, "count": 8, "priority": "medium"}, {
-            "team": "k",
-            "cycleTime": 5,
-            "effort": 8,
-            "count": 3,
-            "priority": "high"
-        }];
+        {team:'myTeam2',count:10,priority:'low'},
+        {team:'myTeam',count:6,priority:'low'},
+        {team:'myTeam3',count:-6,priority:'low'},
+        {team:'myTeam3',count:-6,priority:'high'},
+        {team:'myTeam1',count:-10,priority:'low'}
+    ];
 
     function getFieldData($field) {
         try {
@@ -257,8 +225,8 @@ System.import('tau.newCharts').then(function (m) {
     var $color = $('#color').val('team');
     var $type = $('#type');
     var $size = $('#size').val('count');
-    var $y = $('#y').val('cycleTime');
-    var $x = $('#x').val('effort');
+    var $y = $('#y').val('count');
+    var $x = $('#x').val('team');
     var $data = $('#data').val(JSON.stringify(defData));
     $('#colorSettings').click(function () {
         return $color.val(JSON.stringify({
@@ -310,7 +278,7 @@ System.import('tau.newCharts').then(function (m) {
             guide: {
                 color: color
             },
-            color: 'team',
+            color: 'priority',
             size: getFieldData($size)
         });
 
