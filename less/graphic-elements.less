@@ -71,136 +71,6 @@
     fill: #222222;
 }
 
-.line.color10-1 .dot {
-    stroke: #e41a1c;
-    fill: #e41a1c;
-}
-
-.line.color10-2 .dot {
-    stroke: #377eb8;
-    fill: #377eb8;
-}
-
-.line.color10-3 .dot {
-    stroke: #4daf4a;
-    fill: #4daf4a;
-}
-
-.line.color10-4 .dot {
-    stroke: #984ea3;
-    fill: #984ea3;
-}
-
-.line.color10-5 .dot {
-    stroke: #ff7f00;
-    fill: #ff7f00;
-}
-
-.line.color10-6 .dot {
-    stroke: #e9e964;
-    fill: #e9e964;
-}
-
-.line.color10-7 .dot {
-    stroke: #a65628;
-    fill: #a65628;
-}
-
-.line.color10-8 .dot {
-    stroke: #f781bf;
-    fill: #f781bf;
-}
-
-.line.color10-9 .dot {
-    stroke: #999999;
-    fill: #999999;
-}
-
-.line.color10-10 .dot {
-    stroke: #222222;
-    fill: #222222;
-}
-
-.legend li.color10-1:before {
-    background-color: #e41a1c;
-}
-
-.legend li.color10-2:before {
-    background-color: #377eb8;
-}
-
-.legend li.color10-3:before {
-    background-color: #4daf4a;
-}
-
-.legend li.color10-4:before {
-    background-color: #984ea3;
-}
-
-.legend li.color10-5:before {
-    background-color: #ff7f00;
-}
-
-.legend li.color10-6:before {
-    background-color: #e9e964;
-}
-
-.legend li.color10-7:before {
-    background-color: #a65628;
-}
-
-.legend li.color10-8:before {
-    background-color: #f781bf;
-}
-
-.legend li.color10-9:before {
-    background-color: #999999;
-}
-
-.legend li.color10-10:before {
-    background-color: #222222;
-}
-
-.legend li.disabled.color10-1:before {
-    border-color: #e41a1c;
-}
-
-.legend li.disabled.color10-2:before {
-    border-color: #377eb8;
-}
-
-.legend li.disabled.color10-3:before {
-    border-color: #4daf4a;
-}
-
-.legend li.disabled.color10-4:before {
-    border-color: #984ea3;
-}
-
-.legend li.disabled.color10-5:before {
-    border-color: #ff7f00;
-}
-
-.legend li.disabled.color10-6:before {
-    border-color: #e9e964;
-}
-
-.legend li.disabled.color10-7:before {
-    border-color: #a65628;
-}
-
-.legend li.disabled.color10-8:before {
-    border-color: #f781bf;
-}
-
-.legend li.disabled.color10-9:before {
-    border-color: #999999;
-}
-
-.legend li.disabled.color10-10:before {
-    border-color: #222222;
-}
-
 /*endregion*/
 
 .graphical-report {
@@ -230,34 +100,6 @@
 //        }
     }
 
-    &__html {
-        position: absolute;
-        display: inline-table;
-
-        &-left {
-            top: 0;
-            right: 100%;
-            height: 100%;
-        }
-
-        &-right {
-            top: 0;
-            left: 100%;
-            height: 100%;
-        }
-
-        &-above {
-            left: 0;
-            bottom: 100%;
-            width: 100%;
-        }
-
-        &-below {
-            left: 0;
-            top: 100%;
-            width: 100%;
-        }
-    }
     /* endregion */
 
     /* region Axises and Grid */
@@ -298,52 +140,6 @@
 
     /* endregion */
 
-    /* region Axis Labels  */
-
-    &__html-chart {
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        .axis {
-            position: absolute;
-            z-index: 700;
-            &:after {
-                content: '\2192';
-                margin-left: 5px;
-            }
-            &:first-letter {
-                text-transform: uppercase;
-            }
-            &.y {
-                top: 50%;
-                left: -49%;
-                width: 100%;
-                text-align: center;
-                transform: rotate(-90deg);
-            }
-            &.x {
-                top: 97%;
-                width: 100%;
-                text-align: center;
-            }
-            h4 {
-                font: 700 12px Roboto, sans-serif;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                display: inline-block;
-                margin-left: 50px;
-                &:after {
-                    content: ',';
-                    margin-right: 5px;
-                }
-            }
-            p {
-                display: inline-block;
-            }
-        }
-    }
-    /* endregion */
 
     /* region Scatterplot  */
     &__dot {
@@ -371,20 +167,6 @@
 
     /* region PLUGINS  */
 
-    /* region Header  */
-    header {
-        margin: 0px 25px 20px;
-
-        h1 {
-            font: 700 24px 'Roboto', sans-serif;
-            margin: 0 0 10px;
-        }
-        p {
-            margin-left: 0px;
-        }
-    }
-
-    /* endregion */
     /* region Highlighter  */
     &__dot.highlighted {
         stroke-width: 6;
@@ -392,25 +174,7 @@
         opacity: 1;
     }
     /* endregion */
-    /* region Jittering  */
 
-    &__jittering {
-        padding: 15px 20px;
-        border-radius: 2px;
-        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-        margin: 20px 0 0 20px;
-        white-space: nowrap;
-        text-align: center;
-        label {
-            cursor: pointer;
-
-            input {
-                margin-right: 4px;
-            }
-        }
-    }
-
-    /* endregion */
     /* region Tooltip  */
     &__tooltip {
         position: absolute;
@@ -432,131 +196,7 @@
     }
 
     /* endregion */
-    /* region Projections  */
 
-    &__projections {
-        line {
-            stroke-width: 1;
-            opacity: 0.6;
-        }
-        text {
-            stroke: none;
-        }
-        .x text {
-            text-anchor: end;
-        }
-        .y text {
-            text-anchor: middle;
-        }
-    }
-    /* endregion */
-    /* region Datatable  */
-    &__datatable {
-        padding: 15px 20px;
-        border-radius: 2px;
-        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-        margin: 20px 0 0 20px;
-        white-space: nowrap;
-        text-align: center;
-        div {
-            display: none;
-            background: white;
-            width: 300px;
-            position: absolute;
-            z-index: 2;
-            box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-            border-radius: 2px;
-            margin-left: -20px;
-            margin-top: 15px;
-            table {
-                width: 100%;
-                thead {
-                    display: table;
-                    width: 100%;
-                }
-                tbody {
-                    display: block;
-                    width: 100%;
-                    height: 300px;
-                    overflow: scroll;
-                }
-                tr {
-                    display: table;
-                    width: 100%;
-                    white-space: nowrap;
-                    &:hover {
-                        background-color: fade(@link-color, 95%);
-                    }
-                }
-                th {
-                    padding: 10px 0;
-                    font-weight: 600;
-                    border-bottom: 1px solid fade(@axis-color, 50%);
-                    font-size: 11px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    display: inline-block;
-                    white-space: nowrap;
-                    &:first-child {
-                        padding-left: 4%;
-                    }
-                }
-                td {
-                    padding: 2px 0;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    display: inline-block;
-                    white-space: nowrap;
-                    &:first-child {
-                        padding-left: 4%;
-                    }
-                }
-            }
-        }
-        &.show {
-            box-shadow: inset 0px 2px 4px 0px rgba(0, 0, 0, 0.2), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-            background-color: fade(@link-color, 95%);
-            div {
-                display: block;
-            }
-        }
-    }
 
-    /* endregion */
-    /* region Legend  */
-
-    &__legend {
-        padding: 20px 20px 15px;
-        border-radius: 2px;
-        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-        margin: 20px 0 0 20px;
-        max-height: 300px;
-        overflow: auto;
-        li {
-            cursor: pointer;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            &:before {
-                width: 14px;
-                height: 14px;
-                display: inline-block;
-                content: '';
-                padding: 1px;
-                vertical-align: middle;
-                margin-right: 5px;
-                border-radius: 2px;
-                margin-top: -2px;
-            }
-            &.disabled:before {
-                background-color: transparent;
-                border: 1px solid #666;
-                padding: 0;
-            }
-        }
-    }
-
-    /* endregion */
     /* endregion */
 }
