@@ -74,7 +74,7 @@
 /*endregion*/
 
 .graphical-report {
-    /* region Links */
+    /* Links */
     a {
         color: @link-color;
         border-bottom: 1px solid fade(@link-color, 30%);
@@ -86,9 +86,7 @@
         }
     }
 
-    /* endregion */
-
-    /* region Charts */
+    /* Charts */
     &__chart {
         position: absolute;
         height: 100%;
@@ -100,9 +98,8 @@
 //        }
     }
 
-    /* endregion */
 
-    /* region Axises and Grid */
+    /* Axises and Grid */
     &__svg {
         .axis {
             line,
@@ -138,10 +135,8 @@
         }
     }
 
-    /* endregion */
 
-
-    /* region Scatterplot  */
+    /* Scatterplot  */
     &__dot {
         opacity: 0.6;
         transition: stroke-width 0.1s ease, opacity 0.1s ease;
@@ -150,32 +145,28 @@
         cursor: pointer;
     }
 
-    /* endregion */
 
-    /* region Linechart  */
+    /* Linechart  */
     &__line {
         fill: none !important;
         stroke-width: 1.5px;
     }
-    /* endregion */
 
-    /* region Bar  */
+    /*  Bar  */
     &__bar {
         fill: steelblue;
     }
-    /* endregion */
 
-    /* region PLUGINS  */
+    /*  PLUGINS  */
 
-    /* region Highlighter  */
+    /*  Highlighter  */
     &__dot.highlighted {
         stroke-width: 6;
         stroke-opacity: 0.4;
         opacity: 1;
     }
-    /* endregion */
 
-    /* region Tooltip  */
+    /* Tooltip  */
     &__tooltip {
         position: absolute;
         top: 0;
@@ -195,8 +186,4 @@
         }
     }
 
-    /* endregion */
-
-
-    /* endregion */
 }
