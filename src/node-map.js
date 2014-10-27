@@ -275,9 +275,7 @@ var nodeMap = {
 
         var updateLines = function () {
             this.attr('class', (d) => 'graphical-report__' + 'line' + ' line ' + 'color10-9');
-            var paths = this.selectAll('path').data((d) => {
-                return [d];
-            });
+            var paths = this.selectAll('path').data((d) => [d]);
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);
             paths.exit().remove();
