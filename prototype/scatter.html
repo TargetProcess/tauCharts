@@ -103,9 +103,9 @@
     <label>
         type
         <select id="type">
-            <option selected value="scatterplot">scatter</option>
+            <option  value="scatterplot">scatter</option>
             <option value="line">line</option>
-            <option value="bar">bar</option>
+            <option selected value="bar">bar</option>
         </select>
     </label><br/><br/>
     <label>x<input id="x" type="text"/></label><br/><br/>
@@ -206,11 +206,11 @@ tau.plugins.add('tableHighlight', Tooltip);
 System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
 System.import('tau.newCharts').then(function (m) {
     var defData = [
-        {team:'myTeam2',count:10,priority:'low'},
+        {team:'myTeam2',count:20,priority:'low'},
         {team:'myTeam',count:6,priority:'low'},
-        {team:'myTeam3',count:-6,priority:'low'},
-        {team:'myTeam3',count:-6,priority:'high'},
-        {team:'myTeam1',count:-10,priority:'low'}
+        {team:'myTeam3',count:3,priority:'low'},
+        {team:'myTeam3',count:4,priority:'high'},
+        {team:'myTeam1',count:5,priority:'low'}
     ];
 
     function getFieldData($field) {
@@ -275,9 +275,9 @@ System.import('tau.newCharts').then(function (m) {
             plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
             x: getFieldData($x),
             y: getFieldData($y),
-            guide: {
+            /*guide: {
                 color: color
-            },
+            },*/
             color: 'priority',
             size: getFieldData($size)
         });

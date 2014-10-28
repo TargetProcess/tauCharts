@@ -102,9 +102,6 @@
   fill: none !important;
   stroke-width: 1.5px;
 }
-.graphical-report__bar {
-  fill: steelblue;
-}
 .graphical-report__dot.highlighted {
   stroke-width: 6;
   stroke-opacity: 0.4;
