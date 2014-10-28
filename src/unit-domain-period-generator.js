@@ -68,6 +68,9 @@ var PERIODS_MAP = {
 };
 
 var UnitDomainPeriodGenerator = {
+
+    get: (periodAlias) => PERIODS_MAP[periodAlias].take,
+
     generate: (lTick, rTick, periodAlias, fnIterator) => {
         var period = PERIODS_MAP[periodAlias];
         if (period) {

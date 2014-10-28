@@ -1,16 +1,21 @@
 describe("Unit domain decorator", function () {
 
     var data = [
-        {"effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}   , role:'Feature Owner'},
-        {"effort": 0.0000, "name": "Follow", "team": "Alaska"   , "project": "TP2", "priority": {id:2, name:'medium'}, "business value": {value:1, title:'Nice to have'}, role:'Some Unknown role'},
-        {"effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}, role:'QA'}
+        {"date": +new Date("2014-11-01T17:25:01+03:00"), "effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}   , role:'Feature Owner'},
+        {"date": +new Date("2014-10-28T14:12:22+03:00"), "effort": 0.0000, "name": "Follow", "team": "Alaska"   , "project": "TP2", "priority": {id:2, name:'medium'}, "business value": {value:1, title:'Nice to have'}, role:'Some Unknown role'},
+        {"date": +new Date("2014-10-30T22:01:17+03:00"), "effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}, role:'QA'}
     ];
 
     var decorator;
+    var PeriodGenerator;
     beforeEach(function () {
+
+        PeriodGenerator = tauChart.__api__.UnitDomainPeriodGenerator;
+
         decorator = new tauChart.__api__.UnitDomainMixin(
             {
-                name : {type: 'category', scale: 'ordinal'},
+                date    : {type: 'order', scale: 'period'},
+                name    : {type: 'category', scale: 'ordinal'},
                 project : {type: 'category', scale: 'ordinal'},
                 team    : {type: 'category', scale: 'ordinal'},
                 effort  : {type: 'measure', scale: 'linear'},
@@ -57,10 +62,33 @@ describe("Unit domain decorator", function () {
             .to
             .deep
             .equal(['Product Owner', 'Feature Owner', 'QA', 'Developer', 'Some Unknown role']);
+
+        expect(unit.domain('date')).to.deep.equal(
+            [
+                data[1].date,
+                data[2].date,
+                data[0].date
+            ]);
     });
 
     it("should decorate with [scaleTo] method", function () {
         var unit = decorator.mix({});
+
+        var dateScale = unit.scaleTo(
+            'date',
+            [0, 10],
+            {
+                period: 'day',
+                val: PeriodGenerator.get('day')
+            });
+
+        expect(dateScale(data[1].date)).to.equal(1);
+        expect(dateScale(+new Date("2014-10-29T14:12:22+03:00"))).to.equal(3);
+        expect(dateScale(data[2].date)).to.equal(5);
+        expect(dateScale(+new Date("2014-10-31T14:12:22+03:00"))).to.equal(7);
+        expect(dateScale(data[0].date)).to.equal(9);
+
+
         var scaleProject = unit.scaleTo('project', [0, 10]);
         expect(scaleProject('TP2')).to.equal(7.5);
         expect(scaleProject('TP3')).to.equal(2.5);

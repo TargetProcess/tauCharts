@@ -1,3 +1,5 @@
+import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
+
 var rangeMethods = {
 
     'ordinal': (inputValues, interval, props) => {
@@ -13,6 +15,26 @@ var rangeMethods = {
             Math.max(max, domainParam[1])
         ];
         return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
+    },
+
+    'period': (inputValues, interval, props) => {
+        var domainParam = d3.extent(inputValues);
+        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : props.min;
+        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : props.max;
+
+        var range = [
+            Math.min(min, domainParam[0]),
+            Math.max(max, domainParam[1])
+        ];
+
+        var dates = [];
+        UnitDomainPeriodGenerator.generate(
+            range[0],
+            range[1],
+            props.period,
+            (x) => dates.push(x));
+
+        return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
     }
 };
 
@@ -112,17 +134,18 @@ export class UnitDomainMixin {
             return domainSortedAsc.map(fnMapperId);
         };
 
-        this.fnScaleTo = (scaleDim, interval, props) => {
-            var propertyObj = props || {};
+        this.fnScaleTo = (scaleDim, interval, options) => {
+            var opts = options || {};
             var dimx = _.defaults({}, meta[scaleDim]);
-            var fMap = propertyObj.map ? getPropMapper(propertyObj.map) : getValueMapper(scaleDim);
 
-            var type = (meta[scaleDim] || {}).type;
-            var vals = _domain(scaleDim, getScaleSortStrategy(type)).map(fMap);
+            var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
+            var fVal = opts.val || ((x) => x);
 
-            var func = rangeMethods[dimx.scale](vals, interval, propertyObj);
+            var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
 
-            var wrap = (domainPropObject) => func(fMap(domainPropObject));
+            var func = rangeMethods[dimx.scale](vals, interval, opts);
+
+            var wrap = (domainPropObject) => func(fVal(fMap(domainPropObject)));
             // have to copy properties since d3 produce Function with methods
             for (var p in func) {
                 if (func.hasOwnProperty(p)) {

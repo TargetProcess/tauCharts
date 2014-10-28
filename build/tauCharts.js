@@ -1,6 +1,3 @@
-/*! tauCharts - v0.1.0 - 2014-10-28
-* https://github.com/TargetProcess/tauCharts
-* Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -801,6 +798,92 @@
     
     })();
 
+    var unit$domain$period$generator$$PERIODS_MAP = {
+    
+        'day': {
+            take: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                return new Date(prevDate.setHours(0, 0, 0, 0));
+            },
+            next: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                return new Date(prevDate.setDate(prevDate.getDate() + 1));
+            }
+        },
+    
+        'week': {
+            take: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
+                prevDate = new Date(prevDate.setDate(prevDate.getDate() - prevDate.getDay()));
+                return prevDate;
+            },
+            next: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                return new Date(prevDate.setDate(prevDate.getDate() + 7));
+            }
+        },
+    
+        'month': {
+            take: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
+                prevDate = new Date(prevDate.setDate(1));
+                return prevDate;
+            },
+            next: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
+            }
+        },
+    
+        'quarter': {
+            take: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
+                prevDate = new Date(prevDate.setDate(1));
+                var currentMonth = prevDate.getMonth();
+                var firstQuarterMonth = currentMonth - (currentMonth % 3);
+                return new Date(prevDate.setMonth(firstQuarterMonth));
+            },
+            next: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
+            }
+        },
+    
+        'year': {
+            take: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
+                prevDate = new Date(prevDate.setDate(1));
+                prevDate = new Date(prevDate.setMonth(0));
+                return prevDate;
+            },
+            next: function (prevTick) {
+                var prevDate = new Date(prevTick);
+                return new Date(prevDate.setFullYear(prevDate.getFullYear() + 1));
+            }
+        }
+    };
+
+    var unit$domain$period$generator$$UnitDomainPeriodGenerator = {
+    
+        get: function(periodAlias)  {return unit$domain$period$generator$$PERIODS_MAP[periodAlias].take},
+    
+        generate: function(lTick, rTick, periodAlias, fnIterator)  {
+            var period = unit$domain$period$generator$$PERIODS_MAP[periodAlias];
+            if (period) {
+                var last = period.take(rTick);
+                var curr = period.take(lTick);
+                fnIterator(curr);
+                while ((curr = period.next(curr)) <= last) {
+                    fnIterator(curr);
+                }
+            }
+        }
+    };
+
     var unit$domain$mixin$$rangeMethods = {
     
         'ordinal': function(inputValues, interval, props)  {
@@ -816,6 +899,26 @@
                 Math.max(max, domainParam[1])
             ];
             return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
+        },
+    
+        'period': function(inputValues, interval, props)  {
+            var domainParam = d3.extent(inputValues);
+            var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : props.min;
+            var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : props.max;
+    
+            var range = [
+                Math.min(min, domainParam[0]),
+                Math.max(max, domainParam[1])
+            ];
+    
+            var dates = [];
+            unit$domain$period$generator$$UnitDomainPeriodGenerator.generate(
+                range[0],
+                range[1],
+                props.period,
+                function(x)  {return dates.push(x)});
+    
+            return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
         }
     };
 
@@ -915,17 +1018,18 @@
                 return domainSortedAsc.map(fnMapperId);
             };
     
-            this.fnScaleTo = function(scaleDim, interval, props)  {
-                var propertyObj = props || {};
+            this.fnScaleTo = function(scaleDim, interval, options)  {
+                var opts = options || {};
                 var dimx = _.defaults({}, meta[scaleDim]);
-                var fMap = propertyObj.map ? getPropMapper(propertyObj.map) : getValueMapper(scaleDim);
     
-                var type = (meta[scaleDim] || {}).type;
-                var vals = _domain(scaleDim, getScaleSortStrategy(type)).map(fMap);
+                var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
+                var fVal = opts.val || (function(x)  {return x});
     
-                var func = unit$domain$mixin$$rangeMethods[dimx.scale](vals, interval, propertyObj);
+                var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
     
-                var wrap = function(domainPropObject)  {return func(fMap(domainPropObject))};
+                var func = unit$domain$mixin$$rangeMethods[dimx.scale](vals, interval, opts);
+    
+                var wrap = function(domainPropObject)  {return func(fVal(fMap(domainPropObject)))};
                 // have to copy properties since d3 produce Function with methods
                 for (var p in func) {
                     if (func.hasOwnProperty(p)) {
@@ -1533,88 +1637,7 @@
         proto$0.convertConfig = function(config) {
             return charts$tau$chart$$typesChart[config.type](config);
         };
-    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})(charts$tau$plot$$Plot);var unit$domain$period$generator$$PERIODS_MAP = {
-    
-        'day': {
-            take: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                return new Date(prevDate.setHours(0, 0, 0, 0));
-            },
-            next: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                return new Date(prevDate.setDate(prevDate.getDate() + 1));
-            }
-        },
-    
-        'week': {
-            take: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-                prevDate = new Date(prevDate.setDate(prevDate.getDate() - prevDate.getDay()));
-                return prevDate;
-            },
-            next: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                return new Date(prevDate.setDate(prevDate.getDate() + 7));
-            }
-        },
-    
-        'month': {
-            take: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-                prevDate = new Date(prevDate.setDate(1));
-                return prevDate;
-            },
-            next: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
-            }
-        },
-    
-        'quarter': {
-            take: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-                prevDate = new Date(prevDate.setDate(1));
-                var currentMonth = prevDate.getMonth();
-                var firstQuarterMonth = currentMonth - (currentMonth % 3);
-                return new Date(prevDate.setMonth(firstQuarterMonth));
-            },
-            next: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
-            }
-        },
-    
-        'year': {
-            take: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-                prevDate = new Date(prevDate.setDate(1));
-                prevDate = new Date(prevDate.setMonth(0));
-                return prevDate;
-            },
-            next: function (prevTick) {
-                var prevDate = new Date(prevTick);
-                return new Date(prevDate.setFullYear(prevDate.getFullYear() + 1));
-            }
-        }
-    };
-
-    var unit$domain$period$generator$$UnitDomainPeriodGenerator = {
-        generate: function(lTick, rTick, periodAlias, fnIterator)  {
-            var period = unit$domain$period$generator$$PERIODS_MAP[periodAlias];
-            if (period) {
-                var last = period.take(rTick);
-                var curr = period.take(lTick);
-                fnIterator(curr);
-                while ((curr = period.next(curr)) <= last) {
-                    fnIterator(curr);
-                }
-            }
-        }
-    };
+    MIXIN$0(Chart.prototype,proto$0);proto$0=void 0;return Chart;})(charts$tau$plot$$Plot);
 
 
     var tau$newCharts$$tauChart = {
