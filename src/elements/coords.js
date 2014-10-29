@@ -1,5 +1,6 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
+
 var coords = function (node, continueTraverse) {
 
     var options = node.options;
@@ -17,14 +18,16 @@ var coords = function (node, continueTraverse) {
     var tickX = {
         map: node.x.guide.tickLabel,
         min: node.x.guide.tickMin,
-        max: node.x.guide.tickMax
+        max: node.x.guide.tickMax,
+        period: node.x.guide.tickPeriod
     };
     node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
 
     var tickY = {
         map: node.y.guide.tickLabel,
         min: node.y.guide.tickMin,
-        max: node.y.guide.tickMax
+        max: node.y.guide.tickMax,
+        period: node.y.guide.tickPeriod
     };
     node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 

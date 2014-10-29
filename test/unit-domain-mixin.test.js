@@ -74,35 +74,19 @@ describe("Unit domain decorator", function () {
     it("should decorate with [scaleTo] method", function () {
         var unit = decorator.mix({});
 
-        var dateScale = unit.scaleTo(
-            'date',
-            [0, 10],
-            {
-                period: 'day',
-                val: PeriodGenerator.get('day')
-            });
-
+        var dateScale = unit.scaleTo('date', [0, 10], { period: 'day' });
         expect(dateScale(data[1].date)).to.equal(1);
         expect(dateScale(+new Date("2014-10-29T14:12:22+03:00"))).to.equal(3);
         expect(dateScale(data[2].date)).to.equal(5);
         expect(dateScale(+new Date("2014-10-31T14:12:22+03:00"))).to.equal(7);
         expect(dateScale(data[0].date)).to.equal(9);
 
-
-        var monthScale = unit.scaleTo(
-            'date',
-            [0, 10],
-            {
-                period: 'month',
-                val: PeriodGenerator.get('month')
-            });
-
+        var monthScale = unit.scaleTo('date', [0, 10], { period: 'month' });
         expect(monthScale(data[1].date)).to.equal(2.5);
         expect(monthScale(+new Date("2014-10-29T14:12:22+03:00"))).to.equal(2.5);
         expect(monthScale(data[2].date)).to.equal(2.5);
         expect(monthScale(+new Date("2014-10-31T14:12:22+03:00"))).to.equal(2.5);
         expect(monthScale(data[0].date)).to.equal(7.5);
-
 
         var scaleProject = unit.scaleTo('project', [0, 10]);
         expect(scaleProject('TP2')).to.equal(7.5);

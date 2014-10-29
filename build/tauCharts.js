@@ -322,6 +322,7 @@
         fnDrawGrid: utils$utils$draw$$fnDrawGrid,
         generateColor: utils$utils$draw$$generateColor
     };
+
     var elements$coords$$coords = function (node, continueTraverse) {
     
         var options = node.options;
@@ -339,14 +340,16 @@
         var tickX = {
             map: node.x.guide.tickLabel,
             min: node.x.guide.tickMin,
-            max: node.x.guide.tickMax
+            max: node.x.guide.tickMax,
+            period: node.x.guide.tickPeriod
         };
         node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
     
         var tickY = {
             map: node.y.guide.tickLabel,
             min: node.y.guide.tickMin,
-            max: node.y.guide.tickMax
+            max: node.y.guide.tickMax,
+            period: node.y.guide.tickPeriod
         };
         node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
     
@@ -497,14 +500,16 @@
         var tickX = {
             map: node.x.guide.tickLabel,
             min: node.x.guide.tickMin,
-            max: node.x.guide.tickMax
+            max: node.x.guide.tickMax,
+            period: node.x.guide.tickPeriod
         };
         node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
     
         var tickY = {
             map: node.y.guide.tickLabel,
             min: node.y.guide.tickMin,
-            max: node.y.guide.tickMax
+            max: node.y.guide.tickMax,
+            period: node.y.guide.tickPeriod
         };
         node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
     
@@ -1012,7 +1017,7 @@
                 var dimx = _.defaults({}, meta[scaleDim]);
     
                 var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-                var fVal = opts.val || (function(x)  {return x});
+                var fVal = opts.period ? unit$domain$period$generator$$UnitDomainPeriodGenerator.get(opts.period) : (function(x)  {return x});
     
                 var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
     

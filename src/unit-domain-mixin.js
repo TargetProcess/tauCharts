@@ -139,7 +139,7 @@ export class UnitDomainMixin {
             var dimx = _.defaults({}, meta[scaleDim]);
 
             var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-            var fVal = opts.val || ((x) => x);
+            var fVal = opts.period ? UnitDomainPeriodGenerator.get(opts.period) : ((x) => x);
 
             var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
 

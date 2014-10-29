@@ -115,6 +115,10 @@
 </head>
 <body>
 
+<div id="datetime-container" class="cc" style="width: 1605px">
+    <div class="cc-empty"></div>
+</div>
+
 <div id="chart-container" class="cc">
     <div class="cc-empty"></div>
 </div>
@@ -359,6 +363,45 @@
             ]
         }
     };
+
+    var dateTimeChart = new tauChart.Plot(
+            {
+                layoutEngine: 'DEFAULT',
+                data: [
+                    {xdate: +new Date('2014-01-01T00:00:00Z'), count: 12},
+                    {xdate: +new Date('2014-02-01T00:00:00Z'), count: 22},
+                    {xdate: +new Date('2014-03-01T00:00:00Z'), count: 23},
+                    {xdate: +new Date('2014-04-01T00:00:00Z'), count: 24},
+                    {xdate: +new Date('2014-05-01T00:00:00Z'), count: 25},
+                    {xdate: +new Date('2014-06-01T00:00:00Z'), count: 1}
+                ].map(function(x) {
+                            x.xdate = x.xdate + (new Date()).getTimezoneOffset() * 60 * 1000;
+                            return x;
+                        }),
+                spec: {
+                    dimensions: {
+                        xdate: {type: 'order', scale: 'period'},
+                        count: {type: 'measure'}
+                    },
+                    unit: {
+                        type: 'COORDS.RECT',
+                        guide: {
+                            padding: {l:40, r:0, t:8, b:250},
+                            showGridLines: 'xy',
+                            x: { tickPeriod: 'month', rotate: 45, textAnchor: 'start' }
+                        },
+                        x: 'xdate',
+                        y: 'count',
+                        unit: [
+                            { type: 'ELEMENT.INTERVAL' },
+                            { type: 'ELEMENT.POINT' },
+                            { type: 'ELEMENT.LINE' }
+                        ]
+                    }
+                },
+                plugins: []
+            }).renderTo('#datetime-container');
+
 
     var parallelChart = new tauChart.Plot(
             {
