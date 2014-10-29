@@ -17,7 +17,7 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
         div.parentNode.removeChild(div);
     });
 
-    it("should fail on render unknown unit type appearance", function () {
+    it("should fail on build unknown unit type appearance", function () {
 
         var api = tauChart.__api__;
         var reader = new api.DSLReader(
@@ -44,16 +44,7 @@ describe("DSL reader calcLayout() / renderGraph()", function () {
             },
             data);
 
-        var logicXGraph = reader.buildGraph();
-        var layoutGraph = reader.calcLayout(
-            logicXGraph,
-            api.LayoutEngineFactory.get('DEFAULT'),
-            {
-                width: 100,
-                height: 100
-            });
-
-        expect(function() { reader.renderGraph(layoutGraph, d3.select(div).append("svg")) })
+        expect(function() { reader.buildGraph() })
             .to
             .throw("Unknown unit type: ELEMENT.UNKNOWN");
     });

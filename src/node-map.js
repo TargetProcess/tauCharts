@@ -4,6 +4,8 @@ import {point} from './elements/point';
 import {interval} from './elements/interval';
 import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
+import {CoordsParallel} from './elements/coords-parallel';
+import {CoordsParallelLine} from './elements/coords-parallel-line';
 
 var setupElementNode = (node, dimensions) => {
 
@@ -40,10 +42,13 @@ var setupElementNode = (node, dimensions) => {
 
 var nodeMap = {
 
-    'COORDS.RECT': (node, continueTraverse) => {
-        node.x = node.dimension(node.x, node);
-        node.y = node.dimension(node.y, node);
-        coords(node, continueTraverse);
+    'COORDS.RECT': {
+        walk: coords.walk,
+        draw: (node, continueTraverse) => {
+            node.x = node.dimension(node.x, node);
+            node.y = node.dimension(node.y, node);
+            coords.draw(node, continueTraverse);
+        }
     },
 
     'ELEMENT.POINT': (node) => {
@@ -186,120 +191,8 @@ var nodeMap = {
         });
     },
 
-    'COORDS.PARALLEL': function(node, continueTraverse) {
-
-        var options = node.options;
-        var padding = node.guide.padding;
-
-        var L = options.left + padding.l;
-        var T = options.top + padding.t;
-
-        var W = options.width - (padding.l + padding.r);
-        var H = options.height - (padding.t + padding.b);
-
-        var scaleObjArr = node.x.map((xN) => node.scaleTo(xN, [H, 0], {}));
-
-        var container = options
-            .container
-            .append('g')
-            .attr('class', 'graphical-report__' + 'cell ' + 'cell')
-            .attr('transform', utilsDraw.translate(L, T));
-
-
-        var translate = (left, top) => 'translate(' + left + ',' + top + ')';
-        var rotate = (angle) => 'rotate(' + angle + ')';
-
-
-        var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
-            var container = this;
-
-            var axisScale = d3.svg.axis().scale(xScaleObj).orient('left');
-
-            var nodeScale = container
-                .append('g')
-                .attr('class', 'y axis')
-                .attr('transform', translate.apply(null, AXIS_POSITION))
-                .call(axisScale);
-
-            nodeScale
-                .selectAll('.tick text')
-                .attr('transform', rotate(0))
-                .style('text-anchor', 'end');
-        };
-
-        var offset = W / (node.x.length - 1);
-        scaleObjArr.forEach((scale, i) => {
-            fnDrawDimAxis.call(container, scale, [i * offset, 0]);
-        });
-
-        var grid = container
-            .append('g')
-            .attr('class', 'grid')
-            .attr('transform', translate(0, 0));
-
-        node.$matrix.iterate((iRow, iCol, subNodes) => {
-            subNodes.forEach((node) => {
-                node.options = _.extend({container: grid}, node.options);
-                continueTraverse(node);
-            });
-        });
-    },
-
-    'PARALLEL/ELEMENT.LINE': function(node) {
-
-        node.color = node.dimension(node.color, node);
-
-        var options = node.options;
-
-        var scalesMap = node.x.reduce(
-            (memo, xN) => {
-                memo[xN] = node.scaleTo(xN, [options.height, 0], {});
-                return memo;
-            },
-            {});
-
-        var color = utilsDraw.generateColor(node);
-
-        var categories = d3
-            .nest()
-            .key((d) => d[color.dimension])
-            .entries(node.partition())
-            .map((src) => {
-                var row = src.values[0];
-                var memo = [];
-                node.x.forEach((propName) => {
-                    memo.push({key: propName, val: row[propName]});
-                });
-                return memo;
-            });
-
-        var updateLines = function () {
-            this.attr('class', (d) => 'graphical-report__' + 'line' + ' line ' + 'color10-9');
-            var paths = this.selectAll('path').data((d) => [d]);
-            paths.call(updatePaths);
-            paths.enter().append('path').call(updatePaths);
-            paths.exit().remove();
-        };
-
-        var segment = options.width / (node.x.length - 1);
-        var segmentMap = {};
-        node.x.forEach((propName, i) => {
-            segmentMap[propName] = (i * segment);
-        });
-
-        var fnLine = d3.svg.line()
-            .x((d) => segmentMap[d.key])
-            .y((d) => scalesMap[d.key](d.val));
-
-        var updatePaths = function () {
-            this.attr('d', fnLine);
-        };
-
-        var lines = options.container.selectAll('.line').data(categories);
-        lines.call(updateLines);
-        lines.enter().append('g').call(updateLines);
-        lines.exit().remove();
-    }
+    'COORDS.PARALLEL': CoordsParallel,
+    'PARALLEL/ELEMENT.LINE': CoordsParallelLine
 };
 
 export {nodeMap};

@@ -1,8 +1,6 @@
 import {utils} from './utils/utils';
-import {TMatrix} from './matrix';
-import {TUnitVisitorFactory} from './unit-visitor-factory';
-import {TNodeVisitorFactory} from './node-visitor-factory';
 import {UnitDomainMixin} from './unit-domain-mixin';
+import {UnitsRegistry} from './units-registry';
 
 export class DSLReader {
 
@@ -12,7 +10,7 @@ export class DSLReader {
     }
 
     buildGraph() {
-        var buildRecursively = (unit) => TUnitVisitorFactory(unit.type)(this.domain.mix(unit), buildRecursively);
+        var buildRecursively = (unit) => UnitsRegistry.get(unit.type).walk(this.domain.mix(unit), buildRecursively);
         return buildRecursively(this.spec.unit);
     }
 
@@ -32,7 +30,7 @@ export class DSLReader {
 
         styledGraph.options.container = target;
 
-        var renderRecursively = (unit) => TNodeVisitorFactory(unit.type)(this.domain.mix(unit), renderRecursively);
+        var renderRecursively = (unit) => UnitsRegistry.get(unit.type).draw(this.domain.mix(unit), renderRecursively);
 
         renderRecursively(styledGraph);
         return styledGraph.options.container;
