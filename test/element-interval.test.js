@@ -38,8 +38,8 @@ describe("ELEMENT.INTERVAL", function () {
     });
     it("should group contain interval element", function () {
         var bars = getGroupBar();
-        expect(bars[0].children.length).to.equal(1);
-        expect(bars[1].children.length).to.equal(2);
-        expect(bars[2].children.length).to.equal(1);
+        expect(bars[0].childNodes.length).to.equal(1);
+        expect(bars[1].childNodes.length).to.equal(2);
+        expect(bars[2].childNodes.length).to.equal(1);
     });
 });
