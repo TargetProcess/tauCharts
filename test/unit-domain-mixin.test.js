@@ -89,6 +89,21 @@ describe("Unit domain decorator", function () {
         expect(dateScale(data[0].date)).to.equal(9);
 
 
+        var monthScale = unit.scaleTo(
+            'date',
+            [0, 10],
+            {
+                period: 'month',
+                val: PeriodGenerator.get('month')
+            });
+
+        expect(monthScale(data[1].date)).to.equal(2.5);
+        expect(monthScale(+new Date("2014-10-29T14:12:22+03:00"))).to.equal(2.5);
+        expect(monthScale(data[2].date)).to.equal(2.5);
+        expect(monthScale(+new Date("2014-10-31T14:12:22+03:00"))).to.equal(2.5);
+        expect(monthScale(data[0].date)).to.equal(7.5);
+
+
         var scaleProject = unit.scaleTo('project', [0, 10]);
         expect(scaleProject('TP2')).to.equal(7.5);
         expect(scaleProject('TP3')).to.equal(2.5);
