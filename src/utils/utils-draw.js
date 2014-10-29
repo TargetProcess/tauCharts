@@ -1,4 +1,6 @@
 import {utils} from '../utils/utils';
+import {FormatterRegistry} from '../formatter-registry';
+
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
@@ -48,6 +50,10 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
             .scale(x.scaleObj)
             .orient(x.guide.scaleOrient)
             .ticks(_.max([Math.round(size / x.guide.density), 4]));
+
+        if (x.guide.tickFormat) {
+            axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
+        }
 
         var nodeScale = container
             .append('g')

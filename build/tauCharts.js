@@ -179,6 +179,48 @@
     
     })();
 
+    var formatter$registry$$FORMATS_MAP = {
+    
+        'day': d3.time.format('%d-%b-%Y'),
+    
+        'week': d3.time.format('%d-%b-%Y'),
+    
+        'week-range': function(x)  {
+            var sWeek = new Date(x);
+            var clone = new Date(x);
+            var eWeek = new Date(clone.setDate(clone.getDate() + 7));
+            var format = d3.time.format('%d-%b-%Y');
+            return format(sWeek) + ' - ' + format(eWeek);
+        },
+    
+        'month': function(x)  {
+            var d = new Date(x);
+            var m = d.getMonth();
+            var formatSpec = (m === 0) ? '%B, %Y' : '%B';
+            return d3.time.format(formatSpec)(x);
+        },
+    
+        'month-year': d3.time.format('%B, %Y'),
+    
+        'quarter': function(x)  {
+            var d = new Date(x);
+            var m = d.getMonth();
+            var q = (m - (m % 3)) / 3;
+            return 'Q' + (q + 1) + ' ' + d.getFullYear();
+        },
+    
+        'year': d3.time.format('%Y')
+    };
+
+    var formatter$registry$$FormatterRegistry = {
+    
+        get: function(formatAlias)  {return formatter$registry$$FORMATS_MAP[formatAlias] || d3.format(formatAlias)} ,
+    
+        add: function(formatAlias, formatter)  {
+            formatter$registry$$FORMATS_MAP[formatAlias] = formatter;
+        }
+    };
+
     var utils$utils$draw$$translate = function(left, top)  {return 'translate(' + left + ',' + top + ')'};
     var utils$utils$draw$$rotate = function(angle)  {return 'rotate(' + angle + ')'};
     var utils$utils$draw$$getOrientation = function(scaleOrient)  {return _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v'};
@@ -228,6 +270,10 @@
                 .scale(x.scaleObj)
                 .orient(x.guide.scaleOrient)
                 .ticks(_.max([Math.round(size / x.guide.density), 4]));
+    
+            if (x.guide.tickFormat) {
+                axisScale.tickFormat(formatter$registry$$FormatterRegistry.get(x.guide.tickFormat));
+            }
     
             var nodeScale = container
                 .append('g')
