@@ -25,7 +25,6 @@ var interval = function (node) {
         calculateWidth,
         calculateHeight,
         calculateTranslate;
-
     if (node.flip) {
         xScale = options.yScale;
         yScale = options.xScale;

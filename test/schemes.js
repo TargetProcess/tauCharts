@@ -16,6 +16,14 @@ var schemes = {};
         y: [String]
     });
 
+    var interval = schema({
+        color: [null, String],
+        flip: [Boolean],
+        type: "ELEMENT.INTERVAL",
+        x: [String],
+        y: [String]
+    });
+
     var dimension = schema({
         type: String,
         scale: String
@@ -37,7 +45,19 @@ var schemes = {};
         })
     });
 
-    var line = schema({
+    var bar = schema({
+        dimensions: dimensions,
+        unit: schema({
+            guide: undefined,
+            x: [null, String],
+            y: [null, String],
+            type: "COORDS.RECT",
+            unit: Array.of(interval)
+
+        })
+    });
+
+    var lineSpec = schema({
         dimensions: dimensions,
         unit: schema({
             guide: undefined,
@@ -49,7 +69,8 @@ var schemes = {};
         })
     });
     schemes.point = point;
-    schemes.line = line;
+    schemes.bar = bar;
+    schemes.line = lineSpec;
     schemes.scatterplot = scatterplot
 }(schemes));
 

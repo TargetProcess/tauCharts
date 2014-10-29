@@ -11,6 +11,21 @@ function convertAxis(data) {
 function generateSimpleConfig(type, config) {
     var chartConfig = _.omit(config, 'spec');
     var colorGuide = config.guide && config.guide.color || {};
+    var element = {
+        type: type,
+        x: config.x,
+        y: config.y,
+        color: config.color,
+        guide: {
+            color: colorGuide
+        }
+    };
+    if (config.size) {
+        element.size = config.size;
+    }
+    if (config.flip) {
+        element.flip = config.flip;
+    }
     chartConfig.spec = {
         dimensions: config.dimensions,
         unit: {
@@ -23,18 +38,7 @@ function generateSimpleConfig(type, config) {
                 x: {label: config.x},
                 y: {label: config.y}
             },
-            unit: [
-                {
-                    type: type,
-                    x: config.x,
-                    y: config.y,
-                    color: config.color,
-                    size: config.size,
-                    guide: {
-                        color:  colorGuide
-                    }
-                }
-            ]
+            unit: [element]
         }
 
     };
