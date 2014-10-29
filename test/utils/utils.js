@@ -5,6 +5,10 @@ function getLine() {
     return d3.selectAll('.line')[0];
 }
 
+function getGroupBar() {
+    return d3.selectAll('.i-role-bar-group')[0];
+}
+
 function attrib(el, prop) {
     return el.getAttribute(prop)
 }
