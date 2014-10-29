@@ -27,12 +27,7 @@ var rangeMethods = {
             Math.max(max, domainParam[1])
         ];
 
-        var dates = [];
-        UnitDomainPeriodGenerator.generate(
-            range[0],
-            range[1],
-            props.period,
-            (x) => dates.push(x));
+        var dates = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
 
         return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
     }
@@ -139,7 +134,7 @@ export class UnitDomainMixin {
             var dimx = _.defaults({}, meta[scaleDim]);
 
             var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-            var fVal = opts.period ? UnitDomainPeriodGenerator.get(opts.period) : ((x) => x);
+            var fVal = opts.period ? UnitDomainPeriodGenerator.get(opts.period).cast : ((x) => x);
 
             var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
 

@@ -1,7 +1,7 @@
 var PERIODS_MAP = {
 
     'day': {
-        take: function (prevTick) {
+        cast: function (prevTick) {
             var prevDate = new Date(prevTick);
             return new Date(prevDate.setHours(0, 0, 0, 0));
         },
@@ -12,7 +12,7 @@ var PERIODS_MAP = {
     },
 
     'week': {
-        take: function (prevTick) {
+        cast: function (prevTick) {
             var prevDate = new Date(prevTick);
             prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
             prevDate = new Date(prevDate.setDate(prevDate.getDate() - prevDate.getDay()));
@@ -25,7 +25,7 @@ var PERIODS_MAP = {
     },
 
     'month': {
-        take: function (prevTick) {
+        cast: function (prevTick) {
             var prevDate = new Date(prevTick);
             prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
             prevDate = new Date(prevDate.setDate(1));
@@ -38,7 +38,7 @@ var PERIODS_MAP = {
     },
 
     'quarter': {
-        take: function (prevTick) {
+        cast: function (prevTick) {
             var prevDate = new Date(prevTick);
             prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
             prevDate = new Date(prevDate.setDate(1));
@@ -53,7 +53,7 @@ var PERIODS_MAP = {
     },
 
     'year': {
-        take: function (prevTick) {
+        cast: function (prevTick) {
             var prevDate = new Date(prevTick);
             prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
             prevDate = new Date(prevDate.setDate(1));
@@ -69,18 +69,25 @@ var PERIODS_MAP = {
 
 var UnitDomainPeriodGenerator = {
 
-    get: (periodAlias) => PERIODS_MAP[periodAlias].take,
+    add: function(periodAlias, obj) {
+        PERIODS_MAP[periodAlias.toLowerCase()] = obj;
+        return this;
+    },
 
-    generate: (lTick, rTick, periodAlias, fnIterator) => {
-        var period = PERIODS_MAP[periodAlias];
+    get: (periodAlias) => PERIODS_MAP[periodAlias.toLowerCase()],
+
+    generate: (lTick, rTick, periodAlias) => {
+        var r = [];
+        var period = PERIODS_MAP[periodAlias.toLowerCase()];
         if (period) {
-            var last = period.take(rTick);
-            var curr = period.take(lTick);
-            fnIterator(curr);
+            var last = period.cast(rTick);
+            var curr = period.cast(lTick);
+            r.push(curr);
             while ((curr = period.next(curr)) <= last) {
-                fnIterator(curr);
+                r.push(curr);
             }
         }
+        return r;
     }
 };
 

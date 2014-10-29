@@ -841,7 +841,7 @@
     var unit$domain$period$generator$$PERIODS_MAP = {
     
         'day': {
-            take: function (prevTick) {
+            cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
                 return new Date(prevDate.setHours(0, 0, 0, 0));
             },
@@ -852,7 +852,7 @@
         },
     
         'week': {
-            take: function (prevTick) {
+            cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
                 prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
                 prevDate = new Date(prevDate.setDate(prevDate.getDate() - prevDate.getDay()));
@@ -865,7 +865,7 @@
         },
     
         'month': {
-            take: function (prevTick) {
+            cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
                 prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
                 prevDate = new Date(prevDate.setDate(1));
@@ -878,7 +878,7 @@
         },
     
         'quarter': {
-            take: function (prevTick) {
+            cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
                 prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
                 prevDate = new Date(prevDate.setDate(1));
@@ -893,7 +893,7 @@
         },
     
         'year': {
-            take: function (prevTick) {
+            cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
                 prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
                 prevDate = new Date(prevDate.setDate(1));
@@ -909,18 +909,25 @@
 
     var unit$domain$period$generator$$UnitDomainPeriodGenerator = {
     
-        get: function(periodAlias)  {return unit$domain$period$generator$$PERIODS_MAP[periodAlias].take},
+        add: function(periodAlias, obj) {
+            unit$domain$period$generator$$PERIODS_MAP[periodAlias.toLowerCase()] = obj;
+            return this;
+        },
     
-        generate: function(lTick, rTick, periodAlias, fnIterator)  {
-            var period = unit$domain$period$generator$$PERIODS_MAP[periodAlias];
+        get: function(periodAlias)  {return unit$domain$period$generator$$PERIODS_MAP[periodAlias.toLowerCase()]},
+    
+        generate: function(lTick, rTick, periodAlias)  {
+            var r = [];
+            var period = unit$domain$period$generator$$PERIODS_MAP[periodAlias.toLowerCase()];
             if (period) {
-                var last = period.take(rTick);
-                var curr = period.take(lTick);
-                fnIterator(curr);
+                var last = period.cast(rTick);
+                var curr = period.cast(lTick);
+                r.push(curr);
                 while ((curr = period.next(curr)) <= last) {
-                    fnIterator(curr);
+                    r.push(curr);
                 }
             }
+            return r;
         }
     };
 
@@ -951,12 +958,7 @@
                 Math.max(max, domainParam[1])
             ];
     
-            var dates = [];
-            unit$domain$period$generator$$UnitDomainPeriodGenerator.generate(
-                range[0],
-                range[1],
-                props.period,
-                function(x)  {return dates.push(x)});
+            var dates = unit$domain$period$generator$$UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
     
             return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
         }
@@ -1063,7 +1065,7 @@
                 var dimx = _.defaults({}, meta[scaleDim]);
     
                 var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-                var fVal = opts.period ? unit$domain$period$generator$$UnitDomainPeriodGenerator.get(opts.period) : (function(x)  {return x});
+                var fVal = opts.period ? unit$domain$period$generator$$UnitDomainPeriodGenerator.get(opts.period).cast : (function(x)  {return x});
     
                 var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
     
@@ -1688,6 +1690,10 @@
             UnitDomainPeriodGenerator: unit$domain$period$generator$$UnitDomainPeriodGenerator,
             DSLReader: dsl$reader$$DSLReader,
             LayoutEngineFactory: layout$engine$factory$$LayoutEngineFactory
+        },
+        api: {
+            FormatsRegistry: formatter$registry$$FormatterRegistry,
+            PeriodsRegistry: unit$domain$period$generator$$UnitDomainPeriodGenerator
         }
     };
 

@@ -4,6 +4,7 @@ import {UnitDomainMixin} from './unit-domain-mixin';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {DSLReader} from './dsl-reader';
 import {LayoutEngineFactory} from './layout-engine-factory';
+import {FormatterRegistry} from './formatter-registry';
 
 
 var tauChart = {
@@ -14,6 +15,10 @@ var tauChart = {
         UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
         DSLReader: DSLReader,
         LayoutEngineFactory: LayoutEngineFactory
+    },
+    api: {
+        FormatsRegistry: FormatterRegistry,
+        PeriodsRegistry: UnitDomainPeriodGenerator
     }
 };
 
