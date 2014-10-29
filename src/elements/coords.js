@@ -41,13 +41,11 @@ var coords = function (node, continueTraverse) {
         .attr('transform', utilsDraw.translate(L, T));
 
     if (!node.x.guide.hide) {
-        var domainXLength = node.domain(node.x.scaleDim).length;
-        utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength, W);
+        utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
     }
 
     if (!node.y.guide.hide) {
-        var domainYLength = node.domain(node.y.scaleDim).length;
-        utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength, H);
+        utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
     }
 
     var grid = utilsDraw.fnDrawGrid.call(container, node, H, W);

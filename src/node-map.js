@@ -100,13 +100,11 @@ var nodeMap = {
             .attr('transform', utilsDraw.translate(L, T));
 
         if (options.showX && !node.x.guide.hide) {
-            var domainXLength = node.domain(node.x.scaleDim).length;
-            utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength, W);
+            utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
         }
 
         if (options.showY && !node.y.guide.hide) {
-            var domainYLength = node.domain(node.y.scaleDim).length;
-            utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength, H);
+            utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
         }
 
         var grid = container

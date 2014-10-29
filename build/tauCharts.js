@@ -183,13 +183,51 @@
     var utils$utils$draw$$rotate = function(angle)  {return 'rotate(' + angle + ')'};
     var utils$utils$draw$$getOrientation = function(scaleOrient)  {return _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v'};
 
-    var utils$utils$draw$$fnDrawDimAxis = function (x, AXIS_POSITION, sectorSize, size) {
+    var utils$utils$draw$$decorateAxisTicks = function(nodeScale, x, size)  {
+    
+        var selection = nodeScale.selectAll('.tick line');
+    
+        var sectorSize = size / selection[0].length;
+        var offsetSize = sectorSize / 2;
+    
+        if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
+    
+            var isHorizontal = ('h' === utils$utils$draw$$getOrientation(x.guide.scaleOrient));
+    
+            var key = (isHorizontal) ? 'x' : 'y';
+            var val = (isHorizontal) ? offsetSize : (-offsetSize);
+    
+            selection.attr(key + '1', val).attr(key + '2', val);
+        }
+    };
+
+    var utils$utils$draw$$decorateAxisLabel = function(nodeScale, x)  {
+        var koeff = ('h' === utils$utils$draw$$getOrientation(x.guide.scaleOrient)) ? 1 : -1;
+        nodeScale
+            .append('text')
+            .attr('transform', utils$utils$draw$$rotate(x.guide.label.rotate))
+            .attr('class', 'label')
+            .attr('x', koeff * x.guide.size * 0.5)
+            .attr('y', koeff * x.guide.label.padding)
+            .style('text-anchor', x.guide.label.textAnchor)
+            .text(x.guide.label.text);
+    };
+
+    var utils$utils$draw$$decorateTickLabel = function(nodeScale, x)  {
+        nodeScale
+            .selectAll('.tick text')
+            .attr('transform', utils$utils$draw$$rotate(x.guide.rotate))
+            .style('text-anchor', x.guide.textAnchor);
+    };
+
+    var utils$utils$draw$$fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         var container = this;
         if (x.scaleDim) {
     
-            var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient);
-    
-            axisScale.ticks(_.max([Math.round(size / x.guide.density), 4]));
+            var axisScale = d3.svg.axis()
+                .scale(x.scaleObj)
+                .orient(x.guide.scaleOrient)
+                .ticks(_.max([Math.round(size / x.guide.density), 4]));
     
             var nodeScale = container
                 .append('g')
@@ -197,47 +235,9 @@
                 .attr('transform', utils$utils$draw$$translate.apply(null, AXIS_POSITION))
                 .call(axisScale);
     
-            nodeScale
-                .selectAll('.tick text')
-                .attr('transform', utils$utils$draw$$rotate(x.guide.rotate))
-                .style('text-anchor', x.guide.textAnchor);
-    
-            if ('h' === utils$utils$draw$$getOrientation(x.guide.scaleOrient)) {
-    
-                if (x.scaleType === 'ordinal') {
-                    nodeScale
-                        .selectAll('.tick line')
-                        .attr('x1', sectorSize / 2)
-                        .attr('x2', sectorSize / 2);
-                }
-    
-                nodeScale
-                    .append('text')
-                    .attr('transform', utils$utils$draw$$rotate(x.guide.label.rotate))
-                    .attr('class', 'label')
-                    .attr('x', x.guide.size * 0.5)
-                    .attr('y', x.guide.label.padding)
-                    .style('text-anchor', x.guide.label.textAnchor)
-                    .text(x.guide.label.text);
-            }
-            else {
-    
-                if (x.scaleType === 'ordinal') {
-                    nodeScale
-                        .selectAll('.tick line')
-                        .attr('y1', -sectorSize / 2)
-                        .attr('y2', -sectorSize / 2);
-                }
-    
-                nodeScale
-                    .append('text')
-                    .attr('transform', utils$utils$draw$$rotate(x.guide.label.rotate))
-                    .attr('class', 'label')
-                    .attr('x', -x.guide.size * 0.5)
-                    .attr('y', -x.guide.label.padding)
-                    .style('text-anchor', x.guide.label.textAnchor)
-                    .text(x.guide.label.text);
-            }
+            utils$utils$draw$$decorateAxisTicks(nodeScale, x, size);
+            utils$utils$draw$$decorateTickLabel(nodeScale, x);
+            utils$utils$draw$$decorateAxisLabel(nodeScale, x);
         }
     };
 
@@ -257,37 +257,30 @@
     
             if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                 var x = node.x;
-                var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H);
+                var xGridAxis = d3.svg
+                    .axis()
+                    .scale(x.scaleObj)
+                    .orient(x.guide.scaleOrient)
+                    .tickSize(H)
+                    .ticks(_.max([Math.round(W / x.guide.density), 4]));
     
-                xGridAxis.ticks(_.max([Math.round(W / x.guide.density), 4]));
+                var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
     
-                var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x');
-                xGridLines.call(xGridAxis);
-    
-                if (x.scaleType === 'ordinal') {
-                    var sectorSize = W / node.domain(x.scaleDim).length;
-                    gridLines
-                        .selectAll('.tick line')
-                        .attr('x1', sectorSize / 2)
-                        .attr('x2', sectorSize / 2);
-                }
+                utils$utils$draw$$decorateAxisTicks(xGridLines, x, W);
             }
     
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
-                var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W);
+                var yGridAxis = d3.svg
+                    .axis()
+                    .scale(y.scaleObj)
+                    .orient(y.guide.scaleOrient)
+                    .tickSize(-W)
+                    .ticks(_.max([Math.round(H / y.guide.density), 4]));
     
-                yGridAxis.ticks(_.max([Math.round(H / y.guide.density), 4]));
+                var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
     
-                var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y');
-                yGridLines.call(yGridAxis);
-                if (y.scaleType === 'ordinal') {
-                    var sectorSize$0 = H / node.domain(y.scaleDim).length;
-                    yGridLines
-                        .selectAll('.tick line')
-                        .attr('y1', -sectorSize$0 / 2)
-                        .attr('y2', -sectorSize$0 / 2);
-                }
+                utils$utils$draw$$decorateAxisTicks(yGridLines, y, H);
             }
     
             // TODO: make own axes and grid instead of using d3's in such tricky way
@@ -370,13 +363,11 @@
             .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
     
         if (!node.x.guide.hide) {
-            var domainXLength = node.domain(node.x.scaleDim).length;
-            utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength, W);
+            utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
         }
     
         if (!node.y.guide.hide) {
-            var domainYLength = node.domain(node.y.scaleDim).length;
-            utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength, H);
+            utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
         }
     
         var grid = utils$utils$draw$$utilsDraw.fnDrawGrid.call(container, node, H, W);
@@ -584,13 +575,11 @@
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
     
             if (options.showX && !node.x.guide.hide) {
-                var domainXLength = node.domain(node.x.scaleDim).length;
-                utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W / domainXLength, W);
+                utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
             }
     
             if (options.showY && !node.y.guide.hide) {
-                var domainYLength = node.domain(node.y.scaleDim).length;
-                utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H / domainYLength, H);
+                utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
             }
     
             var grid = container
