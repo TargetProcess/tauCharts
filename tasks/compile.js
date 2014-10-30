@@ -28,7 +28,7 @@ module.exports = function (grunt) {
             include:['../node_modules/almond/almond'],
             baseUrl: 'tmp_dir/',
             name: 'tau.newCharts',
-            optimize: false,
+            optimize: 'none',
             out: 'build/tauCharts.js',
             wrap: {
                 startFile: 'tasks/start.frag',
