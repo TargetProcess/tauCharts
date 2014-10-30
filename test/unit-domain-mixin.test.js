@@ -1,9 +1,9 @@
 describe("Unit domain decorator", function () {
 
     var data = [
-        {"date": +new Date("2014-11-01T17:25:01+03:00"), "effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}   , role:'Feature Owner'},
+        {"date": new Date("2014-11-01T17:25:01+03:00"),  "effort": 1.0000, "name": "Report", "team": "Exploited", "project": "TP3", "priority": {id:1, name:'low'}   , "business value": {value:3, title:'Must Have'}   , role:'Feature Owner'},
         {"date": +new Date("2014-10-28T14:12:22+03:00"), "effort": 0.0000, "name": "Follow", "team": "Alaska"   , "project": "TP2", "priority": {id:2, name:'medium'}, "business value": {value:1, title:'Nice to have'}, role:'Some Unknown role'},
-        {"date": +new Date("2014-10-30T22:01:17+03:00"), "effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}, role:'QA'}
+        {"date": "2014-10-30T22:01:17+03:00",            "effort": 2.0000, "name": "Errors", "team": "Exploited", "project": "TP2", "priority": {id:3, name:'high'}  , "business value": {value:1, title:'Nice to have'}, role:'QA'}
     ];
 
     var decorator;
@@ -65,9 +65,9 @@ describe("Unit domain decorator", function () {
 
         expect(unit.domain('date')).to.deep.equal(
             [
-                data[1].date,
-                data[2].date,
-                data[0].date
+                new Date(data[1].date).getTime(),
+                new Date(data[2].date).getTime(),
+                new Date(data[0].date).getTime()
             ]);
     });
 
@@ -87,6 +87,24 @@ describe("Unit domain decorator", function () {
         expect(monthScale(data[2].date)).to.equal(2.5);
         expect(monthScale(+new Date("2014-10-31T14:12:22+03:00"))).to.equal(2.5);
         expect(monthScale(data[0].date)).to.equal(7.5);
+
+        var dateMinMaxScale = unit.scaleTo(
+            'date',
+            [0, 10],
+            {
+                period: 'month',
+                min: '2014-09-01T00:00:00+03:00',
+                max: '2015-01-01T00:00:00+03:00'
+            });
+        expect(dateMinMaxScale('2014-09-01T00:00:00+03:00')).to.equal(1);
+        expect(dateMinMaxScale('2014-10-01T00:00:00+03:00')).to.equal(3);
+        expect(dateMinMaxScale('2014-10-31T23:59:59+03:00')).to.equal(3);
+        expect(dateMinMaxScale('2014-11-01T00:00:00+03:00')).to.equal(5);
+        expect(dateMinMaxScale('2014-12-01T00:00:00+03:00')).to.equal(7);
+        expect(dateMinMaxScale('2015-01-01T00:00:00+03:00')).to.equal(9);
+
+        expect(dateMinMaxScale(data[2].date)).to.equal(3);
+        expect(dateMinMaxScale(data[0].date)).to.equal(5);
 
         var scaleProject = unit.scaleTo('project', [0, 10]);
         expect(scaleProject('TP2')).to.equal(7.5);

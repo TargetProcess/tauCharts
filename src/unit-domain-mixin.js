@@ -19,8 +19,8 @@ var rangeMethods = {
 
     'period': (inputValues, interval, props) => {
         var domainParam = d3.extent(inputValues);
-        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : props.min;
-        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : props.max;
+        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
+        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
 
         var range = [
             Math.min(min, domainParam[0]),
@@ -30,6 +30,19 @@ var rangeMethods = {
         var dates = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
 
         return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
+    },
+
+    'time': (inputValues, interval, props) => {
+        var domainParam = d3.extent(inputValues);
+        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
+        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
+
+        var range = [
+            Math.min(min, domainParam[0]),
+            Math.max(max, domainParam[1])
+        ];
+
+        return d3.time.scale().domain(range).range(interval);
     }
 };
 
@@ -41,7 +54,11 @@ export class UnitDomainMixin {
 
         var getValueMapper = (dim) => {
             var d = meta[dim] || {};
-            return d.value ? getPropMapper(d.value) : ((x) => x);
+            var f = d.value ? getPropMapper(d.value) : ((x) => x);
+
+            var isTime = _.contains(['period', 'time'], d.scale);
+
+            return isTime ? _.compose(((v) => (new Date(v)).getTime()), f) : f;
         };
 
         var getOrder = (dim) => {
