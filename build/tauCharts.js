@@ -1,6 +1,3 @@
-/*! tauCharts - v0.1.0 - 2014-10-29
-* https://github.com/TargetProcess/tauCharts
-* Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -1584,6 +1581,11 @@
             return charts$tau$chart$$generateSimpleConfig('ELEMENT.LINE', config);
         },
         'bar': function(config)  {
+            config.flip  = true;
+            return charts$tau$chart$$generateSimpleConfig('ELEMENT.INTERVAL', config);
+        },
+        'horizontalBar': function(config)  {
+            config.flip  = true;
             return charts$tau$chart$$generateSimpleConfig('ELEMENT.INTERVAL', config);
         }
     };

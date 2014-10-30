@@ -1,3 +1,27 @@
+/*function generateCoordIfChangeDesign(){
+    var map = [].map;
+    var bars = getGroupBar();
+    var coords = bars.map(function (bar) {
+        var childCoords = map.call(bar.childNodes,function (el) {
+            return {x: attrib(el, 'x'), y: attrib(el, 'y')};
+        });
+        return childCoords;
+    });
+    return coords;
+}*/
+
+var expectCoordsElement = function (expect, coords) {
+    var bars = getGroupBar();
+    //debugger
+    _.each(bars,function(bar, index){
+        _.each(bar.childNodes,function(el,ind){
+            expect(attrib(el,'x')).to.equal(coords[index][ind].x);
+            expect(attrib(el,'y')).to.equal(coords[index][ind].y);
+        });
+    });
+
+   // expect(bars[2].childNodes.length).to.equal(0);
+};
 describe("ELEMENT.INTERVAL", function () {
 
     var testData = [
@@ -18,7 +42,7 @@ describe("ELEMENT.INTERVAL", function () {
                     type: 'COORDS.RECT',
                     x: 'x',
                     y: 'y',
-                    guide:{},
+                    guide: {},
                     unit: [
                         {
                             type: 'ELEMENT.INTERVAL',
@@ -43,10 +67,31 @@ describe("ELEMENT.INTERVAL", function () {
         expect(getGroupBar().length).to.equal(3);
     });
     it("should group contain interval element", function () {
-        var bars = getGroupBar();
-        expect(bars[0].childNodes.length).to.equal(1);
-        expect(bars[1].childNodes.length).to.equal(2);
-        expect(bars[2].childNodes.length).to.equal(1);
+        expectCoordsElement(expect,[
+            //generate with help generateCoordIfChangeDesign
+            [
+                {
+                    "x": "0",
+                    "y": "711"
+                }
+            ],
+            [
+                {
+                    "x": "266.66666666666663",
+                    "y": "800"
+                },
+                {
+                    "x": "533.3333333333334",
+                    "y": "0"
+                }
+            ],
+            [
+                {
+                    "x": "533.3333333333334",
+                    "y": "533"
+                }
+            ]
+        ]);
     });
 });
 
@@ -70,7 +115,7 @@ describe("ELEMENT.INTERVAL.FLIP", function () {
                     type: 'COORDS.RECT',
                     x: 'size',
                     y: 'color',
-                    guide:{},
+                    guide: {},
                     unit: [
                         {
                             type: 'ELEMENT.INTERVAL',
@@ -95,9 +140,30 @@ describe("ELEMENT.INTERVAL.FLIP", function () {
         expect(getGroupBar().length).to.equal(3);
     });
     it("should group contain interval element", function () {
-        var bars = getGroupBar();
-        expect(bars[0].childNodes.length).to.equal(1);
-        expect(bars[1].childNodes.length).to.equal(2);
-        expect(bars[2].childNodes.length).to.equal(1);
+        expectCoordsElement(expect,[
+            //generate with help generateCoordIfChangeDesign
+            [
+                {
+                    "x": "0",
+                    "y": "611"
+                }
+            ],
+            [
+                {
+                    "x": "0",
+                    "y": "700"
+                },
+                {
+                    "x": "0",
+                    "y": "-100"
+                }
+            ],
+            [
+                {
+                    "x": "0",
+                    "y": "433"
+                }
+            ]
+        ]);
     });
 });

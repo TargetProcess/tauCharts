@@ -52,6 +52,11 @@ var typesChart = {
         return generateSimpleConfig('ELEMENT.LINE', config);
     },
     'bar': (config) => {
+        config.flip  = true;
+        return generateSimpleConfig('ELEMENT.INTERVAL', config);
+    },
+    'horizontalBar': (config) => {
+        config.flip  = true;
         return generateSimpleConfig('ELEMENT.INTERVAL', config);
     }
 };

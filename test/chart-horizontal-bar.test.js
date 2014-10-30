@@ -6,7 +6,7 @@ describe('Line plot chart', function () {
     ];
     it('should convert to common config', function () {
         var bar = new tauChart.Chart({
-            type:'bar',
+            type:'horizontalBar',
             data:testData,
             x:'x',
             y:'y',
@@ -14,6 +14,6 @@ describe('Line plot chart', function () {
             size:'size'
         });
         assert.equal(schemes.bar.errors(bar.config.spec), false,'spec right');
-
+        assert.equal(bar.config.spec.unit.unit[0].flip, true,'spec right');
     })
 });
