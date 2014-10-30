@@ -1,5 +1,4 @@
-/* region css */
-/* Colors */
+/* region Generate .color@{n}-@{i}  function  */
 .color10-1 {
   stroke: #e41a1c;
   fill: #e41a1c;
@@ -40,7 +39,7 @@
   stroke: #222222;
   fill: #222222;
 }
-/*endregion*/
+/* endregion */
 .graphical-report {
   /* Links */
   /* Charts */

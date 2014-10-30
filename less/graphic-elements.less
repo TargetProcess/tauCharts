@@ -3,187 +3,129 @@
 
 @axis-color: #BDC3CD;
 
-//@category-colors: '#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#E9E964', '#a65628', '#f781bf', '#999999', '#222222';
 
-//@colors-number: 10;
+/* region Generate .color@{n}-@{i}  function  */
 
-//
-//.loop(@counter) when (@counter > 0) {
-//    .loop((@counter - 1));    // next iteration
-//
-//    .color@colors-number-@counter{
-//        stroke: @category-colors[@counter];
-//        fill: @category-colors[@counter];
-//    }
-//    width: (10px * @counter); // code for each iteration
-//}
+@category-colors: #e41a1c, #377eb8, #4daf4a, #984ea3, #ff7f00, #E9E964, #a65628, #f781bf, #999999, #222222;
 
+@list_category-colors: length(@category-colors);
 
-/* region css */
-/* Colors */
-.color10-1 {
-    stroke: #e41a1c;
-    fill: #e41a1c;
+.generate-colors(@n, @i: 1) when (@i =< @n) {
+  .color@{n}-@{i} {
+    stroke: extract(@category-colors, @i);
+    fill: extract(@category-colors, @i);
+  }
+  .generate-colors(@n, (@i + 1));
 }
 
-.color10-2 {
-    stroke: #377eb8;
-    fill: #377eb8;
-}
+.generate-colors(@list_category-colors);
 
-.color10-3 {
-    stroke: #4daf4a;
-    fill: #4daf4a;
-}
+/* endregion */
 
-.color10-4 {
-    stroke: #984ea3;
-    fill: #984ea3;
-}
-
-.color10-5 {
-    stroke: #ff7f00;
-    fill: #ff7f00;
-}
-
-.color10-6 {
-    stroke: #e9e964;
-    fill: #e9e964;
-}
-
-.color10-7 {
-    stroke: #a65628;
-    fill: #a65628;
-}
-
-.color10-8 {
-    stroke: #f781bf;
-    fill: #f781bf;
-}
-
-.color10-9 {
-    stroke: #999999;
-    fill: #999999;
-}
-
-.color10-10 {
-    stroke: #222222;
-    fill: #222222;
-}
-
-/*endregion*/
 
 .graphical-report {
-    /* Links */
-    a {
-        color: @link-color;
-        border-bottom: 1px solid fade(@link-color, 30%);
-        text-decoration: none;
+  /* Links */
+  a {
+    color: @link-color;
+    border-bottom: 1px solid fade(@link-color, 30%);
+    text-decoration: none;
 
-        &:hover {
-            color: @link-hover-color;
-            border-bottom: 1px solid fade(@link-hover-color, 30%);
-        }
+    &:hover {
+      color: @link-hover-color;
+      border-bottom: 1px solid fade(@link-hover-color, 30%);
     }
+  }
 
-    /* Charts */
-    &__chart {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        overflow: auto;
-//        svg {
-//            width: 100%;
-//            height: 100%;
-//        }
+  /* Charts */
+  &__chart {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+  }
+
+  /* Axises and Grid */
+  &__svg {
+    .axis {
+      line,
+      path {
+        stroke-width: 1;
+        fill: none;
+        stroke: @axis-color;
+        shape-rendering: crispEdges;
+      }
     }
-
-
-    /* Axises and Grid */
-    &__svg {
-        .axis {
-            line,
-            path {
-                stroke-width: 1;
-                fill: none;
-                stroke: @axis-color;
-                shape-rendering: crispEdges;
-            }
-        }
-        .tick text {
-            font-size: 11px;
-            font-color: red;
-            tut: 'ds';
-        }
-        .grid {
-            path {
-                fill: none;
-                shape-rendering: crispEdges;
-            }
-            line {
-                fill: none;
-                stroke: fade(@axis-color, 50%);
-                stroke-width: 1px;
-                shape-rendering: crispEdges;
-            }
-            .line path {
-                shape-rendering: geometricPrecision;
-            }
-        }
-        .label {
-            font-size: 11px;
-        }
+    .tick text {
+      font-size: 11px;
+      font-color: red;
+      tut: 'ds';
     }
-
-
-    /* Scatterplot  */
-    &__dot {
-        opacity: 0.6;
-        transition: stroke-width 0.1s ease, opacity 0.1s ease;
-        transition: stroke-width 0.1s ease, opacity 0.1s ease;
-        stroke-width: 0;
-        cursor: pointer;
+    .grid {
+      path {
+        fill: none;
+        shape-rendering: crispEdges;
+      }
+      line {
+        fill: none;
+        stroke: fade(@axis-color, 50%);
+        stroke-width: 1px;
+        shape-rendering: crispEdges;
+      }
+      .line path {
+        shape-rendering: geometricPrecision;
+      }
     }
-
-
-    /* Linechart  */
-    &__line {
-        fill: none !important;
-        stroke-width: 1.5px;
+    .label {
+      font-size: 11px;
     }
+  }
 
-    /*  Bar  */
-    &__bar {
-        fill: steelblue;
+  /* Scatterplot  */
+  &__dot {
+    opacity: 0.6;
+    transition: stroke-width 0.1s ease, opacity 0.1s ease;
+    stroke-width: 0;
+    cursor: pointer;
+  }
+
+  /* Linechart  */
+  &__line {
+    fill: none !important;
+    stroke-width: 1.5px;
+  }
+
+  /*  Bar  */
+  &__bar {
+    fill: steelblue;
+  }
+
+  /*  PLUGINS  */
+
+  /*  Highlighter  */
+  &__dot.highlighted {
+    stroke-width: 6;
+    stroke-opacity: 0.4;
+    opacity: 1;
+  }
+
+  /* Tooltip  */
+  &__tooltip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    z-index: 900;
+    font-size: 11px;
+    padding: 7px 10px 8px;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+    em {
+      font-style: normal;
+      color: #999;
+      display: inline-block;
+      min-width: 45px;
     }
-
-    /*  PLUGINS  */
-
-    /*  Highlighter  */
-    &__dot.highlighted {
-        stroke-width: 6;
-        stroke-opacity: 0.4;
-        opacity: 1;
-    }
-
-    /* Tooltip  */
-    &__tooltip {
-        position: absolute;
-        top: 0;
-        left: 0;
-        display: none;
-        z-index: 900;
-        font-size: 11px;
-        padding: 7px 10px 8px;
-        border-radius: 5px;
-        background: #fff;
-        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-        em {
-            font-style: normal;
-            color: #999;
-            display: inline-block;
-            min-width: 45px;
-        }
-    }
+  }
 
 }
