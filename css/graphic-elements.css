@@ -66,6 +66,9 @@
   width: 100%;
   overflow: auto;
 }
+.graphical-report__svg {
+  display: block;
+}
 .graphical-report__svg .axis line,
 .graphical-report__svg .axis path {
   stroke-width: 1;
