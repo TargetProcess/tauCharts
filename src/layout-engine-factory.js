@@ -13,10 +13,14 @@ var applyNodeDefaults = (node) => {
         cssClass: 'x axis',
         scaleOrient: 'bottom',
         rotate: 0,
-        textAnchor: 'middle'
+        textAnchor: 'middle',
+        tickPeriod: null,
+        tickFormat: null
     });
     node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
     node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
+
+    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
 
     node.guide.y = _.defaults(node.guide.y || {}, {
         label: '',
@@ -25,10 +29,14 @@ var applyNodeDefaults = (node) => {
         cssClass: 'y axis',
         scaleOrient: 'left',
         rotate: 0,
-        textAnchor: 'end'
+        textAnchor: 'end',
+        tickPeriod: null,
+        tickFormat: null
     });
     node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
     node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
+
+    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
 
     return node;
 };

@@ -1,3 +1,6 @@
+/*! tauCharts - v0.1.0 - 2014-10-30
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function(definition) {
     if (typeof define === "function" && define.amd) {
         define(definition);
@@ -28,7 +31,7 @@
     };
 
     var unit$domain$period$generator$$PERIODS_MAP = {
-
+    
         'day': {
             cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
@@ -39,7 +42,7 @@
                 return new Date(prevDate.setDate(prevDate.getDate() + 1));
             }
         },
-
+    
         'week': {
             cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
@@ -52,7 +55,7 @@
                 return new Date(prevDate.setDate(prevDate.getDate() + 7));
             }
         },
-
+    
         'month': {
             cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
@@ -65,7 +68,7 @@
                 return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
             }
         },
-
+    
         'quarter': {
             cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
@@ -80,7 +83,7 @@
                 return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
             }
         },
-
+    
         'year': {
             cast: function (prevTick) {
                 var prevDate = new Date(prevTick);
@@ -97,14 +100,14 @@
     };
 
     var unit$domain$period$generator$$UnitDomainPeriodGenerator = {
-
+    
         add: function(periodAlias, obj) {
             unit$domain$period$generator$$PERIODS_MAP[periodAlias.toLowerCase()] = obj;
             return this;
         },
-
+    
         get: function(periodAlias)  {return unit$domain$period$generator$$PERIODS_MAP[periodAlias.toLowerCase()]},
-
+    
         generate: function(lTick, rTick, periodAlias)  {
             var r = [];
             var period = unit$domain$period$generator$$PERIODS_MAP[periodAlias.toLowerCase()];
@@ -121,11 +124,11 @@
     };
 
     var unit$domain$mixin$$rangeMethods = {
-
+    
         'ordinal': function(inputValues, interval, props)  {
             return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
         },
-
+    
         'linear': function(inputValues, interval, props)  {
             var domainParam = d3.extent(inputValues);
             var min = _.isNumber(props.min) ? props.min : domainParam[0];
@@ -136,102 +139,102 @@
             ];
             return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
         },
-
+    
         'period': function(inputValues, interval, props)  {
             var domainParam = d3.extent(inputValues);
             var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
             var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
-
+    
             var range = [
                 Math.min(min, domainParam[0]),
                 Math.max(max, domainParam[1])
             ];
-
+    
             var dates = unit$domain$period$generator$$UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
-
+    
             return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
         },
-
+    
         'time': function(inputValues, interval, props)  {
             var domainParam = d3.extent(inputValues);
             var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
             var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
-
+    
             var range = [
                 Math.min(min, domainParam[0]),
                 Math.max(max, domainParam[1])
             ];
-
+    
             return d3.time.scale().domain(range).range(interval);
         }
     };
 
     var unit$domain$mixin$$UnitDomainMixin = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
-
+    
         function UnitDomainMixin(meta, data) {
-
+    
             var getPropMapper = function(prop)  {return function(propObj)  {return propObj[prop]}} ;
-
+    
             var getValueMapper = function(dim)  {
                 var d = meta[dim] || {};
                 var f = d.value ? getPropMapper(d.value) : (function(x)  {return x});
-
+    
                 var isTime = _.contains(['period', 'time'], d.scale);
-
+    
                 return isTime ? _.compose((function(v)  {return (new Date(v)).getTime()}), f) : f;
             };
-
+    
             var getOrder = function(dim)  {
                 var d = meta[dim] || {};
                 return d.order || null;
             };
-
+    
             var getDomainSortStrategy = function(type)  {
-
+    
                 var map = {
-
+    
                     category: function(dim, fnMapperId, domain)  {
                         return domain;
                     },
-
+    
                     order: function(dim, fnMapperId, domain)  {
                         var metaOrder = getOrder(dim);
                         return (metaOrder) ?
                             _.union(metaOrder, domain) : // arguments order is important
                             _.sortBy(domain, fnMapperId);
                     },
-
+    
                     measure: function(dim, fnMapperId, domain)  {
                         return _.sortBy(domain, fnMapperId);
                     },
-
+    
                     'as-is': (function(dim, fnMapperId, domain)  {return domain})
                 };
-
+    
                 return map[type] || map['as-is'];
             };
-
+    
             var getScaleSortStrategy = function(type)  {
-
+    
                 var map = {
-
+    
                     category: getDomainSortStrategy('category'),
-
+    
                     order: function(dim, fnMapperId, domain)  {
                         var metaOrder = getOrder(dim);
                         return (metaOrder) ?
                             _.union(domain, metaOrder) : // arguments order is important
                             domain;
                     },
-
+    
                     measure: getDomainSortStrategy('measure'),
-
+    
                     'as-is': getDomainSortStrategy('as-is')
                 };
-
+    
                 return map[type] || map['as-is'];
             };
-
+    
             this.fnDimension = function(dimensionName, subUnit)  {
                 var unit = (subUnit || {}).dimensions || {};
                 var xRoot = meta[dimensionName] || {};
@@ -241,42 +244,42 @@
                     scaleType: xNode.scale || xRoot.scale
                 };
             };
-
+    
             this.fnSource = function(whereFilter)  {
                 var predicates = _.map(whereFilter, function(v, k)  {return function(row)  {return getValueMapper(k)(row[k]) === v}});
                 return _(data).filter(function(row)  {return _.every(predicates, (function(p)  {return p(row)}))});
             };
-
+    
             var _domain = function(dim, fnSort)  {
-
+    
                 if (!meta[dim]) {
                     return [null];
                 }
-
+    
                 var fnMapperId = getValueMapper(dim);
                 var uniqValues = _(data).chain().pluck(dim).uniq(fnMapperId).value();
-
+    
                 return fnSort(dim, fnMapperId, uniqValues);
             };
-
+    
             this.fnDomain = function(dim)  {
                 var fnMapperId = getValueMapper(dim);
                 var type = (meta[dim] || {}).type;
                 var domainSortedAsc = _domain(dim, getDomainSortStrategy(type));
                 return domainSortedAsc.map(fnMapperId);
             };
-
+    
             this.fnScaleTo = function(scaleDim, interval, options)  {
                 var opts = options || {};
                 var dimx = _.defaults({}, meta[scaleDim]);
-
+    
                 var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
                 var fVal = opts.period ? unit$domain$period$generator$$UnitDomainPeriodGenerator.get(opts.period).cast : (function(x)  {return x});
-
+    
                 var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
-
+    
                 var func = unit$domain$mixin$$rangeMethods[dimx.scale](vals, interval, opts);
-
+    
                 var wrap = function(domainPropObject)  {return func(fVal(fMap(domainPropObject)))};
                 // have to copy properties since d3 produce Function with methods
                 for (var p in func) {
@@ -287,20 +290,20 @@
                 return wrap;
             };
         }DP$0(UnitDomainMixin,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-
+    
         proto$0.mix = function(unit) {
             unit.dimension = this.fnDimension;
             unit.source = this.fnSource;
             unit.domain = this.fnDomain;
             unit.scaleTo = this.fnScaleTo;
             unit.partition = (function()  {return unit.source(unit.$where)});
-
+    
             return unit;
         };
     MIXIN$0(UnitDomainMixin.prototype,proto$0);proto$0=void 0;return UnitDomainMixin;})();var units$registry$$UnitsMap = {};
 
     var units$registry$$UnitsRegistry = {
-
+    
         add: function(unitType, xUnit) {
             var unit = {};
             unit.draw = (typeof xUnit === 'function') ? xUnit : xUnit.draw;
@@ -308,57 +311,57 @@
             units$registry$$UnitsMap[unitType] = unit;
             return this;
         },
-
+    
         get: function(unitType)  {
-
+    
             if (!units$registry$$UnitsMap.hasOwnProperty(unitType)) {
                 throw new Error('Unknown unit type: ' + unitType);
             }
-
+    
             return units$registry$$UnitsMap[unitType];
         }
     };
 
     var dsl$reader$$DSLReader = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
-
+    
         function DSLReader (spec, data) {
             this.spec = utils$utils$$utils.clone(spec);
             this.domain = new unit$domain$mixin$$UnitDomainMixin(this.spec.dimensions, data);
         }DP$0(DSLReader,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-
+    
         proto$0.buildGraph = function() {var this$0 = this;
             var buildRecursively = function(unit)  {return units$registry$$UnitsRegistry.get(unit.type).walk(this$0.domain.mix(unit), buildRecursively)};
             return buildRecursively(this.spec.unit);
         };
-
+    
         proto$0.calcLayout = function(graph, layoutEngine, size) {
-
+    
             graph.options = {
                 top: 0,
                 left: 0,
                 width: size.width,
                 height: size.height
             };
-
+    
             return layoutEngine(graph, this.domain);
         };
-
+    
         proto$0.renderGraph = function(styledGraph, target) {var this$0 = this;
-
+    
             styledGraph.options.container = target;
-
+    
             var renderRecursively = function(unit)  {return units$registry$$UnitsRegistry.get(unit.type).draw(this$0.domain.mix(unit), renderRecursively)};
-
+    
             renderRecursively(styledGraph);
             return styledGraph.options.container;
         };
     MIXIN$0(DSLReader.prototype,proto$0);proto$0=void 0;return DSLReader;})();
     var formatter$registry$$FORMATS_MAP = {
-
+    
         'day': d3.time.format('%d-%b-%Y'),
-
+    
         'week': d3.time.format('%d-%b-%Y'),
-
+    
         'week-range': function(x)  {
             var sWeek = new Date(x);
             var clone = new Date(x);
@@ -366,42 +369,51 @@
             var format = d3.time.format('%d-%b-%Y');
             return format(sWeek) + ' - ' + format(eWeek);
         },
-
+    
         'month': function(x)  {
             var d = new Date(x);
             var m = d.getMonth();
             var formatSpec = (m === 0) ? '%B, %Y' : '%B';
             return d3.time.format(formatSpec)(x);
         },
-
+    
         'month-year': d3.time.format('%B, %Y'),
-
+    
         'quarter': function(x)  {
             var d = new Date(x);
             var m = d.getMonth();
             var q = (m - (m % 3)) / 3;
             return 'Q' + (q + 1) + ' ' + d.getFullYear();
         },
-
+    
         'year': d3.time.format('%Y')
     };
 
     var formatter$registry$$FormatterRegistry = {
-
-        get: function(formatAlias)  {return formatter$registry$$FORMATS_MAP[formatAlias] || d3.format(formatAlias)} ,
-
+    
+        get: function(formatAlias)  {
+            var formatter = formatter$registry$$FORMATS_MAP[formatAlias];
+            if (!formatter) {
+                formatter = function(v)  {
+                    var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
+                    return f(v);
+                };
+            }
+            return formatter;
+        },
+    
         add: function(formatAlias, formatter)  {
             formatter$registry$$FORMATS_MAP[formatAlias] = formatter;
         }
     };
 
     var matrix$$TMatrix = (function () {
-
+    
         var Matrix = function (r, c) {
-
+    
             var args = _.toArray(arguments);
             var cube;
-
+    
             if (_.isArray(args[0])) {
                 cube = args[0];
             }
@@ -412,12 +424,12 @@
                     });
                 });
             }
-
+    
             this.cube = cube;
         };
-
+    
         Matrix.prototype = {
-
+    
             iterate: function (iterator) {
                 var cube = this.cube;
                 _.each(cube, function (row, ir) {
@@ -427,28 +439,28 @@
                 });
                 return this;
             },
-
+    
             getRC: function (r, c) {
                 return this.cube[r][c];
             },
-
+    
             setRC: function (r, c, val) {
                 this.cube[r][c] = val;
                 return this;
             },
-
+    
             sizeR: function () {
                 return this.cube.length;
             },
-
+    
             sizeC: function () {
                 var row = this.cube[0] || [];
                 return row.length;
             }
         };
-
+    
         return Matrix;
-
+    
     })();
 
     var layout$engine$factory$$this$0 = this;
@@ -457,7 +469,7 @@
         node.options = node.options || {};
         node.guide = node.guide || {};
         node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
-
+    
         node.guide.x = _.defaults(node.guide.x || {}, {
             label: '',
             padding: 0,
@@ -465,11 +477,15 @@
             cssClass: 'x axis',
             scaleOrient: 'bottom',
             rotate: 0,
-            textAnchor: 'middle'
+            textAnchor: 'middle',
+            tickPeriod: null,
+            tickFormat: null
         });
         node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
         node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
-
+    
+        node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
+    
         node.guide.y = _.defaults(node.guide.y || {}, {
             label: '',
             padding: 0,
@@ -477,36 +493,40 @@
             cssClass: 'y axis',
             scaleOrient: 'left',
             rotate: 0,
-            textAnchor: 'end'
+            textAnchor: 'end',
+            tickPeriod: null,
+            tickFormat: null
         });
         node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
         node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
-
+    
+        node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
+    
         return node;
     };
 
     var layout$engine$factory$$fnDefaultLayoutEngine = function(rootNode, domainMixin)  {
-
+    
         var fnTraverseLayout = function(rawNode)  {
-
+    
             var node = layout$engine$factory$$applyNodeDefaults(rawNode);
-
+    
             if (!node.$matrix) {
                 return node;
             }
-
+    
             var options = node.options;
             var padding = node.guide.padding;
-
+    
             var innerW = options.width - (padding.l + padding.r);
             var innerH = options.height - (padding.t + padding.b);
-
+    
             var nRows = node.$matrix.sizeR();
             var nCols = node.$matrix.sizeC();
-
+    
             var cellW = innerW / nCols;
             var cellH = innerH / nRows;
-
+    
             var calcLayoutStrategy;
             if (node.guide.split) {
                 calcLayoutStrategy = {
@@ -520,11 +540,11 @@
                     calcTop: (function(cellHeight, rowIndex, elIndex, lenIndex)  {return rowIndex * cellH})
                 };
             }
-
+    
             node.$matrix.iterate(function(iRow, iCol, subNodes)  {
-
+    
                 var len = subNodes.length;
-
+    
                 _.each(
                     subNodes,
                     function(node, i)  {
@@ -537,60 +557,60 @@
                         fnTraverseLayout(node);
                     });
             });
-
+    
             return node;
         };
-
+    
         return fnTraverseLayout(rootNode);
     };
 
     var layout$engine$factory$$LayoutEngineTypeMap = {
-
+    
         'DEFAULT': layout$engine$factory$$fnDefaultLayoutEngine,
-
+    
         'EXTRACT-AXES': function(rootNode, domainMixin)  {
-
+    
             var fnExtractAxesTransformation = (function(root)  {
-
+    
                 var traverse = (function(rootNode, wrapperNode)  {
-
+    
                     var node = layout$engine$factory$$applyNodeDefaults(rootNode);
-
+    
                     _.each([node.guide.x || {}, node.guide.y || {}], function(a)  {return a.hide = true});
-
+    
                     var nRows = node.$matrix.sizeR();
                     var nCols = node.$matrix.sizeC();
-
+    
                     wrapperNode.$axes = new matrix$$TMatrix(nRows, nCols);
-
+    
                     node.$matrix.iterate(function(r, c, subNodes)  {
-
+    
                         var axesMap = [];
                         wrapperNode.$axes.setRC(r, c, axesMap);
-
+    
                         var isHeadCol = (c === 0);
                         var isTailRow = (r === (nRows - 1));
-
+    
                         subNodes.forEach(function(subNode)  {
                             var node = layout$engine$factory$$applyNodeDefaults(subNode);
                             if (node.$matrix) {
                                 var axis = _.extend(utils$utils$$utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
                                 axesMap.push(axis);
-
+    
                                 node.guide.padding.l = 0;
                                 node.guide.padding.b = 0;
-
+    
                                 axis.guide.padding.l = (isHeadCol ? axis.guide.padding.l : 0);
                                 axis.guide.padding.b = (isTailRow ? axis.guide.padding.b : 0);
-
+    
                                 traverse(node, axis);
                             }
                         });
                     });
-
+    
                     return node;
                 });
-
+    
                 var wrapperNode = layout$engine$factory$$applyNodeDefaults({
                     type: 'WRAP.MULTI_AXES',
                     options: utils$utils$$utils.clone(root.options),
@@ -598,9 +618,9 @@
                     y: {},
                     $matrix: new matrix$$TMatrix([[[root]]])
                 });
-
+    
                 traverse(domainMixin.mix(wrapperNode), wrapperNode);
-
+    
                 wrapperNode.$matrix = new matrix$$TMatrix([
                     [
                         [
@@ -613,64 +633,64 @@
                         ]
                     ]
                 ]);
-
+    
                 return wrapperNode;
             });
-
+    
             var fnTraverseExtAxesLayout = function(wrapperNode)  {
-
+    
                 var multiAxisDecorator = function(node)  {
-
+    
                     var options = node.options;
                     var padding = node.guide.padding;
-
+    
                     var innerW = options.width - (padding.l + padding.r);
                     var innerH = options.height - (padding.t + padding.b);
-
+    
                     var nR = node.$axes.sizeR();
                     var nC = node.$axes.sizeC();
-
+    
                     var leftBottomItem = layout$engine$factory$$applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
                     var lPadding = leftBottomItem.guide.padding.l;
                     var bPadding = leftBottomItem.guide.padding.b;
-
+    
                     var sharedWidth = (innerW - lPadding);
                     var sharedHeight = (innerH - bPadding);
-
+    
                     var cellW = sharedWidth / nC;
                     var cellH = sharedHeight / nR;
-
+    
                     node.$axes.iterate(function(iRow, iCol, subNodes)  {
-
+    
                         var isHeadCol = (iCol === 0);
                         var isTailRow = (iRow === (nR - 1));
-
+    
                         if (isHeadCol || isTailRow) {
-
+    
                             subNodes.forEach(function(node)  {
                                 node.options = {
                                     showX: isTailRow,
                                     showY: isHeadCol,
-
+    
                                     width : cellW + (isHeadCol ? lPadding: 0),
                                     height: cellH + (isTailRow ? bPadding: 0),
-
+    
                                     top : iRow * cellH,
                                     left: iCol * cellW + (isHeadCol ? 0 : lPadding)
                                 };
-
+    
                                 if (node.$axes) {
                                     multiAxisDecorator(node);
                                 }
                             });
                         }
                     });
-
+    
                     return node;
                 };
-
+    
                 multiAxisDecorator(wrapperNode);
-
+    
                 var gridL = 0;
                 var gridB = 0;
                 var axisOffsetTraverser = function(node)  {
@@ -683,15 +703,15 @@
                             subNodes.forEach(function(node)  {return axisOffsetTraverser(node)});
                         }
                     });
-
+    
                     return node;
                 };
-
+    
                 axisOffsetTraverser(wrapperNode);
-
+    
                 var gridW = wrapperNode.options.width - gridL;
                 var gridH = wrapperNode.options.height - gridB;
-
+    
                 var refRoot = wrapperNode.$matrix.getRC(0, 0)[0];
                 refRoot.options = {
                     top: 0,
@@ -699,22 +719,22 @@
                     width: gridW,
                     height: gridH
                 };
-
+    
                 layout$engine$factory$$fnDefaultLayoutEngine(refRoot, domainMixin);
-
+    
                 return wrapperNode;
             };
-
+    
             return (fnTraverseExtAxesLayout(fnExtractAxesTransformation(rootNode)));
         }
     };
 
     var layout$engine$factory$$LayoutEngineFactory = {
-
+    
         get: function(typeName)  {
             return (layout$engine$factory$$LayoutEngineTypeMap[typeName] || layout$engine$factory$$LayoutEngineTypeMap.DEFAULT).bind(layout$engine$factory$$this$0);
         }
-
+    
     };
 
     var utils$utils$draw$$translate = function(left, top)  {return 'translate(' + left + ',' + top + ')'};
@@ -722,19 +742,19 @@
     var utils$utils$draw$$getOrientation = function(scaleOrient)  {return _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v'};
 
     var utils$utils$draw$$decorateAxisTicks = function(nodeScale, x, size)  {
-
+    
         var selection = nodeScale.selectAll('.tick line');
-
+    
         var sectorSize = size / selection[0].length;
         var offsetSize = sectorSize / 2;
-
+    
         if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
-
+    
             var isHorizontal = ('h' === utils$utils$draw$$getOrientation(x.guide.scaleOrient));
-
+    
             var key = (isHorizontal) ? 'x' : 'y';
             var val = (isHorizontal) ? offsetSize : (-offsetSize);
-
+    
             selection.attr(key + '1', val).attr(key + '2', val);
         }
     };
@@ -761,22 +781,22 @@
     var utils$utils$draw$$fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         var container = this;
         if (x.scaleDim) {
-
+    
             var axisScale = d3.svg.axis()
                 .scale(x.scaleObj)
                 .orient(x.guide.scaleOrient)
                 .ticks(_.max([Math.round(size / x.guide.density), 4]));
-
+    
             if (x.guide.tickFormat) {
                 axisScale.tickFormat(formatter$registry$$FormatterRegistry.get(x.guide.tickFormat));
             }
-
+    
             var nodeScale = container
                 .append('g')
                 .attr('class', x.guide.cssClass)
                 .attr('transform', utils$utils$draw$$translate.apply(null, AXIS_POSITION))
                 .call(axisScale);
-
+    
             utils$utils$draw$$decorateAxisTicks(nodeScale, x, size);
             utils$utils$draw$$decorateTickLabel(nodeScale, x);
             utils$utils$draw$$decorateAxisLabel(nodeScale, x);
@@ -784,19 +804,19 @@
     };
 
     var utils$utils$draw$$fnDrawGrid = function (node, H, W) {
-
+    
         var container = this;
-
+    
         var grid = container
             .append('g')
             .attr('class', 'grid')
             .attr('transform', utils$utils$draw$$translate(0, 0));
-
+    
         var linesOptions = (node.guide.showGridLines || '').toLowerCase();
         if (linesOptions.length > 0) {
-
+    
             var gridLines = grid.append('g').attr('class', 'grid-lines');
-
+    
             if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                 var x = node.x;
                 var xGridAxis = d3.svg
@@ -805,12 +825,12 @@
                     .orient(x.guide.scaleOrient)
                     .tickSize(H)
                     .ticks(_.max([Math.round(W / x.guide.density), 4]));
-
+    
                 var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
-
+    
                 utils$utils$draw$$decorateAxisTicks(xGridLines, x, W);
             }
-
+    
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
                 var yGridAxis = d3.svg
@@ -819,16 +839,16 @@
                     .orient(y.guide.scaleOrient)
                     .tickSize(-W)
                     .ticks(_.max([Math.round(H / y.guide.density), 4]));
-
+    
                 var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
-
+    
                 utils$utils$draw$$decorateAxisTicks(yGridLines, y, H);
             }
-
+    
             // TODO: make own axes and grid instead of using d3's in such tricky way
             gridLines.selectAll('text').remove();
         }
-
+    
         return grid;
     };
 
@@ -837,10 +857,10 @@
         var range, domain;
         var colorGuide = (node.guide || {}).color || {};
         var colorParam = node.color;
-
+    
         var colorDim = colorParam.scaleDim;
         var brewer = colorGuide.brewer || defaultRange;
-
+    
         if (utils$utils$$utils.isArray(brewer)) {
             domain = node.domain(colorDim);
             range = brewer;
@@ -849,7 +869,7 @@
             domain = Object.keys(brewer);
             range = domain.map(function(key)  {return brewer[key]});
         }
-
+    
         return {
             get: function(d)  {return d3.scale.ordinal().range(range).domain(domain)(d)},
             dimension:colorDim
@@ -866,25 +886,25 @@
     };
 
     var elements$coords$$FacetAlgebra = {
-
+    
         'CROSS': function (root, dimX, dimY) {
-
+    
             var domainX = root.domain(dimX);
             var domainY = root.domain(dimY).reverse();
-
+    
             return _(domainY).map(function(rowVal)  {
                 return _(domainX).map(function(colVal)  {
-
+    
                     var r = {};
-
+    
                     if (dimX) {
                         r[dimX] = colVal;
                     }
-
+    
                     if (dimY) {
                         r[dimY] = rowVal;
                     }
-
+    
                     return r;
                 });
             });
@@ -900,17 +920,17 @@
     };
 
     var elements$coords$$coords = {
-
+    
         walk: function (unit, continueTraverse) {
-
+    
             var root = _.defaults(unit, {$where: {}});
-
+    
             var isFacet = _.any(root.unit, function(n)  {return n.type.indexOf('COORDS.') === 0} );
             var unitFunc = elements$coords$$TFuncMap(isFacet ? 'CROSS' : '');
-
+    
             var matrixOfPrFilters = new matrix$$TMatrix(unitFunc(root, root.x, root.y));
             var matrixOfUnitNodes = new matrix$$TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
-
+    
             matrixOfPrFilters.iterate(function(row, col, $whereRC)  {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map(function(sUnit)  {
@@ -918,30 +938,30 @@
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });
-
+    
             root.$matrix = matrixOfUnitNodes;
-
+    
             matrixOfUnitNodes.iterate(function(r, c, cellNodes)  {
                 _.each(cellNodes, function(refSubNode)  {return continueTraverse(refSubNode)});
             });
-
+    
             return root;
         },
-
+    
         draw: function (node, continueTraverse) {
-
+    
             var options = node.options;
             var padding = node.guide.padding;
-
+    
             node.x.guide = node.guide.x;
             node.y.guide = node.guide.y;
-
+    
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-
+    
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-
+    
             var tickX = {
                 map: node.x.guide.tickLabel,
                 min: node.x.guide.tickMin,
@@ -949,7 +969,7 @@
                 period: node.x.guide.tickPeriod
             };
             node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-
+    
             var tickY = {
                 map: node.y.guide.tickLabel,
                 min: node.y.guide.tickMin,
@@ -957,29 +977,29 @@
                 period: node.y.guide.tickPeriod
             };
             node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
-
+    
             node.x.guide.size = W;
             node.y.guide.size = H;
-
+    
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
-
+    
             var container = options
                 .container
                 .append('g')
                 .attr('class', const$$CSS_PREFIX + 'cell ' + 'cell')
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
-
+    
             if (!node.x.guide.hide) {
                 utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
             }
-
+    
             if (!node.y.guide.hide) {
                 utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
             }
-
+    
             var grid = utils$utils$draw$$utilsDraw.fnDrawGrid.call(container, node, H, W);
-
+    
             node.$matrix.iterate(function(iRow, iCol, subNodes)  {
                 subNodes.forEach(function(node)  {
                     node.options = _.extend({container: grid}, node.options);
@@ -989,19 +1009,19 @@
         }
     };
     var elements$line$$line = function (node) {
-
+    
         var options = node.options;
-
+    
         var xScale = options.xScale;
         var yScale = options.yScale;
-
+    
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
-
+    
         var categories = d3
             .nest()
             .key(function(d)  {return d[color.dimension]})
             .entries(node.partition());
-
+    
         var updateLines = function () {
             this.attr('class', function(d)  {
                 return const$$CSS_PREFIX + 'line' + ' line ' + color.get(d.key);
@@ -1011,33 +1031,33 @@
             paths.enter().append('path').call(updatePaths);
             paths.exit().remove();
         };
-
+    
         var line = d3
             .svg
             .line()
             .x(function(d)  {return xScale(d[node.x.scaleDim])})
             .y(function(d)  {return yScale(d[node.y.scaleDim])});
-
+    
         var updatePaths = function () {
             this.attr('d', line);
         };
-
+    
         var lines = options.container.selectAll('.line').data(categories);
         lines.call(updateLines);
         lines.enter().append('g').call(updateLines);
         lines.exit().remove();
     };
     var elements$point$$point = function (node) {
-
+    
         var options = node.options;
-
+    
         var xScale = options.xScale;
         var yScale = options.yScale;
-
+    
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
         var maxAxis = _.max([options.width, options.height]);
         var sizeValues = node.domain(node.size.scaleDim);
-
+    
         var size = d3
             .scale
             .linear()
@@ -1046,7 +1066,7 @@
                 Math.min.apply(null, sizeValues),
                 Math.max.apply(null, sizeValues)
             ]);
-
+    
         var update = function () {
             return this
                 .attr('r', function(d)  {
@@ -1059,7 +1079,7 @@
                 .attr('cx', function(d)  {return xScale(d[node.x.scaleDim])})
                 .attr('cy', function(d)  {return yScale(d[node.y.scaleDim])});
         };
-
+    
         var elements = options.container.selectAll('.dot').data(node.partition());
         elements.call(update);
         elements.exit().remove();
@@ -1068,23 +1088,23 @@
 
     var elements$interval$$BAR_GROUP = 'i-role-bar-group';
     var elements$interval$$interval = function (node) {
-
+    
         var options = node.options;
-
+    
         var color = utils$utils$draw$$utilsDraw.generateColor(node);
-
+    
         var partition = node.partition();
         var categories = d3
             .nest()
             .key(function(d)  {return d[color.dimension]})
             .entries(partition);
-
+    
         var xScale,
             yScale,
             tickWidth,
             intervalWidth,
             offsetCategory,
-
+    
             calculateX,
             calculateY,
             calculateWidth,
@@ -1096,27 +1116,27 @@
             tickWidth = options.height / (node.domain(node.y.scaleDim).length);
             intervalWidth = tickWidth / (categories.length + 1);
             offsetCategory = intervalWidth;
-
+    
             calculateX = function(d)  {return 0};
             calculateY = function(d)   {return xScale(d[node.y.scaleDim]) - (tickWidth / 2)};
             calculateWidth = function(d)  {return yScale(d[node.x.scaleDim])};
             calculateHeight = function(d){return intervalWidth};
             calculateTranslate = function(d, index)  {return utils$utils$draw$$utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2)};
-
+    
         } else {
             xScale = options.xScale;
             yScale = options.yScale;
             tickWidth = options.width / (node.domain(node.x.scaleDim).length);
             intervalWidth = tickWidth / (categories.length + 1);
             offsetCategory = intervalWidth;
-
+    
             calculateX = function(d)   {return xScale(d[node.x.scaleDim]) - (tickWidth / 2)};
             calculateY = function(d)  {return yScale(d[node.y.scaleDim])};
             calculateWidth = function(d){return intervalWidth};
             calculateHeight = function(d)  {return options.height - yScale(d[node.y.scaleDim])};
             calculateTranslate = function(d, index)  {return utils$utils$draw$$utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0)};
         }
-
+    
         var updateBar = function () {
             return this
                 .attr('class', function(d) {
@@ -1128,7 +1148,7 @@
                 .attr('height', calculateHeight);
         };
         var updateBarContainer = function () {
-
+    
             this
                 .attr('class', elements$interval$$BAR_GROUP)
                 .attr('transform', calculateTranslate);
@@ -1137,7 +1157,7 @@
             bars.enter().append('rect').call(updateBar);
             bars.exit().remove();
         };
-
+    
         var elements = options.container.selectAll('.' + elements$interval$$BAR_GROUP).data(categories);
         elements.call(updateBarContainer);
         elements.enter().append('g').call(updateBarContainer);
@@ -1151,13 +1171,13 @@
     };
 
     var elements$coords$parallel$$CoordsParallel = {
-
+    
         walk: function (unit, continueTraverse) {
             var root = _.defaults(unit, {$where: {}});
-
+    
             var matrixOfPrFilters = new matrix$$TMatrix(1, 1);
             var matrixOfUnitNodes = new matrix$$TMatrix(1, 1);
-
+    
             matrixOfPrFilters.iterate(function(row, col)  {
                 var cellWhere = _.extend({}, root.$where);
                 var cellNodes = _(root.unit).map(function(sUnit)  {
@@ -1165,67 +1185,67 @@
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });
-
+    
             root.$matrix = matrixOfUnitNodes;
-
+    
             matrixOfUnitNodes.iterate(function(r, c, cellNodes)  {
                 _.each(cellNodes, function(refSubNode)  {return continueTraverse(refSubNode)});
             });
-
+    
             return root;
         },
-
+    
         draw: function(node, continueTraverse) {
-
+    
             var options = node.options;
             var padding = node.guide.padding;
-
+    
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-
+    
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-
+    
             var scaleObjArr = node.x.map(function(xN)  {return node.scaleTo(xN, [H, 0], {})});
-
+    
             var container = options
                 .container
                 .append('g')
                 .attr('class', 'graphical-report__' + 'cell ' + 'cell')
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
-
-
+    
+    
             var translate = function(left, top)  {return 'translate(' + left + ',' + top + ')'};
             var rotate = function(angle)  {return 'rotate(' + angle + ')'};
-
-
+    
+    
             var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
                 var container = this;
-
+    
                 var axisScale = d3.svg.axis().scale(xScaleObj).orient('left');
-
+    
                 var nodeScale = container
                     .append('g')
                     .attr('class', 'y axis')
                     .attr('transform', translate.apply(null, AXIS_POSITION))
                     .call(axisScale);
-
+    
                 nodeScale
                     .selectAll('.tick text')
                     .attr('transform', rotate(0))
                     .style('text-anchor', 'end');
             };
-
+    
             var offset = W / (node.x.length - 1);
             scaleObjArr.forEach(function(scale, i)  {
                 fnDrawDimAxis.call(container, scale, [i * offset, 0]);
             });
-
+    
             var grid = container
                 .append('g')
                 .attr('class', 'grid')
                 .attr('transform', translate(0, 0));
-
+    
             node.$matrix.iterate(function(iRow, iCol, subNodes)  {
                 subNodes.forEach(function(node)  {
                     node.options = _.extend({container: grid}, node.options);
@@ -1236,22 +1256,22 @@
     };
 
     var elements$coords$parallel$line$$CoordsParallelLine = {
-
+    
         draw: function (node) {
-
+    
             node.color = node.dimension(node.color, node);
-
+    
             var options = node.options;
-
+    
             var scalesMap = node.x.reduce(
                 function(memo, xN)  {
                     memo[xN] = node.scaleTo(xN, [options.height, 0], {});
                     return memo;
                 },
                 {});
-
+    
             var color = utils$utils$draw$$utilsDraw.generateColor(node);
-
+    
             var categories = d3
                 .nest()
                 .key(function(d)  {return d[color.dimension]})
@@ -1264,7 +1284,7 @@
                     });
                     return memo;
                 });
-
+    
             var updateLines = function () {
                 this.attr('class', function(d)  {return 'graphical-report__' + 'line' + ' line ' + 'color10-9'});
                 var paths = this.selectAll('path').data(function(d)  {return [d]});
@@ -1272,21 +1292,21 @@
                 paths.enter().append('path').call(updatePaths);
                 paths.exit().remove();
             };
-
+    
             var segment = options.width / (node.x.length - 1);
             var segmentMap = {};
             node.x.forEach(function(propName, i)  {
                 segmentMap[propName] = (i * segment);
             });
-
+    
             var fnLine = d3.svg.line()
                 .x(function(d)  {return segmentMap[d.key]})
                 .y(function(d)  {return scalesMap[d.key](d.val)});
-
+    
             var updatePaths = function () {
                 this.attr('d', fnLine);
             };
-
+    
             var lines = options.container.selectAll('.line').data(categories);
             lines.call(updateLines);
             lines.enter().append('g').call(updateLines);
@@ -1295,19 +1315,19 @@
     };
 
     var node$map$$setupElementNode = function(node, dimensions)  {
-
+    
         dimensions.forEach(function(dimName)  {
             node[dimName] = node.dimension(node[dimName], node);
         });
-
+    
         var options = node.options;
-
+    
         var W = options.width;
         var H = options.height;
-
+    
         node.x.guide = node.guide.x;
         node.y.guide = node.guide.y;
-
+    
         var tickX = {
             map: node.x.guide.tickLabel,
             min: node.x.guide.tickMin,
@@ -1315,7 +1335,7 @@
             period: node.x.guide.tickPeriod
         };
         node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-
+    
         var tickY = {
             map: node.y.guide.tickLabel,
             min: node.y.guide.tickMin,
@@ -1323,12 +1343,12 @@
             period: node.y.guide.tickPeriod
         };
         node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
-
+    
         return node;
     };
 
     var node$map$$nodeMap = {
-
+    
         'COORDS.RECT': {
             walk: elements$coords$$coords.walk,
             draw: function(node, continueTraverse)  {
@@ -1337,78 +1357,78 @@
                 elements$coords$$coords.draw(node, continueTraverse);
             }
         },
-
+    
         'ELEMENT.POINT': function(node)  {
             elements$point$$point(node$map$$setupElementNode(node, ['x', 'y', 'color', 'size']));
         },
-
+    
         'ELEMENT.LINE': function(node)  {
             elements$line$$line(node$map$$setupElementNode(node, ['x', 'y', 'color']));
         },
-
+    
         'ELEMENT.INTERVAL': function (node) {
             elements$interval$$interval(node$map$$setupElementNode(node, ['x', 'y', 'color']));
         },
-
+    
         'WRAP.AXIS': function (node, continueTraverse) {
-
+    
             node.x = node.dimension(node.x, node);
             node.y = node.dimension(node.y, node);
-
+    
             var options = node.options;
             var padding = node.guide.padding;
-
+    
             node.x.guide = node.guide.x;
             node.y.guide = node.guide.y;
-
+    
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-
+    
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-
+    
             node.x.guide.size = W;
             node.y.guide.size = H;
-
+    
             var tickX = {
                 map: node.x.guide.tickLabel,
                 min: node.x.guide.tickMin,
                 max: node.x.guide.tickMax
             };
             node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-
+    
             var tickY = {
                 map: node.y.guide.tickLabel,
                 min: node.y.guide.tickMin,
                 max: node.y.guide.tickMax
             };
             node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
-
+    
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
-
+    
             var container = options
                 .container
                 .append('g')
                 .attr('class', 'axis-container')
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
-
+    
             if (options.showX && !node.x.guide.hide) {
                 utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
             }
-
+    
             if (options.showY && !node.y.guide.hide) {
                 utils$utils$draw$$utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
             }
-
+    
             var grid = container
                 .append('g')
                 .attr('class', 'sub-axis-container')
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(0, 0));
-
+    
             var nRows = node.$axes.sizeR();
             var nCols = node.$axes.sizeC();
-
+    
             node.$axes.iterate(function(iRow, iCol, subNodes)  {
                 if (iCol === 0 || (iRow === (nRows - 1))) {
                     subNodes.forEach(function(node)  {
@@ -1417,7 +1437,7 @@
                                 container: grid
                             },
                             node.options || {});
-
+    
                         if (node.$axes) {
                             continueTraverse(node);
                         }
@@ -1425,30 +1445,30 @@
                 }
             });
         },
-
+    
         'WRAP.MULTI_AXES': function (node, continueTraverse) {
             var options = node.options;
             var padding = node.guide.padding;
-
+    
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-
+    
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-
+    
             var container = options
                 .container
                 .append('g')
                 .attr('class', 'cell-wrapper')
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
-
+    
             node.$axes.iterate(function(r, c, subAxesNodes)  {
                 subAxesNodes.forEach(function(node)  {
                     node.options = _.extend({container: container}, node.options);
                     continueTraverse(node);
                 });
             });
-
+    
             node.$matrix.iterate(function(r, c, subNodes)  {
                 subNodes.forEach(function(node)  {
                     node.options = _.extend({container: container}, node.options);
@@ -1456,20 +1476,20 @@
                 });
             });
         },
-
+    
         'WRAP.MULTI_GRID': function (node, continueTraverse) {
             var options = node.options;
             var padding = node.guide.padding;
-
+    
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-
+    
             var grid = options
                 .container
                 .append('g')
                 .attr('class', 'grid-wrapper')
                 .attr('transform', utils$utils$draw$$utilsDraw.translate(L, T));
-
+    
             node.$matrix.iterate(function(r, c, subNodes)  {
                 subNodes.forEach(function(node)  {
                     node.options = _.extend({container: grid}, node.options);
@@ -1477,7 +1497,7 @@
                 });
             });
         },
-
+    
         'COORDS.PARALLEL': elements$coords$parallel$$CoordsParallel,
         'PARALLEL/ELEMENT.LINE': elements$coords$parallel$line$$CoordsParallelLine
     };
@@ -1491,7 +1511,7 @@
         function Plugins(plugins) {
             this._plugins = plugins;
         }plugins$$DP$0(Plugins,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-
+    
         proto$0._call = function(name, args) {
             for (var i = 0; i < this._plugins.length; i++) {
                 if (typeof(this._plugins[i][name]) == 'function') {
@@ -1499,23 +1519,23 @@
                 }
             }
         };
-
+    
         proto$0.render = function(context, tools) {
             this._call('render', arguments);
         };
-
+    
         proto$0.click = function(context, tools) {
             this._call('click', arguments);
         };
-
+    
         proto$0.mouseover = function(context, tools) {
             this._call('mouseover', arguments);
         };
-
+    
         proto$0.mouseout = function(context, tools) {
             this._call('mouseout', arguments);
         };
-
+    
         proto$0.mousemove = function(context, tools) {
             this._call('mousemove', arguments);
         };
@@ -1580,7 +1600,7 @@
             this.html = layout.html;
             this.mapper = mapper;
         }plugins$$DP$0(ChartTools,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-
+    
         proto$0.elements = function() {
             return this.svg.selectAll('.i-role-datum');
         };
@@ -1601,63 +1621,63 @@
     };
     var charts$tau$plot$$Plot = (function(){"use strict";var PRS$0 = (function(o,t){o["__proto__"]={"a":t};return o["a"]===t})({},{});var DP$0 = Object.defineProperty;var GOPD$0 = Object.getOwnPropertyDescriptor;var MIXIN$0 = function(t,s){for(var p in s){if(s.hasOwnProperty(p)){DP$0(t,p,GOPD$0(s,p));}}return t};var proto$0={};
         function Plot(config) {
-
+    
             var chartConfig = this.convertConfig(config);
-
+    
             this.config = _.defaults(chartConfig, {
                 spec: null,
                 data: [],
                 plugins: []
             });
-
+    
             chartConfig.spec.dimensions = this._normalizeDimensions(chartConfig.spec.dimensions, chartConfig.data);
-
+    
             this.plugins = this.config.plugins;
             this.spec = this.config.spec;
             this.data = this.config.data;
-
+    
             //plugins
             this._plugins = new plugins$$Plugins(this.config.plugins);
         }DP$0(Plot,"prototype",{"configurable":false,"enumerable":false,"writable":false});
-
+    
         proto$0.renderTo = function(target, xSize) {
-
+    
             var container = d3.select(target);
             var containerNode = container[0][0];
-
+    
             if (containerNode === null) {
                 throw new Error('Target element not found');
             }
-
+    
             //todo don't compute width if width or height were passed
             var size = _.defaults(xSize || {}, utils$utils$dom$$utilsDom.getContainerSize(containerNode));
-
+    
             if (this.data.length === 0) {
                 // empty data source
                 return;
             }
-
+    
             containerNode.innerHTML = '';
-
+    
             var svgContainer = container
                 .append("svg")
                 .attr("class",const$$CSS_PREFIX + 'svg')
                 .attr("width", size.width)
                 .attr("height", size.height);
-
+    
             var reader = new dsl$reader$$DSLReader(this.spec, this.data);
             var xGraph = reader.buildGraph();
             var engine = layout$engine$factory$$LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES');
             var layout = reader.calcLayout(xGraph, engine, size);
             var canvas = reader.renderGraph(layout, svgContainer);
-
+    
             //plugins
             canvas.selectAll('.i-role-datum').call(plugins$$propagateDatumEvents(this._plugins));
             this._plugins.render(canvas);
         };
-
+    
         proto$0._autoDetectDimensions = function(data) {
-
+    
             var detectType = function(propertyValue)  {
                 var type;
                 if (_.isObject(propertyValue)) {
@@ -1669,46 +1689,46 @@
                 else {
                     type = 'category';
                 }
-
+    
                 return type;
             };
-
+    
             return _.reduce(
                 data,
                 function(dimMemo, rowItem)  {
-
+    
                     _.each(rowItem, function(val, key)  {
                         var assumedType = detectType(val);
                         dimMemo[key] = dimMemo[key] || {type: assumedType};
                         dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'category';
                     });
-
+    
                     return dimMemo;
                 },
                 {});
         };
-
+    
         proto$0._autoAssignScales = function(dimensions) {
-
+    
             var scaleMap = {
                 category: 'ordinal',
                 order: 'ordinal',
                 measure:'linear'
             };
-
+    
             _.each(dimensions, function(val, key)  {
                 var t = val.type.toLowerCase();
                 val.scale = val.scale || scaleMap[t];
             });
-
+    
             return dimensions;
         };
-
+    
         proto$0._normalizeDimensions = function(dimensions, data) {
             var dims = (dimensions) ? dimensions : this._autoDetectDimensions(data);
             return this._autoAssignScales(dims);
         };
-
+    
         proto$0.convertConfig = function(config) {
             return config;
         };
@@ -1718,7 +1738,7 @@
         if (!data) {
             return null;
         }
-
+    
         return data;
     }
 
@@ -1754,7 +1774,7 @@
                 },
                 unit: [element]
             }
-
+    
         };
         return chartConfig;
     }
