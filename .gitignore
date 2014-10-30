@@ -1,5 +1,6 @@
 /.idea
 libs
+tmp_dir
 /bower_components/
 .DS_Store
 node_modules
