@@ -5,18 +5,19 @@ module.exports = function(config) {
         basePath: '..',
 
         // frameworks to use
-        frameworks: ['mocha', 'chai'],
+        frameworks: ['mocha','requirejs'],
 
         // list of files / patterns to load in the browser
         files: [
-            'libs/es5-shim.js',
-            'test/utils/utils.js',
+            /*'test/utils/utils.js',
             'libs/underscore.js',
             'libs/js-schema.js',
             'libs/d3.js',
-            'build/tauCharts.js',
-            'src/addons/color-brewer.js',
-            'test/*.js'
+
+            'src/addons/color-brewer.js',*/
+            //'build/tauCharts.js',
+            {pattern:'test/*test.js', included: false},
+            'test/tests-main.js'
         ],
         // test results reporter to use
         reporters: ['progress'],

@@ -471,7 +471,7 @@ define('utils/utils',["exports"], function(exports) {
 
 define('unit-domain-period-generator',["exports"], function(exports) {
   var PERIODS_MAP = {
-  
+
       'day': {
           cast: function (date) {
               return new Date(date.setHours(0, 0, 0, 0));
@@ -480,7 +480,7 @@ define('unit-domain-period-generator',["exports"], function(exports) {
               return new Date(prevDate.setDate(prevDate.getDate() + 1));
           }
       },
-  
+
       'week': {
           cast: function (date) {
               date = new Date(date.setHours(0, 0, 0, 0));
@@ -491,7 +491,7 @@ define('unit-domain-period-generator',["exports"], function(exports) {
               return new Date(prevDate.setDate(prevDate.getDate() + 7));
           }
       },
-  
+
       'month': {
           cast: function (date) {
               date = new Date(date.setHours(0, 0, 0, 0));
@@ -502,7 +502,7 @@ define('unit-domain-period-generator',["exports"], function(exports) {
               return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
           }
       },
-  
+
       'quarter': {
           cast: function (date) {
               date = new Date(date.setHours(0, 0, 0, 0));
@@ -515,7 +515,7 @@ define('unit-domain-period-generator',["exports"], function(exports) {
               return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
           }
       },
-  
+
       'year': {
           cast: function (date) {
               date = new Date(date.setHours(0, 0, 0, 0));
@@ -530,16 +530,16 @@ define('unit-domain-period-generator',["exports"], function(exports) {
   };
 
   var UnitDomainPeriodGenerator = {
-  
+
       add: function(periodAlias, obj) {
           PERIODS_MAP[periodAlias.toLowerCase()] = obj;
           return this;
       },
-  
+
       get: function(periodAlias) {
         return PERIODS_MAP[periodAlias.toLowerCase()];
       },
-  
+
       generate: function(lTick, rTick, periodAlias) {
           var r = [];
           var period = PERIODS_MAP[periodAlias.toLowerCase()];
@@ -565,11 +565,11 @@ define(
     var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
 
     var rangeMethods = {
-    
+
         'ordinal': function(inputValues, interval, props) {
             return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
         },
-    
+
         'linear': function(inputValues, interval, props) {
             var domainParam = d3.extent(inputValues);
             var min = _.isNumber(props.min) ? props.min : domainParam[0];
@@ -580,111 +580,111 @@ define(
             ];
             return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
         },
-    
+
         'period': function(inputValues, interval, props) {
             var domainParam = d3.extent(inputValues);
             var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
             var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
-    
+
             var range = [
                 Math.min(min, domainParam[0]),
                 Math.max(max, domainParam[1])
             ];
-    
+
             var dates = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
-    
+
             return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
         },
-    
+
         'time': function(inputValues, interval, props) {
             var domainParam = d3.extent(inputValues);
             var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
             var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
-    
+
             var range = [
                 Math.min(min, domainParam[0]),
                 Math.max(max, domainParam[1])
             ];
-    
+
             return d3.time.scale().domain(range).range(interval);
         }
     };
 
     var UnitDomainMixin = function() {
       var UnitDomainMixin = function UnitDomainMixin(meta, data) {
-  
+
           var getPropMapper = function(prop) {
             return function(propObj) {
               return propObj[prop];
             };
           };
-  
+
           var getValueMapper = function(dim) {
               var d = meta[dim] || {};
               var f = d.value ? getPropMapper(d.value) : (function(x) {
                 return x;
               });
-  
+
               var isTime = _.contains(['period', 'time'], d.scale);
-  
+
               return isTime ? _.compose((function(v) {
                 return (new Date(v)).getTime();
               }), f) : f;
           };
-  
+
           var getOrder = function(dim) {
               var d = meta[dim] || {};
               return d.order || null;
           };
-  
+
           var getDomainSortStrategy = function(type) {
-  
+
               var map = {
-  
+
                   category: function(dim, fnMapperId, domain) {
                       return domain;
                   },
-  
+
                   order: function(dim, fnMapperId, domain) {
                       var metaOrder = getOrder(dim);
                       return (metaOrder) ?
                           _.union(metaOrder, domain) : // arguments order is important
                           _.sortBy(domain, fnMapperId);
                   },
-  
+
                   measure: function(dim, fnMapperId, domain) {
                       return _.sortBy(domain, fnMapperId);
                   },
-  
+
                   'as-is': (function(dim, fnMapperId, domain) {
                     return domain;
                   })
               };
-  
+
               return map[type] || map['as-is'];
           };
-  
+
           var getScaleSortStrategy = function(type) {
-  
+
               var map = {
-  
+
                   category: getDomainSortStrategy('category'),
-  
+
                   order: function(dim, fnMapperId, domain) {
                       var metaOrder = getOrder(dim);
                       return (metaOrder) ?
                           _.union(domain, metaOrder) : // arguments order is important
                           domain;
                   },
-  
+
                   measure: getDomainSortStrategy('measure'),
-  
+
                   'as-is': getDomainSortStrategy('as-is')
               };
-  
+
               return map[type] || map['as-is'];
           };
-  
+
           this.fnDimension = function(dimensionName, subUnit) {
               var unit = (subUnit || {}).dimensions || {};
               var xRoot = meta[dimensionName] || {};
@@ -694,7 +694,7 @@ define(
                   scaleType: xNode.scale || xRoot.scale
               };
           };
-  
+
           this.fnSource = function(whereFilter) {
               var predicates = _.map(whereFilter, function(v, k) {
                 return function(row) {
@@ -707,30 +707,30 @@ define(
                 }));
               });
           };
-  
+
           var _domain = function(dim, fnSort) {
-  
+
               if (!meta[dim]) {
                   return [null];
               }
-  
+
               var fnMapperId = getValueMapper(dim);
               var uniqValues = _(data).chain().pluck(dim).uniq(fnMapperId).value();
-  
+
               return fnSort(dim, fnMapperId, uniqValues);
           };
-  
+
           this.fnDomain = function(dim) {
               var fnMapperId = getValueMapper(dim);
               var type = (meta[dim] || {}).type;
               var domainSortedAsc = _domain(dim, getDomainSortStrategy(type));
               return domainSortedAsc.map(fnMapperId);
           };
-  
+
           this.fnScaleTo = function(scaleDim, interval, options) {
               var opts = options || {};
               var dimx = _.defaults({}, meta[scaleDim]);
-  
+
               var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
               var fVal = opts.period ?
                   (function(x) {
@@ -739,11 +739,11 @@ define(
                   (function(x) {
                 return x;
               });
-  
+
               var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
-  
+
               var func = rangeMethods[dimx.scale](vals, interval, opts);
-  
+
               var wrap = function(domainPropObject) {
                 return func(fVal(fMap(domainPropObject)));
               };
@@ -769,7 +769,7 @@ define(
               unit.partition = (function() {
                 return unit.source(unit.$where);
               });
-      
+
               return unit;
           }
         }
@@ -787,7 +787,7 @@ define('units-registry',["exports"], function(exports) {
   var UnitsMap = {};
 
   var UnitsRegistry = {
-  
+
       add: function(unitType, xUnit) {
           var unit = {};
           unit.draw = (typeof xUnit === 'function') ? xUnit : xUnit.draw;
@@ -797,13 +797,13 @@ define('units-registry',["exports"], function(exports) {
           UnitsMap[unitType] = unit;
           return this;
       },
-  
+
       get: function(unitType) {
-  
+
           if (!UnitsMap.hasOwnProperty(unitType)) {
               throw new Error('Unknown unit type: ' + unitType);
           }
-  
+
           return UnitsMap[unitType];
       }
   };
@@ -842,14 +842,14 @@ define(
           writable: true,
 
           value: function(graph, layoutEngine, size) {
-      
+
               graph.options = {
                   top: 0,
                   left: 0,
                   width: size.width,
                   height: size.height
               };
-      
+
               return layoutEngine(graph, this.domain);
           }
         },
@@ -883,12 +883,12 @@ define(
 
 define('matrix',["exports"], function(exports) {
   var TMatrix = (function () {
-  
+
       var Matrix = function (r, c) {
-  
+
           var args = _.toArray(arguments);
           var cube;
-  
+
           if (_.isArray(args[0])) {
               cube = args[0];
           }
@@ -899,12 +899,12 @@ define('matrix',["exports"], function(exports) {
                   });
               });
           }
-  
+
           this.cube = cube;
       };
-  
+
       Matrix.prototype = {
-  
+
           iterate: function (iterator) {
               var cube = this.cube;
               _.each(cube, function (row, ir) {
@@ -914,28 +914,28 @@ define('matrix',["exports"], function(exports) {
               });
               return this;
           },
-  
+
           getRC: function (r, c) {
               return this.cube[r][c];
           },
-  
+
           setRC: function (r, c, val) {
               this.cube[r][c] = val;
               return this;
           },
-  
+
           sizeR: function () {
               return this.cube.length;
           },
-  
+
           sizeC: function () {
               var row = this.cube[0] || [];
               return row.length;
           }
       };
-  
+
       return Matrix;
-  
+
   })();
 
   exports.TMatrix = TMatrix;
@@ -953,7 +953,7 @@ define(
         node.options = node.options || {};
         node.guide = node.guide || {};
         node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
-    
+
         node.guide.x = _.defaults(node.guide.x || {}, {
             label: '',
             padding: 0,
@@ -967,9 +967,9 @@ define(
         });
         node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
         node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
-    
+
         node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
-    
+
         node.guide.y = _.defaults(node.guide.y || {}, {
             label: '',
             padding: 0,
@@ -983,34 +983,34 @@ define(
         });
         node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
         node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
-    
+
         node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
-    
+
         return node;
     };
 
     var fnDefaultLayoutEngine = function(rootNode, domainMixin) {
-    
+
         var fnTraverseLayout = function(rawNode) {
-    
+
             var node = applyNodeDefaults(rawNode);
-    
+
             if (!node.$matrix) {
                 return node;
             }
-    
+
             var options = node.options;
             var padding = node.guide.padding;
-    
+
             var innerW = options.width - (padding.l + padding.r);
             var innerH = options.height - (padding.t + padding.b);
-    
+
             var nRows = node.$matrix.sizeR();
             var nCols = node.$matrix.sizeC();
-    
+
             var cellW = innerW / nCols;
             var cellH = innerH / nRows;
-    
+
             var calcLayoutStrategy;
             if (node.guide.split) {
                 calcLayoutStrategy = {
@@ -1032,11 +1032,11 @@ define(
                     })
                 };
             }
-    
+
             node.$matrix.iterate(function(iRow, iCol, subNodes) {
-    
+
                 var len = subNodes.length;
-    
+
                 _.each(
                     subNodes,
                     function(node, i) {
@@ -1049,62 +1049,62 @@ define(
                         fnTraverseLayout(node);
                     });
             });
-    
+
             return node;
         };
-    
+
         return fnTraverseLayout(rootNode);
     };
 
     var LayoutEngineTypeMap = {
-    
+
         'DEFAULT': fnDefaultLayoutEngine,
-    
+
         'EXTRACT-AXES': function(rootNode, domainMixin) {
-    
+
             var fnExtractAxesTransformation = (function(root) {
-    
+
                 var traverse = (function(rootNode, wrapperNode) {
-    
+
                     var node = applyNodeDefaults(rootNode);
-    
+
                     _.each([node.guide.x || {}, node.guide.y || {}], function(a) {
                       return a.hide = true;
                     });
-    
+
                     var nRows = node.$matrix.sizeR();
                     var nCols = node.$matrix.sizeC();
-    
+
                     wrapperNode.$axes = new TMatrix(nRows, nCols);
-    
+
                     node.$matrix.iterate(function(r, c, subNodes) {
-    
+
                         var axesMap = [];
                         wrapperNode.$axes.setRC(r, c, axesMap);
-    
+
                         var isHeadCol = (c === 0);
                         var isTailRow = (r === (nRows - 1));
-    
+
                         subNodes.forEach(function(subNode) {
                             var node = applyNodeDefaults(subNode);
                             if (node.$matrix) {
                                 var axis = _.extend(utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
                                 axesMap.push(axis);
-    
+
                                 node.guide.padding.l = 0;
                                 node.guide.padding.b = 0;
-    
+
                                 axis.guide.padding.l = (isHeadCol ? axis.guide.padding.l : 0);
                                 axis.guide.padding.b = (isTailRow ? axis.guide.padding.b : 0);
-    
+
                                 traverse(node, axis);
                             }
                         });
                     });
-    
+
                     return node;
                 });
-    
+
                 var wrapperNode = applyNodeDefaults({
                     type: 'WRAP.MULTI_AXES',
                     options: utils.clone(root.options),
@@ -1112,9 +1112,9 @@ define(
                     y: {},
                     $matrix: new TMatrix([[[root]]])
                 });
-    
+
                 traverse(domainMixin.mix(wrapperNode), wrapperNode);
-    
+
                 wrapperNode.$matrix = new TMatrix([
                     [
                         [
@@ -1127,64 +1127,64 @@ define(
                         ]
                     ]
                 ]);
-    
+
                 return wrapperNode;
             });
-    
+
             var fnTraverseExtAxesLayout = function(wrapperNode) {
-    
+
                 var multiAxisDecorator = function(node) {
-    
+
                     var options = node.options;
                     var padding = node.guide.padding;
-    
+
                     var innerW = options.width - (padding.l + padding.r);
                     var innerH = options.height - (padding.t + padding.b);
-    
+
                     var nR = node.$axes.sizeR();
                     var nC = node.$axes.sizeC();
-    
+
                     var leftBottomItem = applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
                     var lPadding = leftBottomItem.guide.padding.l;
                     var bPadding = leftBottomItem.guide.padding.b;
-    
+
                     var sharedWidth = (innerW - lPadding);
                     var sharedHeight = (innerH - bPadding);
-    
+
                     var cellW = sharedWidth / nC;
                     var cellH = sharedHeight / nR;
-    
+
                     node.$axes.iterate(function(iRow, iCol, subNodes) {
-    
+
                         var isHeadCol = (iCol === 0);
                         var isTailRow = (iRow === (nR - 1));
-    
+
                         if (isHeadCol || isTailRow) {
-    
+
                             subNodes.forEach(function(node) {
                                 node.options = {
                                     showX: isTailRow,
                                     showY: isHeadCol,
-    
+
                                     width : cellW + (isHeadCol ? lPadding: 0),
                                     height: cellH + (isTailRow ? bPadding: 0),
-    
+
                                     top : iRow * cellH,
                                     left: iCol * cellW + (isHeadCol ? 0 : lPadding)
                                 };
-    
+
                                 if (node.$axes) {
                                     multiAxisDecorator(node);
                                 }
                             });
                         }
                     });
-    
+
                     return node;
                 };
-    
+
                 multiAxisDecorator(wrapperNode);
-    
+
                 var gridL = 0;
                 var gridB = 0;
                 var axisOffsetTraverser = function(node) {
@@ -1199,15 +1199,15 @@ define(
                             });
                         }
                     });
-    
+
                     return node;
                 };
-    
+
                 axisOffsetTraverser(wrapperNode);
-    
+
                 var gridW = wrapperNode.options.width - gridL;
                 var gridH = wrapperNode.options.height - gridB;
-    
+
                 var refRoot = wrapperNode.$matrix.getRC(0, 0)[0];
                 refRoot.options = {
                     top: 0,
@@ -1215,22 +1215,22 @@ define(
                     width: gridW,
                     height: gridH
                 };
-    
+
                 fnDefaultLayoutEngine(refRoot, domainMixin);
-    
+
                 return wrapperNode;
             };
-    
+
             return (fnTraverseExtAxesLayout(fnExtractAxesTransformation(rootNode)));
         }
     };
 
     var LayoutEngineFactory = {
-    
+
         get: function(typeName) {
             return (LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap.DEFAULT).bind(_this);
         }
-    
+
     };
 
     exports.LayoutEngineFactory = LayoutEngineFactory;
@@ -1419,21 +1419,21 @@ define(
 
     var Plot = function() {
       var Plot = function Plot(config) {
-  
+
           var chartConfig = this.convertConfig(config);
-  
+
           this.config = _.defaults(chartConfig, {
               spec: null,
               data: [],
               plugins: []
           });
-  
+
           chartConfig.spec.dimensions = this._normalizeDimensions(chartConfig.spec.dimensions, chartConfig.data);
-  
+
           this.plugins = this.config.plugins;
           this.spec = this.config.spec;
           this.data = this.config.data;
-  
+
           //plugins
           this._plugins = new Plugins(this.config.plugins);
       };
@@ -1443,36 +1443,36 @@ define(
           writable: true,
 
           value: function(target, xSize) {
-      
+
               var container = d3.select(target);
               var containerNode = container[0][0];
-      
+
               if (containerNode === null) {
                   throw new Error('Target element not found');
               }
-      
+
               //todo don't compute width if width or height were passed
               var size = _.defaults(xSize || {}, utilsDom.getContainerSize(containerNode));
-      
+
               if (this.data.length === 0) {
                   // empty data source
                   return;
               }
-      
+
               containerNode.innerHTML = '';
-      
+
               var svgContainer = container
                   .append("svg")
                   .attr("class",CSS_PREFIX + 'svg')
                   .attr("width", size.width)
                   .attr("height", size.height);
-      
+
               var reader = new DSLReader(this.spec, this.data);
               var xGraph = reader.buildGraph();
               var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES');
               var layout = reader.calcLayout(xGraph, engine, size);
               var canvas = reader.renderGraph(layout, svgContainer);
-      
+
               //plugins
               canvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
               this._plugins.render(canvas);
@@ -1483,7 +1483,7 @@ define(
           writable: true,
 
           value: function(data) {
-      
+
               var detectType = function(propertyValue) {
                   var type;
                   if (_.isObject(propertyValue)) {
@@ -1495,20 +1495,20 @@ define(
                   else {
                       type = 'category';
                   }
-      
+
                   return type;
               };
-      
+
               return _.reduce(
                   data,
                   function(dimMemo, rowItem) {
-      
+
                       _.each(rowItem, function(val, key) {
                           var assumedType = detectType(val);
                           dimMemo[key] = dimMemo[key] || {type: assumedType};
                           dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'category';
                       });
-      
+
                       return dimMemo;
                   },
                   {});
@@ -1519,18 +1519,18 @@ define(
           writable: true,
 
           value: function(dimensions) {
-      
+
               var scaleMap = {
                   category: 'ordinal',
                   order: 'ordinal',
                   measure:'linear'
               };
-      
+
               _.each(dimensions, function(val, key) {
                   var t = val.type.toLowerCase();
                   val.scale = val.scale || scaleMap[t];
               });
-      
+
               return dimensions;
           }
         },
@@ -1582,7 +1582,7 @@ define('charts/tau.chart',["exports", "./tau.plot"], function(exports, _tauPlot)
       if (!data) {
           return null;
       }
-  
+
       return data;
   }
 
@@ -1618,7 +1618,7 @@ define('charts/tau.chart',["exports", "./tau.plot"], function(exports, _tauPlot)
               },
               unit: [element]
           }
-  
+
       };
       return chartConfig;
   }
@@ -1665,11 +1665,11 @@ define('charts/tau.chart',["exports", "./tau.plot"], function(exports, _tauPlot)
 
 define('formatter-registry',["exports"], function(exports) {
   var FORMATS_MAP = {
-  
+
       'day': d3.time.format('%d-%b-%Y'),
-  
+
       'week': d3.time.format('%d-%b-%Y'),
-  
+
       'week-range': function(x) {
           var sWeek = new Date(x);
           var clone = new Date(x);
@@ -1677,28 +1677,28 @@ define('formatter-registry',["exports"], function(exports) {
           var format = d3.time.format('%d-%b-%Y');
           return format(sWeek) + ' - ' + format(eWeek);
       },
-  
+
       'month': function(x) {
           var d = new Date(x);
           var m = d.getMonth();
           var formatSpec = (m === 0) ? '%B, %Y' : '%B';
           return d3.time.format(formatSpec)(x);
       },
-  
+
       'month-year': d3.time.format('%B, %Y'),
-  
+
       'quarter': function(x) {
           var d = new Date(x);
           var m = d.getMonth();
           var q = (m - (m % 3)) / 3;
           return 'Q' + (q + 1) + ' ' + d.getFullYear();
       },
-  
+
       'year': d3.time.format('%Y')
   };
 
   var FormatterRegistry = {
-  
+
       get: function(formatAlias) {
           var formatter = FORMATS_MAP[formatAlias];
           if (!formatter) {
@@ -1709,7 +1709,7 @@ define('formatter-registry',["exports"], function(exports) {
           }
           return formatter;
       },
-  
+
       add: function(formatAlias, formatter) {
           FORMATS_MAP[formatAlias] = formatter;
       }
@@ -1736,19 +1736,19 @@ define(
     };
 
     var decorateAxisTicks = function(nodeScale, x, size) {
-    
+
         var selection = nodeScale.selectAll('.tick line');
-    
+
         var sectorSize = size / selection[0].length;
         var offsetSize = sectorSize / 2;
-    
+
         if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
-    
+
             var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
-    
+
             var key = (isHorizontal) ? 'x' : 'y';
             var val = (isHorizontal) ? offsetSize : (-offsetSize);
-    
+
             selection.attr(key + '1', val).attr(key + '2', val);
         }
     };
@@ -1775,22 +1775,22 @@ define(
     var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         var container = this;
         if (x.scaleDim) {
-    
+
             var axisScale = d3.svg.axis()
                 .scale(x.scaleObj)
                 .orient(x.guide.scaleOrient)
                 .ticks(_.max([Math.round(size / x.guide.density), 4]));
-    
+
             if (x.guide.tickFormat) {
                 axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
             }
-    
+
             var nodeScale = container
                 .append('g')
                 .attr('class', x.guide.cssClass)
                 .attr('transform', translate.apply(null, AXIS_POSITION))
                 .call(axisScale);
-    
+
             decorateAxisTicks(nodeScale, x, size);
             decorateTickLabel(nodeScale, x);
             decorateAxisLabel(nodeScale, x);
@@ -1798,19 +1798,19 @@ define(
     };
 
     var fnDrawGrid = function (node, H, W) {
-    
+
         var container = this;
-    
+
         var grid = container
             .append('g')
             .attr('class', 'grid')
             .attr('transform', translate(0, 0));
-    
+
         var linesOptions = (node.guide.showGridLines || '').toLowerCase();
         if (linesOptions.length > 0) {
-    
+
             var gridLines = grid.append('g').attr('class', 'grid-lines');
-    
+
             if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
                 var x = node.x;
                 var xGridAxis = d3.svg
@@ -1819,12 +1819,12 @@ define(
                     .orient(x.guide.scaleOrient)
                     .tickSize(H)
                     .ticks(_.max([Math.round(W / x.guide.density), 4]));
-    
+
                 var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
-    
+
                 decorateAxisTicks(xGridLines, x, W);
             }
-    
+
             if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
                 var y = node.y;
                 var yGridAxis = d3.svg
@@ -1833,16 +1833,16 @@ define(
                     .orient(y.guide.scaleOrient)
                     .tickSize(-W)
                     .ticks(_.max([Math.round(H / y.guide.density), 4]));
-    
+
                 var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
-    
+
                 decorateAxisTicks(yGridLines, y, H);
             }
-    
+
             // TODO: make own axes and grid instead of using d3's in such tricky way
             gridLines.selectAll('text').remove();
         }
-    
+
         return grid;
     };
 
@@ -1853,10 +1853,10 @@ define(
         var range, domain;
         var colorGuide = (node.guide || {}).color || {};
         var colorParam = node.color;
-    
+
         var colorDim = colorParam.scaleDim;
         var brewer = colorGuide.brewer || defaultRange;
-    
+
         if (utils.isArray(brewer)) {
             domain = node.domain(colorDim);
             range = brewer;
@@ -1867,7 +1867,7 @@ define(
               return brewer[key];
             });
         }
-    
+
         return {
             get: function(d) {
               return d3.scale.ordinal().range(range).domain(domain)(d);
@@ -1898,25 +1898,25 @@ define(
     var TMatrix = _matrix.TMatrix;
 
     var FacetAlgebra = {
-    
+
         'CROSS': function (root, dimX, dimY) {
-    
+
             var domainX = root.domain(dimX);
             var domainY = root.domain(dimY).reverse();
-    
+
             return _(domainY).map(function(rowVal) {
                 return _(domainX).map(function(colVal) {
-    
+
                     var r = {};
-    
+
                     if (dimX) {
                         r[dimX] = colVal;
                     }
-    
+
                     if (dimY) {
                         r[dimY] = rowVal;
                     }
-    
+
                     return r;
                 });
             });
@@ -1936,19 +1936,19 @@ define(
     };
 
     var coords = {
-    
+
         walk: function (unit, continueTraverse) {
-    
+
             var root = _.defaults(unit, {$where: {}});
-    
+
             var isFacet = _.any(root.unit, function(n) {
               return n.type.indexOf('COORDS.') === 0;
             });
             var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
-    
+
             var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.y));
             var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
-    
+
             matrixOfPrFilters.iterate(function(row, col, $whereRC) {
                 var cellWhere = _.extend({}, root.$where, $whereRC);
                 var cellNodes = _(root.unit).map(function(sUnit) {
@@ -1956,32 +1956,32 @@ define(
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });
-    
+
             root.$matrix = matrixOfUnitNodes;
-    
+
             matrixOfUnitNodes.iterate(function(r, c, cellNodes) {
                 _.each(cellNodes, function(refSubNode) {
                   return continueTraverse(refSubNode);
                 });
             });
-    
+
             return root;
         },
-    
+
         draw: function (node, continueTraverse) {
-    
+
             var options = node.options;
             var padding = node.guide.padding;
-    
+
             node.x.guide = node.guide.x;
             node.y.guide = node.guide.y;
-    
+
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-    
+
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-    
+
             var tickX = {
                 map: node.x.guide.tickLabel,
                 min: node.x.guide.tickMin,
@@ -1989,7 +1989,7 @@ define(
                 period: node.x.guide.tickPeriod
             };
             node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-    
+
             var tickY = {
                 map: node.y.guide.tickLabel,
                 min: node.y.guide.tickMin,
@@ -1997,29 +1997,29 @@ define(
                 period: node.y.guide.tickPeriod
             };
             node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
-    
+
             node.x.guide.size = W;
             node.y.guide.size = H;
-    
+
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
-    
+
             var container = options
                 .container
                 .append('g')
                 .attr('class', CSS_PREFIX + 'cell ' + 'cell')
                 .attr('transform', utilsDraw.translate(L, T));
-    
+
             if (!node.x.guide.hide) {
                 utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
             }
-    
+
             if (!node.y.guide.hide) {
                 utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
             }
-    
+
             var grid = utilsDraw.fnDrawGrid.call(container, node, H, W);
-    
+
             node.$matrix.iterate(function(iRow, iCol, subNodes) {
                 subNodes.forEach(function(node) {
                     node.options = _.extend({container: grid}, node.options);
@@ -2039,21 +2039,21 @@ define(
     var utilsDraw = _utilsUtilsDraw.utilsDraw;
     var CSS_PREFIX = _const.CSS_PREFIX;
     var line = function (node) {
-    
+
         var options = node.options;
-    
+
         var xScale = options.xScale;
         var yScale = options.yScale;
-    
+
         var color = utilsDraw.generateColor(node);
-    
+
         var categories = d3
             .nest()
             .key(function(d) {
           return d[color.dimension];
         })
             .entries(node.partition());
-    
+
         var updateLines = function () {
             this.attr('class', function(d) {
                 return CSS_PREFIX + 'line' + ' line ' + color.get(d.key);
@@ -2065,7 +2065,7 @@ define(
             paths.enter().append('path').call(updatePaths);
             paths.exit().remove();
         };
-    
+
         var line = d3
             .svg
             .line()
@@ -2075,11 +2075,11 @@ define(
             .y(function(d) {
           return yScale(d[node.y.scaleDim]);
         });
-    
+
         var updatePaths = function () {
             this.attr('d', line);
         };
-    
+
         var lines = options.container.selectAll('.line').data(categories);
         lines.call(updateLines);
         lines.enter().append('g').call(updateLines);
@@ -2097,16 +2097,16 @@ define(
     var utilsDraw = _utilsUtilsDraw.utilsDraw;
     var CSS_PREFIX = _const.CSS_PREFIX;
     var point = function (node) {
-    
+
         var options = node.options;
-    
+
         var xScale = options.xScale;
         var yScale = options.yScale;
-    
+
         var color = utilsDraw.generateColor(node);
         var maxAxis = _.max([options.width, options.height]);
         var sizeValues = node.domain(node.size.scaleDim);
-    
+
         var size = d3
             .scale
             .linear()
@@ -2115,7 +2115,7 @@ define(
                 Math.min.apply(null, sizeValues),
                 Math.max.apply(null, sizeValues)
             ]);
-    
+
         var update = function () {
             return this
                 .attr('r', function(d) {
@@ -2132,7 +2132,7 @@ define(
               return yScale(d[node.y.scaleDim]);
             });
         };
-    
+
         var elements = options.container.selectAll('.dot').data(node.partition());
         elements.call(update);
         elements.exit().remove();
@@ -2152,11 +2152,11 @@ define(
     var CSS_PREFIX = _const.CSS_PREFIX;
     var _BARGROUP = 'i-role-bar-group';
     var interval = function (node) {
-    
+
         var options = node.options;
-    
+
         var color = utilsDraw.generateColor(node);
-    
+
         var partition = node.partition();
         var categories = d3
             .nest()
@@ -2164,13 +2164,13 @@ define(
           return d[color.dimension];
         })
             .entries(partition);
-    
+
         var xScale,
             yScale,
             tickWidth,
             intervalWidth,
             offsetCategory,
-    
+
             calculateX,
             calculateY,
             calculateWidth,
@@ -2182,7 +2182,7 @@ define(
             tickWidth = options.height / (node.domain(node.y.scaleDim).length);
             intervalWidth = tickWidth / (categories.length + 1);
             offsetCategory = intervalWidth;
-    
+
             calculateX = function(d) {
               return 0;
             };
@@ -2198,14 +2198,14 @@ define(
             calculateTranslate = function(d, index) {
               return utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
             };
-    
+
         } else {
             xScale = options.xScale;
             yScale = options.yScale;
             tickWidth = options.width / (node.domain(node.x.scaleDim).length);
             intervalWidth = tickWidth / (categories.length + 1);
             offsetCategory = intervalWidth;
-    
+
             calculateX = function(d) {
               return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
             };
@@ -2222,7 +2222,7 @@ define(
               return utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
             };
         }
-    
+
         var updateBar = function () {
             return this
                 .attr('class', function(d) {
@@ -2234,7 +2234,7 @@ define(
                 .attr('height', calculateHeight);
         };
         var updateBarContainer = function () {
-    
+
             this
                 .attr('class', _BARGROUP)
                 .attr('transform', calculateTranslate);
@@ -2245,7 +2245,7 @@ define(
             bars.enter().append('rect').call(updateBar);
             bars.exit().remove();
         };
-    
+
         var elements = options.container.selectAll('.' + _BARGROUP).data(categories);
         elements.call(updateBarContainer);
         elements.enter().append('g').call(updateBarContainer);
@@ -2272,13 +2272,13 @@ define(
     };
 
     var CoordsParallel = {
-    
+
         walk: function (unit, continueTraverse) {
             var root = _.defaults(unit, {$where: {}});
-    
+
             var matrixOfPrFilters = new TMatrix(1, 1);
             var matrixOfUnitNodes = new TMatrix(1, 1);
-    
+
             matrixOfPrFilters.iterate(function(row, col) {
                 var cellWhere = _.extend({}, root.$where);
                 var cellNodes = _(root.unit).map(function(sUnit) {
@@ -2286,75 +2286,75 @@ define(
                 });
                 matrixOfUnitNodes.setRC(row, col, cellNodes);
             });
-    
+
             root.$matrix = matrixOfUnitNodes;
-    
+
             matrixOfUnitNodes.iterate(function(r, c, cellNodes) {
                 _.each(cellNodes, function(refSubNode) {
                   return continueTraverse(refSubNode);
                 });
             });
-    
+
             return root;
         },
-    
+
         draw: function(node, continueTraverse) {
-    
+
             var options = node.options;
             var padding = node.guide.padding;
-    
+
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-    
+
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-    
+
             var scaleObjArr = node.x.map(function(xN) {
               return node.scaleTo(xN, [H, 0], {});
             });
-    
+
             var container = options
                 .container
                 .append('g')
                 .attr('class', 'graphical-report__' + 'cell ' + 'cell')
                 .attr('transform', utilsDraw.translate(L, T));
-    
-    
+
+
             var translate = function(left, top) {
               return 'translate(' + left + ',' + top + ')';
             };
             var rotate = function(angle) {
               return 'rotate(' + angle + ')';
             };
-    
-    
+
+
             var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
                 var container = this;
-    
+
                 var axisScale = d3.svg.axis().scale(xScaleObj).orient('left');
-    
+
                 var nodeScale = container
                     .append('g')
                     .attr('class', 'y axis')
                     .attr('transform', translate.apply(null, AXIS_POSITION))
                     .call(axisScale);
-    
+
                 nodeScale
                     .selectAll('.tick text')
                     .attr('transform', rotate(0))
                     .style('text-anchor', 'end');
             };
-    
+
             var offset = W / (node.x.length - 1);
             scaleObjArr.forEach(function(scale, i) {
                 fnDrawDimAxis.call(container, scale, [i * offset, 0]);
             });
-    
+
             var grid = container
                 .append('g')
                 .attr('class', 'grid')
                 .attr('transform', translate(0, 0));
-    
+
             node.$matrix.iterate(function(iRow, iCol, subNodes) {
                 subNodes.forEach(function(node) {
                     node.options = _.extend({container: grid}, node.options);
@@ -2375,22 +2375,22 @@ define(
     var CSS_PREFIX = _const.CSS_PREFIX;
 
     var CoordsParallelLine = {
-    
+
         draw: function (node) {
-    
+
             node.color = node.dimension(node.color, node);
-    
+
             var options = node.options;
-    
+
             var scalesMap = node.x.reduce(
                 function(memo, xN) {
                     memo[xN] = node.scaleTo(xN, [options.height, 0], {});
                     return memo;
                 },
                 {});
-    
+
             var color = utilsDraw.generateColor(node);
-    
+
             var categories = d3
                 .nest()
                 .key(function(d) {
@@ -2405,7 +2405,7 @@ define(
                     });
                     return memo;
                 });
-    
+
             var updateLines = function () {
                 this.attr('class', function(d) {
                   return 'graphical-report__' + 'line' + ' line ' + 'color10-9';
@@ -2417,13 +2417,13 @@ define(
                 paths.enter().append('path').call(updatePaths);
                 paths.exit().remove();
             };
-    
+
             var segment = options.width / (node.x.length - 1);
             var segmentMap = {};
             node.x.forEach(function(propName, i) {
                 segmentMap[propName] = (i * segment);
             });
-    
+
             var fnLine = d3.svg.line()
                 .x(function(d) {
               return segmentMap[d.key];
@@ -2431,11 +2431,11 @@ define(
                 .y(function(d) {
               return scalesMap[d.key](d.val);
             });
-    
+
             var updatePaths = function () {
                 this.attr('d', fnLine);
             };
-    
+
             var lines = options.container.selectAll('.line').data(categories);
             lines.call(updateLines);
             lines.enter().append('g').call(updateLines);
@@ -2470,19 +2470,19 @@ define(
     var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
 
     var setupElementNode = function(node, dimensions) {
-    
+
         dimensions.forEach(function(dimName) {
             node[dimName] = node.dimension(node[dimName], node);
         });
-    
+
         var options = node.options;
-    
+
         var W = options.width;
         var H = options.height;
-    
+
         node.x.guide = node.guide.x;
         node.y.guide = node.guide.y;
-    
+
         var tickX = {
             map: node.x.guide.tickLabel,
             min: node.x.guide.tickMin,
@@ -2490,7 +2490,7 @@ define(
             period: node.x.guide.tickPeriod
         };
         node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-    
+
         var tickY = {
             map: node.y.guide.tickLabel,
             min: node.y.guide.tickMin,
@@ -2498,12 +2498,12 @@ define(
             period: node.y.guide.tickPeriod
         };
         node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
-    
+
         return node;
     };
 
     var nodeMap = {
-    
+
         'COORDS.RECT': {
             walk: coords.walk,
             draw: function(node, continueTraverse) {
@@ -2512,78 +2512,78 @@ define(
                 coords.draw(node, continueTraverse);
             }
         },
-    
+
         'ELEMENT.POINT': function(node) {
             point(setupElementNode(node, ['x', 'y', 'color', 'size']));
         },
-    
+
         'ELEMENT.LINE': function(node) {
             line(setupElementNode(node, ['x', 'y', 'color']));
         },
-    
+
         'ELEMENT.INTERVAL': function (node) {
             interval(setupElementNode(node, ['x', 'y', 'color']));
         },
-    
+
         'WRAP.AXIS': function (node, continueTraverse) {
-    
+
             node.x = node.dimension(node.x, node);
             node.y = node.dimension(node.y, node);
-    
+
             var options = node.options;
             var padding = node.guide.padding;
-    
+
             node.x.guide = node.guide.x;
             node.y.guide = node.guide.y;
-    
+
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-    
+
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-    
+
             node.x.guide.size = W;
             node.y.guide.size = H;
-    
+
             var tickX = {
                 map: node.x.guide.tickLabel,
                 min: node.x.guide.tickMin,
                 max: node.x.guide.tickMax
             };
             node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-    
+
             var tickY = {
                 map: node.y.guide.tickLabel,
                 min: node.y.guide.tickMin,
                 max: node.y.guide.tickMax
             };
             node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
-    
+
             var X_AXIS_POS = [0, H + node.guide.x.padding];
             var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
-    
+
             var container = options
                 .container
                 .append('g')
                 .attr('class', 'axis-container')
                 .attr('transform', utilsDraw.translate(L, T));
-    
+
             if (options.showX && !node.x.guide.hide) {
                 utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
             }
-    
+
             if (options.showY && !node.y.guide.hide) {
                 utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
             }
-    
+
             var grid = container
                 .append('g')
                 .attr('class', 'sub-axis-container')
                 .attr('transform', utilsDraw.translate(0, 0));
-    
+
             var nRows = node.$axes.sizeR();
             var nCols = node.$axes.sizeC();
-    
+
             node.$axes.iterate(function(iRow, iCol, subNodes) {
                 if (iCol === 0 || (iRow === (nRows - 1))) {
                     subNodes.forEach(function(node) {
@@ -2592,7 +2592,7 @@ define(
                                 container: grid
                             },
                             node.options || {});
-    
+
                         if (node.$axes) {
                             continueTraverse(node);
                         }
@@ -2600,30 +2600,30 @@ define(
                 }
             });
         },
-    
+
         'WRAP.MULTI_AXES': function (node, continueTraverse) {
             var options = node.options;
             var padding = node.guide.padding;
-    
+
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-    
+
             var W = options.width - (padding.l + padding.r);
             var H = options.height - (padding.t + padding.b);
-    
+
             var container = options
                 .container
                 .append('g')
                 .attr('class', 'cell-wrapper')
                 .attr('transform', utilsDraw.translate(L, T));
-    
+
             node.$axes.iterate(function(r, c, subAxesNodes) {
                 subAxesNodes.forEach(function(node) {
                     node.options = _.extend({container: container}, node.options);
                     continueTraverse(node);
                 });
             });
-    
+
             node.$matrix.iterate(function(r, c, subNodes) {
                 subNodes.forEach(function(node) {
                     node.options = _.extend({container: container}, node.options);
@@ -2631,20 +2631,20 @@ define(
                 });
             });
         },
-    
+
         'WRAP.MULTI_GRID': function (node, continueTraverse) {
             var options = node.options;
             var padding = node.guide.padding;
-    
+
             var L = options.left + padding.l;
             var T = options.top + padding.t;
-    
+
             var grid = options
                 .container
                 .append('g')
                 .attr('class', 'grid-wrapper')
                 .attr('transform', utilsDraw.translate(L, T));
-    
+
             node.$matrix.iterate(function(r, c, subNodes) {
                 subNodes.forEach(function(node) {
                     node.options = _.extend({container: grid}, node.options);
@@ -2652,7 +2652,7 @@ define(
                 });
             });
         },
-    
+
         'COORDS.PARALLEL': CoordsParallel,
         'PARALLEL/ELEMENT.LINE': CoordsParallelLine
     };
