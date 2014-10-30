@@ -1,4 +1,4 @@
-describe('Line plot chart', function () {
+describe('Bar chart', function () {
     var testData = [
         {x: 1, y: 1, color: 'red', size: 6},
         {x: 0.5, y: 0.5, color: 'green', size: 6},
@@ -14,6 +14,6 @@ describe('Line plot chart', function () {
             size:'size'
         });
         assert.equal(schemes.bar.errors(bar.config.spec), false,'spec right');
-
+        assert.equal(bar.config.spec.unit.unit[0].flip, false,'spec right');
     })
 });

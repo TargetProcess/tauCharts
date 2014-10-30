@@ -23,7 +23,7 @@ function generateSimpleConfig(type, config) {
     if (config.size) {
         element.size = config.size;
     }
-    if (config.flip) {
+    if (config.hasOwnProperty('flip')) {
         element.flip = config.flip;
     }
     chartConfig.spec = {
@@ -52,7 +52,7 @@ var typesChart = {
         return generateSimpleConfig('ELEMENT.LINE', config);
     },
     'bar': (config) => {
-        config.flip  = true;
+        config.flip = false;
         return generateSimpleConfig('ELEMENT.INTERVAL', config);
     },
     'horizontalBar': (config) => {
