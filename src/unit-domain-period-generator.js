@@ -1,67 +1,57 @@
 var PERIODS_MAP = {
 
     'day': {
-        cast: function (prevTick) {
-            var prevDate = new Date(prevTick);
-            return new Date(prevDate.setHours(0, 0, 0, 0));
+        cast: function (date) {
+            return new Date(date.setHours(0, 0, 0, 0));
         },
-        next: function (prevTick) {
-            var prevDate = new Date(prevTick);
+        next: function (prevDate) {
             return new Date(prevDate.setDate(prevDate.getDate() + 1));
         }
     },
 
     'week': {
-        cast: function (prevTick) {
-            var prevDate = new Date(prevTick);
-            prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-            prevDate = new Date(prevDate.setDate(prevDate.getDate() - prevDate.getDay()));
-            return prevDate;
+        cast: function (date) {
+            date = new Date(date.setHours(0, 0, 0, 0));
+            date = new Date(date.setDate(date.getDate() - date.getDay()));
+            return date;
         },
-        next: function (prevTick) {
-            var prevDate = new Date(prevTick);
+        next: function (prevDate) {
             return new Date(prevDate.setDate(prevDate.getDate() + 7));
         }
     },
 
     'month': {
-        cast: function (prevTick) {
-            var prevDate = new Date(prevTick);
-            prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-            prevDate = new Date(prevDate.setDate(1));
-            return prevDate;
+        cast: function (date) {
+            date = new Date(date.setHours(0, 0, 0, 0));
+            date = new Date(date.setDate(1));
+            return date;
         },
-        next: function (prevTick) {
-            var prevDate = new Date(prevTick);
+        next: function (prevDate) {
             return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
         }
     },
 
     'quarter': {
-        cast: function (prevTick) {
-            var prevDate = new Date(prevTick);
-            prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-            prevDate = new Date(prevDate.setDate(1));
-            var currentMonth = prevDate.getMonth();
+        cast: function (date) {
+            date = new Date(date.setHours(0, 0, 0, 0));
+            date = new Date(date.setDate(1));
+            var currentMonth = date.getMonth();
             var firstQuarterMonth = currentMonth - (currentMonth % 3);
-            return new Date(prevDate.setMonth(firstQuarterMonth));
+            return new Date(date.setMonth(firstQuarterMonth));
         },
-        next: function (prevTick) {
-            var prevDate = new Date(prevTick);
+        next: function (prevDate) {
             return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
         }
     },
 
     'year': {
-        cast: function (prevTick) {
-            var prevDate = new Date(prevTick);
-            prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-            prevDate = new Date(prevDate.setDate(1));
-            prevDate = new Date(prevDate.setMonth(0));
-            return prevDate;
+        cast: function (date) {
+            date = new Date(date.setHours(0, 0, 0, 0));
+            date = new Date(date.setDate(1));
+            date = new Date(date.setMonth(0));
+            return date;
         },
-        next: function (prevTick) {
-            var prevDate = new Date(prevTick);
+        next: function (prevDate) {
             return new Date(prevDate.setFullYear(prevDate.getFullYear() + 1));
         }
     }
@@ -80,10 +70,10 @@ var UnitDomainPeriodGenerator = {
         var r = [];
         var period = PERIODS_MAP[periodAlias.toLowerCase()];
         if (period) {
-            var last = period.cast(rTick);
-            var curr = period.cast(lTick);
+            var last = period.cast(new Date(rTick));
+            var curr = period.cast(new Date(lTick));
             r.push(curr);
-            while ((curr = period.next(curr)) <= last) {
+            while ((curr = period.next(new Date(curr))) <= last) {
                 r.push(curr);
             }
         }

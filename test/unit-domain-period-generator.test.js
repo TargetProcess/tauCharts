@@ -82,8 +82,7 @@ describe("Unit domain period generator", function () {
         PeriodGenerator.add(
             '2h',
             {
-                cast: function(dateAnyFormat) {
-                    var d = new Date(dateAnyFormat);
+                cast: function(d) {
                     var h = d.getHours();
                     var s = h - h % 2;
                     return new Date(d.setHours(s, 0, 0, 0));
