@@ -44,9 +44,12 @@ module.exports = function (grunt) {
         var config = {
             include: ['../node_modules/almond/almond'],
             baseUrl: tmpDir + '/',
-            // dir: 'release',
-            fileExclusionRegExp: /underscore|d3/,
             name: 'tau.newCharts',
+            exclude:['d3','underscore'],
+            paths:{
+                'underscore':'../libs/underscore',
+                'd3':'../libs/d3'
+            },
             optimize: 'none',
             done: function (done, response) {
                 done();
