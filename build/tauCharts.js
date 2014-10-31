@@ -1,6 +1,9 @@
+/*! tauCharts - v0.1.0 - 2014-10-31
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['underscore'],function(_){return factory(_, d3);});
+        define(['underscore', 'd3'],function(_,d3){return factory(_, d3);});
     } else if (typeof module === "object" && module.exports) {
         var _ = require('underscore');
         var d3 = require('d3');
@@ -475,67 +478,57 @@ define('unit-domain-period-generator',["exports"], function(exports) {
   var PERIODS_MAP = {
 
       'day': {
-          cast: function (prevTick) {
-              var prevDate = new Date(prevTick);
-              return new Date(prevDate.setHours(0, 0, 0, 0));
+          cast: function (date) {
+              return new Date(date.setHours(0, 0, 0, 0));
           },
-          next: function (prevTick) {
-              var prevDate = new Date(prevTick);
+          next: function (prevDate) {
               return new Date(prevDate.setDate(prevDate.getDate() + 1));
           }
       },
 
       'week': {
-          cast: function (prevTick) {
-              var prevDate = new Date(prevTick);
-              prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-              prevDate = new Date(prevDate.setDate(prevDate.getDate() - prevDate.getDay()));
-              return prevDate;
+          cast: function (date) {
+              date = new Date(date.setHours(0, 0, 0, 0));
+              date = new Date(date.setDate(date.getDate() - date.getDay()));
+              return date;
           },
-          next: function (prevTick) {
-              var prevDate = new Date(prevTick);
+          next: function (prevDate) {
               return new Date(prevDate.setDate(prevDate.getDate() + 7));
           }
       },
 
       'month': {
-          cast: function (prevTick) {
-              var prevDate = new Date(prevTick);
-              prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-              prevDate = new Date(prevDate.setDate(1));
-              return prevDate;
+          cast: function (date) {
+              date = new Date(date.setHours(0, 0, 0, 0));
+              date = new Date(date.setDate(1));
+              return date;
           },
-          next: function (prevTick) {
-              var prevDate = new Date(prevTick);
+          next: function (prevDate) {
               return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
           }
       },
 
       'quarter': {
-          cast: function (prevTick) {
-              var prevDate = new Date(prevTick);
-              prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-              prevDate = new Date(prevDate.setDate(1));
-              var currentMonth = prevDate.getMonth();
+          cast: function (date) {
+              date = new Date(date.setHours(0, 0, 0, 0));
+              date = new Date(date.setDate(1));
+              var currentMonth = date.getMonth();
               var firstQuarterMonth = currentMonth - (currentMonth % 3);
-              return new Date(prevDate.setMonth(firstQuarterMonth));
+              return new Date(date.setMonth(firstQuarterMonth));
           },
-          next: function (prevTick) {
-              var prevDate = new Date(prevTick);
+          next: function (prevDate) {
               return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
           }
       },
 
       'year': {
-          cast: function (prevTick) {
-              var prevDate = new Date(prevTick);
-              prevDate = new Date(prevDate.setHours(0, 0, 0, 0));
-              prevDate = new Date(prevDate.setDate(1));
-              prevDate = new Date(prevDate.setMonth(0));
-              return prevDate;
+          cast: function (date) {
+              date = new Date(date.setHours(0, 0, 0, 0));
+              date = new Date(date.setDate(1));
+              date = new Date(date.setMonth(0));
+              return date;
           },
-          next: function (prevTick) {
-              var prevDate = new Date(prevTick);
+          next: function (prevDate) {
               return new Date(prevDate.setFullYear(prevDate.getFullYear() + 1));
           }
       }
@@ -556,10 +549,10 @@ define('unit-domain-period-generator',["exports"], function(exports) {
           var r = [];
           var period = PERIODS_MAP[periodAlias.toLowerCase()];
           if (period) {
-              var last = period.cast(rTick);
-              var curr = period.cast(lTick);
+              var last = period.cast(new Date(rTick));
+              var curr = period.cast(new Date(lTick));
               r.push(curr);
-              while ((curr = period.next(curr)) <= last) {
+              while ((curr = period.next(new Date(curr))) <= last) {
                   r.push(curr);
               }
           }
@@ -747,7 +740,11 @@ define(
               var dimx = _.defaults({}, meta[scaleDim]);
 
               var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-              var fVal = opts.period ? UnitDomainPeriodGenerator.get(opts.period).cast : (function(x) {
+              var fVal = opts.period ?
+                  (function(x) {
+                return UnitDomainPeriodGenerator.get(opts.period).cast(new Date(x));
+              }) :
+                  (function(x) {
                 return x;
               });
 
@@ -2712,8 +2709,8 @@ define(
         },
         api: {
             UnitsRegistry: UnitsRegistry,
-            FormatsRegistry: FormatterRegistry,
-            PeriodsRegistry: UnitDomainPeriodGenerator
+            tickFormat: FormatterRegistry,
+            tickPeriod: UnitDomainPeriodGenerator
         }
     };
 
@@ -2731,5 +2728,11 @@ define(
     exports.tauChart = tauChart;
   }
 );
+ define('underscore',function(){
+   return _;
+ });
+ define('d3',function(){
+    return d3;
+  });
  return require('tau.newCharts').tauChart;
 }));

@@ -1,6 +1,6 @@
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['underscore'],function(_){return factory(_, d3);});
+        define(['underscore', 'd3'],function(_,d3){return factory(_, d3);});
     } else if (typeof module === "object" && module.exports) {
         var _ = require('underscore');
         var d3 = require('d3');
