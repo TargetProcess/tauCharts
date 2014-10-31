@@ -8,7 +8,7 @@ describe("Unit domain period generator", function () {
 
     var PeriodGenerator;
     beforeEach(function () {
-        PeriodGenerator = tauChart.api.PeriodsRegistry;
+        PeriodGenerator = tauChart.api.tickPeriod;
     });
 
     it("should generate [day] range", function () {

@@ -20,8 +20,8 @@ var tauChart = {
     },
     api: {
         UnitsRegistry: UnitsRegistry,
-        FormatsRegistry: FormatterRegistry,
-        PeriodsRegistry: UnitDomainPeriodGenerator
+        tickFormat: FormatterRegistry,
+        tickPeriod: UnitDomainPeriodGenerator
     }
 };
 

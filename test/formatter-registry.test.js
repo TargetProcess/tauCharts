@@ -8,7 +8,7 @@ describe("Formatter registry", function () {
 
     var registry;
     beforeEach(function () {
-        registry = tauChart.api.FormatsRegistry;
+        registry = tauChart.api.tickFormat;
     });
 
     it("should support default formats", function () {
