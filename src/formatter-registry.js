@@ -1,4 +1,6 @@
+/* jshint ignore:start */
 import * as d3 from 'd3';
+/* jshint ignore:end */
 var FORMATS_MAP = {
 
     'day': d3.time.format('%d-%b-%Y'),

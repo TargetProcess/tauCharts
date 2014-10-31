@@ -1,3 +1,6 @@
+/*! tauCharts - v0.1.0 - 2014-10-31
+* https://github.com/TargetProcess/tauCharts
+* Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define(['underscore'],function(_){return factory(_, d3);});
@@ -11136,6 +11139,7 @@ define(
     var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
     var _ = _underscore;
     var d3 = _d3;
+    /* jshint ignore:end */
 
     var rangeMethods = {
 
@@ -12230,10 +12234,12 @@ define('charts/tau.chart',["exports", "./tau.plot"], function(exports, _tauPlot)
 
   exports.Chart = Chart;
 });
+/* jshint ignore:start */
 
 
 define('formatter-registry',["exports", "d3"], function(exports, _d3) {
   var d3 = _d3;
+  /* jshint ignore:end */
   var FORMATS_MAP = {
 
       'day': d3.time.format('%d-%b-%Y'),
