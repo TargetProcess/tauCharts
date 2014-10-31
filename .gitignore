@@ -1,6 +1,6 @@
 /.idea
 libs
-tmp_dir
+/tau_modules
 /bower_components/
 .DS_Store
 node_modules

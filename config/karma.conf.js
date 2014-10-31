@@ -1,22 +1,26 @@
-module.exports = function(config) {
+module.exports = function (config) {
     config.set({
 
         // base path, that will be used to resolve files and exclude
         basePath: '..',
 
         // frameworks to use
-        frameworks: ['mocha','requirejs'],
+        frameworks: ['mocha', 'requirejs'],
 
         // list of files / patterns to load in the browser
         files: [
             /*'test/utils/utils.js',
-            'libs/underscore.js',
-            'libs/js-schema.js',
-            'libs/d3.js',
-
-            'src/addons/color-brewer.js',*/
+             'libs/underscore.js',
+             'libs/js-schema.js',
+             'libs/d3.js',
+             */
+            {pattern:'src/addons/color-brewer.js', included: false},
             //'build/tauCharts.js',
-            {pattern:'test/*test.js', included: false},
+            {pattern: 'test/utils/*.js', included: false},
+            {pattern: 'libs/**/*.js', included: false},
+            {pattern: 'node_modules/chai/*.js', included: false},
+            {pattern: 'tau_modules/**/*.js', included: false},
+            {pattern: 'test/*test.js', included: false},
             'test/tests-main.js'
         ],
         // test results reporter to use

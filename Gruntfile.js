@@ -53,10 +53,10 @@ module.exports = function (grunt) {
             },
             unit: {
                 reporters: ["dots", "coverage"],
-                preprocessors: {"build/tauCharts.js": "coverage"}
+                preprocessors: {"tau_modules/**/*.js": "coverage"}
             },
             travis: {
-                preprocessors: {"build/tauCharts.js": "coverage"},
+                preprocessors: {"tau_modules/**/*.js": "coverage"},
                 reporters: ["coverage", "dots", "coveralls"],
                 coverageReporter: {
                     type: "lcovonly",

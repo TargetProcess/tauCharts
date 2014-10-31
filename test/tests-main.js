@@ -1,22 +1,26 @@
 var tests = [];
-debugger
 for (var file in window.__karma__.files) {
     if (/test.js$/.test(file)) {
         tests.push(file);
     }
 }
-
 requirejs.config({
     // Karma serves files from '/base'
     baseUrl: '/base',
     paths: {
         'chai': 'node_modules/chai/chai',
-        'es5-shim':'libs/es5-shim.js'/*,
-        'tauChart':'build/tauCharts.js'*/
+        'd3':'libs/d3',
+        'js-schema':'libs/js-schema',
+        'underscore':'libs/underscore',
+        'schemes':'test/utils/schemes',
+        'testUtils':'test/utils/utils',
+        'es5-shim':'libs/es5-shim',
+        'brewer':'src/addons/color-brewer'
     },
     shim: {
-      'tauChart':{
-          exports:'tauChart'
+      'js-schema':{
+          deps:['libs/es5-shim'],
+          exports:'schema'
       }
     },
     // ask Require.js to load these files (all our tests)

@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 var FORMATS_MAP = {
 
     'day': d3.time.format('%d-%b-%Y'),

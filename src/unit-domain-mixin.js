@@ -1,4 +1,6 @@
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
+import * as _ from 'underscore';
+import * as d3 from 'd3';
 
 var rangeMethods = {
 
