@@ -1,4 +1,5 @@
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
+import {utils} from './utils/utils';
 /* jshint ignore:start */
 import * as _ from 'underscore';
 import * as d3 from 'd3';
@@ -14,10 +15,13 @@ var rangeMethods = {
         var domainParam = d3.extent(inputValues);
         var min = _.isNumber(props.min) ? props.min : domainParam[0];
         var max = _.isNumber(props.max) ? props.max : domainParam[1];
+
+        // TODO: utils.autoScale
         var range = [
             Math.min(min, domainParam[0]),
             Math.max(max, domainParam[1])
         ];
+
         return d3.scale.linear().domain(range).nice().rangeRound(interval, 1);
     },
 
