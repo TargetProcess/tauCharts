@@ -4,7 +4,7 @@ import {FormatterRegistry} from '../formatter-registry';
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
-
+var s;
 var decorateAxisTicks = (nodeScale, x, size) => {
 
     var selection = nodeScale.selectAll('.tick line');

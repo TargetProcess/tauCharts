@@ -32,42 +32,44 @@ module.exports = function (grunt) {
             }
 
         }, this);
-        // The following catches errors in the user-defined `done` function and outputs them.
-        var tryCatch = function (fn, done, output) {
+        if(outputFile) {
+            // The following catches errors in the user-defined `done` function and outputs them.
+            var tryCatch = function (fn, done, output) {
+                try {
+                    fn(done, output);
+                } catch (e) {
+                    grunt.fail.warn('There was an error while processing your done function: "' + e + '"');
+                }
+            };
+
+            var config = {
+                include: ['../node_modules/almond/almond'],
+                baseUrl: tmpDir + '/',
+                name: 'tau.newCharts',
+                exclude:['d3','underscore'],
+                paths:{
+                    'underscore':'../libs/underscore',
+                    'd3':'../libs/d3'
+                },
+                optimize: 'none',
+                done: function (done, response) {
+                    done();
+                },
+
+                out: outputFile,
+                wrap: {
+                    startFile: 'tasks/start.frag',
+                    endFile: 'tasks/end.frag'
+                }
+            };
             try {
-                fn(done, output);
+                requirejs.optimize(config, tryCatch.bind(null, config.done, done));
             } catch (e) {
-                grunt.fail.warn('There was an error while processing your done function: "' + e + '"');
+                grunt.fail.fatal(e)
             }
-        };
-
-        var config = {
-            include: ['../node_modules/almond/almond'],
-            baseUrl: tmpDir + '/',
-            name: 'tau.newCharts',
-            exclude:['d3','underscore'],
-            paths:{
-                'underscore':'../libs/underscore',
-                'd3':'../libs/d3'
-            },
-            optimize: 'none',
-            done: function (done, response) {
-                done();
-            },
-
-            out: 'build/tauCharts.js',
-            wrap: {
-                startFile: 'tasks/start.frag',
-                endFile: 'tasks/end.frag'
-            }
-        };
-        try {
-            requirejs.optimize(config, tryCatch.bind(null, config.done, done));
-        } catch (e) {
-            grunt.fail.fatal(e)
+        } else {
+            done();
         }
 
-
-        // grunt.file.delete(tmpDir);
     });
 };

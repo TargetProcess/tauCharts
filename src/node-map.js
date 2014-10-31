@@ -2,7 +2,6 @@ import {coords} from './elements/coords';
 import {line} from './elements/line';
 import {point} from './elements/point';
 import {interval} from './elements/interval';
-import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {CoordsParallel} from './elements/coords-parallel';
 import {CoordsParallelLine} from './elements/coords-parallel-line';

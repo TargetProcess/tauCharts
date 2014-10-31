@@ -1,4 +1,3 @@
-import {utils} from '../utils/utils';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 const BAR_GROUP = 'i-role-bar-group';

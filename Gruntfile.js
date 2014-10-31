@@ -2,6 +2,20 @@
 module.exports = function (grunt) {
 
     // Project configuration.
+    var src = [
+        "*.js",
+        "**/*.js",
+        "!charts/bar.js",
+        '!tau.plugins.js',
+        '!tau.svg.js',
+        '!charts/line.js',
+        '!charts/scatterplot.js',
+        '!addons/*.js',
+        '!tau.charts.js',
+        '!class.js',
+        '!tau.data.js',
+        '!tau.data.types.js'
+    ];
     grunt.initConfig({
         // Metadata.
         pkg: grunt.file.readJSON('package.json'),
@@ -24,22 +38,12 @@ module.exports = function (grunt) {
         compile: {
             build: {
                 cwd: "src/",
-
-                src: [
-                    "*.js",
-                    "**/*.js",
-                    "!charts/bar.js",
-                    '!tau.plugins.js',
-                    '!tau.svg.js',
-                    '!charts/line.js',
-                    '!charts/scatterplot.js',
-                    '!addons/*.js',
-                    '!tau.charts.js',
-                    '!class.js',
-                    '!tau.data.js',
-                    '!tau.data.types.js'
-                ],
+                src: src,
                 dest: "build/<%= pkg.name %>.js"
+            },
+            dev: {
+                cwd: "src/",
+                src: src
             }
         },
         karma: {
@@ -152,7 +156,7 @@ module.exports = function (grunt) {
         },
         watch: {
             files: '<%= jshint.all.src %>',
-            tasks: ['jshint', 'compile']
+            tasks: ['jshint', 'compile:dev']
         }
     });
     // load local tasks
@@ -172,8 +176,8 @@ module.exports = function (grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['bowercopy', 'jshint', 'compile', 'concat', 'uglify']);
-    grunt.registerTask('build', ['less', 'copy', 'cssmin', 'compile', 'concat', 'uglify', 'shell:gitadd']);
-    grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile', 'concat', 'uglify', 'karma:travis']);
-    grunt.registerTask('watching', ['less', 'bowercopy', 'compile', 'concat', 'jshint', 'watch']);
+    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'concat', 'jshint', 'watch']);
+    grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat', 'uglify', 'shell:gitadd']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'concat', 'uglify', 'karma:travis']);
+    grunt.registerTask('watching', ['bowercopy', 'less', 'compile:dev', 'concat', 'jshint', 'watch']);
 };
