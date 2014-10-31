@@ -446,24 +446,9 @@ define("../node_modules/almond/almond", function(){});
 
 
 define('utils/utils',["exports"], function(exports) {
-  var class2type = ["Boolean", "Number", "String", "Function", "Array", "Date", "RegExp", "Object", "Error"].reduce(function (class2type, name) {
-      class2type["[object " + name + "]"] = name.toLowerCase();
-      return class2type;
-  }, {});
-  var toString = {}.toString;
-
   var utils = {
       clone: function(obj) {
         return JSON.parse(JSON.stringify(obj));
-      },
-      type: function(obj) {
-          /* jshint eqnull:true*/
-          if (obj == null) {
-              return obj + "";
-          }
-          return typeof obj === "object" || typeof obj === "function" ?
-          class2type[toString.call(obj)] || "object" :
-              typeof obj;
       },
       isArray: function(obj) {
         return Array.isArray(obj);
@@ -1745,7 +1730,7 @@ define(
     var getOrientation = function(scaleOrient) {
       return _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
     };
-
+    var s;
     var decorateAxisTicks = function(nodeScale, x, size) {
 
         var selection = nodeScale.selectAll('.tick line');
@@ -2101,12 +2086,32 @@ define(
 );
 
 
+define('elements/size',["exports"], function(exports) {
+  var sizeScale = function (values, maxSize) {
+      values = _.filter(values, _.isFinite);
+
+      var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
+      var domainWidth = Math.max(1, domain[1] / domain[0]);
+
+      var range = [Math.max(1, maxSize / (Math.log(domainWidth) + 1)), maxSize];
+
+      return d3
+          .scale
+          .linear()
+          .range(range)
+          .domain(domain);
+  };
+
+  exports.sizeScale = sizeScale;
+});
+
+
 define(
-  'elements/point',["exports", "../utils/utils", "../utils/utils-draw", "../const"],
-  function(exports, _utilsUtils, _utilsUtilsDraw, _const) {
-    var utils = _utilsUtils.utils;
+  'elements/point',["exports", "../utils/utils-draw", "../const", "./size"],
+  function(exports, _utilsUtilsDraw, _const, _size) {
     var utilsDraw = _utilsUtilsDraw.utilsDraw;
     var CSS_PREFIX = _const.CSS_PREFIX;
+    var sizeScale = _size.sizeScale;
     var point = function (node) {
 
         var options = node.options;
@@ -2115,17 +2120,9 @@ define(
         var yScale = options.yScale;
 
         var color = utilsDraw.generateColor(node);
-        var maxAxis = _.max([options.width, options.height]);
-        var sizeValues = node.domain(node.size.scaleDim);
 
-        var size = d3
-            .scale
-            .linear()
-            .range([maxAxis / 200, maxAxis / 100])
-            .domain([
-                Math.min.apply(null, sizeValues),
-                Math.max.apply(null, sizeValues)
-            ]);
+        var maxAxis = _.max([options.width, options.height]);
+        var size = sizeScale(node.domain(node.size.scaleDim), maxAxis / 100);
 
         var update = function () {
             return this
@@ -2155,10 +2152,10 @@ define(
 );
 
 
+
 define(
-  'elements/interval',["exports", "../utils/utils", "../utils/utils-draw", "../const"],
-  function(exports, _utilsUtils, _utilsUtilsDraw, _const) {
-    var utils = _utilsUtils.utils;
+  'elements/interval',["exports", "../utils/utils-draw", "../const"],
+  function(exports, _utilsUtilsDraw, _const) {
     var utilsDraw = _utilsUtilsDraw.utilsDraw;
     var CSS_PREFIX = _const.CSS_PREFIX;
     var _BARGROUP = 'i-role-bar-group';
@@ -2460,14 +2457,13 @@ define(
 
 
 define(
-  'node-map',["exports", "./elements/coords", "./elements/line", "./elements/point", "./elements/interval", "./utils/utils", "./utils/utils-draw", "./elements/coords-parallel", "./elements/coords-parallel-line"],
+  'node-map',["exports", "./elements/coords", "./elements/line", "./elements/point", "./elements/interval", "./utils/utils-draw", "./elements/coords-parallel", "./elements/coords-parallel-line"],
   function(
     exports,
     _elementsCoords,
     _elementsLine,
     _elementsPoint,
     _elementsInterval,
-    _utilsUtils,
     _utilsUtilsDraw,
     _elementsCoordsParallel,
     _elementsCoordsParallelLine) {
@@ -2475,7 +2471,6 @@ define(
     var line = _elementsLine.line;
     var point = _elementsPoint.point;
     var interval = _elementsInterval.interval;
-    var utils = _utilsUtils.utils;
     var utilsDraw = _utilsUtilsDraw.utilsDraw;
     var CoordsParallel = _elementsCoordsParallel.CoordsParallel;
     var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
