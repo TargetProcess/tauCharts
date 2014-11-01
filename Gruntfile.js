@@ -176,8 +176,8 @@ module.exports = function (grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'concat', 'jshint', 'watch']);
+    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch']);
     grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat', 'uglify', 'shell:gitadd']);
-    grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'concat', 'uglify', 'karma:travis']);
-    grunt.registerTask('watching', ['bowercopy', 'less', 'compile:dev', 'concat', 'jshint', 'watch']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
+    grunt.registerTask('watching', ['default']);
 };
