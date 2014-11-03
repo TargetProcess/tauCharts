@@ -44,7 +44,10 @@ define(function (require) {
         "Point element with all params",
         {
             unit: {
-                guide: {},
+                guide: {
+                    x: { tickAutoScale: false },
+                    y: { tickAutoScale: false }
+                },
                 type: 'COORDS.RECT',
                 x: 'x',
                 y: 'y',
@@ -94,6 +97,10 @@ define(function (require) {
                 type: 'COORDS.RECT',
                 x: 'x',
                 y: 'y',
+                guide: {
+                    x: { tickAutoScale: false },
+                    y: { tickAutoScale: false }
+                },
                 unit: [
                     {
                         type: 'ELEMENT.POINT',
@@ -136,6 +143,10 @@ define(function (require) {
                 type: 'COORDS.RECT',
                 x: 'x',
                 y: 'y',
+                guide: {
+                    x: { tickAutoScale: false },
+                    y: { tickAutoScale: false }
+                },
                 unit: [
                     {
                         type: 'ELEMENT.POINT',
@@ -169,6 +180,10 @@ define(function (require) {
                 type: 'COORDS.RECT',
                 x: 'x',
                 y: 'y',
+                guide: {
+                    x: { tickAutoScale: false },
+                    y: { tickAutoScale: false }
+                },
                 unit: [
                     {
                         type: 'ELEMENT.POINT',
@@ -198,6 +213,10 @@ define(function (require) {
             type: 'COORDS.RECT',
             x: 'x',
             y: 'y',
+            guide: {
+                x: { tickAutoScale: false },
+                y: { tickAutoScale: false }
+            },
             unit: [
                 {
                     type: 'ELEMENT.POINT',

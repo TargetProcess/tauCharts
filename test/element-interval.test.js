@@ -50,7 +50,10 @@ define(function (require) {
                         type: 'COORDS.RECT',
                         x: 'x',
                         y: 'y',
-                        guide: {},
+                        guide: {
+                            x: { tickAutoScale: false },
+                            y: { tickAutoScale: false }
+                        },
                         unit: [
                             {
                                 type: 'ELEMENT.INTERVAL',
@@ -123,7 +126,10 @@ define(function (require) {
                         type: 'COORDS.RECT',
                         x: 'size',
                         y: 'color',
-                        guide: {},
+                        guide: {
+                            x: { tickAutoScale: false },
+                            y: { tickAutoScale: false }
+                        },
                         unit: [
                             {
                                 type: 'ELEMENT.INTERVAL',

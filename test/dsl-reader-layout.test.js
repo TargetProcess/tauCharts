@@ -308,8 +308,8 @@ define(function (require) {
                         y: 'effort',
                         guide: {
                             showGridLines: 'xy',
-                            x: {density: 100, tickFormat: 's'},
-                            y: {density: 50, tickFormat: 's'}
+                            x: {density: 100, tickFormat: 's', tickAutoScale: false},
+                            y: {density: 50, tickFormat: 's', tickAutoScale: false}
                         },
                         unit: [
                             {
