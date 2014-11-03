@@ -37,7 +37,7 @@
     <script src="tpStories.js"></script>
 
     <script src="//google.github.io/traceur-compiler/bin/traceur.js"></script>
-    <script src="//raw.githubusercontent.com/ModuleLoader/es6-module-loader/v0.9.4/dist/es6-module-loader.js"></script>
+    <script src="//rawgit.com/ModuleLoader/es6-module-loader/v0.9.4/dist/es6-module-loader.js"></script>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
@@ -106,6 +106,7 @@
             <option value="scatterplot">scatter</option>
             <option value="line">line</option>
             <option selected value="bar">bar</option>
+            <option selected value="horizontalBar">horizontalBar</option>
         </select>
     </label><br/><br/>
     <label>x<input id="x" type="text"/></label><br/><br/>
@@ -273,10 +274,10 @@
             }
             var chart = new m.tauChart.Chart({
                 data: data,
-                type:'horizontalBar', //getFieldData($type),
+                type:getFieldData($type),
                 plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
-                x: ['priority','count'],
                 y: ['team'],
+                x: ['count'],
                 /*guide: {
                  color: color
                  },*/

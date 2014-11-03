@@ -35,7 +35,7 @@ define(function (require) {
         var testData = [
             {x: 'a', y: 1, color: 'red', size: 6},
             {x: 'b', y: 0.5, color: 'green', size: 6},
-            {x: 'c', y: 2, color: 'yellow', size: 8},
+            {x: 'c', y: -2, color: 'yellow', size: 8},
             {x: 'c', y: 5, color: 'green', size: 8}
         ];
 
@@ -51,8 +51,8 @@ define(function (require) {
                         x: 'x',
                         y: 'y',
                         guide: {
-                            x: { tickAutoScale: false },
-                            y: { tickAutoScale: false }
+                            x: {tickAutoScale: false},
+                            y: {tickAutoScale: false}
                         },
                         unit: [
                             {
@@ -83,13 +83,13 @@ define(function (require) {
                 [
                     {
                         "x": "0",
-                        "y": "711"
+                        "y": "457"
                     }
                 ],
                 [
                     {
                         "x": "266.66666666666663",
-                        "y": "800"
+                        "y": "514"
                     },
                     {
                         "x": "533.3333333333334",
@@ -99,7 +99,7 @@ define(function (require) {
                 [
                     {
                         "x": "533.3333333333334",
-                        "y": "533"
+                        "y": "571"
                     }
                 ]
             ]);
@@ -108,10 +108,10 @@ define(function (require) {
 
     describe("ELEMENT.INTERVAL.FLIP", function () {
 
-        var testData = [
+        var testData =  [
             {x: 'a', y: 1, color: 'red', size: 6},
             {x: 'b', y: 0.5, color: 'green', size: 6},
-            {x: 'c', y: 2, color: 'yellow', size: 8},
+            {x: 'c', y: -2, color: 'yellow', size: 8},
             {x: 'c', y: 5, color: 'green', size: 8}
         ];
 
@@ -124,18 +124,18 @@ define(function (require) {
                 spec: {
                     unit: {
                         type: 'COORDS.RECT',
-                        x: 'size',
-                        y: 'color',
+                        x: 'y',
+                        y: 'x',
                         guide: {
-                            x: { tickAutoScale: false },
-                            y: { tickAutoScale: false }
+                            x: {tickAutoScale: false},
+                            y: {tickAutoScale: false}
                         },
                         unit: [
                             {
                                 type: 'ELEMENT.INTERVAL',
-                                x: 'x',
+                                x: 'y',
                                 flip: true,
-                                y: 'y',
+                                y: 'x',
                                 color: 'color'
                             }
                         ]
@@ -158,24 +158,24 @@ define(function (require) {
                 //generate with help generateCoordIfChangeDesign
                 [
                     {
-                        "x": "0",
-                        "y": "611"
+                        "x": "229",
+                        "y": "533.3333333333333"
                     }
                 ],
                 [
                     {
-                        "x": "0",
-                        "y": "700"
+                        "x": "229",
+                        "y": "266.66666666666663"
                     },
                     {
-                        "x": "0",
-                        "y": "-100"
+                        "x": "229",
+                        "y": "-8.526512829121202e-14"
                     }
                 ],
                 [
                     {
                         "x": "0",
-                        "y": "433"
+                        "y": "-8.526512829121202e-14"
                     }
                 ]
             ]);
