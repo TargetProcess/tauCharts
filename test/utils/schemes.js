@@ -69,7 +69,9 @@ define(['js-schema'],function(schema){
 
             })
         });
+        schemes.dimensions = dimensions;
         schemes.point = point;
+        schemes.interval = interval;
         schemes.bar = bar;
         schemes.line = lineSpec;
         schemes.scatterplot = scatterplot

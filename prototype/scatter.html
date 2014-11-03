@@ -37,7 +37,7 @@
     <script src="tpStories.js"></script>
 
     <script src="//google.github.io/traceur-compiler/bin/traceur.js"></script>
-    <script src="//rawgit.com/ModuleLoader/es6-module-loader/v0.9.2/dist/es6-module-loader.js"></script>
+    <script src="//raw.githubusercontent.com/ModuleLoader/es6-module-loader/v0.9.4/dist/es6-module-loader.js"></script>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
@@ -103,7 +103,7 @@
     <label>
         type
         <select id="type">
-            <option  value="scatterplot">scatter</option>
+            <option value="scatterplot">scatter</option>
             <option value="line">line</option>
             <option selected value="bar">bar</option>
         </select>
@@ -125,15 +125,174 @@
     <table id="table"></table>
 </div>
 <script>
-/** @class Tooltip
- * @extends Plugin */
-/* Usage
- .plugins(tau.plugins.tooltip('effort', 'priority'))
- accepts a list of data fields names as properties
- */
-var Tooltip = {
+    /** @class Tooltip
+     * @extends Plugin */
+    /* Usage
+     .plugins(tau.plugins.tooltip('effort', 'priority'))
+     accepts a list of data fields names as properties
+     */
+    var Tooltip = {
 
-    init: function (data) {
+        init: function (data) {
+            function generateTable(data) {
+                var headers = Object.keys(data[0]);
+                var rows = data.map(function (item, key) {
+                    var map = headers.map(function (key) {
+                        return item[key];
+                    });
+                    map['key'] = JSON.stringify(item);
+                    return map;
+                });
+                var $table = $('#table');
+                $table.empty();
+                var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
+                $table.append(rowHtml);
+                var keyValue = {};
+                var s = _.each(rows, function (arr, index) {
+                    var rowHtml = '<tr >';
+                    rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
+                    keyValue[arr.key] = {
+                        $el: $(rowHtml),
+                        index: index
+                    };
+
+
+                    $table.append(keyValue[arr.key].$el);
+                });
+
+
+                //debugger
+                return {
+                    keyValues: keyValue,
+                    $table: $table
+                };
+            }
+
+            var generateTable2 = generateTable(data);
+            this.keyValues = generateTable2.keyValues;
+            this.table = generateTable2.$table;
+        },
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseover: function (context, tools) {
+            this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
+            // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
+        },
+        render: function (context) {
+            var $points = $(context.node()).find('circle');
+            this.table.find('tr')
+                    .on('mouseover', function () {
+                        $points.get(($(this).index() - 1)).classList.add('highlighted');
+                    })
+                    .on('mouseleave', function () {
+                        $points.each(function () {
+                            this.classList.remove('highlighted');
+                        });
+                    });
+        },
+
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseout: function (context, tools) {
+            $('tr').removeClass('highClass');
+        }
+    };
+
+    tau.plugins.add('tableHighlight', Tooltip);
+    System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
+    System.paths['underscore'] = '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js';
+    System.paths['d3'] = '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js';
+    System.import('tau.newCharts').then(function (m) {
+        var defData = [
+            {team: 'myTeam2', count: 20, priority: 'low'},
+            {team: 'myTeam', count: 6, priority: 'low'},
+            {team: 'myTeam3', count: 3, priority: 'low'},
+            {team: 'myTeam3', count: 4, priority: 'high'},
+            {team: 'myTeam1', count: 5, priority: 'low'}
+        ];
+
+        function getFieldData($field) {
+            try {
+                return JSON.parse($field.val())
+            } catch (e) {
+                return $field.val();
+            }
+
+        }
+
+        var $color = $('#color').val('team');
+        var $type = $('#type');
+        var $size = $('#size').val('count');
+        var $y = $('#y').val('count');
+        var $x = $('#x').val('team');
+        var $data = $('#data').val(JSON.stringify(defData));
+        $('#colorSettings').click(function () {
+            return $color.val(JSON.stringify({
+                dimension: 'team',
+                brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
+            }))
+        });
+        $('select,input[type=checkbox]').change(function () {
+            try {
+                drawChart();
+            } catch (e) {
+                $('#chart-container').empty();
+                console.error(e);
+            }
+        });
+        $('textarea,input').on('input', function () {
+            try {
+                drawChart();
+            } catch (e) {
+                $('#chart-container').empty();
+                console.error(e);
+            }
+        });
+        try {
+            drawChart();
+        } catch (e) {
+            $('#chart-container').empty();
+            console.error(e);
+        }
+
+        function drawChart() {
+            var data = JSON.parse($data.val());
+            $('#chart-container').empty();
+            var color;
+            if ($('#brewer').prop('checked')) {
+                color = {
+                    dimension: getFieldData($color),
+                    brewer: tauBrewer(getFieldData($('#hue')), getFieldData($('#number')))
+                }
+            } else {
+                color = getFieldData($color)
+            }
+            var chart = new m.tauChart.Chart({
+                data: data,
+                type:'horizontalBar', //getFieldData($type),
+                plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
+                x: ['priority','count'],
+                y: ['team'],
+                /*guide: {
+                 color: color
+                 },*/
+                color: 'priority',
+                size: getFieldData($size)
+            });
+
+
+            chart.renderTo(
+                    '#chart-container',
+                    {
+                        width: 600,
+                        height: 600
+                    });
+        }
+
         function generateTable(data) {
             var headers = Object.keys(data[0]);
             var rows = data.map(function (item, key) {
@@ -148,175 +307,18 @@ var Tooltip = {
             var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
             $table.append(rowHtml);
             var keyValue = {};
-            var s = _.each(rows, function (arr, index) {
+            var s = _.each(rows, function (arr) {
                 var rowHtml = '<tr >';
                 rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
-                keyValue[arr.key] = {
-                    $el: $(rowHtml),
-                    index: index
-                };
-
-
-                $table.append(keyValue[arr.key].$el);
+                keyValue[arr.key] = $(rowHtml);
+                $table.append(keyValue[arr.key]);
             });
 
 
-            //debugger
-            return {
-                keyValues: keyValue,
-                $table: $table
-            };
+            return keyValue;
         }
 
-        var generateTable2 = generateTable(data);
-        this.keyValues = generateTable2.keyValues;
-        this.table = generateTable2.$table;
-    },
-    /**
-     * @param {ElementContext} context
-     * @param {ChartElementTools} tools
-     */
-    mouseover: function (context, tools) {
-        this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
-        // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
-    },
-    render: function (context) {
-        var $points = $(context.node()).find('circle');
-        this.table.find('tr')
-                .on('mouseover', function () {
-                    $points.get(($(this).index() - 1)).classList.add('highlighted');
-                })
-                .on('mouseleave', function () {
-                    $points.each(function () {
-                        this.classList.remove('highlighted');
-                    });
-                });
-    },
-
-    /**
-     * @param {ElementContext} context
-     * @param {ChartElementTools} tools
-     */
-    mouseout: function (context, tools) {
-        $('tr').removeClass('highClass');
-    }
-};
-
-tau.plugins.add('tableHighlight', Tooltip);
-System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
-System.import('tau.newCharts').then(function (m) {
-    var defData = [
-        {team:'myTeam2',count:20,priority:'low'},
-        {team:'myTeam',count:6,priority:'low'},
-        {team:'myTeam3',count:3,priority:'low'},
-        {team:'myTeam3',count:4,priority:'high'},
-        {team:'myTeam1',count:5,priority:'low'}
-    ];
-
-    function getFieldData($field) {
-        try {
-            return JSON.parse($field.val())
-        } catch (e) {
-            return $field.val();
-        }
-
-    }
-
-    var $color = $('#color').val('team');
-    var $type = $('#type');
-    var $size = $('#size').val('count');
-    var $y = $('#y').val('count');
-    var $x = $('#x').val('team');
-    var $data = $('#data').val(JSON.stringify(defData));
-    $('#colorSettings').click(function () {
-        return $color.val(JSON.stringify({
-            dimension: 'team',
-            brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
-        }))
-    });
-    $('select,input[type=checkbox]').change(function () {
-        try {
-            drawChart();
-        } catch (e) {
-            $('#chart-container').empty();
-            console.error(e);
-        }
-    });
-    $('textarea,input').on('input', function () {
-        try {
-            drawChart();
-        } catch (e) {
-            $('#chart-container').empty();
-            console.error(e);
-        }
-    });
-    try {
-        drawChart();
-    } catch (e) {
-        $('#chart-container').empty();
-        console.error(e);
-    }
-
-    function drawChart() {
-        var data = JSON.parse($data.val());
-        $('#chart-container').empty();
-        var color;
-        if ($('#brewer').prop('checked')) {
-            color = {
-                dimension: getFieldData($color),
-                brewer: tauBrewer(getFieldData($('#hue')), getFieldData($('#number')))
-            }
-        } else {
-            color = getFieldData($color)
-        }
-        var chart = new m.tauChart.Chart({
-            data: data,
-            type: getFieldData($type),
-            plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
-            x: getFieldData($x),
-            y: getFieldData($y),
-            /*guide: {
-                color: color
-            },*/
-            color: 'priority',
-            size: getFieldData($size)
-        });
-
-
-        chart.renderTo(
-                '#chart-container',
-                {
-                    width: 600,
-                    height: 600
-                });
-    }
-
-    function generateTable(data) {
-        var headers = Object.keys(data[0]);
-        var rows = data.map(function (item, key) {
-            var map = headers.map(function (key) {
-                return item[key];
-            });
-            map['key'] = JSON.stringify(item);
-            return map;
-        });
-        var $table = $('#table');
-        $table.empty();
-        var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
-        $table.append(rowHtml);
-        var keyValue = {};
-        var s = _.each(rows, function (arr) {
-            var rowHtml = '<tr >';
-            rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
-            keyValue[arr.key] = $(rowHtml);
-            $table.append(keyValue[arr.key]);
-        });
-
-
-        return keyValue;
-    }
-
-})
+    })
 </script>
 </body>
 </html>

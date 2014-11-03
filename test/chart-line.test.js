@@ -19,6 +19,6 @@ define(function (require) {
             });
             assert.equal(schemes.line.errors(line.config.spec), false, 'spec right');
 
-        })
+        });
     });
 });
