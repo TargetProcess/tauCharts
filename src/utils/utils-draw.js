@@ -119,7 +119,7 @@ var fnDrawGrid = function (node, H, W) {
 var generateColor = function (node) {
     var defaultRange = _.times(10, (i) => 'color10-' + (1 + i));
     var range, domain;
-    var colorGuide = (node.guide || {}).color || {};
+    var colorGuide = node.guide.color || {};
     var colorParam = node.color;
 
     var colorDim = colorParam.scaleDim;

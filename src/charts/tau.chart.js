@@ -1,16 +1,12 @@
 import {Plot} from './tau.plot';
 
 function convertAxis(data) {
-    if (!data) {
-        return null;
-    }
-
-    return data;
+    return (!data) ? null : data;
 }
 
 function generateSimpleConfig(type, config) {
     var chartConfig = _.omit(config, 'spec');
-    var colorGuide = config.guide && config.guide.color || {};
+    var colorGuide = (config.guide || {}).color || {};
     var element = {
         type: type,
         x: config.x,
