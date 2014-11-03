@@ -519,7 +519,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#scatter-fit-container');
+            }).renderTo('#scatter-auto-scale-container');
 
     var scatterAutoScaleChart = new tauChart.Plot(
             {
@@ -539,12 +539,12 @@
                             x: {
                                 padding: 8,
                                 label: 'Cycle Time',
-                                tickAutoScale: true
+                                tickAutoScale: false
                             },
                             y: {
                                 padding: 8,
                                 label: 'Effort',
-                                tickAutoScale: true
+                                tickAutoScale: false
                             }
                         },
                         x: 'cycleTime',
@@ -563,7 +563,7 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#scatter-auto-scale-container');
+            }).renderTo('#scatter-fit-container');
 
     var complexChart = new tauChart.Plot(
             {
