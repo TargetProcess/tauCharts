@@ -123,7 +123,7 @@
   stroke-width: 1px;
   shape-rendering: crispEdges;
 }
-.graphical-report__svg .grid__line path {
+.graphical-report__svg .grid .line path {
   shape-rendering: geometricPrecision;
 }
 .graphical-report__svg .label {
