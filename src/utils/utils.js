@@ -1,12 +1,15 @@
 var utils = {
     clone: (obj) => JSON.parse(JSON.stringify(obj)),
-    isArray: (obj)=>Array.isArray(obj),
+    isArray: (obj) => Array.isArray(obj),
 
     autoScale: (domain) => {
 
         var m = 10;
 
-        var extent = [Math.min.apply(null, domain), Math.max.apply(null, domain)];
+        var low = Math.min.apply(null, domain);
+        var top = Math.max.apply(null, domain);
+
+        var extent = [low, top];
         var span = extent[1] - extent[0];
         var step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10));
         var err = m / span * step;
@@ -26,18 +29,27 @@ var utils = {
         extent[0] = Math.floor(extent[0] / step) * step;
         extent[1] = Math.ceil(extent[1] / step) * step;
 
-        var deltaLow = domain[0] - extent[0];
-        var deltaTop = extent[1] - domain[1];
+        var deltaLow = low - extent[0];
+        var deltaTop = extent[1] - top;
 
-        var limit = (step / 10);
+        var limit = (step / 2);
 
-        extent[0] = (deltaLow <= limit) ? (extent[0] - step) : extent[0];
-        extent[1] = (deltaTop <= limit) ? (extent[1] + step) : extent[1];
+        if (low >= 0) {
+            // include 0 by default
+            extent[0] = 0;
+        }
+        else {
+            var koeffLow = (deltaLow <= limit) ? step : 0;
+            extent[0] = (extent[0] - koeffLow);
+        }
 
-        // include 0 by default
-        extent[0] = Math.min(0, extent[0]);
+        var koeffTop = (deltaTop <= limit) ? step : 0;
+        extent[1] = extent[1] + koeffTop;
 
-        return extent;
+        return [
+            parseFloat(extent[0].toFixed(15)),
+            parseFloat(extent[1].toFixed(15))
+        ];
     }
 };
 
