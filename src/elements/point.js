@@ -1,5 +1,6 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
+import {sizeScale} from './size';
 var point = function (node) {
 
     var options = node.options;
@@ -8,17 +9,9 @@ var point = function (node) {
     var yScale = options.yScale;
 
     var color = utilsDraw.generateColor(node);
-    var maxAxis = _.max([options.width, options.height]);
-    var sizeValues = node.domain(node.size.scaleDim);
 
-    var size = d3
-        .scale
-        .linear()
-        .range([maxAxis / 200, maxAxis / 100])
-        .domain([
-            Math.min.apply(null, sizeValues),
-            Math.max.apply(null, sizeValues)
-        ]);
+    var maxAxis = _.max([options.width, options.height]);
+    var size = sizeScale(node.domain(node.size.scaleDim), maxAxis / 100);
 
     var update = function () {
         return this

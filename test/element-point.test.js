@@ -15,195 +15,266 @@ define(function (require) {
         {x: 2, y: 2, color: 'green', size: 8}
     ];
 
-    describe("Point element with all params", function () {
-        var element;
-        var chart;
-        beforeEach(function () {
-            element = document.createElement('div');
-            document.body.appendChild(element);
-            chart = new tauChart.Plot({
-                spec: {
-                    unit: {
-                        guide: {},
-                        type: 'COORDS.RECT',
-                        x: 'x',
-                        y: 'y',
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT',
-                                x: 'x',
-                                y: 'y',
-                                color: 'color',
-                                size: 'size'
-                            }
-                        ]
-                    }
-                },
-                data: testData
+    var describeChart = function (name, spec, data, fn) {
+        describe(name, function () {
+            var context = {
+                element: null,
+                chart: null
+            };
+
+            beforeEach(function () {
+                context.element = document.createElement('div');
+                document.body.appendChild(context.element);
+                context.chart = new tauChart.Plot({
+                    spec: spec,
+                    data: data
+                });
+                context.chart.renderTo(context.element, {width: 800, height: 800});
             });
-            chart.renderTo(element, {width: 800, height: 800});
 
+            fn(context);
 
-        });
-        afterEach(function () {
-            element.parentNode.removeChild(element);
-        });
-        it("should right spec", function () {
-            assert.ok(schemes.scatterplot(chart.config.spec), 'spec is right');
-        });
-        it("should render point with right cord", function () {
-            var dots = getDots();
-            expect(dots.length).to.equal(3);
-            expect(position(dots[1])).to.deep.equal({x: '50', y: '750'});
-            expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
-        });
-        it("should render point with right size", function () {
-            var dots = getDots();
-            var size1 = attrib(dots[0], 'r');
-            var size2 = attrib(dots[1], 'r');
-            var size3 = attrib(dots[2], 'r');
-            assert.equal(size1, size2, 'size should same');
-            assert.notEqual(size1, size3, 'size shouldn\'t same');
-        });
-        it("should render point with right color", function () {
-            var dots = getDots();
-            var size1 = attrib(dots[0], 'class');
-            var size2 = attrib(dots[1], 'class');
-            var size3 = attrib(dots[2], 'class');
-            assert.equal(size2, size3, 'size should same');
-            assert.notEqual(size1, size2, 'size shouldn\'t same');
-        });
-    });
-    describe("Point element without color and size params", function () {
-        var element;
-        beforeEach(function () {
-            element = document.createElement('div');
-            document.body.appendChild(element);
-            new tauChart.Plot({
-                spec: {
-                    unit: {
-                        type: 'COORDS.RECT',
+            afterEach(function () {
+                context.element.parentNode.removeChild(context.element);
+            });
+        })
+    };
+
+    describeChart(
+        "Point element with all params",
+        {
+            unit: {
+                guide: {},
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT',
                         x: 'x',
                         y: 'y',
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT',
-                                x: 'x',
-                                y: 'y'
-                            }
-                        ]
+                        color: 'color',
+                        size: 'size'
                     }
-                },
-                data: testData
-            }).renderTo(element, {width: 800, height: 800});
-        });
-        afterEach(function () {
-            element.parentNode.removeChild(element);
+                ]
+            }
+        }
+        , testData
+        , function (context) {
+            it("should right spec", function () {
+                assert.ok(schemes.scatterplot(context.chart.config.spec), 'spec is right');
+            });
+            it("should render point with right cord", function () {
+                var dots = getDots();
+                expect(dots.length).to.equal(3);
+                expect(position(dots[1])).to.deep.equal({x: '50', y: '750'});
+                expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
+            });
+            it("should render point with right size", function () {
+                var dots = getDots();
+                var size1 = attrib(dots[0], 'r');
+                var size2 = attrib(dots[1], 'r');
+                var size3 = attrib(dots[2], 'r');
+                assert.equal(size1, size2, 'size should same');
+                assert.notEqual(size1, size3, 'size shouldn\'t same');
+            });
+            it("should render point with right color", function () {
+                var dots = getDots();
+                var size1 = attrib(dots[0], 'class');
+                var size2 = attrib(dots[1], 'class');
+                var size3 = attrib(dots[2], 'class');
+                assert.equal(size2, size3, 'size should same');
+                assert.notEqual(size1, size2, 'size shouldn\'t same');
+            });
         });
 
-        it("should render point with right cord", function () {
-            var dots = getDots();
-            expect(dots.length).to.equal(3);
-            expect(position(dots[1])).to.deep.equal({x: '50', y: '750'});
-            expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
+    describeChart("Point element without color and size params",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT',
+                        x: 'x',
+                        y: 'y'
+                    }
+                ]
+            }
+        },
+        testData,
+        function (context) {
+            it("should render point with right cord", function () {
+                var dots = getDots();
+                expect(dots.length).to.equal(3);
+                expect(position(dots[1])).to.deep.equal({x: '50', y: '750'});
+                expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
+            });
+            it("should render point with right size", function () {
+                var dots = getDots();
+                var size1 = attrib(dots[0], 'r');
+                var size2 = attrib(dots[1], 'r');
+                var size3 = attrib(dots[2], 'r');
+                assert.equal(size1, size2, 'size should same');
+                assert.equal(size1, size3, 'size should same');
+            });
+            it("should render point with right color", function () {
+                var dots = getDots();
+                var size1 = attrib(dots[0], 'class');
+                var size2 = attrib(dots[1], 'class');
+                var size3 = attrib(dots[2], 'class');
+                assert.equal(size2, size3, 'size should same');
+                assert.equal(size1, size2, 'size should same');
+            });
         });
-        it("should render point with right size", function () {
-            var dots = getDots();
-            var size1 = attrib(dots[0], 'r');
-            var size2 = attrib(dots[1], 'r');
-            var size3 = attrib(dots[2], 'r');
-            assert.equal(size1, size2, 'size should same');
-            assert.equal(size1, size3, 'size should same');
-        });
-        it("should render point with right color", function () {
-            var dots = getDots();
-            var size1 = attrib(dots[0], 'class');
-            var size2 = attrib(dots[1], 'class');
-            var size3 = attrib(dots[2], 'class');
-            assert.equal(size2, size3, 'size should same');
-            assert.equal(size1, size2, 'size should same');
-        });
-    });
 
-    describe("Point element color was presented  with brewer as object", function () {
-        var element;
-        beforeEach(function () {
-            element = document.createElement('div');
-            document.body.appendChild(element);
-            new tauChart.Plot({
-                spec: {
-                    unit: {
-                        type: 'COORDS.RECT',
+    describeChart(
+        "Point element color was presented  with brewer as object",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT',
                         x: 'x',
                         y: 'y',
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT',
-                                x: 'x',
-                                y: 'y',
-                                color: 'color',
-                                guide: {
-                                    color: {
-                                        brewer: {red: 'red', green: 'green', blue: 'blue'}
-                                    }
-                                }
+                        color: 'color',
+                        guide: {
+                            color: {
+                                brewer: {red: 'red', green: 'green', blue: 'blue'}
                             }
-                        ]
+                        }
                     }
-                },
-                data: testData.concat({x: 3, y: 3, color: 'blue', size: 8})
-            }).renderTo(element, {width: 800, height: 800});
-        });
-        afterEach(function () {
-            element.parentNode.removeChild(element);
+                ]
+            }
+        },
+        testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
+        function () {
+            it("should render point with right color", function () {
+                var dots = getDots();
+                assert.ok(hasClass(dots[0], 'red'), 'has red class');
+                assert.ok(hasClass(dots[1], 'green'), 'has green class');
+                assert.ok(hasClass(dots[2], 'green'), 'has green class');
+                assert.ok(hasClass(dots[3], 'blue'), 'has blue class');
+            });
         });
 
-        it("should render point with right color", function () {
-            var dots = getDots();
-            assert.ok(hasClass(dots[0], 'red'), 'has red class');
-            assert.ok(hasClass(dots[1], 'green'), 'has green class');
-            assert.ok(hasClass(dots[2], 'green'), 'has green class');
-            assert.ok(hasClass(dots[3], 'blue'), 'has blue class');
-        });
-    });
-
-    describe("Point element color was presented  with brewer as array", function () {
-        var element;
-        beforeEach(function () {
-            element = document.createElement('div');
-            document.body.appendChild(element);
-            new tauChart.Plot({
-                spec: {
-                    unit: {
-                        type: 'COORDS.RECT',
+    describeChart(
+        "Point element color was presented  with brewer as array",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT',
                         x: 'x',
                         y: 'y',
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT',
-                                x: 'x',
-                                y: 'y',
-                                color: 'color',
-                                guide: {
-                                    color: {brewer: tauBrewer('YlGn', 3)}
-                                }
-                            }
-                        ]
+                        color: 'color',
+                        guide: {
+                            color: {brewer: tauBrewer('YlGn', 3)}
+                        }
                     }
-                },
-                data: testData.concat({x: 3, y: 3, color: 'blue', size: 8})
-            }).renderTo(element, {width: 800, height: 800});
-        });
-        afterEach(function () {
-            element.parentNode.removeChild(element);
+                ]
+            }
+        },
+        testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
+        function () {
+            it("should render point with right color", function () {
+                var dots = getDots();
+                assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
+                assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
+                assert.ok(hasClass(dots[2], 'YlGn q1-3'), 'has brewer class');
+                assert.ok(hasClass(dots[3], 'YlGn q2-3'), 'has brewer class');
+            });
         });
 
-        it("should render point with right color", function () {
-            var dots = getDots();
-            assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
-            assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
-            assert.ok(hasClass(dots[2], 'YlGn q1-3'), 'has brewer class');
-            assert.ok(hasClass(dots[3], 'YlGn q2-3'), 'has brewer class');
+    var scatterplotSpec = {
+        unit: {
+            type: 'COORDS.RECT',
+            x: 'x',
+            y: 'y',
+            unit: [
+                {
+                    type: 'ELEMENT.POINT',
+                    size: 'size'
+                }
+            ]
+        }
+    };
+
+    var getAttr = function(attrName){
+        return function(element) {
+            return d3.select(element).attr(attrName);
+        }
+    };
+
+    describeChart(
+        "Point elements with large size domain",
+        scatterplotSpec,
+        [{x: 0, y: 0, size: 8}, {x:1, y: 1, size: 800}],
+        function(){
+            it("should have sizes in large range", function(){
+                var sizes = getDots().map(getAttr('r')).map(parseFloat);
+                expect(sizes[0]).to.be.closeTo(1, 1);
+                expect(sizes[1]).to.be.closeTo(8, 1);
+            })
         });
-    });
+
+    describeChart(
+        "Point element with small size domain",
+        scatterplotSpec,
+        [{x: 0, y: 0, size: 8}, {x:1, y: 1, size: 16}],
+        function(){
+            it("should have sizes in small range", function(){
+                var sizes = getDots().map(getAttr('r')).map(parseFloat);
+                expect(sizes[0]).to.be.closeTo(5, 1);
+                expect(sizes[1]).to.be.closeTo(8, 1);
+            })
+        });
+
+    describeChart(
+        "Point elements with  size domain values in [0..1]",
+        scatterplotSpec,
+        [{x: 0, y: 0, size: 0.08}, {x:1, y: 1, size: 0.16}],
+        function(){
+            it("should have proportional sizes", function(){
+                var sizes = getDots().map(getAttr('r')).map(parseFloat);
+                expect(sizes[0]).to.be.closeTo(5, 1);
+                expect(sizes[1]).to.be.closeTo(8, 1);
+            })
+        });
+
+    describeChart(
+        "Point elements with  size domain values including 0",
+        scatterplotSpec,
+        [{x: 0, y: 0, size: 0}, {x:1, y: 1, size: 5}, {x:1, y: 1, size: 8}],
+        function(){
+            it("should have sizes in large range", function(){
+                var sizes = getDots().map(getAttr('r')).map(parseFloat);
+                expect(sizes[0]).to.be.closeTo(2, 1);
+                expect(sizes[1]).to.be.closeTo(6, 1);
+                expect(sizes[2]).to.be.closeTo(8, 1);
+            })
+        });
+
+    describeChart(
+        "Point element with size domain values including not only finite values",
+        scatterplotSpec,
+        [{x: 0, y: 0, size: 0}, {x:1, y: 1, size: 10}, {x:1, y: 1, size: null}, {x:1, y: 1, size: Infinity}],
+        function(){
+            it("should map Infinity to maximum size", function(){
+                var sizes = getDots().map(getAttr('r')).map(parseFloat);
+                expect(sizes[3]).to.be.closeTo(sizes[1], 0.1);
+            });
+
+            it("should map null to maximum size", function(){
+                var sizes = getDots().map(getAttr('r')).map(parseFloat);
+                expect(sizes[2]).to.be.closeTo(sizes[0], 0.1);
+            });
+        })
 });
