@@ -12,20 +12,19 @@ var rangeMethods = {
     },
 
     'linear': (inputValues, interval, props) => {
+        var domainParam = (props.tickAutoScale) ?
+            utils.autoScale(inputValues) :
+            d3.extent(inputValues);
 
-            var domainParam = (props.tickAutoScale) ?
-                utils.autoScale(inputValues) :
-                d3.extent(inputValues);
+        var min = _.isNumber(props.min) ? props.min : domainParam[0];
+        var max = _.isNumber(props.max) ? props.max : domainParam[1];
 
-            var min = _.isNumber(props.min) ? props.min : domainParam[0];
-            var max = _.isNumber(props.max) ? props.max : domainParam[1];
+        var range = [
+            Math.min(min, domainParam[0]),
+            Math.max(max, domainParam[1])
+        ];
 
-            var range = [
-                Math.min(min, domainParam[0]),
-                Math.max(max, domainParam[1])
-            ];
-
-            return d3.scale.linear().domain(range).rangeRound(interval, 1);
+        return d3.scale.linear().domain(range).rangeRound(interval, 1);
     },
 
     'period': (inputValues, interval, props) => {

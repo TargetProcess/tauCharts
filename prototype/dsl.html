@@ -135,7 +135,11 @@
     <div class="cc-empty"></div>
 </div>
 
-<div id="simple-container" class="cc">
+<div id="scatter-fit-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
+<div id="scatter-auto-scale-container" class="cc">
     <div class="cc-empty"></div>
 </div>
 
@@ -389,12 +393,14 @@
                             padding: {l:40, r:0, t:8, b:60},
                             showGridLines: 'xy',
                             x: {
+                                tickAutoScale: true,
                                 tickFormat: 'month',
                                 tickPeriod: 'month',
                                 rotate: 45,
                                 textAnchor: 'start'
                             },
                             y: {
+                                tickAutoScale: true,
                                 tickFormat: 's'
                             }
                         },
@@ -505,7 +511,7 @@
                 ]
             }).renderTo('#facet-of-facets-container');
 
-    var scatterChart = new tauChart.Plot(
+    var scatterFitChart = new tauChart.Plot(
             {
                 data: rawData,
                 spec: scatter,
@@ -513,7 +519,51 @@
                     tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tau.plugins.highlighter()
                 ]
-            }).renderTo('#simple-container');
+            }).renderTo('#scatter-fit-container');
+
+    var scatterAutoScaleChart = new tauChart.Plot(
+            {
+                data: rawData,
+                spec: {
+                    dimensions: {
+                        project: { type: 'category' },
+                        team: { type: 'category' },
+                        cycleTime: { type: 'measure' },
+                        effort: { type: 'measure' }
+                    },
+                    unit: {
+                        type: 'COORDS.RECT',
+                        guide: {
+                            showGridLines: 'xy',
+                            padding: { l:56, b:46, r:8, t:8 },
+                            x: {
+                                padding: 8,
+                                label: 'Cycle Time',
+                                tickAutoScale: true
+                            },
+                            y: {
+                                padding: 8,
+                                label: 'Effort',
+                                tickAutoScale: true
+                            }
+                        },
+                        x: 'cycleTime',
+                        y: 'effort',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT',
+                                color: 'effort',
+                                size: 'cycleTime',
+                                shape: null
+                            }
+                        ]
+                    }
+                },
+                plugins: [
+                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tau.plugins.highlighter()
+                ]
+            }).renderTo('#scatter-auto-scale-container');
 
     var complexChart = new tauChart.Plot(
             {

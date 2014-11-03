@@ -94,7 +94,7 @@ var coords = {
             min: node.y.guide.tickMin,
             max: node.y.guide.tickMax,
             period: node.y.guide.tickPeriod,
-            tickAutoScale: node.x.guide.tickAutoScale
+            tickAutoScale: node.y.guide.tickAutoScale
         };
         node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 
