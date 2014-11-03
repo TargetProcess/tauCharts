@@ -84,7 +84,8 @@ var coords = {
             map: node.x.guide.tickLabel,
             min: node.x.guide.tickMin,
             max: node.x.guide.tickMax,
-            period: node.x.guide.tickPeriod
+            period: node.x.guide.tickPeriod,
+            tickAutoScale: node.x.guide.tickAutoScale
         };
         node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
 
@@ -92,7 +93,8 @@ var coords = {
             map: node.y.guide.tickLabel,
             min: node.y.guide.tickMin,
             max: node.y.guide.tickMax,
-            period: node.y.guide.tickPeriod
+            period: node.y.guide.tickPeriod,
+            tickAutoScale: node.x.guide.tickAutoScale
         };
         node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 

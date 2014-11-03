@@ -331,8 +331,11 @@ define(function (require) {
 
             var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
 
+            var ticksCountX = 4;
+            var ticksCountY = 5;
+
             var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
-            expect(xAxisTickLines.length).to.equal(5);
+            expect(xAxisTickLines.length).to.equal(ticksCountX);
             xAxisTickLines.forEach(function (el) {
                 var expectedXCoord = '0';
                 expect(el.getAttribute('x1')).to.equal(null);
@@ -340,7 +343,7 @@ define(function (require) {
             });
 
             var yAxisTickLines = layoutCanvas.selectAll('.cell .y.axis .tick line')[0];
-            expect(yAxisTickLines.length).to.equal(5);
+            expect(yAxisTickLines.length).to.equal(ticksCountY);
             yAxisTickLines.forEach(function (el) {
                 var expectedYCoord = '0';
                 expect(el.getAttribute('y1')).to.equal(null);
@@ -348,7 +351,7 @@ define(function (require) {
             });
 
             var xGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-x .tick line')[0];
-            expect(xGridTickLines.length).to.equal(5);
+            expect(xGridTickLines.length).to.equal(ticksCountX);
             xGridTickLines.forEach(function (el) {
                 var expectedXCoords = '0';
                 expect(el.getAttribute('x1')).to.equal(null);
@@ -359,7 +362,7 @@ define(function (require) {
             });
 
             var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
-            expect(yGridTickLines.length).to.equal(5);
+            expect(yGridTickLines.length).to.equal(ticksCountY);
             yGridTickLines.forEach(function (el) {
                 var expectedYCoords = '0';
 
