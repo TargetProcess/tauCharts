@@ -139,6 +139,49 @@ var generateColor = function (node) {
         dimension:colorDim
     };
 };
+
+var applyNodeDefaults = (node) => {
+    node.options = node.options || {};
+    node.guide = node.guide || {};
+    node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
+
+    node.guide.x = _.defaults(node.guide.x || {}, {
+        label: '',
+        padding: 0,
+        density: 30,
+        cssClass: 'x axis',
+        scaleOrient: 'bottom',
+        rotate: 0,
+        textAnchor: 'middle',
+        tickPeriod: null,
+        tickFormat: null,
+        autoScale: true
+    });
+    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
+    node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
+
+    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
+
+    node.guide.y = _.defaults(node.guide.y || {}, {
+        label: '',
+        padding: 0,
+        density: 30,
+        cssClass: 'y axis',
+        scaleOrient: 'left',
+        rotate: 0,
+        textAnchor: 'end',
+        tickPeriod: null,
+        tickFormat: null,
+        autoScale: true
+    });
+    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
+    node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
+
+    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
+
+    return node;
+};
+
 /* jshint ignore:start */
 var utilsDraw = {
     translate,
@@ -146,7 +189,8 @@ var utilsDraw = {
     getOrientation,
     fnDrawDimAxis,
     fnDrawGrid,
-    generateColor
+    generateColor,
+    applyNodeDefaults
 };
 /* jshint ignore:end */
 

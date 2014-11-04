@@ -1,53 +1,12 @@
 import {utils} from './utils/utils';
+import {utilsDraw} from './utils/utils-draw';
 import {TMatrix} from './matrix';
-
-var applyNodeDefaults = (node) => {
-    node.options = node.options || {};
-    node.guide = node.guide || {};
-    node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
-
-    node.guide.x = _.defaults(node.guide.x || {}, {
-        label: '',
-        padding: 0,
-        density: 30,
-        cssClass: 'x axis',
-        scaleOrient: 'bottom',
-        rotate: 0,
-        textAnchor: 'middle',
-        tickPeriod: null,
-        tickFormat: null,
-        autoScale: true
-    });
-    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
-    node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
-
-    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
-
-    node.guide.y = _.defaults(node.guide.y || {}, {
-        label: '',
-        padding: 0,
-        density: 30,
-        cssClass: 'y axis',
-        scaleOrient: 'left',
-        rotate: 0,
-        textAnchor: 'end',
-        tickPeriod: null,
-        tickFormat: null,
-        autoScale: true
-    });
-    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
-    node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
-
-    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
-
-    return node;
-};
 
 var fnDefaultLayoutEngine = (rootNode, domainMixin) => {
 
     var fnTraverseLayout = (rawNode) => {
 
-        var node = applyNodeDefaults(rawNode);
+        var node = utilsDraw.applyNodeDefaults(rawNode);
 
         if (!node.$matrix) {
             return node;
@@ -112,7 +71,7 @@ var LayoutEngineTypeMap = {
 
             var traverse = ((rootNode, wrapperNode) => {
 
-                var node = applyNodeDefaults(rootNode);
+                var node = utilsDraw.applyNodeDefaults(rootNode);
 
                 _.each([node.guide.x || {}, node.guide.y || {}], (a) => a.hide = true);
 
@@ -130,7 +89,7 @@ var LayoutEngineTypeMap = {
                     var isTailRow = (r === (nRows - 1));
 
                     subNodes.forEach((subNode) => {
-                        var node = applyNodeDefaults(subNode);
+                        var node = utilsDraw.applyNodeDefaults(subNode);
                         if (node.$matrix) {
                             var axis = _.extend(utils.clone(_.omit(node, '$matrix')), { type: 'WRAP.AXIS' });
                             axesMap.push(axis);
@@ -149,7 +108,7 @@ var LayoutEngineTypeMap = {
                 return node;
             });
 
-            var wrapperNode = applyNodeDefaults({
+            var wrapperNode = utilsDraw.applyNodeDefaults({
                 type: 'WRAP.MULTI_AXES',
                 options: utils.clone(root.options),
                 x: {},
@@ -162,7 +121,7 @@ var LayoutEngineTypeMap = {
             wrapperNode.$matrix = new TMatrix([
                 [
                     [
-                        applyNodeDefaults({
+                        utilsDraw.applyNodeDefaults({
                             type: 'WRAP.MULTI_GRID',
                             x: {},
                             y: {},
@@ -188,7 +147,7 @@ var LayoutEngineTypeMap = {
                 var nR = node.$axes.sizeR();
                 var nC = node.$axes.sizeC();
 
-                var leftBottomItem = applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
+                var leftBottomItem = utilsDraw.applyNodeDefaults(node.$axes.getRC(nR - 1, 0)[0] || {});
                 var lPadding = leftBottomItem.guide.padding.l;
                 var bPadding = leftBottomItem.guide.padding.b;
 
