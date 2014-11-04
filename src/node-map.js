@@ -25,7 +25,7 @@ var setupElementNode = (node, dimensions) => {
         min: node.x.guide.tickMin,
         max: node.x.guide.tickMax,
         period: node.x.guide.tickPeriod,
-        tickAutoScale: node.x.guide.tickAutoScale
+        autoScale: node.x.guide.autoScale
     };
     node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
 
@@ -34,7 +34,7 @@ var setupElementNode = (node, dimensions) => {
         min: node.y.guide.tickMin,
         max: node.y.guide.tickMax,
         period: node.y.guide.tickPeriod,
-        tickAutoScale: node.y.guide.tickAutoScale
+        autoScale: node.y.guide.autoScale
     };
     node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 
@@ -88,7 +88,7 @@ var nodeMap = {
             map: node.x.guide.tickLabel,
             min: node.x.guide.tickMin,
             max: node.x.guide.tickMax,
-            tickAutoScale: node.x.guide.tickAutoScale
+            autoScale: node.x.guide.autoScale
         };
         node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
 
@@ -96,7 +96,7 @@ var nodeMap = {
             map: node.y.guide.tickLabel,
             min: node.y.guide.tickMin,
             max: node.y.guide.tickMax,
-            tickAutoScale: node.y.guide.tickAutoScale
+            autoScale: node.y.guide.autoScale
         };
         node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 

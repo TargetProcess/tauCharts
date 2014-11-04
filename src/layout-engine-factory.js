@@ -16,7 +16,7 @@ var applyNodeDefaults = (node) => {
         textAnchor: 'middle',
         tickPeriod: null,
         tickFormat: null,
-        tickAutoScale: true
+        autoScale: true
     });
     node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
     node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
@@ -33,7 +33,7 @@ var applyNodeDefaults = (node) => {
         textAnchor: 'end',
         tickPeriod: null,
         tickFormat: null,
-        tickAutoScale: true
+        autoScale: true
     });
     node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
     node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});

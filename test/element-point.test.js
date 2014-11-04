@@ -45,8 +45,8 @@ define(function (require) {
         {
             unit: {
                 guide: {
-                    x: { tickAutoScale: false },
-                    y: { tickAutoScale: false }
+                    x: { autoScale: false },
+                    y: { autoScale: false }
                 },
                 type: 'COORDS.RECT',
                 x: 'x',
@@ -98,8 +98,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { tickAutoScale: false },
-                    y: { tickAutoScale: false }
+                    x: { autoScale: false },
+                    y: { autoScale: false }
                 },
                 unit: [
                     {
@@ -144,8 +144,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { tickAutoScale: false },
-                    y: { tickAutoScale: false }
+                    x: { autoScale: false },
+                    y: { autoScale: false }
                 },
                 unit: [
                     {
@@ -181,8 +181,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { tickAutoScale: false },
-                    y: { tickAutoScale: false }
+                    x: { autoScale: false },
+                    y: { autoScale: false }
                 },
                 unit: [
                     {
@@ -214,8 +214,8 @@ define(function (require) {
             x: 'x',
             y: 'y',
             guide: {
-                x: { tickAutoScale: false },
-                y: { tickAutoScale: false }
+                x: { autoScale: false },
+                y: { autoScale: false }
             },
             unit: [
                 {

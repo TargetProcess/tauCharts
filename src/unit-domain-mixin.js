@@ -12,7 +12,7 @@ var rangeMethods = {
     },
 
     'linear': (inputValues, interval, props) => {
-        var domainParam = (props.tickAutoScale) ?
+        var domainParam = (props.autoScale) ?
             utils.autoScale(inputValues) :
             d3.extent(inputValues);
 

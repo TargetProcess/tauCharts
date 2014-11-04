@@ -51,8 +51,8 @@ define(function (require) {
                         x: 'x',
                         y: 'y',
                         guide: {
-                            x: {tickAutoScale: false},
-                            y: {tickAutoScale: false}
+                            x: {autoScale: false},
+                            y: {autoScale: false}
                         },
                         unit: [
                             {
@@ -127,8 +127,8 @@ define(function (require) {
                         x: 'y',
                         y: 'x',
                         guide: {
-                            x: {tickAutoScale: false},
-                            y: {tickAutoScale: false}
+                            x: {autoScale: false},
+                            y: {autoScale: false}
                         },
                         unit: [
                             {
