@@ -74,7 +74,6 @@ function transformConfig(type, config) {
         dimensions: config.dimensions,
         unit: spec
     };
-    console.log(config);
     return config;
 }
 var typesChart = {

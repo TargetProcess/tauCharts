@@ -128,7 +128,8 @@ export class UnitDomainMixin {
             var xNode = unit[dimensionName] || {};
             return {
                 scaleDim: dimensionName,
-                scaleType: xNode.scale || xRoot.scale
+                scaleType: xNode.scale || xRoot.scale,
+                dimType: xNode.type || xRoot.type
             };
         };
 

@@ -1,6 +1,9 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 const BAR_GROUP = 'i-role-bar-group';
+var isMeasure = function (dim) {
+    return dim.dimType === 'measure';
+};
 var interval = function (node) {
     var startPoint = 0;
     var options = node.options;
@@ -29,10 +32,10 @@ var interval = function (node) {
         intervalWidth = tickWidth / (categories.length + 1);
         offsetCategory = intervalWidth;
 
-        calculateX = (d) => xScale(Math.min(startPoint, d[node.x.scaleDim]));
+        calculateX = isMeasure(node.x) ? (d) => xScale(Math.min(startPoint, d[node.x.scaleDim])) : 0;
         calculateY = (d) =>  yScale(d[node.y.scaleDim]) - (tickWidth / 2);
-        calculateWidth = (d) => Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint));
-        calculateHeight = (d)=>intervalWidth;
+        calculateWidth = isMeasure(node.x) ? (d) => Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint)) : (d) => xScale(d[node.x.scaleDim]);
+        calculateHeight = (d)=> intervalWidth;
         calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
 
     } else {
@@ -41,9 +44,14 @@ var interval = function (node) {
         offsetCategory = intervalWidth;
 
         calculateX = (d) =>  xScale(d[node.x.scaleDim]) - (tickWidth / 2);
-        calculateY = (d) =>  yScale(Math.max(startPoint, d[node.y.scaleDim]));// yScale(d[node.y.scaleDim]);
+        calculateY = isMeasure(node.y) ?
+            (d) =>  yScale(Math.max(startPoint, d[node.y.scaleDim])) :
+            (d) => yScale(d[node.y.scaleDim]);
+
         calculateWidth = (d)=> intervalWidth;
-        calculateHeight = (d) => Math.abs(yScale(d[node.y.scaleDim]) - yScale(startPoint));// options.height - yScale(d[node.y.scaleDim]);
+        calculateHeight = isMeasure(node.y) ?
+            (d) => Math.abs(yScale(d[node.y.scaleDim]) - yScale(startPoint)) :
+            (d) => (options.height - yScale(d[node.y.scaleDim]));
         calculateTranslate = (d, index) => utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
     }
 

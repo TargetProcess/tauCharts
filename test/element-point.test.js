@@ -8,39 +8,15 @@ define(function (require) {
     var attrib = testUtils.attrib;
     var position = testUtils.position;
     var assert = require('chai').assert;
-    var tauChart = require('tau_modules/tau.newCharts').tauChart;
     var testData = [
         {x: 1, y: 1, color: 'red', size: 6},
         {x: 0.5, y: 0.5, color: 'green', size: 6},
         {x: 2, y: 2, color: 'green', size: 8}
     ];
 
-    var describeChart = function (name, spec, data, fn) {
-        describe(name, function () {
-            var context = {
-                element: null,
-                chart: null
-            };
+    var describePlot = testUtils.describePlot;
 
-            beforeEach(function () {
-                context.element = document.createElement('div');
-                document.body.appendChild(context.element);
-                context.chart = new tauChart.Plot({
-                    spec: spec,
-                    data: data
-                });
-                context.chart.renderTo(context.element, {width: 800, height: 800});
-            });
-
-            fn(context);
-
-            afterEach(function () {
-                context.element.parentNode.removeChild(context.element);
-            });
-        })
-    };
-
-    describeChart(
+    describePlot(
         "Point element with all params",
         {
             unit: {
@@ -91,7 +67,7 @@ define(function (require) {
             });
         });
 
-    describeChart("Point element without color and size params",
+    describePlot("Point element without color and size params",
         {
             unit: {
                 type: 'COORDS.RECT',
@@ -136,7 +112,7 @@ define(function (require) {
             });
         });
 
-    describeChart(
+    describePlot(
         "Point element color was presented  with brewer as object",
         {
             unit: {
@@ -173,7 +149,7 @@ define(function (require) {
             });
         });
 
-    describeChart(
+    describePlot(
         "Point element color was presented  with brewer as array",
         {
             unit: {
@@ -226,54 +202,54 @@ define(function (require) {
         }
     };
 
-    var getAttr = function(attrName){
-        return function(element) {
+    var getAttr = function (attrName) {
+        return function (element) {
             return d3.select(element).attr(attrName);
         }
     };
 
-    describeChart(
+    describePlot(
         "Point elements with large size domain",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 8}, {x:1, y: 1, size: 800}],
-        function(){
-            it("should have sizes in large range", function(){
+        [{x: 0, y: 0, size: 8}, {x: 1, y: 1, size: 800}],
+        function () {
+            it("should have sizes in large range", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(1, 1);
                 expect(sizes[1]).to.be.closeTo(8, 1);
             })
         });
 
-    describeChart(
+    describePlot(
         "Point element with small size domain",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 8}, {x:1, y: 1, size: 16}],
-        function(){
-            it("should have sizes in small range", function(){
+        [{x: 0, y: 0, size: 8}, {x: 1, y: 1, size: 16}],
+        function () {
+            it("should have sizes in small range", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(5, 1);
                 expect(sizes[1]).to.be.closeTo(8, 1);
             })
         });
 
-    describeChart(
+    describePlot(
         "Point elements with  size domain values in [0..1]",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 0.08}, {x:1, y: 1, size: 0.16}],
-        function(){
-            it("should have proportional sizes", function(){
+        [{x: 0, y: 0, size: 0.08}, {x: 1, y: 1, size: 0.16}],
+        function () {
+            it("should have proportional sizes", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(5, 1);
                 expect(sizes[1]).to.be.closeTo(8, 1);
             })
         });
 
-    describeChart(
+    describePlot(
         "Point elements with  size domain values including 0",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 0}, {x:1, y: 1, size: 5}, {x:1, y: 1, size: 8}],
-        function(){
-            it("should have sizes in large range", function(){
+        [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 5}, {x: 1, y: 1, size: 8}],
+        function () {
+            it("should have sizes in large range", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(2, 1);
                 expect(sizes[1]).to.be.closeTo(6, 1);
@@ -281,17 +257,17 @@ define(function (require) {
             })
         });
 
-    describeChart(
+    describePlot(
         "Point element with size domain values including not only finite values",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 0}, {x:1, y: 1, size: 10}, {x:1, y: 1, size: null}, {x:1, y: 1, size: Infinity}],
-        function(){
-            it("should map Infinity to maximum size", function(){
+        [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 10}, {x: 1, y: 1, size: null}, {x: 1, y: 1, size: Infinity}],
+        function () {
+            it("should map Infinity to maximum size", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[3]).to.be.closeTo(sizes[1], 0.1);
             });
 
-            it("should map null to maximum size", function(){
+            it("should map null to maximum size", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[2]).to.be.closeTo(sizes[0], 0.1);
             });
