@@ -40,6 +40,40 @@
   fill: #222222;
 }
 /* endregion */
+/* region Generate .line-params-@{n}  function  */
+/* Generate .line-size-@{n} */
+.line-size-1 {
+  stroke-width: 1px;
+}
+.line-size-2 {
+  stroke-width: 1.5px;
+}
+.line-size-3 {
+  stroke-width: 2px;
+}
+.line-size-4 {
+  stroke-width: 2.5px;
+}
+.line-size-5 {
+  stroke-width: 3px;
+}
+/* Generate .line-opacity-@{n} */
+.line-opacity-1 {
+  stroke-width: 1px;
+}
+.line-opacity-2 {
+  stroke-width: 0.95px;
+}
+.line-opacity-3 {
+  stroke-width: 0.9px;
+}
+.line-opacity-4 {
+  stroke-width: 0.85px;
+}
+.line-opacity-5 {
+  stroke-width: 0.8px;
+}
+/* endregion */
 .graphical-report {
   /* Links */
   /* Charts */
