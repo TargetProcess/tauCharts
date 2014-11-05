@@ -599,30 +599,36 @@ define(function (require) {
 
             expect(layoutXGraph.type).to.equal('WRAPPER.SHARED.AXES');
 
-            expect(layoutXGraph.x[0].length).to.equal(1);
-            expect(layoutXGraph.x[1].length).to.equal(2);
-            expect(layoutXGraph.y[0].length).to.equal(1);
-            expect(layoutXGraph.y[1].length).to.equal(2);
 
-            var xLevel0 = layoutXGraph.x[0];
+
+            expect(layoutXGraph.x.length).to.equal(2);
+            expect(layoutXGraph.x[0].project.length).to.equal(1);
+            expect(layoutXGraph.x[1].effort.length).to.equal(2);
+
+            expect(layoutXGraph.y.length).to.equal(2);
+            expect(layoutXGraph.y[0].team.length).to.equal(1);
+            expect(layoutXGraph.y[1].cycle.length).to.equal(2);
+
+
+            var xLevel0 = layoutXGraph.x[0].project;
             expect(xLevel0[0].type).to.equal('WRAP.AXIS');
             expect(xLevel0[0].x).to.equal('project');
 
-            var xLevel1 = layoutXGraph.x[1];
+            var xLevel1 = layoutXGraph.x[1].effort;
             expect(xLevel1[0].type).to.equal('WRAP.AXIS');
-            expect(xLevel1[1].type).to.equal('WRAP.AXIS');
             expect(xLevel1[0].x).to.equal('effort');
+            expect(xLevel1[1].type).to.equal('WRAP.AXIS');
             expect(xLevel1[1].x).to.equal('effort');
 
 
-            var yLevel0 = layoutXGraph.y[0];
+            var yLevel0 = layoutXGraph.y[0].team;
             expect(yLevel0[0].type).to.equal('WRAP.AXIS');
             expect(yLevel0[0].y).to.equal('team');
 
-            var yLevel1 = layoutXGraph.y[1];
+            var yLevel1 = layoutXGraph.y[1].cycle;
             expect(yLevel1[0].type).to.equal('WRAP.AXIS');
-            expect(yLevel1[1].type).to.equal('WRAP.AXIS');
             expect(yLevel1[0].y).to.equal('cycle');
+            expect(yLevel1[1].type).to.equal('WRAP.AXIS');
             expect(yLevel1[1].y).to.equal('cycle');
         });
     });

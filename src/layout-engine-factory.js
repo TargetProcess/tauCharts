@@ -69,23 +69,32 @@ var LayoutEngineTypeMap = {
 
         var traverse = ((node, level, wrapper) => {
 
+            var arr = node.$matrix.getRC(0, 0);
+
+            if (arr[0].$matrix) {
+                wrapper.x[level] = wrapper.x[level] || {};
+                wrapper.x[level][arr[0].x] = [];
+
+                wrapper.y[level] = wrapper.y[level] || {};
+                wrapper.y[level][arr[0].y] = [];
+            }
+
             node.$matrix.iterate((r, c, subNodes) => {
 
                 if (r === 0 || c === 0) {
 
                     let subNode = utilsDraw.applyNodeDefaults(subNodes[0]);
+
                     if (subNode.$matrix) {
 
                         let subAxis = _.extend(utils.clone(_.omit(subNode, '$matrix')), {type: 'WRAP.AXIS'});
 
                         if (r === 0) {
-                            wrapper.x[level] = wrapper.x[level] || [];
-                            wrapper.x[level].push(subAxis);
+                            wrapper.x[level][subAxis.x].push(subAxis);
                         }
 
                         if (c === 0) {
-                            wrapper.y[level] = wrapper.y[level] || [];
-                            wrapper.y[level].push(subAxis);
+                            wrapper.y[level][subAxis.y].push(subAxis);
                         }
 
                         traverse(subNode, level + 1, wrapper);
