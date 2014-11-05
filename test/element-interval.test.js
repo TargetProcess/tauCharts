@@ -96,6 +96,53 @@ define(function (require) {
         }
     );
     describePlot(
+        "ELEMENT.INTERVAL WITH TWO LINEAR AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'y',
+                y: 'x',
+                guide: {
+                    x: {autoScale: false},
+                    y: {autoScale: false}
+                },
+                unit: [
+                    {
+                        type: 'ELEMENT.INTERVAL'
+                    }
+                ]
+            }
+        },
+        testData,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
+
+                    [
+                        {
+                            "x": "342.5",
+                            "y": "666.6666666666666"
+                        },
+                        {
+                            "x": "285.5",
+                            "y": "399.99999999999994"
+                        },
+                        {
+                            "x": "-0.5",
+                            "y": "133.33333333333326"
+                        },
+                        {
+                            "x": "799.5",
+                            "y": "133.33333333333326"
+                        }
+                    ]
+
+                ]);
+            });
+        }
+    );
+    describePlot(
         "ELEMENT.INTERVAL WITH TWO CATEGORICAL AXIS",
         {
             unit: {
@@ -201,7 +248,54 @@ define(function (require) {
             });
         }
     );
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH TWO LINEAR AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                guide: {
+                    x: {autoScale: false},
+                    y: {autoScale: false}
+                },
+                unit: [
+                    {
+                        type: 'ELEMENT.INTERVAL',
+                        flip: true
+                    }
+                ]
+            }
+        },
+        testData,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
 
+                    [
+                        {
+                            "x": "0",
+                            "y": "456.5"
+                        },
+                        {
+                            "x": "0",
+                            "y": "513.5"
+                        },
+                        {
+                            "x": "0",
+                            "y": "799.5"
+                        },
+                        {
+                            "x": "0",
+                            "y": "-0.5"
+                        }
+                    ]
+
+                ]);
+            });
+        }
+    );
     describePlot(
         "ELEMENT.INTERVAL.FLIP WITH TWO CATEGORICAL AXIS",
         {
