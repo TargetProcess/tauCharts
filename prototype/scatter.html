@@ -10,33 +10,6 @@
     <script src="../libs/jquery.js"></script>
     <script src="../libs/d3.js"></script>-->
     <!-- src -->
-    <script src="../src/class.js"></script>
-    <script src="../src/tau.data.js"></script>
-    <script src="../src/tau.data.types.js"></script>
-    <script src="../src/tau.svg.js"></script>
-    <script src="../src/tau.charts.js"></script>
-    <script src="../src/charts/line.js"></script>
-    <script src="../src/charts/scatterplot.js"></script>
-    <script src="../src/charts/bar.js"></script>
-    <script src="../src/tau.plugins.js"></script>
-
-    <!-- plugins -->
-    <script src="../plugins/tooltip.js"></script>
-    <script src="../plugins/legend.js"></script>
-    <script src="../plugins/highlighter.js"></script>
-    <script src="../plugins/projection.js"></script>
-    <script src="../plugins/datatable.js"></script>
-    <script src="../plugins/header.js"></script>
-    <script src="../plugins/trend.js"></script>
-    <script src="../plugins/jittering.js"></script>
-
-    <!-- test data -->
-    <script src="data.js"></script>
-
-    <script src="countries.js"></script>
-    <script src="tpStories.js"></script>
-
-
     <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
@@ -126,90 +99,11 @@
     <table id="table"></table>
 </div>
 <script>
-/** @class Tooltip
- * @extends Plugin */
-/* Usage
- .plugins(tau.plugins.tooltip('effort', 'priority'))
- accepts a list of data fields names as properties
- */
-var Tooltip = {
-
-    init: function (data) {
-        function generateTable(data) {
-            var headers = Object.keys(data[0]);
-            var rows = data.map(function (item, key) {
-                var map = headers.map(function (key) {
-                    return item[key];
-                });
-                map['key'] = JSON.stringify(item);
-                return map;
-            });
-            var $table = $('#table');
-            $table.empty();
-            var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
-            $table.append(rowHtml);
-            var keyValue = {};
-            var s = _.each(rows, function (arr, index) {
-                var rowHtml = '<tr >';
-                rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
-                keyValue[arr.key] = {
-                    $el: $(rowHtml),
-                    index: index
-                };
-
-
-                $table.append(keyValue[arr.key].$el);
-            });
-
-
-            //debugger
-            return {
-                keyValues: keyValue,
-                $table: $table
-            };
-        }
-
-        var generateTable2 = generateTable(data);
-        this.keyValues = generateTable2.keyValues;
-        this.table = generateTable2.$table;
-    },
-    /**
-     * @param {ElementContext} context
-     * @param {ChartElementTools} tools
-     */
-    mouseover: function (context, tools) {
-        this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
-        // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
-    },
-    render: function (context) {
-        var $points = $(context.node()).find('circle');
-        this.table.find('tr')
-                .on('mouseover', function () {
-                    $points.get(($(this).index() - 1)).classList.add('highlighted');
-                })
-                .on('mouseleave', function () {
-                    $points.each(function () {
-                        this.classList.remove('highlighted');
-                    });
-                });
-    },
-
-    /**
-     * @param {ElementContext} context
-     * @param {ChartElementTools} tools
-     */
-    mouseout: function (context, tools) {
-        $('tr').removeClass('highClass');
-    }
-};
-
-tau.plugins.add('tableHighlight', Tooltip);
-
-
 requirejs.config({
     // Karma serves files from '/base'
     baseUrl: location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1'),
     paths: {
+        'tauPlugins': 'src/tau.plugins',
         'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
         'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min',
         'schemes': 'test/utils/schemes',
@@ -218,17 +112,87 @@ requirejs.config({
         'brewer': 'src/addons/color-brewer'
     }
 });
-/*System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
-System.paths['underscore'] = '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js';
-System.paths['d3'] = '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js';*/
-require(['tau_modules/tau.newCharts'],function (m) {
-    var defData = [
-        {team: 'myTeam2', count: 20, priority: 'low'},
-        {team: 'myTeam', count: 6, priority: 'low'},
-        {team: 'myTeam3', count: 3, priority: 'low'},
-        {team: 'myTeam3', count: 4, priority: 'high'},
-        {team: 'myTeam1', count: 5, priority: 'low'}
-    ];
+
+require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugins/tooltip'], function (m, tauPlugins) {
+    /** @class Tooltip
+     * @extends Plugin */
+    /* Usage
+     .plugins(tau.plugins.tooltip('effort', 'priority'))
+     accepts a list of data fields names as properties
+     */
+    var Tooltip = {
+
+        init: function (data) {
+            function generateTable(data) {
+                var headers = Object.keys(data[0]);
+                var rows = data.map(function (item, key) {
+                    var map = headers.map(function (key) {
+                        return item[key];
+                    });
+                    map['key'] = JSON.stringify(item);
+                    return map;
+                });
+                var $table = $('#table');
+                $table.empty();
+                var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
+                $table.append(rowHtml);
+                var keyValue = {};
+                var s = _.each(rows, function (arr, index) {
+                    var rowHtml = '<tr >';
+                    rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
+                    keyValue[arr.key] = {
+                        $el: $(rowHtml),
+                        index: index
+                    };
+
+
+                    $table.append(keyValue[arr.key].$el);
+                });
+
+
+                //debugger
+                return {
+                    keyValues: keyValue,
+                    $table: $table
+                };
+            }
+
+            var generateTable2 = generateTable(data);
+            this.keyValues = generateTable2.keyValues;
+            this.table = generateTable2.$table;
+        },
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseover: function (context, tools) {
+            this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
+            // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
+        },
+        render: function (context) {
+            var $points = $(context.node()).find('circle');
+            this.table.find('tr')
+                    .on('mouseover', function () {
+                        $points.get(($(this).index() - 1)).classList.add('highlighted');
+                    })
+                    .on('mouseleave', function () {
+                        $points.each(function () {
+                            this.classList.remove('highlighted');
+                        });
+                    });
+        },
+
+        /**
+         * @param {ElementContext} context
+         * @param {ChartElementTools} tools
+         */
+        mouseout: function (context, tools) {
+            $('tr').removeClass('highClass');
+        }
+    };
+
+    tauPlugins.add('tableHighlight', Tooltip);
+    var defData = [{"userStories":3,"project":"My Project!","dataItem":{"id":"90485","type":"Project","orderingValue":115.0,"data":{"id":90485,"name":"My Project!","type":"Project"}}},{"userStories":3,"project":"New Project!","dataItem":{"id":"90486","type":"Project","orderingValue":116.0,"data":{"id":90486,"name":"New Project!","type":"Project"}}}];
 
     function getFieldData($field) {
         try {
@@ -289,7 +253,7 @@ require(['tau_modules/tau.newCharts'],function (m) {
         var chart = new m.tauChart.Chart({
             data: data,
             type: getFieldData($type),
-            plugins: [tau.plugins.tooltip.apply(null, Object.keys(data[0])), tau.plugins.highlighter(), tau.plugins.tableHighlight(data)],
+            plugins: [tauPlugins.tooltip.apply(null, Object.keys(data[0])), tauPlugins.highlighter(), tauPlugins.tableHighlight(data)],
             y: ['userStories'],
             x: ['project'],
             /*guide: {

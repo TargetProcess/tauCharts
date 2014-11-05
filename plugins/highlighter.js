@@ -1,4 +1,13 @@
-(function () {
+(function (factory) {
+    if (typeof define === "function" && define.amd) {
+        define(['tauPlugins'],function(tauPlugins){return factory(tauPlugins);});
+    } else if (typeof module === "object" && module.exports) {
+        var tauPlugins = require('tauPlugins');
+        module.exports = factory();
+    } else {
+        factory(this.tauPlugins)
+    }
+})(function (tauPlugins) {
     /** @class Tooltip
      * @extends Plugin */
     var Highlighter = {
@@ -19,5 +28,5 @@
         }
     };
 
-    tau.plugins.add('highlighter', Highlighter);
-})();
+    tauPlugins.add('highlighter', Highlighter);
+});

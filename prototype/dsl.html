@@ -7,26 +7,11 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 
     <!-- src -->
-    <script src="../src/class.js"></script>
-    <script src="../src/tau.data.js"></script>
-    <script src="../src/tau.data.types.js"></script>
-    <script src="../src/tau.svg.js"></script>
-    <script src="../src/tau.charts.js"></script>
-    <script src="../src/charts/line.js"></script>
-    <script src="../src/charts/scatterplot.js"></script>
-    <script src="../src/charts/bar.js"></script>
     <script src="../src/tau.plugins.js"></script>
 
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
-    <script src="../plugins/legend.js"></script>
     <script src="../plugins/highlighter.js"></script>
-    <script src="../plugins/projection.js"></script>
-    <script src="../plugins/datatable.js"></script>
-    <script src="../plugins/header.js"></script>
-    <script src="../plugins/trend.js"></script>
-    <script src="../plugins/jittering.js"></script>
-
     <!-- test data -->
     <script src="data.js"></script>
 
@@ -497,8 +482,8 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#chart-container');
 
@@ -508,8 +493,8 @@
                 data: rawData,
                 spec: facetPriority,
                 plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#chart-priority-container');
 
@@ -519,8 +504,8 @@
                 spec: facetOfFacets,
                 layoutEngine: 'DEFAULT',
                 plugins: [
-                    tau.plugins.tooltip('name', 'cycleTime', 'effort'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('name', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#facet-of-facets-container');
 
@@ -529,8 +514,8 @@
                 data: rawData,
                 spec: scatter,
                 plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#scatter-auto-scale-container');
 
@@ -573,8 +558,8 @@
                     }
                 },
                 plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#scatter-fit-container');
 
@@ -583,8 +568,8 @@
                 data: rawData,
                 spec: facet3x1,
                 plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#complex-container');
 
@@ -593,8 +578,8 @@
                 data: [],
                 spec: facet3x1,
                 plugins: [
-                    tau.plugins.tooltip('team', 'project', 'cycleTime', 'effort'),
-                    tau.plugins.highlighter()
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
                 ]
             }).renderTo('#complex-container');
 
@@ -693,8 +678,8 @@
                     data: data,
                     spec: facet2x1,
                     plugins: [
-                        tau.plugins.tooltip('team', 'count', 'month'),
-                        tau.plugins.highlighter()
+                        tauPlugins.tooltip('team', 'count', 'month'),
+                        tauPlugins.highlighter()
                     ]
                 }).renderTo('#bars-container');
     });
