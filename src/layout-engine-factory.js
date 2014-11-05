@@ -113,7 +113,28 @@ var LayoutEngineTypeMap = {
             $matrix: new TMatrix([[[rootNode]]])
         });
 
-        return traverse(domainMixin.mix(wrapperNode), 0, wrapperNode);
+        var wrapper = traverse(domainMixin.mix(wrapperNode), 0, wrapperNode);
+
+        var xW = wrapper.x.reduce((memo, level) => {
+            Object.keys(level).forEach((k) => {
+                memo += level[k][0].guide.padding.b;
+            });
+            return memo;
+        }, 0);
+
+        var yW = wrapper.y.reduce((memo, level) => {
+            Object.keys(level).forEach((k) => {
+                memo += level[k][0].guide.padding.l;
+            });
+            return memo;
+        }, 0);
+
+        rootNode.options.width = wrapperNode.options.width - yW;
+        rootNode.options.height = wrapperNode.options.height - xW;
+
+        rootNode = fnDefaultLayoutEngine(rootNode, domainMixin);
+
+        return wrapper;
     },
 
     'EXTRACT-AXES': (rootNode, domainMixin) => {
