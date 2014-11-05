@@ -538,4 +538,92 @@ define(function (require) {
             ]);
         });
     });
+
+    describe("Layout for extracting axes", function() {
+
+        var data = [
+            {"team": "Alpha", "project": "TP2", "effort": 1, "cycle": 10},
+            {"team": "Sigma", "project": "TP3", "effort": 2, "cycle": 20}
+        ];
+
+        var div;
+
+        beforeEach(function () {
+            div = document.createElement('div');
+            document.body.appendChild(div);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+        });
+
+        it("should calc layout for 2 levels facet", function () {
+
+            var spec = {
+                dimensions: {
+                    project : {type: 'category', scale: 'ordinal'},
+                    team    : {type: 'category', scale: 'ordinal'},
+                    effort  : {type: 'measure', scale: 'linear'},
+                    cycle   : {type: 'measure', scale: 'linear'}
+                },
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'project',
+                    y: 'team',
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            x: 'effort',
+                            y: 'cycle',
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(spec, data);
+
+            var logicalGraph = reader.buildGraph();
+            var layoutXGraph = reader.calcLayout(
+                logicalGraph,
+                api.LayoutEngineFactory.get('SHARE-AXES'),
+                {
+                    width : 1000,
+                    height: 1000
+                });
+
+            expect(layoutXGraph.type).to.equal('WRAPPER.SHARED.AXES');
+
+            expect(layoutXGraph.x[0].length).to.equal(1);
+            expect(layoutXGraph.x[1].length).to.equal(2);
+            expect(layoutXGraph.y[0].length).to.equal(1);
+            expect(layoutXGraph.y[1].length).to.equal(2);
+
+            var xLevel0 = layoutXGraph.x[0];
+            expect(xLevel0[0].type).to.equal('WRAP.AXIS');
+            expect(xLevel0[0].x).to.equal('project');
+
+            var xLevel1 = layoutXGraph.x[1];
+            expect(xLevel1[0].type).to.equal('WRAP.AXIS');
+            expect(xLevel1[1].type).to.equal('WRAP.AXIS');
+            expect(xLevel1[0].x).to.equal('effort');
+            expect(xLevel1[1].x).to.equal('effort');
+
+
+            var yLevel0 = layoutXGraph.y[0];
+            expect(yLevel0[0].type).to.equal('WRAP.AXIS');
+            expect(yLevel0[0].y).to.equal('team');
+
+            var yLevel1 = layoutXGraph.y[1];
+            expect(yLevel1[0].type).to.equal('WRAP.AXIS');
+            expect(yLevel1[1].type).to.equal('WRAP.AXIS');
+            expect(yLevel1[0].y).to.equal('cycle');
+            expect(yLevel1[1].y).to.equal('cycle');
+        });
+    });
 });

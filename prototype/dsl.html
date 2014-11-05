@@ -155,6 +155,10 @@
     <div class="cc-empty"></div>
 </div>
 
+<div id="extract-axes-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
 <script>
 
     var facet2x2 = {
@@ -593,6 +597,50 @@
                     tau.plugins.highlighter()
                 ]
             }).renderTo('#complex-container');
+
+    var extractAxesChart = new tauChart.Plot(
+            {
+                data: [
+                    {"team": "Alpha", "project": "TP2", "effort": 1, "cycle": 10},
+                    {"team": "Sigma", "project": "TP3", "effort": 2, "cycle": 20}
+                ],
+                layoutEngine: 'DEFAULT',
+                spec: {
+                    dimensions: {
+                        project : {type: 'category', scale: 'ordinal'},
+                        team    : {type: 'category', scale: 'ordinal'},
+                        effort  : {type: 'measure', scale: 'linear'},
+                        cycle   : {type: 'measure', scale: 'linear'}
+                    },
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'project',
+                        y: 'team',
+                        guide: {
+                            showGridLines: 'xy',
+                            padding: { l: 25, b: 25, r: 25, t: 25 }
+                        },
+                        unit: [
+                            {
+                                type: 'COORDS.RECT',
+                                x: 'effort',
+                                y: 'cycle',
+                                guide: {
+                                    showGridLines: 'xy',
+                                    padding: { l: 25, b: 25, r: 25, t: 25 },
+                                    x: { hide: false },
+                                    y: { hide: true }
+                                },
+                                unit: [
+                                    {
+                                        type: 'ELEMENT.POINT'
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }).renderTo('#extract-axes-container');
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 

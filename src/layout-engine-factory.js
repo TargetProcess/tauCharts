@@ -65,6 +65,48 @@ var LayoutEngineTypeMap = {
 
     'DEFAULT': fnDefaultLayoutEngine,
 
+    'SHARE-AXES': (rootNode, domainMixin) => {
+
+        var traverse = ((node, level, wrapper) => {
+
+            node.$matrix.iterate((r, c, subNodes) => {
+
+                if (r === 0 || c === 0) {
+
+                    let subNode = utilsDraw.applyNodeDefaults(subNodes[0]);
+                    if (subNode.$matrix) {
+
+                        let subAxis = _.extend(utils.clone(_.omit(subNode, '$matrix')), {type: 'WRAP.AXIS'});
+
+                        if (r === 0) {
+                            wrapper.x[level] = wrapper.x[level] || [];
+                            wrapper.x[level].push(subAxis);
+                        }
+
+                        if (c === 0) {
+                            wrapper.y[level] = wrapper.y[level] || [];
+                            wrapper.y[level].push(subAxis);
+                        }
+
+                        traverse(subNode, level + 1, wrapper);
+                    }
+                }
+            });
+
+            return node;
+        });
+
+        var wrapperNode = utilsDraw.applyNodeDefaults({
+            type: 'WRAPPER.SHARED.AXES',
+            options: utils.clone(rootNode.options),
+            x: [],
+            y: [],
+            $matrix: new TMatrix([[[rootNode]]])
+        });
+
+        return traverse(domainMixin.mix(wrapperNode), 0, wrapperNode);
+    },
+
     'EXTRACT-AXES': (rootNode, domainMixin) => {
 
         var fnExtractAxesTransformation = ((root) => {
