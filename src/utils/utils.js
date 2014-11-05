@@ -9,6 +9,12 @@ var utils = {
         var low = Math.min.apply(null, domain);
         var top = Math.max.apply(null, domain);
 
+        if (low === top) {
+            let k = (top >= 0) ? -1 : 1;
+            let d = (top || 1);
+            top = top - k * d / m;
+        }
+
         var extent = [low, top];
         var span = extent[1] - extent[0];
         var step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10));
