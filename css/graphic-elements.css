@@ -42,37 +42,38 @@
 /* endregion */
 /* region Generate .line-params-@{n}  function  */
 /* Generate .line-size-@{n} */
-.line-size-1 {
+.graphical-report__line-width-1 {
   stroke-width: 1px;
 }
-.line-size-2 {
+.graphical-report__line-width-2 {
   stroke-width: 1.5px;
 }
-.line-size-3 {
+.graphical-report__line-width-3 {
   stroke-width: 2px;
 }
-.line-size-4 {
+.graphical-report__line-width-4 {
   stroke-width: 2.5px;
 }
-.line-size-5 {
+.graphical-report__line-width-5 {
   stroke-width: 3px;
 }
 /* Generate .line-opacity-@{n} */
-.line-opacity-1 {
-  stroke-width: 1px;
+.graphical-report__line-opacity-1 {
+  stroke-opacity: 1px;
 }
-.line-opacity-2 {
-  stroke-width: 0.95px;
+.graphical-report__line-opacity-2 {
+  stroke-opacity: 0.95px;
 }
-.line-opacity-3 {
-  stroke-width: 0.9px;
+.graphical-report__line-opacity-3 {
+  stroke-opacity: 0.9px;
 }
-.line-opacity-4 {
-  stroke-width: 0.85px;
+.graphical-report__line-opacity-4 {
+  stroke-opacity: 0.85px;
 }
-.line-opacity-5 {
-  stroke-width: 0.8px;
+.graphical-report__line-opacity-5 {
+  stroke-opacity: 0.8px;
 }
+/* endregion */
 /* endregion */
 .graphical-report {
   /* Links */

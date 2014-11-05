@@ -27,18 +27,20 @@
 
 .generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) {
 
-  .line-@{params}-@{i} {
-    stroke-width: @default-size;
+  .graphical-report__line-@{params}-@{i} {
+    stroke-@{params}: @default-size;
   }
 
   .generate-line-params(@default-size: (@default-size + @step); @params; @step; @n; (@i + 1));
 }
 
 /* Generate .line-size-@{n} */
-.generate-line-params(@params: size; @default-size: 1px; @step: 0.5px; @n: 5);
+.generate-line-params(@params: width; @default-size: 1px; @step: 0.5px; @n: 5);
 
 /* Generate .line-opacity-@{n} */
 .generate-line-params(@params: opacity; @default-size: 1px; @step: -0.05px; @n: 5);
+
+/* endregion */
 
 /* endregion */
 
