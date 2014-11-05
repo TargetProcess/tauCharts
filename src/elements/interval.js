@@ -4,6 +4,28 @@ const BAR_GROUP = 'i-role-bar-group';
 var isMeasure = function (dim) {
     return dim.dimType === 'measure';
 };
+
+var getSizesParams = function (params) {
+    var tickWidth, intervalWidth, offsetCategory;
+    if (isMeasure(params.dim)) {
+        tickWidth = 1;
+        intervalWidth = 1;
+        offsetCategory = 0;
+    } else {
+        tickWidth = params.size / (params.domain(params.dim.scaleDim).length);
+        intervalWidth = tickWidth / (params.categories.length + 1);
+        offsetCategory = intervalWidth;
+    }
+
+    /* jshint ignore:start */
+    return {
+        tickWidth,
+        intervalWidth,
+        offsetCategory
+    };
+    /* jshint ignore:end */
+};
+
 var interval = function (node) {
     var startPoint = 0;
     var options = node.options;
@@ -18,20 +40,20 @@ var interval = function (node) {
 
     var xScale = options.xScale,
         yScale = options.yScale,
-        tickWidth,
-        intervalWidth,
-        offsetCategory,
-
         calculateX,
         calculateY,
         calculateWidth,
         calculateHeight,
         calculateTranslate;
     if (node.flip) {
-        tickWidth = options.height / (node.domain(node.y.scaleDim).length);
-        intervalWidth = tickWidth / (categories.length + 1);
-        offsetCategory = intervalWidth;
-
+        /* jshint ignore:start */
+        var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
+            domain: node.domain,
+            dim: node.y,
+            categories: categories,
+            size: options.height
+        });
+        /* jshint ignore:end */
         calculateX = isMeasure(node.x) ? (d) => xScale(Math.min(startPoint, d[node.x.scaleDim])) : 0;
         calculateY = (d) =>  yScale(d[node.y.scaleDim]) - (tickWidth / 2);
         calculateWidth = isMeasure(node.x) ? (d) => Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint)) : (d) => xScale(d[node.x.scaleDim]);
@@ -39,10 +61,14 @@ var interval = function (node) {
         calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
 
     } else {
-        tickWidth = options.width / (node.domain(node.x.scaleDim).length);
-        intervalWidth = tickWidth / (categories.length + 1);
-        offsetCategory = intervalWidth;
-
+        /* jshint ignore:start */
+        var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
+            domain: node.domain,
+            dim: node.x,
+            categories: categories,
+            size: options.width
+        });
+        /* jshint ignore:end */
         calculateX = (d) =>  xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         calculateY = isMeasure(node.y) ?
             (d) =>  yScale(Math.max(startPoint, d[node.y.scaleDim])) :
