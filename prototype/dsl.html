@@ -104,15 +104,23 @@
     <div class="cc-empty"></div>
 </div>
 
-<div id="chart-container" class="cc">
+<div id="chart-container-extract" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
+<div id="chart-container-default" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
+<div id="chart-priority-container-default" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
+<div id="chart-priority-container-extract" class="cc">
     <div class="cc-empty"></div>
 </div>
 
 <div id="parallel-container" class="cc">
-    <div class="cc-empty"></div>
-</div>
-
-<div id="chart-priority-container" class="cc">
     <div class="cc-empty"></div>
 </div>
 
@@ -128,7 +136,11 @@
     <div class="cc-empty"></div>
 </div>
 
-<div id="complex-container" class="cc">
+<div id="complex-container-default" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
+<div id="complex-container-extract" class="cc">
     <div class="cc-empty"></div>
 </div>
 
@@ -137,10 +149,6 @@
 </div>
 
 <div id="no-data-container" class="cc">
-    <div class="cc-empty"></div>
-</div>
-
-<div id="extract-axes-container" class="cc">
     <div class="cc-empty"></div>
 </div>
 
@@ -479,24 +487,48 @@
 
     new tauChart.Plot(
             {
+                layoutEngine: 'DEFAULT',
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
                     tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tauPlugins.highlighter()
                 ]
-            }).renderTo('#chart-container');
+            }).renderTo('#chart-container-default');
+
+    new tauChart.Plot(
+            {
+                layoutEngine: 'EXTRACT',
+                data: rawData,
+                spec: facet2x2,
+                plugins: [
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
+                ]
+            }).renderTo('#chart-container-extract');
 
 
     new tauChart.Plot(
             {
+                layoutEngine: 'DEFAULT',
                 data: rawData,
                 spec: facetPriority,
                 plugins: [
                     tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
                     tauPlugins.highlighter()
                 ]
-            }).renderTo('#chart-priority-container');
+            }).renderTo('#chart-priority-container-default');
+
+    new tauChart.Plot(
+            {
+                layoutEngine: 'EXTRACT',
+                data: rawData,
+                spec: facetPriority,
+                plugins: [
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tauPlugins.highlighter()
+                ]
+            }).renderTo('#chart-priority-container-extract');
 
     new tauChart.Plot(
             {
@@ -563,15 +595,27 @@
                 ]
             }).renderTo('#scatter-fit-container');
 
-    var complexChart = new tauChart.Plot(
+    new tauChart.Plot(
             {
+                layoutEngine: 'DEFAULT',
                 data: rawData,
                 spec: facet3x1,
                 plugins: [
                     tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tauPlugins.highlighter()
                 ]
-            }).renderTo('#complex-container');
+            }).renderTo('#complex-container-default');
+
+    new tauChart.Plot(
+            {
+                layoutEngine: 'EXTRACT',
+                data: rawData,
+                spec: facet3x1,
+                plugins: [
+                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.highlighter()
+                ]
+            }).renderTo('#complex-container-extract');
 
     var noDataChart = new tauChart.Plot(
             {
@@ -581,51 +625,7 @@
                     tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
                     tauPlugins.highlighter()
                 ]
-            }).renderTo('#complex-container');
-
-    var extractAxesChart = new tauChart.Plot(
-            {
-                data: [
-                    {"team": "Alpha", "project": "TP2", "effort": 1, "cycle": 10},
-                    {"team": "Sigma", "project": "TP3", "effort": 2, "cycle": 20}
-                ],
-                layoutEngine: 'DEFAULT',
-                spec: {
-                    dimensions: {
-                        project : {type: 'category', scale: 'ordinal'},
-                        team    : {type: 'category', scale: 'ordinal'},
-                        effort  : {type: 'measure', scale: 'linear'},
-                        cycle   : {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'project',
-                        y: 'team',
-                        guide: {
-                            showGridLines: 'xy',
-                            padding: { l: 25, b: 25, r: 25, t: 25 }
-                        },
-                        unit: [
-                            {
-                                type: 'COORDS.RECT',
-                                x: 'effort',
-                                y: 'cycle',
-                                guide: {
-                                    showGridLines: 'xy',
-                                    padding: { l: 25, b: 25, r: 25, t: 25 },
-                                    x: { hide: false },
-                                    y: { hide: true }
-                                },
-                                unit: [
-                                    {
-                                        type: 'ELEMENT.POINT'
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            }).renderTo('#extract-axes-container');
+            }).renderTo('#no-data-container');
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
@@ -675,6 +675,7 @@
 
         new tauChart.Plot(
                 {
+                    layoutEngine: 'EXTRACT',
                     data: data,
                     spec: facet2x1,
                     plugins: [
