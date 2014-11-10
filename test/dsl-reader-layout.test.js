@@ -591,47 +591,13 @@ define(function (require) {
             var logicalGraph = reader.buildGraph();
             var layoutXGraph = reader.calcLayout(
                 logicalGraph,
-                api.LayoutEngineFactory.get('SHARE-AXES'),
+                api.LayoutEngineFactory.get('EXTRACT'),
                 {
                     width : 1000,
                     height: 1000
                 });
 
-            expect(layoutXGraph.type).to.equal('WRAPPER.SHARED.AXES');
-
-
-
-            expect(layoutXGraph.x.length).to.equal(2);
-            expect(layoutXGraph.x[0].project.length).to.equal(1);
-            expect(layoutXGraph.x[1].effort.length).to.equal(2);
-
-            expect(layoutXGraph.y.length).to.equal(2);
-            expect(layoutXGraph.y[0].team.length).to.equal(1);
-            expect(layoutXGraph.y[1].cycle.length).to.equal(2);
-
-
-            var elementType = 'WRAP.AXIS';
-
-            var xLevel0 = layoutXGraph.x[0].project;
-            expect(xLevel0[0].type).to.equal(elementType);
-            expect(xLevel0[0].x).to.equal('project');
-
-            var xLevel1 = layoutXGraph.x[1].effort;
-            expect(xLevel1[0].type).to.equal(elementType);
-            expect(xLevel1[0].x).to.equal('effort');
-            expect(xLevel1[1].type).to.equal(elementType);
-            expect(xLevel1[1].x).to.equal('effort');
-
-
-            var yLevel0 = layoutXGraph.y[0].team;
-            expect(yLevel0[0].type).to.equal(elementType);
-            expect(yLevel0[0].y).to.equal('team');
-
-            var yLevel1 = layoutXGraph.y[1].cycle;
-            expect(yLevel1[0].type).to.equal(elementType);
-            expect(yLevel1[0].y).to.equal('cycle');
-            expect(yLevel1[1].type).to.equal(elementType);
-            expect(yLevel1[1].y).to.equal('cycle');
+            expect(layoutXGraph.type).to.equal('COORDS.RECT');
         });
     });
 });
