@@ -8,12 +8,12 @@ define(function(require){
         dimensions: schemes.dimensions,
         unit: schema({
             guide: undefined,
-            x: 'x',
+            x: 'color',
             y: null,
             type: "COORDS.RECT",
             unit: Array.of(schema({
                 guide: undefined,
-                x: 'x1',
+                x: 'x',
                 y: 'y',
                 unit:Array.of(schemes.interval)
             }))
@@ -31,7 +31,7 @@ define(function(require){
                 guide:{},
                 type:'bar',
                 data:testData,
-                x:['x','x1'],
+                x:['color','x'],
                 y:'y',
                 color:'color',
                 size:'size'

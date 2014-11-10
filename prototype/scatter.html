@@ -192,7 +192,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugi
     };
 
     tauPlugins.add('tableHighlight', Tooltip);
-    var defData = [{"userStories":3,"project":"My Project!","dataItem":{"id":"90485","type":"Project","orderingValue":115.0,"data":{"id":90485,"name":"My Project!","type":"Project"}}},{"userStories":3,"project":"New Project!","dataItem":{"id":"90486","type":"Project","orderingValue":116.0,"data":{"id":90486,"name":"New Project!","type":"Project"}}}];
+    var defData = [{"userStories":3,"orderingValue":115,"project":"My Project!","dataItem":{"id":"90485","type":"Project","orderingValue":115,"data":{"id":90485,"name":"My Project!","type":"Project"}}},{"userStories":3,"orderingValue":115,"project":"New Project!","dataItem":{"id":"90486","type":"Project","orderingValue":116,"data":{"id":90486,"name":"New Project!","type":"Project"}}}];
 
     function getFieldData($field) {
         try {
@@ -254,7 +254,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugi
             data: data,
             type: getFieldData($type),
             plugins: [tauPlugins.tooltip.apply(null, Object.keys(data[0])), tauPlugins.highlighter(), tauPlugins.tableHighlight(data)],
-            y: ['userStories'],
+            y: ['orderingValue','userStories'],
             x: ['project'],
             /*guide: {
              color: color
@@ -297,8 +297,6 @@ require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugi
         return keyValue;
     }
 
-}, function (e) {
-    debugger;
 })
 </script>
 </body>

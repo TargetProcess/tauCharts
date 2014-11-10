@@ -23,9 +23,47 @@ function createElement(type, config) {
         size: config.size
     };
 }
+const status = {
+    SUCCESS: "SUCCESS",
+    WARNING: "WARNING",
+    FAIL: "FAIL"
+};
+/* jshint ignore:start */
+var strategyNormalizeAxis = {
+    [status.SUCCESS]: (axis)=> axis,
+    [status.FAIL]: (axis)=> {
+        throw new Error('This configuration not supported, See http://api.taucharts.com/basic/facet.html');
+    },
+    [status.WARNING]: (axis, config)=> {
+        var measure = axis[config.indexMeasureAxis[0]];
+        var newAxis = _.without(axis, measure);
+        newAxis.push(measure);
+        return newAxis;
+    }
+};
+/* jshint ignore:end */
+function validateAxis(dimensions, axis) {
+    return axis.reduce(function (result, item, index) {
+        if (dimensions[item].type === 'measure') {
+            result.countMeasureAxis++;
+            result.indexMeasureAxis.push(index);
+        }
+        if (dimensions[item].type !== 'measure' && result.countMeasureAxis === 1) {
+            result.status = status.WARNING;
+        } else if (result.countMeasureAxis > 1) {
+            result.status = status.FAIL;
+        }
+        return result;
+    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: []});
+}
 function transformConfig(type, config) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
+
+    var validatedX = validateAxis(config.dimensions, x);
+    var validatedY = validateAxis(config.dimensions, y);
+    x = strategyNormalizeAxis[validatedX.status](x, validatedX);
+    y = strategyNormalizeAxis[validatedY.status](y, validatedY);
     var guide = normalizeSettings(config.guide);
     var maxDeep = Math.max(x.length, y.length);
     var spec = {
@@ -57,10 +95,10 @@ function transformConfig(type, config) {
         } else {
             spec = {
                 type: 'COORDS.RECT',
-                x:convertAxis(currentX),
-                y:convertAxis(currentY),
+                x: convertAxis(currentX),
+                y: convertAxis(currentY),
                 unit: [spec],
-                guide :currentGuide || {
+                guide: currentGuide || {
                     padding: {l: 0, b: 45, r: 0, t: 0},
                     x: {label: currentX},
                     y: {label: currentY}
@@ -95,8 +133,7 @@ var typesChart = {
 
 export class Chart extends Plot {
     convertConfig(config) {
-        var dimensions = this._normalizeDimensions(config.dimensions, config.data);
-        config.dimensions = dimensions;
+        config.dimensions = this._normalizeDimensions(config.dimensions, config.data);
         return typesChart[config.type](config);
     }
 }
