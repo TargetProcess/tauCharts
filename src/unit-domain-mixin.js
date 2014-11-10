@@ -172,11 +172,7 @@ export class UnitDomainMixin {
 
             var wrap = (domainPropObject) => func(fVal(fMap(domainPropObject)));
             // have to copy properties since d3 produce Function with methods
-            for (var p in func) {
-                if (func.hasOwnProperty(p)) {
-                    wrap[p] = func[p];
-                }
-            }
+            Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;
         };
     }

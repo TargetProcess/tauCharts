@@ -12,6 +12,16 @@ define(function (require) {
         beforeEach(function () {
             PeriodGenerator = tauChart.api.tickPeriod;
         });
+
+        it("should generate empty array for unknown period", function () {
+            var r = PeriodGenerator.generate(
+                iso('2014-10-30T23:59:59'),
+                iso('2014-11-02T10:00:00'),
+                'some_unknown_period');
+
+            expect(r.length).to.equal(0);
+        });
+
         it("should generate [day] range", function () {
             var r = PeriodGenerator.generate(
                 iso('2014-10-30T23:59:59'),
