@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.0 - 2014-11-06
+/*! tauCharts - v0.1.0 - 2014-11-10
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1387,7 +1387,7 @@ define(
     
         'EXTRACT': function(rootNode, domainMixin) {
     
-            var traverse = (function(rootNodeMatrix, totalBox, depth, rule) {
+            var traverse = (function(rootNodeMatrix/*, totalBox*/, depth, rule) {
     
                 var matrix = rootNodeMatrix;
     
@@ -1396,32 +1396,25 @@ define(
     
                 matrix.iterate(function(r, c, subNodes) {
     
-                    var newNodes = subNodes
-                        .map(function(unit) {
-                            return rule(unit, {
-                                firstRow: (r === 0),
-                                firstCol: (c === 0),
-                                lastRow: (r === (rows - 1)),
-                                lastCol: (c === (cols - 1)),
-                                depth: depth
-                            });
-                        })
-                        .filter(function(unit) {
-                      return unit !== null;
+                    subNodes.forEach(function(unit) {
+                        return rule(unit, {
+                            firstRow: (r === 0),
+                            firstCol: (c === 0),
+                            lastRow: (r === (rows - 1)),
+                            lastCol: (c === (cols - 1)),
+                            depth: depth
+                        });
                     });
     
-                    matrix.setRC(r, c, newNodes);
+                    //var newTotalBox = utils.clone(totalBox);
     
-                    var newTotalBox = utils.clone(totalBox);
-    
-                    matrix
-                        .getRC(r, c)
+                    subNodes
                         .filter(function(unit) {
                       return unit.$matrix;
                     })
                         .forEach(function(unit) {
                             unit.$matrix = new TMatrix(unit.$matrix.cube);
-                            traverse(unit.$matrix, newTotalBox, depth - 1, rule);
+                            traverse(unit.$matrix/*, totalBox*/, depth - 1, rule);
                         });
                 });
             });
@@ -1429,10 +1422,8 @@ define(
             var normalizedNode = fnApplyDefaults(rootNode);
     
             var coordNode = utils.clone(normalizedNode);
-            var elemsNode = utils.clone(normalizedNode);
     
             var coordMatrix = new TMatrix([[[coordNode]]]);
-            var elemsMatrix = new TMatrix([[[elemsNode]]]);
     
             var box = specUnitSummary(coordNode);
     
@@ -1456,9 +1447,8 @@ define(
             var wrapperNode = utilsDraw.applyNodeDefaults({
                 type: 'COORDS.RECT',
                 options: utils.clone(rootNode.options),
-                $matrix: new TMatrix([[[coordNode, elemsNode]]]),
+                $matrix: new TMatrix([[[coordNode]]]),
                 guide: {
-                    split: false,
                     padding: {
                         l: globPadd.l,
                         b: globPadd.b,
@@ -1468,37 +1458,12 @@ define(
                 }
             });
     
-            traverse(coordMatrix, utils.clone(box), box.depth, function(unit, selectorPredicates) {
+            traverse(coordMatrix/*, utils.clone(box)*/, box.depth, function(unit, selectorPredicates) {
     
                 var depth = selectorPredicates.depth;
-    
-                if (unit.type !== 'COORDS.RECT') {
-                    // display: none;
-                    return null;
-                }
     
                 unit.guide.x.hide = !selectorPredicates.lastRow;
                 unit.guide.y.hide = !selectorPredicates.firstCol;
-    
-                unit.guide.x.padding = (box.paddings[depth].b + unit.guide.x.padding);
-                unit.guide.y.padding = (box.paddings[depth].l + unit.guide.y.padding);
-    
-                var d = (depth > 1) ? 0 : 8;
-                unit.guide.padding.l = d;
-                unit.guide.padding.b = d;
-                unit.guide.padding.r = d;
-                unit.guide.padding.t = d;
-    
-                unit.guide.showGridLines = '';
-                return unit;
-            });
-    
-            traverse(elemsMatrix, utils.clone(box), box.depth, function(unit, selectorPredicates) {
-    
-                var depth = selectorPredicates.depth;
-    
-                unit.guide.x.hide = true;
-                unit.guide.y.hide = true;
     
                 unit.guide.x.padding = (box.paddings[depth].b + unit.guide.x.padding);
                 unit.guide.y.padding = (box.paddings[depth].l + unit.guide.y.padding);
