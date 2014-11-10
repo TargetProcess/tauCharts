@@ -12,7 +12,8 @@ define(function (require) {
 
         var data = [
             {
-                "date": new Date(iso("2014-11-01T17:25:01")),
+                "date": new Date(iso("2014-11-01T00:00:00")),
+                "time": new Date(iso("2014-11-01T17:25:01")),
                 "effort": 1.0000,
                 "name": "Report",
                 "team": "Exploited",
@@ -22,7 +23,8 @@ define(function (require) {
                 role: 'Feature Owner'
             },
             {
-                "date": +new Date(iso("2014-10-28T14:12:22")),
+                "date": +new Date(iso("2014-10-28T00:00:00")),
+                "time": +new Date(iso("2014-10-28T14:12:22")),
                 "effort": 0.0000,
                 "name": "Follow",
                 "team": "Alaska",
@@ -32,7 +34,8 @@ define(function (require) {
                 role: 'Some Unknown role'
             },
             {
-                "date": iso("2014-10-30T22:01:17"),
+                "date": iso("2014-10-30T00:00:00"),
+                "time": iso("2014-10-30T22:01:17"),
                 "effort": 2.0000,
                 "name": "Errors",
                 "team": "Exploited",
@@ -50,6 +53,7 @@ define(function (require) {
             decorator = new UnitDomainMixin(
                 {
                     date: {type: 'order', scale: 'period'},
+                    time: {type: 'measure', scale: 'time'},
                     name: {type: 'category', scale: 'ordinal'},
                     project: {type: 'category', scale: 'ordinal'},
                     team: {type: 'category', scale: 'ordinal'},
@@ -104,6 +108,13 @@ define(function (require) {
                     new Date(data[2].date).getTime(),
                     new Date(data[0].date).getTime()
                 ]);
+
+            expect(unit.domain('time')).to.deep.equal(
+                [
+                    new Date(data[1].time).getTime(),
+                    new Date(data[2].time).getTime(),
+                    new Date(data[0].time).getTime()
+                ]);
         });
 
         it("should decorate with [scaleTo] method", function () {
@@ -141,6 +152,31 @@ define(function (require) {
             expect(dateMinMaxScale(data[2].date)).to.equal(3);
             expect(dateMinMaxScale(data[0].date)).to.equal(5);
 
+
+
+            var timeScale = unit.scaleTo('time', [0, 10], {});
+            expect(timeScale(data[1].time)).to.equal(0);
+            expect(timeScale(data[2].time)).to.equal(5.625925708157991);
+            expect(timeScale(data[0].time)).to.equal(10);
+
+
+
+            var timeMinMaxScale = unit.scaleTo(
+                'time',
+                [0, 10],
+                {
+                    min: iso('2014-09-01T00:00:00'),
+                    max: iso('2015-01-01T00:00:00')
+                });
+            expect(timeMinMaxScale(iso('2014-09-01T00:00:00'))).to.equal(0);
+            // 2014-11-01T00:00:00
+            expect(timeMinMaxScale(data[0].date)).to.equal(5);
+            // 2014-11-01T17:25:01
+            expect(timeMinMaxScale(data[0].time)).to.equal(5.059484099878567);
+            expect(timeMinMaxScale(iso('2015-01-01T00:00:00'))).to.equal(10);
+
+
+
             var scaleProject = unit.scaleTo('project', [0, 10]);
             expect(scaleProject('TP2')).to.equal(7.5);
             expect(scaleProject('TP3')).to.equal(2.5);
@@ -149,6 +185,13 @@ define(function (require) {
             expect(scaleEffort(0)).to.equal(0);
             expect(scaleEffort(1)).to.equal(5);
             expect(scaleEffort(2)).to.equal(10);
+
+
+            var scaleEffortMinMax = unit.scaleTo('effort', [0, 10], { min: 0, max: 100 });
+            expect(scaleEffortMinMax(0)).to.equal(0);
+            expect(scaleEffortMinMax(50)).to.equal(5);
+            expect(scaleEffortMinMax(100)).to.equal(10);
+
 
             var scalePriority = unit.scaleTo('priority', [0, 90], {map: 'name'});
             expect(scalePriority(data[0].priority)).to.equal(15);
