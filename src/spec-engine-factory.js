@@ -1,6 +1,4 @@
-import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
-import {TMatrix} from './matrix';
 
 var inheritProps = (unit, root) => {
     unit.guide = unit.guide || {};

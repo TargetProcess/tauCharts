@@ -5,13 +5,15 @@ import {UnitsRegistry} from './units-registry';
 export class DSLReader {
 
     constructor (spec, data, specEngine) {
-        this.spec = specEngine(utils.clone(spec));
+        this.spec = utils.clone(spec);
         this.domain = new UnitDomainMixin(this.spec.dimensions, data);
+        this.specEngine = specEngine;
     }
 
     buildGraph() {
+        var spec = this.specEngine(this.spec);
         var buildRecursively = (unit) => UnitsRegistry.get(unit.type).walk(this.domain.mix(unit), buildRecursively);
-        return buildRecursively(this.spec.unit);
+        return buildRecursively(spec.unit);
     }
 
     calcLayout(graph, layoutEngine, size) {
