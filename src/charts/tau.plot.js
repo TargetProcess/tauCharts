@@ -1,4 +1,5 @@
 import {DSLReader} from '../dsl-reader';
+import {SpecEngineFactory} from '../spec-engine-factory';
 import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utilsDom} from '../utils/utils-dom';
@@ -50,7 +51,7 @@ export class Plot {
             .attr("width", size.width)
             .attr("height", size.height);
 
-        var reader = new DSLReader(this.spec, this.data);
+        var reader = new DSLReader(this.spec, this.data, SpecEngineFactory.get());
         var xGraph = reader.buildGraph();
         var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT');
         var layout = reader.calcLayout(xGraph, engine, size);

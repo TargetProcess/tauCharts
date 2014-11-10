@@ -4,8 +4,8 @@ import {UnitsRegistry} from './units-registry';
 
 export class DSLReader {
 
-    constructor (spec, data) {
-        this.spec = utils.clone(spec);
+    constructor (spec, data, specEngine) {
+        this.spec = specEngine(utils.clone(spec));
         this.domain = new UnitDomainMixin(this.spec.dimensions, data);
     }
 

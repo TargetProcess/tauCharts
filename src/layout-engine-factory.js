@@ -16,32 +16,9 @@ var specUnitSummary = (spec, boxOpt) => {
     return box;
 };
 
-var fnApplyDefaults = (rootNode) => {
-
-    var fnTraverseLayout = (rawNode) => {
-
-        var node = utilsDraw.applyNodeDefaults(rawNode);
-
-        if (!node.$matrix) {
-            return node;
-        }
-
-        node.$matrix.iterate((iRow, iCol, subNodes) => {
-            subNodes.forEach(fnTraverseLayout);
-        });
-
-        return node;
-    };
-
-    return fnTraverseLayout(rootNode);
-};
-
-
 var fnDefaultLayoutEngine = (rootNode, domainMixin) => {
 
-    var fnTraverseLayout = (rawNode) => {
-
-        var node = utilsDraw.applyNodeDefaults(rawNode);
+    var fnTraverseLayout = (node) => {
 
         if (!node.$matrix) {
             return node;
@@ -130,9 +107,7 @@ var LayoutEngineTypeMap = {
             });
         });
 
-        var normalizedNode = fnApplyDefaults(rootNode);
-
-        var coordNode = utils.clone(normalizedNode);
+        var coordNode = utils.clone(rootNode);
 
         var coordMatrix = new TMatrix([[[coordNode]]]);
 

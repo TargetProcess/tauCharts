@@ -3,6 +3,7 @@ import {Chart} from './charts/tau.chart';
 import {UnitDomainMixin} from './unit-domain-mixin';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {DSLReader} from './dsl-reader';
+import {SpecEngineFactory} from './spec-engine-factory';
 import {LayoutEngineFactory} from './layout-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
 import {nodeMap} from './node-map';
@@ -16,6 +17,7 @@ var tauChart = {
         UnitDomainMixin: UnitDomainMixin,
         UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
         DSLReader: DSLReader,
+        SpecEngineFactory: SpecEngineFactory,
         LayoutEngineFactory: LayoutEngineFactory
     },
     api: {

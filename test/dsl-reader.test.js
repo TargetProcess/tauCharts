@@ -57,7 +57,7 @@ define(function (require) {
 
             var originalSpecState = JSON.stringify(spec);
 
-            var reader = new tauChart.__api__.DSLReader(spec, data);
+            var reader = new tauChart.__api__.DSLReader(spec, data, tauChart.__api__.SpecEngineFactory.get());
 
             var logicalGraph = reader.buildGraph();
 
@@ -106,7 +106,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                tauChart.__api__.SpecEngineFactory.get());
 
             var logicalGraph = reader.buildGraph();
 
@@ -148,7 +149,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                tauChart.__api__.SpecEngineFactory.get());
 
             var logicalGraph = reader.buildGraph();
 

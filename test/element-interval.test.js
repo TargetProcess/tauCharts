@@ -150,8 +150,8 @@ define(function (require) {
                 x: 'x',
                 y: 'color',
                 guide: {
-                    x: {tickAutoScale: false},
-                    y: {tickAutoScale: false}
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {

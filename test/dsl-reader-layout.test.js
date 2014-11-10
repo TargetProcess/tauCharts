@@ -46,7 +46,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             expect(function () {
                 reader.buildGraph()
@@ -80,7 +81,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             var logicXGraph = reader.buildGraph();
             var layoutGraph = reader.calcLayout(
@@ -159,7 +161,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             var logicXGraph = reader.buildGraph();
             var layoutGraph = reader.calcLayout(
@@ -238,7 +241,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             var logicXGraph = reader.buildGraph();
             var layoutGraph = reader.calcLayout(
@@ -318,7 +322,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             var logicXGraph = reader.buildGraph();
             var layoutGraph = reader.calcLayout(
@@ -410,7 +415,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             var logicXGraph = reader.buildGraph();
             var layoutGraph = reader.calcLayout(
@@ -492,7 +498,8 @@ define(function (require) {
                         ]
                     }
                 },
-                data);
+                data,
+                api.SpecEngineFactory.get());
 
             var logicXGraph = reader.buildGraph();
             var layoutGraph = reader.calcLayout(
@@ -586,7 +593,7 @@ define(function (require) {
             };
 
             var api = tauChart.__api__;
-            var reader = new api.DSLReader(spec, data);
+            var reader = new api.DSLReader(spec, data, api.SpecEngineFactory.get());
 
             var logicalGraph = reader.buildGraph();
             var layoutXGraph = reader.calcLayout(
