@@ -31,8 +31,8 @@ const status = {
 /* jshint ignore:start */
 var strategyNormalizeAxis = {
     [status.SUCCESS]: (axis)=> axis,
-    [status.FAIL]: (axis)=> {
-        throw new Error('This configuration not supported, See http://api.taucharts.com/basic/facet.html');
+    [status.FAIL]: ()=> {
+        throw new Error('This configuration not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
     [status.WARNING]: (axis, config)=> {
         var measure = axis[config.indexMeasureAxis[0]];
@@ -74,7 +74,7 @@ function transformConfig(type, config) {
     for (var i = maxDeep; i > 0; i--) {
         var currentX = x.pop();
         var currentY = y.pop();
-        var currentGuide = guide.pop();
+        var currentGuide = guide.pop() || {};
         if (i === maxDeep) {
             spec.x = currentX;
             spec.y = currentY;
@@ -86,23 +86,23 @@ function transformConfig(type, config) {
                 flip: config.flip,
                 colorGuide: colorGuide
             }));
-            spec.guide = currentGuide || {
+            spec.guide = _.defaults(currentGuide, {
                 padding: {l: 45, b: 45, r: 24, t: 24},
                 showGridLines: 'xy',
                 x: {label: currentX},
                 y: {label: currentY}
-            };
+            });
         } else {
             spec = {
                 type: 'COORDS.RECT',
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
                 unit: [spec],
-                guide: currentGuide || {
-                    padding: {l: 0, b: 45, r: 0, t: 0},
+                guide: _.defaults(currentGuide, {
+                    padding: {l: 45, b: 45, r: 0, t: 0},
                     x: {label: currentX},
                     y: {label: currentY}
-                }
+                })
             };
         }
     }
