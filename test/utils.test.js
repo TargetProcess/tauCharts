@@ -41,14 +41,24 @@ define(function (require) {
             check(samples);
         });
 
+        it("should add 0 by default for negative numbers", function () {
+            var samples = [
+                [[-0.01, -0.092], [-0.1, 0]],
+                [[-10, -99]     , [-110, 0]],
+                [[-2, -9]       , [-10, 0]]
+            ];
+
+            check(samples);
+        });
+
         it("should nice domain", function () {
             var samples = [
                 [[1, 2, 20, 40   ], [0, 45]],
                 [[20, 23, 45, 150], [0, 160]],
                 [[3], [0, 3.35]],
                 [[0], [0, 0.11]],
-                [[-3], [-3.05, -2.65]],
-                [[-30, -10], [-32, -8]]
+                [[-3], [-3.05, 0]],
+                [[-30, -10], [-32, 0]]
             ];
 
             check(samples);

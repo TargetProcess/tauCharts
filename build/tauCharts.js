@@ -501,8 +501,14 @@ define('utils/utils',["exports"], function(exports) {
               extent[0] = (extent[0] - koeffLow);
           }
   
-          var koeffTop = (deltaTop <= limit) ? step : 0;
-          extent[1] = extent[1] + koeffTop;
+          if (top <= 0) {
+              // include 0 by default
+              extent[1] = 0;
+          }
+          else {
+              var koeffTop = (deltaTop <= limit) ? step : 0;
+              extent[1] = extent[1] + koeffTop;
+          }
   
           return [
               parseFloat(extent[0].toFixed(15)),
@@ -1387,7 +1393,7 @@ define(
     
         'EXTRACT': function(rootNode, domainMixin) {
     
-            var traverse = (function(rootNodeMatrix/*, totalBox*/, depth, rule) {
+            var traverse = (function(rootNodeMatrix, depth, rule) {
     
                 var matrix = rootNodeMatrix;
     
@@ -1406,15 +1412,13 @@ define(
                         });
                     });
     
-                    //var newTotalBox = utils.clone(totalBox);
-    
                     subNodes
                         .filter(function(unit) {
                       return unit.$matrix;
                     })
                         .forEach(function(unit) {
                             unit.$matrix = new TMatrix(unit.$matrix.cube);
-                            traverse(unit.$matrix/*, totalBox*/, depth - 1, rule);
+                            traverse(unit.$matrix, depth - 1, rule);
                         });
                 });
             });
@@ -1458,7 +1462,7 @@ define(
                 }
             });
     
-            traverse(coordMatrix/*, utils.clone(box)*/, box.depth, function(unit, selectorPredicates) {
+            traverse(coordMatrix, box.depth, function(unit, selectorPredicates) {
     
                 var depth = selectorPredicates.depth;
     
@@ -1479,78 +1483,6 @@ define(
             });
     
             return fnDefaultLayoutEngine(wrapperNode, domainMixin);
-        },
-    
-        'SHARE-AXES': function(rootNode, domainMixin) {
-    
-            var traverse = (function(node, level, wrapper) {
-    
-                var arr = node.$matrix.getRC(0, 0);
-    
-                if (arr[0].$matrix) {
-                    wrapper.x[level] = wrapper.x[level] || {};
-                    wrapper.x[level][arr[0].x] = [];
-    
-                    wrapper.y[level] = wrapper.y[level] || {};
-                    wrapper.y[level][arr[0].y] = [];
-                }
-    
-                node.$matrix.iterate(function(r, c, subNodes) {
-    
-                    if (r === 0 || c === 0) {
-    
-                        var _subNode = utilsDraw.applyNodeDefaults(subNodes[0]);
-    
-                        if (_subNode.$matrix) {
-    
-                            var _subAxis = _.extend(utils.clone(_.omit(_subNode, '$matrix')), {type: 'WRAP.AXIS'});
-    
-                            if (r === 0) {
-                                wrapper.x[level][_subAxis.x].push(_subAxis);
-                            }
-    
-                            if (c === 0) {
-                                wrapper.y[level][_subAxis.y].push(_subAxis);
-                            }
-    
-                            traverse(_subNode, level + 1, wrapper);
-                        }
-                    }
-                });
-    
-                return node;
-            });
-    
-            var wrapperNode = utilsDraw.applyNodeDefaults({
-                type: 'WRAPPER.SHARED.AXES',
-                options: utils.clone(rootNode.options),
-                x: [],
-                y: [],
-                $matrix: new TMatrix([[[rootNode]]])
-            });
-    
-            var wrapper = traverse(domainMixin.mix(wrapperNode), 0, wrapperNode);
-    
-            var xW = wrapper.x.reduce(function(memo, level) {
-                Object.keys(level).forEach(function(k) {
-                    memo += level[k][0].guide.padding.b;
-                });
-                return memo;
-            }, 0);
-    
-            var yW = wrapper.y.reduce(function(memo, level) {
-                Object.keys(level).forEach(function(k) {
-                    memo += level[k][0].guide.padding.l;
-                });
-                return memo;
-            }, 0);
-    
-            rootNode.options.width = wrapperNode.options.width - yW;
-            rootNode.options.height = wrapperNode.options.height - xW;
-    
-            rootNode = fnDefaultLayoutEngine(rootNode, domainMixin);
-    
-            return wrapper;
         },
     
         'EXTRACT-AXES': function(rootNode, domainMixin) {

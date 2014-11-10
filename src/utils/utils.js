@@ -49,8 +49,14 @@ var utils = {
             extent[0] = (extent[0] - koeffLow);
         }
 
-        var koeffTop = (deltaTop <= limit) ? step : 0;
-        extent[1] = extent[1] + koeffTop;
+        if (top <= 0) {
+            // include 0 by default
+            extent[1] = 0;
+        }
+        else {
+            var koeffTop = (deltaTop <= limit) ? step : 0;
+            extent[1] = extent[1] + koeffTop;
+        }
 
         return [
             parseFloat(extent[0].toFixed(15)),
