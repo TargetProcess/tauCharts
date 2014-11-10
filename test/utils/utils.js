@@ -37,6 +37,7 @@ define(function (require) {
                 context.element = document.createElement('div');
                 document.body.appendChild(context.element);
                 context.chart = new tauChart.Plot({
+                    layoutEngine: 'DEFAULT',
                     spec: spec,
                     data: data
                 });

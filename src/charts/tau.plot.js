@@ -52,7 +52,7 @@ export class Plot {
 
         var reader = new DSLReader(this.spec, this.data);
         var xGraph = reader.buildGraph();
-        var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT-AXES');
+        var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT');
         var layout = reader.calcLayout(xGraph, engine, size);
         var canvas = reader.renderGraph(layout, svgContainer);
 

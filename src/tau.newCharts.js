@@ -31,9 +31,6 @@ tauChart.api.UnitsRegistry
     .add('COORDS.RECT', nodeMap['COORDS.RECT'])
     .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
     .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
-    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL'])
-    .add('WRAP.AXIS', nodeMap['WRAP.AXIS'])
-    .add('WRAP.MULTI_AXES', nodeMap['WRAP.MULTI_AXES'])
-    .add('WRAP.MULTI_GRID', nodeMap['WRAP.MULTI_GRID']);
+    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL']);
 
 export {tauChart};
