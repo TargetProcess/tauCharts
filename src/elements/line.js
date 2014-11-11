@@ -1,5 +1,6 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
+
 var line = function (node) {
 
     var options = node.options;
@@ -14,7 +15,7 @@ var line = function (node) {
         .key((d) => d[color.dimension])
         .entries(node.partition());
 
-    var updateLines = function () {
+    var updateLines = function (d) {
         this.attr('class', (d) => {
             return CSS_PREFIX + 'line' + ' line ' + color.get(d.key);
         });
@@ -23,6 +24,30 @@ var line = function (node) {
         paths.enter().append('path').call(updatePaths);
         paths.exit().remove();
     };
+    var drawPointsIfNeed = function (categories) {
+        var data = categories.reduce(function (data, item) {
+            var values = item.values;
+            if (values.length === 1) {
+                data.push(values[0]);
+            }
+            return data;
+        }, []);
+        var update = function () {
+            return this
+                .attr('r', 1.5)
+                .attr('class', (d) => {
+                    return CSS_PREFIX + 'dot-line dot-line ' + CSS_PREFIX + 'dot ' + 'i-role-datum ' + color.get(d[color.dimension]);
+                })
+                .attr('cx', (d) => xScale(d[node.x.scaleDim]))
+                .attr('cy', (d) => yScale(d[node.y.scaleDim]));
+        };
+
+        var elements = options.container.selectAll('.dot-line').data(data);
+        elements.call(update);
+        elements.exit().remove();
+        elements.enter().append('circle').call(update);
+    };
+
 
     var line = d3
         .svg
@@ -33,7 +58,7 @@ var line = function (node) {
     var updatePaths = function () {
         this.attr('d', line);
     };
-
+    drawPointsIfNeed(categories);
     var lines = options.container.selectAll('.line').data(categories);
     lines.call(updateLines);
     lines.enter().append('g').call(updateLines);

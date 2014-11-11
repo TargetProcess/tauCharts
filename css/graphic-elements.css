@@ -137,8 +137,11 @@
   cursor: pointer;
 }
 .graphical-report__line {
-  fill: none !important;
+  fill: none;
   stroke-width: 1.5px;
+}
+.graphical-report__dot-line {
+  opacity: 1;
 }
 .graphical-report__dot.highlighted {
   stroke-width: 6;
