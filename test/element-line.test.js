@@ -54,4 +54,46 @@ define(function (require) {
             assert.notEqual(attrib(lines[0], 'class'), attrib(lines[1], 'class'), 'should different class');
         });
     });
+    describe("ELEMENT.LINE WITH ONE POINT", function () {
+
+        var testData = [
+            {x: 1, y: 1, color: 'red'}
+        ];
+
+        var element;
+        var chart;
+
+        beforeEach(function () {
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Plot({
+                spec: {
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'x',
+                        y: 'y',
+                        guide: {},
+                        unit: [
+                            {
+                                type: 'ELEMENT.LINE',
+                                color: 'color',
+                                x: 'x',
+                                y: 'y'
+                            }
+                        ]
+                    }
+                },
+                data: testData
+            });
+            chart.renderTo(element, {width: 800, height: 800});
+        });
+        afterEach(function () {
+            element.parentNode.removeChild(element);
+        });
+
+        it("should render poin element", function () {
+            var dotLines = d3.selectAll('.dot-line');
+            assert.equal(dotLines.length, 1, 'should draw point');
+        });
+    });
 });
