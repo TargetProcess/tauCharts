@@ -11,7 +11,7 @@ export class DSLReader {
     }
 
     buildGraph() {
-        var spec = this.specEngine(this.spec);
+        var spec = this.specEngine(this.spec, this.domain.mix({}));
         var buildRecursively = (unit) => UnitsRegistry.get(unit.type).walk(this.domain.mix(unit), buildRecursively);
         return buildRecursively(spec.unit);
     }

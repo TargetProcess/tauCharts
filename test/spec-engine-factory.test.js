@@ -43,6 +43,21 @@ define(function (require) {
             expect(full.unit.guide.padding.b).to.equal(20);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
+
+            var x = full.unit.guide.x;
+            var y = full.unit.guide.y;
+
+            expect(x.autoScale).to.equal(true);
+            expect(x.scaleOrient).to.equal('bottom');
+            expect(x.padding).to.equal(0);
+            expect(x.cssClass).to.equal('x axis');
+            expect(x.textAnchor).to.equal('middle');
+
+            expect(y.autoScale).to.equal(true);
+            expect(y.scaleOrient).to.equal('left');
+            expect(y.padding).to.equal(0);
+            expect(y.cssClass).to.equal('y axis');
+            expect(y.textAnchor).to.equal('end');
         });
     });
 });
