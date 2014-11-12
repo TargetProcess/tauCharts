@@ -38,7 +38,7 @@
 .generate-line-params(@params: width; @default-size: 1px; @step: 0.5px; @n: 5);
 
 /* Generate .line-opacity-@{n} */
-.generate-line-params(@params: opacity; @default-size: 1px; @step: -0.05px; @n: 5);
+.generate-line-params(@params: opacity; @default-size: 1; @step: -0.05; @n: 5);
 
 /* endregion */
 
@@ -112,7 +112,6 @@
   /* Linechart  */
   &__line {
     fill: none;
-    stroke-width: 1.5px;
   }
   &__dot-line {
     opacity: 1;
