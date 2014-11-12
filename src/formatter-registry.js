@@ -37,7 +37,8 @@ var FORMATS_MAP = {
 var FormatterRegistry = {
 
     get: (formatAlias) => {
-        var formatter = FORMATS_MAP[formatAlias];
+
+        var formatter = formatAlias === null ? ((x) => x.toString()) : FORMATS_MAP[formatAlias];
         if (!formatter) {
             formatter = (v) => {
                 var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);

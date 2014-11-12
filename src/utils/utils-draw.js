@@ -36,10 +36,17 @@ var decorateAxisLabel = (nodeScale, x) => {
 };
 
 var decorateTickLabel = (nodeScale, x) => {
-    nodeScale
-        .selectAll('.tick text')
-        .attr('transform', rotate(x.guide.rotate))
+
+    var angle = x.guide.rotate;
+
+    var ticks = nodeScale.selectAll('.tick text');
+    ticks
+        .attr('transform', rotate(angle))
         .style('text-anchor', x.guide.textAnchor);
+
+    if (angle === -90) {
+        ticks.attr('x', -9).attr('y', 0);
+    }
 };
 
 var fnDrawDimAxis = function (x, AXIS_POSITION, size) {

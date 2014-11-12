@@ -5,13 +5,12 @@ import * as _ from 'underscore';
 import * as d3 from 'd3';
 /* jshint ignore:end */
 
-var rangeMethods = {
-
-    'ordinal': (inputValues, interval, props) => {
-        return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
+var autoScaleMethods = {
+    'ordinal': (inputValues, props) => {
+        return inputValues;
     },
 
-    'linear': (inputValues, interval, props) => {
+    'linear': (inputValues, props) => {
         var domainParam = (props.autoScale) ?
             utils.autoScale(inputValues) :
             d3.extent(inputValues);
@@ -19,15 +18,13 @@ var rangeMethods = {
         var min = _.isNumber(props.min) ? props.min : domainParam[0];
         var max = _.isNumber(props.max) ? props.max : domainParam[1];
 
-        var range = [
+        return [
             Math.min(min, domainParam[0]),
             Math.max(max, domainParam[1])
         ];
-
-        return d3.scale.linear().domain(range).rangeRound(interval, 1);
     },
 
-    'period': (inputValues, interval, props) => {
+    'period': (inputValues, props) => {
         var domainParam = d3.extent(inputValues);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
@@ -37,22 +34,37 @@ var rangeMethods = {
             Math.max(max, domainParam[1])
         ];
 
-        var dates = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
-
-        return d3.scale.ordinal().domain(dates).rangePoints(interval, 1);
+        return UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
     },
 
-    'time': (inputValues, interval, props) => {
+    'time': (inputValues, props) => {
         var domainParam = d3.extent(inputValues);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
 
-        var range = [
+        return [
             Math.min(min, domainParam[0]),
             Math.max(max, domainParam[1])
         ];
+    }
+};
 
-        return d3.time.scale().domain(range).range(interval);
+var rangeMethods = {
+
+    'ordinal': (inputValues, interval) => {
+        return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
+    },
+
+    'linear': (inputValues, interval) => {
+        return d3.scale.linear().domain(inputValues).rangeRound(interval, 1);
+    },
+
+    'period': (inputValues, interval) => {
+        return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
+    },
+
+    'time': (inputValues, interval) => {
+        return d3.time.scale().domain(inputValues).range(interval);
     }
 };
 
@@ -157,7 +169,7 @@ export class UnitDomainMixin {
             return domainSortedAsc.map(fnMapperId);
         };
 
-        this.fnScaleTo = (scaleDim, interval, options) => {
+        var _scaleMeta = (scaleDim, options) => {
             var opts = options || {};
             var dimx = _.defaults({}, meta[scaleDim]);
 
@@ -166,11 +178,26 @@ export class UnitDomainMixin {
                 ((x) => UnitDomainPeriodGenerator.get(opts.period).cast(new Date(x))) :
                 ((x) => x);
 
-            var vals = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
+            var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
+            var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
 
-            var func = rangeMethods[dimx.scale](vals, interval, opts);
+            return {
+                extract: (x) => fVal(fMap(x)),
+                values: autoScaledVals
+            };
+        };
 
-            var wrap = (domainPropObject) => func(fVal(fMap(domainPropObject)));
+        this.fnScaleMeta = _scaleMeta;
+
+        this.fnScaleTo = (scaleDim, interval, options) => {
+            var opts = options || {};
+            var dimx = _.defaults({}, meta[scaleDim]);
+
+            var info = _scaleMeta(scaleDim, options);
+
+            var func = rangeMethods[dimx.scale](info.values, interval, opts);
+
+            var wrap = (domainPropObject) => func(info.extract(domainPropObject));
             // have to copy properties since d3 produce Function with methods
             Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;
@@ -181,6 +208,7 @@ export class UnitDomainMixin {
         unit.dimension = this.fnDimension;
         unit.source = this.fnSource;
         unit.domain = this.fnDomain;
+        unit.scaleMeta = this.fnScaleMeta;
         unit.scaleTo = this.fnScaleTo;
         unit.partition = (() => unit.source(unit.$where));
 

@@ -1,4 +1,6 @@
+import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
+import {FormatterRegistry} from './formatter-registry';
 
 var inheritProps = (unit, root) => {
     unit.guide = unit.guide || {};
@@ -8,7 +10,36 @@ var inheritProps = (unit, root) => {
     return unit;
 };
 
-var getPhisicalTickWidth = function(text) {
+var createSelectorPredicates = (root) => {
+
+    var children = root.unit || [];
+
+    var isLeaf = !root.hasOwnProperty('unit');
+    var isLeafParent = !children.some((c) => c.hasOwnProperty('unit'));
+
+    return {
+        type: root.type,
+        isLeaf: isLeaf,
+        isLeafParent: !isLeaf && isLeafParent
+    };
+};
+
+var fnTraverseTree = (specUnitRef, transformRules) => {
+    var temp = utilsDraw.applyNodeDefaults(specUnitRef);
+    var root = transformRules(createSelectorPredicates(temp), temp);
+    var prop = _.omit(root, 'unit');
+    (root.unit || []).forEach((unit) => fnTraverseTree(inheritProps(unit, prop), transformRules));
+    return root;
+};
+
+var getPhisicalTickSize = function(text) {
+
+    if (text === '') {
+        return {
+            width: 0,
+            height: 0
+        };
+    }
 
     var id = _.uniqueId('tauChartHelper');
 
@@ -37,83 +68,145 @@ var getPhisicalTickWidth = function(text) {
         yTick: text
     });
 
-    var sel = d3.select('#' + id).selectAll('.x.axis .tick text');
+    var textNode = d3.select('#' + id).selectAll('.x.axis .tick text')[0][0];
 
-    console.log(sel);
-    console.log(sel[0][0].clientWidth);
-
-    return sel[0][0].clientWidth;
+    return {
+        width: textNode.clientWidth,
+        height: textNode.clientHeight
+    };
 };
 
 var SpecEngineTypeMap = {
 
     'DEFAULT': (spec, meta) => {
-
-        var fnTraverseTree = (specUnitRef) => {
-            var root = utilsDraw.applyNodeDefaults(specUnitRef);
-            var prop = _.omit(root, 'unit');
-            (root.unit || []).forEach((unit) => fnTraverseTree(inheritProps(unit, prop)));
-            return root;
-        };
-
-        fnTraverseTree(spec.unit);
-
-        return spec;
+        return (selectorPredicates, unit) => unit;
     },
 
     'AUTO': (spec, meta) => {
 
-        var fnTraverseTree = (specUnitRef, transform) => {
-            var rootUnit = utilsDraw.applyNodeDefaults(specUnitRef);
-            var children = rootUnit.unit || [];
-            var isLeaf = !rootUnit.hasOwnProperty('unit');
-            var isLeafParent = !children.some((c) => c.hasOwnProperty('unit'));
+        var xLabels = [];
+        var yLabels = [];
+        var xUnit = null;
+        var yUnit = null;
+        fnTraverseTree(spec.unit, (selectors, unit) => {
 
-            var predicates = {
-                type: rootUnit.type,
-                isLeaf: isLeaf,
-                isLeafParent: !isLeaf && isLeafParent
-            };
+            if (selectors.isLeaf) {
+                return unit;
+            }
 
-            rootUnit = transform(predicates, rootUnit);
+            if (!xUnit && unit.x) {
+                xUnit = unit;
+            }
 
-            var prop = _.omit(rootUnit, 'unit');
-            children.forEach((unit) => fnTraverseTree(inheritProps(unit, prop), transform));
-            return rootUnit;
-        };
+            if (!yUnit && unit.y) {
+                yUnit = unit;
+            }
 
-        fnTraverseTree(spec.unit, (selectorPredicates, unit) => {
+            var x = unit.guide.x.label.text;
+            if (x) {
+                xLabels.push(x);
+                unit.guide.x.label.text = '';
+            }
+
+            var y = unit.guide.y.label.text;
+            if (y) {
+                yLabels.push(y);
+                unit.guide.y.label.text = '';
+            }
+
+            return unit;
+        });
+
+        if (xUnit) {
+            xUnit.guide.x.label.text = xLabels.join(' > ');
+        }
+
+        if (yUnit) {
+            yUnit.guide.y.label.text = yLabels.join(' > ');
+        }
+
+        return (selectorPredicates, unit) => {
 
             if (selectorPredicates.isLeaf) {
                 return unit;
             }
 
+            var dimX = meta.dimension(unit.x);
+            var dimY = meta.dimension(unit.y);
+
+            var xScaleOptions = {
+                map: unit.guide.x.tickLabel,
+                min: unit.guide.x.tickMin,
+                max: unit.guide.x.tickMax,
+                period: unit.guide.x.tickPeriod,
+                autoScale: unit.guide.x.autoScale
+            };
+
+            var yScaleOptions = {
+                map: unit.guide.y.tickLabel,
+                min: unit.guide.y.tickMin,
+                max: unit.guide.y.tickMax,
+                period: unit.guide.y.tickPeriod,
+                autoScale: unit.guide.y.autoScale
+            };
+
+            var xValues = meta.scaleMeta(unit.x, xScaleOptions).values;
+            var yValues = meta.scaleMeta(unit.y, yScaleOptions).values;
+
+            var xIsEmptyAxis = (xValues.length === 0);
+            var yIsEmptyAxis = (yValues.length === 0);
+
             var xAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
             var yAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
 
-            unit.guide.x.padding = xAxisPadding;
-            unit.guide.y.padding = yAxisPadding;
+            var isXVertical = (!!dimX.dimType && dimX.dimType !== 'measure');
 
-            var domainY = meta.domain(unit.y);
-            var maxYTickText = _.max(domainY, (x) => (x || '').toString().length);
 
-            var tickWidth = 6;
-            var maxXTickH = 15;
-            var maxYTickW = getPhisicalTickWidth(maxYTickText);
+            unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
+            unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
 
-            var xFontH = tickWidth + maxXTickH;
-            var yFontW = tickWidth + maxYTickW;
 
-            var kx = 2;
-            var ky = 1;
+            unit.guide.x.rotate = isXVertical ? -90 : 0;
+            unit.guide.x.textAnchor = isXVertical ? 'end' : unit.guide.x.textAnchor;
+
+
+            var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
+            var yFormatter = FormatterRegistry.get(unit.guide.y.tickFormat);
+
+            var maxXTickText = xIsEmptyAxis ?
+                '' :
+                (_.max(xValues, (x) => xFormatter(x || '').toString().length));
+
+            var maxYTickText = yIsEmptyAxis ?
+                '' :
+                (_.max(yValues, (y) => yFormatter(y || '').toString().length));
+
+            var xTickWidth = xIsEmptyAxis ? 0 : (6 + 3);
+            var yTickWidth = yIsEmptyAxis ? 0 : (6 + 3);
+
+            var defaultTickSize = { width: 0, height: 0 };
+
+            var maxXTickSize = xIsEmptyAxis ? defaultTickSize : getPhisicalTickSize(xFormatter(maxXTickText));
+            var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
+
+
+            var maxYTickSize = yIsEmptyAxis ? defaultTickSize : getPhisicalTickSize(yFormatter(maxYTickText));
+            var maxYTickW = maxYTickSize.width;
+
+
+            var xFontH = xTickWidth + maxXTickH;
+            var yFontW = yTickWidth + maxYTickW;
+
             var xFontLabelHeight = 15;
             var yFontLabelHeight = 15;
 
-            unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + kx * xFontLabelHeight) : 0;
-            unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + ky * yFontLabelHeight) : 0;
+            var distToAxisLabel = 20;
 
-            var xLabelPadding = (unit.guide.x.label.text) ? (xFontH + (kx + 1) * xFontLabelHeight) : (xFontH);
-            var yLabelPadding = (unit.guide.y.label.text) ? (yFontW + (ky + 1) * yFontLabelHeight) : (yFontW);
+            unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToAxisLabel) : 0;
+            unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToAxisLabel) : 0;
+
+            var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+            var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
             unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
             unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
@@ -122,16 +215,19 @@ var SpecEngineTypeMap = {
             unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
             return unit;
-        });
-
-        return spec;
+        };
     }
 };
 
 var SpecEngineFactory = {
 
     get: (typeName) => {
-        return (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT).bind(this);
+
+        var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT);
+        return (spec, meta) => {
+            fnTraverseTree(spec.unit, rules(spec, meta));
+            return spec;
+        }
     }
 
 };
