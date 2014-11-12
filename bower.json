@@ -14,7 +14,7 @@
   "license": "MIT",
   "private": false,
   "ignore": [
-    "*.*",
+    "/*",
     "!plugins/**",
     "!build/**",
     "!License.txt"
