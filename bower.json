@@ -17,6 +17,7 @@
     "/*",
     "!plugins/**",
     "!build/**",
+    "!src/tau.plugins.js",
     "!License.txt"
   ],
   "dependencies": {
