@@ -32,7 +32,7 @@ const status = {
 var strategyNormalizeAxis = {
     [status.SUCCESS]: (axis)=> axis,
     [status.FAIL]: ()=> {
-        throw new Error('This configuration not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
+        throw new Error('This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
     [status.WARNING]: (axis, config)=> {
         var measure = axis[config.indexMeasureAxis[0]];

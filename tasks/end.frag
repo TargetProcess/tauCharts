@@ -4,5 +4,5 @@
  define('d3',function(){
     return d3;
   });
- return require('tau.newCharts').tauChart;
+ return require('tau.newCharts');
 }));

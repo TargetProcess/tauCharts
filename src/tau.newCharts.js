@@ -8,31 +8,40 @@ import {LayoutEngineFactory} from './layout-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
 import {nodeMap} from './node-map';
 import {UnitsRegistry} from './units-registry';
+var colorBrewers = {};
 
 
-var tauChart = {
-    Plot: Plot,
-    Chart: Chart,
-    __api__: {
-        UnitDomainMixin: UnitDomainMixin,
-        UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
-        DSLReader: DSLReader,
-        SpecEngineFactory: SpecEngineFactory,
-        LayoutEngineFactory: LayoutEngineFactory
-    },
-    api: {
-        UnitsRegistry: UnitsRegistry,
-        tickFormat: FormatterRegistry,
-        tickPeriod: UnitDomainPeriodGenerator
+var __api__ = {
+    UnitDomainMixin: UnitDomainMixin,
+    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
+    DSLReader: DSLReader,
+    SpecEngineFactory: SpecEngineFactory,
+    LayoutEngineFactory: LayoutEngineFactory
+};
+var api = {
+    UnitsRegistry: UnitsRegistry,
+    tickFormat: FormatterRegistry,
+    tickPeriod: UnitDomainPeriodGenerator,
+    colorBrewers: {
+        add: function (name, brewer) {
+            if (!(name in colorBrewers)) {
+                colorBrewers[name] = brewer;
+            }
+        },
+        get: function (name) {
+            return colorBrewers[name];
+        }
     }
 };
 
-tauChart.api.UnitsRegistry
+api.UnitsRegistry
     .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
     .add('PARALLEL/ELEMENT.LINE', nodeMap['PARALLEL/ELEMENT.LINE'])
     .add('COORDS.RECT', nodeMap['COORDS.RECT'])
     .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
     .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
     .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL']);
+export {Plot, Chart, __api__, api};
 
-export {tauChart};
+
+

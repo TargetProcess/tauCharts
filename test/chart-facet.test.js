@@ -2,7 +2,7 @@ define(function(require){
     var assert = require('chai').assert;
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var tauChart = require('tau_modules/tau.newCharts').tauChart;
+    var tauChart = require('tau_modules/tau.newCharts');
 
 
     var facetSpec = schema({

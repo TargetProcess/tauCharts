@@ -1,6 +1,6 @@
 define(function (require) {
     var expect = require('chai').expect;
-    var tauChart = require('tau_modules/tau.newCharts').tauChart;
+    var tauChart = require('tau_modules/tau.newCharts');
     var specEngine = tauChart.__api__.SpecEngineFactory;
 
     describe("Spec engine factory", function () {

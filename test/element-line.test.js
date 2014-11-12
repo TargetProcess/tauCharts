@@ -6,7 +6,7 @@ define(function (require) {
     var assert = require('chai').assert;
     var getLine = testUtils.getLine;
     var attrib = testUtils.attrib;
-    var tauChart = require('tau_modules/tau.newCharts').tauChart;
+    var tauChart = require('tau_modules/tau.newCharts');
     describe("ELEMENT.LINE", function () {
 
         var testData = [

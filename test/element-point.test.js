@@ -3,6 +3,7 @@ define(function (require) {
     var schemes = require('schemes');
     var tauBrewer = require('brewer');
     var testUtils = require('testUtils');
+    var tauCharts = require('tau_modules/tau.newCharts');
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
     var attrib = testUtils.attrib;
@@ -168,6 +169,41 @@ define(function (require) {
                         color: 'color',
                         guide: {
                             color: {brewer: tauBrewer('YlGn', 3)}
+                        }
+                    }
+                ]
+            }
+        },
+        testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
+        function () {
+            it("should render point with right color", function () {
+                var dots = getDots();
+                assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
+                assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
+                assert.ok(hasClass(dots[2], 'YlGn q1-3'), 'has brewer class');
+                assert.ok(hasClass(dots[3], 'YlGn q2-3'), 'has brewer class');
+            });
+        });
+
+    describePlot(
+        "Point element color was presented  with brewer as array an register to tauChart",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                guide: {
+                    x: { autoScale: false },
+                    y: { autoScale: false }
+                },
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT',
+                        x: 'x',
+                        y: 'y',
+                        color: 'color',
+                        guide: {
+                            color: {brewer: tauCharts.api.colorBrewers.get('tauBrewer')('YlGn', 3)}
                         }
                     }
                 ]

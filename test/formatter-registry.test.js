@@ -1,7 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var tauChart = require('tau_modules/tau.newCharts').tauChart;
+    var tauChart = require('tau_modules/tau.newCharts');
     describe("Formatter registry", function () {
 
         var offsetHrs = new Date().getTimezoneOffset() / 60;

@@ -17,6 +17,11 @@ requirejs.config({
         'es5-shim':'libs/es5-shim',
         'brewer':'src/addons/color-brewer'
     },
+    map: {
+        '*': {
+            'tauCharts': 'tau_modules/tau.newCharts'
+        }
+    },
     shim: {
       'js-schema':{
           deps:['libs/es5-shim'],

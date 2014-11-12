@@ -1,12 +1,15 @@
 (function (definition) {
     if (typeof define === "function" && define.amd) {
-        define(definition);
+        define(['tauCharts'], function (tauCharts) {
+            return definition(tauCharts);
+        });
     } else if (typeof module === "object" && module.exports) {
-        module.exports = definition();
+        var tauCharts = require('tauCharts');
+        module.exports = definition(tauCharts);
     } else {
-        this.tauBrewer = definition();
+        definition(this.tauCharts);
     }
-})(function () {
+})(function (tauCharts) {
     // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
     var colorbrewer = {
         YlGn: {
@@ -311,10 +314,11 @@
             12: ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
         }
     };
-    return function (hueSet, colorNumber) {
-        var range = colorbrewer[hueSet][colorNumber].map(function (element, index) {
+    var tauBrewer = function (hueSet, colorNumber) {
+        return colorbrewer[hueSet][colorNumber].map(function (element, index) {
             return hueSet + ' ' + 'q' + index + '-' + colorNumber;
         });
-        return range;
     };
+    tauCharts.api.colorBrewers.add('tauBrewer', tauBrewer);
+    return tauBrewer;
 });

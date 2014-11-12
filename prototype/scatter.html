@@ -108,12 +108,16 @@ requirejs.config({
         'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min',
         'schemes': 'test/utils/schemes',
         'testUtils': 'test/utils/utils',
-        'es5-shim': 'libs/es5-shim',
-        'brewer': 'src/addons/color-brewer'
+        'es5-shim': 'libs/es5-shim'
+    },
+    map: {
+        '*': {
+            'tauCharts': 'tau_modules/tau.newCharts'
+        }
     }
 });
 
-require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugins/tooltip'], function (m, tauPlugins) {
+require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugins/tooltip','src/addons/color-brewer'], function (tauCharts, tauPlugins) {
     /** @class Tooltip
      * @extends Plugin */
     /* Usage
@@ -250,7 +254,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugi
         } else {
             color = getFieldData($color)
         }
-        var chart = new m.tauChart.Chart({
+        var chart = new tauCharts.Chart({
             data: data,
             type: getFieldData($type),
             plugins: [tauPlugins.tooltip.apply(null, Object.keys(data[0])), tauPlugins.highlighter(), tauPlugins.tableHighlight(data)],
