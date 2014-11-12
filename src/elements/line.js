@@ -1,6 +1,6 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
-
+import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 var line = function (node) {
 
     var options = node.options;
@@ -14,10 +14,11 @@ var line = function (node) {
         .nest()
         .key((d) => d[color.dimension])
         .entries(node.partition());
-
+    var widthClass = getLineClassesByWidth(options.width);
+    var countClass = getLineClassesByCount(categories.length);
     var updateLines = function (d) {
         this.attr('class', (d) => {
-            return CSS_PREFIX + 'line' + ' line ' + color.get(d.key);
+            return [CSS_PREFIX + 'line', 'line', color.get(d.key), widthClass, countClass].join(' ');
         });
         var paths = this.selectAll('path').data((d) => [d.values]);
         paths.call(updatePaths);

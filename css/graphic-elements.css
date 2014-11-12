@@ -59,19 +59,19 @@
 }
 /* Generate .line-opacity-@{n} */
 .graphical-report__line-opacity-1 {
-  stroke-opacity: 1px;
+  stroke-opacity: 1;
 }
 .graphical-report__line-opacity-2 {
-  stroke-opacity: 0.95px;
+  stroke-opacity: 0.95;
 }
 .graphical-report__line-opacity-3 {
-  stroke-opacity: 0.9px;
+  stroke-opacity: 0.9;
 }
 .graphical-report__line-opacity-4 {
-  stroke-opacity: 0.85px;
+  stroke-opacity: 0.85;
 }
 .graphical-report__line-opacity-5 {
-  stroke-opacity: 0.8px;
+  stroke-opacity: 0.8;
 }
 /* endregion */
 /* endregion */
@@ -139,7 +139,6 @@
 }
 .graphical-report__line {
   fill: none;
-  stroke-width: 1.5px;
 }
 .graphical-report__dot-line {
   opacity: 1;
