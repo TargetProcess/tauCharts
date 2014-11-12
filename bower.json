@@ -8,23 +8,26 @@
     "charts"
   ],
   "main": [
-	"build/tauCharts.js",
-	"build/css/graphic-elements.css"
+    "build/tauCharts.js",
+    "build/css/graphic-elements.css"
   ],
   "license": "MIT",
   "private": false,
   "ignore": [
-    "!buils",
+    "*.*",
+    "!plugins/**",
+    "!build/**",
     "!License.txt"
   ],
   "dependencies": {
     "d3": "~3.4.3",
-    "underscore": "~1.6.0"
+    "underscore": "~1.6.0",
+    "tauCharts": "~0.1.5"
   },
-  "devDependencies":{
+  "devDependencies": {
     "jquery": "2.1.1",
-    "es6-module-loader":"0.9.2",
-    "js-schema":"0.7.0",
+    "es6-module-loader": "0.9.2",
+    "js-schema": "0.7.0",
     "es5-shim": "latest"
   }
 }
