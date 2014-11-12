@@ -3,7 +3,7 @@ var arrayNumber = [1, 2, 3, 4, 5];
 var countLineClasses = arrayNumber.map((i) => CSS_PREFIX + 'line-opacity-' + i);
 var widthLineClasses = arrayNumber.map((i) => CSS_PREFIX + 'line-width-' + i);
 function getLineClassesByCount(count) {
-    return countLineClasses[count - 1] || countLineClasses[5];
+    return countLineClasses[count - 1] || countLineClasses[4];
 }
 function getLineClassesByWidth(width) {
     var index = 0;

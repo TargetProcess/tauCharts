@@ -1,6 +1,6 @@
 {
   "name": "tauCharts",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "Simple charts library based on d3",
   "keywords": [
@@ -14,9 +14,8 @@
   "license": "MIT",
   "private": false,
   "ignore": [
-    "**/.*",
-    "test",
-    "config"
+    "!buils",
+    "!License.txt"
   ],
   "dependencies": {
     "d3": "~3.4.3",

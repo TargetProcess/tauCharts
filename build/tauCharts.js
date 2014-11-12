@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.3 - 2014-11-10
+/*! tauCharts - v0.1.3 - 2014-11-12
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -849,9 +849,10 @@ define('dsl-reader',["exports", "./utils/utils", "./unit-domain-mixin", "./units
   var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
   var DSLReader = (function () {
-    var DSLReader = function DSLReader(spec, data) {
+    var DSLReader = function DSLReader(spec, data, specEngine) {
       this.spec = utils.clone(spec);
       this.domain = new UnitDomainMixin(this.spec.dimensions, data);
+      this.specEngine = specEngine;
     };
 
     _classProps(DSLReader, null, {
@@ -860,10 +861,11 @@ define('dsl-reader',["exports", "./utils/utils", "./unit-domain-mixin", "./units
         value: function () {
           var _this = this;
 
+          var spec = this.specEngine(this.spec, this.domain.mix({}));
           var buildRecursively = function (unit) {
             return UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
           };
-          return buildRecursively(this.spec.unit);
+          return buildRecursively(spec.unit);
         }
       },
       calcLayout: {
@@ -1134,6 +1136,141 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
   };
   exports.utilsDraw = utilsDraw;
 });
+define('spec-engine-factory',["exports", "./utils/utils-draw"], function (exports, _utilsUtilsDraw) {
+  
+
+  var _this = this;
+  var utilsDraw = _utilsUtilsDraw.utilsDraw;
+
+  var inheritProps = function (unit, root) {
+    unit.guide = unit.guide || {};
+    unit.guide.padding = unit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
+    unit = _.defaults(unit, root);
+    unit.guide = _.defaults(unit.guide, root.guide);
+    return unit;
+  };
+
+  var getPhisicalTickWidth = function (text) {
+    var id = _.uniqueId("tauChartHelper");
+
+    var tmpl = ["<svg class=\"graphical-report__svg\">", "<g class=\"graphical-report__cell cell\">", "<g class=\"x axis\">", "<g class=\"tick\"><text><%= xTick %></text></g>", "</g>", "<g class=\"y axis\">", "<g class=\"tick\"><text><%= xTick %></text></g>", "</g>", "</g>", "</svg>"].join("");
+
+    var compiled = _.template(tmpl);
+
+    var div = document.createElement("div");
+    document.body.appendChild(div);
+
+    div.outerHTML = ("<div id=\"" + id + "\" style=\"position: absolute; width: 100px; height: 100px; border: 1px solid red\"><div>");
+
+    document.getElementById(id).innerHTML = compiled({
+      xTick: text,
+      yTick: text
+    });
+
+    var sel = d3.select("#" + id).selectAll(".x.axis .tick text");
+
+    console.log(sel);
+    console.log(sel[0][0].clientWidth);
+
+    return sel[0][0].clientWidth;
+  };
+
+  var SpecEngineTypeMap = {
+    DEFAULT: function (spec, meta) {
+      var fnTraverseTree = function (specUnitRef) {
+        var root = utilsDraw.applyNodeDefaults(specUnitRef);
+        var prop = _.omit(root, "unit");
+        (root.unit || []).forEach(function (unit) {
+          return fnTraverseTree(inheritProps(unit, prop));
+        });
+        return root;
+      };
+
+      fnTraverseTree(spec.unit);
+
+      return spec;
+    },
+
+    AUTO: function (spec, meta) {
+      var fnTraverseTree = function (specUnitRef, transform) {
+        var rootUnit = utilsDraw.applyNodeDefaults(specUnitRef);
+        var children = rootUnit.unit || [];
+        var isLeaf = !rootUnit.hasOwnProperty("unit");
+        var isLeafParent = !children.some(function (c) {
+          return c.hasOwnProperty("unit");
+        });
+
+        var predicates = {
+          type: rootUnit.type,
+          isLeaf: isLeaf,
+          isLeafParent: !isLeaf && isLeafParent
+        };
+
+        rootUnit = transform(predicates, rootUnit);
+
+        var prop = _.omit(rootUnit, "unit");
+        children.forEach(function (unit) {
+          return fnTraverseTree(inheritProps(unit, prop), transform);
+        });
+        return rootUnit;
+      };
+
+      fnTraverseTree(spec.unit, function (selectorPredicates, unit) {
+        if (selectorPredicates.isLeaf) {
+          return unit;
+        }
+
+        var xAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
+        var yAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
+
+        unit.guide.x.padding = xAxisPadding;
+        unit.guide.y.padding = yAxisPadding;
+
+        var domainY = meta.domain(unit.y);
+        var maxYTickText = _.max(domainY, function (x) {
+          return (x || "").toString().length;
+        });
+
+        var tickWidth = 6;
+        var maxXTickH = 15;
+        var maxYTickW = getPhisicalTickWidth(maxYTickText);
+
+        var xFontH = tickWidth + maxXTickH;
+        var yFontW = tickWidth + maxYTickW;
+
+        var kx = 2;
+        var ky = 1;
+        var xFontLabelHeight = 15;
+        var yFontLabelHeight = 15;
+
+        unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + kx * xFontLabelHeight) : 0;
+        unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + ky * yFontLabelHeight) : 0;
+
+        var xLabelPadding = (unit.guide.x.label.text) ? (xFontH + (kx + 1) * xFontLabelHeight) : (xFontH);
+        var yLabelPadding = (unit.guide.y.label.text) ? (yFontW + (ky + 1) * yFontLabelHeight) : (yFontW);
+
+        unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
+        unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
+
+        unit.guide.padding.b = xAxisPadding + xLabelPadding;
+        unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+        return unit;
+      });
+
+      return spec;
+    }
+  };
+
+  var SpecEngineFactory = {
+    get: function (typeName) {
+      return (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT).bind(_this);
+    }
+
+  };
+
+  exports.SpecEngineFactory = SpecEngineFactory;
+});
 define('matrix',["exports"], function (exports) {
   
 
@@ -1211,28 +1348,8 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
     return box;
   };
 
-  var fnApplyDefaults = function (rootNode) {
-    var fnTraverseLayout = function (rawNode) {
-      var node = utilsDraw.applyNodeDefaults(rawNode);
-
-      if (!node.$matrix) {
-        return node;
-      }
-
-      node.$matrix.iterate(function (iRow, iCol, subNodes) {
-        subNodes.forEach(fnTraverseLayout);
-      });
-
-      return node;
-    };
-
-    return fnTraverseLayout(rootNode);
-  };
-
   var fnDefaultLayoutEngine = function (rootNode, domainMixin) {
-    var fnTraverseLayout = function (rawNode) {
-      var node = utilsDraw.applyNodeDefaults(rawNode);
-
+    var fnTraverseLayout = function (node) {
       if (!node.$matrix) {
         return node;
       }
@@ -1320,9 +1437,7 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
         });
       });
 
-      var normalizedNode = fnApplyDefaults(rootNode);
-
-      var coordNode = utils.clone(normalizedNode);
+      var coordNode = utils.clone(rootNode);
 
       var coordMatrix = new TMatrix([[[coordNode]]]);
 
@@ -1526,7 +1641,7 @@ define('const',["exports"], function (exports) {
 
   var CSS_PREFIX = exports.CSS_PREFIX = "graphical-report__";
 });
-define('charts/tau.plot',["exports", "../dsl-reader", "../layout-engine-factory", "../plugins", "../utils/utils-dom", "../const"], function (exports, _dslReader, _layoutEngineFactory, _plugins, _utilsUtilsDom, _const) {
+define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils-dom", "../const"], function (exports, _dslReader, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtilsDom, _const) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
@@ -1536,6 +1651,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../layout-engine-factory"
   };
 
   var DSLReader = _dslReader.DSLReader;
+  var SpecEngineFactory = _specEngineFactory.SpecEngineFactory;
   var LayoutEngineFactory = _layoutEngineFactory.LayoutEngineFactory;
   var Plugins = _plugins.Plugins;
   var propagateDatumEvents = _plugins.propagateDatumEvents;
@@ -1584,7 +1700,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../layout-engine-factory"
 
           var svgContainer = container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height);
 
-          var reader = new DSLReader(this.spec, this.data);
+          var reader = new DSLReader(this.spec, this.data, SpecEngineFactory.get());
           var xGraph = reader.buildGraph();
           var engine = LayoutEngineFactory.get(this.config.layoutEngine || "EXTRACT");
           var layout = reader.calcLayout(xGraph, engine, size);
@@ -1716,7 +1832,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
       return axis;
     };
     _strategyNormalizeAxis[status.FAIL] = function () {
-      throw new Error("This configuration not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
+      throw new Error("This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
     };
     _strategyNormalizeAxis[status.WARNING] = function (axis, config) {
       var measure = axis[config.indexMeasureAxis[0]];
@@ -1970,11 +2086,44 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   };
   exports.coords = coords;
 });
-define('elements/line',["exports", "../utils/utils-draw", "../const"], function (exports, _utilsUtilsDraw, _const) {
+define('utils/css-class-map',["exports", "../const"], function (exports, _const) {
+  
+
+  var CSS_PREFIX = _const.CSS_PREFIX;
+
+  var arrayNumber = [1, 2, 3, 4, 5];
+  var countLineClasses = arrayNumber.map(function (i) {
+    return CSS_PREFIX + "line-opacity-" + i;
+  });
+  var widthLineClasses = arrayNumber.map(function (i) {
+    return CSS_PREFIX + "line-width-" + i;
+  });
+  function getLineClassesByCount(count) {
+    return countLineClasses[count - 1] || countLineClasses[5];
+  }
+  function getLineClassesByWidth(width) {
+    var index = 0;
+    if (width >= 160 && width < 320) {
+      index = 1;
+    } else if (width >= 320 && width < 480) {
+      index = 2;
+    } else if (width >= 480 && width < 640) {
+      index = 3;
+    } else if (width >= 640) {
+      index = 4;
+    }
+    return widthLineClasses[index];
+  }
+  exports.getLineClassesByWidth = getLineClassesByWidth;
+  exports.getLineClassesByCount = getLineClassesByCount;
+});
+define('elements/line',["exports", "../utils/utils-draw", "../const", "../utils/css-class-map"], function (exports, _utilsUtilsDraw, _const, _utilsCssClassMap) {
   
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
+  var getLineClassesByWidth = _utilsCssClassMap.getLineClassesByWidth;
+  var getLineClassesByCount = _utilsCssClassMap.getLineClassesByCount;
 
   var line = function (node) {
     var options = node.options;
@@ -1987,10 +2136,11 @@ define('elements/line',["exports", "../utils/utils-draw", "../const"], function 
     var categories = d3.nest().key(function (d) {
       return d[color.dimension];
     }).entries(node.partition());
-
-    var updateLines = function () {
+    var widthClass = getLineClassesByWidth(options.width);
+    var countClass = getLineClassesByCount(categories.length);
+    var updateLines = function (d) {
       this.attr("class", function (d) {
-        return CSS_PREFIX + "line" + " line " + color.get(d.key);
+        return [CSS_PREFIX + "line", "line", color.get(d.key), widthClass, countClass].join(" ");
       });
       var paths = this.selectAll("path").data(function (d) {
         return [d.values];
@@ -1998,6 +2148,29 @@ define('elements/line',["exports", "../utils/utils-draw", "../const"], function 
       paths.call(updatePaths);
       paths.enter().append("path").call(updatePaths);
       paths.exit().remove();
+    };
+    var drawPointsIfNeed = function (categories) {
+      var data = categories.reduce(function (data, item) {
+        var values = item.values;
+        if (values.length === 1) {
+          data.push(values[0]);
+        }
+        return data;
+      }, []);
+      var update = function () {
+        return this.attr("r", 1.5).attr("class", function (d) {
+          return CSS_PREFIX + "dot-line dot-line " + CSS_PREFIX + "dot " + "i-role-datum " + color.get(d[color.dimension]);
+        }).attr("cx", function (d) {
+          return xScale(d[node.x.scaleDim]);
+        }).attr("cy", function (d) {
+          return yScale(d[node.y.scaleDim]);
+        });
+      };
+
+      var elements = options.container.selectAll(".dot-line").data(data);
+      elements.call(update);
+      elements.exit().remove();
+      elements.enter().append("circle").call(update);
     };
 
     var line = d3.svg.line().x(function (d) {
@@ -2009,7 +2182,7 @@ define('elements/line',["exports", "../utils/utils-draw", "../const"], function 
     var updatePaths = function () {
       this.attr("d", line);
     };
-
+    drawPointsIfNeed(categories);
     var lines = options.container.selectAll(".line").data(categories);
     lines.call(updateLines);
     lines.enter().append("g").call(updateLines);
@@ -2434,7 +2607,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
 
   exports.nodeMap = nodeMap;
 });
-define('tau.newCharts',["exports", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-mixin", "./unit-domain-period-generator", "./dsl-reader", "./layout-engine-factory", "./formatter-registry", "./node-map", "./units-registry"], function (exports, _chartsTauPlot, _chartsTauChart, _unitDomainMixin, _unitDomainPeriodGenerator, _dslReader, _layoutEngineFactory, _formatterRegistry, _nodeMap, _unitsRegistry) {
+define('tau.newCharts',["exports", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-mixin", "./unit-domain-period-generator", "./dsl-reader", "./spec-engine-factory", "./layout-engine-factory", "./formatter-registry", "./node-map", "./units-registry"], function (exports, _chartsTauPlot, _chartsTauChart, _unitDomainMixin, _unitDomainPeriodGenerator, _dslReader, _specEngineFactory, _layoutEngineFactory, _formatterRegistry, _nodeMap, _unitsRegistry) {
   
 
   var Plot = _chartsTauPlot.Plot;
@@ -2442,30 +2615,42 @@ define('tau.newCharts',["exports", "./charts/tau.plot", "./charts/tau.chart", ".
   var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
   var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
   var DSLReader = _dslReader.DSLReader;
+  var SpecEngineFactory = _specEngineFactory.SpecEngineFactory;
   var LayoutEngineFactory = _layoutEngineFactory.LayoutEngineFactory;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var nodeMap = _nodeMap.nodeMap;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
 
-  var tauChart = {
-    Plot: Plot,
-    Chart: Chart,
-    __api__: {
-      UnitDomainMixin: UnitDomainMixin,
-      UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
-      DSLReader: DSLReader,
-      LayoutEngineFactory: LayoutEngineFactory
-    },
-    api: {
-      UnitsRegistry: UnitsRegistry,
-      tickFormat: FormatterRegistry,
-      tickPeriod: UnitDomainPeriodGenerator
+  var colorBrewers = {};
+
+  var __api__ = {
+    UnitDomainMixin: UnitDomainMixin,
+    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
+    DSLReader: DSLReader,
+    SpecEngineFactory: SpecEngineFactory,
+    LayoutEngineFactory: LayoutEngineFactory
+  };
+  var api = {
+    UnitsRegistry: UnitsRegistry,
+    tickFormat: FormatterRegistry,
+    tickPeriod: UnitDomainPeriodGenerator,
+    colorBrewers: {
+      add: function (name, brewer) {
+        if (!(name in colorBrewers)) {
+          colorBrewers[name] = brewer;
+        }
+      },
+      get: function (name) {
+        return colorBrewers[name];
+      }
     }
   };
 
-  tauChart.api.UnitsRegistry.add("COORDS.PARALLEL", nodeMap["COORDS.PARALLEL"]).add("PARALLEL/ELEMENT.LINE", nodeMap["PARALLEL/ELEMENT.LINE"]).add("COORDS.RECT", nodeMap["COORDS.RECT"]).add("ELEMENT.POINT", nodeMap["ELEMENT.POINT"]).add("ELEMENT.LINE", nodeMap["ELEMENT.LINE"]).add("ELEMENT.INTERVAL", nodeMap["ELEMENT.INTERVAL"]);
-
-  exports.tauChart = tauChart;
+  api.UnitsRegistry.add("COORDS.PARALLEL", nodeMap["COORDS.PARALLEL"]).add("PARALLEL/ELEMENT.LINE", nodeMap["PARALLEL/ELEMENT.LINE"]).add("COORDS.RECT", nodeMap["COORDS.RECT"]).add("ELEMENT.POINT", nodeMap["ELEMENT.POINT"]).add("ELEMENT.LINE", nodeMap["ELEMENT.LINE"]).add("ELEMENT.INTERVAL", nodeMap["ELEMENT.INTERVAL"]);
+  exports.Plot = Plot;
+  exports.Chart = Chart;
+  exports.__api__ = __api__;
+  exports.api = api;
 });
  define('underscore',function(){
    return _;
@@ -2473,5 +2658,5 @@ define('tau.newCharts',["exports", "./charts/tau.plot", "./charts/tau.chart", ".
  define('d3',function(){
     return d3;
   });
- return require('tau.newCharts').tauChart;
+ return require('tau.newCharts');
 }));
