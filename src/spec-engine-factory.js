@@ -227,7 +227,7 @@ var SpecEngineFactory = {
         return (spec, meta) => {
             fnTraverseTree(spec.unit, rules(spec, meta));
             return spec;
-        }
+        };
     }
 
 };

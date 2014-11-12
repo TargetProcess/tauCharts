@@ -29,7 +29,7 @@ define(function (require) {
                             "b": 20
                         }
                     },
-                    "x": "xdate",
+                    "x": "team",
                     "y": "count",
                     "unit": [
                         {
