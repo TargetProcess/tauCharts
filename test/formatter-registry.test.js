@@ -10,10 +10,15 @@ define(function (require) {
             return (str + '+' + offsetISO);
         };
 
-    var registry;
-    beforeEach(function () {
-        registry = tauChart.api.tickFormat;
-    });
+        var registry;
+        beforeEach(function () {
+            registry = tauChart.api.tickFormat;
+        });
+
+        it("should use *.toString() by default", function () {
+            expect(registry.get(null)('str')).to.equal('str');
+            expect(registry.get(null)(-42)).to.equal('-42');
+        });
 
         it("should support default formats", function () {
             var jan01 = new Date(iso('2013-01-01T00:00:00'));
