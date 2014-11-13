@@ -44,8 +44,8 @@ var utilsDom =  {
         var textNode = d3.select(div).selectAll('.x.axis .tick text')[0][0];
 
         var size = {
-            width: textNode.clientWidth,
-            height: textNode.clientHeight
+            width: textNode.clientWidth || textNode.scrollWidth,
+            height: textNode.clientHeight || textNode.scrollHeight
         };
 
         document.body.removeChild(div);
