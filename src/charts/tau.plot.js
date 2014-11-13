@@ -24,6 +24,17 @@ export class Plot {
 
         //plugins
         this._plugins = new Plugins(this.config.plugins);
+
+        this._measurer = {
+            getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+            xTickWidth: 6 + 3,
+            distToXAxisLabel: 20,
+            distToYAxisLabel: 20,
+            xAxisPadding: 20,
+            yAxisPadding: 20,
+            xFontLabelHeight: 15,
+            yFontLabelHeight: 15
+        };
     }
 
     renderTo(target, xSize) {
@@ -51,11 +62,16 @@ export class Plot {
             .attr("width", size.width)
             .attr("height", size.height);
 
-        var specEngine = SpecEngineFactory.get(this.config.specEngine || 'AUTO');
+        var specEngineId = this.config.specEngine || 'AUTO';
+        var specEngine = SpecEngineFactory.get(specEngineId, this._measurer);
+
         var reader = new DSLReader(this.spec, this.data, specEngine);
         var xGraph = reader.buildGraph();
-        var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT');
-        var layout = reader.calcLayout(xGraph, engine, size);
+
+        var layoutEngineId = this.config.layoutEngine || 'EXTRACT';
+        var layoutEngine = LayoutEngineFactory.get(layoutEngineId);
+
+        var layout = reader.calcLayout(xGraph, layoutEngine, size);
         var canvas = reader.renderGraph(layout, svgContainer);
 
         //plugins

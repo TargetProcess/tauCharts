@@ -32,61 +32,13 @@ var fnTraverseTree = (specUnitRef, transformRules) => {
     return root;
 };
 
-var getAxisTickLabelSize = function(text) {
-
-    if (text === '') {
-        return {
-            width: 0,
-            height: 0
-        };
-    }
-
-    var id = _.uniqueId('tauChartHelper');
-
-    var tmpl = [
-        '<svg class="graphical-report__svg">',
-        '<g class="graphical-report__cell cell">',
-            '<g class="x axis">',
-                '<g class="tick"><text><%= xTick %></text></g>',
-            '</g>',
-            '<g class="y axis">',
-                '<g class="tick"><text><%= xTick %></text></g>',
-            '</g>',
-        '</g>',
-        '</svg>'
-    ].join('');
-
-    var compiled = _.template(tmpl);
-
-    var div = document.createElement('div');
-    document.body.appendChild(div);
-
-    div.outerHTML = ('<div id="' + id + '" style="position: absolute; width: 100px; height: 100px; border: 1px solid red"><div>');
-
-    document.getElementById(id).innerHTML = compiled({
-        xTick: text,
-        yTick: text
-    });
-
-    var textNode = d3.select('#' + id).selectAll('.x.axis .tick text')[0][0];
-
-    return {
-        width: textNode.clientWidth,
-        height: textNode.clientHeight
-    };
-};
-
 var SpecEngineTypeMap = {
 
-    'DEFAULT': (spec, meta) => {
+    'DEFAULT': (spec, meta, measurer) => {
         return (selectorPredicates, unit) => unit;
     },
 
-    'AUTO': (spec, meta, phisicalMeasurer) => {
-
-        var measurer = phisicalMeasurer || {
-            getAxisTickLabelSize: getAxisTickLabelSize
-        };
+    'AUTO': (spec, meta, measurer) => {
 
         var xLabels = [];
         var yLabels = [];
@@ -173,8 +125,8 @@ var SpecEngineTypeMap = {
             var xIsEmptyAxis = (xValues.length === 0);
             var yIsEmptyAxis = (yValues.length === 0);
 
-            var xAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
-            var yAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
+            var xAxisPadding = selectorPredicates.isLeafParent ? measurer.xAxisPadding : 0;
+            var yAxisPadding = selectorPredicates.isLeafParent ? measurer.yAxisPadding : 0;
 
             var isXVertical = (!!dimX.dimType && dimX.dimType !== 'measure');
 
@@ -198,8 +150,8 @@ var SpecEngineTypeMap = {
                 '' :
                 (_.max(yValues, (y) => yFormatter(y || '').toString().length));
 
-            var xTickWidth = xIsEmptyAxis ? 0 : (6 + 3);
-            var yTickWidth = yIsEmptyAxis ? 0 : (6 + 3);
+            var xTickWidth = xIsEmptyAxis ? 0 : measurer.xTickWidth;
+            var yTickWidth = yIsEmptyAxis ? 0 : measurer.xTickWidth;
 
             var defaultTickSize = { width: 0, height: 0 };
 
@@ -214,13 +166,14 @@ var SpecEngineTypeMap = {
             var xFontH = xTickWidth + maxXTickH;
             var yFontW = yTickWidth + maxYTickW;
 
-            var xFontLabelHeight = 15;
-            var yFontLabelHeight = 15;
+            var xFontLabelHeight = measurer.xFontLabelHeight;
+            var yFontLabelHeight = measurer.yFontLabelHeight;
 
-            var distToAxisLabel = 20;
+            var distToXAxisLabel = measurer.distToXAxisLabel;
+            var distToYAxisLabel = measurer.distToYAxisLabel;
 
-            unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToAxisLabel) : 0;
-            unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToAxisLabel) : 0;
+            unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
+            unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
             var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
             var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
@@ -238,10 +191,10 @@ var SpecEngineTypeMap = {
 
 var SpecEngineFactory = {
 
-    get: (typeName) => {
+    get: (typeName, measurer) => {
 
         var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT);
-        return (spec, meta, measurer) => {
+        return (spec, meta) => {
             fnTraverseTree(spec.unit, rules(spec, meta, measurer));
             return spec;
         };

@@ -58,7 +58,14 @@ define(function (require) {
                     width: text.length * 5,
                     height: 10
                 };
-            }
+            },
+            xTickWidth: 9, // 6px tick mark + 3px margin to tick text
+            distToXAxisLabel: 20,
+            distToYAxisLabel: 20,
+            xAxisPadding: 20,
+            yAxisPadding: 20,
+            xFontLabelHeight: 15,
+            yFontLabelHeight: 15
         };
 
         it("should support [DEFAULT] spec engine", function () {
@@ -67,9 +74,9 @@ define(function (require) {
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("DEFAULT");
+            var testSpecEngine = SpecEngineFactory.get("DEFAULT", measurer);
 
-            var full = testSpecEngine(spec, meta, measurer);
+            var full = testSpecEngine(spec, meta);
 
             expect(full.unit.guide.padding.l).to.equal(0);
             expect(full.unit.guide.padding.b).to.equal(0);
@@ -104,9 +111,9 @@ define(function (require) {
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO");
+            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
 
-            var full = testSpecEngine(spec, meta, measurer);
+            var full = testSpecEngine(spec, meta);
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -152,9 +159,9 @@ define(function (require) {
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO");
+            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
 
-            var full = testSpecEngine(spec, meta, measurer);
+            var full = testSpecEngine(spec, meta);
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
