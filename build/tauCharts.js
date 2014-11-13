@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.5 - 2014-11-13
+/*! tauCharts - v0.1.6 - 2014-11-13
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1392,8 +1392,8 @@ define(
                 var xIsEmptyAxis = (xValues.length === 0);
                 var yIsEmptyAxis = (yValues.length === 0);
     
-                var xAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
-                var yAxisPadding = selectorPredicates.isLeafParent ? 20 : 0;
+                var xAxisPadding = selectorPredicates.isLeafParent ? measurer.xAxisPadding : 0;
+                var yAxisPadding = selectorPredicates.isLeafParent ? measurer.yAxisPadding : 0;
     
                 var isXVertical = (!!dimX.dimType && dimX.dimType !== 'measure');
     
@@ -1421,8 +1421,8 @@ define(
                   return yFormatter(y || '').toString().length;
                 }));
     
-                var xTickWidth = xIsEmptyAxis ? 0 : (6 + 3);
-                var yTickWidth = yIsEmptyAxis ? 0 : (6 + 3);
+                var xTickWidth = xIsEmptyAxis ? 0 : measurer.xTickWidth;
+                var yTickWidth = yIsEmptyAxis ? 0 : measurer.xTickWidth;
     
                 var defaultTickSize = { width: 0, height: 0 };
     
@@ -1437,13 +1437,14 @@ define(
                 var xFontH = xTickWidth + maxXTickH;
                 var yFontW = yTickWidth + maxYTickW;
     
-                var xFontLabelHeight = 15;
-                var yFontLabelHeight = 15;
+                var xFontLabelHeight = measurer.xFontLabelHeight;
+                var yFontLabelHeight = measurer.yFontLabelHeight;
     
-                var distToAxisLabel = 20;
+                var distToXAxisLabel = measurer.distToXAxisLabel;
+                var distToYAxisLabel = measurer.distToYAxisLabel;
     
-                unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToAxisLabel) : 0;
-                unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToAxisLabel) : 0;
+                unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
+                unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
     
                 var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
                 var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
@@ -1976,7 +1977,14 @@ define(
           this._plugins = new Plugins(this.config.plugins);
   
           this._measurer = {
-              getAxisTickLabelSize: utilsDom.getAxisTickLabelSize
+              getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+              xTickWidth: 6 + 3,
+              distToXAxisLabel: 20,
+              distToYAxisLabel: 20,
+              xAxisPadding: 20,
+              yAxisPadding: 20,
+              xFontLabelHeight: 15,
+              yFontLabelHeight: 15
           };
       };
 
@@ -2204,7 +2212,8 @@ define(
             type: 'COORDS.RECT',
             unit: []
         };
-        var colorGuide = config.guide && config.guide.color || {};
+        var elementGuide = guide[guide.length-1];
+        var colorGuide = elementGuide && elementGuide.color || {};
         for (var i = maxDeep; i > 0; i--) {
             var currentX = x.pop();
             var currentY = y.pop();
