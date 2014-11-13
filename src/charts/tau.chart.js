@@ -70,7 +70,8 @@ function transformConfig(type, config) {
         type: 'COORDS.RECT',
         unit: []
     };
-    var colorGuide = config.guide && config.guide.color || {};
+    var elementGuide = guide[guide.length-1];
+    var colorGuide = elementGuide && elementGuide.color || {};
     for (var i = maxDeep; i > 0; i--) {
         var currentX = x.pop();
         var currentY = y.pop();
