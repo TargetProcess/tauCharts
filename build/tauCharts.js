@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.6 - 2014-11-13
+/*! tauCharts - v0.1.7 - 2014-11-13
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1012,7 +1012,14 @@ define('formatter-registry',["exports", "d3"], function(exports, _d3) {
 
   var FormatterRegistry = {
   
-      get: function(formatAlias) {
+      get: function(formatAlias, tickFormatLimit) {
+  
+          var cut = function(str) {
+              var limit = tickFormatLimit || 1000;
+              return (str.length <= limit) ?
+                  (str) :
+                  (str.substr(0, limit - 1) + '...');
+          };
   
           var formatter = (formatAlias === null) ? (function(x) {
             return x.toString();
@@ -1023,7 +1030,9 @@ define('formatter-registry',["exports", "d3"], function(exports, _d3) {
                   return f(v);
               };
           }
-          return formatter;
+          return function(str) {
+            return cut(formatter(str));
+          };
       },
   
       add: function(formatAlias, formatter) {
@@ -1090,8 +1099,8 @@ define(
             .attr('transform', rotate(angle))
             .style('text-anchor', x.guide.textAnchor);
     
-        if (angle === -90) {
-            ticks.attr('x', -9).attr('y', 0);
+        if (angle === 90) {
+            ticks.attr('x', 9).attr('y', 0);
         }
     };
 
@@ -1102,11 +1111,9 @@ define(
             var axisScale = d3.svg.axis()
                 .scale(x.scaleObj)
                 .orient(x.guide.scaleOrient)
-                .ticks(_.max([Math.round(size / x.guide.density), 4]));
+                .ticks(Math.round(size / x.guide.density));
     
-            if (x.guide.tickFormat) {
-                axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
-            }
+            axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat, x.guide.tickFormatLimit));
     
             var nodeScale = container
                 .append('g')
@@ -1141,7 +1148,7 @@ define(
                     .scale(x.scaleObj)
                     .orient(x.guide.scaleOrient)
                     .tickSize(H)
-                    .ticks(_.max([Math.round(W / x.guide.density), 4]));
+                    .ticks(Math.round(W / x.guide.density));
     
                 var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
     
@@ -1155,7 +1162,7 @@ define(
                     .scale(y.scaleObj)
                     .orient(y.guide.scaleOrient)
                     .tickSize(-W)
-                    .ticks(_.max([Math.round(H / y.guide.density), 4]));
+                    .ticks(Math.round(H / y.guide.density));
     
                 var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
     
@@ -1287,6 +1294,14 @@ define(
         };
     };
 
+    var getTickFormat = function(dimType, scaleType) {
+        var tickFormat = null;
+        if (dimType === 'measure') {
+            tickFormat = (scaleType === 'time') ? '%c' : 's';
+        }
+        return tickFormat;
+    };
+
     var fnTraverseTree = function(specUnitRef, transformRules) {
         var temp = utilsDraw.applyNodeDefaults(specUnitRef);
         var root = transformRules(createSelectorPredicates(temp), temp);
@@ -1325,17 +1340,13 @@ define(
                 if (unit.x) {
                     unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
                     var dimX = meta.dimension(unit.x);
-                    if (dimX.dimType === 'measure') {
-                        unit.guide.x.tickFormat = (dimX.scaleType === 'time') ? null : 's';
-                    }
+                    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType);
                 }
     
                 if (unit.y) {
                     unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
                     var dimY = meta.dimension(unit.y);
-                    if (dimY.dimType === 'measure') {
-                        unit.guide.y.tickFormat = (dimY.scaleType === 'time') ? '%c' : 's';
-                    }
+                    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType);
                 }
     
                 var x = unit.guide.x.label.text;
@@ -1367,6 +1378,13 @@ define(
                     return unit;
                 }
     
+                var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
+                if (isFacetUnit) {
+                    // unit is a facet!
+                    unit.guide.x.cssClass += ' facet-axis';
+                    unit.guide.y.cssClass += ' facet-axis';
+                }
+    
                 var dimX = meta.dimension(unit.x);
                 var dimY = meta.dimension(unit.y);
     
@@ -1395,15 +1413,13 @@ define(
                 var xAxisPadding = selectorPredicates.isLeafParent ? measurer.xAxisPadding : 0;
                 var yAxisPadding = selectorPredicates.isLeafParent ? measurer.yAxisPadding : 0;
     
-                var isXVertical = (!!dimX.dimType && dimX.dimType !== 'measure');
-    
+                var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== 'measure');
     
                 unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
                 unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
     
-    
-                unit.guide.x.rotate = isXVertical ? -90 : 0;
-                unit.guide.x.textAnchor = isXVertical ? 'end' : unit.guide.x.textAnchor;
+                unit.guide.x.rotate = isXVertical ? 90 : 0;
+                unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
     
     
                 var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
@@ -1428,10 +1444,18 @@ define(
     
                 var maxXTickSize = xIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(xFormatter(maxXTickText));
                 var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
+                if (dimX.dimType !== 'measure' && (maxXTickH > measurer.axisTickLabelLimit)) {
+                    unit.guide.x.tickFormatLimit = measurer.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
+                    maxXTickH = measurer.axisTickLabelLimit;
+                }
     
     
                 var maxYTickSize = yIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(yFormatter(maxYTickText));
                 var maxYTickW = maxYTickSize.width;
+                if (dimY.dimType !== 'measure' && (maxYTickW > measurer.axisTickLabelLimit)) {
+                    unit.guide.y.tickFormatLimit = measurer.axisTickLabelLimit / (maxYTickW / maxYTickText.length);
+                    maxYTickW = measurer.axisTickLabelLimit;
+                }
     
     
                 var xFontH = xTickWidth + maxXTickH;
@@ -1442,6 +1466,13 @@ define(
     
                 var distToXAxisLabel = measurer.distToXAxisLabel;
                 var distToYAxisLabel = measurer.distToYAxisLabel;
+    
+                var densityKoeff = measurer.densityKoeff;
+    
+    
+                unit.guide.x.density = densityKoeff * (isXVertical ? maxXTickSize.height : maxXTickSize.width);
+                unit.guide.y.density = densityKoeff * maxYTickSize.height;
+    
     
                 unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
                 unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
@@ -1918,8 +1949,8 @@ define('utils/utils-dom',["exports"], function(exports) {
           var textNode = d3.select(div).selectAll('.x.axis .tick text')[0][0];
   
           var size = {
-              width: textNode.clientWidth,
-              height: textNode.clientHeight
+              width: textNode.clientWidth || textNode.scrollWidth,
+              height: textNode.clientHeight || textNode.scrollHeight
           };
   
           document.body.removeChild(div);
@@ -1978,13 +2009,15 @@ define(
   
           this._measurer = {
               getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+              axisTickLabelLimit: 100,
               xTickWidth: 6 + 3,
               distToXAxisLabel: 20,
               distToYAxisLabel: 20,
               xAxisPadding: 20,
               yAxisPadding: 20,
               xFontLabelHeight: 15,
-              yFontLabelHeight: 15
+              yFontLabelHeight: 15,
+              densityKoeff: 2.2
           };
       };
 

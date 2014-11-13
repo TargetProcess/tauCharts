@@ -111,6 +111,12 @@
   stroke: #bdc3cd;
   shape-rendering: crispEdges;
 }
+.graphical-report__svg .axis.facet-axis .tick line {
+  opacity: 0;
+}
+.graphical-report__svg .axis.facet-axis path.domain {
+  opacity: 0;
+}
 .graphical-report__svg .tick text {
   font-size: 11px;
 }
