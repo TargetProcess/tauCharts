@@ -38,6 +38,7 @@ define(function (require) {
                 document.body.appendChild(context.element);
                 context.chart = new tauChart.Plot({
                     layoutEngine: 'DEFAULT',
+                    specEngine: 'DEFAULT',
                     spec: spec,
                     data: data
                 });

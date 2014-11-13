@@ -32,7 +32,7 @@ var fnTraverseTree = (specUnitRef, transformRules) => {
     return root;
 };
 
-var getPhisicalTickSize = function(text) {
+var getAxisTickLabelSize = function(text) {
 
     if (text === '') {
         return {
@@ -82,7 +82,11 @@ var SpecEngineTypeMap = {
         return (selectorPredicates, unit) => unit;
     },
 
-    'AUTO': (spec, meta) => {
+    'AUTO': (spec, meta, phisicalMeasurer) => {
+
+        var measurer = phisicalMeasurer || {
+            getAxisTickLabelSize: getAxisTickLabelSize
+        };
 
         var xLabels = [];
         var yLabels = [];
@@ -94,12 +98,25 @@ var SpecEngineTypeMap = {
                 return unit;
             }
 
-            if (!xUnit && unit.x) {
-                xUnit = unit;
+
+            if (!xUnit && unit.x) (xUnit = unit);
+            if (!yUnit && unit.y) (yUnit = unit);
+
+
+            if (unit.x) {
+                unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
+                var dimX = meta.dimension(unit.x);
+                if (dimX.dimType === 'measure') {
+                    unit.guide.x.tickFormat = (dimX.scaleType === 'time') ? null : 's';
+                }
             }
 
-            if (!yUnit && unit.y) {
-                yUnit = unit;
+            if (unit.y) {
+                unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
+                var dimY = meta.dimension(unit.y);
+                if (dimY.dimType === 'measure') {
+                    unit.guide.y.tickFormat = (dimY.scaleType === 'time') ? '%c' : 's';
+                }
             }
 
             var x = unit.guide.x.label.text;
@@ -186,11 +203,11 @@ var SpecEngineTypeMap = {
 
             var defaultTickSize = { width: 0, height: 0 };
 
-            var maxXTickSize = xIsEmptyAxis ? defaultTickSize : getPhisicalTickSize(xFormatter(maxXTickText));
+            var maxXTickSize = xIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(xFormatter(maxXTickText));
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
 
-            var maxYTickSize = yIsEmptyAxis ? defaultTickSize : getPhisicalTickSize(yFormatter(maxYTickText));
+            var maxYTickSize = yIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;
 
 
@@ -224,8 +241,8 @@ var SpecEngineFactory = {
     get: (typeName) => {
 
         var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT);
-        return (spec, meta) => {
-            fnTraverseTree(spec.unit, rules(spec, meta));
+        return (spec, meta, measurer) => {
+            fnTraverseTree(spec.unit, rules(spec, meta, measurer));
             return spec;
         };
     }

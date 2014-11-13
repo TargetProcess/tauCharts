@@ -30,8 +30,8 @@ var autoScaleMethods = {
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
 
         var range = [
-            Math.min(min, domainParam[0]),
-            Math.max(max, domainParam[1])
+            new Date(Math.min(min, domainParam[0])),
+            new Date(Math.max(max, domainParam[1]))
         ];
 
         return UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
@@ -43,8 +43,8 @@ var autoScaleMethods = {
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
 
         return [
-            Math.min(min, domainParam[0]),
-            Math.max(max, domainParam[1])
+            new Date(Math.min(min, domainParam[0])),
+            new Date(Math.max(max, domainParam[1]))
         ];
     }
 };

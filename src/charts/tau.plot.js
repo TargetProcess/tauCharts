@@ -51,7 +51,8 @@ export class Plot {
             .attr("width", size.width)
             .attr("height", size.height);
 
-        var reader = new DSLReader(this.spec, this.data, SpecEngineFactory.get());
+        var specEngine = SpecEngineFactory.get(this.config.specEngine || 'AUTO');
+        var reader = new DSLReader(this.spec, this.data, specEngine);
         var xGraph = reader.buildGraph();
         var engine = LayoutEngineFactory.get(this.config.layoutEngine || 'EXTRACT');
         var layout = reader.calcLayout(xGraph, engine, size);
