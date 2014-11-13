@@ -24,6 +24,14 @@ var createSelectorPredicates = (root) => {
     };
 };
 
+var getTickFormat = (dimType, scaleType) => {
+    var tickFormat = null;
+    if (dimType === 'measure') {
+        tickFormat = (scaleType === 'time') ? '%c' : 's';
+    }
+    return tickFormat;
+};
+
 var fnTraverseTree = (specUnitRef, transformRules) => {
     var temp = utilsDraw.applyNodeDefaults(specUnitRef);
     var root = transformRules(createSelectorPredicates(temp), temp);
@@ -58,17 +66,13 @@ var SpecEngineTypeMap = {
             if (unit.x) {
                 unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
                 var dimX = meta.dimension(unit.x);
-                if (dimX.dimType === 'measure') {
-                    unit.guide.x.tickFormat = (dimX.scaleType === 'time') ? null : 's';
-                }
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType);
             }
 
             if (unit.y) {
                 unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
                 var dimY = meta.dimension(unit.y);
-                if (dimY.dimType === 'measure') {
-                    unit.guide.y.tickFormat = (dimY.scaleType === 'time') ? '%c' : 's';
-                }
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType);
             }
 
             var x = unit.guide.x.label.text;
@@ -98,6 +102,11 @@ var SpecEngineTypeMap = {
 
             if (selectorPredicates.isLeaf) {
                 return unit;
+            }
+
+            if (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent) {
+                unit.guide.x.cssClass += ' facet-axis';
+                unit.guide.y.cssClass += ' facet-axis';
             }
 
             var dimX = meta.dimension(unit.x);
