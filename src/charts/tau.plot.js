@@ -27,13 +27,15 @@ export class Plot {
 
         this._measurer = {
             getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+            axisTickLabelLimit: 100,
             xTickWidth: 6 + 3,
             distToXAxisLabel: 20,
             distToYAxisLabel: 20,
             xAxisPadding: 20,
             yAxisPadding: 20,
             xFontLabelHeight: 15,
-            yFontLabelHeight: 15
+            yFontLabelHeight: 15,
+            densityKoeff: 2.2
         };
     }
 

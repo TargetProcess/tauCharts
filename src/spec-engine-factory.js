@@ -104,7 +104,9 @@ var SpecEngineTypeMap = {
                 return unit;
             }
 
-            if (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent) {
+            var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
+            if (isFacetUnit) {
+                // unit is a facet!
                 unit.guide.x.cssClass += ' facet-axis';
                 unit.guide.y.cssClass += ' facet-axis';
             }
@@ -137,15 +139,13 @@ var SpecEngineTypeMap = {
             var xAxisPadding = selectorPredicates.isLeafParent ? measurer.xAxisPadding : 0;
             var yAxisPadding = selectorPredicates.isLeafParent ? measurer.yAxisPadding : 0;
 
-            var isXVertical = (!!dimX.dimType && dimX.dimType !== 'measure');
-
+            var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== 'measure');
 
             unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
             unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
 
-
-            unit.guide.x.rotate = isXVertical ? -90 : 0;
-            unit.guide.x.textAnchor = isXVertical ? 'end' : unit.guide.x.textAnchor;
+            unit.guide.x.rotate = isXVertical ? 90 : 0;
+            unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
 
 
             var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
@@ -166,10 +166,18 @@ var SpecEngineTypeMap = {
 
             var maxXTickSize = xIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(xFormatter(maxXTickText));
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
+            if (dimX.dimType !== 'measure' && (maxXTickH > measurer.axisTickLabelLimit)) {
+                unit.guide.x.tickFormatLimit = measurer.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
+                maxXTickH = measurer.axisTickLabelLimit;
+            }
 
 
             var maxYTickSize = yIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;
+            if (dimY.dimType !== 'measure' && (maxYTickW > measurer.axisTickLabelLimit)) {
+                unit.guide.y.tickFormatLimit = measurer.axisTickLabelLimit / (maxYTickW / maxYTickText.length);
+                maxYTickW = measurer.axisTickLabelLimit;
+            }
 
 
             var xFontH = xTickWidth + maxXTickH;
@@ -180,6 +188,13 @@ var SpecEngineTypeMap = {
 
             var distToXAxisLabel = measurer.distToXAxisLabel;
             var distToYAxisLabel = measurer.distToYAxisLabel;
+
+            var densityKoeff = measurer.densityKoeff;
+
+
+            unit.guide.x.density = densityKoeff * (isXVertical ? maxXTickSize.height : maxXTickSize.width);
+            unit.guide.y.density = densityKoeff * maxYTickSize.height;
+
 
             unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
             unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;

@@ -44,8 +44,8 @@ var decorateTickLabel = (nodeScale, x) => {
         .attr('transform', rotate(angle))
         .style('text-anchor', x.guide.textAnchor);
 
-    if (angle === -90) {
-        ticks.attr('x', -9).attr('y', 0);
+    if (angle === 90) {
+        ticks.attr('x', 9).attr('y', 0);
     }
 };
 
@@ -56,11 +56,9 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         var axisScale = d3.svg.axis()
             .scale(x.scaleObj)
             .orient(x.guide.scaleOrient)
-            .ticks(_.max([Math.round(size / x.guide.density), 4]));
+            .ticks(Math.round(size / x.guide.density));
 
-        if (x.guide.tickFormat) {
-            axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
-        }
+        axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat, x.guide.tickFormatLimit));
 
         var nodeScale = container
             .append('g')
@@ -95,7 +93,7 @@ var fnDrawGrid = function (node, H, W) {
                 .scale(x.scaleObj)
                 .orient(x.guide.scaleOrient)
                 .tickSize(H)
-                .ticks(_.max([Math.round(W / x.guide.density), 4]));
+                .ticks(Math.round(W / x.guide.density));
 
             var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
 
@@ -109,7 +107,7 @@ var fnDrawGrid = function (node, H, W) {
                 .scale(y.scaleObj)
                 .orient(y.guide.scaleOrient)
                 .tickSize(-W)
-                .ticks(_.max([Math.round(H / y.guide.density), 4]));
+                .ticks(Math.round(H / y.guide.density));
 
             var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
 

@@ -59,13 +59,15 @@ define(function (require) {
                     height: 10
                 };
             },
+            axisTickLabelLimit: 100,
             xTickWidth: 9, // 6px tick mark + 3px margin to tick text
             distToXAxisLabel: 20,
             distToYAxisLabel: 20,
             xAxisPadding: 20,
             yAxisPadding: 20,
             xFontLabelHeight: 15,
-            yFontLabelHeight: 15
+            yFontLabelHeight: 15,
+            densityKoeff: 2.2
         };
 
         it("should support [DEFAULT] spec engine", function () {
@@ -122,8 +124,8 @@ define(function (require) {
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(20);
             expect(x.cssClass).to.equal('x axis');
-            expect(x.rotate).to.equal(-90);
-            expect(x.textAnchor).to.equal('end');
+            expect(x.rotate).to.equal(90);
+            expect(x.textAnchor).to.equal('start');
             expect(x.tickFormat).to.equal(null);
             expect(x.label.text).to.equal('TEAM');
 

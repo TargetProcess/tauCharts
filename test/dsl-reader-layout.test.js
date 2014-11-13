@@ -336,8 +336,8 @@ define(function (require) {
 
             var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
 
-            var ticksCountX = 4;
-            var ticksCountY = 5;
+            var ticksCountX = 1;
+            var ticksCountY = 3;
 
             var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
             expect(xAxisTickLines.length).to.equal(ticksCountX);

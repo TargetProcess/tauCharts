@@ -36,7 +36,14 @@ var FORMATS_MAP = {
 
 var FormatterRegistry = {
 
-    get: (formatAlias) => {
+    get: (formatAlias, tickFormatLimit) => {
+
+        var cut = (str) => {
+            var limit = tickFormatLimit || 1000;
+            return (str.length <= limit) ?
+                (str) :
+                (str.substr(0, limit - 1) + '...');
+        };
 
         var formatter = (formatAlias === null) ? ((x) => x.toString()) : FORMATS_MAP[formatAlias];
         if (!formatter) {
@@ -45,7 +52,7 @@ var FormatterRegistry = {
                 return f(v);
             };
         }
-        return formatter;
+        return (str) => (cut(formatter(str)));
     },
 
     add: (formatAlias, formatter) => {
