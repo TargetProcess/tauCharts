@@ -67,7 +67,11 @@ define(function (require) {
             yAxisPadding: 20,
             xFontLabelHeight: 15,
             yFontLabelHeight: 15,
-            densityKoeff: 2.2
+            densityKoeff: 2.2,
+            defaultFormats: {
+                'measure': 's',
+                'measure:time': '%e %b %Y, %H:%M'
+            }
         };
 
         it("should support [DEFAULT] spec engine", function () {
@@ -183,7 +187,7 @@ define(function (require) {
             expect(y.cssClass).to.equal('y axis');
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
-            expect(y.tickFormat).to.equal('%c');
+            expect(y.tickFormat).to.equal('%e %b %Y, %H:%M');
             expect(y.label.text).to.equal('DATE');
 
             // 20 padding to X axis line
@@ -195,10 +199,10 @@ define(function (require) {
 
             // 20 padding to Y axis line
             // 9  tick mark size
-            // 120 "Thu Nov 13 13:18:10 2014" iso string width
+            // 90 "13 Nov 2014, 13:18" (18 * 5) iso string width
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.equal(184);
+            expect(full.unit.guide.padding.l).to.equal(154);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });

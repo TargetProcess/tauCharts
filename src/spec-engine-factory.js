@@ -24,12 +24,9 @@ var createSelectorPredicates = (root) => {
     };
 };
 
-var getTickFormat = (dimType, scaleType) => {
-    var tickFormat = null;
-    if (dimType === 'measure') {
-        tickFormat = (scaleType === 'time') ? '%c' : 's';
-    }
-    return tickFormat;
+var getTickFormat = (dimType, scaleType, defaultFormats) => {
+    var key = [dimType, scaleType].join(':');
+    return defaultFormats[key] || defaultFormats[dimType] || null;
 };
 
 var fnTraverseTree = (specUnitRef, transformRules) => {
@@ -66,13 +63,13 @@ var SpecEngineTypeMap = {
             if (unit.x) {
                 unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
                 var dimX = meta.dimension(unit.x);
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType);
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType, measurer.defaultFormats);
             }
 
             if (unit.y) {
                 unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
                 var dimY = meta.dimension(unit.y);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType);
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType, measurer.defaultFormats);
             }
 
             var x = unit.guide.x.label.text;

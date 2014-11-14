@@ -26,18 +26,15 @@ export class Plot {
         //plugins
         this._plugins = new Plugins(this.config.plugins);
 
-        this._measurer = {
-            getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
-            axisTickLabelLimit: 100,
-            xTickWidth: 6 + 3,
-            distToXAxisLabel: 20,
-            distToYAxisLabel: 20,
-            xAxisPadding: 20,
-            yAxisPadding: 20,
-            xFontLabelHeight: 15,
-            yFontLabelHeight: 15,
-            densityKoeff: 2.2
-        };
+        var globalSettings = Plot.globalSettings;
+        var localSettings = {};
+        Object.keys(globalSettings).forEach((k) => {
+            localSettings[k] = (_.isFunction(globalSettings[k])) ?
+                globalSettings[k] :
+                utils.clone(globalSettings[k]);
+        });
+
+        this.settings = localSettings;
     }
 
     renderTo(target, xSize) {
@@ -66,7 +63,7 @@ export class Plot {
             .attr("height", size.height);
 
         var specEngineId = this.config.specEngine || 'AUTO';
-        var specEngine = SpecEngineFactory.get(specEngineId, this._measurer);
+        var specEngine = SpecEngineFactory.get(specEngineId, this.settings);
 
         var reader = new DSLReader(this.spec, this.data, specEngine);
         var xGraph = reader.buildGraph();

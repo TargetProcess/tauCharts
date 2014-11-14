@@ -1,3 +1,4 @@
+import {utilsDom} from './utils/utils-dom';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
 import {UnitDomainMixin} from './unit-domain-mixin';
@@ -31,8 +32,26 @@ var api = {
         get: function (name) {
             return colorBrewers[name];
         }
+    },
+    globalSettings: {
+        getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+        axisTickLabelLimit: 100,
+        xTickWidth: 6 + 3,
+        distToXAxisLabel: 20,
+        distToYAxisLabel: 20,
+        xAxisPadding: 20,
+        yAxisPadding: 20,
+        xFontLabelHeight: 15,
+        yFontLabelHeight: 15,
+        densityKoeff: 2.2,
+        defaultFormats: {
+            'measure': 's',
+            'measure:time': '%e %b %Y, %H:%M'
+        }
     }
 };
+
+Plot.globalSettings = api.globalSettings;
 
 api.UnitsRegistry
     .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
