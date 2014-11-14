@@ -2,6 +2,7 @@ import {DSLReader} from '../dsl-reader';
 import {SpecEngineFactory} from '../spec-engine-factory';
 import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
+import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
 
@@ -20,7 +21,7 @@ export class Plot {
 
         this.plugins = this.config.plugins;
         this.spec = this.config.spec;
-        this.data = this.config.data;
+        this.data = this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data);
 
         //plugins
         this._plugins = new Plugins(this.config.plugins);
@@ -83,50 +84,103 @@ export class Plot {
 
     _autoDetectDimensions(data) {
 
-        var detectType = (propertyValue) => {
-            var type;
-            if (_.isObject(propertyValue)) {
-                type = 'order';
-            }
-            else if (_.isNumber(propertyValue)) {
-                type = 'measure';
-            }
-            else {
-                type = 'category';
-            }
-
-            return type;
+        var defaultDetect = {
+            type: 'category',
+            scale: 'ordinal'
         };
 
-        return _.reduce(
-            data,
-            (dimMemo, rowItem) => {
+        var detectType = (propertyValue, defaultDetect) => {
 
-                _.each(rowItem, (val, key) => {
-                    var assumedType = detectType(val);
-                    dimMemo[key] = dimMemo[key] || {type: assumedType};
-                    dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'category';
-                });
+            var pair = defaultDetect;
 
-                return dimMemo;
-            },
-            {});
+            if (_.isDate(propertyValue)) {
+                pair.type = 'measure';
+                pair.scale = 'time';
+            }
+            else if (_.isObject(propertyValue)) {
+                pair.type = 'order';
+                pair.scale = 'ordinal';
+            }
+            else if (_.isNumber(propertyValue)) {
+                pair.type = 'measure';
+                pair.scale = 'linear';
+            }
+
+            return pair;
+        };
+
+        var reducer = (memo, rowItem) => {
+
+            Object.keys(rowItem).forEach((key) => {
+
+                var val = rowItem.hasOwnProperty(key) ? rowItem[key] : null;
+
+                memo[key] = memo[key] || {
+                    type: null,
+                    hasNull: false
+                };
+
+                if (val === null) {
+                    memo[key].hasNull = true;
+                }
+                else {
+                    var typeScalePair = detectType(val, utils.clone(defaultDetect));
+                    var detectedType  = typeScalePair.type;
+                    var detectedScale = typeScalePair.scale;
+
+                    var isInContraToPrev = (memo[key].type !== null && memo[key].type !== detectedType);
+                    memo[key].type  = isInContraToPrev ? defaultDetect.type  : detectedType;
+                    memo[key].scale = isInContraToPrev ? defaultDetect.scale : detectedScale;
+                }
+            });
+
+            return memo;
+        };
+
+        return _.reduce(data, reducer, {});
+    }
+
+    _autoExcludeNullValues(dimensions, srcData) {
+
+        var fields = [];
+        Object.keys(dimensions).forEach((k) => {
+            var d = dimensions[k];
+            if (d.hasNull && (d.type === 'measure')) {
+                // rule: exclude null values of "measure" type
+                fields.push(k);
+            }
+        });
+
+        var r;
+        if (fields.length === 0) {
+            r = srcData;
+        }
+        else {
+            r = srcData.filter((row) => !fields.some((f) => (!row.hasOwnProperty(f) || (row[f] === null))));
+        }
+
+        return r;
     }
 
     _autoAssignScales(dimensions) {
 
+        var defaultType = 'category';
         var scaleMap = {
             category: 'ordinal',
             order: 'ordinal',
             measure:'linear'
         };
 
-        _.each(dimensions, (val, key) => {
-            var t = val.type.toLowerCase();
-            val.scale = val.scale || scaleMap[t];
+        var r = {};
+        Object.keys(dimensions).forEach((k) => {
+            var v = dimensions[k];
+            var t = (v.type || defaultType).toLowerCase();
+            r[k] = {};
+            r[k].type = t;
+            r[k].scale = v.scale || scaleMap[t];
         });
 
-        return dimensions;
+        return r;
     }
 
     _normalizeDimensions(dimensions, data) {
