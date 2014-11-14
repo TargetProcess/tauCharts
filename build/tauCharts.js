@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.7 - 2014-11-13
+/*! tauCharts - v0.1.8 - 2014-11-14
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1970,13 +1970,14 @@ define('const',["exports"], function(exports) {
 
 
 define(
-  'charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils-dom", "../const"],
+  'charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const"],
   function(
     exports,
     _dslReader,
     _specEngineFactory,
     _layoutEngineFactory,
     _plugins,
+    _utilsUtils,
     _utilsUtilsDom,
     _const) {
     var DSLReader = _dslReader.DSLReader;
@@ -1984,6 +1985,7 @@ define(
     var LayoutEngineFactory = _layoutEngineFactory.LayoutEngineFactory;
     var Plugins = _plugins.Plugins;
     var propagateDatumEvents = _plugins.propagateDatumEvents;
+    var utils = _utilsUtils.utils;
     var utilsDom = _utilsUtilsDom.utilsDom;
     var CSS_PREFIX = _const.CSS_PREFIX;
 
@@ -2002,7 +2004,7 @@ define(
   
           this.plugins = this.config.plugins;
           this.spec = this.config.spec;
-          this.data = this.config.data;
+          this.data = this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data);
   
           //plugins
           this._plugins = new Plugins(this.config.plugins);
@@ -2073,34 +2075,90 @@ define(
 
           value: function(data) {
       
-              var detectType = function(propertyValue) {
-                  var type;
-                  if (_.isObject(propertyValue)) {
-                      type = 'order';
-                  }
-                  else if (_.isNumber(propertyValue)) {
-                      type = 'measure';
-                  }
-                  else {
-                      type = 'category';
-                  }
-      
-                  return type;
+              var defaultDetect = {
+                  type: 'category',
+                  scale: 'ordinal'
               };
       
-              return _.reduce(
-                  data,
-                  function(dimMemo, rowItem) {
+              var detectType = function(propertyValue, defaultDetect) {
       
-                      _.each(rowItem, function(val, key) {
-                          var assumedType = detectType(val);
-                          dimMemo[key] = dimMemo[key] || {type: assumedType};
-                          dimMemo[key].type = (dimMemo[key].type === assumedType) ? assumedType : 'category';
-                      });
+                  var pair = defaultDetect;
       
-                      return dimMemo;
-                  },
-                  {});
+                  if (_.isDate(propertyValue)) {
+                      pair.type = 'measure';
+                      pair.scale = 'time';
+                  }
+                  else if (_.isObject(propertyValue)) {
+                      pair.type = 'order';
+                      pair.scale = 'ordinal';
+                  }
+                  else if (_.isNumber(propertyValue)) {
+                      pair.type = 'measure';
+                      pair.scale = 'linear';
+                  }
+      
+                  return pair;
+              };
+      
+              var reducer = function(memo, rowItem) {
+      
+                  Object.keys(rowItem).forEach(function(key) {
+      
+                      var val = rowItem.hasOwnProperty(key) ? rowItem[key] : null;
+      
+                      memo[key] = memo[key] || {
+                          type: null,
+                          hasNull: false
+                      };
+      
+                      if (val === null) {
+                          memo[key].hasNull = true;
+                      }
+                      else {
+                          var typeScalePair = detectType(val, utils.clone(defaultDetect));
+                          var detectedType  = typeScalePair.type;
+                          var detectedScale = typeScalePair.scale;
+      
+                          var isInContraToPrev = (memo[key].type !== null && memo[key].type !== detectedType);
+                          memo[key].type  = isInContraToPrev ? defaultDetect.type  : detectedType;
+                          memo[key].scale = isInContraToPrev ? defaultDetect.scale : detectedScale;
+                      }
+                  });
+      
+                  return memo;
+              };
+      
+              return _.reduce(data, reducer, {});
+          }
+        },
+
+        _autoExcludeNullValues: {
+          writable: true,
+
+          value: function(dimensions, srcData) {
+      
+              var fields = [];
+              Object.keys(dimensions).forEach(function(k) {
+                  var d = dimensions[k];
+                  if (d.hasNull && (d.type === 'measure')) {
+                      // rule: exclude null values of "measure" type
+                      fields.push(k);
+                  }
+              });
+      
+              var r;
+              if (fields.length === 0) {
+                  r = srcData;
+              }
+              else {
+                  r = srcData.filter(function(row) {
+                    return !fields.some(function(f) {
+                      return !row.hasOwnProperty(f) || (row[f] === null);
+                    });
+                  });
+              }
+      
+              return r;
           }
         },
 
@@ -2109,18 +2167,23 @@ define(
 
           value: function(dimensions) {
       
+              var defaultType = 'category';
               var scaleMap = {
                   category: 'ordinal',
                   order: 'ordinal',
                   measure:'linear'
               };
       
-              _.each(dimensions, function(val, key) {
-                  var t = val.type.toLowerCase();
-                  val.scale = val.scale || scaleMap[t];
+              var r = {};
+              Object.keys(dimensions).forEach(function(k) {
+                  var v = dimensions[k];
+                  var t = (v.type || defaultType).toLowerCase();
+                  r[k] = {};
+                  r[k].type = t;
+                  r[k].scale = v.scale || scaleMap[t];
               });
       
-              return dimensions;
+              return r;
           }
         },
 
