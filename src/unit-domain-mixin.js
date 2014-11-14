@@ -223,7 +223,7 @@ export class UnitDomainMixin {
         unit.domain = this.fnDomain;
         unit.scaleMeta = this.fnScaleMeta;
         unit.scaleTo = this.fnScaleTo;
-        unit.partition = (() => unit.source(unit.$where));
+        unit.partition = (() => unit.data || unit.source(unit.$where));
 
         return unit;
     }

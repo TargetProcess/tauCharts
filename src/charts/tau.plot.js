@@ -1,4 +1,5 @@
 import {DSLReader} from '../dsl-reader';
+import {Emitter} from '../event';
 import {SpecEngineFactory} from '../spec-engine-factory';
 import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
@@ -9,12 +10,11 @@ import {UnitDomainMixin} from '../unit-domain-mixin';
 import {UnitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 
-export class Plot {
-
+export class Plot extends Emitter{
     constructor(config) {
         this.setupConfig(config);
         //plugins
-        this._plugins = new Plugins(this.config.plugins);
+        this._plugins = new Plugins(this.config.plugins, this);
     }
 
     setupConfig(config) {
@@ -53,12 +53,21 @@ export class Plot {
 
         return _.defaults(configSettings || {}, localSettings);
     }
+    addLine (conf) {
+        var unitContainer = this._spec.unit;
+        var unit = this._spec.unit.unit[0];
 
+
+        do {
+            console.log(unitContainer);
+        } while (unitContainer = unit,unit = unit.unit.length); // jshint ignore:line
+
+    }
     renderTo(target, xSize) {
-
         var container = d3.select(target);
         var containerNode = container[0][0];
-
+        this.target = target;
+        this.targetSizes = xSize;
         if (containerNode === null) {
             throw new Error('Target element not found');
         }
@@ -172,7 +181,14 @@ export class Plot {
         );
 
         //plugins
-        svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
-        this._plugins.render(svgXElement);
+        svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
+        this.fire('render', svgXElement);
+    }
+    getData() {
+        return this.config.data;
+    }
+    setData(data) {
+        this.config.data = data;
+        this.renderTo(this.target, this.targetSizes);
     }
 }

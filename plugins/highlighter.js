@@ -5,28 +5,30 @@
         var tauPlugins = require('tauPlugins');
         module.exports = factory();
     } else {
-        factory(this.tauPlugins)
+        factory(this.tauPlugins);
     }
 })(function (tauPlugins) {
     /** @class Tooltip
      * @extends Plugin */
-    var Highlighter = {
+    var highlighter = {
         /**
          * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
-        mouseover: function (context, tools) { 
-            tools.element.classed('highlighted', true);
+        onElementMouseOver: function (chart, data) {
+            data.element.classed('highlighted', true);
         },
 
         /**
          * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
-        mouseout: function (context, tools) {
-            tools.element.classed('highlighted', false);
+        onElementMouseOut: function (chart, data) {
+            data.element.classed('highlighted', false);
         }
     };
 
-    tauPlugins.add('highlighter', Highlighter);
+    tauPlugins.add('highlighter', function() {
+       return highlighter;
+    });
 });
