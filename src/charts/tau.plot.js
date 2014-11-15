@@ -54,16 +54,19 @@ export class Plot extends Emitter{
         return _.defaults(configSettings || {}, localSettings);
     }
     addLine (conf) {
-        var unitContainer = this._spec.unit;
-        var unit = this._spec.unit.unit[0];
+        var unitContainer = this._spec.unit.unit;
 
-
-        do {
-            console.log(unitContainer);
-        } while (unitContainer = unit,unit = unit.unit.length); // jshint ignore:line
-
+        while(true) {
+            if(unitContainer[0].unit) {
+                unitContainer = unitContainer[0].unit;
+            } else {
+                break;
+            }
+        }
+        unitContainer.push(conf);
     }
     renderTo(target, xSize) {
+        this.addLine({type:'ELEMENT.LINE', isGuide:true});
         var container = d3.select(target);
         var containerNode = container[0][0];
         this.target = target;

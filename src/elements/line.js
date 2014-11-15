@@ -49,12 +49,29 @@ var line = function (node) {
         elements.enter().append('circle').call(update);
     };
 
+    var line;
+    if(node.isGuide) {
+        var  i = 0;
+        line = d3
+            .svg
+            .line()
+            .x((d) => {
+                if(i) {
+                    return xScale.rangeExtent()[1];
+                } else {
+                    i++;
+                    return 0;
+                }
+            })
+            .y((d) => yScale(45));
+    } else {
+        line = d3
+            .svg
+            .line()
+            .x((d) => xScale(d[node.x.scaleDim]))
+            .y((d) => yScale(d[node.y.scaleDim]));
+    }
 
-    var line = d3
-        .svg
-        .line()
-        .x((d) => xScale(d[node.x.scaleDim]))
-        .y((d) => yScale(d[node.y.scaleDim]));
 
     var updatePaths = function () {
         this.attr('d', line);
