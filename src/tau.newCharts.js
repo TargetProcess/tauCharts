@@ -46,7 +46,7 @@ var api = {
         densityKoeff: 2.2,
         defaultFormats: {
             'measure': 's',
-            'measure:time': '%e %b %Y, %H:%M'
+            'measure:time': 'x-time-auto'
         }
     }
 };

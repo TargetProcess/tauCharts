@@ -70,7 +70,7 @@ define(function (require) {
             densityKoeff: 2.2,
             defaultFormats: {
                 'measure': 's',
-                'measure:time': '%e %b %Y, %H:%M'
+                'measure:time': 'x-time-auto'
             }
         };
 
@@ -187,7 +187,7 @@ define(function (require) {
             expect(y.cssClass).to.equal('y axis');
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
-            expect(y.tickFormat).to.equal('%e %b %Y, %H:%M');
+            expect(y.tickFormat).to.equal('x-time-auto');
             expect(y.label.text).to.equal('DATE');
 
             // 20 padding to X axis line
@@ -199,10 +199,10 @@ define(function (require) {
 
             // 20 padding to Y axis line
             // 9  tick mark size
-            // 90 "13 Nov 2014, 13:18" (18 * 5) iso string width
+            // 25 "03 AM" (5 * 5) iso string width
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.equal(154);
+            expect(full.unit.guide.padding.l).to.equal(89);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });
