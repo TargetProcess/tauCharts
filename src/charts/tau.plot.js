@@ -1,4 +1,5 @@
 import {DSLReader} from '../dsl-reader';
+import {Tooltip} from '../api/tooltip';
 import {Emitter} from '../event';
 import {SpecEngineFactory} from '../spec-engine-factory';
 import {LayoutEngineFactory} from '../layout-engine-factory';
@@ -65,8 +66,11 @@ export class Plot extends Emitter{
         }
         unitContainer.push(conf);
     }
+    addBallon(conf) {
+        return new Tooltip('', conf || {});
+    }
     renderTo(target, xSize) {
-        this.addLine({type:'ELEMENT.LINE', isGuide:true});
+       // this.addLine({type:'ELEMENT.LINE', isGuide:true});
         var container = d3.select(target);
         var containerNode = container[0][0];
         this.target = target;

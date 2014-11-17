@@ -1,0 +1,39 @@
+.tooltip {
+	position: absolute;
+	padding: .8em 1em;
+	top: 10px; /* Defines the spacing between tooltip and target position */
+	max-width: 200px;
+	color: #fff;
+	background: #3a3c47;
+	border-radius: 2px;
+	text-shadow: -1px -1px 0 rgba(0,0,0,.2);
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+	pointer-events: none;
+}
+
+/* Arrow styles */
+.tooltip:after {
+	content: '';
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	margin: -5px;
+	background: inherit;
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transform: rotate(45deg);
+}
+
+.tooltip.top:after, .tooltip.top-left:after, .tooltip.top-right:after { bottom: 0; }
+.tooltip.bottom:after, .tooltip.bottom-left:after, .tooltip.bottom-right:after { top: 0; }
+.tooltip.top:after, .tooltip.bottom:after { left: 50%; }
+.tooltip.top-left:after, .tooltip.bottom-left:after { right: 15px; }
+.tooltip.top-right:after, .tooltip.bottom-right:after { left: 15px; }
+
+.tooltip.left:after, .tooltip.left-top:after, .tooltip.left-bottom:after { right: 0; }
+.tooltip.right:after, .tooltip.right-top:after, .tooltip.right-bottom:after { left: 0; }
+.tooltip.left:after, .tooltip.right:after { top: 50%; }
+.tooltip.left-top:after, .tooltip.right-top:after { bottom: 15px; }
+.tooltip.left-bottom:after, .tooltip.right-bottom:after { top: 15px; }

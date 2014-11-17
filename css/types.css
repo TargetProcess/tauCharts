@@ -1,0 +1,5 @@
+/* Types */
+.tooltip.light { color: #3a3c47; background: #fff; text-shadow: none; }
+.tooltip.success { background: #8dc572; }
+.tooltip.warning { background: #ddc12e; }
+.tooltip.error { background: #be6464; }

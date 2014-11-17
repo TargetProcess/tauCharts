@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../css/tooltip.css"/>
+    <title>
+
+    </title>
+
+</head>
+<body >
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<a onclick="showTooltip(this)">show tooltip</a>
+<script src="../src/api/tooltip.js"></script>
+<script>
+
+    function showTooltip(el) {
+        var tip = new Tooltip('Foo bar!',{place:'bottom',auto:true});
+        tip.attach(el).show();
+    }
+
+</script>
+</body>
+</html>

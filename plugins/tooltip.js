@@ -17,16 +17,16 @@
     function tooltip (fields) {
         return  {
 
-            init: function () {
+            init: function (chart) {
                 this._dataFields = fields;
-                this._container = d3.select('body').append('div');
-                this._container.on('mouseover',function(){
+                this._tooltip = chart.addBallon();
+                /*this._container.on('mouseover',function(){
                     this.needHide = false;
                 }.bind(this));
                 this._container.on('mouseleave',function(){
                     this.needHide = true;
-                    this._container.style("display", "none");
-                }.bind(this));
+                    this._tooltip.hide();
+                }.bind(this));*/
                 this.needHide = true;
             },
             /**
@@ -41,33 +41,26 @@
                     text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + data.context.datum[field];
                 }
                 text+='</p><a>Exclude</a>';
-                this._container.classed({'tooltip graphical-report__tooltip': true})
+              /*  this._container.classed({'tooltip graphical-report__tooltip': true})
                     .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
                     .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
                     .style('display', 'block')
-                    .html(text);
+                    .html(text);*/
+                this._tooltip.content(text);
+                this._tooltip.show(data.element.node());
                 var dataChart = chart.getData();
-                this._container.select('a').on('click',function(){
+               /* this._container.select('a').on('click',function(){
                     chart.setData(_.without(dataChart, data.context.datum));
-                });
+                });*/
             },
-
-            onElementMouseMove: function (context, tools) {
-                if (this._container.style('display', 'block')) {
-                    this._container
-                        .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
-                        .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)');
-                }
-            },
-
-            /**
+             /**
              * @param {ElementContext} context
              * @param {ChartElementTools} tools
              */
             onElementMouseOut: function (context, tools) {
                 setTimeout(function(){
                     if(this.needHide) {
-                        this._container.style("display", "none");
+                        this._tooltip.hide();
                     }
                 }.bind(this),300);
             }
