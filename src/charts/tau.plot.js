@@ -56,22 +56,45 @@ export class Plot {
 
         containerNode.innerHTML = '';
 
-        var svgContainer = container
-            .append("svg")
-            .attr("class",CSS_PREFIX + 'svg')
-            .attr("width", size.width)
-            .attr("height", size.height);
-
         var specEngineId = this.config.specEngine || 'AUTO';
         var specEngine = SpecEngineFactory.get(specEngineId, this.settings);
 
         var reader = new DSLReader(this.spec, this.data, specEngine);
+
         var xGraph = reader.buildGraph();
+
+        var useHScroll = false;
+        if (size.width < reader.spec.recommendedWidth) {
+            size.width = reader.spec.recommendedWidth;
+            useHScroll = true;
+        }
+
+        var useVScroll = false;
+        if (size.height < reader.spec.recommendedHeight) {
+            size.height = reader.spec.recommendedHeight;
+            useVScroll = true;
+        }
+
+        var scrollSize = utilsDom.getScrollbarWidth();
+        if (useHScroll) {
+            size.height -= scrollSize;
+        }
+
+        if (useVScroll) {
+            size.width -= scrollSize;
+        }
 
         var layoutEngineId = this.config.layoutEngine || 'EXTRACT';
         var layoutEngine = LayoutEngineFactory.get(layoutEngineId);
 
         var layout = reader.calcLayout(xGraph, layoutEngine, size);
+
+        var svgContainer = container
+            .append("svg")
+            .attr("class", CSS_PREFIX + 'svg')
+            .attr("width", size.width)
+            .attr("height", size.height);
+
         var canvas = reader.renderGraph(layout, svgContainer);
 
         //plugins
@@ -175,6 +198,7 @@ export class Plot {
             r[k] = {};
             r[k].type = t;
             r[k].scale = v.scale || scaleMap[t];
+            r[k].value = v.value;
         });
 
         return r;

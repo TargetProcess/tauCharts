@@ -101,23 +101,23 @@ define(function (require) {
         it("should render to target with size (where target = element)", function () {
 
             new tauChart.Plot(spec)
-                .renderTo(document.getElementById('test-div'), {width: 100, height: 100});
+                .renderTo(document.getElementById('test-div'), {width: 1000, height: 1000});
 
             var svg = d3.select(div).selectAll('svg');
 
-            expect(svg.attr('width')).to.equal('100');
-            expect(svg.attr('height')).to.equal('100');
+            expect(svg.attr('width')).to.equal('1000');
+            expect(svg.attr('height')).to.equal('1000');
         });
 
         it("should render to target with size (where target = ID selector)", function () {
 
             new tauChart.Plot(spec)
-                .renderTo('#test-div', {width: 200, height: 100});
+                .renderTo('#test-div', {width: 2000, height: 1000});
 
             var svg = d3.select(div).selectAll('svg');
 
-            expect(svg.attr('width')).to.equal('200');
-            expect(svg.attr('height')).to.equal('100');
+            expect(svg.attr('width')).to.equal('2000');
+            expect(svg.attr('height')).to.equal('1000');
         });
 
         it("should infer size from target (where target = element)", function () {

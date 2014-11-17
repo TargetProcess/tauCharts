@@ -130,6 +130,7 @@ var SpecEngineTypeMap = {
             var xValues = meta.scaleMeta(unit.x, xScaleOptions).values;
             var yValues = meta.scaleMeta(unit.y, yScaleOptions).values;
 
+
             var xIsEmptyAxis = (xValues.length === 0);
             var yIsEmptyAxis = (yValues.length === 0);
 
@@ -196,14 +197,22 @@ var SpecEngineTypeMap = {
             unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
             unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
+
             var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
             var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
 
             unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
             unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
 
+
             unit.guide.padding.b = xAxisPadding + xLabelPadding;
             unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+
+            unit.guide.x.$minimalDomain = xValues.length;
+            unit.guide.y.$minimalDomain = yValues.length;
+
 
             return unit;
         };
@@ -216,7 +225,37 @@ var SpecEngineFactory = {
 
         var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT);
         return (spec, meta) => {
+
             fnTraverseTree(spec.unit, rules(spec, meta, measurer));
+
+            var traverseFromDeep = (root) => {
+                var r;
+
+                if (!root.unit) {
+                    r = { w: 0, h: 0 };
+                }
+                else {
+                    var s = traverseFromDeep(root.unit[0]);
+                    var g = root.guide;
+                    var xmd = g.x.$minimalDomain || 1;
+                    var ymd = g.y.$minimalDomain || 1;
+                    var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
+                    var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
+
+                    r = {
+                        w: maxW + g.padding.l + g.padding.r,
+                        h: maxH + g.padding.t + g.padding.b
+                    };
+                }
+
+                return r;
+            };
+
+            var s = traverseFromDeep(spec.unit);
+
+            spec.recommendedWidth = s.w;
+            spec.recommendedHeight = s.h;
+
             return spec;
         };
     }
