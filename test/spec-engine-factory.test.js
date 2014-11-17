@@ -7,12 +7,12 @@ define(function (require) {
     describe("Spec engine factory", function () {
 
         var data = [
-            { team: 'A',    count: '1',  date: new Date('2014-11-10') },
-            { team: 'B',    count: '2',  date: new Date('2014-11-11') },
-            { team: 'C',    count: '3',  date: new Date('2014-11-12') },
-            { team: 'D',    count: '4',  date: new Date('2014-11-13') },
-            { team: 'E',    count: '5',  date: new Date('2014-11-14') },
-            { team: 'Long', count: '25', date: new Date('2014-11-15') }
+            { team: 'A',    count: '1',  date: new Date('2014-11-10T00:00:00+00:00') },
+            { team: 'B',    count: '2',  date: new Date('2014-11-11T00:00:00+00:00') },
+            { team: 'C',    count: '3',  date: new Date('2014-11-12T00:00:00+00:00') },
+            { team: 'D',    count: '4',  date: new Date('2014-11-13T00:00:00+00:00') },
+            { team: 'E',    count: '5',  date: new Date('2014-11-14T00:00:00+00:00') },
+            { team: 'Long', count: '25', date: new Date('2014-11-15T00:00:00+00:00') }
         ];
 
         var spec = {
@@ -202,7 +202,7 @@ define(function (require) {
             // 25 "03 AM" (5 * 5) iso string width
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.equal(89);
+            expect(full.unit.guide.padding.l).to.be.at.least(89);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });
