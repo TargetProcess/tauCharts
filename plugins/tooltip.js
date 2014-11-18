@@ -42,16 +42,16 @@
                 var text = '';
                 for (var i = this._dataFields.length - 1; i >= 0; i--) {
                     var field = this._dataFields[i];
-                    text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + data.context.datum[field];
+                    text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + data.elementData[field];
                 }
                 text += '</p><a>Exclude</a>';
 
                 this._tooltip.content(text);
-                this._tooltip.show(data.element.node());
+                this._tooltip.show(data.element);
                 var dataChart = chart.getData();
                 clearInterval(this._interval);
                 this._tooltip.getDom().querySelectorAll('a')[0].addEventListener('click',function(){
-                     chart.setData(_.without(dataChart, data.context.datum));
+                     chart.setData(_.without(dataChart, data.elementData));
                     this._tooltip.hide();
                 }.bind(this));
             },

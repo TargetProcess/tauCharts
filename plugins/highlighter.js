@@ -11,20 +11,11 @@
     /** @class Tooltip
      * @extends Plugin */
     var highlighter = {
-        /**
-         * @param {ElementContext} context
-         * @param {ChartElementTools} tools
-         */
         onElementMouseOver: function (chart, data) {
-            data.element.classed('highlighted', true);
+            data.element.classList.toggle('highlighted', true);
         },
-
-        /**
-         * @param {ElementContext} context
-         * @param {ChartElementTools} tools
-         */
         onElementMouseOut: function (chart, data) {
-            data.element.classed('highlighted', false);
+            data.element.classList.toggle('highlighted', false);
         }
     };
 
