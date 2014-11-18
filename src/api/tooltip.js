@@ -508,6 +508,9 @@ Tooltip.prototype.show = function (x, y) {
 
     return this;
 };
+Tooltip.prototype.getDom = function (x, y) {
+    return this.element;
+};
 
 /**
  * Hide the tooltip.
@@ -596,7 +599,6 @@ Tooltip.reposition = (function () {
     var rIndex;
 
     function requestReposition() {
-        console.log('dsaf');
         if (rIndex || !Tooltip.winAware.length) {
             return;
         }

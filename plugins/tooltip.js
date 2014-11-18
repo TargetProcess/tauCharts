@@ -1,6 +1,8 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define(['tauPlugins'],function(tauPlugins){return factory(tauPlugins);});
+        define(['tauPlugins'], function (tauPlugins) {
+            return factory(tauPlugins);
+        });
     } else if (typeof module === "object" && module.exports) {
         var tauPlugins = require('tauPlugins');
         module.exports = factory();
@@ -10,23 +12,25 @@
 })(function (tauPlugins) {
     /** @class Tooltip
      * @extends Plugin */
-     /* Usage
+    /* Usage
      .plugins(tau.plugins.tooltip('effort', 'priority'))
-    accepts a list of data fields names as properties
-    */
-    function tooltip (fields) {
-        return  {
+     accepts a list of data fields names as properties
+     */
+    function tooltip(fields) {
+        return {
 
             init: function (chart) {
                 this._dataFields = fields;
-                this._tooltip = chart.addBallon();
-                /*this._container.on('mouseover',function(){
+                this._interval = null;
+                this._tooltip = chart.addBallon({spacing:10});
+                this._tooltip.getDom().addEventListener('mouseover', function () {
                     this.needHide = false;
-                }.bind(this));
-                this._container.on('mouseleave',function(){
+                    clearTimeout(this.interval);
+                }.bind(this), false);
+                this._tooltip.getDom().addEventListener('mouseleave', function () {
                     this.needHide = true;
                     this._tooltip.hide();
-                }.bind(this));*/
+                }.bind(this), false);
                 this.needHide = true;
             },
             /**
@@ -40,29 +44,27 @@
                     var field = this._dataFields[i];
                     text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + data.context.datum[field];
                 }
-                text+='</p><a>Exclude</a>';
-              /*  this._container.classed({'tooltip graphical-report__tooltip': true})
-                    .style('transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
-                    .style('-webkit-transform', 'translate(' + (d3.mouse(this._container[0].parentNode)[0]+10) + 'px, ' + (d3.mouse(this._container[0].parentNode)[1]-10) + 'px)')
-                    .style('display', 'block')
-                    .html(text);*/
+                text += '</p><a>Exclude</a>';
+
                 this._tooltip.content(text);
                 this._tooltip.show(data.element.node());
                 var dataChart = chart.getData();
-               /* this._container.select('a').on('click',function(){
-                    chart.setData(_.without(dataChart, data.context.datum));
-                });*/
+                clearInterval(this._interval);
+                this._tooltip.getDom().querySelectorAll('a')[0].addEventListener('click',function(){
+                     chart.setData(_.without(dataChart, data.context.datum));
+                    this._tooltip.hide();
+                }.bind(this));
             },
-             /**
+            /**
              * @param {ElementContext} context
              * @param {ChartElementTools} tools
              */
             onElementMouseOut: function (context, tools) {
-                setTimeout(function(){
-                    if(this.needHide) {
+                this._interval = setTimeout(function () {
+                    if (this.needHide) {
                         this._tooltip.hide();
                     }
-                }.bind(this),300);
+                }.bind(this), 300);
             }
         };
 
