@@ -47,8 +47,17 @@ var api = {
         yFontLabelHeight: 15,
         densityKoeff: 2.2,
         defaultFormats: {
-            'measure': 's',
-            'measure:time': 'x-time-auto'
+            'measure': 'x-num-auto',
+            'measure:time': 'x-time-auto',
+            'measure:time:year': 'x-time-year',
+            'measure:time:quarter': 'x-time-quarter',
+            'measure:time:month': 'x-time-month',
+            'measure:time:week': 'x-time-week',
+            'measure:time:day': 'x-time-day',
+            'measure:time:hour': 'x-time-hour',
+            'measure:time:min': 'x-time-min',
+            'measure:time:sec': 'x-time-sec',
+            'measure:time:ms': 'x-time-ms'
         }
     }
 };

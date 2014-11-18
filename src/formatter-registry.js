@@ -3,6 +3,10 @@ import * as d3 from 'd3';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 
+    'xs': (x) => {
+        return (Math.abs(x) < 1) ? x.toString() : d3.format('s')(x);
+    },
+
     'day': d3.time.format('%d-%b-%Y'),
 
     'week': d3.time.format('%d-%b-%Y'),
@@ -44,6 +48,16 @@ var FORMATS_MAP = {
         ["%Y", function() { return true; }]
     ])
 };
+
+FORMATS_MAP['x-time-ms'] = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-sec'] = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-min'] = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-hour'] = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-day'] = FORMATS_MAP['day'];
+FORMATS_MAP['x-time-week'] = FORMATS_MAP['week'];
+FORMATS_MAP['x-time-month'] = FORMATS_MAP['month'];
+FORMATS_MAP['x-time-quarter'] = FORMATS_MAP['quarter'];
+FORMATS_MAP['x-time-year'] = FORMATS_MAP['year'];
 
 var FormatterRegistry = {
 

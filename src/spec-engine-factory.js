@@ -24,9 +24,54 @@ var createSelectorPredicates = (root) => {
     };
 };
 
-var getTickFormat = (dimType, scaleType, defaultFormats) => {
-    var key = [dimType, scaleType].join(':');
-    return defaultFormats[key] || defaultFormats[dimType] || null;
+var getTickFormat = (dim, meta, defaultFormats) => {
+    var dimType = dim.dimType;
+    var scaleType = dim.scaleType;
+    var specifier = '*';
+    if (dimType === 'measure' && scaleType === 'time') {
+        let src = meta.source.filter((x) => (x !== null)).sort();
+        let resolutionAvg = 0;
+        if (src.length > 1) {
+            let i = 1;
+            let l = src.length;
+            let m = [];
+            while (i < l) {
+                m.push(src[i] - src[i - 1]);
+                ++i;
+            }
+
+            var s = m.reduce((sum, x) => {
+                sum += x;
+                return sum;
+            }, 0);
+
+            resolutionAvg = s / m.length;
+        }
+
+        var resolutions = [
+            [1000 * 60 * 60 * 24 * 365, 'year'],
+            [1000 * 60 * 60 * 24 * 30 * 3, 'quarter'],
+            [1000 * 60 * 60 * 24 * 30, 'month'],
+            [1000 * 60 * 60 * 24 * 7, 'week'],
+            [1000 * 60 * 60 * 24, 'day'],
+            [1000 * 60 * 60, 'hour'],
+            [1000 * 60, 'min'],
+            [1000, 'sec'],
+            [0, 'ms']
+        ];
+
+        let r = -1;
+        do {
+            ++r;
+        }
+        while (resolutions[r][0] > resolutionAvg);
+
+        specifier = resolutions[r][1];
+    }
+
+    var key = [dimType, scaleType, specifier].join(':');
+    var tag = [dimType, scaleType].join(':');
+    return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
 };
 
 var fnTraverseTree = (specUnitRef, transformRules) => {
@@ -62,14 +107,10 @@ var SpecEngineTypeMap = {
 
             if (unit.x) {
                 unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
-                var dimX = meta.dimension(unit.x);
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType, settings.defaultFormats);
             }
 
             if (unit.y) {
                 unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
-                var dimY = meta.dimension(unit.y);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType, settings.defaultFormats);
             }
 
             var x = unit.guide.x.label.text;
@@ -127,9 +168,13 @@ var SpecEngineTypeMap = {
                 autoScale: unit.guide.y.autoScale
             };
 
-            var xValues = meta.scaleMeta(unit.x, xScaleOptions).values;
-            var yValues = meta.scaleMeta(unit.y, yScaleOptions).values;
+            var xMeta = meta.scaleMeta(unit.x, xScaleOptions);
+            var xValues = xMeta.values;
+            var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
+            var yValues = yMeta.values;
 
+            unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
+            unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
             var xIsEmptyAxis = (xValues.length === 0);
             var yIsEmptyAxis = (yValues.length === 0);
@@ -168,7 +213,6 @@ var SpecEngineTypeMap = {
                 unit.guide.x.tickFormatLimit = settings.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
                 maxXTickH = settings.axisTickLabelLimit;
             }
-
 
             var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;

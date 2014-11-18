@@ -183,7 +183,8 @@ export class UnitDomainMixin {
 
             return {
                 extract: (x) => fVal(fMap(x)),
-                values: autoScaledVals
+                values: autoScaledVals,
+                source: originalValues
             };
         };
 

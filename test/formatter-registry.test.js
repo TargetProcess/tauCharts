@@ -36,13 +36,17 @@ define(function (require) {
             expect(registry.get('year')(oct30)).to.equal('2014');
             expect(registry.get('quarter')(oct30)).to.equal('Q4 2014');
 
-            expect(registry.get('s')(22000)).to.equal('22k');
-            expect(registry.get('s')(22000000)).to.equal('22M');
+            expect(registry.get('xs')(22000)).to.equal('22k');
+            expect(registry.get('xs')(22000000)).to.equal('22M');
+            expect(registry.get('xs')(0.0022)).to.equal('0.0022');
+            expect(registry.get('xs')(-0.0022)).to.equal('-0.0022');
         });
 
         it("should support d3 formats", function () {
             expect(registry.get('s')(22000)).to.equal('22k');
             expect(registry.get('s')(22000000)).to.equal('22M');
+            expect(registry.get('s')(0.02)).to.equal('20m');
+            expect(registry.get('s')(0.0002)).to.equal('200µ');
         });
 
         it("should allow to add custom formats", function () {

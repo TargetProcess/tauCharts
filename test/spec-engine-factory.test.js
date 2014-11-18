@@ -7,12 +7,12 @@ define(function (require) {
     describe("Spec engine factory", function () {
 
         var data = [
-            { team: 'A',    count: '1',  date: new Date('2014-11-10T00:00:00+00:00') },
-            { team: 'B',    count: '2',  date: new Date('2014-11-11T00:00:00+00:00') },
-            { team: 'C',    count: '3',  date: new Date('2014-11-12T00:00:00+00:00') },
-            { team: 'D',    count: '4',  date: new Date('2014-11-13T00:00:00+00:00') },
-            { team: 'E',    count: '5',  date: new Date('2014-11-14T00:00:00+00:00') },
-            { team: 'Long', count: '25', date: new Date('2014-11-15T00:00:00+00:00') }
+            { team: 'A',    count: '1',  date: new Date('2014-01-01T00:00:00+00:00') },
+            { team: 'B',    count: '2',  date: new Date('2014-04-01T00:00:00+00:00') },
+            { team: 'C',    count: '3',  date: new Date('2014-07-12T00:00:00+00:00') },
+            { team: 'D',    count: '4',  date: new Date('2014-09-01T00:00:00+00:00') },
+            { team: 'E',    count: '5',  date: new Date('2015-01-01T00:00:00+00:00') },
+            { team: 'Long', count: '25', date: new Date('2015-04-01T00:00:00+00:00') }
         ];
 
         var spec = {
@@ -69,8 +69,17 @@ define(function (require) {
             yFontLabelHeight: 15,
             densityKoeff: 2.2,
             defaultFormats: {
-                'measure': 's',
-                'measure:time': 'x-time-auto'
+                'measure': 'x-num-auto',
+                'measure:time': 'x-time-auto',
+                'measure:time:year': 'x-time-year',
+                'measure:time:quarter': 'x-time-quarter',
+                'measure:time:month': 'x-time-month',
+                'measure:time:week': 'x-time-week',
+                'measure:time:day': 'x-time-day',
+                'measure:time:hour': 'x-time-hour',
+                'measure:time:min': 'x-time-min',
+                'measure:time:sec': 'x-time-sec',
+                'measure:time:ms': 'x-time-ms'
             }
         };
 
@@ -139,7 +148,7 @@ define(function (require) {
             expect(y.cssClass).to.equal('y axis');
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
-            expect(y.tickFormat).to.equal('s');
+            expect(y.tickFormat).to.equal('x-num-auto');
             expect(y.label.text).to.equal('COUNT');
 
             // 20 padding to X axis line
@@ -178,7 +187,7 @@ define(function (require) {
             expect(x.cssClass).to.equal('x axis');
             expect(x.rotate).to.equal(0);
             expect(x.textAnchor).to.equal('middle');
-            expect(x.tickFormat).to.equal('s');
+            expect(x.tickFormat).to.equal('x-num-auto');
             expect(x.label.text).to.equal('COUNT');
 
             expect(y.autoScale).to.equal(true);
@@ -187,7 +196,7 @@ define(function (require) {
             expect(y.cssClass).to.equal('y axis');
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
-            expect(y.tickFormat).to.equal('x-time-auto');
+            expect(y.tickFormat).to.equal('x-time-quarter');
             expect(y.label.text).to.equal('DATE');
 
             // 20 padding to X axis line
@@ -199,10 +208,10 @@ define(function (require) {
 
             // 20 padding to Y axis line
             // 9  tick mark size
-            // 25 "03 AM" (5 * 5) iso string width
+            // 35 "Q1 2014" (7 * 5) iso string width
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.be.at.least(89);
+            expect(full.unit.guide.padding.l).to.equal(99);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });
