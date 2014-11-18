@@ -30,7 +30,7 @@ function createDispatcher(eventName) {
 
                     }
 
-                    fn.apply(cursor.context || this, args);
+                    fn.apply(cursor.context, args);
                 }
 
                 // any event callback call
@@ -46,7 +46,7 @@ function createDispatcher(eventName) {
 
                     }
 
-                    fn.call(cursor.context || this, {
+                    fn.call(cursor.context, {
                         sender: this,
                         type: eventName,
                         args: args
@@ -63,58 +63,17 @@ function createDispatcher(eventName) {
 }
 
 /**
- * @param {string|Array.<string>=} events
- * @param {function} eventCallback
- * @return {object}
- */
-function createHandler(events, eventCallback) {
-    var handler = {
-        events: []
-    };
-
-    if (events) {
-        events = String(events).trim().split(/\s+|\s*,\s*/).sort();
-        handler = {
-            events: events
-        };
-
-        for (var i = 0, eventName; eventName = events[i]; i++) { // jshint ignore:line
-            if (eventName !== 'destroy') {
-                handler[eventName] = eventCallback;
-            }
-        }
-
-    }
-
-    return handler;
-}
-
-
-/**
  * Base class for event dispatching. It provides interface for instance
  * to add and remove handler for desired events, and call it when event happens.
  * @class
- *//*
-var Emitter = function () {
-
-};
-Emitter.prototype = {};*/
-
+ */
 class Emitter {
     /**
      * @constructor
      */
-        constructor() {
+    constructor() {
         this.handler = null;
         this.emit_destroy = createDispatcher('destroy');
-        if (this.handler && !this.handler.callbacks) {
-            this.handler = {
-                callbacks: this.handler,
-                context: this,
-                handler: null
-            };
-        }
-
     }
 
     /**
@@ -122,7 +81,7 @@ class Emitter {
      * @param {object} callbacks Callback set.
      * @param {object=} context Context object.
      */
-        addHandler(callbacks, context) {
+    addHandler(callbacks, context) {
         context = context || this;
         // add handler
         this.handler = {
@@ -136,6 +95,7 @@ class Emitter {
         var obj = {};
         obj[name] = callback;
         this.addHandler(obj, context);
+        return obj;
     }
 
     fire(name, data) {
@@ -148,7 +108,7 @@ class Emitter {
      * @param {object} callbacks Callback set.
      * @param {object=} context Context object.
      */
-        removeHandler(callbacks, context) {
+    removeHandler(callbacks, context) {
         var cursor = this;
         var prev;
 
@@ -174,7 +134,7 @@ class Emitter {
     /**
      * @destructor
      */
-        destroy() {
+    destroy() {
         // fire object destroy event handlers
         this.emit_destroy();
         // drop event handlers if any
@@ -187,13 +147,5 @@ class Emitter {
 //
 export {Emitter};
 
-/*module.exports = {
-    create: createDispatcher,
-    createHandler: createHandler,
-
-    events: events,
-
-    Emitter: Emitter
-};*/
 
 

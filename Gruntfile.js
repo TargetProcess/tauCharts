@@ -51,7 +51,7 @@ module.exports = function (grunt) {
                 configFile: 'config/karma.conf.js'
             },
             dev: {
-                reporters: ["progress"],
+                reporters: ["dots"],
                 browsers: ["Chrome"],
                 singleRun: false
             },

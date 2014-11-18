@@ -50,7 +50,7 @@ var line = function (node) {
     };
 
     var line;
-    if(node.isGuide) {
+    /*if(node.isGuide) {
         var  i = 0;
         line = d3
             .svg
@@ -64,13 +64,13 @@ var line = function (node) {
                 }
             })
             .y((d) => yScale(45));
-    } else {
+    } else {*/
         line = d3
             .svg
             .line()
             .x((d) => xScale(d[node.x.scaleDim]))
             .y((d) => yScale(d[node.y.scaleDim]));
-    }
+    /*}*/
 
 
     var updatePaths = function () {
