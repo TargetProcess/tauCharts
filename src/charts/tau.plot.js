@@ -191,8 +191,8 @@ export class Plot {
         var fields = [];
         Object.keys(dimensions).forEach((k) => {
             var d = dimensions[k];
-            if (d.hasNull && (d.type === 'measure')) {
-                // rule: exclude null values of "measure" type
+            if ((!d.hasOwnProperty('hasNull') || d.hasNull) && ((d.type === 'measure') || (d.scale === 'period'))) {
+                // rule: exclude null values of "measure" type or "period" scale
                 fields.push(k);
             }
         });
