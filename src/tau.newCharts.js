@@ -34,6 +34,8 @@ var api = {
         }
     },
     globalSettings: {
+        specEngine: 'AUTO',
+        layoutEngine: 'EXTRACT',
         getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
         axisTickLabelLimit: 100,
         xTickWidth: 6 + 3,

@@ -2,6 +2,8 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var tauChart = require('tau_modules/tau.newCharts');
+    var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
+    var UnitsRegistry = require('tau_modules/units-registry').UnitsRegistry;
     describe("DSL reader buildGraph()", function () {
 
         var data = [
@@ -55,11 +57,15 @@ define(function (require) {
                 }
             };
 
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+
             var originalSpecState = JSON.stringify(spec);
 
-            var reader = new tauChart.__api__.DSLReader(spec, data, tauChart.__api__.SpecEngineFactory.get());
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
 
-            var logicalGraph = reader.buildGraph();
+            var logicalGraph = reader.buildGraph(fullSpec);
 
             var specStateAfterBuild = JSON.stringify(spec);
 
@@ -78,38 +84,40 @@ define(function (require) {
 
         it("should build logical graph (facet with 1 axis only)", function () {
 
-            var reader = new tauChart.__api__.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category'},
-                        team: {type: 'category'},
-                        effort: {type: 'measure'},
-                        cycleTime: {type: 'measure'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'project',
-                        y: null,
-                        unit: [
-                            {
-                                type: 'COORDS.RECT',
-                                x: 'cycleTime',
-                                y: 'effort',
-                                unit: [
-                                    {
-                                        type: 'ELEMENT.POINT',
-                                        x: 'cycleTime',
-                                        y: 'effort'
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    effort: {type: 'measure'},
+                    cycleTime: {type: 'measure'}
                 },
-                data,
-                tauChart.__api__.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'project',
+                    y: null,
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            x: 'cycleTime',
+                            y: 'effort',
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT',
+                                    x: 'cycleTime',
+                                    y: 'effort'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
 
-            var logicalGraph = reader.buildGraph();
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
+            var logicalGraph = reader.buildGraph(fullSpec);
 
             expect(logicalGraph.$matrix.sizeR()).to.equal(1);
             expect(logicalGraph.$matrix.sizeC()).to.equal(2);
@@ -123,36 +131,38 @@ define(function (require) {
 
         it("should build logical graph for empty facet (container 0 * 0 axes)", function () {
 
-            var reader = new tauChart.__api__.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category'},
-                        team: {type: 'category'},
-                        effort: {type: 'measure'},
-                        cycleTime: {type: 'measure'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: null,
-                        y: null,
-                        unit: [
-                            {
-                                type: 'COORDS.RECT',
-                                x: 'cycleTime',
-                                y: 'effort',
-                                unit: [
-                                    {
-                                        type: 'ELEMENT.POINT'
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    effort: {type: 'measure'},
+                    cycleTime: {type: 'measure'}
                 },
-                data,
-                tauChart.__api__.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: null,
+                    y: null,
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            x: 'cycleTime',
+                            y: 'effort',
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
 
-            var logicalGraph = reader.buildGraph();
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
+            var logicalGraph = reader.buildGraph(fullSpec);
 
             expect(logicalGraph.$matrix.sizeR()).to.equal(1);
             expect(logicalGraph.$matrix.sizeC()).to.equal(1);

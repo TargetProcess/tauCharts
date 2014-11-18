@@ -5,6 +5,8 @@ import {Plugins, propagateDatumEvents} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
+import {UnitDomainMixin} from '../unit-domain-mixin';
+import {UnitsRegistry} from '../units-registry';
 
 export class Plot {
     constructor(config) {
@@ -35,6 +37,9 @@ export class Plot {
         });
 
         this.settings = localSettings;
+
+        this.settings.specEngine = this.config.specEngine || this.settings.specEngine;
+        this.settings.layoutEngine = this.config.layoutEngine || this.settings.layoutEngine;
     }
 
     renderTo(target, xSize) {
@@ -56,50 +61,71 @@ export class Plot {
 
         containerNode.innerHTML = '';
 
-        var specEngineId = this.config.specEngine || 'AUTO';
-        var specEngine = SpecEngineFactory.get(specEngineId, this.settings);
+        var domainMixin = new UnitDomainMixin(this.spec.dimensions, this.data);
 
-        var reader = new DSLReader(this.spec, this.data, specEngine);
+        var specEngine = SpecEngineFactory.get(this.settings.specEngine, this.settings);
 
-        var xGraph = reader.buildGraph();
+        var fullSpec = specEngine(this.spec, domainMixin.mix({}));
 
-        var useHScroll = false;
-        if (size.width < reader.spec.recommendedWidth) {
-            size.width = reader.spec.recommendedWidth;
-            useHScroll = true;
-        }
+        var traverseFromDeep = (root) => {
+            var r;
 
-        var useVScroll = false;
-        if (size.height < reader.spec.recommendedHeight) {
-            size.height = reader.spec.recommendedHeight;
-            useVScroll = true;
-        }
+            if (!root.unit) {
+                r = { w: 0, h: 0 };
+            }
+            else {
+                var s = traverseFromDeep(root.unit[0]);
+                var g = root.guide;
+                var xmd = g.x.$minimalDomain || 1;
+                var ymd = g.y.$minimalDomain || 1;
+                var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
+                var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
+
+                r = {
+                    w: maxW + g.padding.l + g.padding.r,
+                    h: maxH + g.padding.t + g.padding.b
+                };
+            }
+
+            return r;
+        };
+
+        var optimalSize = traverseFromDeep(fullSpec.unit);
+        var recommendedWidth = optimalSize.w;
+        var recommendedHeight = optimalSize.h;
 
         var scrollSize = utilsDom.getScrollbarWidth();
-        if (useHScroll) {
-            size.height -= scrollSize;
-        }
 
-        if (useVScroll) {
-            size.width -= scrollSize;
-        }
+        var deltaW = (size.width - recommendedWidth);
+        var deltaH = (size.height - recommendedHeight);
 
-        var layoutEngineId = this.config.layoutEngine || 'EXTRACT';
-        var layoutEngine = LayoutEngineFactory.get(layoutEngineId);
+        var screenW = (deltaW >= 0) ? size.width : recommendedWidth;
+        var scrollW = (deltaH >= 0) ? 0 : scrollSize;
 
-        var layout = reader.calcLayout(xGraph, layoutEngine, size);
+        var screenH = (deltaH >= 0) ? size.height : recommendedHeight;
+        var scrollH = (deltaW >= 0) ? 0 : scrollSize;
 
-        var svgContainer = container
-            .append("svg")
-            .attr("class", CSS_PREFIX + 'svg')
-            .attr("width", size.width)
-            .attr("height", size.height);
+        size.height = screenH - scrollH;
+        size.width  = screenW - scrollW;
 
-        var canvas = reader.renderGraph(layout, svgContainer);
+
+        var reader = new DSLReader(domainMixin, UnitsRegistry);
+
+        var logicXGraph = reader.buildGraph(fullSpec);
+        var layoutGraph = LayoutEngineFactory.get(this.settings.layoutEngine)(logicXGraph);
+        var renderGraph = reader.calcLayout(layoutGraph, size);
+        var svgXElement = reader.renderGraph(
+            renderGraph,
+            container
+                .append("svg")
+                .attr("class", CSS_PREFIX + 'svg')
+                .attr("width", size.width)
+                .attr("height", size.height)
+        );
 
         //plugins
-        canvas.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
-        this._plugins.render(canvas);
+        svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
+        this._plugins.render(svgXElement);
     }
 
     _autoDetectDimensions(data) {

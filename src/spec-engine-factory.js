@@ -39,11 +39,11 @@ var fnTraverseTree = (specUnitRef, transformRules) => {
 
 var SpecEngineTypeMap = {
 
-    'DEFAULT': (spec, meta, measurer) => {
+    'NONE': (spec, meta, settings) => {
         return (selectorPredicates, unit) => unit;
     },
 
-    'AUTO': (spec, meta, measurer) => {
+    'AUTO': (spec, meta, settings) => {
 
         var xLabels = [];
         var yLabels = [];
@@ -63,13 +63,13 @@ var SpecEngineTypeMap = {
             if (unit.x) {
                 unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
                 var dimX = meta.dimension(unit.x);
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType, measurer.defaultFormats);
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType, settings.defaultFormats);
             }
 
             if (unit.y) {
                 unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
                 var dimY = meta.dimension(unit.y);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType, measurer.defaultFormats);
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType, settings.defaultFormats);
             }
 
             var x = unit.guide.x.label.text;
@@ -134,8 +134,8 @@ var SpecEngineTypeMap = {
             var xIsEmptyAxis = (xValues.length === 0);
             var yIsEmptyAxis = (yValues.length === 0);
 
-            var xAxisPadding = selectorPredicates.isLeafParent ? measurer.xAxisPadding : 0;
-            var yAxisPadding = selectorPredicates.isLeafParent ? measurer.yAxisPadding : 0;
+            var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
+            var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
 
             var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== 'measure');
 
@@ -157,37 +157,37 @@ var SpecEngineTypeMap = {
                 '' :
                 (_.max(yValues, (y) => yFormatter(y || '').toString().length));
 
-            var xTickWidth = xIsEmptyAxis ? 0 : measurer.xTickWidth;
-            var yTickWidth = yIsEmptyAxis ? 0 : measurer.xTickWidth;
+            var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
+            var yTickWidth = yIsEmptyAxis ? 0 : settings.xTickWidth;
 
             var defaultTickSize = { width: 0, height: 0 };
 
-            var maxXTickSize = xIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(xFormatter(maxXTickText));
+            var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
-            if (dimX.dimType !== 'measure' && (maxXTickH > measurer.axisTickLabelLimit)) {
-                unit.guide.x.tickFormatLimit = measurer.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
-                maxXTickH = measurer.axisTickLabelLimit;
+            if (dimX.dimType !== 'measure' && (maxXTickH > settings.axisTickLabelLimit)) {
+                unit.guide.x.tickFormatLimit = settings.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
+                maxXTickH = settings.axisTickLabelLimit;
             }
 
 
-            var maxYTickSize = yIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(yFormatter(maxYTickText));
+            var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;
-            if (dimY.dimType !== 'measure' && (maxYTickW > measurer.axisTickLabelLimit)) {
-                unit.guide.y.tickFormatLimit = measurer.axisTickLabelLimit / (maxYTickW / maxYTickText.length);
-                maxYTickW = measurer.axisTickLabelLimit;
+            if (dimY.dimType !== 'measure' && (maxYTickW > settings.axisTickLabelLimit)) {
+                unit.guide.y.tickFormatLimit = settings.axisTickLabelLimit / (maxYTickW / maxYTickText.length);
+                maxYTickW = settings.axisTickLabelLimit;
             }
 
 
             var xFontH = xTickWidth + maxXTickH;
             var yFontW = yTickWidth + maxYTickW;
 
-            var xFontLabelHeight = measurer.xFontLabelHeight;
-            var yFontLabelHeight = measurer.yFontLabelHeight;
+            var xFontLabelHeight = settings.xFontLabelHeight;
+            var yFontLabelHeight = settings.yFontLabelHeight;
 
-            var distToXAxisLabel = measurer.distToXAxisLabel;
-            var distToYAxisLabel = measurer.distToYAxisLabel;
+            var distToXAxisLabel = settings.distToXAxisLabel;
+            var distToYAxisLabel = settings.distToYAxisLabel;
 
-            var densityKoeff = measurer.densityKoeff;
+            var densityKoeff = settings.densityKoeff;
 
 
             unit.guide.x.density = densityKoeff * (isXVertical ? maxXTickSize.height : maxXTickSize.width);
@@ -221,41 +221,12 @@ var SpecEngineTypeMap = {
 
 var SpecEngineFactory = {
 
-    get: (typeName, measurer) => {
+    get: (typeName, settings) => {
 
-        var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT);
-        return (spec, meta) => {
-
-            fnTraverseTree(spec.unit, rules(spec, meta, measurer));
-
-            var traverseFromDeep = (root) => {
-                var r;
-
-                if (!root.unit) {
-                    r = { w: 0, h: 0 };
-                }
-                else {
-                    var s = traverseFromDeep(root.unit[0]);
-                    var g = root.guide;
-                    var xmd = g.x.$minimalDomain || 1;
-                    var ymd = g.y.$minimalDomain || 1;
-                    var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
-                    var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
-
-                    r = {
-                        w: maxW + g.padding.l + g.padding.r,
-                        h: maxH + g.padding.t + g.padding.b
-                    };
-                }
-
-                return r;
-            };
-
-            var s = traverseFromDeep(spec.unit);
-
-            spec.recommendedWidth = s.w;
-            spec.recommendedHeight = s.h;
-
+        var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
+        return (srcSpec, meta) => {
+            var spec = utils.clone(srcSpec);
+            fnTraverseTree(spec.unit, rules(spec, meta, settings));
             return spec;
         };
     }

@@ -2,6 +2,8 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var tauChart = require('tau_modules/tau.newCharts');
+    var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
+    var UnitsRegistry = require('tau_modules/units-registry').UnitsRegistry;
     describe("DSL reader calcLayout() / renderGraph()", function () {
 
         var data = [
@@ -23,77 +25,73 @@ define(function (require) {
 
         it("should fail on build unknown unit type appearance", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'cycleTime',
-                        y: 'effort',
-                        guide: {
-                            showGridLines: 'xy'
-                        },
-                        unit: [
-                            {
-                                type: 'ELEMENT.UNKNOWN'
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'cycleTime',
+                    y: 'effort',
+                    guide: {
+                        showGridLines: 'xy'
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.UNKNOWN'
+                        }
+                    ]
+                }
+            };
 
-            expect(function () {
-                reader.buildGraph()
-            })
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
+
+            expect(reader.buildGraph.bind(reader, fullSpec))
                 .to
                 .throw("Unknown unit type: ELEMENT.UNKNOWN");
         });
 
         it("should render axes correctly (x:category, y:category)", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'project',
-                        y: 'team',
-                        guide: {
-                            showGridLines: 'xy'
-                        },
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT'
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'project',
+                    y: 'team',
+                    guide: {
+                        showGridLines: 'xy'
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            };
 
-            var logicXGraph = reader.buildGraph();
-            var layoutGraph = reader.calcLayout(
-                logicXGraph,
-                api.LayoutEngineFactory.get('DEFAULT'),
-                {
-                    width: 200,
-                    height: 100
-                });
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
 
-            var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
+            var renderGraph = reader.calcLayout(layoutGraph, {width: 200, height: 100});
+
+            var layoutCanvas = reader.renderGraph(renderGraph, d3.select(div).append("svg"));
 
             var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
             expect(xAxisTickLines.length).to.equal(2);
@@ -137,43 +135,40 @@ define(function (require) {
 
         it("should render axes correctly (x:measure, y:category)", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'effort',
-                        y: 'team',
-                        guide: {
-                            showGridLines: 'xy',
-                            x: {density: 40}
-                        },
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT'
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'effort',
+                    y: 'team',
+                    guide: {
+                        showGridLines: 'xy',
+                        x: {density: 40}
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            };
 
-            var logicXGraph = reader.buildGraph();
-            var layoutGraph = reader.calcLayout(
-                logicXGraph,
-                api.LayoutEngineFactory.get('DEFAULT'),
-                {
-                    width: 200,
-                    height: 100
-                });
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
 
-            var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
+            var renderGraph = reader.calcLayout(layoutGraph, {width: 200, height: 100});
+
+            var layoutCanvas = reader.renderGraph(renderGraph, d3.select(div).append("svg"));
+
 
             var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
             expect(xAxisTickLines.length).to.equal(5);
@@ -217,43 +212,40 @@ define(function (require) {
 
         it("should render axes correctly (x:category, y:measure)", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'team',
-                        y: 'effort',
-                        guide: {
-                            showGridLines: 'xy',
-                            y: {density: 20}
-                        },
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT'
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'team',
+                    y: 'effort',
+                    guide: {
+                        showGridLines: 'xy',
+                        y: {density: 20}
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            };
 
-            var logicXGraph = reader.buildGraph();
-            var layoutGraph = reader.calcLayout(
-                logicXGraph,
-                api.LayoutEngineFactory.get('DEFAULT'),
-                {
-                    width: 200,
-                    height: 100
-                });
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
 
-            var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
+            var renderGraph = reader.calcLayout(layoutGraph, {width: 200, height: 100});
+
+            var layoutCanvas = reader.renderGraph(renderGraph, d3.select(div).append("svg"));
+
 
             var xAxisTickLines = layoutCanvas.selectAll('.cell .x.axis .tick line')[0];
             expect(xAxisTickLines.length).to.equal(2);
@@ -297,44 +289,41 @@ define(function (require) {
 
         it("should render axes correctly (x:measure, y:measure)", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'cycleTime',
-                        y: 'effort',
-                        guide: {
-                            showGridLines: 'xy',
-                            x: {density: 100, tickFormat: 's', autoScale: false},
-                            y: {density: 50, tickFormat: 's', autoScale: false}
-                        },
-                        unit: [
-                            {
-                                type: 'ELEMENT.POINT'
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'cycleTime',
+                    y: 'effort',
+                    guide: {
+                        showGridLines: 'xy',
+                        x: {density: 100, tickFormat: 's', autoScale: false},
+                        y: {density: 50, tickFormat: 's', autoScale: false}
+                    },
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            };
 
-            var logicXGraph = reader.buildGraph();
-            var layoutGraph = reader.calcLayout(
-                logicXGraph,
-                api.LayoutEngineFactory.get('DEFAULT'),
-                {
-                    width: 200,
-                    height: 100
-                });
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
 
-            var layoutCanvas = reader.renderGraph(layoutGraph, d3.select(div).append("svg"));
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
+            var renderGraph = reader.calcLayout(layoutGraph, {width: 200, height: 100});
+
+            var layoutCanvas = reader.renderGraph(renderGraph, d3.select(div).append("svg"));
+
 
             var ticksCountX = 1;
             var ticksCountY = 3;
@@ -381,51 +370,47 @@ define(function (require) {
 
         it("should calc layout for logical graph (- split)", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'project',
-                        y: 'team',
-                        unit: [
-                            {
-                                type: 'COORDS.RECT',
-                                x: 'cycleTime',
-                                y: 'effort',
-                                guide: {
-                                    showGridLines: 'xy',
-                                    split: false
-                                },
-                                unit: [
-                                    {
-                                        type: 'ELEMENT.POINT'
-                                    },
-                                    {
-                                        type: 'ELEMENT.LINE'
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'project',
+                    y: 'team',
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            x: 'cycleTime',
+                            y: 'effort',
+                            guide: {
+                                showGridLines: 'xy',
+                                split: false
+                            },
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT'
+                                },
+                                {
+                                    type: 'ELEMENT.LINE'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
 
-            var logicXGraph = reader.buildGraph();
-            var layoutGraph = reader.calcLayout(
-                logicXGraph,
-                api.LayoutEngineFactory.get('DEFAULT'),
-                {
-                    width: 200,
-                    height: 100
-                });
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
+
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var draftLGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
+            var layoutGraph = reader.calcLayout(draftLGraph, {width: 200, height: 100});
 
             var checkFacetCells = function ($matrix, facet) {
                 $matrix.iterate(function (r, c, cell) {
@@ -464,51 +449,47 @@ define(function (require) {
 
         it("should calc layout for logical graph (+ split)", function () {
 
-            var api = tauChart.__api__;
-            var reader = new api.DSLReader(
-                {
-                    dimensions: {
-                        project: {type: 'category', scale: 'ordinal'},
-                        team: {type: 'category', scale: 'ordinal'},
-                        effort: {type: 'measure', scale: 'linear'},
-                        cycleTime: {type: 'measure', scale: 'linear'}
-                    },
-                    unit: {
-                        type: 'COORDS.RECT',
-                        x: 'project',
-                        y: 'team',
-                        unit: [
-                            {
-                                type: 'COORDS.RECT',
-                                x: 'cycleTime',
-                                y: 'effort',
-                                guide: {
-                                    showGridLines: 'xy',
-                                    split: true
-                                },
-                                unit: [
-                                    {
-                                        type: 'ELEMENT.POINT'
-                                    },
-                                    {
-                                        type: 'ELEMENT.LINE'
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+            var spec = {
+                dimensions: {
+                    project: {type: 'category', scale: 'ordinal'},
+                    team: {type: 'category', scale: 'ordinal'},
+                    effort: {type: 'measure', scale: 'linear'},
+                    cycleTime: {type: 'measure', scale: 'linear'}
                 },
-                data,
-                api.SpecEngineFactory.get());
+                unit: {
+                    type: 'COORDS.RECT',
+                    x: 'project',
+                    y: 'team',
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            x: 'cycleTime',
+                            y: 'effort',
+                            guide: {
+                                showGridLines: 'xy',
+                                split: true
+                            },
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT'
+                                },
+                                {
+                                    type: 'ELEMENT.LINE'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
 
-            var logicXGraph = reader.buildGraph();
-            var layoutGraph = reader.calcLayout(
-                logicXGraph,
-                api.LayoutEngineFactory.get('DEFAULT'),
-                {
-                    width: 200,
-                    height: 100
-                });
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
+            var api = tauChart.__api__;
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
+
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var draftLGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
+            var layoutGraph = reader.calcLayout(draftLGraph, {width: 200, height: 100});
 
             var checkFacetCells = function ($matrix, facet) {
                 $matrix.iterate(function (r, c, cell) {
@@ -592,19 +573,16 @@ define(function (require) {
                 }
             };
 
+            var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
-            var reader = new api.DSLReader(spec, data, api.SpecEngineFactory.get());
+            var reader = new api.DSLReader(domainMixin, UnitsRegistry);
+            var fullSpec = api.SpecEngineFactory.get()(spec, domainMixin.mix({}));
 
-            var logicalGraph = reader.buildGraph();
-            var layoutXGraph = reader.calcLayout(
-                logicalGraph,
-                api.LayoutEngineFactory.get('EXTRACT'),
-                {
-                    width : 1000,
-                    height: 1000
-                });
+            var logicXGraph = reader.buildGraph(fullSpec);
+            var draftLGraph = api.LayoutEngineFactory.get('EXTRACT')(logicXGraph);
+            var layoutGraph = reader.calcLayout(draftLGraph, {width: 1000, height: 1000});
 
-            expect(layoutXGraph.type).to.equal('COORDS.RECT');
+            expect(layoutGraph.type).to.equal('COORDS.RECT');
         });
     });
 });
