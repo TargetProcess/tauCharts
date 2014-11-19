@@ -10,6 +10,7 @@ requirejs.config({
     paths: {
         'chai': 'node_modules/chai/chai',
         'd3':'libs/d3',
+        'jquery':'libs/jquery',
         'js-schema':'libs/js-schema',
         'underscore':'libs/underscore',
         'schemes':'test/utils/schemes',

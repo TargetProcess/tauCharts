@@ -94,7 +94,7 @@ define(function (require) {
 
         it("should throw exception if target not found", function () {
             expect(function () {
-                new tauChart.Plot(spec).renderTo('#unknown-test-div')
+                new tauChart.Plot(spec).renderTo('#unknown-test-div');
             }).throw('Target element not found');
         });
 
