@@ -39,6 +39,7 @@ define(function (require) {
                 context.chart = new tauChart.Plot({
                     layoutEngine: 'DEFAULT',
                     specEngine: 'DEFAULT',
+                    excludeNull: false,
                     spec: spec,
                     data: data
                 });

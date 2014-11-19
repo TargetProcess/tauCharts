@@ -14,6 +14,7 @@ export class Plot {
         var chartConfig = this.convertConfig(config);
 
         this.config = _.defaults(chartConfig, {
+            excludeNull: true,
             spec: null,
             data: [],
             plugins: []
@@ -23,7 +24,9 @@ export class Plot {
 
         this.plugins = this.config.plugins;
         this.spec = this.config.spec;
-        this.data = this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data);
+        this.data = this.config.excludeNull ?
+            this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data) :
+            this.config.data;
 
         //plugins
         this._plugins = new Plugins(this.config.plugins);
