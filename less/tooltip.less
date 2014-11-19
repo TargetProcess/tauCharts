@@ -1,0 +1,69 @@
+@grayTextColor: #8e8e8e;
+@bgColor: rgba(255, 255, 255, 0.9);
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 900;
+  font-size: 11px;
+  background: @bgColor;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+
+  &:before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    position: absolute;
+    left: calc(50% - 4px);
+    bottom: -6px;
+    border: solid transparent;
+    border-color: @bgColor transparent transparent transparent;
+    border-width: 6px 8px 0 8px ;
+  }
+
+  &__content {
+    padding: 15px 15px 10px 15px;
+  }
+
+  &__exclude {
+    padding: 0 15px;
+    line-height: 26px;
+    border-top: 1px solid #dde2e7;
+    color: #65717f;
+
+    &:hover {
+      background: linear-gradient(to bottom, rgba(235, 238, 241, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    .tau-icon-close-gray{
+      position: relative;
+      top:2px;
+      margin-right: 5px;
+    }
+  }
+  &__list {
+    display: table;
+
+    &__item {
+      display: table-row;
+    }
+
+    &__elem {
+      display: table-cell;
+      padding-bottom: 5px;
+
+      &:not(:first-child) {
+        padding-left: 15px;
+      }
+
+      &:first-child {
+        color: @grayTextColor;
+      }
+    }
+  }
+  &__gray-text {
+    color: @grayTextColor;
+  }
+}

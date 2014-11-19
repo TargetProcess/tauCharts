@@ -1,35 +1,57 @@
 .tooltip {
-	position: absolute;
-	padding: .8em 1em;
-	top: 10px; /* Defines the spacing between tooltip and target position */
-	max-width: 200px;
-	color: #fff;
-	background: #3a3c47;
-	border-radius: 2px;
-	text-shadow: -1px -1px 0 rgba(0,0,0,.2);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 900;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
-
-/* Arrow styles */
-.tooltip:after {
-	content: '';
-	position: absolute;
-	width: 10px;
-	height: 10px;
-	margin: -5px;
-	background: inherit;
-	-webkit-transform: rotate(45deg);
-	-ms-transform: rotate(45deg);
-	transform: rotate(45deg);
+.tooltip:before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+  left: calc(46%);
+  bottom: -6px;
+  border: solid transparent;
+  border-color: rgba(255, 255, 255, 0.9) transparent transparent transparent;
+  border-width: 6px 8px 0 8px ;
 }
-
-.tooltip.top:after, .tooltip.top-left:after, .tooltip.top-right:after { bottom: 0; }
-.tooltip.bottom:after, .tooltip.bottom-left:after, .tooltip.bottom-right:after { top: 0; }
-.tooltip.top:after, .tooltip.bottom:after { left: 50%; }
-.tooltip.top-left:after, .tooltip.bottom-left:after { right: 15px; }
-.tooltip.top-right:after, .tooltip.bottom-right:after { left: 15px; }
-
-.tooltip.left:after, .tooltip.left-top:after, .tooltip.left-bottom:after { right: 0; }
-.tooltip.right:after, .tooltip.right-top:after, .tooltip.right-bottom:after { left: 0; }
-.tooltip.left:after, .tooltip.right:after { top: 50%; }
-.tooltip.left-top:after, .tooltip.right-top:after { bottom: 15px; }
-.tooltip.left-bottom:after, .tooltip.right-bottom:after { top: 15px; }
+.tooltip__content {
+  padding: 15px 15px 10px 15px;
+}
+.tooltip__exclude {
+  padding: 0 15px;
+  line-height: 26px;
+  border-top: 1px solid #dde2e7;
+  color: #65717f;
+}
+.tooltip__exclude:hover {
+  background: linear-gradient(to bottom, rgba(235, 238, 241, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+}
+.tooltip__exclude .tau-icon-close-gray {
+  position: relative;
+  top: 2px;
+  margin-right: 5px;
+}
+.tooltip__list {
+  display: table;
+}
+.tooltip__list__item {
+  display: table-row;
+}
+.tooltip__list__elem {
+  display: table-cell;
+  padding-bottom: 5px;
+}
+.tooltip__list__elem:not(:first-child) {
+  padding-left: 15px;
+}
+.tooltip__list__elem:first-child {
+  color: #8e8e8e;
+}
+.tooltip__gray-text {
+  color: #8e8e8e;
+}
