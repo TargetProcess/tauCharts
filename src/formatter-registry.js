@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 
-    'xs': (x) => {
+    'x-num-auto': (x) => {
         return (Math.abs(x) < 1) ? x.toString() : d3.format('s')(x);
     },
 
