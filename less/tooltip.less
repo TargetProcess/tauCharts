@@ -1,11 +1,13 @@
 @grayTextColor: #8e8e8e;
 @bgColor: rgba(255, 255, 255, 0.9);
+@fontFamily: OpenSans, 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 .tooltip {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 900;
+  font-family: @fontFamily;
   font-size: 11px;
   background: @bgColor;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
@@ -20,7 +22,7 @@
     bottom: -6px;
     border: solid transparent;
     border-color: @bgColor transparent transparent transparent;
-    border-width: 6px 8px 0 8px ;
+    border-width: 6px 8px 0 8px;
   }
 
   &__content {
@@ -37,10 +39,15 @@
       background: linear-gradient(to bottom, rgba(235, 238, 241, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
     }
 
-    .tau-icon-close-gray{
+    .tau-icon-close-gray {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
       position: relative;
-      top:2px;
+      top: 3px;
       margin-right: 5px;
+      background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMHB4IiBoZWlnaHQ9IjMwcHgiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMzAgMzAiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGlkPSJTaGFwZV8zNV8iIGZpbGw9IiM4NDk2QTciIGQ9Ik0xMCwwLjcxNUw5LjI4NSwwTDUsNC4yODVMMC43MTUsMEwwLDAuNzE1TDQuMjg1LDVMMCw5LjI4NUwwLjcxNSwxMEw1LDUuNzE1TDkuMjg1LDEwTDEwLDkuMjg1TDUuNzE1LDVMMTAsMC43MTV6Ii8+PC9zdmc+);
+
     }
   }
   &__list {
