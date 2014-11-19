@@ -14,11 +14,39 @@
   width: 0;
   height: 0;
   position: absolute;
-  left: calc(46%);
-  bottom: -6px;
   border: solid transparent;
+}
+.tooltip.bottom:before,
+.tooltip.bottom-right:before,
+.tooltip.bottom-left:before {
+  top: -6px;
+  border-color: transparent transparent rgba(255, 255, 255, 0.9) transparent;
+  border-width: 0 8px 6px 8px;
+}
+.tooltip.bottom:before {
+  left: calc(46%);
+}
+.tooltip.bottom-right:before {
+  left: 20px;
+}
+.tooltip.bottom-left:before {
+  right: 20px;
+}
+.tooltip.top:before,
+.tooltip.top-right:before,
+.tooltip.top-left:before {
+  bottom: -6px;
   border-color: rgba(255, 255, 255, 0.9) transparent transparent transparent;
   border-width: 6px 8px 0 8px;
+}
+.tooltip.top:before {
+  left: calc(46%);
+}
+.tooltip.top-right:before {
+  left: 20px;
+}
+.tooltip.top-left:before {
+  right: 20px;
 }
 .tooltip__content {
   padding: 15px 15px 10px 15px;

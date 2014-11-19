@@ -2,6 +2,18 @@
 @bgColor: rgba(255, 255, 255, 0.9);
 @fontFamily: OpenSans, 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
+.bottom-arrow() {
+  top: -6px;
+  border-color: transparent transparent @bgColor transparent;
+  border-width: 0 8px 6px 8px;
+}
+
+.top-arrow() {
+  bottom: -6px;
+  border-color: @bgColor transparent transparent transparent;
+  border-width: 6px 8px 0 8px;
+}
+
 .tooltip {
   position: absolute;
   top: 0;
@@ -18,11 +30,41 @@
     width: 0;
     height: 0;
     position: absolute;
-    left: calc(50% - 4px);
-    bottom: -6px;
     border: solid transparent;
-    border-color: @bgColor transparent transparent transparent;
-    border-width: 6px 8px 0 8px;
+  }
+
+  &.bottom {
+    &:before,
+    &-right:before,
+    &-left:before {
+      .bottom-arrow();
+    }
+    &:before {
+      left: calc(50% - 4px);
+    }
+    &-right:before {
+      left: 20px;
+    }
+    &-left:before {
+      right: 20px;
+    }
+  }
+  &.top {
+
+    &:before,
+    &-right:before,
+    &-left:before {
+      .top-arrow();
+    }
+    &:before {
+      left: calc(50% - 4px);
+    }
+    &-right:before {
+      left: 20px;
+    }
+    &-left:before {
+      right: 20px;
+    }
   }
 
   &__content {
