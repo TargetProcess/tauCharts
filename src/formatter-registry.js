@@ -63,14 +63,7 @@ FORMATS_MAP['x-time-year'] = FORMATS_MAP['year'];
 
 var FormatterRegistry = {
 
-    get: (formatAlias, tickFormatLimit) => {
-
-        var cut = (str) => {
-            var limit = tickFormatLimit || 1000;
-            return (str.length <= limit) ?
-                (str) :
-                (str.substr(0, limit - 1) + '...');
-        };
+    get: (formatAlias) => {
 
         var formatter = (formatAlias === null) ? ((x) => x.toString()) : FORMATS_MAP[formatAlias];
         if (!formatter) {
@@ -79,7 +72,7 @@ var FormatterRegistry = {
                 return f(v);
             };
         }
-        return (str) => (cut(formatter(str)));
+        return formatter;
     },
 
     add: (formatAlias, formatter) => {

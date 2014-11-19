@@ -112,6 +112,39 @@ export class Plot {
         size.width  = screenW - scrollW;
 
 
+        // optimize full spec depending on size
+        var localSettings = this.settings;
+        var traverseToDeep = (root, size) => {
+
+            var mdx = root.guide.x.$minimalDomain || 1;
+            var mdy = root.guide.y.$minimalDomain || 1;
+
+            var perTickX = size.width / mdx;
+            var perTickY = size.height / mdy;
+
+            var densityKoeff = localSettings.densityKoeff;
+            if (root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+                root.guide.x.rotate = 0;
+                root.guide.x.textAnchor = 'middle';
+                var s = Math.min(localSettings.axisTickLabelLimit, root.guide.x.$maxTickTextW);
+                var xDelta = 0 - s + root.guide.x.$maxTickTextH;
+                root.guide.x.label.padding = root.guide.x.label.padding + xDelta;
+                root.guide.padding.b = root.guide.padding.b + xDelta;
+            }
+
+            var newSize = {
+                width: perTickX,
+                height: perTickY
+            };
+
+            if (root.unit) {
+                traverseToDeep(root.unit[0], newSize);
+            }
+        };
+
+        traverseToDeep(fullSpec.unit, size);
+
+
         var reader = new DSLReader(domainMixin, UnitsRegistry);
 
         var logicXGraph = reader.buildGraph(fullSpec);

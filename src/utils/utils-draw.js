@@ -5,6 +5,71 @@ var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
 var s;
+
+var cutText = (textString, widthLimit) => {
+    textString.each(function () {
+        var textD3 = d3.select(this);
+        var tokens = textD3.text().split(/\s+/).reverse();
+
+        textD3.text(null);
+
+        var line = [];
+        var word;
+        var stop = false;
+        while (!stop && (word = tokens.pop())) {
+            line.push(word);
+            textD3.text(line.join(' '));
+            if (textD3.node().getComputedTextLength() > widthLimit) {
+
+                line.pop();
+
+                var str = line.join(' ');
+                str += '...';
+
+                textD3.text(str);
+
+                stop = true;
+            }
+        }
+    });
+};
+
+var wrapText = (textString, widthLimit, linesLimit) => {
+    textString.each(function () {
+        var textD3 = d3.select(this),
+            tokens = textD3.text().split(/\s+/).reverse(),
+            lineHeight = 1.1, // ems
+            y = textD3.attr('y'),
+            dy = parseFloat(textD3.attr('dy'));
+
+        textD3.text(null);
+        var tspan = textD3.append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em');
+
+        var line = [];
+        var word;
+        var lineNumber = 0;
+        while ((lineNumber < linesLimit) && (word = tokens.pop())) {
+            line.push(word);
+            tspan.text(line.join(' '));
+            if (tspan.node().getComputedTextLength() > widthLimit) {
+
+                line.pop();
+
+                var str = line.join(' ');
+                str += ((lineNumber === (linesLimit - 1)) ? '...' : '');
+
+                tspan.text(str);
+
+                // start new line
+                ++lineNumber;
+                line = [word];
+                var dyNew = lineNumber * lineHeight + dy;
+                tspan = textD3.append('tspan').attr('x', 0).attr('y', y).attr('dy', dyNew + 'em');
+            }
+        }
+    });
+};
+
 var decorateAxisTicks = (nodeScale, x, size) => {
 
     var selection = nodeScale.selectAll('.tick line');
@@ -58,7 +123,7 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
             .orient(x.guide.scaleOrient)
             .ticks(Math.round(size / x.guide.density));
 
-        axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat, x.guide.tickFormatLimit));
+        axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
 
         var nodeScale = container
             .append('g')
@@ -69,6 +134,17 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         decorateAxisTicks(nodeScale, x, size);
         decorateTickLabel(nodeScale, x);
         decorateAxisLabel(nodeScale, x);
+
+        if (x.guide.tickFormatWordWrap) {
+            nodeScale
+                .selectAll('.tick text')
+                .call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines);
+        }
+        else {
+            nodeScale
+                .selectAll('.tick text')
+                .call(cutText, x.guide.tickFormatWordWrapLimit);
+        }
     }
 };
 

@@ -207,18 +207,29 @@ var SpecEngineTypeMap = {
 
             var defaultTickSize = { width: 0, height: 0 };
 
+            unit.guide.x.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
+            unit.guide.y.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
+
             var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
+
             if (dimX.dimType !== 'measure' && (maxXTickH > settings.axisTickLabelLimit)) {
-                unit.guide.x.tickFormatLimit = settings.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
                 maxXTickH = settings.axisTickLabelLimit;
             }
+
+            if (!isXVertical && (maxXTickSize.width > settings.axisTickLabelLimit)) {
+                unit.guide.x.tickFormatWordWrap = true;
+                unit.guide.x.tickFormatWordWrapLines = 2;
+                maxXTickH = 2 * maxXTickSize.height;
+            }
+
 
             var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;
             if (dimY.dimType !== 'measure' && (maxYTickW > settings.axisTickLabelLimit)) {
-                unit.guide.y.tickFormatLimit = settings.axisTickLabelLimit / (maxYTickW / maxYTickText.length);
                 maxYTickW = settings.axisTickLabelLimit;
+                unit.guide.y.tickFormatWordWrap = true;
+                unit.guide.y.tickFormatWordWrapLines = 3;
             }
 
 
@@ -234,8 +245,8 @@ var SpecEngineTypeMap = {
             var densityKoeff = settings.densityKoeff;
 
 
-            unit.guide.x.density = densityKoeff * (isXVertical ? maxXTickSize.height : maxXTickSize.width);
-            unit.guide.y.density = densityKoeff * maxYTickSize.height;
+            unit.guide.x.density = densityKoeff * Math.min(settings.axisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
+            unit.guide.y.density = densityKoeff * Math.min(settings.axisTickLabelLimit, maxYTickSize.height);
 
 
             unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
@@ -257,6 +268,11 @@ var SpecEngineTypeMap = {
             unit.guide.x.$minimalDomain = xValues.length;
             unit.guide.y.$minimalDomain = yValues.length;
 
+            unit.guide.x.$maxTickTextW = maxXTickSize.width;
+            unit.guide.x.$maxTickTextH = maxXTickSize.height;
+
+            unit.guide.y.$maxTickTextW = maxYTickSize.width;
+            unit.guide.y.$maxTickTextH = maxYTickSize.height;
 
             return unit;
         };
