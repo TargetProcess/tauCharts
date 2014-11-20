@@ -37,17 +37,30 @@ var api = {
         specEngine: 'AUTO',
         layoutEngine: 'EXTRACT',
         getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
-        axisTickLabelLimit: 100,
+
+        xAxisTickLabelLimit: 100,
+        yAxisTickLabelLimit: 100,
+
         xTickWordWrapLinesLimit: 2,
         yTickWordWrapLinesLimit: 3,
+
         xTickWidth: 6 + 3,
+        yTickWidth: 6 + 3,
+
         distToXAxisLabel: 20,
         distToYAxisLabel: 20,
+
         xAxisPadding: 20,
         yAxisPadding: 20,
+
         xFontLabelHeight: 15,
         yFontLabelHeight: 15,
-        densityKoeff: 2.2,
+
+        xDensityKoeff: 2.2,
+        xMinimumDensityKoeff: 1.1,
+        yDensityKoeff: 2.2,
+        yMinimumDensityKoeff: 1.1,
+
         defaultFormats: {
             'measure': 'x-num-auto',
             'measure:time': 'x-time-auto',

@@ -34,40 +34,57 @@ var cutText = (textString, widthLimit) => {
     });
 };
 
-var wrapText = (textString, widthLimit, linesLimit) => {
-    textString.each(function () {
+var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
+
+    var addLine = (targetD3, text, lineHeight, x, y, dy, lineNumber) => {
+        var dyNew = (lineNumber * lineHeight) + dy;
+        var nodeX = targetD3.append('tspan').attr('x', x).attr('y', y).attr('dy', dyNew + 'em').text(text);
+        return nodeX;
+    };
+
+    textNode.each(function () {
         var textD3 = d3.select(this),
-            tokens = textD3.text().split(/\s+/).reverse(),
+            tokens = textD3.text().split(/\s+/),
             lineHeight = 1.1, // ems
             x = textD3.attr('x'),
             y = textD3.attr('y'),
             dy = parseFloat(textD3.attr('dy'));
 
         textD3.text(null);
-        var tspan = textD3.append('tspan').attr('x', x).attr('y', y).attr('dy', dy + 'em');
+        var tempSpan = addLine(textD3, null, lineHeight, x, y, dy, 0);
 
-        var line = [];
-        var word;
-        var lineNumber = 0;
-        while ((lineNumber < linesLimit) && (word = tokens.pop())) {
-            line.push(word);
-            tspan.text(line.join(' '));
-            if (tspan.node().getComputedTextLength() > widthLimit) {
+        var stopReduce = false;
+        var lines = tokens.reduce(
+            (memo, next) => {
 
-                line.pop();
+                if (stopReduce) return memo;
 
-                var str = line.join(' ');
-                str += ((lineNumber === (linesLimit - 1)) ? '...' : '');
+                var isLimit = memo.length === linesLimit;
+                var last = memo[memo.length - 1];
+                var over = tempSpan.text(last + next).node().getComputedTextLength() > widthLimit;
 
-                tspan.text(str);
+                if (over && isLimit) {
+                    memo[memo.length - 1] = last + '...';
+                    stopReduce = true;
+                }
 
-                // start new line
-                ++lineNumber;
-                line = [word];
-                var dyNew = lineNumber * lineHeight + dy;
-                tspan = textD3.append('tspan').attr('x', x).attr('y', y).attr('dy', dyNew + 'em');
-            }
-        }
+                if (over && !isLimit) {
+                    memo.push(next);
+                }
+
+                if (!over) {
+                    memo[memo.length - 1] = last + ' ' + next;
+                }
+
+                return memo;
+
+            },
+            ['']);
+
+        y = isY ? (-1 * (lines.length - 1) * Math.floor(tickLabelFontHeight * 0.5)) : y;
+        lines.forEach((text, i) => addLine(textD3, text, lineHeight, x, y, dy, i));
+
+        tempSpan.remove();
     });
 };
 
@@ -103,6 +120,8 @@ var decorateAxisLabel = (nodeScale, x) => {
 
 var decorateTickLabel = (nodeScale, x) => {
 
+    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+
     var angle = x.guide.rotate;
 
     var ticks = nodeScale.selectAll('.tick text');
@@ -112,6 +131,15 @@ var decorateTickLabel = (nodeScale, x) => {
 
     if (angle === 90) {
         ticks.attr('x', 9).attr('y', 0);
+    }
+
+    if (x.guide.tickFormatWordWrap) {
+        ticks
+            .call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines, x.guide.$maxTickTextH, !isHorizontal);
+    }
+    else {
+        ticks
+            .call(cutText, x.guide.tickFormatWordWrapLimit);
     }
 };
 
@@ -135,17 +163,6 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         decorateAxisTicks(nodeScale, x, size);
         decorateTickLabel(nodeScale, x);
         decorateAxisLabel(nodeScale, x);
-
-        if (x.guide.tickFormatWordWrap) {
-            nodeScale
-                .selectAll('.tick text')
-                .call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines);
-        }
-        else {
-            nodeScale
-                .selectAll('.tick text')
-                .call(cutText, x.guide.tickFormatWordWrapLimit);
-        }
     }
 };
 

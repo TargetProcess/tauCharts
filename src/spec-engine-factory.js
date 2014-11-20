@@ -203,21 +203,21 @@ var SpecEngineTypeMap = {
                 (_.max(yValues, (y) => yFormatter(y || '').toString().length));
 
             var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
-            var yTickWidth = yIsEmptyAxis ? 0 : settings.xTickWidth;
+            var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
 
             var defaultTickSize = { width: 0, height: 0 };
 
-            unit.guide.x.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
-            unit.guide.y.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
+            unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
+            unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
             var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
-            if (dimX.dimType !== 'measure' && (maxXTickH > settings.axisTickLabelLimit)) {
-                maxXTickH = settings.axisTickLabelLimit;
+            if (dimX.dimType !== 'measure' && (maxXTickH > settings.xAxisTickLabelLimit)) {
+                maxXTickH = settings.xAxisTickLabelLimit;
             }
 
-            if (!isXVertical && (maxXTickSize.width > settings.axisTickLabelLimit)) {
+            if (!isXVertical && (maxXTickSize.width > settings.xAxisTickLabelLimit)) {
                 unit.guide.x.tickFormatWordWrap = true;
                 unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
                 maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
@@ -226,8 +226,8 @@ var SpecEngineTypeMap = {
 
             var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;
-            if (dimY.dimType !== 'measure' && (maxYTickW > settings.axisTickLabelLimit)) {
-                maxYTickW = settings.axisTickLabelLimit;
+            if (dimY.dimType !== 'measure' && (maxYTickW > settings.yAxisTickLabelLimit)) {
+                maxYTickW = settings.yAxisTickLabelLimit;
                 unit.guide.y.tickFormatWordWrap = true;
                 unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
             }
@@ -242,11 +242,15 @@ var SpecEngineTypeMap = {
             var distToXAxisLabel = settings.distToXAxisLabel;
             var distToYAxisLabel = settings.distToYAxisLabel;
 
-            var densityKoeff = settings.densityKoeff;
 
 
-            unit.guide.x.density = densityKoeff * Math.min(settings.axisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
-            unit.guide.y.density = densityKoeff * Math.min(settings.axisTickLabelLimit, maxYTickSize.height);
+            var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
+            unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
+
+            var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
+            var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
+            var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
+            unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
 
 
             unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
