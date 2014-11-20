@@ -82,7 +82,8 @@
             _hide: function () {
                 this._interval = setTimeout(function () {
                     this._boundElement = null;
-                    this._tooltip.hide();
+                  //  this._tooltip.hide();
+                  //  this._tooltip.hide();
                 }.bind(this), 300);
             },
             destroy: function () {
