@@ -131,7 +131,7 @@ module.exports = function (grunt) {
                     paths: ["less"]
                 },
                 files: {
-                    "css/graphic-elements.css": "less/graphic-elements.less"
+                    "css/tooltip.css": "less/tooltip.less"
                 }
             }
         },

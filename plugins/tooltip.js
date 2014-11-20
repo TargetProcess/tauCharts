@@ -18,25 +18,42 @@
      */
     function tooltip(fields) {
         return {
-
+            template: [
+                '<div>',
+                '<div class="i-role-content tooltip__content"></div>',
+                '<div class="i-role-exclude tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
+                '</div>']
+                .join(''),
             init: function (chart) {
+                this._chart = chart;
                 this._dataFields = fields;
                 this._interval = null;
-                this._tooltip = chart.addBallon({spacing:10});
-                this._tooltip.getDom().addEventListener('mouseover', function () {
+                this._tooltip = chart.addBallon({spacing: 10});
+                var dom = this._tooltip.getDom();
+                dom.addEventListener('mouseover', function () {
                     this.needHide = false;
                     clearTimeout(this.interval);
                 }.bind(this), false);
-                this._tooltip.getDom().addEventListener('mouseleave', function () {
+                dom.addEventListener('mouseleave', function () {
                     this.needHide = true;
                     this._tooltip.hide();
                 }.bind(this), false);
+                dom.insertAdjacentHTML('afterbegin', this.template);
+                dom.addEventListener('click', function (e) {
+                    var target = e.target;
+                    if(target.classList.contains('i-role-exclude')) {
+                        this._exclude();
+                    }
+                }.bind(this), false);
                 this.needHide = true;
             },
-            /**
-             * @param {ElementContext} context
-             * @param {ChartElementTools} tools
-             */
+            render:function(data) {
+
+            },
+            _exclude:function() {
+                var dataChart = this._chart.getData();
+                this._chart.setData(_.without(dataChart, this._currentElement));
+            },
             onElementMouseOver: function (chart, data) {
                 //TODO: this tooltip jumps a bit, need to be fixed
                 var text = '';
@@ -44,22 +61,13 @@
                     var field = this._dataFields[i];
                     text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + data.elementData[field];
                 }
-                text += '</p><a>Exclude</a>';
-
-                this._tooltip.content(text);
-                this._tooltip.show(data.element);
-                var dataChart = chart.getData();
+                text += '</p>';
+                this._tooltip.getDom().querySelectorAll('.i-role-content')[0].innerHTML = text;
+                this._tooltip.show(data.element).updateSize();
                 clearInterval(this._interval);
-                this._tooltip.getDom().querySelectorAll('a')[0].addEventListener('click',function(){
-                     chart.setData(_.without(dataChart, data.elementData));
-                    this._tooltip.hide();
-                }.bind(this));
+                this._currentElement = data.elementData;
             },
-            /**
-             * @param {ElementContext} context
-             * @param {ChartElementTools} tools
-             */
-            onElementMouseOut: function (context, tools) {
+            onElementMouseOut: function () {
                 this._interval = setTimeout(function () {
                     if (this.needHide) {
                         this._tooltip.hide();

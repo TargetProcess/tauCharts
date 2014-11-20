@@ -24,7 +24,8 @@
   border-width: 0 8px 6px 8px;
 }
 .tooltip.bottom:before {
-  left: calc(46%);
+  margin-left: -8px;
+  left: 50%;
 }
 .tooltip.bottom-right:before {
   left: 20px;
@@ -40,7 +41,8 @@
   border-width: 6px 8px 0 8px;
 }
 .tooltip.top:before {
-  left: calc(46%);
+  margin-left: -8px;
+  left: 50%;
 }
 .tooltip.top-right:before {
   left: 20px;
