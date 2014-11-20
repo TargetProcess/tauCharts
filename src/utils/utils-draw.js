@@ -39,11 +39,12 @@ var wrapText = (textString, widthLimit, linesLimit) => {
         var textD3 = d3.select(this),
             tokens = textD3.text().split(/\s+/).reverse(),
             lineHeight = 1.1, // ems
+            x = textD3.attr('x'),
             y = textD3.attr('y'),
             dy = parseFloat(textD3.attr('dy'));
 
         textD3.text(null);
-        var tspan = textD3.append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em');
+        var tspan = textD3.append('tspan').attr('x', x).attr('y', y).attr('dy', dy + 'em');
 
         var line = [];
         var word;
@@ -64,7 +65,7 @@ var wrapText = (textString, widthLimit, linesLimit) => {
                 ++lineNumber;
                 line = [word];
                 var dyNew = lineNumber * lineHeight + dy;
-                tspan = textD3.append('tspan').attr('x', 0).attr('y', y).attr('dy', dyNew + 'em');
+                tspan = textD3.append('tspan').attr('x', x).attr('y', y).attr('dy', dyNew + 'em');
             }
         }
     });
