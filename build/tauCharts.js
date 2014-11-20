@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.9 - 2014-11-18
+/*! tauCharts - v0.1.10 - 2014-11-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -519,6 +519,116 @@ define('utils/utils-dom',["exports"], function (exports) {
   };
   exports.utilsDom = utilsDom;
 });
+define('dsl-reader',["exports"], function (exports) {
+  
+
+  var _classProps = function (child, staticProps, instanceProps) {
+    if (staticProps) Object.defineProperties(child, staticProps);
+
+    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
+  };
+
+  var DSLReader = (function () {
+    var DSLReader = function DSLReader(domainMixin, UnitsRegistry) {
+      this.domain = domainMixin;
+      this.UnitsRegistry = UnitsRegistry;
+    };
+
+    _classProps(DSLReader, null, {
+      buildGraph: {
+        writable: true,
+        value: function (spec) {
+          var _this = this;
+
+          var buildRecursively = function (unit) {
+            return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
+          };
+          return buildRecursively(spec.unit);
+        }
+      },
+      calcLayout: {
+        writable: true,
+        value: function (graph, size) {
+          graph.options = { top: 0, left: 0, width: size.width, height: size.height };
+
+          var fnTraverseLayout = function (node) {
+            if (!node.$matrix) {
+              return node;
+            }
+
+            var options = node.options;
+            var padding = node.guide.padding;
+
+            var innerW = options.width - (padding.l + padding.r);
+            var innerH = options.height - (padding.t + padding.b);
+
+            var nRows = node.$matrix.sizeR();
+            var nCols = node.$matrix.sizeC();
+
+            var cellW = innerW / nCols;
+            var cellH = innerH / nRows;
+
+            var calcLayoutStrategy;
+            if (node.guide.split) {
+              calcLayoutStrategy = {
+                calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+                  return cellHeight / lenIndex;
+                }),
+                calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+                  return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex;
+                })
+              };
+            } else {
+              calcLayoutStrategy = {
+                calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+                  return cellHeight;
+                }),
+                calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+                  return rowIndex * cellH;
+                })
+              };
+            }
+
+            node.$matrix.iterate(function (iRow, iCol, subNodes) {
+              var len = subNodes.length;
+
+              _.each(subNodes, function (node, i) {
+                node.options = {
+                  width: cellW,
+                  left: iCol * cellW,
+                  height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
+                  top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
+                };
+                fnTraverseLayout(node);
+              });
+            });
+
+            return node;
+          };
+
+          return fnTraverseLayout(graph);
+        }
+      },
+      renderGraph: {
+        writable: true,
+        value: function (styledGraph, target) {
+          var _this2 = this;
+
+          styledGraph.options.container = target;
+          var renderRecursively = function (unit) {
+            return _this2.UnitsRegistry.get(unit.type).draw(_this2.domain.mix(unit), renderRecursively);
+          };
+          renderRecursively(styledGraph);
+          return styledGraph.options.container;
+        }
+      }
+    });
+
+    return DSLReader;
+  })();
+
+  exports.DSLReader = DSLReader;
+});
 define('utils/utils',["exports"], function (exports) {
   
 
@@ -583,6 +693,923 @@ define('utils/utils',["exports"], function (exports) {
   };
 
   exports.utils = utils;
+});
+/* jshint ignore:start */
+define('formatter-registry',["exports", "d3"], function (exports, _d3) {
+  
+
+  var d3 = _d3;
+
+  /* jshint ignore:end */
+  var FORMATS_MAP = {
+    "x-num-auto": function (x) {
+      return (Math.abs(x) < 1) ? x.toString() : d3.format("s")(x);
+    },
+
+    day: d3.time.format("%d-%b-%Y"),
+
+    week: d3.time.format("%d-%b-%Y"),
+
+    "week-range": function (x) {
+      var sWeek = new Date(x);
+      var clone = new Date(x);
+      var eWeek = new Date(clone.setDate(clone.getDate() + 7));
+      var format = d3.time.format("%d-%b-%Y");
+      return format(sWeek) + " - " + format(eWeek);
+    },
+
+    month: function (x) {
+      var d = new Date(x);
+      var m = d.getMonth();
+      var formatSpec = (m === 0) ? "%B, %Y" : "%B";
+      return d3.time.format(formatSpec)(x);
+    },
+
+    "month-year": d3.time.format("%B, %Y"),
+
+    quarter: function (x) {
+      var d = new Date(x);
+      var m = d.getMonth();
+      var q = (m - (m % 3)) / 3;
+      return "Q" + (q + 1) + " " + d.getFullYear();
+    },
+
+    year: d3.time.format("%Y"),
+
+    "x-time-auto": d3.time.format.multi([[".%L", function (d) {
+      return d.getMilliseconds();
+    }], [":%S", function (d) {
+      return d.getSeconds();
+    }], ["%I:%M", function (d) {
+      return d.getMinutes();
+    }], ["%I %p", function (d) {
+      return d.getHours();
+    }], ["%a %d", function (d) {
+      return d.getDay() && d.getDate() != 1;
+    }], ["%b %d", function (d) {
+      return d.getDate() != 1;
+    }], ["%B", function (d) {
+      return d.getMonth();
+    }], ["%Y", function () {
+      return true;
+    }]])
+  };
+
+  /* jshint ignore:start */
+  FORMATS_MAP["x-time-ms"] = FORMATS_MAP["x-time-auto"];
+  FORMATS_MAP["x-time-sec"] = FORMATS_MAP["x-time-auto"];
+  FORMATS_MAP["x-time-min"] = FORMATS_MAP["x-time-auto"];
+  FORMATS_MAP["x-time-hour"] = FORMATS_MAP["x-time-auto"];
+  FORMATS_MAP["x-time-day"] = FORMATS_MAP["day"];
+  FORMATS_MAP["x-time-week"] = FORMATS_MAP["week"];
+  FORMATS_MAP["x-time-month"] = FORMATS_MAP["month"];
+  FORMATS_MAP["x-time-quarter"] = FORMATS_MAP["quarter"];
+  FORMATS_MAP["x-time-year"] = FORMATS_MAP["year"];
+  /* jshint ignore:end */
+
+  var FormatterRegistry = {
+    get: function (formatAlias) {
+      var formatter = (formatAlias === null) ? (function (x) {
+        return x.toString();
+      }) : FORMATS_MAP[formatAlias];
+      if (!formatter) {
+        formatter = function (v) {
+          var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
+          return f(v);
+        };
+      }
+      return formatter;
+    },
+
+    add: function (formatAlias, formatter) {
+      FORMATS_MAP[formatAlias] = formatter;
+    }
+  };
+
+  exports.FormatterRegistry = FormatterRegistry;
+});
+define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"], function (exports, _utilsUtils, _formatterRegistry) {
+  
+
+  var utils = _utilsUtils.utils;
+  var FormatterRegistry = _formatterRegistry.FormatterRegistry;
+
+  var translate = function (left, top) {
+    return "translate(" + left + "," + top + ")";
+  };
+  var rotate = function (angle) {
+    return "rotate(" + angle + ")";
+  };
+  var getOrientation = function (scaleOrient) {
+    return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
+  };
+  var s;
+
+  var cutText = function (textString, widthLimit) {
+    textString.each(function () {
+      var textD3 = d3.select(this);
+      var tokens = textD3.text().split(/\s+/).reverse();
+
+      textD3.text(null);
+
+      var line = [];
+      var word;
+      var stop = false;
+      while (!stop && (word = tokens.pop())) {
+        line.push(word);
+        textD3.text(line.join(" "));
+        if (textD3.node().getComputedTextLength() > widthLimit) {
+          line.pop();
+
+          var str = line.join(" ");
+          str += "...";
+
+          textD3.text(str);
+
+          stop = true;
+        }
+      }
+    });
+  };
+
+  var wrapText = function (textString, widthLimit, linesLimit) {
+    textString.each(function () {
+      var textD3 = d3.select(this), tokens = textD3.text().split(/\s+/).reverse(), lineHeight = 1.1, // ems
+      y = textD3.attr("y"), dy = parseFloat(textD3.attr("dy"));
+
+      textD3.text(null);
+      var tspan = textD3.append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+
+      var line = [];
+      var word;
+      var lineNumber = 0;
+      while ((lineNumber < linesLimit) && (word = tokens.pop())) {
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.node().getComputedTextLength() > widthLimit) {
+          line.pop();
+
+          var str = line.join(" ");
+          str += ((lineNumber === (linesLimit - 1)) ? "..." : "");
+
+          tspan.text(str);
+
+          // start new line
+          ++lineNumber;
+          line = [word];
+          var dyNew = lineNumber * lineHeight + dy;
+          tspan = textD3.append("tspan").attr("x", 0).attr("y", y).attr("dy", dyNew + "em");
+        }
+      }
+    });
+  };
+
+  var decorateAxisTicks = function (nodeScale, x, size) {
+    var selection = nodeScale.selectAll(".tick line");
+
+    var sectorSize = size / selection[0].length;
+    var offsetSize = sectorSize / 2;
+
+    if (x.scaleType === "ordinal" || x.scaleType === "period") {
+      var isHorizontal = ("h" === getOrientation(x.guide.scaleOrient));
+
+      var key = (isHorizontal) ? "x" : "y";
+      var val = (isHorizontal) ? offsetSize : (-offsetSize);
+
+      selection.attr(key + "1", val).attr(key + "2", val);
+    }
+  };
+
+  var decorateAxisLabel = function (nodeScale, x) {
+    var koeff = ("h" === getOrientation(x.guide.scaleOrient)) ? 1 : -1;
+    nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", "label").attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor).text(x.guide.label.text);
+  };
+
+  var decorateTickLabel = function (nodeScale, x) {
+    var angle = x.guide.rotate;
+
+    var ticks = nodeScale.selectAll(".tick text");
+    ticks.attr("transform", rotate(angle)).style("text-anchor", x.guide.textAnchor);
+
+    if (angle === 90) {
+      ticks.attr("x", 9).attr("y", 0);
+    }
+  };
+
+  var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
+    var container = this;
+    if (x.scaleDim) {
+      var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).ticks(Math.round(size / x.guide.density));
+
+      axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
+
+      var nodeScale = container.append("g").attr("class", x.guide.cssClass).attr("transform", translate.apply(null, AXIS_POSITION)).call(axisScale);
+
+      decorateAxisTicks(nodeScale, x, size);
+      decorateTickLabel(nodeScale, x);
+      decorateAxisLabel(nodeScale, x);
+
+      if (x.guide.tickFormatWordWrap) {
+        nodeScale.selectAll(".tick text").call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines);
+      } else {
+        nodeScale.selectAll(".tick text").call(cutText, x.guide.tickFormatWordWrapLimit);
+      }
+    }
+  };
+
+  var fnDrawGrid = function (node, H, W) {
+    var container = this;
+
+    var grid = container.append("g").attr("class", "grid").attr("transform", translate(0, 0));
+
+    var linesOptions = (node.guide.showGridLines || "").toLowerCase();
+    if (linesOptions.length > 0) {
+      var gridLines = grid.append("g").attr("class", "grid-lines");
+
+      if ((linesOptions.indexOf("x") > -1) && node.x.scaleDim) {
+        var x = node.x;
+        var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H).ticks(Math.round(W / x.guide.density));
+
+        var xGridLines = gridLines.append("g").attr("class", "grid-lines-x").call(xGridAxis);
+
+        decorateAxisTicks(xGridLines, x, W);
+
+        var firstXGridLine = xGridLines.select("g.tick");
+        if (firstXGridLine.attr("transform") !== "translate(0,0)") {
+          var zeroNode = firstXGridLine.node().cloneNode(true);
+          gridLines.node().appendChild(zeroNode);
+          d3.select(zeroNode).attr("class", "border").attr("transform", translate(0, 0)).select("line").attr("x1", 0).attr("x2", 0);
+        }
+      }
+
+      if ((linesOptions.indexOf("y") > -1) && node.y.scaleDim) {
+        var y = node.y;
+        var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W).ticks(Math.round(H / y.guide.density));
+
+        var yGridLines = gridLines.append("g").attr("class", "grid-lines-y").call(yGridAxis);
+
+        decorateAxisTicks(yGridLines, y, H);
+      }
+
+      // TODO: make own axes and grid instead of using d3's in such tricky way
+      gridLines.selectAll("text").remove();
+    }
+
+    return grid;
+  };
+
+  var generateColor = function (node) {
+    var defaultRange = _.times(10, function (i) {
+      return "color10-" + (1 + i);
+    });
+    var range, domain;
+    var colorGuide = node.guide.color || {};
+    var colorParam = node.color;
+
+    var colorDim = colorParam.scaleDim;
+    var brewer = colorGuide.brewer || defaultRange;
+
+    if (utils.isArray(brewer)) {
+      domain = node.domain(colorDim);
+      range = brewer;
+    } else {
+      domain = Object.keys(brewer);
+      range = domain.map(function (key) {
+        return brewer[key];
+      });
+    }
+
+    return {
+      get: function (d) {
+        return d3.scale.ordinal().range(range).domain(domain)(d);
+      },
+      dimension: colorDim
+    };
+  };
+
+  var applyNodeDefaults = function (node) {
+    node.options = node.options || {};
+    node.guide = node.guide || {};
+    node.guide.padding = _.defaults(node.guide.padding || {}, { l: 0, b: 0, r: 0, t: 0 });
+
+    node.guide.x = _.defaults(node.guide.x || {}, {
+      label: "",
+      padding: 0,
+      density: 30,
+      cssClass: "x axis",
+      scaleOrient: "bottom",
+      rotate: 0,
+      textAnchor: "middle",
+      tickPeriod: null,
+      tickFormat: null,
+      autoScale: true
+    });
+    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : { text: node.guide.x.label };
+    node.guide.x.label = _.defaults(node.guide.x.label, { padding: 32, rotate: 0, textAnchor: "middle" });
+
+    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
+
+    node.guide.y = _.defaults(node.guide.y || {}, {
+      label: "",
+      padding: 0,
+      density: 30,
+      cssClass: "y axis",
+      scaleOrient: "left",
+      rotate: 0,
+      textAnchor: "end",
+      tickPeriod: null,
+      tickFormat: null,
+      autoScale: true
+    });
+    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : { text: node.guide.y.label };
+    node.guide.y.label = _.defaults(node.guide.y.label, { padding: 32, rotate: -90, textAnchor: "middle" });
+
+    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
+
+    return node;
+  };
+
+  /* jshint ignore:start */
+  var utilsDraw = {
+    translate: translate,
+    rotate: rotate,
+    getOrientation: getOrientation,
+    fnDrawDimAxis: fnDrawDimAxis,
+    fnDrawGrid: fnDrawGrid,
+    generateColor: generateColor,
+    applyNodeDefaults: applyNodeDefaults
+  };
+  exports.utilsDraw = utilsDraw;
+});
+define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", "./formatter-registry"], function (exports, _utilsUtils, _utilsUtilsDraw, _formatterRegistry) {
+  
+
+  var utils = _utilsUtils.utils;
+  var utilsDraw = _utilsUtilsDraw.utilsDraw;
+  var FormatterRegistry = _formatterRegistry.FormatterRegistry;
+
+  var inheritProps = function (unit, root) {
+    unit.guide = unit.guide || {};
+    unit.guide.padding = unit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
+    unit = _.defaults(unit, root);
+    unit.guide = _.defaults(unit.guide, root.guide);
+    return unit;
+  };
+
+  var createSelectorPredicates = function (root) {
+    var children = root.unit || [];
+
+    var isLeaf = !root.hasOwnProperty("unit");
+    var isLeafParent = !children.some(function (c) {
+      return c.hasOwnProperty("unit");
+    });
+
+    return {
+      type: root.type,
+      isLeaf: isLeaf,
+      isLeafParent: !isLeaf && isLeafParent
+    };
+  };
+
+  var getTickFormat = function (dim, meta, defaultFormats) {
+    var dimType = dim.dimType;
+    var scaleType = dim.scaleType;
+    var specifier = "*";
+    if (dimType === "measure" && scaleType === "time") {
+      var src = meta.source.filter(function (x) {
+        return (x !== null);
+      }).sort();
+      var resolutionAvg = 0;
+      if (src.length > 1) {
+        var i = 1;
+        var l = src.length;
+        var m = [];
+        while (i < l) {
+          m.push(src[i] - src[i - 1]);
+          ++i;
+        }
+
+        var s = m.reduce(function (sum, x) {
+          sum += x;
+          return sum;
+        }, 0);
+
+        resolutionAvg = s / m.length;
+      }
+
+      var resolutions = [[1000 * 60 * 60 * 24 * 365, "year"], [1000 * 60 * 60 * 24 * 30 * 3, "quarter"], [1000 * 60 * 60 * 24 * 30, "month"], [1000 * 60 * 60 * 24 * 7, "week"], [1000 * 60 * 60 * 24, "day"], [1000 * 60 * 60, "hour"], [1000 * 60, "min"], [1000, "sec"], [0, "ms"]];
+
+      var r = -1;
+      do {
+        ++r;
+      } while (resolutions[r][0] > resolutionAvg);
+
+      specifier = resolutions[r][1];
+    }
+
+    var key = [dimType, scaleType, specifier].join(":");
+    var tag = [dimType, scaleType].join(":");
+    return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
+  };
+
+  var fnTraverseTree = function (specUnitRef, transformRules) {
+    var temp = utilsDraw.applyNodeDefaults(specUnitRef);
+    var root = transformRules(createSelectorPredicates(temp), temp);
+    var prop = _.omit(root, "unit");
+    (root.unit || []).forEach(function (unit) {
+      return fnTraverseTree(inheritProps(unit, prop), transformRules);
+    });
+    return root;
+  };
+
+  var SpecEngineTypeMap = {
+    NONE: function (spec, meta, settings) {
+      return function (selectorPredicates, unit) {
+        return unit;
+      };
+    },
+
+    AUTO: function (spec, meta, settings) {
+      var xLabels = [];
+      var yLabels = [];
+      var xUnit = null;
+      var yUnit = null;
+      fnTraverseTree(spec.unit, function (selectors, unit) {
+        if (selectors.isLeaf) {
+          return unit;
+        }
+
+        if (!xUnit && unit.x) (xUnit = unit);
+        if (!yUnit && unit.y) (yUnit = unit);
+
+        if (unit.x) {
+          unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
+        }
+
+        if (unit.y) {
+          unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
+        }
+
+        var x = unit.guide.x.label.text;
+        if (x) {
+          xLabels.push(x);
+          unit.guide.x.label.text = "";
+        }
+
+        var y = unit.guide.y.label.text;
+        if (y) {
+          yLabels.push(y);
+          unit.guide.y.label.text = "";
+        }
+
+        return unit;
+      });
+
+      if (xUnit) {
+        xUnit.guide.x.label.text = xLabels.join(" > ");
+      }
+
+      if (yUnit) {
+        yUnit.guide.y.label.text = yLabels.join(" > ");
+      }
+
+      return function (selectorPredicates, unit) {
+        if (selectorPredicates.isLeaf) {
+          return unit;
+        }
+
+        var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
+        if (isFacetUnit) {
+          // unit is a facet!
+          unit.guide.x.cssClass += " facet-axis";
+          unit.guide.y.cssClass += " facet-axis";
+        }
+
+        var dimX = meta.dimension(unit.x);
+        var dimY = meta.dimension(unit.y);
+
+        var xScaleOptions = {
+          map: unit.guide.x.tickLabel,
+          min: unit.guide.x.tickMin,
+          max: unit.guide.x.tickMax,
+          period: unit.guide.x.tickPeriod,
+          autoScale: unit.guide.x.autoScale
+        };
+
+        var yScaleOptions = {
+          map: unit.guide.y.tickLabel,
+          min: unit.guide.y.tickMin,
+          max: unit.guide.y.tickMax,
+          period: unit.guide.y.tickPeriod,
+          autoScale: unit.guide.y.autoScale
+        };
+
+        var xMeta = meta.scaleMeta(unit.x, xScaleOptions);
+        var xValues = xMeta.values;
+        var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
+        var yValues = yMeta.values;
+
+        unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
+        unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+
+        var xIsEmptyAxis = (xValues.length === 0);
+        var yIsEmptyAxis = (yValues.length === 0);
+
+        var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
+        var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
+
+        var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== "measure");
+
+        unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
+        unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
+
+        unit.guide.x.rotate = isXVertical ? 90 : 0;
+        unit.guide.x.textAnchor = isXVertical ? "start" : unit.guide.x.textAnchor;
+
+        var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
+        var yFormatter = FormatterRegistry.get(unit.guide.y.tickFormat);
+
+        var maxXTickText = xIsEmptyAxis ? "" : (_.max(xValues, function (x) {
+          return xFormatter(x || "").toString().length;
+        }));
+
+        var maxYTickText = yIsEmptyAxis ? "" : (_.max(yValues, function (y) {
+          return yFormatter(y || "").toString().length;
+        }));
+
+        var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
+        var yTickWidth = yIsEmptyAxis ? 0 : settings.xTickWidth;
+
+        var defaultTickSize = { width: 0, height: 0 };
+
+        unit.guide.x.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
+        unit.guide.y.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
+
+        var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
+        var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
+
+        if (dimX.dimType !== "measure" && (maxXTickH > settings.axisTickLabelLimit)) {
+          maxXTickH = settings.axisTickLabelLimit;
+        }
+
+        if (!isXVertical && (maxXTickSize.width > settings.axisTickLabelLimit)) {
+          unit.guide.x.tickFormatWordWrap = true;
+          unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
+          maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
+        }
+
+        var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
+        var maxYTickW = maxYTickSize.width;
+        if (dimY.dimType !== "measure" && (maxYTickW > settings.axisTickLabelLimit)) {
+          maxYTickW = settings.axisTickLabelLimit;
+          unit.guide.y.tickFormatWordWrap = true;
+          unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
+        }
+
+        var xFontH = xTickWidth + maxXTickH;
+        var yFontW = yTickWidth + maxYTickW;
+
+        var xFontLabelHeight = settings.xFontLabelHeight;
+        var yFontLabelHeight = settings.yFontLabelHeight;
+
+        var distToXAxisLabel = settings.distToXAxisLabel;
+        var distToYAxisLabel = settings.distToYAxisLabel;
+
+        var densityKoeff = settings.densityKoeff;
+
+        unit.guide.x.density = densityKoeff * Math.min(settings.axisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
+        unit.guide.y.density = densityKoeff * Math.min(settings.axisTickLabelLimit, maxYTickSize.height);
+
+        unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
+        unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
+
+        var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+        var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
+        unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
+        unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
+
+        unit.guide.padding.b = xAxisPadding + xLabelPadding;
+        unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+        unit.guide.x.$minimalDomain = xValues.length;
+        unit.guide.y.$minimalDomain = yValues.length;
+
+        unit.guide.x.$maxTickTextW = maxXTickSize.width;
+        unit.guide.x.$maxTickTextH = maxXTickSize.height;
+
+        unit.guide.y.$maxTickTextW = maxYTickSize.width;
+        unit.guide.y.$maxTickTextH = maxYTickSize.height;
+
+        return unit;
+      };
+    }
+  };
+
+  var SpecEngineFactory = {
+    get: function (typeName, settings) {
+      var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
+      return function (srcSpec, meta) {
+        var spec = utils.clone(srcSpec);
+        fnTraverseTree(spec.unit, rules(spec, meta, settings));
+        return spec;
+      };
+    }
+
+  };
+
+  exports.SpecEngineFactory = SpecEngineFactory;
+});
+define('matrix',["exports"], function (exports) {
+  
+
+  var TMatrix = (function () {
+    var Matrix = function (r, c) {
+      var args = _.toArray(arguments);
+      var cube;
+
+      if (_.isArray(args[0])) {
+        cube = args[0];
+      } else {
+        cube = _.times(r, function () {
+          return _.times(c, function () {
+            return null;
+          });
+        });
+      }
+
+      this.cube = cube;
+    };
+
+    Matrix.prototype = {
+      iterate: function (iterator) {
+        var cube = this.cube;
+        _.each(cube, function (row, ir) {
+          _.each(row, function (colValue, ic) {
+            iterator(ir, ic, colValue);
+          });
+        });
+        return this;
+      },
+
+      getRC: function (r, c) {
+        return this.cube[r][c];
+      },
+
+      setRC: function (r, c, val) {
+        this.cube[r][c] = val;
+        return this;
+      },
+
+      sizeR: function () {
+        return this.cube.length;
+      },
+
+      sizeC: function () {
+        var row = this.cube[0] || [];
+        return row.length;
+      }
+    };
+
+    return Matrix;
+  })();
+
+  exports.TMatrix = TMatrix;
+});
+define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", "./matrix"], function (exports, _utilsUtils, _utilsUtilsDraw, _matrix) {
+  
+
+  var utils = _utilsUtils.utils;
+  var utilsDraw = _utilsUtilsDraw.utilsDraw;
+  var TMatrix = _matrix.TMatrix;
+
+  var specUnitSummary = function (spec, boxOpt) {
+    var box = boxOpt ? boxOpt : { depth: -1, paddings: [] };
+    var p = (spec.guide || {}).padding || { l: 0, b: 0, r: 0, t: 0 };
+    box.depth += 1;
+    box.paddings.unshift({ l: p.l, b: p.b, r: p.r, t: p.t });
+
+    if (spec.unit && spec.unit.length) {
+      specUnitSummary(spec.unit[0], box);
+    }
+
+    return box;
+  };
+
+  var LayoutEngineTypeMap = {
+    NONE: (function (rootNode) {
+      return rootNode;
+    }),
+
+    EXTRACT: function (rootNode) {
+      var traverse = (function (rootNodeMatrix, depth, rule) {
+        var matrix = rootNodeMatrix;
+
+        var rows = matrix.sizeR();
+        var cols = matrix.sizeC();
+
+        matrix.iterate(function (r, c, subNodes) {
+          subNodes.forEach(function (unit) {
+            return rule(unit, {
+              firstRow: (r === 0),
+              firstCol: (c === 0),
+              lastRow: (r === (rows - 1)),
+              lastCol: (c === (cols - 1)),
+              depth: depth
+            });
+          });
+
+          subNodes.filter(function (unit) {
+            return unit.$matrix;
+          }).forEach(function (unit) {
+            unit.$matrix = new TMatrix(unit.$matrix.cube);
+            traverse(unit.$matrix, depth - 1, rule);
+          });
+        });
+      });
+
+      var coordNode = utils.clone(rootNode);
+
+      var coordMatrix = new TMatrix([[[coordNode]]]);
+
+      var box = specUnitSummary(coordNode);
+
+      var globPadd = box.paddings.reduce(function (memo, item) {
+        memo.l += item.l;
+        memo.b += item.b;
+        return memo;
+      }, { l: 0, b: 0 });
+
+      var temp = utils.clone(globPadd);
+      var axesPadd = box.paddings.reverse().map(function (item) {
+        item.l = temp.l - item.l;
+        item.b = temp.b - item.b;
+        temp = { l: item.l, b: item.b };
+        return item;
+      });
+      box.paddings = axesPadd.reverse();
+
+      var wrapperNode = utilsDraw.applyNodeDefaults({
+        type: "COORDS.RECT",
+        options: utils.clone(rootNode.options),
+        $matrix: new TMatrix([[[coordNode]]]),
+        guide: {
+          padding: {
+            l: globPadd.l,
+            b: globPadd.b,
+            r: 0,
+            t: 0
+          }
+        }
+      });
+
+      traverse(coordMatrix, box.depth, function (unit, selectorPredicates) {
+        var depth = selectorPredicates.depth;
+
+        unit.guide.x.hide = !selectorPredicates.lastRow;
+        unit.guide.y.hide = !selectorPredicates.firstCol;
+
+        unit.guide.x.padding = (box.paddings[depth].b + unit.guide.x.padding);
+        unit.guide.y.padding = (box.paddings[depth].l + unit.guide.y.padding);
+
+        var d = (depth > 1) ? 0 : 10;
+        unit.guide.padding.l = d;
+        unit.guide.padding.b = d;
+        unit.guide.padding.r = d;
+        unit.guide.padding.t = d;
+
+        unit.guide.showGridLines = (depth > 1) ? "" : "xy";
+        return unit;
+      });
+
+      return wrapperNode;
+    }
+  };
+
+  var LayoutEngineFactory = {
+    get: (function (typeName) {
+      return (LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap.NONE);
+    })
+
+  };
+
+  exports.LayoutEngineFactory = LayoutEngineFactory;
+});
+//plugins
+/** @class
+ * @extends Plugin */
+define('plugins',["exports"], function (exports) {
+  
+
+  var _classProps = function (child, staticProps, instanceProps) {
+    if (staticProps) Object.defineProperties(child, staticProps);
+
+    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
+  };
+
+  var Plugins = (function () {
+    var Plugins = function Plugins(plugins) {
+      this._plugins = plugins;
+    };
+
+    _classProps(Plugins, null, {
+      _call: {
+        writable: true,
+        value: function (name, args) {
+          for (var i = 0; i < this._plugins.length; i++) {
+            if (typeof (this._plugins[i][name]) == "function") {
+              this._plugins[i][name].apply(this._plugins[i], args);
+            }
+          }
+        }
+      },
+      render: {
+        writable: true,
+        value: function (context, tools) {
+          this._call("render", arguments);
+        }
+      },
+      click: {
+        writable: true,
+        value: function (context, tools) {
+          this._call("click", arguments);
+        }
+      },
+      mouseover: {
+        writable: true,
+        value: function (context, tools) {
+          this._call("mouseover", arguments);
+        }
+      },
+      mouseout: {
+        writable: true,
+        value: function (context, tools) {
+          this._call("mouseout", arguments);
+        }
+      },
+      mousemove: {
+        writable: true,
+        value: function (context, tools) {
+          this._call("mousemove", arguments);
+        }
+      }
+    });
+
+    return Plugins;
+  })();
+
+  var propagateDatumEvents = function (plugins) {
+    return function () {
+      this.on("click", function (d) {
+        plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
+      }).on("mouseover", function (d) {
+        plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
+      }).on("mouseout", function (d) {
+        plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
+      }).on("mousemove", function (d) {
+        plugins.mousemove(new ElementContext(d), new ChartElementTools(d3.select(this)));
+      });
+    };
+  };
+
+  var ChartElementTools = function ChartElementTools(element) {
+    this.element = element;
+  };
+
+  var RenderContext = function RenderContext(dataSource) {
+    this.data = dataSource;
+  };
+
+  var ElementContext = function ElementContext(datum) {
+    this.datum = datum;
+  };
+
+  var ChartTools = (function () {
+    var ChartTools = function ChartTools(layout, mapper) {
+      this.svg = layout.svg;
+      this.html = layout.html;
+      this.mapper = mapper;
+    };
+
+    _classProps(ChartTools, null, {
+      elements: {
+        writable: true,
+        value: function () {
+          return this.svg.selectAll(".i-role-datum");
+        }
+      }
+    });
+
+    return ChartTools;
+  })();
+
+  exports.propagateDatumEvents = propagateDatumEvents;
+  exports.Plugins = Plugins;
+});
+define('const',["exports"], function (exports) {
+  
+
+  var CSS_PREFIX = exports.CSS_PREFIX = "graphical-report__";
 });
 define('unit-domain-period-generator',["exports"], function (exports) {
   
@@ -867,7 +1894,8 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
           extract: function (x) {
             return fVal(fMap(x));
           },
-          values: autoScaledVals
+          values: autoScaledVals,
+          source: originalValues
         };
       };
 
@@ -942,941 +1970,7 @@ define('units-registry',["exports"], function (exports) {
 
   exports.UnitsRegistry = UnitsRegistry;
 });
-define('dsl-reader',["exports", "./utils/utils", "./unit-domain-mixin", "./units-registry"], function (exports, _utilsUtils, _unitDomainMixin, _unitsRegistry) {
-  
-
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
-  var utils = _utilsUtils.utils;
-  var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
-  var UnitsRegistry = _unitsRegistry.UnitsRegistry;
-  var DSLReader = (function () {
-    var DSLReader = function DSLReader(spec, data, specEngine) {
-      this.spec = utils.clone(spec);
-      this.domain = new UnitDomainMixin(this.spec.dimensions, data);
-      this.specEngine = specEngine;
-    };
-
-    _classProps(DSLReader, null, {
-      buildGraph: {
-        writable: true,
-        value: function () {
-          var _this = this;
-
-          var spec = this.specEngine(this.spec, this.domain.mix({}));
-          var buildRecursively = function (unit) {
-            return UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
-          };
-          return buildRecursively(spec.unit);
-        }
-      },
-      calcLayout: {
-        writable: true,
-        value: function (graph, layoutEngine, size) {
-          graph.options = {
-            top: 0,
-            left: 0,
-            width: size.width,
-            height: size.height
-          };
-
-          return layoutEngine(graph, this.domain);
-        }
-      },
-      renderGraph: {
-        writable: true,
-        value: function (styledGraph, target) {
-          var _this2 = this;
-
-          styledGraph.options.container = target;
-
-          var renderRecursively = function (unit) {
-            return UnitsRegistry.get(unit.type).draw(_this2.domain.mix(unit), renderRecursively);
-          };
-
-          renderRecursively(styledGraph);
-          return styledGraph.options.container;
-        }
-      }
-    });
-
-    return DSLReader;
-  })();
-
-  exports.DSLReader = DSLReader;
-});
-/* jshint ignore:start */
-define('formatter-registry',["exports", "d3"], function (exports, _d3) {
-  
-
-  var d3 = _d3;
-
-  /* jshint ignore:end */
-  var FORMATS_MAP = {
-    day: d3.time.format("%d-%b-%Y"),
-
-    week: d3.time.format("%d-%b-%Y"),
-
-    "week-range": function (x) {
-      var sWeek = new Date(x);
-      var clone = new Date(x);
-      var eWeek = new Date(clone.setDate(clone.getDate() + 7));
-      var format = d3.time.format("%d-%b-%Y");
-      return format(sWeek) + " - " + format(eWeek);
-    },
-
-    month: function (x) {
-      var d = new Date(x);
-      var m = d.getMonth();
-      var formatSpec = (m === 0) ? "%B, %Y" : "%B";
-      return d3.time.format(formatSpec)(x);
-    },
-
-    "month-year": d3.time.format("%B, %Y"),
-
-    quarter: function (x) {
-      var d = new Date(x);
-      var m = d.getMonth();
-      var q = (m - (m % 3)) / 3;
-      return "Q" + (q + 1) + " " + d.getFullYear();
-    },
-
-    year: d3.time.format("%Y"),
-
-    "x-time-auto": d3.time.format.multi([[".%L", function (d) {
-      return d.getMilliseconds();
-    }], [":%S", function (d) {
-      return d.getSeconds();
-    }], ["%I:%M", function (d) {
-      return d.getMinutes();
-    }], ["%I %p", function (d) {
-      return d.getHours();
-    }], ["%a %d", function (d) {
-      return d.getDay() && d.getDate() != 1;
-    }], ["%b %d", function (d) {
-      return d.getDate() != 1;
-    }], ["%B", function (d) {
-      return d.getMonth();
-    }], ["%Y", function () {
-      return true;
-    }]])
-  };
-
-  var FormatterRegistry = {
-    get: function (formatAlias, tickFormatLimit) {
-      var cut = function (str) {
-        var limit = tickFormatLimit || 1000;
-        return (str.length <= limit) ? (str) : (str.substr(0, limit - 1) + "...");
-      };
-
-      var formatter = (formatAlias === null) ? (function (x) {
-        return x.toString();
-      }) : FORMATS_MAP[formatAlias];
-      if (!formatter) {
-        formatter = function (v) {
-          var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
-          return f(v);
-        };
-      }
-      return function (str) {
-        return (cut(formatter(str)));
-      };
-    },
-
-    add: function (formatAlias, formatter) {
-      FORMATS_MAP[formatAlias] = formatter;
-    }
-  };
-
-  exports.FormatterRegistry = FormatterRegistry;
-});
-define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"], function (exports, _utilsUtils, _formatterRegistry) {
-  
-
-  var utils = _utilsUtils.utils;
-  var FormatterRegistry = _formatterRegistry.FormatterRegistry;
-
-  var translate = function (left, top) {
-    return "translate(" + left + "," + top + ")";
-  };
-  var rotate = function (angle) {
-    return "rotate(" + angle + ")";
-  };
-  var getOrientation = function (scaleOrient) {
-    return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
-  };
-  var s;
-  var decorateAxisTicks = function (nodeScale, x, size) {
-    var selection = nodeScale.selectAll(".tick line");
-
-    var sectorSize = size / selection[0].length;
-    var offsetSize = sectorSize / 2;
-
-    if (x.scaleType === "ordinal" || x.scaleType === "period") {
-      var isHorizontal = ("h" === getOrientation(x.guide.scaleOrient));
-
-      var key = (isHorizontal) ? "x" : "y";
-      var val = (isHorizontal) ? offsetSize : (-offsetSize);
-
-      selection.attr(key + "1", val).attr(key + "2", val);
-    }
-  };
-
-  var decorateAxisLabel = function (nodeScale, x) {
-    var koeff = ("h" === getOrientation(x.guide.scaleOrient)) ? 1 : -1;
-    nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", "label").attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor).text(x.guide.label.text);
-  };
-
-  var decorateTickLabel = function (nodeScale, x) {
-    var angle = x.guide.rotate;
-
-    var ticks = nodeScale.selectAll(".tick text");
-    ticks.attr("transform", rotate(angle)).style("text-anchor", x.guide.textAnchor);
-
-    if (angle === 90) {
-      ticks.attr("x", 9).attr("y", 0);
-    }
-  };
-
-  var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
-    var container = this;
-    if (x.scaleDim) {
-      var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).ticks(Math.round(size / x.guide.density));
-
-      axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat, x.guide.tickFormatLimit));
-
-      var nodeScale = container.append("g").attr("class", x.guide.cssClass).attr("transform", translate.apply(null, AXIS_POSITION)).call(axisScale);
-
-      decorateAxisTicks(nodeScale, x, size);
-      decorateTickLabel(nodeScale, x);
-      decorateAxisLabel(nodeScale, x);
-    }
-  };
-
-  var fnDrawGrid = function (node, H, W) {
-    var container = this;
-
-    var grid = container.append("g").attr("class", "grid").attr("transform", translate(0, 0));
-
-    var linesOptions = (node.guide.showGridLines || "").toLowerCase();
-    if (linesOptions.length > 0) {
-      var gridLines = grid.append("g").attr("class", "grid-lines");
-
-      if ((linesOptions.indexOf("x") > -1) && node.x.scaleDim) {
-        var x = node.x;
-        var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H).ticks(Math.round(W / x.guide.density));
-
-        var xGridLines = gridLines.append("g").attr("class", "grid-lines-x").call(xGridAxis);
-
-        decorateAxisTicks(xGridLines, x, W);
-      }
-
-      if ((linesOptions.indexOf("y") > -1) && node.y.scaleDim) {
-        var y = node.y;
-        var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W).ticks(Math.round(H / y.guide.density));
-
-        var yGridLines = gridLines.append("g").attr("class", "grid-lines-y").call(yGridAxis);
-
-        decorateAxisTicks(yGridLines, y, H);
-      }
-
-      // TODO: make own axes and grid instead of using d3's in such tricky way
-      gridLines.selectAll("text").remove();
-    }
-
-    return grid;
-  };
-
-  var generateColor = function (node) {
-    var defaultRange = _.times(10, function (i) {
-      return "color10-" + (1 + i);
-    });
-    var range, domain;
-    var colorGuide = node.guide.color || {};
-    var colorParam = node.color;
-
-    var colorDim = colorParam.scaleDim;
-    var brewer = colorGuide.brewer || defaultRange;
-
-    if (utils.isArray(brewer)) {
-      domain = node.domain(colorDim);
-      range = brewer;
-    } else {
-      domain = Object.keys(brewer);
-      range = domain.map(function (key) {
-        return brewer[key];
-      });
-    }
-
-    return {
-      get: function (d) {
-        return d3.scale.ordinal().range(range).domain(domain)(d);
-      },
-      dimension: colorDim
-    };
-  };
-
-  var applyNodeDefaults = function (node) {
-    node.options = node.options || {};
-    node.guide = node.guide || {};
-    node.guide.padding = _.defaults(node.guide.padding || {}, { l: 0, b: 0, r: 0, t: 0 });
-
-    node.guide.x = _.defaults(node.guide.x || {}, {
-      label: "",
-      padding: 0,
-      density: 30,
-      cssClass: "x axis",
-      scaleOrient: "bottom",
-      rotate: 0,
-      textAnchor: "middle",
-      tickPeriod: null,
-      tickFormat: null,
-      autoScale: true
-    });
-    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : { text: node.guide.x.label };
-    node.guide.x.label = _.defaults(node.guide.x.label, { padding: 32, rotate: 0, textAnchor: "middle" });
-
-    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
-
-    node.guide.y = _.defaults(node.guide.y || {}, {
-      label: "",
-      padding: 0,
-      density: 30,
-      cssClass: "y axis",
-      scaleOrient: "left",
-      rotate: 0,
-      textAnchor: "end",
-      tickPeriod: null,
-      tickFormat: null,
-      autoScale: true
-    });
-    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : { text: node.guide.y.label };
-    node.guide.y.label = _.defaults(node.guide.y.label, { padding: 32, rotate: -90, textAnchor: "middle" });
-
-    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
-
-    return node;
-  };
-
-  /* jshint ignore:start */
-  var utilsDraw = {
-    translate: translate,
-    rotate: rotate,
-    getOrientation: getOrientation,
-    fnDrawDimAxis: fnDrawDimAxis,
-    fnDrawGrid: fnDrawGrid,
-    generateColor: generateColor,
-    applyNodeDefaults: applyNodeDefaults
-  };
-  exports.utilsDraw = utilsDraw;
-});
-define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", "./formatter-registry"], function (exports, _utilsUtils, _utilsUtilsDraw, _formatterRegistry) {
-  
-
-  var utils = _utilsUtils.utils;
-  var utilsDraw = _utilsUtilsDraw.utilsDraw;
-  var FormatterRegistry = _formatterRegistry.FormatterRegistry;
-
-  var inheritProps = function (unit, root) {
-    unit.guide = unit.guide || {};
-    unit.guide.padding = unit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
-    unit = _.defaults(unit, root);
-    unit.guide = _.defaults(unit.guide, root.guide);
-    return unit;
-  };
-
-  var createSelectorPredicates = function (root) {
-    var children = root.unit || [];
-
-    var isLeaf = !root.hasOwnProperty("unit");
-    var isLeafParent = !children.some(function (c) {
-      return c.hasOwnProperty("unit");
-    });
-
-    return {
-      type: root.type,
-      isLeaf: isLeaf,
-      isLeafParent: !isLeaf && isLeafParent
-    };
-  };
-
-  var getTickFormat = function (dimType, scaleType, defaultFormats) {
-    var key = [dimType, scaleType].join(":");
-    return defaultFormats[key] || defaultFormats[dimType] || null;
-  };
-
-  var fnTraverseTree = function (specUnitRef, transformRules) {
-    var temp = utilsDraw.applyNodeDefaults(specUnitRef);
-    var root = transformRules(createSelectorPredicates(temp), temp);
-    var prop = _.omit(root, "unit");
-    (root.unit || []).forEach(function (unit) {
-      return fnTraverseTree(inheritProps(unit, prop), transformRules);
-    });
-    return root;
-  };
-
-  var SpecEngineTypeMap = {
-    DEFAULT: function (spec, meta, measurer) {
-      return function (selectorPredicates, unit) {
-        return unit;
-      };
-    },
-
-    AUTO: function (spec, meta, measurer) {
-      var xLabels = [];
-      var yLabels = [];
-      var xUnit = null;
-      var yUnit = null;
-      fnTraverseTree(spec.unit, function (selectors, unit) {
-        if (selectors.isLeaf) {
-          return unit;
-        }
-
-        if (!xUnit && unit.x) (xUnit = unit);
-        if (!yUnit && unit.y) (yUnit = unit);
-
-        if (unit.x) {
-          unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
-          var dimX = meta.dimension(unit.x);
-          unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX.dimType, dimX.scaleType, measurer.defaultFormats);
-        }
-
-        if (unit.y) {
-          unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
-          var dimY = meta.dimension(unit.y);
-          unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY.dimType, dimY.scaleType, measurer.defaultFormats);
-        }
-
-        var x = unit.guide.x.label.text;
-        if (x) {
-          xLabels.push(x);
-          unit.guide.x.label.text = "";
-        }
-
-        var y = unit.guide.y.label.text;
-        if (y) {
-          yLabels.push(y);
-          unit.guide.y.label.text = "";
-        }
-
-        return unit;
-      });
-
-      if (xUnit) {
-        xUnit.guide.x.label.text = xLabels.join(" > ");
-      }
-
-      if (yUnit) {
-        yUnit.guide.y.label.text = yLabels.join(" > ");
-      }
-
-      return function (selectorPredicates, unit) {
-        if (selectorPredicates.isLeaf) {
-          return unit;
-        }
-
-        var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
-        if (isFacetUnit) {
-          // unit is a facet!
-          unit.guide.x.cssClass += " facet-axis";
-          unit.guide.y.cssClass += " facet-axis";
-        }
-
-        var dimX = meta.dimension(unit.x);
-        var dimY = meta.dimension(unit.y);
-
-        var xScaleOptions = {
-          map: unit.guide.x.tickLabel,
-          min: unit.guide.x.tickMin,
-          max: unit.guide.x.tickMax,
-          period: unit.guide.x.tickPeriod,
-          autoScale: unit.guide.x.autoScale
-        };
-
-        var yScaleOptions = {
-          map: unit.guide.y.tickLabel,
-          min: unit.guide.y.tickMin,
-          max: unit.guide.y.tickMax,
-          period: unit.guide.y.tickPeriod,
-          autoScale: unit.guide.y.autoScale
-        };
-
-        var xValues = meta.scaleMeta(unit.x, xScaleOptions).values;
-        var yValues = meta.scaleMeta(unit.y, yScaleOptions).values;
-
-        var xIsEmptyAxis = (xValues.length === 0);
-        var yIsEmptyAxis = (yValues.length === 0);
-
-        var xAxisPadding = selectorPredicates.isLeafParent ? measurer.xAxisPadding : 0;
-        var yAxisPadding = selectorPredicates.isLeafParent ? measurer.yAxisPadding : 0;
-
-        var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== "measure");
-
-        unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
-        unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
-
-        unit.guide.x.rotate = isXVertical ? 90 : 0;
-        unit.guide.x.textAnchor = isXVertical ? "start" : unit.guide.x.textAnchor;
-
-        var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
-        var yFormatter = FormatterRegistry.get(unit.guide.y.tickFormat);
-
-        var maxXTickText = xIsEmptyAxis ? "" : (_.max(xValues, function (x) {
-          return xFormatter(x || "").toString().length;
-        }));
-
-        var maxYTickText = yIsEmptyAxis ? "" : (_.max(yValues, function (y) {
-          return yFormatter(y || "").toString().length;
-        }));
-
-        var xTickWidth = xIsEmptyAxis ? 0 : measurer.xTickWidth;
-        var yTickWidth = yIsEmptyAxis ? 0 : measurer.xTickWidth;
-
-        var defaultTickSize = { width: 0, height: 0 };
-
-        var maxXTickSize = xIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(xFormatter(maxXTickText));
-        var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
-        if (dimX.dimType !== "measure" && (maxXTickH > measurer.axisTickLabelLimit)) {
-          unit.guide.x.tickFormatLimit = measurer.axisTickLabelLimit / (maxXTickH / maxXTickText.length);
-          maxXTickH = measurer.axisTickLabelLimit;
-        }
-
-        var maxYTickSize = yIsEmptyAxis ? defaultTickSize : measurer.getAxisTickLabelSize(yFormatter(maxYTickText));
-        var maxYTickW = maxYTickSize.width;
-        if (dimY.dimType !== "measure" && (maxYTickW > measurer.axisTickLabelLimit)) {
-          unit.guide.y.tickFormatLimit = measurer.axisTickLabelLimit / (maxYTickW / maxYTickText.length);
-          maxYTickW = measurer.axisTickLabelLimit;
-        }
-
-        var xFontH = xTickWidth + maxXTickH;
-        var yFontW = yTickWidth + maxYTickW;
-
-        var xFontLabelHeight = measurer.xFontLabelHeight;
-        var yFontLabelHeight = measurer.yFontLabelHeight;
-
-        var distToXAxisLabel = measurer.distToXAxisLabel;
-        var distToYAxisLabel = measurer.distToYAxisLabel;
-
-        var densityKoeff = measurer.densityKoeff;
-
-        unit.guide.x.density = densityKoeff * (isXVertical ? maxXTickSize.height : maxXTickSize.width);
-        unit.guide.y.density = densityKoeff * maxYTickSize.height;
-
-        unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
-        unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
-
-        var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
-        var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
-
-        unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
-        unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
-
-        unit.guide.padding.b = xAxisPadding + xLabelPadding;
-        unit.guide.padding.l = yAxisPadding + yLabelPadding;
-
-        unit.guide.x.$minimalDomain = xValues.length;
-        unit.guide.y.$minimalDomain = yValues.length;
-
-        return unit;
-      };
-    }
-  };
-
-  var SpecEngineFactory = {
-    get: function (typeName, measurer) {
-      var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.DEFAULT);
-      return function (spec, meta) {
-        fnTraverseTree(spec.unit, rules(spec, meta, measurer));
-
-        var traverseFromDeep = function (root) {
-          var r;
-
-          if (!root.unit) {
-            r = { w: 0, h: 0 };
-          } else {
-            var s = traverseFromDeep(root.unit[0]);
-            var g = root.guide;
-            var xmd = g.x.$minimalDomain || 1;
-            var ymd = g.y.$minimalDomain || 1;
-            var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
-            var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
-
-            r = {
-              w: maxW + g.padding.l + g.padding.r,
-              h: maxH + g.padding.t + g.padding.b
-            };
-          }
-
-          return r;
-        };
-
-        var s = traverseFromDeep(spec.unit);
-
-        spec.recommendedWidth = s.w;
-        spec.recommendedHeight = s.h;
-
-        return spec;
-      };
-    }
-
-  };
-
-  exports.SpecEngineFactory = SpecEngineFactory;
-});
-define('matrix',["exports"], function (exports) {
-  
-
-  var TMatrix = (function () {
-    var Matrix = function (r, c) {
-      var args = _.toArray(arguments);
-      var cube;
-
-      if (_.isArray(args[0])) {
-        cube = args[0];
-      } else {
-        cube = _.times(r, function () {
-          return _.times(c, function () {
-            return null;
-          });
-        });
-      }
-
-      this.cube = cube;
-    };
-
-    Matrix.prototype = {
-      iterate: function (iterator) {
-        var cube = this.cube;
-        _.each(cube, function (row, ir) {
-          _.each(row, function (colValue, ic) {
-            iterator(ir, ic, colValue);
-          });
-        });
-        return this;
-      },
-
-      getRC: function (r, c) {
-        return this.cube[r][c];
-      },
-
-      setRC: function (r, c, val) {
-        this.cube[r][c] = val;
-        return this;
-      },
-
-      sizeR: function () {
-        return this.cube.length;
-      },
-
-      sizeC: function () {
-        var row = this.cube[0] || [];
-        return row.length;
-      }
-    };
-
-    return Matrix;
-  })();
-
-  exports.TMatrix = TMatrix;
-});
-define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", "./matrix"], function (exports, _utilsUtils, _utilsUtilsDraw, _matrix) {
-  
-
-  var _this = this;
-  var utils = _utilsUtils.utils;
-  var utilsDraw = _utilsUtilsDraw.utilsDraw;
-  var TMatrix = _matrix.TMatrix;
-
-  var specUnitSummary = function (spec, boxOpt) {
-    var box = boxOpt ? boxOpt : { depth: -1, paddings: [] };
-    var p = (spec.guide || {}).padding || { l: 0, b: 0, r: 0, t: 0 };
-    box.depth += 1;
-    box.paddings.unshift({ l: p.l, b: p.b, r: p.r, t: p.t });
-
-    if (spec.unit && spec.unit.length) {
-      specUnitSummary(spec.unit[0], box);
-    }
-
-    return box;
-  };
-
-  var fnDefaultLayoutEngine = function (rootNode, domainMixin) {
-    var fnTraverseLayout = function (node) {
-      if (!node.$matrix) {
-        return node;
-      }
-
-      var options = node.options;
-      var padding = node.guide.padding;
-
-      var innerW = options.width - (padding.l + padding.r);
-      var innerH = options.height - (padding.t + padding.b);
-
-      var nRows = node.$matrix.sizeR();
-      var nCols = node.$matrix.sizeC();
-
-      var cellW = innerW / nCols;
-      var cellH = innerH / nRows;
-
-      var calcLayoutStrategy;
-      if (node.guide.split) {
-        calcLayoutStrategy = {
-          calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-            return cellHeight / lenIndex;
-          }),
-          calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-            return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex;
-          })
-        };
-      } else {
-        calcLayoutStrategy = {
-          calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-            return cellHeight;
-          }),
-          calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-            return rowIndex * cellH;
-          })
-        };
-      }
-
-      node.$matrix.iterate(function (iRow, iCol, subNodes) {
-        var len = subNodes.length;
-
-        _.each(subNodes, function (node, i) {
-          node.options = {
-            width: cellW,
-            left: iCol * cellW,
-            height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
-            top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
-          };
-          fnTraverseLayout(node);
-        });
-      });
-
-      return node;
-    };
-
-    return fnTraverseLayout(rootNode);
-  };
-
-  var LayoutEngineTypeMap = {
-    DEFAULT: fnDefaultLayoutEngine,
-
-    EXTRACT: function (rootNode, domainMixin) {
-      var traverse = (function (rootNodeMatrix, depth, rule) {
-        var matrix = rootNodeMatrix;
-
-        var rows = matrix.sizeR();
-        var cols = matrix.sizeC();
-
-        matrix.iterate(function (r, c, subNodes) {
-          subNodes.forEach(function (unit) {
-            return rule(unit, {
-              firstRow: (r === 0),
-              firstCol: (c === 0),
-              lastRow: (r === (rows - 1)),
-              lastCol: (c === (cols - 1)),
-              depth: depth
-            });
-          });
-
-          subNodes.filter(function (unit) {
-            return unit.$matrix;
-          }).forEach(function (unit) {
-            unit.$matrix = new TMatrix(unit.$matrix.cube);
-            traverse(unit.$matrix, depth - 1, rule);
-          });
-        });
-      });
-
-      var coordNode = utils.clone(rootNode);
-
-      var coordMatrix = new TMatrix([[[coordNode]]]);
-
-      var box = specUnitSummary(coordNode);
-
-      var globPadd = box.paddings.reduce(function (memo, item) {
-        memo.l += item.l;
-        memo.b += item.b;
-        return memo;
-      }, { l: 0, b: 0 });
-
-      var temp = utils.clone(globPadd);
-      var axesPadd = box.paddings.reverse().map(function (item) {
-        item.l = temp.l - item.l;
-        item.b = temp.b - item.b;
-        temp = { l: item.l, b: item.b };
-        return item;
-      });
-      box.paddings = axesPadd.reverse();
-
-      var wrapperNode = utilsDraw.applyNodeDefaults({
-        type: "COORDS.RECT",
-        options: utils.clone(rootNode.options),
-        $matrix: new TMatrix([[[coordNode]]]),
-        guide: {
-          padding: {
-            l: globPadd.l,
-            b: globPadd.b,
-            r: 0,
-            t: 0
-          }
-        }
-      });
-
-      traverse(coordMatrix, box.depth, function (unit, selectorPredicates) {
-        var depth = selectorPredicates.depth;
-
-        unit.guide.x.hide = !selectorPredicates.lastRow;
-        unit.guide.y.hide = !selectorPredicates.firstCol;
-
-        unit.guide.x.padding = (box.paddings[depth].b + unit.guide.x.padding);
-        unit.guide.y.padding = (box.paddings[depth].l + unit.guide.y.padding);
-
-        var d = (depth > 1) ? 0 : 8;
-        unit.guide.padding.l = d;
-        unit.guide.padding.b = d;
-        unit.guide.padding.r = d;
-        unit.guide.padding.t = d;
-
-        unit.guide.showGridLines = (depth > 1) ? "" : "xy";
-        return unit;
-      });
-
-      return fnDefaultLayoutEngine(wrapperNode, domainMixin);
-    }
-  };
-
-  var LayoutEngineFactory = {
-    get: function (typeName) {
-      return (LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap.DEFAULT).bind(_this);
-    }
-
-  };
-
-  exports.LayoutEngineFactory = LayoutEngineFactory;
-});
-//plugins
-/** @class
- * @extends Plugin */
-define('plugins',["exports"], function (exports) {
-  
-
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
-  var Plugins = (function () {
-    var Plugins = function Plugins(plugins) {
-      this._plugins = plugins;
-    };
-
-    _classProps(Plugins, null, {
-      _call: {
-        writable: true,
-        value: function (name, args) {
-          for (var i = 0; i < this._plugins.length; i++) {
-            if (typeof (this._plugins[i][name]) == "function") {
-              this._plugins[i][name].apply(this._plugins[i], args);
-            }
-          }
-        }
-      },
-      render: {
-        writable: true,
-        value: function (context, tools) {
-          this._call("render", arguments);
-        }
-      },
-      click: {
-        writable: true,
-        value: function (context, tools) {
-          this._call("click", arguments);
-        }
-      },
-      mouseover: {
-        writable: true,
-        value: function (context, tools) {
-          this._call("mouseover", arguments);
-        }
-      },
-      mouseout: {
-        writable: true,
-        value: function (context, tools) {
-          this._call("mouseout", arguments);
-        }
-      },
-      mousemove: {
-        writable: true,
-        value: function (context, tools) {
-          this._call("mousemove", arguments);
-        }
-      }
-    });
-
-    return Plugins;
-  })();
-
-  var propagateDatumEvents = function (plugins) {
-    return function () {
-      this.on("click", function (d) {
-        plugins.click(new ElementContext(d), new ChartElementTools(d3.select(this)));
-      }).on("mouseover", function (d) {
-        plugins.mouseover(new ElementContext(d), new ChartElementTools(d3.select(this)));
-      }).on("mouseout", function (d) {
-        plugins.mouseout(new ElementContext(d), new ChartElementTools(d3.select(this)));
-      }).on("mousemove", function (d) {
-        plugins.mousemove(new ElementContext(d), new ChartElementTools(d3.select(this)));
-      });
-    };
-  };
-
-  var ChartElementTools = function ChartElementTools(element) {
-    this.element = element;
-  };
-
-  var RenderContext = function RenderContext(dataSource) {
-    this.data = dataSource;
-  };
-
-  var ElementContext = function ElementContext(datum) {
-    this.datum = datum;
-  };
-
-  var ChartTools = (function () {
-    var ChartTools = function ChartTools(layout, mapper) {
-      this.svg = layout.svg;
-      this.html = layout.html;
-      this.mapper = mapper;
-    };
-
-    _classProps(ChartTools, null, {
-      elements: {
-        writable: true,
-        value: function () {
-          return this.svg.selectAll(".i-role-datum");
-        }
-      }
-    });
-
-    return ChartTools;
-  })();
-
-  exports.propagateDatumEvents = propagateDatumEvents;
-  exports.Plugins = Plugins;
-});
-define('const',["exports"], function (exports) {
-  
-
-  var CSS_PREFIX = exports.CSS_PREFIX = "graphical-report__";
-});
-define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const"], function (exports, _dslReader, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const) {
+define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry"], function (exports, _dslReader, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
@@ -1893,11 +1987,14 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
   var utils = _utilsUtils.utils;
   var utilsDom = _utilsUtilsDom.utilsDom;
   var CSS_PREFIX = _const.CSS_PREFIX;
+  var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
+  var UnitsRegistry = _unitsRegistry.UnitsRegistry;
   var Plot = (function () {
     var Plot = function Plot(config) {
       var chartConfig = this.convertConfig(config);
 
       this.config = _.defaults(chartConfig, {
+        excludeNull: true,
         spec: null,
         data: [],
         plugins: []
@@ -1907,7 +2004,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
 
       this.plugins = this.config.plugins;
       this.spec = this.config.spec;
-      this.data = this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data);
+      this.data = this.config.excludeNull ? this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data) : this.config.data;
 
       //plugins
       this._plugins = new Plugins(this.config.plugins);
@@ -1919,6 +2016,9 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
       });
 
       this.settings = localSettings;
+
+      this.settings.specEngine = this.config.specEngine || this.settings.specEngine;
+      this.settings.layoutEngine = this.config.layoutEngine || this.settings.layoutEngine;
     };
 
     _classProps(Plot, null, {
@@ -1942,46 +2042,93 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
 
           containerNode.innerHTML = "";
 
-          var specEngineId = this.config.specEngine || "AUTO";
-          var specEngine = SpecEngineFactory.get(specEngineId, this.settings);
+          var domainMixin = new UnitDomainMixin(this.spec.dimensions, this.data);
 
-          var reader = new DSLReader(this.spec, this.data, specEngine);
+          var specEngine = SpecEngineFactory.get(this.settings.specEngine, this.settings);
 
-          var xGraph = reader.buildGraph();
+          var fullSpec = specEngine(this.spec, domainMixin.mix({}));
 
-          var useHScroll = false;
-          if (size.width < reader.spec.recommendedWidth) {
-            size.width = reader.spec.recommendedWidth;
-            useHScroll = true;
-          }
+          var traverseFromDeep = function (root) {
+            var r;
 
-          var useVScroll = false;
-          if (size.height < reader.spec.recommendedHeight) {
-            size.height = reader.spec.recommendedHeight;
-            useVScroll = true;
-          }
+            if (!root.unit) {
+              r = { w: 0, h: 0 };
+            } else {
+              var s = traverseFromDeep(root.unit[0]);
+              var g = root.guide;
+              var xmd = g.x.$minimalDomain || 1;
+              var ymd = g.y.$minimalDomain || 1;
+              var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
+              var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
+
+              r = {
+                w: maxW + g.padding.l + g.padding.r,
+                h: maxH + g.padding.t + g.padding.b
+              };
+            }
+
+            return r;
+          };
+
+          var optimalSize = traverseFromDeep(fullSpec.unit);
+          var recommendedWidth = optimalSize.w;
+          var recommendedHeight = optimalSize.h;
 
           var scrollSize = utilsDom.getScrollbarWidth();
-          if (useHScroll) {
-            size.height -= scrollSize;
-          }
 
-          if (useVScroll) {
-            size.width -= scrollSize;
-          }
+          var deltaW = (size.width - recommendedWidth);
+          var deltaH = (size.height - recommendedHeight);
 
-          var layoutEngineId = this.config.layoutEngine || "EXTRACT";
-          var layoutEngine = LayoutEngineFactory.get(layoutEngineId);
+          var screenW = (deltaW >= 0) ? size.width : recommendedWidth;
+          var scrollW = (deltaH >= 0) ? 0 : scrollSize;
 
-          var layout = reader.calcLayout(xGraph, layoutEngine, size);
+          var screenH = (deltaH >= 0) ? size.height : recommendedHeight;
+          var scrollH = (deltaW >= 0) ? 0 : scrollSize;
 
-          var svgContainer = container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height);
+          size.height = screenH - scrollH;
+          size.width = screenW - scrollW;
 
-          var canvas = reader.renderGraph(layout, svgContainer);
+          // optimize full spec depending on size
+          var localSettings = this.settings;
+          var traverseToDeep = function (root, size) {
+            var mdx = root.guide.x.$minimalDomain || 1;
+            var mdy = root.guide.y.$minimalDomain || 1;
+
+            var perTickX = size.width / mdx;
+            var perTickY = size.height / mdy;
+
+            var densityKoeff = localSettings.densityKoeff;
+            if (root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+              root.guide.x.rotate = 0;
+              root.guide.x.textAnchor = "middle";
+              var s = Math.min(localSettings.axisTickLabelLimit, root.guide.x.$maxTickTextW);
+              var xDelta = 0 - s + root.guide.x.$maxTickTextH;
+              root.guide.x.label.padding = root.guide.x.label.padding + xDelta;
+              root.guide.padding.b = root.guide.padding.b + xDelta;
+            }
+
+            var newSize = {
+              width: perTickX,
+              height: perTickY
+            };
+
+            if (root.unit) {
+              traverseToDeep(root.unit[0], newSize);
+            }
+          };
+
+          traverseToDeep(fullSpec.unit, size);
+
+          var reader = new DSLReader(domainMixin, UnitsRegistry);
+
+          var logicXGraph = reader.buildGraph(fullSpec);
+          var layoutGraph = LayoutEngineFactory.get(this.settings.layoutEngine)(logicXGraph);
+          var renderGraph = reader.calcLayout(layoutGraph, size);
+          var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height));
 
           //plugins
-          canvas.selectAll(".i-role-datum").call(propagateDatumEvents(this._plugins));
-          this._plugins.render(canvas);
+          svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this._plugins));
+          this._plugins.render(svgXElement);
         }
       },
       _autoDetectDimensions: {
@@ -2043,8 +2190,8 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
           var fields = [];
           Object.keys(dimensions).forEach(function (k) {
             var d = dimensions[k];
-            if (d.hasNull && (d.type === "measure")) {
-              // rule: exclude null values of "measure" type
+            if ((!d.hasOwnProperty("hasNull") || d.hasNull) && ((d.type === "measure") || (d.scale === "period"))) {
+              // rule: exclude null values of "measure" type or "period" scale
               fields.push(k);
             }
           });
@@ -2978,8 +3125,12 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       }
     },
     globalSettings: {
+      specEngine: "AUTO",
+      layoutEngine: "EXTRACT",
       getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
       axisTickLabelLimit: 100,
+      xTickWordWrapLinesLimit: 2,
+      yTickWordWrapLinesLimit: 3,
       xTickWidth: 6 + 3,
       distToXAxisLabel: 20,
       distToYAxisLabel: 20,
@@ -2989,8 +3140,17 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       yFontLabelHeight: 15,
       densityKoeff: 2.2,
       defaultFormats: {
-        measure: "s",
-        "measure:time": "x-time-auto"
+        measure: "x-num-auto",
+        "measure:time": "x-time-auto",
+        "measure:time:year": "x-time-year",
+        "measure:time:quarter": "x-time-quarter",
+        "measure:time:month": "x-time-month",
+        "measure:time:week": "x-time-week",
+        "measure:time:day": "x-time-day",
+        "measure:time:hour": "x-time-hour",
+        "measure:time:min": "x-time-min",
+        "measure:time:sec": "x-time-sec",
+        "measure:time:ms": "x-time-ms"
       }
     }
   };
