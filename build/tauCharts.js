@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.10 - 2014-11-20
+/*! tauCharts - v0.1.11 - 2014-11-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -832,35 +832,50 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
     });
   };
 
-  var wrapText = function (textString, widthLimit, linesLimit) {
-    textString.each(function () {
-      var textD3 = d3.select(this), tokens = textD3.text().split(/\s+/).reverse(), lineHeight = 1.1, // ems
-      y = textD3.attr("y"), dy = parseFloat(textD3.attr("dy"));
+  var wrapText = function (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) {
+    var addLine = function (targetD3, text, lineHeight, x, y, dy, lineNumber) {
+      var dyNew = (lineNumber * lineHeight) + dy;
+      var nodeX = targetD3.append("tspan").attr("x", x).attr("y", y).attr("dy", dyNew + "em").text(text);
+      return nodeX;
+    };
+
+    textNode.each(function () {
+      var textD3 = d3.select(this), tokens = textD3.text().split(/\s+/), lineHeight = 1.1, // ems
+      x = textD3.attr("x"), y = textD3.attr("y"), dy = parseFloat(textD3.attr("dy"));
 
       textD3.text(null);
-      var tspan = textD3.append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+      var tempSpan = addLine(textD3, null, lineHeight, x, y, dy, 0);
 
-      var line = [];
-      var word;
-      var lineNumber = 0;
-      while ((lineNumber < linesLimit) && (word = tokens.pop())) {
-        line.push(word);
-        tspan.text(line.join(" "));
-        if (tspan.node().getComputedTextLength() > widthLimit) {
-          line.pop();
+      var stopReduce = false;
+      var lines = tokens.reduce(function (memo, next) {
+        if (stopReduce) return memo;
 
-          var str = line.join(" ");
-          str += ((lineNumber === (linesLimit - 1)) ? "..." : "");
+        var isLimit = memo.length === linesLimit;
+        var last = memo[memo.length - 1];
+        var over = tempSpan.text(last + next).node().getComputedTextLength() > widthLimit;
 
-          tspan.text(str);
-
-          // start new line
-          ++lineNumber;
-          line = [word];
-          var dyNew = lineNumber * lineHeight + dy;
-          tspan = textD3.append("tspan").attr("x", 0).attr("y", y).attr("dy", dyNew + "em");
+        if (over && isLimit) {
+          memo[memo.length - 1] = last + "...";
+          stopReduce = true;
         }
-      }
+
+        if (over && !isLimit) {
+          memo.push(next);
+        }
+
+        if (!over) {
+          memo[memo.length - 1] = last + " " + next;
+        }
+
+        return memo;
+      }, [""]);
+
+      y = isY ? (-1 * (lines.length - 1) * Math.floor(tickLabelFontHeight * 0.5)) : y;
+      lines.forEach(function (text, i) {
+        return addLine(textD3, text, lineHeight, x, y, dy, i);
+      });
+
+      tempSpan.remove();
     });
   };
 
@@ -886,6 +901,8 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
   };
 
   var decorateTickLabel = function (nodeScale, x) {
+    var isHorizontal = ("h" === getOrientation(x.guide.scaleOrient));
+
     var angle = x.guide.rotate;
 
     var ticks = nodeScale.selectAll(".tick text");
@@ -893,6 +910,12 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
 
     if (angle === 90) {
       ticks.attr("x", 9).attr("y", 0);
+    }
+
+    if (x.guide.tickFormatWordWrap) {
+      ticks.call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines, x.guide.$maxTickTextH, !isHorizontal);
+    } else {
+      ticks.call(cutText, x.guide.tickFormatWordWrapLimit);
     }
   };
 
@@ -908,12 +931,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
       decorateAxisTicks(nodeScale, x, size);
       decorateTickLabel(nodeScale, x);
       decorateAxisLabel(nodeScale, x);
-
-      if (x.guide.tickFormatWordWrap) {
-        nodeScale.selectAll(".tick text").call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines);
-      } else {
-        nodeScale.selectAll(".tick text").call(cutText, x.guide.tickFormatWordWrapLimit);
-      }
     }
   };
 
@@ -1238,21 +1255,21 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         }));
 
         var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
-        var yTickWidth = yIsEmptyAxis ? 0 : settings.xTickWidth;
+        var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
 
         var defaultTickSize = { width: 0, height: 0 };
 
-        unit.guide.x.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
-        unit.guide.y.tickFormatWordWrapLimit = settings.axisTickLabelLimit;
+        unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
+        unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
         var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
         var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
-        if (dimX.dimType !== "measure" && (maxXTickH > settings.axisTickLabelLimit)) {
-          maxXTickH = settings.axisTickLabelLimit;
+        if (dimX.dimType !== "measure" && (maxXTickH > settings.xAxisTickLabelLimit)) {
+          maxXTickH = settings.xAxisTickLabelLimit;
         }
 
-        if (!isXVertical && (maxXTickSize.width > settings.axisTickLabelLimit)) {
+        if (!isXVertical && (maxXTickSize.width > settings.xAxisTickLabelLimit)) {
           unit.guide.x.tickFormatWordWrap = true;
           unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
           maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
@@ -1260,8 +1277,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
         var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
         var maxYTickW = maxYTickSize.width;
-        if (dimY.dimType !== "measure" && (maxYTickW > settings.axisTickLabelLimit)) {
-          maxYTickW = settings.axisTickLabelLimit;
+        if (dimY.dimType !== "measure" && (maxYTickW > settings.yAxisTickLabelLimit)) {
+          maxYTickW = settings.yAxisTickLabelLimit;
           unit.guide.y.tickFormatWordWrap = true;
           unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
         }
@@ -1275,10 +1292,13 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var distToXAxisLabel = settings.distToXAxisLabel;
         var distToYAxisLabel = settings.distToYAxisLabel;
 
-        var densityKoeff = settings.densityKoeff;
+        var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
+        unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
 
-        unit.guide.x.density = densityKoeff * Math.min(settings.axisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
-        unit.guide.y.density = densityKoeff * Math.min(settings.axisTickLabelLimit, maxYTickSize.height);
+        var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
+        var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
+        var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
+        unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
 
         unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
         unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
@@ -2097,11 +2117,11 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
             var perTickX = size.width / mdx;
             var perTickY = size.height / mdy;
 
-            var densityKoeff = localSettings.densityKoeff;
+            var densityKoeff = localSettings.xMinimumDensityKoeff;
             if (root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
               root.guide.x.rotate = 0;
               root.guide.x.textAnchor = "middle";
-              var s = Math.min(localSettings.axisTickLabelLimit, root.guide.x.$maxTickTextW);
+              var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
               var xDelta = 0 - s + root.guide.x.$maxTickTextH;
               root.guide.x.label.padding = root.guide.x.label.padding + xDelta;
               root.guide.padding.b = root.guide.padding.b + xDelta;
@@ -3128,17 +3148,30 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       specEngine: "AUTO",
       layoutEngine: "EXTRACT",
       getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
-      axisTickLabelLimit: 100,
+
+      xAxisTickLabelLimit: 100,
+      yAxisTickLabelLimit: 100,
+
       xTickWordWrapLinesLimit: 2,
       yTickWordWrapLinesLimit: 3,
+
       xTickWidth: 6 + 3,
+      yTickWidth: 6 + 3,
+
       distToXAxisLabel: 20,
       distToYAxisLabel: 20,
+
       xAxisPadding: 20,
       yAxisPadding: 20,
+
       xFontLabelHeight: 15,
       yFontLabelHeight: 15,
-      densityKoeff: 2.2,
+
+      xDensityKoeff: 2.2,
+      xMinimumDensityKoeff: 1.1,
+      yDensityKoeff: 2.2,
+      yMinimumDensityKoeff: 1.1,
+
       defaultFormats: {
         measure: "x-num-auto",
         "measure:time": "x-time-auto",
