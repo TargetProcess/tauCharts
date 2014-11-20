@@ -19,60 +19,74 @@
     function tooltip(fields) {
         return {
             template: [
-                '<div>',
                 '<div class="i-role-content tooltip__content"></div>',
                 '<div class="i-role-exclude tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
-                '</div>']
+                ]
                 .join(''),
+            templateItem: [
+                '<div class="tooltip__list__item">',
+                '<div class="tooltip__list__elem"><%=label%></div>',
+                '<div class="tooltip__list__elem"><%=value%></div>',
+                '</div>'
+            ].join(''),
             init: function (chart) {
                 this._chart = chart;
                 this._dataFields = fields;
                 this._interval = null;
-                this._tooltip = chart.addBallon({spacing: 10});
-                var dom = this._tooltip.getDom();
-                dom.addEventListener('mouseover', function () {
-                    this.needHide = false;
-                    clearTimeout(this.interval);
+                this._templateItem = _.template(this.templateItem);
+                this._tooltip = chart.addBallon({spacing: 5, auto: true});
+                this._elementTooltip = this._tooltip.getDom();
+                var elementTooltip = this._elementTooltip;
+                elementTooltip.addEventListener('mouseover', function () {
+                    clearTimeout(this._interval);
                 }.bind(this), false);
-                dom.addEventListener('mouseleave', function () {
-                    this.needHide = true;
-                    this._tooltip.hide();
+                elementTooltip.addEventListener('mouseleave', function () {
+                    this._hide();
                 }.bind(this), false);
-                dom.insertAdjacentHTML('afterbegin', this.template);
-                dom.addEventListener('click', function (e) {
+                elementTooltip.addEventListener('click', function (e) {
                     var target = e.target;
-                    if(target.classList.contains('i-role-exclude')) {
+                    if (target.classList.contains('i-role-exclude')) {
                         this._exclude();
+                        this._hide();
                     }
                 }.bind(this), false);
-                this.needHide = true;
+                elementTooltip.insertAdjacentHTML('afterbegin', this.template);
             },
-            render:function(data) {
-
+            render: function (data) {
+                return this._dataFields.map(function (field) {
+                    return this._templateItem({label: field, value: data[field]});
+                }, this).join('');
             },
-            _exclude:function() {
+            _exclude: function () {
                 var dataChart = this._chart.getData();
                 this._chart.setData(_.without(dataChart, this._currentElement));
             },
             onElementMouseOver: function (chart, data) {
-                //TODO: this tooltip jumps a bit, need to be fixed
-                var text = '';
-                for (var i = this._dataFields.length - 1; i >= 0; i--) {
-                    var field = this._dataFields[i];
-                    text += '<p class="tooltip-' + field + '"><em>' + field + ':</em> ' + data.elementData[field];
-                }
-                text += '</p>';
-                this._tooltip.getDom().querySelectorAll('.i-role-content')[0].innerHTML = text;
-                this._tooltip.show(data.element).updateSize();
                 clearInterval(this._interval);
+                if (data.element === this._boundElement) {
+                    return;
+                }
+                this._boundElement = data.element;
+                this._elementTooltip.querySelectorAll('.i-role-content')[0].innerHTML = this.render(data.elementData);
+                this._show();
                 this._currentElement = data.elementData;
             },
             onElementMouseOut: function () {
+                this._hide();
+            },
+            _show:function() {
+                this._tooltip.show();
+                var el = d3.mouse(this._elementTooltip.parentNode);
+                this._tooltip.position(el[0], el[1]).updateSize();
+            },
+            _hide: function () {
                 this._interval = setTimeout(function () {
-                    if (this.needHide) {
-                        this._tooltip.hide();
-                    }
+                    this._boundElement = null;
+                    this._tooltip.hide();
                 }.bind(this), 300);
+            },
+            destroy: function () {
+                this._tooltip.destroy();
             }
         };
 

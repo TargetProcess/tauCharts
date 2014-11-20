@@ -6,16 +6,17 @@
   font-family: OpenSans, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
   background: rgba(255, 255, 255, 0.9);
+  border-radius: 3px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
-.tooltip:before {
+/*.tooltip:before {
   content: '';
   display: block;
   width: 0;
   height: 0;
   position: absolute;
   border: solid transparent;
-}
+}*/
 .tooltip.bottom:before,
 .tooltip.bottom-right:before,
 .tooltip.bottom-left:before {
@@ -54,6 +55,7 @@
   padding: 15px 15px 10px 15px;
 }
 .tooltip__exclude {
+  cursor: pointer;
   padding: 0 15px;
   line-height: 26px;
   border-top: 1px solid #dde2e7;
