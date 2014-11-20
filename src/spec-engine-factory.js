@@ -219,8 +219,8 @@ var SpecEngineTypeMap = {
 
             if (!isXVertical && (maxXTickSize.width > settings.axisTickLabelLimit)) {
                 unit.guide.x.tickFormatWordWrap = true;
-                unit.guide.x.tickFormatWordWrapLines = 2;
-                maxXTickH = 2 * maxXTickSize.height;
+                unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
+                maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
             }
 
 
@@ -229,7 +229,7 @@ var SpecEngineTypeMap = {
             if (dimY.dimType !== 'measure' && (maxYTickW > settings.axisTickLabelLimit)) {
                 maxYTickW = settings.axisTickLabelLimit;
                 unit.guide.y.tickFormatWordWrap = true;
-                unit.guide.y.tickFormatWordWrapLines = 3;
+                unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
             }
 
 

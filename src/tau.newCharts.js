@@ -38,6 +38,8 @@ var api = {
         layoutEngine: 'EXTRACT',
         getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
         axisTickLabelLimit: 100,
+        xTickWordWrapLinesLimit: 2,
+        yTickWordWrapLinesLimit: 3,
         xTickWidth: 6 + 3,
         distToXAxisLabel: 20,
         distToYAxisLabel: 20,

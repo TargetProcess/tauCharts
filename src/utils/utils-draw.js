@@ -174,6 +174,18 @@ var fnDrawGrid = function (node, H, W) {
             var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
 
             decorateAxisTicks(xGridLines, x, W);
+
+            var firstXGridLine = xGridLines.select('g.tick');
+            if (firstXGridLine.attr('transform') !== 'translate(0,0)') {
+                var zeroNode = firstXGridLine.node().cloneNode(true);
+                gridLines.node().appendChild(zeroNode);
+                d3.select(zeroNode)
+                    .attr('class', 'border')
+                    .attr('transform', translate(0, 0))
+                    .select('line')
+                    .attr('x1', 0)
+                    .attr('x2', 0);
+            }
         }
 
         if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {

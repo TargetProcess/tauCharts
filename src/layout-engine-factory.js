@@ -97,7 +97,7 @@ var LayoutEngineTypeMap = {
             unit.guide.x.padding = (box.paddings[depth].b + unit.guide.x.padding);
             unit.guide.y.padding = (box.paddings[depth].l + unit.guide.y.padding);
 
-            var d = (depth > 1) ? 0 : 8;
+            var d = (depth > 1) ? 0 : 10;
             unit.guide.padding.l = d;
             unit.guide.padding.b = d;
             unit.guide.padding.r = d;

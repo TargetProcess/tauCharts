@@ -60,6 +60,8 @@ define(function (require) {
                 };
             },
             axisTickLabelLimit: 100,
+            xTickWordWrapLinesLimit: 2,
+            yTickWordWrapLinesLimit: 3,
             xTickWidth: 9, // 6px tick mark + 3px margin to tick text
             distToXAxisLabel: 20,
             distToYAxisLabel: 20,
