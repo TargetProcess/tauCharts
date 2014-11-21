@@ -21,7 +21,7 @@ define(function (require) {
      });
      return childCoords;
      });
-     return coords;
+     return coords[0];
      }*/
 
     var describePlot = testUtils.describePlot;
@@ -121,19 +121,19 @@ define(function (require) {
 
                     [
                         {
-                            "x": "342.5",
+                            "x": "340.5",
                             "y": "666.6666666666666"
                         },
                         {
-                            "x": "285.5",
+                            "x": "283.5",
                             "y": "399.99999999999994"
                         },
                         {
-                            "x": "-0.5",
+                            "x": "-2.5",
                             "y": "133.33333333333326"
                         },
                         {
-                            "x": "799.5",
+                            "x": "797.5",
                             "y": "133.33333333333326"
                         }
                     ]
@@ -276,19 +276,19 @@ define(function (require) {
                     [
                         {
                             "x": "0",
-                            "y": "456.5"
+                            "y": "454.5"
                         },
                         {
                             "x": "0",
-                            "y": "513.5"
+                            "y": "511.5"
                         },
                         {
                             "x": "0",
-                            "y": "799.5"
+                            "y": "797.5"
                         },
                         {
                             "x": "0",
-                            "y": "-0.5"
+                            "y": "-2.5"
                         }
                     ]
 
@@ -296,6 +296,7 @@ define(function (require) {
             });
         }
     );
+
     describePlot(
         "ELEMENT.INTERVAL.FLIP WITH TWO CATEGORICAL AXIS",
         {
@@ -345,4 +346,131 @@ define(function (require) {
         }
     );
 
+    var dataWithDate = [
+        {
+            "createDate": new Date("2014-09-02T21:00:00.000Z"),
+            "count": 123
+        },
+        {
+            "createDate": new Date("2014-09-29T21:00:00.000Z"),
+            "count": 34
+        },
+        {
+            "createDate": new Date("2014-10-13T21:00:00.000Z"),
+            "count": 2
+        }
+    ];
+
+    describePlot(
+        "ELEMENT.INTERVAL WITH TWO ORDER AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'createDate',
+                y: 'count',
+                "dimensions": {
+                    "createDate": {
+                        "type": "order",
+                        "scale": "period"
+                    },
+                    "count": {
+                        "type": "measure"
+                    }
+                },
+                guide: {
+                    "x": {
+                        "label": "Create Date",
+                        "autoScale": true,
+                        "tickPeriod": "day"
+                    }
+                },
+                unit: [
+                    {
+                        type: 'ELEMENT.INTERVAL'
+                    }
+                ]
+            }
+        },
+        dataWithDate,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
+
+
+                    [
+                        {
+                            "x": "-200",
+                            "y": "43"
+                        },
+                        {
+                            "x": "326.82926829268297",
+                            "y": "591"
+                        },
+                        {
+                            "x": "600",
+                            "y": "788"
+                        }
+                    ]
+
+
+                ]);
+            });
+        }
+    );
+
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH TWO ORDER AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                y: 'createDate',
+                x: 'count',
+                "dimensions": {
+                    "createDate": {
+                        "type": "order",
+                        "scale": "period"
+                    },
+                    "count": {
+                        "type": "measure"
+                    }
+                },
+                guide: {
+                    "y": {
+                        "label": "Create Date",
+                        "autoScale": true,
+                        "tickPeriod": "day"
+                    }
+                },
+                unit: [
+                    {
+                        type: 'ELEMENT.INTERVAL',
+                        flip:true
+                    }
+                ]
+            }
+        },
+        dataWithDate,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
+                    [
+                        {
+                            "x": "0",
+                            "y": "600"
+                        },
+                        {
+                            "x": "0",
+                            "y": "73.17073170731703"
+                        },
+                        {
+                            "x": "0",
+                            "y": "-200"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
 });

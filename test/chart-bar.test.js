@@ -19,7 +19,7 @@ define(function(require){
             });
             assert.equal(schemes.bar.errors(bar.config.spec), false,'spec right');
             assert.equal(bar.config.spec.unit.unit[0].flip, false,'spec right');
-        })
+        });
     });
 
 });

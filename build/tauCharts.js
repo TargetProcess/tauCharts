@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.11 - 2014-11-20
+/*! tauCharts - v0.1.12 - 2014-11-21
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -2758,11 +2758,11 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   var getSizesParams = function (params) {
     var tickWidth, intervalWidth, offsetCategory;
     if (isMeasure(params.dim)) {
-      tickWidth = 1;
-      intervalWidth = 1;
+      tickWidth = 5;
+      intervalWidth = 5;
       offsetCategory = 0;
     } else {
-      tickWidth = params.size / (params.domain(params.dim.scaleDim).length);
+      tickWidth = params.size / (params.domain().length);
       intervalWidth = tickWidth / (params.categories.length + 1);
       offsetCategory = intervalWidth;
     }
@@ -2790,7 +2790,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
     var xScale = options.xScale, yScale = options.yScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate;
     if (node.flip) {
       var _ref = getSizesParams({
-        domain: node.domain,
+        domain: yScale.domain,
         dim: node.y,
         categories: categories,
         size: options.height
@@ -2820,7 +2820,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       };
     } else {
       var _ref2 = getSizesParams({
-        domain: node.domain,
+        domain: xScale.domain,
         dim: node.x,
         categories: categories,
         size: options.width

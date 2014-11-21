@@ -8,11 +8,11 @@ var isMeasure = function (dim) {
 var getSizesParams = function (params) {
     var tickWidth, intervalWidth, offsetCategory;
     if (isMeasure(params.dim)) {
-        tickWidth = 1;
-        intervalWidth = 1;
+        tickWidth = 5;
+        intervalWidth = 5;
         offsetCategory = 0;
     } else {
-        tickWidth = params.size / (params.domain(params.dim.scaleDim).length);
+        tickWidth = params.size / (params.domain().length);
         intervalWidth = tickWidth / (params.categories.length + 1);
         offsetCategory = intervalWidth;
     }
@@ -48,7 +48,7 @@ var interval = function (node) {
     if (node.flip) {
         /* jshint ignore:start */
         var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
-            domain: node.domain,
+            domain: yScale.domain,
             dim: node.y,
             categories: categories,
             size: options.height
@@ -63,7 +63,7 @@ var interval = function (node) {
     } else {
         /* jshint ignore:start */
         var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
-            domain: node.domain,
+            domain: xScale.domain,
             dim: node.x,
             categories: categories,
             size: options.width
