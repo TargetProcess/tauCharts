@@ -897,7 +897,18 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
 
   var decorateAxisLabel = function (nodeScale, x) {
     var koeff = ("h" === getOrientation(x.guide.scaleOrient)) ? 1 : -1;
-    nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", "label").attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor).text(x.guide.label.text);
+    var labelTextNode = nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", "label").attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor);
+
+    var delimiter = " > ";
+    var tags = x.guide.label.text.split(delimiter);
+    var tLen = tags.length;
+    tags.forEach(function (token, i) {
+      labelTextNode.append("tspan").attr("class", "label-token label-token-" + i).text(token);
+
+      if (i < (tLen - 1)) {
+        labelTextNode.append("tspan").attr("class", "label-token-delimiter label-token-delimiter-" + i).text(delimiter);
+      }
+    });
   };
 
   var decorateTickLabel = function (nodeScale, x) {
@@ -1469,14 +1480,16 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
       });
       box.paddings = axesPadd.reverse();
 
+      var distanceBetweenFacets = 10;
+
       var wrapperNode = utilsDraw.applyNodeDefaults({
         type: "COORDS.RECT",
         options: utils.clone(rootNode.options),
         $matrix: new TMatrix([[[coordNode]]]),
         guide: {
           padding: {
-            l: globPadd.l,
-            b: globPadd.b,
+            l: globPadd.l - distanceBetweenFacets,
+            b: globPadd.b - distanceBetweenFacets,
             r: 0,
             t: 0
           }
@@ -1489,14 +1502,19 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
         unit.guide.x.hide = !selectorPredicates.lastRow;
         unit.guide.y.hide = !selectorPredicates.firstCol;
 
-        unit.guide.x.padding = (box.paddings[depth].b + unit.guide.x.padding);
-        unit.guide.y.padding = (box.paddings[depth].l + unit.guide.y.padding);
+        var mid = (depth > 1) ? 0 : distanceBetweenFacets;
+        var rev = (depth > 1) ? distanceBetweenFacets : 0;
 
-        var d = (depth > 1) ? 0 : 10;
-        unit.guide.padding.l = d;
-        unit.guide.padding.b = d;
-        unit.guide.padding.r = d;
-        unit.guide.padding.t = d;
+        unit.guide.x.padding += (box.paddings[depth].b);
+        unit.guide.y.padding += (box.paddings[depth].l);
+
+        unit.guide.x.padding -= rev;
+        unit.guide.y.padding -= rev;
+
+        unit.guide.padding.l = mid;
+        unit.guide.padding.b = mid;
+        unit.guide.padding.r = mid;
+        unit.guide.padding.t = mid;
 
         unit.guide.showGridLines = (depth > 1) ? "" : "xy";
         return unit;
