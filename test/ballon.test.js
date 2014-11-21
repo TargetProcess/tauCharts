@@ -1,12 +1,11 @@
 define(function (require) {
     var assert = require('chai').assert;
     var expect = require('chai').expect;
-    var Balloon = require('tau_modules/api/balloon');
+    var Balloon = require('tau_modules/api/balloon').Tooltip;
     var $ = require('jquery');
     describe('balloon api',function(){
-        var balloon = new Balloon();
-
-        /*balloon.type();
+        var balloon = new Balloon('');
+       /* balloon.type();
         balloon.effect();
         balloon.content();
         balloon.place();
