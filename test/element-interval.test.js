@@ -27,11 +27,13 @@ define(function (require) {
     var describePlot = testUtils.describePlot;
     var expectCoordsElement = function (expect, coords) {
         var bars = getGroupBar();
-        //debugger
+        var convertToFixed = function(x) {
+            return parseFloat(x).toFixed(4);
+        };
         _.each(bars, function (bar, index) {
             _.each(bar.childNodes, function (el, ind) {
-                expect(attrib(el, 'x')).to.equal(coords[index][ind].x);
-                expect(attrib(el, 'y')).to.equal(coords[index][ind].y);
+                expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x));
+                expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y));
             });
         });
 
