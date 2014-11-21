@@ -11,7 +11,7 @@
 
 .generate-colors(@n; @i: 1) when (@i =< @n) {
 
-  .color@{n}-@{i} {
+  .graphical-report__svg .color@{n}-@{i} {
     stroke: extract(@category-colors, @i);
     fill: extract(@category-colors, @i);
   }
@@ -122,6 +122,7 @@
   /* Linechart  */
   &__line {
     fill: none;
+    stroke: #333;
   }
   &__dot-line {
     opacity: 1;

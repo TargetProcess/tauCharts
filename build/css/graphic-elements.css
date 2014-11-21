@@ -1,41 +1,41 @@
 /* region Generate .color@{n}-@{i}  function  */
-.color10-1 {
+.graphical-report__svg .color10-1 {
   stroke: #e41a1c;
   fill: #e41a1c;
 }
-.color10-2 {
+.graphical-report__svg .color10-2 {
   stroke: #377eb8;
   fill: #377eb8;
 }
-.color10-3 {
+.graphical-report__svg .color10-3 {
   stroke: #4daf4a;
   fill: #4daf4a;
 }
-.color10-4 {
+.graphical-report__svg .color10-4 {
   stroke: #984ea3;
   fill: #984ea3;
 }
-.color10-5 {
+.graphical-report__svg .color10-5 {
   stroke: #ff7f00;
   fill: #ff7f00;
 }
-.color10-6 {
+.graphical-report__svg .color10-6 {
   stroke: #e9e964;
   fill: #e9e964;
 }
-.color10-7 {
+.graphical-report__svg .color10-7 {
   stroke: #a65628;
   fill: #a65628;
 }
-.color10-8 {
+.graphical-report__svg .color10-8 {
   stroke: #f781bf;
   fill: #f781bf;
 }
-.color10-9 {
+.graphical-report__svg .color10-9 {
   stroke: #999999;
   fill: #999999;
 }
-.color10-10 {
+.graphical-report__svg .color10-10 {
   stroke: #222222;
   fill: #222222;
 }
@@ -145,6 +145,7 @@
 }
 .graphical-report__line {
   fill: none;
+  stroke: #333;
 }
 .graphical-report__dot-line {
   opacity: 1;

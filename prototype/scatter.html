@@ -260,10 +260,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugi
             plugins: [tauPlugins.tooltip.apply(null, Object.keys(data[0])), tauPlugins.highlighter(), tauPlugins.tableHighlight(data)],
             y: ['orderingValue'],
             x: ['project'],
-            /*guide: {
-             color: color
-             },*/
-            //color: 'priority',
+            color: 'userStories',
             size: getFieldData($size)
         });
 
