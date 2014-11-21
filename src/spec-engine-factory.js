@@ -24,6 +24,22 @@ var createSelectorPredicates = (root) => {
     };
 };
 
+var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize, axisLabelLimit) {
+
+    if (domainValues.length === 0) {
+        return { width: 0, height: 0 };
+    }
+
+    if (formatter === null) {
+        var size = fnCalcTickLabelSize("TauChart Library");
+        size.width = axisLabelLimit * 0.625; // golden ration
+        return size;
+    }
+
+    var maxXTickText = _.max(domainValues, (x) => formatter(x || '').toString().length);
+    return fnCalcTickLabelSize(formatter(maxXTickText));
+};
+
 var getTickFormat = (dim, meta, defaultFormats) => {
     var dimType = dim.dimType;
     var scaleType = dim.scaleType;
@@ -173,11 +189,25 @@ var SpecEngineTypeMap = {
             var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
             var yValues = yMeta.values;
 
+
             unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
             unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
             var xIsEmptyAxis = (xValues.length === 0);
             var yIsEmptyAxis = (yValues.length === 0);
+
+            var maxXTickSize = getMaxTickLabelSize(
+                xValues,
+                FormatterRegistry.get(unit.guide.x.tickFormat),
+                settings.getAxisTickLabelSize,
+                settings.xAxisTickLabelLimit);
+
+            var maxYTickSize = getMaxTickLabelSize(
+                yValues,
+                FormatterRegistry.get(unit.guide.y.tickFormat),
+                settings.getAxisTickLabelSize,
+                settings.yAxisTickLabelLimit);
+
 
             var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
             var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
@@ -190,27 +220,12 @@ var SpecEngineTypeMap = {
             unit.guide.x.rotate = isXVertical ? 90 : 0;
             unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
 
-
-            var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
-            var yFormatter = FormatterRegistry.get(unit.guide.y.tickFormat);
-
-            var maxXTickText = xIsEmptyAxis ?
-                '' :
-                (_.max(xValues, (x) => xFormatter(x || '').toString().length));
-
-            var maxYTickText = yIsEmptyAxis ?
-                '' :
-                (_.max(yValues, (y) => yFormatter(y || '').toString().length));
-
             var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
             var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
-
-            var defaultTickSize = { width: 0, height: 0 };
 
             unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
             unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
-            var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
             if (dimX.dimType !== 'measure' && (maxXTickH > settings.xAxisTickLabelLimit)) {
@@ -223,15 +238,12 @@ var SpecEngineTypeMap = {
                 maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
             }
 
-
-            var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
             var maxYTickW = maxYTickSize.width;
             if (dimY.dimType !== 'measure' && (maxYTickW > settings.yAxisTickLabelLimit)) {
                 maxYTickW = settings.yAxisTickLabelLimit;
                 unit.guide.y.tickFormatWordWrap = true;
                 unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
             }
-
 
             var xFontH = xTickWidth + maxXTickH;
             var yFontW = yTickWidth + maxYTickW;
@@ -241,7 +253,6 @@ var SpecEngineTypeMap = {
 
             var distToXAxisLabel = settings.distToXAxisLabel;
             var distToYAxisLabel = settings.distToYAxisLabel;
-
 
 
             var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));

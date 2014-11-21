@@ -4,8 +4,15 @@ import * as d3 from 'd3';
 var FORMATS_MAP = {
 
     'x-num-auto': (x) => {
+        var base = Math.floor(x);
+        var rest = Math.abs(x - base);
+        if (rest > 0) {
+            x = x.toFixed(2);
+        }
         return (Math.abs(x) < 1) ? x.toString() : d3.format('s')(x);
     },
+
+    'percent': d3.format('.2%'),
 
     'day': d3.time.format('%d-%b-%Y'),
 
@@ -37,41 +44,43 @@ var FORMATS_MAP = {
 
     'year': d3.time.format('%Y'),
 
-    'x-time-auto': d3.time.format.multi([
-        [".%L", function(d) { return d.getMilliseconds(); }],
-        [":%S", function(d) { return d.getSeconds(); }],
-        ["%I:%M", function(d) { return d.getMinutes(); }],
-        ["%I %p", function(d) { return d.getHours(); }],
-        ["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }],
-        ["%b %d", function(d) { return d.getDate() != 1; }],
-        ["%B", function(d) { return d.getMonth(); }],
-        ["%Y", function() { return true; }]
-    ])
+    'x-time-auto': null
 };
 
 /* jshint ignore:start */
-FORMATS_MAP['x-time-ms'] = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-sec'] = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-min'] = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-hour'] = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-day'] = FORMATS_MAP['day'];
-FORMATS_MAP['x-time-week'] = FORMATS_MAP['week'];
-FORMATS_MAP['x-time-month'] = FORMATS_MAP['month'];
-FORMATS_MAP['x-time-quarter'] = FORMATS_MAP['quarter'];
-FORMATS_MAP['x-time-year'] = FORMATS_MAP['year'];
+FORMATS_MAP['x-time-ms']        = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-sec']       = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-min']       = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-hour']      = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-day']       = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-week']      = FORMATS_MAP['x-time-auto'];
+FORMATS_MAP['x-time-month']     = FORMATS_MAP['month'];
+FORMATS_MAP['x-time-quarter']   = FORMATS_MAP['quarter'];
+FORMATS_MAP['x-time-year']      = FORMATS_MAP['year'];
 /* jshint ignore:end */
 
 var FormatterRegistry = {
 
     get: (formatAlias) => {
 
-        var formatter = (formatAlias === null) ? ((x) => x.toString()) : FORMATS_MAP[formatAlias];
-        if (!formatter) {
+        var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
+        var formatter = hasFormat ? FORMATS_MAP[formatAlias] : ((x) => x.toString());
+
+        if (hasFormat) {
+            formatter = FORMATS_MAP[formatAlias];
+        }
+
+        if (!hasFormat && formatAlias) {
             formatter = (v) => {
                 var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
                 return f(v);
             };
         }
+
+        if (!hasFormat && !formatAlias) {
+            formatter = ((x) => x.toString());
+        }
+
         return formatter;
     },
 

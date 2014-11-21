@@ -166,10 +166,13 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
 
         var axisScale = d3.svg.axis()
             .scale(x.scaleObj)
-            .orient(x.guide.scaleOrient)
-            .ticks(Math.round(size / x.guide.density));
+            .orient(x.guide.scaleOrient);
 
-        axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
+        var formatter = FormatterRegistry.get(x.guide.tickFormat);
+        if (formatter !== null) {
+            axisScale.ticks(Math.round(size / x.guide.density));
+            axisScale.tickFormat(formatter);
+        }
 
         var nodeScale = container
             .append('g')
@@ -203,15 +206,20 @@ var fnDrawGrid = function (node, H, W) {
                 .axis()
                 .scale(x.scaleObj)
                 .orient(x.guide.scaleOrient)
-                .tickSize(H)
-                .ticks(Math.round(W / x.guide.density));
+                .tickSize(H);
+
+            let formatter = FormatterRegistry.get(x.guide.tickFormat);
+            if (formatter !== null) {
+                xGridAxis.ticks(Math.round(W / x.guide.density));
+                xGridAxis.tickFormat(formatter);
+            }
 
             var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
 
             decorateAxisTicks(xGridLines, x, W);
 
             var firstXGridLine = xGridLines.select('g.tick');
-            if (firstXGridLine.attr('transform') !== 'translate(0,0)') {
+            if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
                 var zeroNode = firstXGridLine.node().cloneNode(true);
                 gridLines.node().appendChild(zeroNode);
                 d3.select(zeroNode)
@@ -229,8 +237,13 @@ var fnDrawGrid = function (node, H, W) {
                 .axis()
                 .scale(y.scaleObj)
                 .orient(y.guide.scaleOrient)
-                .tickSize(-W)
-                .ticks(Math.round(H / y.guide.density));
+                .tickSize(-W);
+
+            let formatter = FormatterRegistry.get(y.guide.tickFormat);
+            if (formatter !== null) {
+                yGridAxis.ticks(Math.round(H / y.guide.density));
+                yGridAxis.tickFormat(formatter);
+            }
 
             var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
 

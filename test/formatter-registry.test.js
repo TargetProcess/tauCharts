@@ -38,8 +38,18 @@ define(function (require) {
 
             expect(registry.get('x-num-auto')(22000)).to.equal('22k');
             expect(registry.get('x-num-auto')(22000000)).to.equal('22M');
-            expect(registry.get('x-num-auto')(0.0022)).to.equal('0.0022');
-            expect(registry.get('x-num-auto')(-0.0022)).to.equal('-0.0022');
+            expect(registry.get('x-num-auto')(0.1234)).to.equal('0.12');
+            expect(registry.get('x-num-auto')(0.0123)).to.equal('0.01');
+            expect(registry.get('x-num-auto')(0.0022)).to.equal('0.00');
+
+            expect(registry.get('x-num-auto')(-0.1234)).to.equal('-0.12');
+            expect(registry.get('x-num-auto')(-0.0123)).to.equal('-0.01');
+            expect(registry.get('x-num-auto')(-0.0022)).to.equal('-0.00');
+
+            expect(registry.get('percent')(-0.1234)).to.equal('-12.34%');
+            expect(registry.get('percent')(-0.0123)).to.equal('-1.23%');
+            expect(registry.get('percent')(-0.0022)).to.equal('-0.22%');
+            expect(registry.get('percent')(2)).to.equal('200.00%');
         });
 
         it("should support d3 formats", function () {
