@@ -345,18 +345,22 @@ define(function (require) {
             });
         }
     );
-
+    var offsetHrs = new Date().getTimezoneOffset() / 60;
+    var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
+    var iso = function (str) {
+        return (str + '+' + offsetISO);
+    };
     var dataWithDate = [
         {
-            "createDate": new Date("2014-09-02T21:00:00.000Z"),
+            "createDate": new Date(iso("2014-09-02T21:00:00")),
             "count": 123
         },
         {
-            "createDate": new Date("2014-09-29T21:00:00.000Z"),
+            "createDate": new Date(iso("2014-09-29T21:00:00")),
             "count": 34
         },
         {
-            "createDate": new Date("2014-10-13T21:00:00.000Z"),
+            "createDate": new Date(iso("2014-10-13T21:00:00")),
             "count": 2
         }
     ];
@@ -401,15 +405,15 @@ define(function (require) {
 
                     [
                         {
-                            "x": "-200",
+                            "x": "-217.0731707317073",
                             "y": "43"
                         },
                         {
-                            "x": "326.82926829268297",
+                            "x": "309.7560975609756",
                             "y": "591"
                         },
                         {
-                            "x": "600",
+                            "x": "582.9268292682926",
                             "y": "788"
                         }
                     ]
@@ -460,15 +464,15 @@ define(function (require) {
                     [
                         {
                             "x": "0",
-                            "y": "600"
+                            "y": "617.0731707317073"
                         },
                         {
                             "x": "0",
-                            "y": "73.17073170731703"
+                            "y": "90.2439024390244"
                         },
                         {
                             "x": "0",
-                            "y": "-200"
+                            "y": "-182.92682926829266"
                         }
                     ]
                 ]);
