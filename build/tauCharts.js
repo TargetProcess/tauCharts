@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.13 - 2014-11-21
+/*! tauCharts - v0.1.15 - 2014-11-21
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -703,8 +703,15 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   /* jshint ignore:end */
   var FORMATS_MAP = {
     "x-num-auto": function (x) {
+      var base = Math.floor(x);
+      var rest = Math.abs(x - base);
+      if (rest > 0) {
+        x = x.toFixed(2);
+      }
       return (Math.abs(x) < 1) ? x.toString() : d3.format("s")(x);
     },
+
+    percent: d3.format(".2%"),
 
     day: d3.time.format("%d-%b-%Y"),
 
@@ -736,23 +743,7 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
 
     year: d3.time.format("%Y"),
 
-    "x-time-auto": d3.time.format.multi([[".%L", function (d) {
-      return d.getMilliseconds();
-    }], [":%S", function (d) {
-      return d.getSeconds();
-    }], ["%I:%M", function (d) {
-      return d.getMinutes();
-    }], ["%I %p", function (d) {
-      return d.getHours();
-    }], ["%a %d", function (d) {
-      return d.getDay() && d.getDate() != 1;
-    }], ["%b %d", function (d) {
-      return d.getDate() != 1;
-    }], ["%B", function (d) {
-      return d.getMonth();
-    }], ["%Y", function () {
-      return true;
-    }]])
+    "x-time-auto": null
   };
 
   /* jshint ignore:start */
@@ -760,8 +751,8 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   FORMATS_MAP["x-time-sec"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-min"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-hour"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-day"] = FORMATS_MAP["day"];
-  FORMATS_MAP["x-time-week"] = FORMATS_MAP["week"];
+  FORMATS_MAP["x-time-day"] = FORMATS_MAP["x-time-auto"];
+  FORMATS_MAP["x-time-week"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-month"] = FORMATS_MAP["month"];
   FORMATS_MAP["x-time-quarter"] = FORMATS_MAP["quarter"];
   FORMATS_MAP["x-time-year"] = FORMATS_MAP["year"];
@@ -769,15 +760,28 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
 
   var FormatterRegistry = {
     get: function (formatAlias) {
-      var formatter = (formatAlias === null) ? (function (x) {
+      var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
+      var formatter = hasFormat ? FORMATS_MAP[formatAlias] : (function (x) {
         return x.toString();
-      }) : FORMATS_MAP[formatAlias];
-      if (!formatter) {
+      });
+
+      if (hasFormat) {
+        formatter = FORMATS_MAP[formatAlias];
+      }
+
+      if (!hasFormat && formatAlias) {
         formatter = function (v) {
           var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
           return f(v);
         };
       }
+
+      if (!hasFormat && !formatAlias) {
+        formatter = (function (x) {
+          return x.toString();
+        });
+      }
+
       return formatter;
     },
 
@@ -933,9 +937,13 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
   var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
     var container = this;
     if (x.scaleDim) {
-      var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).ticks(Math.round(size / x.guide.density));
+      var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient);
 
-      axisScale.tickFormat(FormatterRegistry.get(x.guide.tickFormat));
+      var formatter = FormatterRegistry.get(x.guide.tickFormat);
+      if (formatter !== null) {
+        axisScale.ticks(Math.round(size / x.guide.density));
+        axisScale.tickFormat(formatter);
+      }
 
       var nodeScale = container.append("g").attr("class", x.guide.cssClass).attr("transform", translate.apply(null, AXIS_POSITION)).call(axisScale);
 
@@ -956,14 +964,20 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
 
       if ((linesOptions.indexOf("x") > -1) && node.x.scaleDim) {
         var x = node.x;
-        var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H).ticks(Math.round(W / x.guide.density));
+        var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H);
+
+        var formatter = FormatterRegistry.get(x.guide.tickFormat);
+        if (formatter !== null) {
+          xGridAxis.ticks(Math.round(W / x.guide.density));
+          xGridAxis.tickFormat(formatter);
+        }
 
         var xGridLines = gridLines.append("g").attr("class", "grid-lines-x").call(xGridAxis);
 
         decorateAxisTicks(xGridLines, x, W);
 
         var firstXGridLine = xGridLines.select("g.tick");
-        if (firstXGridLine.attr("transform") !== "translate(0,0)") {
+        if (firstXGridLine.node() && firstXGridLine.attr("transform") !== "translate(0,0)") {
           var zeroNode = firstXGridLine.node().cloneNode(true);
           gridLines.node().appendChild(zeroNode);
           d3.select(zeroNode).attr("class", "border").attr("transform", translate(0, 0)).select("line").attr("x1", 0).attr("x2", 0);
@@ -972,7 +986,13 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
 
       if ((linesOptions.indexOf("y") > -1) && node.y.scaleDim) {
         var y = node.y;
-        var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W).ticks(Math.round(H / y.guide.density));
+        var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W);
+
+        var formatter = FormatterRegistry.get(y.guide.tickFormat);
+        if (formatter !== null) {
+          yGridAxis.ticks(Math.round(H / y.guide.density));
+          yGridAxis.tickFormat(formatter);
+        }
 
         var yGridLines = gridLines.append("g").attr("class", "grid-lines-y").call(yGridAxis);
 
@@ -1097,6 +1117,23 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       isLeaf: isLeaf,
       isLeafParent: !isLeaf && isLeafParent
     };
+  };
+
+  var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize, axisLabelLimit) {
+    if (domainValues.length === 0) {
+      return { width: 0, height: 0 };
+    }
+
+    if (formatter === null) {
+      var size = fnCalcTickLabelSize("TauChart Library");
+      size.width = axisLabelLimit * 0.625; // golden ration
+      return size;
+    }
+
+    var maxXTickText = _.max(domainValues, function (x) {
+      return formatter(x || "").toString().length;
+    });
+    return fnCalcTickLabelSize(formatter(maxXTickText));
   };
 
   var getTickFormat = function (dim, meta, defaultFormats) {
@@ -1243,6 +1280,10 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var xIsEmptyAxis = (xValues.length === 0);
         var yIsEmptyAxis = (yValues.length === 0);
 
+        var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
+
+        var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
         var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
 
@@ -1254,26 +1295,12 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         unit.guide.x.rotate = isXVertical ? 90 : 0;
         unit.guide.x.textAnchor = isXVertical ? "start" : unit.guide.x.textAnchor;
 
-        var xFormatter = FormatterRegistry.get(unit.guide.x.tickFormat);
-        var yFormatter = FormatterRegistry.get(unit.guide.y.tickFormat);
-
-        var maxXTickText = xIsEmptyAxis ? "" : (_.max(xValues, function (x) {
-          return xFormatter(x || "").toString().length;
-        }));
-
-        var maxYTickText = yIsEmptyAxis ? "" : (_.max(yValues, function (y) {
-          return yFormatter(y || "").toString().length;
-        }));
-
         var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
         var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
-
-        var defaultTickSize = { width: 0, height: 0 };
 
         unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
         unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
-        var maxXTickSize = xIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(xFormatter(maxXTickText));
         var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
         if (dimX.dimType !== "measure" && (maxXTickH > settings.xAxisTickLabelLimit)) {
@@ -1286,7 +1313,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
           maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
         }
 
-        var maxYTickSize = yIsEmptyAxis ? defaultTickSize : settings.getAxisTickLabelSize(yFormatter(maxYTickText));
         var maxYTickW = maxYTickSize.width;
         if (dimY.dimType !== "measure" && (maxYTickW > settings.yAxisTickLabelLimit)) {
           maxYTickW = settings.yAxisTickLabelLimit;
