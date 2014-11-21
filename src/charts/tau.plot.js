@@ -1,5 +1,5 @@
 import {DSLReader} from '../dsl-reader';
-import {Tooltip} from '../api/tooltip';
+import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
 import {SpecEngineFactory} from '../spec-engine-factory';
 import {LayoutEngineFactory} from '../layout-engine-factory';

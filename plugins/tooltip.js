@@ -35,7 +35,7 @@
                 this._interval = null;
                 this._templateItem = _.template(this.templateItem);
                 this._tooltip = chart.addBallon({spacing: 5, auto: true});
-                this._elementTooltip = this._tooltip.getDom();
+                this._elementTooltip = this._tooltip.getElement();
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
                     clearTimeout(this._interval);
@@ -82,8 +82,7 @@
             _hide: function () {
                 this._interval = setTimeout(function () {
                     this._boundElement = null;
-                  //  this._tooltip.hide();
-                  //  this._tooltip.hide();
+                    this._tooltip.hide();
                 }.bind(this), 300);
             },
             destroy: function () {

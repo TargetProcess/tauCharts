@@ -508,7 +508,7 @@ Tooltip.prototype.show = function (x, y) {
 
     return this;
 };
-Tooltip.prototype.getDom = function (x, y) {
+Tooltip.prototype.getElement = function (x, y) {
     return this.element;
 };
 
