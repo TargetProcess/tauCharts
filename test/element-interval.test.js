@@ -381,7 +381,7 @@ define(function (require) {
                     "x": {
                         "label": "Create Date",
                         "autoScale": true,
-                        "tickFormat":"%H",
+                        "tickFormat":"%j",
                         "tickPeriod": "day"
                     }
                 },
@@ -441,7 +441,7 @@ define(function (require) {
                         "label": "Create Date",
                         "autoScale": true,
                         "tickPeriod": "day",
-                        "tickFormat":"%H"
+                        "tickFormat":"%j"
                     }
                 },
                 unit: [
