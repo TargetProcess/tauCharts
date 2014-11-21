@@ -108,14 +108,31 @@ var decorateAxisTicks = (nodeScale, x, size) => {
 
 var decorateAxisLabel = (nodeScale, x) => {
     var koeff = ('h' === getOrientation(x.guide.scaleOrient)) ? 1 : -1;
-    nodeScale
+    var labelTextNode = nodeScale
         .append('text')
         .attr('transform', rotate(x.guide.label.rotate))
         .attr('class', 'label')
         .attr('x', koeff * x.guide.size * 0.5)
         .attr('y', koeff * x.guide.label.padding)
-        .style('text-anchor', x.guide.label.textAnchor)
-        .text(x.guide.label.text);
+        .style('text-anchor', x.guide.label.textAnchor);
+
+    var delimiter = ' > ';
+    var tags = x.guide.label.text.split(delimiter);
+    var tLen = tags.length;
+    tags.forEach((token, i) => {
+
+        labelTextNode
+            .append('tspan')
+            .attr('class', 'label-token label-token-' + i)
+            .text(token);
+
+        if (i < (tLen - 1)) {
+            labelTextNode
+                .append('tspan')
+                .attr('class', 'label-token-delimiter label-token-delimiter-' + i)
+                .text(delimiter);
+        }
+    });
 };
 
 var decorateTickLabel = (nodeScale, x) => {
