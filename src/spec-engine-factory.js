@@ -2,11 +2,14 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
 
+// TODO: think of inheritance rules
 var inheritProps = (unit, root) => {
     unit.guide = unit.guide || {};
     unit.guide.padding = unit.guide.padding || {l: 0, t: 0, r: 0, b: 0};
     unit = _.defaults(unit, root);
-    unit.guide = _.defaults(unit.guide, root.guide);
+    unit.guide = _.defaults(unit.guide, utils.clone(root.guide));
+    unit.guide.x = _.defaults(unit.guide.x, utils.clone(root.guide.x));
+    unit.guide.y = _.defaults(unit.guide.y, utils.clone(root.guide.y));
     return unit;
 };
 
@@ -101,7 +104,13 @@ var fnTraverseTree = (specUnitRef, transformRules) => {
 var SpecEngineTypeMap = {
 
     'NONE': (spec, meta, settings) => {
-        return (selectorPredicates, unit) => unit;
+        return (selectorPredicates, unit) => {
+
+            unit.guide.x.tickFontHeight = settings.getAxisTickLabelSize('X').height;
+            unit.guide.y.tickFontHeight = settings.getAxisTickLabelSize('Y').height;
+
+            return unit;
+        };
     },
 
     'AUTO': (spec, meta, settings) => {
@@ -168,6 +177,9 @@ var SpecEngineTypeMap = {
             var dimX = meta.dimension(unit.x);
             var dimY = meta.dimension(unit.y);
 
+            var isXContinues = (dimX.dimType === 'measure');
+            var isYContinues = (dimY.dimType === 'measure');
+
             var xScaleOptions = {
                 map: unit.guide.x.tickLabel,
                 min: unit.guide.x.tickMin,
@@ -228,7 +240,7 @@ var SpecEngineTypeMap = {
 
             var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
-            if (dimX.dimType !== 'measure' && (maxXTickH > settings.xAxisTickLabelLimit)) {
+            if (!isXContinues && (maxXTickH > settings.xAxisTickLabelLimit)) {
                 maxXTickH = settings.xAxisTickLabelLimit;
             }
 
@@ -239,7 +251,7 @@ var SpecEngineTypeMap = {
             }
 
             var maxYTickW = maxYTickSize.width;
-            if (dimY.dimType !== 'measure' && (maxYTickW > settings.yAxisTickLabelLimit)) {
+            if (!isYContinues && (maxYTickW > settings.yAxisTickLabelLimit)) {
                 maxYTickW = settings.yAxisTickLabelLimit;
                 unit.guide.y.tickFormatWordWrap = true;
                 unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
@@ -279,6 +291,9 @@ var SpecEngineTypeMap = {
             unit.guide.padding.b = xAxisPadding + xLabelPadding;
             unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
+
+            unit.guide.x.tickFontHeight = maxXTickSize.height;
+            unit.guide.y.tickFontHeight = maxYTickSize.height;
 
             unit.guide.x.$minimalDomain = xValues.length;
             unit.guide.y.$minimalDomain = yValues.length;

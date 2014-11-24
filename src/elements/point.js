@@ -10,14 +10,14 @@ var point = function (node) {
 
     var color = utilsDraw.generateColor(node);
 
-    var maxAxis = _.max([options.width, options.height]);
-    var size = sizeScale(node.domain(node.size.scaleDim), maxAxis / 100);
+    var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) / 2;
+    var size = sizeScale(node.domain(node.size.scaleDim), maxAxisSize);
 
     var update = function () {
         return this
             .attr('r', (d) => {
                 var s = size(d[node.size.scaleDim]);
-                return (!_.isFinite(s)) ? maxAxis / 100 : s;
+                return (!_.isFinite(s)) ? maxAxisSize : s;
             })
             .attr('class', (d) => {
                 return CSS_PREFIX + 'dot' + ' dot i-role-datum ' + color.get(d[color.dimension]);

@@ -62,6 +62,49 @@ define(function (require) {
         attrib: attrib,
         hasClass: hasClass,
         position: position,
-        getGroupBar: getGroupBar
+        getGroupBar: getGroupBar,
+        chartSettings: {
+            getAxisTickLabelSize: function (text) {
+                return {
+                    width: text.length * 5,
+                    height: 10
+                };
+            },
+
+            xAxisTickLabelLimit: 100,
+            yAxisTickLabelLimit: 100,
+
+            xTickWordWrapLinesLimit: 2,
+            yTickWordWrapLinesLimit: 3,
+
+            xTickWidth: 6 + 3,
+            yTickWidth: 6 + 3,
+
+            distToXAxisLabel: 20,
+            distToYAxisLabel: 20,
+
+            xAxisPadding: 20,
+            yAxisPadding: 20,
+
+            xFontLabelHeight: 15,
+            yFontLabelHeight: 15,
+
+            xDensityKoeff: 2.2,
+            yDensityKoeff: 2.2,
+
+            defaultFormats: {
+                'measure': 'x-num-auto',
+                'measure:time': 'x-time-auto',
+                'measure:time:year': 'x-time-year',
+                'measure:time:quarter': 'x-time-quarter',
+                'measure:time:month': 'x-time-month',
+                'measure:time:week': 'x-time-week',
+                'measure:time:day': 'x-time-day',
+                'measure:time:hour': 'x-time-hour',
+                'measure:time:min': 'x-time-min',
+                'measure:time:sec': 'x-time-sec',
+                'measure:time:ms': 'x-time-ms'
+            }
+        }
     }
 });

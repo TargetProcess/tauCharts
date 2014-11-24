@@ -1,4 +1,5 @@
 define(function (require) {
+    var testUtils = require('testUtils');
     var expect = require('chai').expect;
     var tauChart = require('tau_modules/tau.newCharts');
     var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
@@ -52,49 +53,7 @@ define(function (require) {
             return specClone;
         };
 
-        var measurer = {
-            getAxisTickLabelSize: function(text) {
-                return {
-                    width: text.length * 5,
-                    height: 10
-                };
-            },
-
-            xAxisTickLabelLimit: 100,
-            yAxisTickLabelLimit: 100,
-
-            xTickWordWrapLinesLimit: 2,
-            yTickWordWrapLinesLimit: 3,
-
-            xTickWidth: 6 + 3,
-            yTickWidth: 6 + 3,
-
-            distToXAxisLabel: 20,
-            distToYAxisLabel: 20,
-
-            xAxisPadding: 20,
-            yAxisPadding: 20,
-
-            xFontLabelHeight: 15,
-            yFontLabelHeight: 15,
-
-            xDensityKoeff: 2.2,
-            yDensityKoeff: 2.2,
-
-            defaultFormats: {
-                'measure': 'x-num-auto',
-                'measure:time': 'x-time-auto',
-                'measure:time:year': 'x-time-year',
-                'measure:time:quarter': 'x-time-quarter',
-                'measure:time:month': 'x-time-month',
-                'measure:time:week': 'x-time-week',
-                'measure:time:day': 'x-time-day',
-                'measure:time:hour': 'x-time-hour',
-                'measure:time:min': 'x-time-min',
-                'measure:time:sec': 'x-time-sec',
-                'measure:time:ms': 'x-time-ms'
-            }
-        };
+        var measurer = testUtils.chartSettings;
 
         it("should support [DEFAULT] spec engine", function () {
 
@@ -122,6 +81,8 @@ define(function (require) {
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
             expect(x.label.text).to.equal('');
+            expect(x.density).to.equal(30);
+            expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
@@ -131,6 +92,8 @@ define(function (require) {
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal(null);
             expect(y.label.text).to.equal('');
+            expect(y.density).to.equal(30);
+            expect(y.tickFontHeight).to.equal(10);
         });
 
         it("should support [AUTO] spec engine (category / measure)", function () {
@@ -154,6 +117,7 @@ define(function (require) {
             expect(x.textAnchor).to.equal('start');
             expect(x.tickFormat).to.equal(null);
             expect(x.label.text).to.equal('TEAM');
+            expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
@@ -163,6 +127,7 @@ define(function (require) {
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal('x-num-auto');
             expect(y.label.text).to.equal('COUNT');
+            expect(y.tickFontHeight).to.equal(10);
 
             // 20 padding to X axis line
             // 9  tick mark size
@@ -202,6 +167,7 @@ define(function (require) {
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal('x-num-auto');
             expect(x.label.text).to.equal('COUNT');
+            expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
@@ -211,6 +177,7 @@ define(function (require) {
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal('x-time-quarter');
             expect(y.label.text).to.equal('DATE');
+            expect(y.tickFontHeight).to.equal(10);
 
             // 20 padding to X axis line
             // 9  tick mark size
@@ -227,6 +194,107 @@ define(function (require) {
             expect(full.unit.guide.padding.l).to.equal(99);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
+        });
+
+        it("should support [AUTO] spec engine (facet)", function () {
+
+            var spec = {
+                "dimensions": {
+                    "team": {
+                        "type": "order",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "measure",
+                        "scale": "time"
+                    }
+                },
+                "unit": {
+                    "type": "COORDS.RECT",
+                    "x": "team",
+                    "y": null,
+                    "unit": [
+                        {
+                            "type": "COORDS.RECT",
+                            "x": "date",
+                            "y": "count",
+                            "unit": [
+                                {
+                                    "type": "ELEMENT.INTERVAL"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+
+            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
+
+            var full = testSpecEngine(spec, meta);
+
+            var x = full.unit.guide.x;
+            var y = full.unit.guide.y;
+
+            expect(x.autoScale).to.equal(true);
+            expect(x.scaleOrient).to.equal('bottom');
+            expect(x.padding).to.equal(0);
+            expect(x.cssClass).to.equal('x axis facet-axis');
+            expect(x.rotate).to.equal(0);
+            expect(x.textAnchor).to.equal('middle');
+            expect(x.tickFormat).to.equal(null);
+            expect(x.label.text).to.equal('TEAM > DATE');
+            expect(x.tickFontHeight).to.equal(10);
+            expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width * measurer.xDensityKoeff);
+
+            expect(y.autoScale).to.equal(true);
+            expect(y.scaleOrient).to.equal('left');
+            expect(y.padding).to.equal(0);
+            expect(y.cssClass).to.equal('y axis facet-axis');
+            expect(y.rotate).to.equal(0);
+            expect(y.textAnchor).to.equal('end');
+            expect(y.tickFormat).to.equal(null);
+            expect(y.label.text).to.equal('');
+            expect(y.tickFontHeight).to.equal(0);
+            expect(y.density).to.equal(0); // empty axis
+
+            // 20 padding to X axis line
+            // 9  tick mark size
+            // 10 "25" string length
+            // 20 padding to X axis label
+            // 15 width of label
+            expect(full.unit.guide.padding.b).to.equal(54);
+
+            // y is null axis
+            expect(full.unit.guide.padding.l).to.equal(0);
+            expect(full.unit.guide.padding.r).to.equal(0);
+            expect(full.unit.guide.padding.t).to.equal(0);
+
+
+            var part = full.unit.unit[0];
+            var px = part.guide.x;
+            var py = part.guide.y;
+
+            expect(px.tickFormat).to.equal('x-time-quarter');
+            expect(px.tickFontHeight).to.equal(10);
+            expect(px.label.text).to.equal('');
+            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width * measurer.xDensityKoeff);
+
+            expect(py.tickFormat).to.equal('x-num-auto');
+            expect(py.tickFontHeight).to.equal(10);
+            expect(py.label.text).to.equal('COUNT');
+            expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width * measurer.yDensityKoeff);
+
+
+            var elem = part.unit[0];
+
+            expect(elem.guide.x.tickFontHeight).to.equal(10);
+            expect(elem.guide.y.tickFontHeight).to.equal(10);
         });
     });
 });
