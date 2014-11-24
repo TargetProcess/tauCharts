@@ -17,6 +17,7 @@ module.exports = function (config) {
             {pattern:'src/addons/color-brewer.js', included: false},
             //'build/tauCharts.js',
             {pattern: 'test/utils/*.js', included: false},
+            {pattern: 'css/tooltip.css', included: true},
             {pattern: 'libs/**/*.js', included: false},
             {pattern: 'node_modules/chai/*.js', included: false},
             {pattern: 'tau_modules/**/*.js', included: false},

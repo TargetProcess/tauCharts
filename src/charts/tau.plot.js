@@ -54,7 +54,7 @@ export class Plot extends Emitter{
 
         return _.defaults(configSettings || {}, localSettings);
     }
-    addLine (conf) {
+   /* addLine (conf) {
         var unitContainer = this._spec.unit.unit;
 
         while(true) {
@@ -65,8 +65,8 @@ export class Plot extends Emitter{
             }
         }
         unitContainer.push(conf);
-    }
-    addBallon(conf) {
+    }*/
+    addBalloon(conf) {
         return new Tooltip('', conf || {});
     }
     renderTo(target, xSize) {

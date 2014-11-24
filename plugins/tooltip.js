@@ -34,7 +34,7 @@
                 this._dataFields = fields;
                 this._interval = null;
                 this._templateItem = _.template(this.templateItem);
-                this._tooltip = chart.addBallon({spacing: 5, auto: true});
+                this._tooltip = chart.addBalloon({spacing: 5, auto: true});
                 this._elementTooltip = this._tooltip.getElement();
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {

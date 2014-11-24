@@ -602,7 +602,7 @@ Tooltip.reposition = (function () {
         if (rIndex || !Tooltip.winAware.length) {
             return;
         }
-        rIndex = rAF(reposition, 17);
+        rIndex = rAF(reposition);
     }
 
     function reposition() {
