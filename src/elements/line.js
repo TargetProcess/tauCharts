@@ -1,4 +1,5 @@
 import {utilsDraw} from '../utils/utils-draw';
+import {point} from './point';
 import {CSS_PREFIX} from '../const';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 var line = function (node) {
@@ -7,7 +8,8 @@ var line = function (node) {
 
     var xScale = options.xScale;
     var yScale = options.yScale;
-
+    node.size = {};
+    point(node);
     var color = utilsDraw.generateColor(node);
 
     var categories = d3
@@ -18,7 +20,7 @@ var line = function (node) {
     var countClass = getLineClassesByCount(categories.length);
     var updateLines = function (d) {
         this.attr('class', (d) => {
-            return [CSS_PREFIX + 'line', 'line', color.get(d.key), widthClass, countClass].join(' ');
+            return [CSS_PREFIX + 'line i-role-datum ', 'line', color.get(d.key), widthClass, countClass].join(' ');
         });
         var paths = this.selectAll('path').data((d) => [d.values]);
         paths.call(updatePaths);
@@ -37,7 +39,7 @@ var line = function (node) {
             return this
                 .attr('r', 1.5)
                 .attr('class', (d) => {
-                    return CSS_PREFIX + 'dot-line dot-line ' + CSS_PREFIX + 'dot ' + 'i-role-datum ' + color.get(d[color.dimension]);
+                    return CSS_PREFIX + 'dot-line dot-line i-role-datum ' + CSS_PREFIX + 'dot ' + 'i-role-datum ' + color.get(d[color.dimension]);
                 })
                 .attr('cx', (d) => xScale(d[node.x.scaleDim]))
                 .attr('cy', (d) => yScale(d[node.y.scaleDim]));

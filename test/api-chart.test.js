@@ -58,11 +58,11 @@ define(function (require) {
             var plot = new tauChart.Plot(config);
             plot.renderTo(div);
             plot.on('elementclick', function (chart) {
-
+                expect('elementclick').to.be.ok;
                 //done();
             });
             plot.on('elementmouseover', function (chart) {
-
+                expect('elementclick').to.be.ok;
                 done();
             });
             var svg = d3.select(div).selectAll('svg');
@@ -74,8 +74,11 @@ define(function (require) {
                     0, 0, 0, 0, 0, false, false, false, false, 0, null);
                 element.dispatchEvent(evt);
             }
+            expect(plot.getData()).to.eql(config.data);
+
             simulateEvent('click',$('circle')[0]);
             simulateEvent('mouseover',$('circle')[0]);
+
         });
     });
 });

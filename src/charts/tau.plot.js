@@ -16,6 +16,7 @@ export class Plot extends Emitter{
         this.setupConfig(config);
         //plugins
         this._plugins = new Plugins(this.config.plugins, this);
+        this._emptyContainer =  config.emptyContainer || '';
     }
 
     setupConfig(config) {
@@ -83,10 +84,9 @@ export class Plot extends Emitter{
         var size = _.defaults(xSize || {}, utilsDom.getContainerSize(containerNode));
 
         if (this.config.data.length === 0) {
-            // empty data source
+            containerNode.innerHTML = this._emptyContainer;
             return;
         }
-
         containerNode.innerHTML = '';
 
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
