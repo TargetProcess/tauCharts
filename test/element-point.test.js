@@ -252,7 +252,7 @@ define(function (require) {
             it("should have sizes in large range", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(1, 1);
-                expect(sizes[1]).to.be.closeTo(8, 1);
+                expect(sizes[1]).to.be.closeTo(5, 0);
             })
         });
 
@@ -263,8 +263,8 @@ define(function (require) {
         function () {
             it("should have sizes in small range", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(5, 1);
-                expect(sizes[1]).to.be.closeTo(8, 1);
+                expect(sizes[0]).to.be.closeTo(2.95, 0.01);
+                expect(sizes[1]).to.be.closeTo(5, 0);
             })
         });
 
@@ -275,8 +275,8 @@ define(function (require) {
         function () {
             it("should have proportional sizes", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(5, 1);
-                expect(sizes[1]).to.be.closeTo(8, 1);
+                expect(sizes[0]).to.be.closeTo(2.95, 0.01);
+                expect(sizes[1]).to.be.closeTo(5, 0);
             })
         });
 
@@ -287,9 +287,9 @@ define(function (require) {
         function () {
             it("should have sizes in large range", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(2, 1);
-                expect(sizes[1]).to.be.closeTo(6, 1);
-                expect(sizes[2]).to.be.closeTo(8, 1);
+                expect(sizes[0]).to.be.closeTo(1.62, 0.01);
+                expect(sizes[1]).to.be.closeTo(3.73, 0.01);
+                expect(sizes[2]).to.be.closeTo(5, 0);
             })
         });
 
@@ -300,12 +300,12 @@ define(function (require) {
         function () {
             it("should map Infinity to maximum size", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[3]).to.be.closeTo(sizes[1], 0.1);
+                expect(sizes[3]).to.be.equal(sizes[1]);
             });
 
             it("should map null to maximum size", function () {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[2]).to.be.closeTo(sizes[0], 0.1);
+                expect(sizes[2]).to.be.equal(sizes[0]);
             });
         })
 });
