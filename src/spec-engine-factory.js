@@ -39,7 +39,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
         return size;
     }
 
-    var maxXTickText = _.max(domainValues, (x) => formatter(x || '').toString().length);
+    var maxXTickText = _.max(domainValues, (x) => formatter(x).toString().length);
     return fnCalcTickLabelSize(formatter(maxXTickText));
 };
 

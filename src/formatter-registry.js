@@ -3,16 +3,15 @@ import * as d3 from 'd3';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 
-    'x-num-auto': (x) => {
-        var base = Math.floor(x);
-        var rest = Math.abs(x - base);
-        if (rest > 0) {
-            x = x.toFixed(2);
-        }
-        return (Math.abs(x) < 1) ? x.toString() : d3.format('s')(x);
+    "x-num-auto": function (x) {
+        var v = parseFloat(x.toFixed(2));
+        return (Math.abs(v) < 1) ? v.toString() : d3.format("s")(v);
     },
 
-    'percent': d3.format('.2%'),
+    percent: function (x) {
+        var v = parseFloat((x * 100).toFixed(2));
+        return v.toString() + '%';
+    },
 
     'day': d3.time.format('%d-%b-%Y'),
 
