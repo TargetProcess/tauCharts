@@ -16,6 +16,7 @@ define(function (require) {
         });
 
         it("should use *.toString() by default", function () {
+            expect(registry.get(null)(null)).to.equal('');
             expect(registry.get(null)('str')).to.equal('str');
             expect(registry.get(null)(-42)).to.equal('-42');
         });
