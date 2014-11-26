@@ -66,9 +66,18 @@ define(function (require) {
         return attrib(element, 'class').indexOf(value) !== -1;
     };
 
-    function position(el) {
-        return {x: attrib(el, 'cx'), y: attrib(el, 'cy')}
-    }
+    var position = function (el) {
+        return {x: attrib(el, 'cx'), y: attrib(el, 'cy')};
+    };
+
+    var toLocalDate = function (str) {
+        var offsetHrs = new Date().getTimezoneOffset() / 60;
+        var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
+        if (str.indexOf('T') === -1) {
+            str += 'T00:00:00';
+        }
+        return new Date(str + '+' + offsetISO);
+    };
 
     function describePlot(name, spec, data, fn) {
         describe(name, function () {
@@ -104,6 +113,7 @@ define(function (require) {
 
 
     return {
+        toLocalDate: toLocalDate,
         describePlot: describePlot,
         getDots: getDots,
         getLine: getLine,

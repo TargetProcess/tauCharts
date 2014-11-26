@@ -27,12 +27,13 @@ var getSizesParams = function (params) {
 };
 
 var interval = function (node) {
-    var startPoint = 0;
+
     var options = node.options;
 
     var color = utilsDraw.generateColor(node);
 
     var partition = node.partition();
+
     var categories = d3
         .nest()
         .key((d) => d[color.dimension])
@@ -45,7 +46,12 @@ var interval = function (node) {
         calculateWidth,
         calculateHeight,
         calculateTranslate;
+
     if (node.flip) {
+
+        var xMin = Math.min.apply(null, xScale.domain());
+        let startPoint = (xMin <= 0) ? 0 : xMin;
+
         /* jshint ignore:start */
         var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
             domain: yScale.domain,
@@ -61,6 +67,10 @@ var interval = function (node) {
         calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
 
     } else {
+
+        var yMin = Math.min.apply(null, yScale.domain());
+        let startPoint = (yMin <= 0) ? 0 : yMin;
+
         /* jshint ignore:start */
         var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
             domain: xScale.domain,
@@ -69,9 +79,9 @@ var interval = function (node) {
             size: options.width
         });
         /* jshint ignore:end */
-        calculateX = (d) =>  xScale(d[node.x.scaleDim]) - (tickWidth / 2);
+        calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         calculateY = isMeasure(node.y) ?
-            (d) =>  yScale(Math.max(startPoint, d[node.y.scaleDim])) :
+            (d) => yScale(Math.max(startPoint, d[node.y.scaleDim])) :
             (d) => yScale(d[node.y.scaleDim]);
 
         calculateWidth = (d)=> intervalWidth;
@@ -83,14 +93,13 @@ var interval = function (node) {
 
     var updateBar = function () {
         return this
-            .attr('class', (d)=> {
-                return 'i-role-datum bar ' + CSS_PREFIX + 'bar ' + color.get(d[color.dimension]);
-            })
+            .attr('class', (d) => ('i-role-datum bar ' + CSS_PREFIX + 'bar ' + color.get(d[color.dimension])))
             .attr('x', calculateX)
             .attr('y', calculateY)
             .attr('width', calculateWidth)
             .attr('height', calculateHeight);
     };
+
     var updateBarContainer = function () {
 
         this

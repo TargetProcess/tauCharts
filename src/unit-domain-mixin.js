@@ -173,10 +173,19 @@ export class UnitDomainMixin {
             var opts = options || {};
             var dimx = _.defaults({}, meta[scaleDim]);
 
+            var fValHub = {
+                'order:period': (xOptions) => {
+                    return ((x) => UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x)));
+                },
+
+                '*': (opts) => {
+                    return ((x) => x);
+                }
+            };
+
             var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-            var fVal = opts.period ?
-                ((x) => UnitDomainPeriodGenerator.get(opts.period).cast(new Date(x))) :
-                ((x) => x);
+            var fKey = [dimx.type, dimx.scale].join(':');
+            var fVal = (fValHub[fKey] || fValHub['*'])(opts);
 
             var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
             var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
