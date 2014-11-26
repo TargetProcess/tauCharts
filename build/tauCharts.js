@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.15 - 2014-11-21
+/*! tauCharts - v0.1.16 - 2014-11-26
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -703,15 +703,14 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   /* jshint ignore:end */
   var FORMATS_MAP = {
     "x-num-auto": function (x) {
-      var base = Math.floor(x);
-      var rest = Math.abs(x - base);
-      if (rest > 0) {
-        x = x.toFixed(2);
-      }
-      return (Math.abs(x) < 1) ? x.toString() : d3.format("s")(x);
+      var v = parseFloat(x.toFixed(2));
+      return (Math.abs(v) < 1) ? v.toString() : d3.format("s")(v);
     },
 
-    percent: d3.format(".2%"),
+    percent: function (x) {
+      var v = parseFloat((x * 100).toFixed(2));
+      return v.toString() + "%";
+    },
 
     day: d3.time.format("%d-%b-%Y"),
 
@@ -758,12 +757,14 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   FORMATS_MAP["x-time-year"] = FORMATS_MAP["year"];
   /* jshint ignore:end */
 
+  var identity = (function (x) {
+    return (x || "").toString();
+  });
+
   var FormatterRegistry = {
     get: function (formatAlias) {
       var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
-      var formatter = hasFormat ? FORMATS_MAP[formatAlias] : (function (x) {
-        return x.toString();
-      });
+      var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
 
       if (hasFormat) {
         formatter = FORMATS_MAP[formatAlias];
@@ -777,9 +778,7 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
       }
 
       if (!hasFormat && !formatAlias) {
-        formatter = (function (x) {
-          return x.toString();
-        });
+        formatter = identity;
       }
 
       return formatter;
@@ -1096,11 +1095,14 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
 
+  // TODO: think of inheritance rules
   var inheritProps = function (unit, root) {
     unit.guide = unit.guide || {};
     unit.guide.padding = unit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
     unit = _.defaults(unit, root);
-    unit.guide = _.defaults(unit.guide, root.guide);
+    unit.guide = _.defaults(unit.guide, utils.clone(root.guide));
+    unit.guide.x = _.defaults(unit.guide.x, utils.clone(root.guide.x));
+    unit.guide.y = _.defaults(unit.guide.y, utils.clone(root.guide.y));
     return unit;
   };
 
@@ -1131,7 +1133,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     }
 
     var maxXTickText = _.max(domainValues, function (x) {
-      return formatter(x || "").toString().length;
+      return formatter(x).toString().length;
     });
     return fnCalcTickLabelSize(formatter(maxXTickText));
   };
@@ -1190,6 +1192,9 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var SpecEngineTypeMap = {
     NONE: function (spec, meta, settings) {
       return function (selectorPredicates, unit) {
+        unit.guide.x.tickFontHeight = settings.getAxisTickLabelSize("X").height;
+        unit.guide.y.tickFontHeight = settings.getAxisTickLabelSize("Y").height;
+
         return unit;
       };
     },
@@ -1253,6 +1258,9 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var dimX = meta.dimension(unit.x);
         var dimY = meta.dimension(unit.y);
 
+        var isXContinues = (dimX.dimType === "measure");
+        var isYContinues = (dimY.dimType === "measure");
+
         var xScaleOptions = {
           map: unit.guide.x.tickLabel,
           min: unit.guide.x.tickMin,
@@ -1303,7 +1311,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
         var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
-        if (dimX.dimType !== "measure" && (maxXTickH > settings.xAxisTickLabelLimit)) {
+        if (!isXContinues && (maxXTickH > settings.xAxisTickLabelLimit)) {
           maxXTickH = settings.xAxisTickLabelLimit;
         }
 
@@ -1314,7 +1322,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         }
 
         var maxYTickW = maxYTickSize.width;
-        if (dimY.dimType !== "measure" && (maxYTickW > settings.yAxisTickLabelLimit)) {
+        if (!isYContinues && (maxYTickW > settings.yAxisTickLabelLimit)) {
           maxYTickW = settings.yAxisTickLabelLimit;
           unit.guide.y.tickFormatWordWrap = true;
           unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
@@ -1348,6 +1356,9 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+        unit.guide.x.tickFontHeight = maxXTickSize.height;
+        unit.guide.y.tickFontHeight = maxYTickSize.height;
 
         unit.guide.x.$minimalDomain = xValues.length;
         unit.guide.y.$minimalDomain = yValues.length;
@@ -2764,13 +2775,15 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
 
     var color = utilsDraw.generateColor(node);
 
-    var maxAxis = _.max([options.width, options.height]);
-    var size = sizeScale(node.domain(node.size.scaleDim), maxAxis / 100);
+    var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
+      return x !== 0;
+    })) / 2;
+    var size = sizeScale(node.domain(node.size.scaleDim), maxAxisSize);
 
     var update = function () {
       return this.attr("r", function (d) {
         var s = size(d[node.size.scaleDim]);
-        return (!_.isFinite(s)) ? maxAxis / 100 : s;
+        return (!_.isFinite(s)) ? maxAxisSize : s;
       }).attr("class", function (d) {
         return CSS_PREFIX + "dot" + " dot i-role-datum " + color.get(d[color.dimension]);
       }).attr("cx", function (d) {
