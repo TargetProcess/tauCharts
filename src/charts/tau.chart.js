@@ -66,6 +66,15 @@ function transformConfig(type, config) {
     y = strategyNormalizeAxis[validatedY.status](y, validatedY);
     var guide = normalizeSettings(config.guide);
     var maxDeep = Math.max(x.length, y.length);
+
+    // feel the gaps if needed
+    while (guide.length < maxDeep) {
+        guide.push({});
+    }
+
+    // cut items
+    guide = guide.slice(0, maxDeep);
+
     var spec = {
         type: 'COORDS.RECT',
         unit: []

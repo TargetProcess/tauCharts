@@ -2,15 +2,20 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
 
-// TODO: think of inheritance rules
-var inheritProps = (unit, root) => {
-    unit.guide = unit.guide || {};
-    unit.guide.padding = unit.guide.padding || {l: 0, t: 0, r: 0, b: 0};
-    unit = _.defaults(unit, root);
-    unit.guide = _.defaults(unit.guide, utils.clone(root.guide));
-    unit.guide.x = _.defaults(unit.guide.x, utils.clone(root.guide.x));
-    unit.guide.y = _.defaults(unit.guide.y, utils.clone(root.guide.y));
-    return unit;
+var inheritProps = (childUnit, root) => {
+
+    childUnit.guide = childUnit.guide || {};
+    childUnit.guide.padding = childUnit.guide.padding || {l: 0, t: 0, r: 0, b: 0};
+
+    // leaf elements should inherit coordinates properties
+    if (!childUnit.hasOwnProperty('unit')) {
+        childUnit = _.defaults(childUnit, root);
+        childUnit.guide = _.defaults(childUnit.guide, utils.clone(root.guide));
+        childUnit.guide.x = _.defaults(childUnit.guide.x, utils.clone(root.guide.x));
+        childUnit.guide.y = _.defaults(childUnit.guide.y, utils.clone(root.guide.y));
+    }
+
+    return childUnit;
 };
 
 var createSelectorPredicates = (root) => {
