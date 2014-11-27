@@ -126,6 +126,7 @@ export class Plot {
             if (root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
                 root.guide.x.rotate = 0;
                 root.guide.x.textAnchor = 'middle';
+                root.guide.x.tickFormatWordWrapLimit = perTickX;
                 var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
                 var xDelta = 0 - s + root.guide.x.$maxTickTextH;
                 root.guide.x.label.padding = root.guide.x.label.padding + xDelta;
