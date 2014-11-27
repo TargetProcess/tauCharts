@@ -40,7 +40,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
 
     if (formatter === null) {
         var size = fnCalcTickLabelSize("TauChart Library");
-        size.width = axisLabelLimit * 0.625; // golden ration
+        size.width = axisLabelLimit * 0.625; // golden ratio
         return size;
     }
 
@@ -170,6 +170,10 @@ var SpecEngineTypeMap = {
 
             if (selectorPredicates.isLeaf) {
                 return unit;
+            }
+
+            if (selectorPredicates.isLeafParent && !unit.guide.hasOwnProperty('showGridLines')) {
+                unit.guide.showGridLines = 'xy';
             }
 
             var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);

@@ -241,6 +241,8 @@ define(function (require) {
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
 
+            expect(full.unit.guide.hasOwnProperty('showGridLines')).to.equal(false);
+
             expect(x.autoScale).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
@@ -280,6 +282,8 @@ define(function (require) {
             var px = part.guide.x;
             var py = part.guide.y;
 
+            expect(part.guide.showGridLines).to.equal('xy');
+
             expect(px.tickFormat).to.equal('x-time-quarter');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
@@ -295,6 +299,55 @@ define(function (require) {
 
             expect(elem.guide.x.tickFontHeight).to.equal(10);
             expect(elem.guide.y.tickFontHeight).to.equal(10);
+        });
+
+        it("should not reset [showGridLines] within [AUTO] spec engine", function () {
+
+            var spec = {
+                "dimensions": {
+                    "team": {
+                        "type": "order",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "measure",
+                        "scale": "time"
+                    }
+                },
+                "unit": {
+                    "type": "COORDS.RECT",
+                    "x": "team",
+                    "y": null,
+                    "guide": { showGridLines: 'x' },
+                    "unit": [
+                        {
+                            "type": "COORDS.RECT",
+                            "x": "date",
+                            "y": "count",
+                            "guide": { showGridLines: '' },
+                            "unit": [
+                                {
+                                    "type": "ELEMENT.INTERVAL"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+
+            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
+
+            var full = testSpecEngine(spec, meta);
+            var part = full.unit.unit[0];
+
+            expect(full.unit.guide.showGridLines).to.equal('x');
+            expect(part.guide.showGridLines).to.equal('');
         });
     });
 });

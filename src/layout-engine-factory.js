@@ -96,21 +96,20 @@ var LayoutEngineTypeMap = {
             unit.guide.x.hide = !selectorPredicates.lastRow;
             unit.guide.y.hide = !selectorPredicates.firstCol;
 
-            var mid = (depth > 1) ? 0 : distanceBetweenFacets;
-            var rev = (depth > 1) ? distanceBetweenFacets : 0;
+            var positiveFeedbackLoop = (depth > 1) ? 0 : distanceBetweenFacets;
+            var negativeFeedbackLoop = (depth > 1) ? distanceBetweenFacets : 0;
 
             unit.guide.x.padding += (box.paddings[depth].b);
             unit.guide.y.padding += (box.paddings[depth].l);
 
-            unit.guide.x.padding -= rev;
-            unit.guide.y.padding -= rev;
+            unit.guide.x.padding -= negativeFeedbackLoop;
+            unit.guide.y.padding -= negativeFeedbackLoop;
 
-            unit.guide.padding.l = mid;
-            unit.guide.padding.b = mid;
-            unit.guide.padding.r = mid;
-            unit.guide.padding.t = mid;
+            unit.guide.padding.l = positiveFeedbackLoop;
+            unit.guide.padding.b = positiveFeedbackLoop;
+            unit.guide.padding.r = positiveFeedbackLoop;
+            unit.guide.padding.t = positiveFeedbackLoop;
 
-            unit.guide.showGridLines = (depth > 1) ? '' : 'xy';
             return unit;
         });
 
