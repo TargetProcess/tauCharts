@@ -2,6 +2,25 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
 
+var applyCustomProps = (targetUnit, customUnit) => {
+    var guide = customUnit.guide || {};
+    var guide_x = guide['x'] || {};
+    var guide_y = guide['y'] || {};
+    var guide_padding = guide['padding'] || {};
+
+    _.extend(targetUnit.guide.padding, guide_padding);
+
+    _.extend(targetUnit.guide.x.label, guide_x.label);
+    _.extend(targetUnit.guide.x, _.omit(guide_x, 'label'));
+
+    _.extend(targetUnit.guide.y.label, guide_y.label);
+    _.extend(targetUnit.guide.y, _.omit(guide_y, 'label'));
+
+    _.extend(targetUnit.guide, _.omit(guide, 'x', 'y', 'padding'));
+
+    return targetUnit;
+};
+
 var inheritProps = (childUnit, root) => {
 
     childUnit.guide = childUnit.guide || {};
@@ -98,12 +117,10 @@ var getTickFormat = (dim, meta, defaultFormats) => {
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
 };
 
-var fnTraverseTree = (specUnitRef, transformRules) => {
-    var temp = utilsDraw.applyNodeDefaults(specUnitRef);
-    var root = transformRules(createSelectorPredicates(temp), temp);
-    var prop = _.omit(root, 'unit');
-    (root.unit || []).forEach((unit) => fnTraverseTree(inheritProps(unit, prop), transformRules));
-    return root;
+var fnTraverseJSON = (unitSpecRef, xProperty, transformRules) => {
+    var rootRef = transformRules(createSelectorPredicates(unitSpecRef), unitSpecRef);
+    (rootRef[xProperty] || []).forEach((unit) => fnTraverseJSON(unit, xProperty, transformRules));
+    return rootRef;
 };
 
 var SpecEngineTypeMap = {
@@ -124,15 +141,22 @@ var SpecEngineTypeMap = {
         var yLabels = [];
         var xUnit = null;
         var yUnit = null;
-        fnTraverseTree(spec.unit, (selectors, unit) => {
+        fnTraverseJSON(spec.unit, 'unit', (selectors, unit) => {
 
             if (selectors.isLeaf) {
                 return unit;
             }
 
-
             if (!xUnit && unit.x) (xUnit = unit);
             if (!yUnit && unit.y) (yUnit = unit);
+
+            unit.guide = unit.guide || {};
+
+            unit.guide.x = unit.guide.x || {label: ''};
+            unit.guide.y = unit.guide.y || {label: ''};
+
+            unit.guide.x.label = _.isObject(unit.guide.x.label) ? unit.guide.x.label : {text: unit.guide.x.label};
+            unit.guide.y.label = _.isObject(unit.guide.y.label) ? unit.guide.y.label : {text: unit.guide.y.label};
 
 
             if (unit.x) {
@@ -159,11 +183,11 @@ var SpecEngineTypeMap = {
         });
 
         if (xUnit) {
-            xUnit.guide.x.label.text = xLabels.join(' > ');
+            xUnit.guide.x.label.text = xLabels.map((x) => x.toUpperCase()).join(' > ');
         }
 
         if (yUnit) {
-            yUnit.guide.y.label.text = yLabels.join(' > ');
+            yUnit.guide.y.label.text = yLabels.map((x) => x.toUpperCase()).join(' > ');
         }
 
         return (selectorPredicates, unit) => {
@@ -293,13 +317,11 @@ var SpecEngineTypeMap = {
             var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
 
-            unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
-            unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
-
-
             unit.guide.padding.b = xAxisPadding + xLabelPadding;
             unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
+            unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+            unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
 
             unit.guide.x.tickFontHeight = maxXTickSize.height;
             unit.guide.y.tickFontHeight = maxYTickSize.height;
@@ -318,6 +340,17 @@ var SpecEngineTypeMap = {
     }
 };
 
+var fnTraverseSpec = (specUnitRef, transformRules) => {
+    var xRef,
+        orig = utils.clone(specUnitRef);
+    xRef = utilsDraw.applyNodeDefaults(specUnitRef);
+    xRef = transformRules(createSelectorPredicates(xRef), xRef);
+    xRef = applyCustomProps(xRef, orig);
+    var prop = _.omit(xRef, 'unit');
+    (xRef.unit || []).forEach((unit) => fnTraverseSpec(inheritProps(unit, prop), transformRules));
+    return xRef;
+};
+
 var SpecEngineFactory = {
 
     get: (typeName, settings) => {
@@ -325,7 +358,7 @@ var SpecEngineFactory = {
         var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
         return (srcSpec, meta) => {
             var spec = utils.clone(srcSpec);
-            fnTraverseTree(spec.unit, rules(spec, meta, settings));
+            fnTraverseSpec(spec.unit, rules(spec, meta, settings));
             return spec;
         };
     }

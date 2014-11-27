@@ -123,7 +123,7 @@ export class Plot {
             var perTickY = size.height / mdy;
 
             var densityKoeff = localSettings.xMinimumDensityKoeff;
-            if (root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+            if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
                 root.guide.x.rotate = 0;
                 root.guide.x.textAnchor = 'middle';
                 root.guide.x.tickFormatWordWrapLimit = perTickX;
