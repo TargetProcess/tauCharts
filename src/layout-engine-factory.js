@@ -93,8 +93,8 @@ var LayoutEngineTypeMap = {
 
             var depth = selectorPredicates.depth;
 
-            unit.guide.x.hide = !selectorPredicates.lastRow;
-            unit.guide.y.hide = !selectorPredicates.firstCol;
+            unit.guide.x.hide = (unit.guide.x.hide) ? unit.guide.x.hide : !selectorPredicates.lastRow;
+            unit.guide.y.hide = (unit.guide.y.hide) ? unit.guide.y.hide : !selectorPredicates.firstCol;
 
             var positiveFeedbackLoop = (depth > 1) ? 0 : distanceBetweenFacets;
             var negativeFeedbackLoop = (depth > 1) ? distanceBetweenFacets : 0;

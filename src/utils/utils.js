@@ -1,3 +1,13 @@
+
+var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
+
+    var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
+
+    (rootRef[byProperty] || []).forEach((unit) => traverseJSON(unit, byProperty, fnSelectorPredicates, funcTransformRules));
+
+    return rootRef;
+};
+
 var utils = {
     clone: (obj) => JSON.parse(JSON.stringify(obj)),
     isArray: (obj) => Array.isArray(obj),
@@ -62,7 +72,9 @@ var utils = {
             parseFloat(extent[0].toFixed(15)),
             parseFloat(extent[1].toFixed(15))
         ];
-    }
+    },
+
+    traverseJSON: traverseJSON
 };
 
 export {utils};

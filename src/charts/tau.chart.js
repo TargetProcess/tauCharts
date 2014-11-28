@@ -96,27 +96,27 @@ function transformConfig(type, config) {
                 flip: config.flip,
                 colorGuide: colorGuide
             }));
-            spec.guide = _.defaults(currentGuide, {
-                padding: {l: 45, b: 45, r: 24, t: 24},
-                showGridLines: 'xy',
-                x: {label: currentX},
-                y: {label: currentY}
-            });
+            spec.guide = _.defaults(
+                currentGuide,
+                {
+                    x: {label: currentX},
+                    y: {label: currentY}
+                });
         } else {
             spec = {
                 type: 'COORDS.RECT',
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
                 unit: [spec],
-                guide: _.defaults(currentGuide, {
-                    padding: {l: 45, b: 45, r: 0, t: 0},
-                    x: {label: currentX},
-                    y: {label: currentY}
-                })
+                guide: _.defaults(
+                    currentGuide,
+                    {
+                        x: {label: currentX},
+                        y: {label: currentY}
+                    })
             };
         }
     }
-
 
     config.spec = {
         dimensions: config.dimensions,
