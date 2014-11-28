@@ -128,9 +128,11 @@ export class Plot {
                 root.guide.x.textAnchor = 'middle';
                 root.guide.x.tickFormatWordWrapLimit = perTickX;
                 var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
+
                 var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-                root.guide.x.label.padding = root.guide.x.label.padding + xDelta;
-                root.guide.padding.b = root.guide.padding.b + xDelta;
+
+                root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
+                root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
             }
 
             var newSize = {
