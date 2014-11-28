@@ -4,9 +4,9 @@ import {FormatterRegistry} from './formatter-registry';
 
 var applyCustomProps = (targetUnit, customUnit) => {
     var guide = customUnit.guide || {};
-    var guide_x = guide['x'] || {};
-    var guide_y = guide['y'] || {};
-    var guide_padding = guide['padding'] || {};
+    var guide_x = guide.hasOwnProperty('x') ? guide.x : {};
+    var guide_y = guide.hasOwnProperty('y') ? guide.y : {};
+    var guide_padding = guide.hasOwnProperty('padding') ? guide.padding : {};
 
     _.extend(targetUnit.guide.padding, guide_padding);
 
@@ -354,7 +354,7 @@ var SpecEngineTypeMap = {
     }
 };
 
-SpecEngineTypeMap['AUTO'] = (srcSpec, meta, settings) => {
+SpecEngineTypeMap.AUTO = (srcSpec, meta, settings) => {
     return ['BUILD-LABELS', 'BUILD-GUIDE'].reduce(
         (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
         srcSpec
