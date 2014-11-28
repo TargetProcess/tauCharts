@@ -29,7 +29,12 @@ var utilsDom =  {
         var pb = parseInt(this.getStyle(el, 'padding-bottom') || 0, 10);
         var pt = parseInt(this.getStyle(el, 'padding-top') || 0, 10);
 
-        var bw = parseInt(this.getStyle(el, 'border-width') || 0, 10);
+        var borderWidthT = parseInt(this.getStyle(el, 'border-top-width') || 0, 10);
+        var borderWidthL = parseInt(this.getStyle(el, 'border-left-width') || 0, 10);
+        var borderWidthR = parseInt(this.getStyle(el, 'border-right-width') || 0, 10);
+        var borderWidthB = parseInt(this.getStyle(el, 'border-bottom-width') || 0, 10);
+
+        var bw = borderWidthT + borderWidthL + borderWidthR + borderWidthB;
 
         var rect = el.getBoundingClientRect();
 
@@ -69,9 +74,14 @@ var utilsDom =  {
         var textNode = d3.select(div).selectAll('.x.axis .tick text')[0][0];
 
         var size = {
-            width: textNode.clientWidth || textNode.scrollWidth,
-            height: textNode.clientHeight || textNode.scrollHeight
+            width: 0,
+            height: 0
         };
+
+        // Internet Explorer, Firefox 3+, Google Chrome, Opera 9.5+, Safari 4+
+        var rect = textNode.getBoundingClientRect();
+        size.width = rect.right - rect.left;
+        size.height = rect.bottom - rect.top;
 
         document.body.removeChild(div);
 
