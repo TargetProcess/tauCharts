@@ -10,7 +10,7 @@
     <script src="../src/tau.plugins.js"></script>
 
     <!-- plugins -->
-    <script src="../plugins/tooltip.js"></script>
+
     <script src="../plugins/highlighter.js"></script>
     <!-- test data -->
     <script src="data.js"></script>
@@ -18,7 +18,7 @@
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
     <script src="dataTp.js"></script>
-    <script src="../build/tauCharts.js"></script>
+
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
@@ -156,7 +156,8 @@
 <div id="no-data-container" class="cc">
     <div class="cc-empty"></div>
 </div>
-
+<script src="../build/tauCharts.js"></script>
+<script src="../plugins/tooltip.js"></script>
 <script>
 
     var facet2x2 = {
@@ -424,7 +425,7 @@
                         ]
                     }
                 },
-                plugins: []
+                plugins: [tauPlugins.tooltip(['count'])]
             }).renderTo('#datetime-container');
 
 
@@ -467,7 +468,7 @@
                         ]
                     }
                 },
-                plugins: []
+                plugins: [tauPlugins.tooltip()]
             }).renderTo('#parallel-container');
 
     var rawData = _.map(

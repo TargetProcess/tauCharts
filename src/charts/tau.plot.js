@@ -13,6 +13,7 @@ import {DataProcessor} from '../data-processor';
 
 export class Plot extends Emitter{
     constructor(config) {
+        super();
         this.setupConfig(config);
         //plugins
         this._plugins = new Plugins(this.config.plugins, this);

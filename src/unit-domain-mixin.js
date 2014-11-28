@@ -1,8 +1,15 @@
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
+import {Emitter} from './event';
 import {utils} from './utils/utils';
 /* jshint ignore:start */
-import * as _ from 'underscore';
-import * as d3 from 'd3';
+import * as
+_
+from
+'underscore';
+import * as
+d3
+from
+'d3';
 /* jshint ignore:end */
 
 var autoScaleMethods = {
@@ -68,7 +75,7 @@ var rangeMethods = {
     }
 };
 
-export class UnitDomainMixin {
+export class UnitDomainMixin extends Emitter {
 
     constructor(meta, data) {
 
@@ -224,7 +231,7 @@ export class UnitDomainMixin {
         unit.scaleMeta = this.fnScaleMeta;
         unit.scaleTo = this.fnScaleTo;
         unit.partition = (() => unit.data || unit.source(unit.$where));
-
+        this.fire('unitReady', unit);
         return unit;
     }
 }
