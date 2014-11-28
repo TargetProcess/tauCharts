@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.16 - 2014-11-26
+/*! tauCharts - v0.1.16 - 2014-11-28
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -476,7 +476,12 @@ define('utils/utils-dom',["exports"], function (exports) {
       var pb = parseInt(this.getStyle(el, "padding-bottom") || 0, 10);
       var pt = parseInt(this.getStyle(el, "padding-top") || 0, 10);
 
-      var bw = parseInt(this.getStyle(el, "border-width") || 0, 10);
+      var borderWidthT = parseInt(this.getStyle(el, "border-top-width") || 0, 10);
+      var borderWidthL = parseInt(this.getStyle(el, "border-left-width") || 0, 10);
+      var borderWidthR = parseInt(this.getStyle(el, "border-right-width") || 0, 10);
+      var borderWidthB = parseInt(this.getStyle(el, "border-bottom-width") || 0, 10);
+
+      var bw = borderWidthT + borderWidthL + borderWidthR + borderWidthB;
 
       var rect = el.getBoundingClientRect();
 
@@ -508,9 +513,14 @@ define('utils/utils-dom',["exports"], function (exports) {
       var textNode = d3.select(div).selectAll(".x.axis .tick text")[0][0];
 
       var size = {
-        width: textNode.clientWidth || textNode.scrollWidth,
-        height: textNode.clientHeight || textNode.scrollHeight
+        width: 0,
+        height: 0
       };
+
+      // Internet Explorer, Firefox 3+, Google Chrome, Opera 9.5+, Safari 4+
+      var rect = textNode.getBoundingClientRect();
+      size.width = rect.right - rect.left;
+      size.height = rect.bottom - rect.top;
 
       document.body.removeChild(div);
 
@@ -632,6 +642,16 @@ define('dsl-reader',["exports"], function (exports) {
 define('utils/utils',["exports"], function (exports) {
   
 
+  var traverseJSON = function (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) {
+    var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
+
+    (rootRef[byProperty] || []).forEach(function (unit) {
+      return traverseJSON(unit, byProperty, fnSelectorPredicates, funcTransformRules);
+    });
+
+    return rootRef;
+  };
+
   var utils = {
     clone: function (obj) {
       return JSON.parse(JSON.stringify(obj));
@@ -689,7 +709,9 @@ define('utils/utils',["exports"], function (exports) {
       }
 
       return [parseFloat(extent[0].toFixed(15)), parseFloat(extent[1].toFixed(15))];
-    }
+    },
+
+    traverseJSON: traverseJSON
   };
 
   exports.utils = utils;
@@ -1095,15 +1117,38 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
 
-  // TODO: think of inheritance rules
-  var inheritProps = function (unit, root) {
-    unit.guide = unit.guide || {};
-    unit.guide.padding = unit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
-    unit = _.defaults(unit, root);
-    unit.guide = _.defaults(unit.guide, utils.clone(root.guide));
-    unit.guide.x = _.defaults(unit.guide.x, utils.clone(root.guide.x));
-    unit.guide.y = _.defaults(unit.guide.y, utils.clone(root.guide.y));
-    return unit;
+  var applyCustomProps = function (targetUnit, customUnit) {
+    var guide = customUnit.guide || {};
+    var guide_x = guide.hasOwnProperty("x") ? guide.x : {};
+    var guide_y = guide.hasOwnProperty("y") ? guide.y : {};
+    var guide_padding = guide.hasOwnProperty("padding") ? guide.padding : {};
+
+    _.extend(targetUnit.guide.padding, guide_padding);
+
+    _.extend(targetUnit.guide.x.label, guide_x.label);
+    _.extend(targetUnit.guide.x, _.omit(guide_x, "label"));
+
+    _.extend(targetUnit.guide.y.label, guide_y.label);
+    _.extend(targetUnit.guide.y, _.omit(guide_y, "label"));
+
+    _.extend(targetUnit.guide, _.omit(guide, "x", "y", "padding"));
+
+    return targetUnit;
+  };
+
+  var inheritProps = function (childUnit, root) {
+    childUnit.guide = childUnit.guide || {};
+    childUnit.guide.padding = childUnit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
+
+    // leaf elements should inherit coordinates properties
+    if (!childUnit.hasOwnProperty("unit")) {
+      childUnit = _.defaults(childUnit, root);
+      childUnit.guide = _.defaults(childUnit.guide, utils.clone(root.guide));
+      childUnit.guide.x = _.defaults(childUnit.guide.x, utils.clone(root.guide.x));
+      childUnit.guide.y = _.defaults(childUnit.guide.y, utils.clone(root.guide.y));
+    }
+
+    return childUnit;
   };
 
   var createSelectorPredicates = function (root) {
@@ -1128,7 +1173,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
     if (formatter === null) {
       var size = fnCalcTickLabelSize("TauChart Library");
-      size.width = axisLabelLimit * 0.625; // golden ration
+      size.width = axisLabelLimit * 0.625; // golden ratio
       return size;
     }
 
@@ -1179,38 +1224,40 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
   };
 
-  var fnTraverseTree = function (specUnitRef, transformRules) {
-    var temp = utilsDraw.applyNodeDefaults(specUnitRef);
-    var root = transformRules(createSelectorPredicates(temp), temp);
-    var prop = _.omit(root, "unit");
-    (root.unit || []).forEach(function (unit) {
-      return fnTraverseTree(inheritProps(unit, prop), transformRules);
-    });
-    return root;
-  };
-
   var SpecEngineTypeMap = {
-    NONE: function (spec, meta, settings) {
-      return function (selectorPredicates, unit) {
+    NONE: function (srcSpec, meta, settings) {
+      var spec = utils.clone(srcSpec);
+      fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
         unit.guide.x.tickFontHeight = settings.getAxisTickLabelSize("X").height;
         unit.guide.y.tickFontHeight = settings.getAxisTickLabelSize("Y").height;
-
         return unit;
-      };
+      });
+      return spec;
     },
 
-    AUTO: function (spec, meta, settings) {
+    "BUILD-LABELS": function (srcSpec, meta, settings) {
+      var spec = utils.clone(srcSpec);
+
       var xLabels = [];
       var yLabels = [];
       var xUnit = null;
       var yUnit = null;
-      fnTraverseTree(spec.unit, function (selectors, unit) {
+
+      utils.traverseJSON(spec.unit, "unit", createSelectorPredicates, function (selectors, unit) {
         if (selectors.isLeaf) {
           return unit;
         }
 
         if (!xUnit && unit.x) (xUnit = unit);
         if (!yUnit && unit.y) (yUnit = unit);
+
+        unit.guide = unit.guide || {};
+
+        unit.guide.x = unit.guide.x || { label: "" };
+        unit.guide.y = unit.guide.y || { label: "" };
+
+        unit.guide.x.label = _.isObject(unit.guide.x.label) ? unit.guide.x.label : { text: unit.guide.x.label };
+        unit.guide.y.label = _.isObject(unit.guide.y.label) ? unit.guide.y.label : { text: unit.guide.y.label };
 
         if (unit.x) {
           unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
@@ -1236,16 +1283,29 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       });
 
       if (xUnit) {
-        xUnit.guide.x.label.text = xLabels.join(" > ");
+        xUnit.guide.x.label.text = xLabels.map(function (x) {
+          return x.toUpperCase();
+        }).join(" > ");
       }
 
       if (yUnit) {
-        yUnit.guide.y.label.text = yLabels.join(" > ");
+        yUnit.guide.y.label.text = yLabels.map(function (x) {
+          return x.toUpperCase();
+        }).join(" > ");
       }
 
-      return function (selectorPredicates, unit) {
+      return spec;
+    },
+
+    "BUILD-GUIDE": function (srcSpec, meta, settings) {
+      var spec = utils.clone(srcSpec);
+      fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
         if (selectorPredicates.isLeaf) {
           return unit;
+        }
+
+        if (selectorPredicates.isLeafParent && !unit.guide.hasOwnProperty("showGridLines")) {
+          unit.guide.showGridLines = "xy";
         }
 
         var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
@@ -1351,11 +1411,11 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
         var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
-        unit.guide.x.label.text = unit.guide.x.label.text.toUpperCase();
-        unit.guide.y.label.text = unit.guide.y.label.text.toUpperCase();
-
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+        unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+        unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
 
         unit.guide.x.tickFontHeight = maxXTickSize.height;
         unit.guide.y.tickFontHeight = maxYTickSize.height;
@@ -1370,20 +1430,35 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         unit.guide.y.$maxTickTextH = maxYTickSize.height;
 
         return unit;
-      };
+      });
+      return spec;
     }
+  };
+
+  SpecEngineTypeMap.AUTO = function (srcSpec, meta, settings) {
+    return ["BUILD-LABELS", "BUILD-GUIDE"].reduce(function (spec, engineName) {
+      return SpecEngineTypeMap[engineName](spec, meta, settings);
+    }, srcSpec);
+  };
+
+  var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
+    var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
+    xRef = transformRules(createSelectorPredicates(xRef), xRef);
+    xRef = applyCustomProps(xRef, orig);
+    var prop = _.omit(xRef, "unit");
+    (xRef.unit || []).forEach(function (unit) {
+      return fnTraverseSpec(utils.clone(unit), inheritProps(unit, prop), transformRules);
+    });
+    return xRef;
   };
 
   var SpecEngineFactory = {
     get: function (typeName, settings) {
-      var rules = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
+      var engine = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
       return function (srcSpec, meta) {
-        var spec = utils.clone(srcSpec);
-        fnTraverseTree(spec.unit, rules(spec, meta, settings));
-        return spec;
+        return engine(srcSpec, meta, settings);
       };
     }
-
   };
 
   exports.SpecEngineFactory = SpecEngineFactory;
@@ -1536,24 +1611,23 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
       traverse(coordMatrix, box.depth, function (unit, selectorPredicates) {
         var depth = selectorPredicates.depth;
 
-        unit.guide.x.hide = !selectorPredicates.lastRow;
-        unit.guide.y.hide = !selectorPredicates.firstCol;
+        unit.guide.x.hide = (unit.guide.x.hide) ? unit.guide.x.hide : !selectorPredicates.lastRow;
+        unit.guide.y.hide = (unit.guide.y.hide) ? unit.guide.y.hide : !selectorPredicates.firstCol;
 
-        var mid = (depth > 1) ? 0 : distanceBetweenFacets;
-        var rev = (depth > 1) ? distanceBetweenFacets : 0;
+        var positiveFeedbackLoop = (depth > 1) ? 0 : distanceBetweenFacets;
+        var negativeFeedbackLoop = (depth > 1) ? distanceBetweenFacets : 0;
 
         unit.guide.x.padding += (box.paddings[depth].b);
         unit.guide.y.padding += (box.paddings[depth].l);
 
-        unit.guide.x.padding -= rev;
-        unit.guide.y.padding -= rev;
+        unit.guide.x.padding -= negativeFeedbackLoop;
+        unit.guide.y.padding -= negativeFeedbackLoop;
 
-        unit.guide.padding.l = mid;
-        unit.guide.padding.b = mid;
-        unit.guide.padding.r = mid;
-        unit.guide.padding.t = mid;
+        unit.guide.padding.l = positiveFeedbackLoop;
+        unit.guide.padding.b = positiveFeedbackLoop;
+        unit.guide.padding.r = positiveFeedbackLoop;
+        unit.guide.padding.t = positiveFeedbackLoop;
 
-        unit.guide.showGridLines = (depth > 1) ? "" : "xy";
         return unit;
       });
 
@@ -1955,12 +2029,23 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
         var opts = options || {};
         var dimx = _.defaults({}, meta[scaleDim]);
 
+        var fValHub = {
+          "order:period": function (xOptions) {
+            return (function (x) {
+              return UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x));
+            });
+          },
+
+          "*": function (opts) {
+            return (function (x) {
+              return x;
+            });
+          }
+        };
+
         var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-        var fVal = opts.period ? (function (x) {
-          return UnitDomainPeriodGenerator.get(opts.period).cast(new Date(x));
-        }) : (function (x) {
-          return x;
-        });
+        var fKey = [dimx.type, dimx.scale].join(":");
+        var fVal = (fValHub[fKey] || fValHub["*"])(opts);
 
         var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
         var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
@@ -2173,13 +2258,16 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
             var perTickY = size.height / mdy;
 
             var densityKoeff = localSettings.xMinimumDensityKoeff;
-            if (root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+            if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
               root.guide.x.rotate = 0;
               root.guide.x.textAnchor = "middle";
+              root.guide.x.tickFormatWordWrapLimit = perTickX;
               var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
+
               var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-              root.guide.x.label.padding = root.guide.x.label.padding + xDelta;
-              root.guide.padding.b = root.guide.padding.b + xDelta;
+
+              root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
+              root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
             }
 
             var newSize = {
@@ -2420,6 +2508,15 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
     y = strategyNormalizeAxis[validatedY.status](y, validatedY);
     var guide = normalizeSettings(config.guide);
     var maxDeep = Math.max(x.length, y.length);
+
+    // feel the gaps if needed
+    while (guide.length < maxDeep) {
+      guide.push({});
+    }
+
+    // cut items
+    guide = guide.slice(0, maxDeep);
+
     var spec = {
       type: "COORDS.RECT",
       unit: []
@@ -2442,8 +2539,6 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
           colorGuide: colorGuide
         }));
         spec.guide = _.defaults(currentGuide, {
-          padding: { l: 45, b: 45, r: 24, t: 24 },
-          showGridLines: "xy",
           x: { label: currentX },
           y: { label: currentY }
         });
@@ -2454,7 +2549,6 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
           y: convertAxis(currentY),
           unit: [spec],
           guide: _.defaults(currentGuide, {
-            padding: { l: 45, b: 45, r: 0, t: 0 },
             x: { label: currentX },
             y: { label: currentY }
           })
@@ -2834,87 +2928,111 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   };
 
   var interval = function (node) {
-    var startPoint = 0;
     var options = node.options;
 
     var color = utilsDraw.generateColor(node);
 
     var partition = node.partition();
+
     var categories = d3.nest().key(function (d) {
       return d[color.dimension];
     }).entries(partition);
 
     var xScale = options.xScale, yScale = options.yScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate;
+
     if (node.flip) {
-      var _ref = getSizesParams({
-        domain: yScale.domain,
-        dim: node.y,
-        categories: categories,
-        size: options.height
-      });
+      var xMin;
+      var _ref;
+      var tickWidth;
+      var intervalWidth;
+      var offsetCategory;
 
-      var tickWidth = _ref.tickWidth;
-      var intervalWidth = _ref.intervalWidth;
-      var offsetCategory = _ref.offsetCategory;
+      (function () {
+        xMin = Math.min.apply(null, xScale.domain());
 
-      /* jshint ignore:end */
-      calculateX = isMeasure(node.x) ? function (d) {
-        return xScale(Math.min(startPoint, d[node.x.scaleDim]));
-      } : 0;
-      calculateY = function (d) {
-        return yScale(d[node.y.scaleDim]) - (tickWidth / 2);
-      };
-      calculateWidth = isMeasure(node.x) ? function (d) {
-        return Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint));
-      } : function (d) {
-        return xScale(d[node.x.scaleDim]);
-      };
-      calculateHeight = function (d) {
-        return intervalWidth;
-      };
-      calculateTranslate = function (d, index) {
-        return utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
-      };
+        var startPoint = (xMin <= 0) ? 0 : xMin;
+
+        _ref = getSizesParams({
+          domain: yScale.domain,
+          dim: node.y,
+          categories: categories,
+          size: options.height
+        });
+        tickWidth = _ref.tickWidth;
+        intervalWidth = _ref.intervalWidth;
+        offsetCategory = _ref.offsetCategory;
+
+        /* jshint ignore:end */
+        calculateX = isMeasure(node.x) ? function (d) {
+          return xScale(Math.min(startPoint, d[node.x.scaleDim]));
+        } : 0;
+        calculateY = function (d) {
+          return yScale(d[node.y.scaleDim]) - (tickWidth / 2);
+        };
+        calculateWidth = isMeasure(node.x) ? function (d) {
+          return Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint));
+        } : function (d) {
+          return xScale(d[node.x.scaleDim]);
+        };
+        calculateHeight = function (d) {
+          return intervalWidth;
+        };
+        calculateTranslate = function (d, index) {
+          return utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
+        };
+      })();
     } else {
-      var _ref2 = getSizesParams({
-        domain: xScale.domain,
-        dim: node.x,
-        categories: categories,
-        size: options.width
-      });
+      var yMin;
+      var _ref2;
+      var tickWidth;
+      var intervalWidth;
+      var offsetCategory;
 
-      var tickWidth = _ref2.tickWidth;
-      var intervalWidth = _ref2.intervalWidth;
-      var offsetCategory = _ref2.offsetCategory;
+      (function () {
+        yMin = Math.min.apply(null, yScale.domain());
 
-      /* jshint ignore:end */
-      calculateX = function (d) {
-        return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
-      };
-      calculateY = isMeasure(node.y) ? function (d) {
-        return yScale(Math.max(startPoint, d[node.y.scaleDim]));
-      } : function (d) {
-        return yScale(d[node.y.scaleDim]);
-      };
+        var startPoint = (yMin <= 0) ? 0 : yMin;
 
-      calculateWidth = function (d) {
-        return intervalWidth;
-      };
-      calculateHeight = isMeasure(node.y) ? function (d) {
-        return Math.abs(yScale(d[node.y.scaleDim]) - yScale(startPoint));
-      } : function (d) {
-        return (options.height - yScale(d[node.y.scaleDim]));
-      };
-      calculateTranslate = function (d, index) {
-        return utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
-      };
+        _ref2 = getSizesParams({
+          domain: xScale.domain,
+          dim: node.x,
+          categories: categories,
+          size: options.width
+        });
+        tickWidth = _ref2.tickWidth;
+        intervalWidth = _ref2.intervalWidth;
+        offsetCategory = _ref2.offsetCategory;
+
+        /* jshint ignore:end */
+        calculateX = function (d) {
+          return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
+        };
+        calculateY = isMeasure(node.y) ? function (d) {
+          return yScale(Math.max(startPoint, d[node.y.scaleDim]));
+        } : function (d) {
+          return yScale(d[node.y.scaleDim]);
+        };
+
+        calculateWidth = function (d) {
+          return intervalWidth;
+        };
+        calculateHeight = isMeasure(node.y) ? function (d) {
+          return Math.abs(yScale(d[node.y.scaleDim]) - yScale(startPoint));
+        } : function (d) {
+          return (options.height - yScale(d[node.y.scaleDim]));
+        };
+        calculateTranslate = function (d, index) {
+          return utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
+        };
+      })();
     }
 
     var updateBar = function () {
       return this.attr("class", function (d) {
-        return "i-role-datum bar " + CSS_PREFIX + "bar " + color.get(d[color.dimension]);
+        return ("i-role-datum bar " + CSS_PREFIX + "bar " + color.get(d[color.dimension]));
       }).attr("x", calculateX).attr("y", calculateY).attr("width", calculateWidth).attr("height", calculateHeight);
     };
+
     var updateBarContainer = function () {
       this.attr("class", BAR_GROUP).attr("transform", calculateTranslate);
       var bars = this.selectAll("bar").data(function (d) {
