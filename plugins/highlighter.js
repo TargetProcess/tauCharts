@@ -1,13 +1,13 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define(['tauPlugins'],function(tauPlugins){return factory(tauPlugins);});
+        define(['tauCharts'],function(tauPlugins){return factory(tauPlugins);});
     } else if (typeof module === "object" && module.exports) {
-        var tauPlugins = require('tauPlugins');
+        var tauPlugins = require('tauCharts');
         module.exports = factory();
     } else {
-        factory(this.tauPlugins);
+        factory(this.tauCharts);
     }
-})(function (tauPlugins) {
+})(function (tauCharts) {
     /** @class Tooltip
      * @extends Plugin */
     var highlighter = {
@@ -18,8 +18,7 @@
             data.element.classList.toggle('highlighted', false);
         }
     };
-
-    tauPlugins.add('highlighter', function() {
+    tauCharts.api.plugins.add('highlighter', function() {
        return highlighter;
     });
 });

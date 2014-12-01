@@ -1,22 +1,23 @@
 (function(factory) {
     if (typeof define === "function" && define.amd) {
-        define(['tauPlugins'], function(tauPlugins) {
+        define(['tauCharts'], function(tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === "object" && module.exports) {
-        var tauPlugins = require('tauPlugins');
+        var tauPlugins = require('tauCharts');
         module.exports = factory();
     } else {
-        factory(this.tauPlugins);
+        factory(this.tauCharts);
     }
-})(function(tauPlugins) {
+})(function(tauCharts) {
     /** @class Tooltip
      * @extends Plugin */
     /* Usage
      .plugins(tau.plugins.tooltip('effort', 'priority'))
      accepts a list of data fields names as properties
      */
-    function tooltip(fields) {
+    function tooltip(settings) {
+        settings = settings || {};
         return {
             template: [
                 '<div class="i-role-content tooltip__content"></div>',
@@ -48,7 +49,7 @@
             },
             init: function(chart) {
                 this._chart = chart;
-                this._dataFields = fields;
+                this._dataFields = settings.fields;
                 this._interval = null;
                 this._dataWithCoords = {};
                 this._unitMeta = {};
@@ -104,7 +105,7 @@
             onElementMouseOver: function(chart, data) {
                 clearInterval(this._interval);
                 var coord = d3.mouse(data.element);
-                var key = this._generateKey(data.cellData.$where)
+                var key = this._generateKey(data.cellData.$where);
                 var item = _.min(this._dataWithCoords[key], function(a) {
                     return this.calculateLength(a.x, a.y, coord[0], coord[1]);
                 }, this);
@@ -148,5 +149,5 @@
 
     }
 
-    tauPlugins.add('tooltip', tooltip);
+    tauCharts.api.plugins.add('tooltip', tooltip);
 });

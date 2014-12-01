@@ -6,12 +6,9 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 
-    <!-- src -->
-    <script src="../src/tau.plugins.js"></script>
-
     <!-- plugins -->
 
-    <script src="../plugins/highlighter.js"></script>
+
     <!-- test data -->
     <script src="data.js"></script>
 
@@ -159,8 +156,8 @@
 </div>
 <script src="../build/tauCharts.js"></script>
 <script src="../plugins/tooltip.js"></script>
+<script src="../plugins/highlighter.js"></script>
 <script>
-
     var facet2x2 = {
         dimensions: {
             project: { type: 'category' },
@@ -372,7 +369,7 @@
         }
     };
 
-    var dateTimeChart = new tauChart.Plot(
+    var dateTimeChart = new tauCharts.Plot(
             {
                 layoutEngine: 'DEFAULT',
                 data: [
@@ -426,11 +423,11 @@
                         ]
                     }
                 },
-                plugins: [tauPlugins.tooltip(['count'])]
+                plugins: [tauCharts.api.plugins.get('tooltip')({fields:['count']})]
             }).renderTo('#datetime-container');
 
 
-    var parallelChart = new tauChart.Plot(
+    var parallelChart = new tauCharts.Plot(
             {
                 specEngine: 'DEFAULT',
                 layoutEngine: 'DEFAULT',
@@ -492,73 +489,67 @@
                 return r;
             });
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 layoutEngine: 'DEFAULT',
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-default');
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 layoutEngine: 'EXTRACT',
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-extract');
 
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 layoutEngine: 'DEFAULT',
                 data: rawData,
                 spec: facetPriority,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']})
                 ]
             }).renderTo('#chart-priority-container-default');
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 layoutEngine: 'EXTRACT',
                 data: rawData,
                 spec: facetPriority,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']})
                 ]
             }).renderTo('#chart-priority-container-extract');
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 data: _(rawData).filter(function(x, i) { return i < 10; }),
                 spec: facetOfFacets,
 //                layoutEngine: 'DEFAULT',
                 plugins: [
-                    tauPlugins.tooltip(['name', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['name', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#facet-of-facets-container');
 
-    var scatterFitChart = new tauChart.Plot(
+    var scatterFitChart = new tauCharts.Plot(
             {
                 data: rawData,
                 spec: scatter,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#scatter-auto-scale-container');
 
-    var scatterAutoScaleChart = new tauChart.Plot(
+    var scatterAutoScaleChart = new tauCharts.Plot(
             {
                 data: rawData,
                 spec: {
@@ -597,40 +588,36 @@
                     }
                 },
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#scatter-fit-container');
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 layoutEngine: 'DEFAULT',
                 data: rawData,
                 spec: facet3x1,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#complex-container-default');
 
-    new tauChart.Plot(
+    new tauCharts.Plot(
             {
                 layoutEngine: 'EXTRACT',
                 data: rawData,
                 spec: facet3x1,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#complex-container-extract');
 
-    var noDataChart = new tauChart.Plot(
+    var noDataChart = new tauCharts.Plot(
             {
                 data: [],
                 spec: facet3x1,
                 plugins: [
-                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
-                    tauPlugins.highlighter()
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#no-data-container');
 
@@ -677,14 +664,13 @@
             }
         };
 
-        new tauChart.Plot(
+        new tauCharts.Plot(
                 {
                     layoutEngine: 'EXTRACT',
                     data: data,
                     spec: facet2x1,
                     plugins: [
-                        tauPlugins.tooltip(['team', 'count', 'month']),
-                        tauPlugins.highlighter()
+                        tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
                     ]
                 }).renderTo('#bars-container');
     });

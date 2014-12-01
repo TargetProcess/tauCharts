@@ -9,7 +9,7 @@
         var d3 = require('d3');
         module.exports = factory(_);
     } else {
-        root.tauChart = factory(root._, root.d3);
+        root.tauCharts = factory(root._, root.d3);
     }
 }(this, function (_, d3) {/**
  * @license almond 0.3.0 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
@@ -3635,8 +3635,7 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
       var X_AXIS_POS = [0, H + node.guide.x.padding];
       var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
 
-      var container = options.container.selectAll(":scope > g" + "_" + parseInt(L) + "_" + parseInt(T)) //todo should more smart
-      .data([{ $where: node.$where }]).enter().append("g").attr("transform", utilsDraw.translate(L, T)).attr("class", CSS_PREFIX + "cell " + "cell");
+      var container = options.container.append("g").attr("class", CSS_PREFIX + "cell " + "cell").attr("transform", utilsDraw.translate(L, T)).datum({ $where: node.$where });
 
       if (!node.x.guide.hide) {
         utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
@@ -4234,7 +4233,7 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
   var nodeMap = _nodeMap.nodeMap;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
   var colorBrewers = {};
-
+  var plugins = {};
 
   var __api__ = {
     UnitDomainMixin: UnitDomainMixin,
@@ -4246,6 +4245,8 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
   var api = {
     UnitsRegistry: UnitsRegistry,
     tickFormat: FormatterRegistry,
+    d3: d3,
+    _: _,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
       add: function (name, brewer) {
@@ -4255,6 +4256,16 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       },
       get: function (name) {
         return colorBrewers[name];
+      }
+    },
+    plugins: {
+      add: function (name, brewer) {
+        if (!(name in plugins)) {
+          plugins[name] = brewer;
+        }
+      },
+      get: function (name) {
+        return plugins[name];
       }
     },
     globalSettings: {

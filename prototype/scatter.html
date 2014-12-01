@@ -104,7 +104,6 @@ requirejs.config({
     // Karma serves files from '/base'
     baseUrl: location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1'),
     paths: {
-        'tauPlugins': 'src/tau.plugins',
         'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
         'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min',
         'schemes': 'test/utils/schemes',
@@ -118,7 +117,7 @@ requirejs.config({
     }
 });
 
-require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plugins/tooltip', 'src/addons/color-brewer', 'underscore'], function(tauCharts, tauPlugins, _) {
+require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 'src/addons/color-brewer', 'underscore'], function(tauCharts) {
     /** @class Tooltip
      * @extends Plugin */
     /* Usage
@@ -196,7 +195,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
         }
     };
 
-    tauPlugins.add('tableHighlight', Tooltip);
+    //tauPlugins.add('tableHighlight', Tooltip);
     var dat = [];
     for (var i = -6.14; i <= 6.14; i += 0.1) {
         dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
@@ -274,7 +273,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
                  autoScale:false
                  }*/
             },
-            plugins: [tauPlugins.tooltip(Object.keys(data[0]))],
+            plugins: [tauCharts.api.plugins.get('tooltip')({fields:Object.keys(data[0])})],
             y: ['t','y'],
             x: ['x', 'type'],
             color: 'type'
