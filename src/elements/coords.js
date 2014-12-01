@@ -106,12 +106,10 @@ var coords = {
 
         var container = options
             .container
-            .selectAll(':scope > g'+ '_' + parseInt(L) + '_' + parseInt(T)) //todo should more smart
-            .data([{'$where': node.$where}])
-            .enter()
             .append('g')
+            .attr('class', CSS_PREFIX + 'cell ' + 'cell')
             .attr('transform', utilsDraw.translate(L, T))
-            .attr('class', CSS_PREFIX + 'cell ' + 'cell');
+            .datum({'$where': node.$where});
 
         if (!node.x.guide.hide) {
             utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);
