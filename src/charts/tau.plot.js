@@ -90,9 +90,14 @@ export class Plot extends Emitter{
         }
         containerNode.innerHTML = '';
 
+<<<<<<< HEAD
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
 
         var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
+=======
+        var domainMixin = new UnitDomainMixin(this._spec.dimensions, this._data);
+        var specEngine = SpecEngineFactory.get(this.settings.specEngine, this.settings);
+>>>>>>> update plugins
 
         var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
 
@@ -185,10 +190,9 @@ export class Plot extends Emitter{
                 .append("svg")
                 .attr("class", CSS_PREFIX + 'svg')
                 .attr("width", size.width)
-                .attr("height", size.height)
+                .attr("height", size.height),
+            this
         );
-
-        //plugins
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this.fire('render', svgXElement);
     }

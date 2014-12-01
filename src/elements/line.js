@@ -9,7 +9,6 @@ var line = function (node) {
     var xScale = options.xScale;
     var yScale = options.yScale;
     node.size = {};
-    point(node);
     var color = utilsDraw.generateColor(node);
 
     var categories = d3

@@ -55,28 +55,16 @@
             onUnitReady: function(chart, unitMeta) {
                 if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
                     this._unitMeta = unitMeta;
-                    //debugger
-                    /*this._unitMeta = unitMeta;
-                     var values = this._unitMeta.partition();
-                     this._dataWithCoords = values.map(function(item) {
-                     return {
-                     x: unitMeta.options.xScale(item[unitMeta.x.scaleDim]),
-                     y: unitMeta.options.yScale(item[unitMeta.y.scaleDim]),
-                     item: item
-                     }
-                     }, this)*/
+                    var values = this._unitMeta.partition();
+                    this._dataWithCoords = values.map(function(item) {
+                        return {
+                            x: this._unitMeta.options.xScale(item[this._unitMeta.x.scaleDim]),
+                            y: this._unitMeta.options.yScale(item[this._unitMeta.y.scaleDim]),
+                            item: item
+                        };
+                    }, this);
 
                 }
-            },
-            onRender: function() {
-                var values = this._unitMeta.partition();
-                this._dataWithCoords = values.map(function(item) {
-                    return {
-                        x: this._unitMeta.options.xScale(item[this._unitMeta.x.scaleDim]),
-                        y: this._unitMeta.options.yScale(item[this._unitMeta.y.scaleDim]),
-                        item: item
-                    };
-                }, this);
             },
             render: function(data) {
                 return this._dataFields.map(function(field) {
@@ -94,7 +82,7 @@
                 clearInterval(this._interval);
                 var coord = d3.mouse(data.element);
                 var item = _.min(this._dataWithCoords, function(a) {
-                    return this.calculateLength(a.x,a.y,coord[0],coord[1]);
+                    return this.calculateLength(a.x, a.y, coord[0], coord[1]);
                 }, this).item;
                 if (this._currentElement === item) {
                     return;
