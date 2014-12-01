@@ -12,7 +12,8 @@ class Plugins {
         if (plugin.init) {
             plugin.init(this.chart);
         }
-        this.chart.on('destroy', plugin.destroy || (()=>{}));
+        this.chart.on('destroy', plugin.destroy || (()=> {
+        }));
         Object.keys(plugin).forEach((name)=> {
             if (name.indexOf('on') === 0) {
                 var event = name.substr(2);
@@ -23,11 +24,16 @@ class Plugins {
 }
 
 var elementEvents = ['click', 'mouseover', 'mouseout', 'mousemove'];
-var propagateDatumEvents = function (chart) {
-    return function () {
-        elementEvents.forEach(function (name) {
-            this.on(name, function (d) {
-                chart.fire('element' + name, {elementData: d, element: this});
+var propagateDatumEvents = function(chart) {
+    return function() {
+        elementEvents.forEach(function(name) {
+            this.on(name, function(d) {
+
+                chart.fire('element' + name, {
+                    elementData: d,
+                    element: this,
+                    cellData: d3.select(this.parentNode.parentNode).datum()
+                });
             });
         }, this);
     };

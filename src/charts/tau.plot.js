@@ -90,14 +90,10 @@ export class Plot extends Emitter{
         }
         containerNode.innerHTML = '';
 
-<<<<<<< HEAD
+
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
 
         var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
-=======
-        var domainMixin = new UnitDomainMixin(this._spec.dimensions, this._data);
-        var specEngine = SpecEngineFactory.get(this.settings.specEngine, this.settings);
->>>>>>> update plugins
 
         var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
 

@@ -199,8 +199,10 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
     tauPlugins.add('tableHighlight', Tooltip);
     var dat = [];
     for (var i = -6.14; i <= 6.14; i += 0.1) {
-        dat.push({x: i, y: Math.sin(i), type: 'sin'});
-        dat.push({x: i, y: Math.cos(i), type: 'cos'});
+        dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
+        dat.push({x: i, y: Math.sin(i), type: 'cos', t: 'w'});
+        dat.push({x: i, y: Math.cos(i), type: 'sin', t: 'w'});
+        dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'x'});
     }
     var defData = dat;
 
@@ -273,7 +275,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
                  }*/
             },
             plugins: [tauPlugins.highlighter(), tauPlugins.tooltip(Object.keys(data[0]))],
-            y: ['y'],
+            y: ['t','y'],
             x: ['x', 'type'],
             color: 'type'
             //size: getFieldData($size)

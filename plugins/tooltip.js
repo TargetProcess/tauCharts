@@ -50,6 +50,8 @@
                 this._chart = chart;
                 this._dataFields = fields;
                 this._interval = null;
+                this._dataWithCoords = {};
+                this._unitMeta = {};
                 this._templateItem = _.template(this.templateItem);
                 this._tooltip = chart.addBalloon({spacing: 5, auto: true});
                 this._elementTooltip = this._tooltip.getElement();
@@ -71,12 +73,13 @@
             },
             onUnitReady: function(chart, unitMeta) {
                 if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
-                    this._unitMeta = unitMeta;
-                    var values = this._unitMeta.partition();
-                    this._dataWithCoords = values.map(function(item) {
+                    var key = this._generateKey(unitMeta.$where);
+                    this._unitMeta[key] = unitMeta;
+                    var values = unitMeta.partition();
+                    this._dataWithCoords[key] = values.map(function(item) {
                         return {
-                            x: this._unitMeta.options.xScale(item[this._unitMeta.x.scaleDim]),
-                            y: this._unitMeta.options.yScale(item[this._unitMeta.y.scaleDim]),
+                            x: unitMeta.options.xScale(item[unitMeta.x.scaleDim]),
+                            y: unitMeta.options.yScale(item[unitMeta.y.scaleDim]),
                             item: item
                         };
                     }, this);
@@ -95,17 +98,21 @@
             calculateLength: function(x1, y1, x2, y2) {
                 return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
             },
+            _generateKey: function(data) {
+                return JSON.stringify(data);
+            },
             onElementMouseOver: function(chart, data) {
                 clearInterval(this._interval);
                 var coord = d3.mouse(data.element);
-                var item = _.min(this._dataWithCoords, function(a) {
+                var key = this._generateKey(data.cellData.$where)
+                var item = _.min(this._dataWithCoords[key], function(a) {
                     return this.calculateLength(a.x, a.y, coord[0], coord[1]);
                 }, this);
                 if (this._currentElement === item) {
                     return;
                 }
                 if (data.elementData.key && Array.isArray(data.elementData.values)) {
-                    this.drawPoint(d3.select(data.element.parentNode), item.x, item.y, this._unitMeta.options.color.get(data.elementData.key));
+                    this.drawPoint(d3.select(data.element.parentNode), item.x, item.y, this._unitMeta[key].options.color.get(data.elementData.key));
                 }
                 this._elementTooltip.querySelectorAll('.i-role-content')[0].innerHTML = this.render(item.item);
                 this._show();
@@ -129,7 +136,7 @@
                 }.bind(this), 300);
             },
             _destroyTooltip: function() {
-                if(this.circle) {
+                if (this.circle) {
                     this.circle.remove();
                 }
                 this._tooltip.destroy();
