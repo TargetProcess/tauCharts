@@ -22,6 +22,7 @@
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
+    <link href="../css/tooltip.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
           type='text/css'>
@@ -467,8 +468,7 @@
                             }
                         ]
                     }
-                },
-                plugins: [tauPlugins.tooltip()]
+                }
             }).renderTo('#parallel-container');
 
     var rawData = _.map(
@@ -498,7 +498,7 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#chart-container-default');
@@ -509,7 +509,7 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#chart-container-extract');
@@ -521,7 +521,7 @@
                 data: rawData,
                 spec: facetPriority,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#chart-priority-container-default');
@@ -532,7 +532,7 @@
                 data: rawData,
                 spec: facetPriority,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#chart-priority-container-extract');
@@ -543,7 +543,7 @@
                 spec: facetOfFacets,
 //                layoutEngine: 'DEFAULT',
                 plugins: [
-                    tauPlugins.tooltip('name', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['name', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#facet-of-facets-container');
@@ -553,7 +553,7 @@
                 data: rawData,
                 spec: scatter,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#scatter-auto-scale-container');
@@ -597,7 +597,7 @@
                     }
                 },
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#scatter-fit-container');
@@ -608,7 +608,7 @@
                 data: rawData,
                 spec: facet3x1,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#complex-container-default');
@@ -619,7 +619,7 @@
                 data: rawData,
                 spec: facet3x1,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#complex-container-extract');
@@ -629,7 +629,7 @@
                 data: [],
                 spec: facet3x1,
                 plugins: [
-                    tauPlugins.tooltip('team', 'project', 'cycleTime', 'effort'),
+                    tauPlugins.tooltip(['team', 'project', 'cycleTime', 'effort']),
                     tauPlugins.highlighter()
                 ]
             }).renderTo('#no-data-container');
@@ -683,7 +683,7 @@
                     data: data,
                     spec: facet2x1,
                     plugins: [
-                        tauPlugins.tooltip('team', 'count', 'month'),
+                        tauPlugins.tooltip(['team', 'count', 'month']),
                         tauPlugins.highlighter()
                     ]
                 }).renderTo('#bars-container');

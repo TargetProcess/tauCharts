@@ -74,7 +74,9 @@ export class DSLReader {
         styledGraph.options.container = target;
         var renderRecursively = (unit) => {
             this.UnitsRegistry.get(unit.type).draw(this.domain.mix(unit), renderRecursively);
-            chart.fire('unitready', unit);
+            if(chart) {
+                chart.fire('unitready', unit);
+            }
         };
         renderRecursively(styledGraph);
         return styledGraph.options.container;

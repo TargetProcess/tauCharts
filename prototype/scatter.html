@@ -78,9 +78,9 @@
         type
         <select id="type">
             <option value="scatterplot">scatter</option>
-            <option  selected value="line">line</option>
-            <option  value="bar">bar</option>
-            <option  value="horizontalBar">horizontalBar</option>
+            <option selected value="line">line</option>
+            <option value="bar">bar</option>
+            <option value="horizontalBar">horizontalBar</option>
         </select>
     </label><br/><br/>
     <label>x<input id="x" type="text"/></label><br/><br/>
@@ -118,7 +118,7 @@ requirejs.config({
     }
 });
 
-require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plugins/tooltip', 'src/addons/color-brewer'], function (tauCharts, tauPlugins) {
+require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plugins/tooltip', 'src/addons/color-brewer', 'underscore'], function(tauCharts, tauPlugins, _) {
     /** @class Tooltip
      * @extends Plugin */
     /* Usage
@@ -127,11 +127,11 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
      */
     var Tooltip = {
 
-        init: function (data) {
+        init: function(data) {
             function generateTable(data) {
                 var headers = Object.keys(data[0]);
-                var rows = data.map(function (item, key) {
-                    var map = headers.map(function (key) {
+                var rows = data.map(function(item, key) {
+                    var map = headers.map(function(key) {
                         return item[key];
                     });
                     map['key'] = JSON.stringify(item);
@@ -142,7 +142,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
                 var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
                 $table.append(rowHtml);
                 var keyValue = {};
-                var s = _.each(rows, function (arr, index) {
+                var s = _.each(rows, function(arr, index) {
                     var rowHtml = '<tr >';
                     rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
                     keyValue[arr.key] = {
@@ -170,18 +170,18 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
          * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
-        mouseover: function (context, tools) {
+        mouseover: function(context, tools) {
             this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
             // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
         },
-        render: function (context) {
+        render: function(context) {
             var $points = $(context.node()).find('circle');
             this.table.find('tr')
-                    .on('mouseover', function () {
+                    .on('mouseover', function() {
                         $points.get(($(this).index() - 1)).classList.add('highlighted');
                     })
-                    .on('mouseleave', function () {
-                        $points.each(function () {
+                    .on('mouseleave', function() {
+                        $points.each(function() {
                             this.classList.remove('highlighted');
                         });
                     });
@@ -191,33 +191,18 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
          * @param {ElementContext} context
          * @param {ChartElementTools} tools
          */
-        mouseout: function (context, tools) {
+        mouseout: function(context, tools) {
             $('tr').removeClass('highClass');
         }
     };
 
     tauPlugins.add('tableHighlight', Tooltip);
-    var defData = [{
-        "userStories": 3,
-        "orderingValue": 115,
-        "project": "My Project!",
-        "dataItem": {
-            "id": "90485",
-            "type": "Project",
-            "orderingValue": 115,
-            "data": {"id": 90485, "name": "My Project!", "type": "Project"}
-        }
-    }, {
-        "userStories": 3,
-        "orderingValue": 115,
-        "project": "New Project!",
-        "dataItem": {
-            "id": "90486",
-            "type": "Project",
-            "orderingValue": 116,
-            "data": {"id": 90486, "name": "New Project!", "type": "Project"}
-        }
-    }];
+    var dat = [];
+    for (var i = -6.14; i <= 6.14; i += 0.1) {
+        dat.push({x: i, y: Math.sin(i), type: 'sin'});
+        dat.push({x: i, y: Math.cos(i), type: 'cos'});
+    }
+    var defData = dat;
 
     function getFieldData($field) {
         try {
@@ -234,13 +219,13 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
     var $y = $('#y').val('count');
     var $x = $('#x').val('team');
     var $data = $('#data').val(JSON.stringify(defData));
-    $('#colorSettings').click(function () {
+    $('#colorSettings').click(function() {
         return $color.val(JSON.stringify({
             dimension: 'team',
             brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
         }))
     });
-    $('select,input[type=checkbox]').change(function () {
+    $('select,input[type=checkbox]').change(function() {
         try {
             drawChart();
         } catch (e) {
@@ -248,7 +233,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
             console.error(e);
         }
     });
-    $('textarea,input').on('input', function () {
+    $('textarea,input').on('input', function() {
         try {
             drawChart();
         } catch (e) {
@@ -257,12 +242,12 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
         }
     });
     drawChart();
-   /* try {
-        drawChart();
-    } catch (e) {
-        $('#chart-container').empty();
-        console.error(e);
-    }*/
+    /* try {
+     drawChart();
+     } catch (e) {
+     $('#chart-container').empty();
+     console.error(e);
+     }*/
 
     function drawChart() {
         var data = JSON.parse($data.val());
@@ -279,16 +264,19 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
         var chart = new tauCharts.Chart({
             data: data,
             type: getFieldData($type),
-            plugins: [tauPlugins.highlighter(),tauPlugins.tooltip(Object.keys(data[0]))],
-            y: ['orderingValue'],
-            x: ['project'],
-            color: 'userStories',
-            guide:{
-                color:{
-                    brewer:{'project':'df'}
-                }
+            guide: {
+                /* x:{
+                 autoScale:false
+                 },
+                 y:{
+                 autoScale:false
+                 }*/
             },
-            size: getFieldData($size)
+            plugins: [tauPlugins.highlighter(), tauPlugins.tooltip(Object.keys(data[0]))],
+            y: ['y'],
+            x: ['x', 'type'],
+            color: 'type'
+            //size: getFieldData($size)
         });
         chart.renderTo(
                 '#chart-container',
@@ -300,8 +288,8 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
 
     function generateTable(data) {
         var headers = Object.keys(data[0]);
-        var rows = data.map(function (item, key) {
-            var map = headers.map(function (key) {
+        var rows = data.map(function(item, key) {
+            var map = headers.map(function(key) {
                 return item[key];
             });
             map['key'] = JSON.stringify(item);
@@ -312,7 +300,7 @@ require(['tau_modules/tau.newCharts', 'tauPlugins', 'plugins/highlighter', 'plug
         var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
         $table.append(rowHtml);
         var keyValue = {};
-        var s = _.each(rows, function (arr) {
+        var s = _.each(rows, function(arr) {
             var rowHtml = '<tr >';
             rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
             keyValue[arr.key] = $(rowHtml);

@@ -29,6 +29,23 @@
                 '<div class="tooltip__list__elem"><%=value%></div>',
                 '</div>'
             ].join(''),
+
+            drawPoint: function(container, x, y, color) {
+                if (this.circle) {
+                    this.circle.remove();
+                }
+                this.circle = container.append("circle")
+                    .attr("cx", x)
+                    .attr("cy", y)
+                    .attr('class', color)
+                    .attr("r", 4);
+                this.circle.node().addEventListener('mouseover', function() {
+                    clearTimeout(this._interval);
+                }.bind(this), false);
+                this.circle.node().addEventListener('mouseleave', function() {
+                    this._hide();
+                }.bind(this), false);
+            },
             init: function(chart) {
                 this._chart = chart;
                 this._dataFields = fields;
@@ -83,13 +100,16 @@
                 var coord = d3.mouse(data.element);
                 var item = _.min(this._dataWithCoords, function(a) {
                     return this.calculateLength(a.x, a.y, coord[0], coord[1]);
-                }, this).item;
+                }, this);
                 if (this._currentElement === item) {
                     return;
                 }
-                this._elementTooltip.querySelectorAll('.i-role-content')[0].innerHTML = this.render(item);
+                if (data.elementData.key && Array.isArray(data.elementData.values)) {
+                    this.drawPoint(d3.select(data.element.parentNode), item.x, item.y, this._unitMeta.options.color.get(data.elementData.key));
+                }
+                this._elementTooltip.querySelectorAll('.i-role-content')[0].innerHTML = this.render(item.item);
                 this._show();
-                this._currentElement = item;
+                this._currentElement = item.item;
             },
             onElementMouseOut: function() {
                 this._hide();
@@ -103,10 +123,19 @@
                 this._interval = setTimeout(function() {
                     this._currentElement = null;
                     this._tooltip.hide();
+                    if (this.circle) {
+                        this.circle.remove();
+                    }
                 }.bind(this), 300);
             },
-            destroy: function() {
+            _destroyTooltip: function() {
+                if(this.circle) {
+                    this.circle.remove();
+                }
                 this._tooltip.destroy();
+            },
+            destroy: function() {
+                this._destroyTooltip();
             }
         };
 

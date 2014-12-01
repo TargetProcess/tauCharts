@@ -10,7 +10,7 @@ var line = function (node) {
     var yScale = options.yScale;
     node.size = {};
     var color = utilsDraw.generateColor(node);
-
+    options.color =  color;
     var categories = d3
         .nest()
         .key((d) => d[color.dimension])

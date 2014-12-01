@@ -1,4 +1,3 @@
-
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -34,11 +33,13 @@ var utils = {
             [0.15, 10],
             [0.35, 5],
             [0.75, 2],
-            [1.00, 1]
+            [1.00, 1],
+            [2.00, 1]
         ];
 
         var i = -1;
-        while (err > correction[++i][0]) {}
+        while (err > correction[++i][0]) {
+        }
 
         step *= correction[i][1];
 
