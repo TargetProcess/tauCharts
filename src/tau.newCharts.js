@@ -34,6 +34,13 @@ var api = {
         }
     },
     globalSettings: {
+
+        log: (msg, type) => {
+            type = type || 'INFO';
+            console.log(type + ': ' + msg);
+        },
+
+        excludeNull: true,
         specEngine: 'AUTO',
         layoutEngine: 'EXTRACT',
         getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,

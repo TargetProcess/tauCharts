@@ -1,16 +1,12 @@
 import {Plot} from './tau.plot';
 import {utils} from '../utils/utils';
+import {DataProcessor} from '../data-processor';
 
-function convertAxis(data) {
-    return (!data) ? null : data;
-}
-function normalizeSettings(axis) {
-    if (!utils.isArray(axis)) {
-        return [axis];
-    }
-    return axis;
-}
-function createElement(type, config) {
+var convertAxis = (data) => (!data) ? null : data;
+
+var normalizeSettings = (axis) => (!utils.isArray(axis)) ? [axis] : axis;
+
+var createElement = (type, config) => {
     return {
         type: type,
         x: config.x,
@@ -22,7 +18,8 @@ function createElement(type, config) {
         flip: config.flip,
         size: config.size
     };
-}
+};
+
 const status = {
     SUCCESS: "SUCCESS",
     WARNING: "WARNING",
@@ -30,11 +27,11 @@ const status = {
 };
 /* jshint ignore:start */
 var strategyNormalizeAxis = {
-    [status.SUCCESS]: (axis)=> axis,
-    [status.FAIL]: ()=> {
+    [status.SUCCESS]: (axis) => axis,
+    [status.FAIL]: () => {
         throw new Error('This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
-    [status.WARNING]: (axis, config)=> {
+    [status.WARNING]: (axis, config) => {
         var measure = axis[config.indexMeasureAxis[0]];
         var newAxis = _.without(axis, measure);
         newAxis.push(measure);
@@ -124,11 +121,64 @@ function transformConfig(type, config) {
     };
     return config;
 }
+
 var typesChart = {
     'scatterplot': (config)=> {
         return transformConfig('ELEMENT.POINT', config);
     },
     'line': (config) => {
+
+        var data = config.data;
+
+        var log = config.settings.log;
+
+        if (!config.sortedBy) {
+            var xs = _.isArray(config.x) ? config.x : [config.x];
+            var ys = _.isArray(config.y) ? config.y : [config.y];
+            var primaryX = xs[xs.length - 1];
+            var secondaryX = xs.slice(0, xs.length - 1);
+            var primaryY = ys[ys.length - 1];
+            var secondaryY = ys.slice(0, ys.length - 1);
+            var colorProp = config.color;
+
+            var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter((x) => x !== null );
+
+            var variantIndex = -1;
+            var variations = [
+                [[primaryX].concat(rest), primaryY],
+                [[primaryY].concat(rest), primaryX]
+            ];
+            var isMatchAny = variations.some((item, i) => {
+                var domainFields  = item[0];
+                var rangeProperty = item[1];
+                var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
+                if (r.result) {
+                    variantIndex = i;
+                }
+                else {
+                    log([
+                        'Attempt to find a functional relation between',
+                        item[0] + ' and ' + item[1] + ' is failed.',
+                        'There are several ' + r.error.keyY + ' values (e.g. ' + r.error.errY.join(',') + ')',
+                        'for (' + r.error.keyX + ' = ' + r.error.valX + ').'
+                    ].join(' '));
+                }
+                return r.result;
+            });
+
+            var propSortBy;
+            if (isMatchAny) {
+                propSortBy = variations[variantIndex][0][0];
+            }
+            else {
+                log('All attempts are failed. Will use ' + primaryX + ' property as a sorting key by default.');
+                log('It is better to use [scatterplot] here.');
+                propSortBy = primaryX;
+            }
+
+            config.data = _(data).sortBy(propSortBy);
+        }
+
         return transformConfig('ELEMENT.LINE', config);
     },
     'bar': (config) => {
@@ -142,8 +192,9 @@ var typesChart = {
 };
 
 export class Chart extends Plot {
-    convertConfig(config) {
-        config.dimensions = this._normalizeDimensions(config.dimensions, config.data);
-        return typesChart[config.type](config);
+    constructor(config) {
+        config.settings   = this.setupSettings(config.settings);
+        config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
+        super(typesChart[config.type](config));
     }
 }

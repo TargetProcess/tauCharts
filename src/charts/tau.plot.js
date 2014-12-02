@@ -7,30 +7,42 @@ import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
 import {UnitDomainMixin} from '../unit-domain-mixin';
 import {UnitsRegistry} from '../units-registry';
+import {DataProcessor} from '../data-processor';
 
 export class Plot {
+
     constructor(config) {
-
-        var chartConfig = this.convertConfig(config);
-
-        this.config = _.defaults(chartConfig, {
-            excludeNull: true,
-            spec: null,
-            data: [],
-            plugins: []
-        });
-
-        chartConfig.spec.dimensions = this._normalizeDimensions(chartConfig.spec.dimensions, chartConfig.data);
-
-        this.plugins = this.config.plugins;
-        this.spec = this.config.spec;
-        this.data = this.config.excludeNull ?
-            this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data) :
-            this.config.data;
-
+        this.setupConfig(config);
         //plugins
         this._plugins = new Plugins(this.config.plugins);
+    }
 
+    setupConfig(config) {
+        this.config = _.defaults(config, {
+            spec: {},
+            data: [],
+            plugins: [],
+            settings: {}
+        });
+
+        // TODO: remove this particular config cases
+        this.config.settings.specEngine   = this.config.specEngine || this.config.settings.specEngine;
+        this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
+
+        this.config.settings        = this.setupSettings(this.config.settings);
+        this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+
+        this.config.data = this.config.settings.excludeNull ?
+            DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) :
+            this.config.data;
+    }
+
+    setupMetaInfo(dims, data) {
+        var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
+        return DataProcessor.autoAssignScales(meta);
+    }
+
+    setupSettings(configSettings) {
         var globalSettings = Plot.globalSettings;
         var localSettings = {};
         Object.keys(globalSettings).forEach((k) => {
@@ -39,10 +51,7 @@ export class Plot {
                 utils.clone(globalSettings[k]);
         });
 
-        this.settings = localSettings;
-
-        this.settings.specEngine = this.config.specEngine || this.settings.specEngine;
-        this.settings.layoutEngine = this.config.layoutEngine || this.settings.layoutEngine;
+        return _.defaults(configSettings || {}, localSettings);
     }
 
     renderTo(target, xSize) {
@@ -57,18 +66,18 @@ export class Plot {
         //todo don't compute width if width or height were passed
         var size = _.defaults(xSize || {}, utilsDom.getContainerSize(containerNode));
 
-        if (this.data.length === 0) {
+        if (this.config.data.length === 0) {
             // empty data source
             return;
         }
 
         containerNode.innerHTML = '';
 
-        var domainMixin = new UnitDomainMixin(this.spec.dimensions, this.data);
+        var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
 
-        var specEngine = SpecEngineFactory.get(this.settings.specEngine, this.settings);
+        var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
 
-        var fullSpec = specEngine(this.spec, domainMixin.mix({}));
+        var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
 
         var traverseFromDeep = (root) => {
             var r;
@@ -113,7 +122,7 @@ export class Plot {
 
 
         // optimize full spec depending on size
-        var localSettings = this.settings;
+        var localSettings = this.config.settings;
         var traverseToDeep = (root, size) => {
 
             var mdx = root.guide.x.$minimalDomain || 1;
@@ -151,7 +160,7 @@ export class Plot {
         var reader = new DSLReader(domainMixin, UnitsRegistry);
 
         var logicXGraph = reader.buildGraph(fullSpec);
-        var layoutGraph = LayoutEngineFactory.get(this.settings.layoutEngine)(logicXGraph);
+        var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
         var renderGraph = reader.calcLayout(layoutGraph, size);
         var svgXElement = reader.renderGraph(
             renderGraph,
@@ -165,116 +174,5 @@ export class Plot {
         //plugins
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this._plugins));
         this._plugins.render(svgXElement);
-    }
-
-    _autoDetectDimensions(data) {
-
-        var defaultDetect = {
-            type: 'category',
-            scale: 'ordinal'
-        };
-
-        var detectType = (propertyValue, defaultDetect) => {
-
-            var pair = defaultDetect;
-
-            if (_.isDate(propertyValue)) {
-                pair.type = 'measure';
-                pair.scale = 'time';
-            }
-            else if (_.isObject(propertyValue)) {
-                pair.type = 'order';
-                pair.scale = 'ordinal';
-            }
-            else if (_.isNumber(propertyValue)) {
-                pair.type = 'measure';
-                pair.scale = 'linear';
-            }
-
-            return pair;
-        };
-
-        var reducer = (memo, rowItem) => {
-
-            Object.keys(rowItem).forEach((key) => {
-
-                var val = rowItem.hasOwnProperty(key) ? rowItem[key] : null;
-
-                memo[key] = memo[key] || {
-                    type: null,
-                    hasNull: false
-                };
-
-                if (val === null) {
-                    memo[key].hasNull = true;
-                }
-                else {
-                    var typeScalePair = detectType(val, utils.clone(defaultDetect));
-                    var detectedType  = typeScalePair.type;
-                    var detectedScale = typeScalePair.scale;
-
-                    var isInContraToPrev = (memo[key].type !== null && memo[key].type !== detectedType);
-                    memo[key].type  = isInContraToPrev ? defaultDetect.type  : detectedType;
-                    memo[key].scale = isInContraToPrev ? defaultDetect.scale : detectedScale;
-                }
-            });
-
-            return memo;
-        };
-
-        return _.reduce(data, reducer, {});
-    }
-
-    _autoExcludeNullValues(dimensions, srcData) {
-
-        var fields = [];
-        Object.keys(dimensions).forEach((k) => {
-            var d = dimensions[k];
-            if ((!d.hasOwnProperty('hasNull') || d.hasNull) && ((d.type === 'measure') || (d.scale === 'period'))) {
-                // rule: exclude null values of "measure" type or "period" scale
-                fields.push(k);
-            }
-        });
-
-        var r;
-        if (fields.length === 0) {
-            r = srcData;
-        }
-        else {
-            r = srcData.filter((row) => !fields.some((f) => (!row.hasOwnProperty(f) || (row[f] === null))));
-        }
-
-        return r;
-    }
-
-    _autoAssignScales(dimensions) {
-
-        var defaultType = 'category';
-        var scaleMap = {
-            category: 'ordinal',
-            order: 'ordinal',
-            measure:'linear'
-        };
-
-        var r = {};
-        Object.keys(dimensions).forEach((k) => {
-            var v = dimensions[k];
-            var t = (v.type || defaultType).toLowerCase();
-            r[k] = {};
-            r[k].type = t;
-            r[k].scale = v.scale || scaleMap[t];
-            r[k].value = v.value;
-        });
-
-        return r;
-    }
-
-    _normalizeDimensions(dimensions, data) {
-        var dims = (dimensions) ? dimensions : this._autoDetectDimensions(data);
-        return this._autoAssignScales(dims);
-    }
-
-    convertConfig(config) {
-        return config;
     }
 }
