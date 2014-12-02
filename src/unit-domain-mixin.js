@@ -72,7 +72,10 @@ export class UnitDomainMixin {
 
     constructor(meta, data) {
 
-        var getPropMapper = (prop) => ((propObj) => propObj[prop]);
+        var getPropMapper = (prop) => ((propObj) => {
+            var xObject = (propObj || {});
+            return xObject.hasOwnProperty(prop) ? xObject[prop] : null;
+        });
 
         var getValueMapper = (dim) => {
             var d = meta[dim] || {};

@@ -4,6 +4,7 @@ define(function (require) {
     var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
     describe("Unit domain decorator", function () {
 
+        var decorator;
         var offsetHrs = new Date().getTimezoneOffset() / 60;
         var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
         var iso = function (str) {
@@ -29,7 +30,7 @@ define(function (require) {
                 "name": "Follow",
                 "team": "Alaska",
                 "project": "TP2",
-                "priority": {id: 2, name: 'medium'},
+                "priority": null,
                 "business value": {value: 1, title: 'Nice to have'},
                 role: 'Some Unknown role'
             },
@@ -93,7 +94,7 @@ define(function (require) {
 
             expect(unit.domain('effort')).to.deep.equal([0, 1, 2]);
 
-            expect(unit.domain('priority')).to.deep.equal([1, 2, 3]);
+            expect(unit.domain('priority')).to.deep.equal([null, 1, 3]);
 
             expect(unit.domain('business value')).to.deep.equal([3, 1]);
 
