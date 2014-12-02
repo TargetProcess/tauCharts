@@ -190,7 +190,7 @@ export class Plot extends Emitter{
             this
         );
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
-        this.fire('render', svgXElement);
+        this.fire('render', svgXElement.node());
     }
     getData() {
         return this.config.data;

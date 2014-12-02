@@ -28,7 +28,6 @@ var propagateDatumEvents = function(chart) {
     return function() {
         elementEvents.forEach(function(name) {
             this.on(name, function(d) {
-
                 chart.fire('element' + name, {
                     elementData: d,
                     element: this,

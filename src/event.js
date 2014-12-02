@@ -67,6 +67,7 @@ function createDispatcher(eventName) {
  * to add and remove handler for desired events, and call it when event happens.
  * @class
  */
+
 class Emitter {
     /**
      * @constructor
