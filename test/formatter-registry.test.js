@@ -17,8 +17,10 @@ define(function (require) {
 
         it("should use *.toString() by default", function () {
             var defaultFormatter = registry.get(null);
+
             expect(defaultFormatter(undefined)).to.equal('');
             expect(defaultFormatter(null)).to.equal('');
+            expect(defaultFormatter(0)).to.equal('0');
             expect(defaultFormatter('')).to.equal('');
 
             expect(defaultFormatter(false)).to.equal('false');
