@@ -1376,6 +1376,7 @@ define('event',["exports"], function (exports) {
    * to add and remove handler for desired events, and call it when event happens.
    * @class
    */
+
   var Emitter = (function () {
     var Emitter =
     /**
@@ -3284,7 +3285,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           var renderGraph = reader.calcLayout(layoutGraph, size);
           var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), this);
           svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
-          this.fire("render", svgXElement);
+          this.fire("render", svgXElement.node());
         }
       },
       getData: {

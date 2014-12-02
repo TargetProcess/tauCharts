@@ -76,9 +76,18 @@ module.exports = function(grunt) {
                 src: '<%= concat.dist.dest %>',
                 dest: 'build/<%= pkg.name %>.min.js'
             },
-            addons: {
-                src: 'src/addons/color-brewer.js',
-                dest: 'build/<%= pkg.name %>.color-brewer.min.js'
+            plugins: {
+                files: [
+                    {
+                        src:  'src/addons/color-brewer.js',
+                        dest: 'build/<%= pkg.name %>.color-brewer.min.js'
+                    },
+                    {
+                        src:  'plugins/tooltip.js',
+                        dest: 'build/plugins/<%= pkg.name %>.tooltip.min.js'
+                    }
+                ]
+
             }
         },
         cssmin: {
@@ -91,6 +100,10 @@ module.exports = function(grunt) {
                     {
                         src: 'css/colorbrewer.css',
                         dest: 'build/css/<%= pkg.name %>.colorbrewer.min.css'
+                    },
+                    {
+                        src: 'css/tooltip.css',
+                        dest: 'build/plugins/<%= pkg.name %>.tooltip.min.css'
                     }
                 ]
             }
