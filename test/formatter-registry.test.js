@@ -16,9 +16,16 @@ define(function (require) {
         });
 
         it("should use *.toString() by default", function () {
-            expect(registry.get(null)(null)).to.equal('');
-            expect(registry.get(null)('str')).to.equal('str');
-            expect(registry.get(null)(-42)).to.equal('-42');
+            var defaultFormatter = registry.get(null);
+            expect(defaultFormatter(undefined)).to.equal('');
+            expect(defaultFormatter(null)).to.equal('');
+            expect(defaultFormatter('')).to.equal('');
+
+            expect(defaultFormatter(false)).to.equal('false');
+            expect(defaultFormatter(true)).to.equal('true');
+
+            expect(defaultFormatter('str')).to.equal('str');
+            expect(defaultFormatter(-42)).to.equal('-42');
         });
 
         it("should support default formats", function () {

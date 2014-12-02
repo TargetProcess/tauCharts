@@ -58,7 +58,7 @@ FORMATS_MAP['x-time-quarter']   = FORMATS_MAP['quarter'];
 FORMATS_MAP['x-time-year']      = FORMATS_MAP['year'];
 /* jshint ignore:end */
 
-var identity = ((x) => (x || '').toString());
+var identity = ((x) => (((x === null) || (typeof x === 'undefined')) ? '' : x).toString());
 
 var FormatterRegistry = {
 
