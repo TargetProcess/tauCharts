@@ -273,7 +273,7 @@ var generateColor = function(node) {
         domain = Object.keys(brewer);
         range = domain.map((key) => brewer[key]);
     }
-    var calculateClass = d3.scale.ordinal().range(range).domain(domain)
+    var calculateClass = d3.scale.ordinal().range(range).domain(domain);
     var getClass = (d) => domain.indexOf(d) > -1 ? calculateClass(d) : 'color-default';
 
     return {
