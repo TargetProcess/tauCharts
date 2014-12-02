@@ -20,14 +20,14 @@
         settings = settings || {};
         return {
             template: [
-                '<div class="i-role-content tooltip__content"></div>',
-                '<div class="i-role-exclude tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
+                '<div class="i-role-content graphical-report__tooltip__content"></div>',
+                '<div class="i-role-exclude graphical-report__tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
             ]
                 .join(''),
             templateItem: [
-                '<div class="tooltip__list__item">',
-                '<div class="tooltip__list__elem"><%=label%></div>',
-                '<div class="tooltip__list__elem"><%=value%></div>',
+                '<div class="graphical-report__tooltip__list__item">',
+                '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
+                '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
                 '</div>'
             ].join(''),
 

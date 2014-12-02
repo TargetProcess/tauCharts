@@ -1,3 +1,4 @@
+import {CSS_PREFIX} from '../const';
 // jshint ignore: start
 var classes = function (el) {
     return {
@@ -635,7 +636,7 @@ Tooltip.classTypes = ['type', 'effect'];
  * @type {Object}
  */
 Tooltip.defaults = {
-    baseClass: 'tooltip', // Base tooltip class name.
+    baseClass: CSS_PREFIX + 'tooltip', // Base tooltip class name.
     typeClass: null,      // Type tooltip class name.
     effectClass: null,      // Effect tooltip class name.
     inClass: 'in',      // Class used to transition stuff in.

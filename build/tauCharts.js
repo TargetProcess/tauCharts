@@ -644,9 +644,15 @@ define('dsl-reader',["exports"], function (exports) {
 
   exports.DSLReader = DSLReader;
 });
-define('api/balloon',["exports"], function (exports) {
+define('const',["exports"], function (exports) {
   
 
+  var CSS_PREFIX = exports.CSS_PREFIX = "graphical-report__";
+});
+define('api/balloon',["exports", "../const"], function (exports, _const) {
+  
+
+  var CSS_PREFIX = _const.CSS_PREFIX;
   // jshint ignore: start
   var classes = function (el) {
     return {
@@ -1284,7 +1290,7 @@ define('api/balloon',["exports"], function (exports) {
    * @type {Object}
    */
   Tooltip.defaults = {
-    baseClass: "tooltip", // Base tooltip class name.
+    baseClass: CSS_PREFIX + "tooltip", // Base tooltip class name.
     typeClass: null, // Type tooltip class name.
     effectClass: null, // Effect tooltip class name.
     inClass: "in", // Class used to transition stuff in.
@@ -2545,11 +2551,6 @@ define('plugins',["exports"], function (exports) {
 
   exports.propagateDatumEvents = propagateDatumEvents;
   exports.Plugins = Plugins;
-});
-define('const',["exports"], function (exports) {
-  
-
-  var CSS_PREFIX = exports.CSS_PREFIX = "graphical-report__";
 });
 define('unit-domain-period-generator',["exports"], function (exports) {
   

@@ -9,7 +9,7 @@ define(function(require) {
         var selector = '.' + classTooltip;
         var balloon;
         beforeEach(function() {
-            balloon = new Balloon('hello world!!!', {effectClass: 'fade', spacing: 3});
+            balloon = new Balloon('hello world!!!', {baseClass: classTooltip, effectClass: 'fade', spacing: 3});
             //  testUtils.loadCss('base/css/tooltip.css').done(done);
         });
         afterEach(function() {
@@ -118,14 +118,14 @@ define(function(require) {
             var $div = $('<div  style="position:absolute;height: 100px;width: 100px"/>').appendTo('body');
             balloon.show().attach($div[0]);
             expect(balloon.element.classList.contains('bottom')).to.be.true;
-         //   Balloon.reposition();
-            $div.css({top:'200px',left:'200px'});
+            //   Balloon.reposition();
+            $div.css({top: '200px', left: '200px'});
             balloon.detach();
             balloon.show().attach($div[0]);
-            setTimeout(function(){
+            setTimeout(function() {
                 expect(balloon.element.classList.contains('top')).to.be.true;
                 done();
-            },40);
+            }, 40);
 
         });
         it('auto position left', function(done) {
@@ -133,13 +133,13 @@ define(function(require) {
             balloon.place('left');
             balloon.show().attach($div[0]);
             expect(balloon.element.classList.contains('right')).to.be.true;
-            $div.css({top:'200px',left:'200px'});
+            $div.css({top: '200px', left: '200px'});
             balloon.detach();
             balloon.show().attach($div[0]);
-            setTimeout(function(){
+            setTimeout(function() {
                 expect(balloon.element.classList.contains('left')).to.be.true;
                 done();
-            },20);
+            }, 20);
 
         });
         it('auto position top-left', function(done) {
@@ -147,13 +147,13 @@ define(function(require) {
             balloon.place('top-left');
             balloon.show().attach($div[0]);
             expect(balloon.element.classList.contains('bottom-left')).to.be.true;
-            $div.css({top:'200px',left:'200px'});
+            $div.css({top: '200px', left: '200px'});
             balloon.detach();
             balloon.show().attach($div[0]);
-            setTimeout(function(){
+            setTimeout(function() {
                 expect(balloon.element.classList.contains('top-left')).to.be.true;
                 done();
-            },20);
+            }, 20);
 
         });
         it('auto position top-right', function(done) {
@@ -161,13 +161,13 @@ define(function(require) {
             balloon.place('top-right');
             balloon.show().attach($div[0]);
             expect(balloon.element.classList.contains('bottom-right')).to.be.true;
-            $div.css({top:'200px',left:'200px'});
+            $div.css({top: '200px', left: '200px'});
             balloon.detach();
             balloon.show().attach($div[0]);
-            setTimeout(function(){
+            setTimeout(function() {
                 expect(balloon.element.classList.contains('top-right')).to.be.true;
                 done();
-            },20);
+            }, 20);
 
         });
 

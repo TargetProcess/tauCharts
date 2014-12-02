@@ -88,7 +88,6 @@
   /*  Bar  */
   /*  PLUGINS  */
   /*  Highlighter  */
-  /* Tooltip  */
 }
 .graphical-report a {
   color: #3962ff;
@@ -175,22 +174,4 @@
   stroke-width: 6;
   stroke-opacity: 0.4;
   opacity: 1;
-}
-.graphical-report__tooltip {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: none;
-  z-index: 900;
-  font-size: 11px;
-  padding: 7px 10px 8px;
-  border-radius: 5px;
-  background: #fff;
-  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-}
-.graphical-report__tooltip em {
-  font-style: normal;
-  color: #999;
-  display: inline-block;
-  min-width: 45px;
 }
