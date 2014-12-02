@@ -16,6 +16,8 @@
      .plugins(tau.plugins.tooltip('effort', 'priority'))
      accepts a list of data fields names as properties
      */
+    var _ = tauCharts.api._;
+    var d3 = tauCharts.api.d3;
     function tooltip(settings) {
         settings = settings || {};
         return {
@@ -24,14 +26,16 @@
                 '<div class="i-role-exclude graphical-report__tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
             ]
                 .join(''),
-            templateItem: [
+            itemTemplate: [
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
                 '</div>'
             ].join(''),
+            onExcludeData: function() {
 
-            drawPoint: function(container, x, y, color) {
+            },
+            _drawPoint: function(container, x, y, color) {
                 if (this.circle) {
                     this.circle.remove();
                 }
@@ -50,10 +54,11 @@
             init: function(chart) {
                 this._chart = chart;
                 this._dataFields = settings.fields;
+                _.extend(this,_.omit(settings,'fields'));
                 this._interval = null;
                 this._dataWithCoords = {};
                 this._unitMeta = {};
-                this._templateItem = _.template(this.templateItem);
+                this._templateItem = _.template(this.itemTemplate);
                 this._tooltip = chart.addBalloon({spacing: 5, auto: true});
                 this._elementTooltip = this._tooltip.getElement();
                 var elementTooltip = this._elementTooltip;
@@ -95,8 +100,9 @@
             _exclude: function() {
                 var dataChart = this._chart.getData();
                 this._chart.setData(_.without(dataChart, this._currentElement));
+                this.onExcludeData(this._currentElement);
             },
-            calculateLength: function(x1, y1, x2, y2) {
+            _calculateLength: function(x1, y1, x2, y2) {
                 return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
             },
             _generateKey: function(data) {
@@ -107,15 +113,21 @@
                 var coord = d3.mouse(data.element);
                 var key = this._generateKey(data.cellData.$where);
                 var item = _.min(this._dataWithCoords[key], function(a) {
-                    return this.calculateLength(a.x, a.y, coord[0], coord[1]);
+                    return this._calculateLength(a.x, a.y, coord[0], coord[1]);
                 }, this);
                 if (this._currentElement === item) {
                     return;
                 }
                 if (data.elementData.key && Array.isArray(data.elementData.values)) {
-                    this.drawPoint(d3.select(data.element.parentNode), item.x, item.y, this._unitMeta[key].options.color.get(data.elementData.key));
+                    this._drawPoint(d3.select(data.element.parentNode), item.x, item.y, this._unitMeta[key].options.color.get(data.elementData.key));
                 }
-                this._elementTooltip.querySelectorAll('.i-role-content')[0].innerHTML = this.render(item.item);
+                var content = this._elementTooltip.querySelectorAll('.i-role-content');
+                if(content[0]) {
+                    content[0].innerHTML = this.render(item.item);
+                } else {
+                    console.log('template should contain i-role-content class');
+                }
+
                 this._show();
                 this._currentElement = item.item;
             },
