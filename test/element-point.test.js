@@ -1,4 +1,4 @@
-define(function (require) {
+define(function(require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var tauBrewer = require('brewer');
@@ -22,8 +22,8 @@ define(function (require) {
         {
             unit: {
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 type: 'COORDS.RECT',
                 x: 'x',
@@ -40,17 +40,17 @@ define(function (require) {
             }
         }
         , testData
-        , function (context) {
-            it("should right spec", function () {
+        , function(context) {
+            it("should right spec", function() {
                 assert.ok(schemes.scatterplot(context.chart.config.spec), 'spec is right');
             });
-            it("should render point with right cord", function () {
+            it("should render point with right cord", function() {
                 var dots = getDots();
                 expect(dots.length).to.equal(3);
                 expect(position(dots[1])).to.deep.equal({x: '0', y: '800'});
                 expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
             });
-            it("should render point with right size", function () {
+            it("should render point with right size", function() {
                 var dots = getDots();
                 var size1 = attrib(dots[0], 'r');
                 var size2 = attrib(dots[1], 'r');
@@ -58,7 +58,7 @@ define(function (require) {
                 assert.equal(size1, size2, 'size should same');
                 assert.notEqual(size1, size3, 'size shouldn\'t same');
             });
-            it("should render point with right color", function () {
+            it("should render point with right color", function() {
                 var dots = getDots();
                 var size1 = attrib(dots[0], 'class');
                 var size2 = attrib(dots[1], 'class');
@@ -75,8 +75,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -88,14 +88,14 @@ define(function (require) {
             }
         },
         testData,
-        function (context) {
-            it("should render point with right cord", function () {
+        function(context) {
+            it("should render point with right cord", function() {
                 var dots = getDots();
                 expect(dots.length).to.equal(3);
                 expect(position(dots[1])).to.deep.equal({x: '0', y: '800'});
                 expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
             });
-            it("should render point with right size", function () {
+            it("should render point with right size", function() {
                 var dots = getDots();
                 var size1 = attrib(dots[0], 'r');
                 var size2 = attrib(dots[1], 'r');
@@ -103,7 +103,7 @@ define(function (require) {
                 assert.equal(size1, size2, 'size should same');
                 assert.equal(size1, size3, 'size should same');
             });
-            it("should render point with right color", function () {
+            it("should render point with right color", function() {
                 var dots = getDots();
                 var size1 = attrib(dots[0], 'class');
                 var size2 = attrib(dots[1], 'class');
@@ -121,8 +121,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -139,14 +139,16 @@ define(function (require) {
                 ]
             }
         },
-        testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
-        function () {
-            it("should render point with right color", function () {
+        testData.concat({x: 3, y: 3, color: 'blue', size: 8}, {x: 4, y: 4, color: 'unknown', size: 8},{x: 5, y: 6, color: 'unknowns', size: 8}),
+        function() {
+            it("should render point with right color", function() {
                 var dots = getDots();
                 assert.ok(hasClass(dots[0], 'red'), 'has red class');
                 assert.ok(hasClass(dots[1], 'green'), 'has green class');
                 assert.ok(hasClass(dots[2], 'green'), 'has green class');
                 assert.ok(hasClass(dots[3], 'blue'), 'has blue class');
+                assert.ok(hasClass(dots[4], 'color-default'), 'should default color');
+                assert.ok(hasClass(dots[5], 'color-default'), 'should default color');
             });
         });
 
@@ -158,8 +160,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -175,8 +177,8 @@ define(function (require) {
             }
         },
         testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
-        function () {
-            it("should render point with right color", function () {
+        function() {
+            it("should render point with right color", function() {
                 var dots = getDots();
                 assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
                 assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
@@ -193,8 +195,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -210,8 +212,8 @@ define(function (require) {
             }
         },
         testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
-        function () {
-            it("should render point with right color", function () {
+        function() {
+            it("should render point with right color", function() {
                 var dots = getDots();
                 assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
                 assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
@@ -226,8 +228,8 @@ define(function (require) {
             x: 'x',
             y: 'y',
             guide: {
-                x: { autoScale: false },
-                y: { autoScale: false }
+                x: {autoScale: false},
+                y: {autoScale: false}
             },
             unit: [
                 {
@@ -238,74 +240,74 @@ define(function (require) {
         }
     };
 
-    var getAttr = function (attrName) {
-        return function (element) {
+    var getAttr = function(attrName) {
+        return function(element) {
             return d3.select(element).attr(attrName);
-        }
+        };
     };
 
     describePlot(
         "Point elements with large size domain",
         scatterplotSpec,
         [{x: 0, y: 0, size: 8}, {x: 1, y: 1, size: 800}],
-        function () {
-            it("should have sizes in large range", function () {
+        function() {
+            it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(1, 1);
                 expect(sizes[1]).to.be.closeTo(5, 0);
-            })
+            });
         });
 
     describePlot(
         "Point element with small size domain",
         scatterplotSpec,
         [{x: 0, y: 0, size: 8}, {x: 1, y: 1, size: 16}],
-        function () {
-            it("should have sizes in small range", function () {
+        function() {
+            it("should have sizes in small range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(2.95, 0.01);
                 expect(sizes[1]).to.be.closeTo(5, 0);
-            })
+            });
         });
 
     describePlot(
         "Point elements with  size domain values in [0..1]",
         scatterplotSpec,
         [{x: 0, y: 0, size: 0.08}, {x: 1, y: 1, size: 0.16}],
-        function () {
-            it("should have proportional sizes", function () {
+        function() {
+            it("should have proportional sizes", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(2.95, 0.01);
                 expect(sizes[1]).to.be.closeTo(5, 0);
-            })
+            });
         });
 
     describePlot(
         "Point elements with  size domain values including 0",
         scatterplotSpec,
         [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 5}, {x: 1, y: 1, size: 8}],
-        function () {
-            it("should have sizes in large range", function () {
+        function() {
+            it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(1.62, 0.01);
                 expect(sizes[1]).to.be.closeTo(3.73, 0.01);
                 expect(sizes[2]).to.be.closeTo(5, 0);
-            })
+            });
         });
 
     describePlot(
         "Point element with size domain values including not only finite values",
         scatterplotSpec,
         [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 10}, {x: 1, y: 1, size: null}, {x: 1, y: 1, size: Infinity}],
-        function () {
-            it("should map Infinity to maximum size", function () {
+        function() {
+            it("should map Infinity to maximum size", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[3]).to.be.equal(sizes[1]);
             });
 
-            it("should map null to maximum size", function () {
+            it("should map null to maximum size", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[2]).to.be.equal(sizes[0]);
             });
-        })
+        });
 });

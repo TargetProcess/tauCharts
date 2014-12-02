@@ -261,6 +261,11 @@ require(['tau_modules/tau.newCharts', 'tauPlugins','plugins/highlighter', 'plugi
             y: ['orderingValue'],
             x: ['project'],
             color: 'userStories',
+            guide:{
+                color:{
+                    brewer:{'project':'df'}
+                }
+            },
             size: getFieldData($size)
         });
 

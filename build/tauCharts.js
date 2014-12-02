@@ -1,4 +1,4 @@
-/*! tauCharts - v0.1.16 - 2014-11-28
+/*! tauCharts - v0.1.17 - 2014-12-02
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -443,12 +443,12 @@ var requirejs, require, define;
 
 define("../node_modules/almond/almond", function(){});
 
-/**
- * Internal method to return CSS value for given element and property
- */
 define('utils/utils-dom',["exports"], function (exports) {
   
 
+  /**
+   * Internal method to return CSS value for given element and property
+   */
   var utilsDom = {
     getScrollbarWidth: function () {
       var div = document.createElement("div");
@@ -534,7 +534,6 @@ define('dsl-reader',["exports"], function (exports) {
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -549,7 +548,6 @@ define('dsl-reader',["exports"], function (exports) {
         writable: true,
         value: function (spec) {
           var _this = this;
-
           var buildRecursively = function (unit) {
             return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
           };
@@ -623,7 +621,6 @@ define('dsl-reader',["exports"], function (exports) {
         writable: true,
         value: function (styledGraph, target) {
           var _this2 = this;
-
           styledGraph.options.container = target;
           var renderRecursively = function (unit) {
             return _this2.UnitsRegistry.get(unit.type).draw(_this2.domain.mix(unit), renderRecursively);
@@ -716,12 +713,10 @@ define('utils/utils',["exports"], function (exports) {
 
   exports.utils = utils;
 });
-/* jshint ignore:start */
 define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   
 
   var d3 = _d3;
-
   /* jshint ignore:end */
   var FORMATS_MAP = {
     "x-num-auto": function (x) {
@@ -774,13 +769,13 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   FORMATS_MAP["x-time-hour"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-day"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-week"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-month"] = FORMATS_MAP["month"];
-  FORMATS_MAP["x-time-quarter"] = FORMATS_MAP["quarter"];
-  FORMATS_MAP["x-time-year"] = FORMATS_MAP["year"];
+  FORMATS_MAP["x-time-month"] = FORMATS_MAP.month;
+  FORMATS_MAP["x-time-quarter"] = FORMATS_MAP.quarter;
+  FORMATS_MAP["x-time-year"] = FORMATS_MAP.year;
   /* jshint ignore:end */
 
   var identity = (function (x) {
-    return (x || "").toString();
+    return (((x === null) || (typeof x === "undefined")) ? "" : x).toString();
   });
 
   var FormatterRegistry = {
@@ -819,6 +814,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
   var utils = _utilsUtils.utils;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
 
+
   var translate = function (left, top) {
     return "translate(" + left + "," + top + ")";
   };
@@ -828,7 +824,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
   var getOrientation = function (scaleOrient) {
     return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
   };
-  var s;
+
 
   var cutText = function (textString, widthLimit) {
     textString.each(function () {
@@ -1026,17 +1022,16 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
 
     return grid;
   };
-
+  var defaultRangeColor = _.times(10, function (i) {
+    return "color10-" + (1 + i);
+  });
   var generateColor = function (node) {
-    var defaultRange = _.times(10, function (i) {
-      return "color10-" + (1 + i);
-    });
     var range, domain;
     var colorGuide = node.guide.color || {};
     var colorParam = node.color;
 
     var colorDim = colorParam.scaleDim;
-    var brewer = colorGuide.brewer || defaultRange;
+    var brewer = colorGuide.brewer || defaultRangeColor;
 
     if (utils.isArray(brewer)) {
       domain = node.domain(colorDim);
@@ -1047,10 +1042,14 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry"]
         return brewer[key];
       });
     }
+    var calculateClass = d3.scale.ordinal().range(range).domain(domain);
+    var getClass = function (d) {
+      return domain.indexOf(d) > -1 ? calculateClass(d) : "color-default";
+    };
 
     return {
       get: function (d) {
-        return d3.scale.ordinal().range(range).domain(domain)(d);
+        return getClass(d);
       },
       dimension: colorDim
     };
@@ -1116,6 +1115,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
+
 
   var applyCustomProps = function (targetUnit, customUnit) {
     var guide = customUnit.guide || {};
@@ -1342,6 +1342,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
         var yValues = yMeta.values;
 
+
         unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
         unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
@@ -1351,6 +1352,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
         var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+
 
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
         var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
@@ -1397,6 +1399,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var distToXAxisLabel = settings.distToXAxisLabel;
         var distToYAxisLabel = settings.distToYAxisLabel;
 
+
         var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
         unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
 
@@ -1405,11 +1408,14 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
         unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
 
+
         unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
         unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
+
         var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
         var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
 
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
@@ -1440,6 +1446,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       return SpecEngineTypeMap[engineName](spec, meta, settings);
     }, srcSpec);
   };
+
 
   var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
     var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
@@ -1525,6 +1532,8 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var TMatrix = _matrix.TMatrix;
+
+
 
   var specUnitSummary = function (spec, boxOpt) {
     var box = boxOpt ? boxOpt : { depth: -1, paddings: [] };
@@ -1644,20 +1653,21 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
 
   exports.LayoutEngineFactory = LayoutEngineFactory;
 });
-//plugins
-/** @class
- * @extends Plugin */
 define('plugins',["exports"], function (exports) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
+  //plugins
+  /** @class
+   * @extends Plugin */
   var Plugins = (function () {
-    var Plugins = function Plugins(plugins) {
+    var Plugins =
+    /** @constructs */
+    function Plugins(plugins) {
       this._plugins = plugins;
     };
 
@@ -1707,6 +1717,9 @@ define('plugins',["exports"], function (exports) {
     return Plugins;
   })();
 
+
+
+
   var propagateDatumEvents = function (plugins) {
     return function () {
       this.on("click", function (d) {
@@ -1721,20 +1734,40 @@ define('plugins',["exports"], function (exports) {
     };
   };
 
-  var ChartElementTools = function ChartElementTools(element) {
+  /** @class ChartElementTools*/
+  var ChartElementTools =
+  /** @constructs */
+  function ChartElementTools(element) {
     this.element = element;
   };
 
-  var RenderContext = function RenderContext(dataSource) {
+  /** @class RenderContext*/
+  var RenderContext =
+  /** @constructs */
+  function RenderContext(dataSource) {
     this.data = dataSource;
   };
 
-  var ElementContext = function ElementContext(datum) {
+  /** @class ElementContext */
+  var ElementContext =
+  /**
+   * @constructs
+   * @param datum
+   *
+   * */
+  function ElementContext(datum) {
     this.datum = datum;
   };
 
+  /** @class ChartTools */
   var ChartTools = (function () {
-    var ChartTools = function ChartTools(layout, mapper) {
+    var ChartTools =
+    /**
+     * @constructs
+     * @param {ChartLayout} layout
+     * @param {Mapper} mapper
+     **/
+    function ChartTools(layout, mapper) {
       this.svg = layout.svg;
       this.html = layout.html;
       this.mapper = mapper;
@@ -1853,7 +1886,6 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -1861,7 +1893,6 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
   var utils = _utilsUtils.utils;
   var _ = _underscore;
   var d3 = _d3;
-
   /* jshint ignore:end */
 
   var autoScaleMethods = {
@@ -2130,12 +2161,163 @@ define('units-registry',["exports"], function (exports) {
 
   exports.UnitsRegistry = UnitsRegistry;
 });
-define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry"], function (exports, _dslReader, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry) {
+define('data-processor',["exports", "./utils/utils"], function (exports, _utilsUtils) {
+  
+
+  var utils = _utilsUtils.utils;
+
+
+  var DataProcessor = {
+    isYFunctionOfX: function (data, xFields, yFields) {
+      var isRelationAFunction = true;
+      var error = null;
+      // domain should has only 1 value from range
+      try {
+        data.reduce(function (memo, item) {
+          var fnVar = function (hash, f) {
+            hash.push(item[f]);
+            return hash;
+          };
+
+          var key = xFields.reduce(fnVar, []).join("/");
+          var val = yFields.reduce(fnVar, []).join("/");
+
+          if (!memo.hasOwnProperty(key)) {
+            memo[key] = val;
+          } else {
+            var prevVal = memo[key];
+            if (prevVal !== val) {
+              error = {
+                type: "RelationIsNotAFunction",
+                keyX: xFields.join("/"),
+                keyY: yFields.join("/"),
+                valX: key,
+                errY: [prevVal, val]
+              };
+
+              throw new Error("RelationIsNotAFunction");
+            }
+          }
+          return memo;
+        }, {});
+      } catch (ex) {
+        if (ex.message !== "RelationIsNotAFunction") {
+          throw ex;
+        }
+
+        isRelationAFunction = false;
+      }
+
+      return {
+        result: isRelationAFunction,
+        error: error
+      };
+    },
+
+    excludeNullValues: function (dimensions, srcData) {
+      var fields = [];
+      Object.keys(dimensions).forEach(function (k) {
+        var d = dimensions[k];
+        if ((!d.hasOwnProperty("hasNull") || d.hasNull) && ((d.type === "measure") || (d.scale === "period"))) {
+          // rule: exclude null values of "measure" type or "period" scale
+          fields.push(k);
+        }
+      });
+
+      var r;
+      if (fields.length === 0) {
+        r = srcData;
+      } else {
+        r = srcData.filter(function (row) {
+          return !fields.some(function (f) {
+            return (!row.hasOwnProperty(f) || (row[f] === null));
+          });
+        });
+      }
+
+      return r;
+    },
+
+    autoAssignScales: function (dimensions) {
+      var defaultType = "category";
+      var scaleMap = {
+        category: "ordinal",
+        order: "ordinal",
+        measure: "linear"
+      };
+
+      var r = {};
+      Object.keys(dimensions).forEach(function (k) {
+        var v = dimensions[k];
+        var t = (v.type || defaultType).toLowerCase();
+        r[k] = {};
+        r[k].type = t;
+        r[k].scale = v.scale || scaleMap[t];
+        r[k].value = v.value;
+      });
+
+      return r;
+    },
+
+    autoDetectDimTypes: function (data) {
+      var defaultDetect = {
+        type: "category",
+        scale: "ordinal"
+      };
+
+      var detectType = function (propertyValue, defaultDetect) {
+        var pair = defaultDetect;
+
+        if (_.isDate(propertyValue)) {
+          pair.type = "measure";
+          pair.scale = "time";
+        } else if (_.isObject(propertyValue)) {
+          pair.type = "order";
+          pair.scale = "ordinal";
+        } else if (_.isNumber(propertyValue)) {
+          pair.type = "measure";
+          pair.scale = "linear";
+        }
+
+        return pair;
+      };
+
+      var reducer = function (memo, rowItem) {
+        Object.keys(rowItem).forEach(function (key) {
+          var val = rowItem.hasOwnProperty(key) ? rowItem[key] : null;
+
+          memo[key] = memo[key] || {
+            type: null,
+            hasNull: false
+          };
+
+          if (val === null) {
+            memo[key].hasNull = true;
+          } else {
+            var typeScalePair = detectType(val, utils.clone(defaultDetect));
+            var detectedType = typeScalePair.type;
+            var detectedScale = typeScalePair.scale;
+
+            var isInContraToPrev = (memo[key].type !== null && memo[key].type !== detectedType);
+            memo[key].type = isInContraToPrev ? defaultDetect.type : detectedType;
+            memo[key].scale = isInContraToPrev ? defaultDetect.scale : detectedScale;
+          }
+        });
+
+        return memo;
+      };
+
+      return _.reduce(data, reducer, {});
+    }
+  };
+
+  exports.DataProcessor = DataProcessor;
+});
+define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor"], function (exports, _dslReader, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -2149,39 +2331,54 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
   var CSS_PREFIX = _const.CSS_PREFIX;
   var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
+  var DataProcessor = _dataProcessor.DataProcessor;
   var Plot = (function () {
     var Plot = function Plot(config) {
-      var chartConfig = this.convertConfig(config);
-
-      this.config = _.defaults(chartConfig, {
-        excludeNull: true,
-        spec: null,
-        data: [],
-        plugins: []
-      });
-
-      chartConfig.spec.dimensions = this._normalizeDimensions(chartConfig.spec.dimensions, chartConfig.data);
-
-      this.plugins = this.config.plugins;
-      this.spec = this.config.spec;
-      this.data = this.config.excludeNull ? this._autoExcludeNullValues(chartConfig.spec.dimensions, this.config.data) : this.config.data;
-
+      this.setupConfig(config);
       //plugins
       this._plugins = new Plugins(this.config.plugins);
-
-      var globalSettings = Plot.globalSettings;
-      var localSettings = {};
-      Object.keys(globalSettings).forEach(function (k) {
-        localSettings[k] = (_.isFunction(globalSettings[k])) ? globalSettings[k] : utils.clone(globalSettings[k]);
-      });
-
-      this.settings = localSettings;
-
-      this.settings.specEngine = this.config.specEngine || this.settings.specEngine;
-      this.settings.layoutEngine = this.config.layoutEngine || this.settings.layoutEngine;
     };
 
     _classProps(Plot, null, {
+      setupConfig: {
+        writable: true,
+        value: function (config) {
+          this.config = _.defaults(config, {
+            spec: {},
+            data: [],
+            plugins: [],
+            settings: {}
+          });
+
+          // TODO: remove this particular config cases
+          this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
+          this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
+
+          this.config.settings = this.setupSettings(this.config.settings);
+          this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+
+          this.config.data = this.config.settings.excludeNull ? DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) : this.config.data;
+        }
+      },
+      setupMetaInfo: {
+        writable: true,
+        value: function (dims, data) {
+          var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
+          return DataProcessor.autoAssignScales(meta);
+        }
+      },
+      setupSettings: {
+        writable: true,
+        value: function (configSettings) {
+          var globalSettings = Plot.globalSettings;
+          var localSettings = {};
+          Object.keys(globalSettings).forEach(function (k) {
+            localSettings[k] = (_.isFunction(globalSettings[k])) ? globalSettings[k] : utils.clone(globalSettings[k]);
+          });
+
+          return _.defaults(configSettings || {}, localSettings);
+        }
+      },
       renderTo: {
         writable: true,
         value: function (target, xSize) {
@@ -2195,18 +2392,18 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
           //todo don't compute width if width or height were passed
           var size = _.defaults(xSize || {}, utilsDom.getContainerSize(containerNode));
 
-          if (this.data.length === 0) {
+          if (this.config.data.length === 0) {
             // empty data source
             return;
           }
 
           containerNode.innerHTML = "";
 
-          var domainMixin = new UnitDomainMixin(this.spec.dimensions, this.data);
+          var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
 
-          var specEngine = SpecEngineFactory.get(this.settings.specEngine, this.settings);
+          var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
 
-          var fullSpec = specEngine(this.spec, domainMixin.mix({}));
+          var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
 
           var traverseFromDeep = function (root) {
             var r;
@@ -2248,8 +2445,9 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
           size.height = screenH - scrollH;
           size.width = screenW - scrollW;
 
+
           // optimize full spec depending on size
-          var localSettings = this.settings;
+          var localSettings = this.config.settings;
           var traverseToDeep = function (root, size) {
             var mdx = root.guide.x.$minimalDomain || 1;
             var mdy = root.guide.y.$minimalDomain || 1;
@@ -2282,131 +2480,17 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
 
           traverseToDeep(fullSpec.unit, size);
 
+
           var reader = new DSLReader(domainMixin, UnitsRegistry);
 
           var logicXGraph = reader.buildGraph(fullSpec);
-          var layoutGraph = LayoutEngineFactory.get(this.settings.layoutEngine)(logicXGraph);
+          var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
           var renderGraph = reader.calcLayout(layoutGraph, size);
           var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height));
 
           //plugins
           svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this._plugins));
           this._plugins.render(svgXElement);
-        }
-      },
-      _autoDetectDimensions: {
-        writable: true,
-        value: function (data) {
-          var defaultDetect = {
-            type: "category",
-            scale: "ordinal"
-          };
-
-          var detectType = function (propertyValue, defaultDetect) {
-            var pair = defaultDetect;
-
-            if (_.isDate(propertyValue)) {
-              pair.type = "measure";
-              pair.scale = "time";
-            } else if (_.isObject(propertyValue)) {
-              pair.type = "order";
-              pair.scale = "ordinal";
-            } else if (_.isNumber(propertyValue)) {
-              pair.type = "measure";
-              pair.scale = "linear";
-            }
-
-            return pair;
-          };
-
-          var reducer = function (memo, rowItem) {
-            Object.keys(rowItem).forEach(function (key) {
-              var val = rowItem.hasOwnProperty(key) ? rowItem[key] : null;
-
-              memo[key] = memo[key] || {
-                type: null,
-                hasNull: false
-              };
-
-              if (val === null) {
-                memo[key].hasNull = true;
-              } else {
-                var typeScalePair = detectType(val, utils.clone(defaultDetect));
-                var detectedType = typeScalePair.type;
-                var detectedScale = typeScalePair.scale;
-
-                var isInContraToPrev = (memo[key].type !== null && memo[key].type !== detectedType);
-                memo[key].type = isInContraToPrev ? defaultDetect.type : detectedType;
-                memo[key].scale = isInContraToPrev ? defaultDetect.scale : detectedScale;
-              }
-            });
-
-            return memo;
-          };
-
-          return _.reduce(data, reducer, {});
-        }
-      },
-      _autoExcludeNullValues: {
-        writable: true,
-        value: function (dimensions, srcData) {
-          var fields = [];
-          Object.keys(dimensions).forEach(function (k) {
-            var d = dimensions[k];
-            if ((!d.hasOwnProperty("hasNull") || d.hasNull) && ((d.type === "measure") || (d.scale === "period"))) {
-              // rule: exclude null values of "measure" type or "period" scale
-              fields.push(k);
-            }
-          });
-
-          var r;
-          if (fields.length === 0) {
-            r = srcData;
-          } else {
-            r = srcData.filter(function (row) {
-              return !fields.some(function (f) {
-                return (!row.hasOwnProperty(f) || (row[f] === null));
-              });
-            });
-          }
-
-          return r;
-        }
-      },
-      _autoAssignScales: {
-        writable: true,
-        value: function (dimensions) {
-          var defaultType = "category";
-          var scaleMap = {
-            category: "ordinal",
-            order: "ordinal",
-            measure: "linear"
-          };
-
-          var r = {};
-          Object.keys(dimensions).forEach(function (k) {
-            var v = dimensions[k];
-            var t = (v.type || defaultType).toLowerCase();
-            r[k] = {};
-            r[k].type = t;
-            r[k].scale = v.scale || scaleMap[t];
-            r[k].value = v.value;
-          });
-
-          return r;
-        }
-      },
-      _normalizeDimensions: {
-        writable: true,
-        value: function (dimensions, data) {
-          var dims = (dimensions) ? dimensions : this._autoDetectDimensions(data);
-          return this._autoAssignScales(dims);
-        }
-      },
-      convertConfig: {
-        writable: true,
-        value: function (config) {
-          return config;
         }
       }
     });
@@ -2416,14 +2500,8 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../spec-engine-factory", 
 
   exports.Plot = Plot;
 });
-define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function (exports, _tauPlot, _utilsUtils) {
+define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-processor"], function (exports, _tauPlot, _utilsUtils, _dataProcessor) {
   
-
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
 
   var _extends = function (child, parent) {
     child.prototype = Object.create(parent.prototype, {
@@ -2439,17 +2517,18 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
 
   var Plot = _tauPlot.Plot;
   var utils = _utilsUtils.utils;
+  var DataProcessor = _dataProcessor.DataProcessor;
 
-  function convertAxis(data) {
+
+  var convertAxis = function (data) {
     return (!data) ? null : data;
-  }
-  function normalizeSettings(axis) {
-    if (!utils.isArray(axis)) {
-      return [axis];
-    }
-    return axis;
-  }
-  function createElement(type, config) {
+  };
+
+  var normalizeSettings = function (axis) {
+    return (!utils.isArray(axis)) ? [axis] : axis;
+  };
+
+  var createElement = function (type, config) {
     return {
       type: type,
       x: config.x,
@@ -2461,7 +2540,8 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
       flip: config.flip,
       size: config.size
     };
-  }
+  };
+
   var status = {
     SUCCESS: "SUCCESS",
     WARNING: "WARNING",
@@ -2562,11 +2642,55 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
     };
     return config;
   }
+
   var typesChart = {
     scatterplot: function (config) {
       return transformConfig("ELEMENT.POINT", config);
     },
     line: function (config) {
+      var data = config.data;
+
+      var log = config.settings.log;
+
+      if (!config.sortedBy) {
+        var xs = _.isArray(config.x) ? config.x : [config.x];
+        var ys = _.isArray(config.y) ? config.y : [config.y];
+        var primaryX = xs[xs.length - 1];
+        var secondaryX = xs.slice(0, xs.length - 1);
+        var primaryY = ys[ys.length - 1];
+        var secondaryY = ys.slice(0, ys.length - 1);
+        var colorProp = config.color;
+
+        var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter(function (x) {
+          return x !== null;
+        });
+
+        var variantIndex = -1;
+        var variations = [[[primaryX].concat(rest), primaryY], [[primaryY].concat(rest), primaryX]];
+        var isMatchAny = variations.some(function (item, i) {
+          var domainFields = item[0];
+          var rangeProperty = item[1];
+          var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
+          if (r.result) {
+            variantIndex = i;
+          } else {
+            log(["Attempt to find a functional relation between", item[0] + " and " + item[1] + " is failed.", "There are several " + r.error.keyY + " values (e.g. " + r.error.errY.join(",") + ")", "for (" + r.error.keyX + " = " + r.error.valX + ")."].join(" "));
+          }
+          return r.result;
+        });
+
+        var propSortBy;
+        if (isMatchAny) {
+          propSortBy = variations[variantIndex][0][0];
+        } else {
+          log("All attempts are failed. Will use " + primaryX + " property as a sorting key by default.");
+          log("It is better to use [scatterplot] here.");
+          propSortBy = primaryX;
+        }
+
+        config.data = _(data).sortBy(propSortBy);
+      }
+
       return transformConfig("ELEMENT.LINE", config);
     },
     bar: function (config) {
@@ -2580,21 +2704,13 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils"], function 
   };
 
   var Chart = (function (Plot) {
-    var Chart = function Chart() {
-      Plot.apply(this, arguments);
+    var Chart = function Chart(config) {
+      config.settings = this.setupSettings(config.settings);
+      config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
+      Plot.call(this, typesChart[config.type](config));
     };
 
     _extends(Chart, Plot);
-
-    _classProps(Chart, null, {
-      convertConfig: {
-        writable: true,
-        value: function (config) {
-          config.dimensions = this._normalizeDimensions(config.dimensions, config.data);
-          return typesChart[config.type](config);
-        }
-      }
-    });
 
     return Chart;
   })(Plot);
@@ -2608,6 +2724,7 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   var CSS_PREFIX = _const.CSS_PREFIX;
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
+
 
   var FacetAlgebra = {
     CROSS: function (root, dimX, dimY) {
@@ -2738,7 +2855,6 @@ define('utils/css-class-map',["exports", "../const"], function (exports, _const)
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   var arrayNumber = [1, 2, 3, 4, 5];
   var countLineClasses = arrayNumber.map(function (i) {
     return CSS_PREFIX + "line-opacity-" + i;
@@ -2772,7 +2888,6 @@ define('elements/line',["exports", "../utils/utils-draw", "../const", "../utils/
   var CSS_PREFIX = _const.CSS_PREFIX;
   var getLineClassesByWidth = _utilsCssClassMap.getLineClassesByWidth;
   var getLineClassesByCount = _utilsCssClassMap.getLineClassesByCount;
-
   var line = function (node) {
     var options = node.options;
 
@@ -2821,6 +2936,7 @@ define('elements/line',["exports", "../utils/utils-draw", "../const", "../utils/
       elements.enter().append("circle").call(update);
     };
 
+
     var line = d3.svg.line().x(function (d) {
       return xScale(d[node.x.scaleDim]);
     }).y(function (d) {
@@ -2860,7 +2976,6 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
   var sizeScale = _size.sizeScale;
-
   var point = function (node) {
     var options = node.options;
 
@@ -2900,7 +3015,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   var BAR_GROUP = "i-role-bar-group";
   var isMeasure = function (dim) {
     return dim.dimType === "measure";
@@ -2946,10 +3060,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
-
       (function () {
         xMin = Math.min.apply(null, xScale.domain());
-
         var startPoint = (xMin <= 0) ? 0 : xMin;
 
         _ref = getSizesParams({
@@ -2961,7 +3073,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref.tickWidth;
         intervalWidth = _ref.intervalWidth;
         offsetCategory = _ref.offsetCategory;
-
         /* jshint ignore:end */
         calculateX = isMeasure(node.x) ? function (d) {
           return xScale(Math.min(startPoint, d[node.x.scaleDim]));
@@ -2987,10 +3098,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
-
       (function () {
         yMin = Math.min.apply(null, yScale.domain());
-
         var startPoint = (yMin <= 0) ? 0 : yMin;
 
         _ref2 = getSizesParams({
@@ -3002,7 +3111,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref2.tickWidth;
         intervalWidth = _ref2.intervalWidth;
         offsetCategory = _ref2.offsetCategory;
-
         /* jshint ignore:end */
         calculateX = function (d) {
           return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
@@ -3059,6 +3167,7 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
+
   var inheritRootProps = function (unit, root, props) {
     var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
     r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
@@ -3107,12 +3216,14 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
 
       var container = options.container.append("g").attr("class", "graphical-report__" + "cell " + "cell").attr("transform", utilsDraw.translate(L, T));
 
+
       var translate = function (left, top) {
         return "translate(" + left + "," + top + ")";
       };
       var rotate = function (angle) {
         return "rotate(" + angle + ")";
       };
+
 
       var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
         var container = this;
@@ -3146,6 +3257,7 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
+
 
   var CoordsParallelLine = {
     draw: function (node) {
@@ -3218,6 +3330,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CoordsParallel = _elementsCoordsParallel.CoordsParallel;
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
+
 
   var setupElementNode = function (node, dimensions) {
     dimensions.forEach(function (dimName) {
@@ -3295,8 +3408,8 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var nodeMap = _nodeMap.nodeMap;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
-
   var colorBrewers = {};
+
 
   var __api__ = {
     UnitDomainMixin: UnitDomainMixin,
@@ -3320,6 +3433,12 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       }
     },
     globalSettings: {
+      log: function (msg, type) {
+        type = type || "INFO";
+        console.log(type + ": " + msg);
+      },
+
+      excludeNull: true,
       specEngine: "AUTO",
       layoutEngine: "EXTRACT",
       getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,

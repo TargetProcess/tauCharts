@@ -1,6 +1,6 @@
 {
   "name": "tauCharts",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "Simple charts library based on d3",
   "author": {
@@ -46,7 +46,7 @@
     "chai": "1.9.2",
     "grunt-karma": "0.9.0",
     "karma-sauce-launcher": "~0.2.10",
-    "6to5":"1.11.6",
+    "6to5":"1.14.6",
     "requirejs": "2.1.15",
     "karma-requirejs":"0.2.2",
     "almond":"0.3.0"

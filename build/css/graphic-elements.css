@@ -39,6 +39,9 @@
   stroke: #222222;
   fill: #222222;
 }
+.graphical-report__svg .color-default {
+  stroke: #333;
+}
 /* endregion */
 /* region Generate .line-params-@{n}  function  */
 /* Generate .line-size-@{n} */
@@ -163,7 +166,6 @@
 }
 .graphical-report__line {
   fill: none;
-  stroke: #333;
 }
 .graphical-report__dot-line {
   opacity: 1;

@@ -4,10 +4,10 @@ import {FormatterRegistry} from '../formatter-registry';
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
-var s;
+
 
 var cutText = (textString, widthLimit) => {
-    textString.each(function () {
+    textString.each(function() {
         var textD3 = d3.select(this);
         var tokens = textD3.text().split(/\s+/).reverse();
 
@@ -42,7 +42,7 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
         return nodeX;
     };
 
-    textNode.each(function () {
+    textNode.each(function() {
         var textD3 = d3.select(this),
             tokens = textD3.text().split(/\s+/),
             lineHeight = 1.1, // ems
@@ -160,7 +160,7 @@ var decorateTickLabel = (nodeScale, x) => {
     }
 };
 
-var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
+var fnDrawDimAxis = function(x, AXIS_POSITION, size) {
     var container = this;
     if (x.scaleDim) {
 
@@ -186,7 +186,7 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
     }
 };
 
-var fnDrawGrid = function (node, H, W) {
+var fnDrawGrid = function(node, H, W) {
 
     var container = this;
 
@@ -256,15 +256,14 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
-
-var generateColor = function (node) {
-    var defaultRange = _.times(10, (i) => 'color10-' + (1 + i));
+var defaultRangeColor = _.times(10, (i) => 'color10-' + (1 + i));
+var generateColor = function(node) {
     var range, domain;
     var colorGuide = node.guide.color || {};
     var colorParam = node.color;
 
     var colorDim = colorParam.scaleDim;
-    var brewer = colorGuide.brewer || defaultRange;
+    var brewer = colorGuide.brewer || defaultRangeColor;
 
     if (utils.isArray(brewer)) {
         domain = node.domain(colorDim);
@@ -274,10 +273,14 @@ var generateColor = function (node) {
         domain = Object.keys(brewer);
         range = domain.map((key) => brewer[key]);
     }
+    var calculateClass = d3.scale.ordinal().range(range).domain(domain)
+    var getClass = (d) => domain.indexOf(d) > -1 ? calculateClass(d) : 'color-default';
 
     return {
-        get: (d) => d3.scale.ordinal().range(range).domain(domain)(d),
-        dimension:colorDim
+        get: (d) => {
+            return getClass(d);
+        },
+        dimension: colorDim
     };
 };
 

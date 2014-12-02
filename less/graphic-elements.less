@@ -20,7 +20,11 @@
 }
 
 .generate-colors(@list_category-colors);
-
+.graphical-report__svg {
+  .color-default {
+    stroke: #333;
+  }
+}
 /* endregion */
 
 /* region Generate .line-params-@{n}  function  */
@@ -145,7 +149,6 @@
   /* Linechart  */
   &__line {
     fill: none;
-    stroke: #333;
   }
   &__dot-line {
     opacity: 1;
