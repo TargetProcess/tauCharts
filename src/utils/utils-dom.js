@@ -23,16 +23,21 @@ var utilsDom =  {
     getStyle: function (el, prop) {
         return window.getComputedStyle(el, undefined).getPropertyValue(prop);
     },
-    getContainerSize : function(el) {
-        var pl = parseInt(this.getStyle(el, 'padding-left') || 0, 10);
-        var pr = parseInt(this.getStyle(el, 'padding-right') || 0, 10);
-        var pb = parseInt(this.getStyle(el, 'padding-bottom') || 0, 10);
-        var pt = parseInt(this.getStyle(el, 'padding-top') || 0, 10);
 
-        var borderWidthT = parseInt(this.getStyle(el, 'border-top-width') || 0, 10);
-        var borderWidthL = parseInt(this.getStyle(el, 'border-left-width') || 0, 10);
-        var borderWidthR = parseInt(this.getStyle(el, 'border-right-width') || 0, 10);
-        var borderWidthB = parseInt(this.getStyle(el, 'border-bottom-width') || 0, 10);
+    getStyleAsNum: function(el, prop) {
+        return parseInt(this.getStyle(el, prop) || 0, 10);
+    },
+
+    getContainerSize : function(el) {
+        var pl = this.getStyleAsNum(el, 'padding-left');
+        var pr = this.getStyleAsNum(el, 'padding-right');
+        var pb = this.getStyleAsNum(el, 'padding-bottom');
+        var pt = this.getStyleAsNum(el, 'padding-top');
+
+        var borderWidthT = this.getStyleAsNum(el, 'border-top-width');
+        var borderWidthL = this.getStyleAsNum(el, 'border-left-width');
+        var borderWidthR = this.getStyleAsNum(el, 'border-right-width');
+        var borderWidthB = this.getStyleAsNum(el, 'border-bottom-width');
 
         var bw = borderWidthT + borderWidthL + borderWidthR + borderWidthB;
 

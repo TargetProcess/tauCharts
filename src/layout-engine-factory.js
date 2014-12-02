@@ -5,7 +5,7 @@ import {TMatrix} from './matrix';
 
 var specUnitSummary = (spec, boxOpt) => {
     var box = boxOpt ? boxOpt : {depth: -1, paddings: []};
-    var p = (spec.guide || {}).padding || {l: 0, b: 0, r: 0, t: 0};
+    var p = spec.guide.padding;
     box.depth += 1;
     box.paddings.unshift({l: p.l, b: p.b, r: p.r, t: p.t});
 

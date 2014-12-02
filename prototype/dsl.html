@@ -149,6 +149,10 @@
     <div class="cc-empty"></div>
 </div>
 
+<div id="null-complex-object-container" class="cc">
+    <div class="cc-empty"></div>
+</div>
+
 <div id="no-data-container" class="cc">
     <div class="cc-empty"></div>
 </div>
@@ -683,6 +687,48 @@
                     ]
                 }).renderTo('#bars-container');
     });
+
+    new tauChart.Chart(
+            {
+                "type": "scatterplot",
+                "x": "entityType",
+                "y": "userStory",
+                "color": "effort",
+                "dimensions": {
+                    "entityType": {"type": "category"},
+                    "userStory": {"type": "category", "value": "id"},
+                    "effort": {"type": "measure"}
+                },
+                data: [
+                    {
+                        "entityType":"Bug",
+                        "userStory":{
+                            "id":2,
+                            "name":"ww"
+                        },
+                        "effort":0.0000
+                    },
+                    {
+                        "entityType":"Bug",
+                        "userStory":null,
+                        "effort":0.0000
+                    },
+                    {
+                        "entityType":"Bug",
+                        "userStory":null,
+                        "effort":0.0000
+                    },
+                    {
+                        "entityType":"Bug",
+                        "userStory":{
+                            "id":11,
+                            "name":"NoCustom"
+                        },
+                        "effort":0.0000
+                    }
+                ]
+            }
+    ).renderTo('#null-complex-object-container');
 
 </script>
 </body>

@@ -33,7 +33,7 @@ var TFuncMap = (opName) => FacetAlgebra[opName] || (() => [[{}]]);
 
 var inheritRootProps = (unit, root, props) => {
     var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
-    r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
+    r.guide = _.extend(utils.clone(root.guide), r.guide);
     return r;
 };
 
