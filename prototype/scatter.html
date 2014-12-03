@@ -273,11 +273,11 @@ require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 
                  autoScale:false
                  }*/
             },
-            plugins: [tauCharts.api.plugins.get('tooltip')({fields:Object.keys(data[0])})],
+            plugins: [tauCharts.api.plugins.get('tooltip')()],
             y: ['t','y'],
             x: ['x', 'type'],
-            color: 'type'
-            //size: getFieldData($size)
+            color: 'type',
+            size: 'y'
         });
         chart.renderTo(
                 '#chart-container',
