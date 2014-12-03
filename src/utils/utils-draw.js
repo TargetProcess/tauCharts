@@ -1,5 +1,9 @@
 import {utils} from '../utils/utils';
 import {FormatterRegistry} from '../formatter-registry';
+/* jshint ignore:start */
+import * as _ from 'underscore';
+import * as d3 from 'd3';
+/* jshint ignore:end */
 
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
