@@ -6,6 +6,6 @@
         var d3 = require('d3');
         module.exports = factory(_);
     } else {
-        root.tauChart = factory(root._, root.d3);
+        root.tauCharts = factory(root._, root.d3);
     }
 }(this, function (_, d3) {

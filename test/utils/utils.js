@@ -112,8 +112,7 @@ define(function (require) {
             });
         });
     }
-
-
+    
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,

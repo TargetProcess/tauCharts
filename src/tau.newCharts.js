@@ -10,7 +10,7 @@ import {FormatterRegistry} from './formatter-registry';
 import {nodeMap} from './node-map';
 import {UnitsRegistry} from './units-registry';
 var colorBrewers = {};
-
+var plugins = {};
 
 var __api__ = {
     UnitDomainMixin: UnitDomainMixin,
@@ -22,15 +22,27 @@ var __api__ = {
 var api = {
     UnitsRegistry: UnitsRegistry,
     tickFormat: FormatterRegistry,
+    d3: d3,
+    _: _,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
-        add: function (name, brewer) {
+        add: function(name, brewer) {
             if (!(name in colorBrewers)) {
                 colorBrewers[name] = brewer;
             }
         },
-        get: function (name) {
+        get: function(name) {
             return colorBrewers[name];
+        }
+    },
+    plugins: {
+        add: function(name, brewer) {
+            if (!(name in plugins)) {
+                plugins[name] = brewer;
+            }
+        },
+        get: function(name) {
+            return plugins[name];
         }
     },
     globalSettings: {

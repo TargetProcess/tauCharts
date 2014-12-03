@@ -5,7 +5,7 @@ import {TMatrix} from '../matrix';
 
 var FacetAlgebra = {
 
-    'CROSS': function (root, dimX, dimY) {
+    'CROSS': function(root, dimX, dimY) {
 
         var domainX = root.domain(dimX);
         var domainY = root.domain(dimY).reverse();
@@ -39,7 +39,7 @@ var inheritRootProps = (unit, root, props) => {
 
 var coords = {
 
-    walk: function (unit, continueTraverse) {
+    walk: function(unit, continueTraverse) {
 
         var root = _.defaults(unit, {$where: {}});
 
@@ -66,7 +66,7 @@ var coords = {
         return root;
     },
 
-    draw: function (node, continueTraverse) {
+    draw: function(node, continueTraverse) {
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -108,7 +108,8 @@ var coords = {
             .container
             .append('g')
             .attr('class', CSS_PREFIX + 'cell ' + 'cell')
-            .attr('transform', utilsDraw.translate(L, T));
+            .attr('transform', utilsDraw.translate(L, T))
+            .datum({'$where': node.$where});
 
         if (!node.x.guide.hide) {
             utilsDraw.fnDrawDimAxis.call(container, node.x, X_AXIS_POS, W);

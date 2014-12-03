@@ -1,5 +1,5 @@
 /*global module:false*/
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
     // Project configuration.
     var src = [
@@ -51,7 +51,7 @@ module.exports = function (grunt) {
                 configFile: 'config/karma.conf.js'
             },
             dev: {
-                reporters: ["progress"],
+                reporters: ["dots"],
                 browsers: ["Chrome"],
                 singleRun: false
             },
@@ -76,31 +76,62 @@ module.exports = function (grunt) {
                 src: '<%= concat.dist.dest %>',
                 dest: 'build/<%= pkg.name %>.min.js'
             },
-            addons: {
-                src: 'src/addons/color-brewer.js',
-                dest: 'build/color-brewer.min.js'
+            plugins: {
+                files: [
+                    {
+                        src:  'src/addons/color-brewer.js',
+                        dest: 'build/<%= pkg.name %>.color-brewer.min.js'
+                    },
+                    {
+                        src:  'plugins/tooltip.js',
+                        dest: 'build/plugins/<%= pkg.name %>.tooltip.min.js'
+                    }
+                ]
+
             }
         },
         cssmin: {
             build: {
-                files: [{
-                    expand: true,
-                    src: ['css/graphic-elements.css', 'css/colorbrewer.css'],
-                    dest: 'build',
-                    ext: '.min.css'
-                }]
+                files: [
+                    {
+                        src: 'css/graphic-elements.css',
+                        dest: 'build/css/<%= pkg.name %>.graphic-elements.min.css'
+                    },
+                    {
+                        src: 'css/colorbrewer.css',
+                        dest: 'build/css/<%= pkg.name %>.colorbrewer.min.css'
+                    },
+                    {
+                        src: 'css/tooltip.css',
+                        dest: 'build/plugins/<%= pkg.name %>.tooltip.min.css'
+                    }
+                ]
             }
         },
         copy: {
             build: {
-                files: [{
-                    expand: true,
-                    src: ['css/graphic-elements.css', 'css/colorbrewer.css'],
-                    dest: 'build'
-                }, {
-                    src: 'src/addons/color-brewer.js',
-                    dest: 'build/color-brewer.js'
-                }]
+                files: [
+                    {
+                        src: 'css/graphic-elements.css',
+                        dest: 'build/css/<%= pkg.name %>.graphic-elements.css'
+                    },
+                    {
+                        src: 'css/colorbrewer.css',
+                        dest: 'build/css/<%= pkg.name %>.colorbrewer.css'
+                    },
+                    {
+                        src: 'src/addons/color-brewer.js',
+                        dest: 'build/<%= pkg.name %>.color-brewer.js'
+                    },
+                    {
+                        src: 'plugins/tooltip.js',
+                        dest: 'build/plugins/<%= pkg.name %>.tooltip.js'
+                    },
+                    {
+                        src: 'css/tooltip.css',
+                        dest: 'build/plugins/<%= pkg.name %>.tooltip.css'
+                    }
+                ]
             }
         },
         shell: {
@@ -131,6 +162,7 @@ module.exports = function (grunt) {
                     paths: ["less"]
                 },
                 files: {
+                    "css/tooltip.css": "less/tooltip.less",
                     "css/graphic-elements.css": "less/graphic-elements.less"
                 }
             }
@@ -147,8 +179,6 @@ module.exports = function (grunt) {
                     "d3.js": "d3/d3.js",
                     "underscore.js": "underscore/underscore.js",
                     "jquery.js": "jquery/dist/jquery.js",
-                    "traceur.js": "traceur/traceur.js",
-                    "es6-module-loader.js": "es6-module-loader/dist/es6-module-loader.src.js",
                     "js-schema.js": "js-schema/js-schema.debug.js",
                     "es5-shim.js": "es5-shim/es5-shim.js"
                 }

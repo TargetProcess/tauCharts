@@ -12,6 +12,7 @@ define(function (require) {
             document.body.appendChild(div);
 
             spec = {
+                emptyContainer:'NODATA',
                 dimensions: {
                     x: {type: 'measure'},
                     y: {type: 'measure'}
@@ -55,6 +56,7 @@ define(function (require) {
             var testDiv = document.getElementById('test-div');
 
             var spec = {
+                emptyContainer:'NODATA',
                 spec: {
                     unit: {
                         type: 'COORDS.RECT',
@@ -94,7 +96,7 @@ define(function (require) {
 
         it("should throw exception if target not found", function () {
             expect(function () {
-                new tauChart.Plot(spec).renderTo('#unknown-test-div')
+                new tauChart.Plot(spec).renderTo('#unknown-test-div');
             }).throw('Target element not found');
         });
 
