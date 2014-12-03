@@ -40,7 +40,8 @@
   fill: #222222;
 }
 .graphical-report__svg .color-default {
-  stroke: #333;
+  stroke: #377eb8;
+  fill: #377eb8;
 }
 /* endregion */
 /* region Generate .line-params-@{n}  function  */
