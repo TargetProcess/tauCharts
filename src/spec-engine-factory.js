@@ -64,7 +64,13 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     }
 
     var maxXTickText = _.max(domainValues, (x) => formatter(x).toString().length);
-    return fnCalcTickLabelSize(formatter(maxXTickText));
+
+    // d3 sometimes produce fractional ticks on wide space
+    // so we intentionally add fractional suffix
+    // to foresee scale density issues
+    var suffix = _.isNumber(maxXTickText) ? '.00' : '';
+
+    return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
 };
 
 var getTickFormat = (dim, meta, defaultFormats) => {
