@@ -132,50 +132,78 @@ var typesChart = {
 
         var log = config.settings.log;
 
-        if (!config.sortedBy) {
-            var xs = _.isArray(config.x) ? config.x : [config.x];
-            var ys = _.isArray(config.y) ? config.y : [config.y];
-            var primaryX = xs[xs.length - 1];
-            var secondaryX = xs.slice(0, xs.length - 1);
-            var primaryY = ys[ys.length - 1];
-            var secondaryY = ys.slice(0, ys.length - 1);
-            var colorProp = config.color;
+        var lineOrientationStrategies = {
 
-            var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter((x) => x !== null );
+            none: (config) => null,
 
-            var variantIndex = -1;
-            var variations = [
-                [[primaryX].concat(rest), primaryY],
-                [[primaryY].concat(rest), primaryX]
-            ];
-            var isMatchAny = variations.some((item, i) => {
-                var domainFields  = item[0];
-                var rangeProperty = item[1];
-                var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
-                if (r.result) {
-                    variantIndex = i;
+            horizontal: (config) => {
+                var xs = utils.isArray(config.x) ? config.x : [config.x];
+                return xs[xs.length - 1];
+            },
+
+            vertical: (config) => {
+                var ys = utils.isArray(config.y) ? config.y : [config.y];
+                return ys[ys.length - 1];
+            },
+
+            auto: (config) => {
+                var xs = utils.isArray(config.x) ? config.x : [config.x];
+                var ys = utils.isArray(config.y) ? config.y : [config.y];
+                var primaryX = xs[xs.length - 1];
+                var secondaryX = xs.slice(0, xs.length - 1);
+                var primaryY = ys[ys.length - 1];
+                var secondaryY = ys.slice(0, ys.length - 1);
+                var colorProp = config.color;
+
+                var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter((x) => x !== null );
+
+                var variantIndex = -1;
+                var variations = [
+                    [[primaryX].concat(rest), primaryY],
+                    [[primaryY].concat(rest), primaryX]
+                ];
+                var isMatchAny = variations.some((item, i) => {
+                    var domainFields  = item[0];
+                    var rangeProperty = item[1];
+                    var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
+                    if (r.result) {
+                        variantIndex = i;
+                    }
+                    else {
+                        log([
+                            'Attempt to find a functional relation between',
+                            item[0] + ' and ' + item[1] + ' is failed.',
+                            'There are several ' + r.error.keyY + ' values (e.g. ' + r.error.errY.join(',') + ')',
+                            'for (' + r.error.keyX + ' = ' + r.error.valX + ').'
+                        ].join(' '));
+                    }
+                    return r.result;
+                });
+
+                var propSortBy;
+                if (isMatchAny) {
+                    propSortBy = variations[variantIndex][0][0];
                 }
                 else {
                     log([
-                        'Attempt to find a functional relation between',
-                        item[0] + ' and ' + item[1] + ' is failed.',
-                        'There are several ' + r.error.keyY + ' values (e.g. ' + r.error.errY.join(',') + ')',
-                        'for (' + r.error.keyX + ' = ' + r.error.valX + ').'
+                        'All attempts are failed.',
+                        'Will orient line horizontally by default.',
+                        'NOTE: the [scatterplot] chart is more convenient for that data.'
                     ].join(' '));
+                    propSortBy = primaryX;
                 }
-                return r.result;
-            });
 
-            var propSortBy;
-            if (isMatchAny) {
-                propSortBy = variations[variantIndex][0][0];
+                return propSortBy;
             }
-            else {
-                log('All attempts are failed. Will use ' + primaryX + ' property as a sorting key by default.');
-                log('It is better to use [scatterplot] here.');
-                propSortBy = primaryX;
-            }
+        };
 
+        var orient = (config.lineOrientation || 'auto').toLowerCase();
+        var strategy = lineOrientationStrategies.hasOwnProperty(orient) ?
+            lineOrientationStrategies[orient] :
+            lineOrientationStrategies.auto;
+
+        var propSortBy = strategy(config);
+        if (propSortBy !== null) {
             config.data = _(data).sortBy(propSortBy);
         }
 
