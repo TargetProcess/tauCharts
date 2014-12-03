@@ -35,9 +35,17 @@ export class Plot extends Emitter{
         this.config.settings        = this.setupSettings(this.config.settings);
         this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
+        var prevLength = this.config.data.length;
         this.config.data = this.config.settings.excludeNull ?
             DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) :
             this.config.data;
+        var currLength = this.config.data.length;
+        var diffLength = prevLength - currLength;
+        if (diffLength > 0) {
+            this.config.settings.log(
+                diffLength + ' data points were excluded, because they have undefined values.',
+                'WARN');
+        }
     }
 
     setupMetaInfo(dims, data) {

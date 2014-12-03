@@ -143,5 +143,115 @@ define(function (require) {
             expect(svg.attr('width')).to.equal('800');
             expect(svg.attr('height')).to.equal('600');
         });
+
+        it("should auto exclude null values", function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var testLog = [];
+            var spec = {
+                settings: {
+                    excludeNull: true,
+                    log: function(msg, type) {
+                        testLog.push(type + ': ' + msg);
+                    }
+                },
+                spec: {
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'x',
+                        y: 'y',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT'
+                            }
+                        ]
+                    }
+                },
+                data: [
+                    {
+                        x: 1,
+                        y: 2,
+                        z: 'category1',
+                        o: {id: 1, name: 'ordered 1'},
+                        a: 1
+                    },
+                    {
+                        x: 11,
+                        y: 22,
+                        z: 'category2',
+                        o: {id: 2, name: 'ordered 2'},
+                        a: null
+                    },
+                    {
+                        x: null,
+                        y: 22,
+                        z: 'category2',
+                        o: {id: 2, name: 'ordered 2'},
+                        a: null
+                    }
+                ]
+            };
+            new tauChart.Plot(spec).renderTo(testDiv);
+
+            expect(testLog.length).to.equal(1);
+            expect(testLog).to.deep.equal([
+                'WARN: 2 data points were excluded, because they have undefined values.'
+            ]);
+        });
+
+        it("should allow to leave null values", function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var testLog = [];
+            var spec = {
+                settings: {
+                    excludeNull: false,
+                    log: function(msg, type) {
+                        testLog.push(type + ': ' + msg);
+                    }
+                },
+                spec: {
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'x',
+                        y: 'y',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT'
+                            }
+                        ]
+                    }
+                },
+                data: [
+                    {
+                        x: 1,
+                        y: 2,
+                        z: 'category1',
+                        o: {id: 1, name: 'ordered 1'},
+                        a: 1
+                    },
+                    {
+                        x: 11,
+                        y: 22,
+                        z: 'category2',
+                        o: {id: 2, name: 'ordered 2'},
+                        a: null
+                    },
+                    {
+                        x: null,
+                        y: 22,
+                        z: 'category2',
+                        o: {id: 2, name: 'ordered 2'},
+                        a: null
+                    }
+                ]
+            };
+            new tauChart.Plot(spec).renderTo(testDiv);
+
+            expect(testLog.length).to.equal(0);
+            expect(testLog).to.deep.equal([]);
+        });
     });
 });
