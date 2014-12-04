@@ -163,7 +163,8 @@ module.exports = function(grunt) {
                 },
                 files: {
                     "css/tooltip.css": "less/tooltip.less",
-                    "css/graphic-elements.css": "less/graphic-elements.less"
+                    "css/graphic-elements.css": "less/graphic-elements.less",
+                    "css/layout.css": "less/layout.less"
                 }
             }
         },
@@ -185,8 +186,14 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            files: '<%= jshint.all.src %>',
-            tasks: ['jshint', 'compile:dev']
+            js:{
+                files: ['<%= jshint.all.src %>'],
+                tasks: ['jshint', 'compile:dev','less']
+            },
+            less:{
+                files: ['less/*.less'],
+                tasks: ['less']
+            }
         }
     });
     // load local tasks
@@ -206,7 +213,7 @@ module.exports = function(grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch']);
+    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
     grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat', 'uglify', 'shell:gitadd']);
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);

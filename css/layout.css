@@ -1,0 +1,27 @@
+.graphical-report_layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.graphical-report_container__top {
+  order: 1;
+}
+.graphical-report_container__center {
+  order: 2;
+  flex-grow: 1;
+  display: inline-flex;
+  flex-direction: row;
+}
+.graphical-report_container__center-left {
+  order: 1;
+}
+.graphical-report_container__center-center {
+  order: 2;
+  flex-grow: 1;
+}
+.graphical-report_container__center-right {
+  order: 3;
+}
+.graphical-report_container__bottom {
+  order: 3;
+}

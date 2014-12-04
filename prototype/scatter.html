@@ -117,7 +117,7 @@ requirejs.config({
     }
 });
 
-require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 'src/addons/color-brewer', 'underscore'], function(tauCharts) {
+require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function(tauCharts) {
     /** @class Tooltip
      * @extends Plugin */
     /* Usage
@@ -273,7 +273,7 @@ require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 
                  autoScale:false
                  }*/
             },
-            plugins: [tauCharts.api.plugins.get('tooltip')()],
+            plugins: [tauCharts.api.plugins.get('tooltip')(),tauCharts.api.plugins.get('legend')()],
             y: ['t','y'],
             x: ['x', 'type'],
             color: 'type',

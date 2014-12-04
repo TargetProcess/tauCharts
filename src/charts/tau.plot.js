@@ -17,8 +17,7 @@ export class Plot extends Emitter{
         this.setupConfig(config);
         //plugins
         this._plugins = new Plugins(this.config.plugins, this);
-        this._emptyContainer =  config.emptyContainer || '';
-    }
+      }
 
     setupConfig(config) {
         this.config = _.defaults(config, {
@@ -27,7 +26,7 @@ export class Plot extends Emitter{
             plugins: [],
             settings: {}
         });
-
+        this._emptyContainer =  config.emptyContainer || '';
         // TODO: remove this particular config cases
         this.config.settings.specEngine   = this.config.specEngine || this.config.settings.specEngine;
         this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
@@ -47,7 +46,9 @@ export class Plot extends Emitter{
                 'WARN');
         }
     }
-
+    getConfig() {
+        return this.config;
+    }
     setupMetaInfo(dims, data) {
         var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
         return DataProcessor.autoAssignScales(meta);
