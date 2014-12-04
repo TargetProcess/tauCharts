@@ -1,16 +1,29 @@
-var sizeScale = function (values, maxSize) {
+var sizeScale = function (values, minSize, maxSize) {
+
     values = _.filter(values, _.isFinite);
 
-    var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
-    var domainWidth = domain[0] === 0 ? domain[1] : Math.max(1, domain[1] / domain[0]);
+    var k = 1;
+    var xMin = 0;
+    if (values.length > 0) {
+        var min = Math.min.apply(null, values);
+        var max = Math.max.apply(null, values);
 
-    var range = [Math.max(1, maxSize / (Math.log(domainWidth) + 1)), maxSize];
+        var len = Math.max.apply(
+            null,
+            [
+                Math.abs(min),
+                Math.abs(max),
+                max - min
+            ]);
 
-    return d3
-        .scale
-        .linear()
-        .range(range)
-        .domain(domain);
+        xMin = (min < 0) ? min : 0;
+        k = (len === 0) ? 1 : ((maxSize - minSize) / len);
+    }
+
+    return function(x) {
+        var nx = (x !== null) ? parseFloat(x) : 0;
+        return (_.isFinite(nx)) ? (minSize + ((nx - xMin) * k)) : maxSize;
+    };
 };
 
 export {sizeScale};

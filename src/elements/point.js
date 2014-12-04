@@ -11,7 +11,7 @@ var point = function (node) {
     var color = utilsDraw.generateColor(node);
 
     var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) / 2;
-    var size = sizeScale(node.domain(node.size.scaleDim), maxAxisSize);
+    var size = sizeScale(node.domain(node.size.scaleDim), 1, maxAxisSize);
 
     var update = function () {
         return this
