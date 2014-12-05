@@ -38,3 +38,17 @@
         }
     }
 }
+
+@category-colors: #e41a1c, #377eb8, #4daf4a, #984ea3, #ff7f00, #E9E964, #a65628, #f781bf, #999999, #222222;
+
+@list_category-colors: length(@category-colors);
+
+.generate-colors(@n; @i: 1) when (@i =< @n) {
+
+    .graphical-report__legend__item .color@{n}-@{i} {
+        background: extract(@category-colors, @i);
+    }
+
+    .generate-colors(@n; (@i + 1));
+}
+.generate-colors(@list_category-colors);

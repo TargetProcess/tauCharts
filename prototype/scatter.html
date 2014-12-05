@@ -69,6 +69,13 @@
     <title></title>
 </head>
 <body>
+<template id="list">
+    <h4><%=name%></h4>
+    <ul><%=items%></ul>
+</template>
+<template id="itemList">
+    <li class="<%=color%>"><%=color%>-<%=value%></li>
+</template>
 <div style="float: left;padding: 20px">
     <label for="data">data</label><br/>
     <textarea style='width:600px;height: 350px' id="data"></textarea>
