@@ -250,6 +250,7 @@ define(function (require) {
             expect(x.rotate).to.equal(0);
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
+            expect(x.tickFormatNullAlias).to.equal('No team');
             expect(x.label.text).to.equal('TEAM > DATE');
             expect(x.tickFontHeight).to.equal(10);
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width * measurer.xDensityKoeff);
@@ -261,6 +262,7 @@ define(function (require) {
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal(null);
+            expect(typeof y.tickFormatNullAlias).to.equal('undefined');
             expect(y.label.text).to.equal('');
             expect(y.tickFontHeight).to.equal(0);
             expect(y.density).to.equal(0); // empty axis
@@ -285,11 +287,13 @@ define(function (require) {
             expect(part.guide.showGridLines).to.equal('xy');
 
             expect(px.tickFormat).to.equal('x-time-quarter');
+            expect(px.tickFormatNullAlias).to.equal('No date');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
             expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width * measurer.xDensityKoeff);
 
             expect(py.tickFormat).to.equal('x-num-auto');
+            expect(py.tickFormatNullAlias).to.equal('No count');
             expect(py.tickFontHeight).to.equal(10);
             expect(py.label.text).to.equal('COUNT');
             expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width * measurer.yDensityKoeff);
@@ -301,7 +305,7 @@ define(function (require) {
             expect(elem.guide.y.tickFontHeight).to.equal(10);
         });
 
-        it("should not reset [showGridLines] within [AUTO] spec engine", function () {
+        it("should save user-defined guide within [AUTO] spec engine", function () {
 
             var spec = {
                 "dimensions": {
@@ -322,7 +326,12 @@ define(function (require) {
                     "type": "COORDS.RECT",
                     "x": "team",
                     "y": null,
-                    "guide": { showGridLines: 'x' },
+                    "guide": {
+                        showGridLines: 'x',
+                        x: {
+                            tickFormatNullAlias: '(NIL)'
+                        }
+                    },
                     "unit": [
                         {
                             "type": "COORDS.RECT",
@@ -346,6 +355,7 @@ define(function (require) {
             var full = testSpecEngine(spec, meta);
             var part = full.unit.unit[0];
 
+            expect(full.unit.guide.x.tickFormatNullAlias).to.equal('(NIL)');
             expect(full.unit.guide.showGridLines).to.equal('x');
             expect(part.guide.showGridLines).to.equal('');
         });

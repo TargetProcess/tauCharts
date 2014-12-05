@@ -30,6 +30,23 @@ define(function (require) {
             expect(defaultFormatter(-42)).to.equal('-42');
         });
 
+        it("should allow alias for null or undefined value", function () {
+            var alias = '<NIL>';
+            var defaultFormatter = registry.get(null, alias);
+
+            expect(defaultFormatter(undefined)).to.equal(alias);
+            expect(defaultFormatter(null)).to.equal(alias);
+
+            expect(defaultFormatter(0)).to.equal('0');
+            expect(defaultFormatter('')).to.equal('');
+
+            expect(defaultFormatter(false)).to.equal('false');
+            expect(defaultFormatter(true)).to.equal('true');
+
+            expect(defaultFormatter('str')).to.equal('str');
+            expect(defaultFormatter(-42)).to.equal('-42');
+        });
+
         it("should support default formats", function () {
             var jan01 = new Date(iso('2013-01-01T00:00:00'));
             var oct30 = new Date(iso('2014-10-30T23:59:59'));

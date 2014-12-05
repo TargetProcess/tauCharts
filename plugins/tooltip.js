@@ -25,8 +25,7 @@
             template: [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
                 '<div class="i-role-exclude graphical-report__tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
-            ]
-                .join(''),
+            ].join(''),
             itemTemplate: [
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
@@ -95,7 +94,12 @@
             },
             render: function (data, fields) {
                 return fields.map(function (field) {
-                    return this._templateItem({label: field, value: data[field]});
+                    var v = data[field];
+                    var value = (_.isNull(v) || _.isUndefined(v)) ? ('No ' + field) : v;
+                    return this._templateItem({
+                        label: field,
+                        value: value
+                    });
                 }, this).join('');
             },
             _exclude: function () {

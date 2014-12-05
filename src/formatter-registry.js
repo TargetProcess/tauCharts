@@ -58,11 +58,13 @@ FORMATS_MAP['x-time-quarter']   = FORMATS_MAP['quarter'];
 FORMATS_MAP['x-time-year']      = FORMATS_MAP['year'];
 /* jshint ignore:end */
 
-var identity = ((x) => (((x === null) || (typeof x === 'undefined')) ? '' : x).toString());
-
 var FormatterRegistry = {
 
-    get: (formatAlias) => {
+    get: (formatAlias, nullOrUndefinedAlias) => {
+
+        var nullAlias = nullOrUndefinedAlias || '';
+
+        var identity = ((x) => (((x === null) || (typeof x === 'undefined')) ? nullAlias : x).toString());
 
         var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
         var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;

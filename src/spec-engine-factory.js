@@ -180,12 +180,14 @@ var SpecEngineTypeMap = {
                 var x = unit.guide.x.label.text;
                 if (x) {
                     xLabels.push(x);
+                    unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ? unit.guide.x.tickFormatNullAlias : 'No ' + x;
                     unit.guide.x.label.text = '';
                 }
 
                 var y = unit.guide.y.label.text;
                 if (y) {
                     yLabels.push(y);
+                    unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ? unit.guide.y.tickFormatNullAlias : 'No ' + y;
                     unit.guide.y.label.text = '';
                 }
 
@@ -262,13 +264,13 @@ var SpecEngineTypeMap = {
 
                 var maxXTickSize = getMaxTickLabelSize(
                     xValues,
-                    FormatterRegistry.get(unit.guide.x.tickFormat),
+                    FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias),
                     settings.getAxisTickLabelSize,
                     settings.xAxisTickLabelLimit);
 
                 var maxYTickSize = getMaxTickLabelSize(
                     yValues,
-                    FormatterRegistry.get(unit.guide.y.tickFormat),
+                    FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.x.tickFormatNullAlias),
                     settings.getAxisTickLabelSize,
                     settings.yAxisTickLabelLimit);
 

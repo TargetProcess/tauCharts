@@ -172,7 +172,7 @@ var fnDrawDimAxis = function(x, AXIS_POSITION, size) {
             .scale(x.scaleObj)
             .orient(x.guide.scaleOrient);
 
-        var formatter = FormatterRegistry.get(x.guide.tickFormat);
+        var formatter = FormatterRegistry.get(x.guide.tickFormat, x.guide.tickFormatNullAlias);
         if (formatter !== null) {
             axisScale.ticks(Math.round(size / x.guide.density));
             axisScale.tickFormat(formatter);
