@@ -11,32 +11,33 @@
 
 .generate-colors(@n; @i: 1) when (@i =< @n) {
 
-  .graphical-report__svg .color@{n}-@{i} {
-    stroke: extract(@category-colors, @i);
-    fill: extract(@category-colors, @i);
-  }
+    .graphical-report__svg .color@{n}-@{i} {
+        stroke: extract(@category-colors, @i);
+        fill: extract(@category-colors, @i);
+    }
 
-  .generate-colors(@n; (@i + 1));
+    .generate-colors(@n; (@i + 1));
 }
 
 .generate-colors(@list_category-colors);
 .graphical-report__svg {
-  .color-default {
-    stroke: #377eb8;
-    fill: #377eb8;
-  }
+    .color-default {
+        stroke: #377eb8;
+        fill: #377eb8;
+    }
 }
+
 /* endregion */
 
 /* region Generate .line-params-@{n}  function  */
 
 .generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) {
 
-  .graphical-report__line-@{params}-@{i} {
-    stroke-@{params}: @default-size;
-  }
+    .graphical-report__line-@{params}-@{i} {
+        stroke-@{params}: @default-size;
+    }
 
-  .generate-line-params(@default-size: (@default-size + @step); @params; @step; @n; (@i + 1));
+    .generate-line-params(@default-size: (@default-size + @step); @params; @step; @n; (@i + 1));
 }
 
 /* Generate .line-size-@{n} */
@@ -50,122 +51,122 @@
 /* endregion */
 
 .graphical-report {
-  /* Links */
-  a {
-    color: @link-color;
-    border-bottom: 1px solid fade(@link-color, 30%);
-    text-decoration: none;
+    /* Links */
+    a {
+        color: @link-color;
+        border-bottom: 1px solid fade(@link-color, 30%);
+        text-decoration: none;
 
-    &:hover {
-      color: @link-hover-color;
-      border-bottom: 1px solid fade(@link-hover-color, 30%);
-    }
-  }
-
-  /* Charts */
-  &__chart {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-  }
-
-  /* Axises and Grid */
-  &__svg {
-    display: block;
-    .axis {
-      line,
-      path {
-        stroke-width: 1;
-        fill: none;
-        stroke: @axis-color;
-        shape-rendering: crispEdges;
-      }
-    }
-    .axis.facet-axis {
-      .tick {
-        line {
-          opacity: 0;
+        &:hover {
+            color: @link-hover-color;
+            border-bottom: 1px solid fade(@link-hover-color, 30%);
         }
+    }
 
-        text {
-          font-weight: bold;
+    /* Charts */
+    &__chart {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        overflow: auto;
+    }
+
+    /* Axises and Grid */
+    &__svg {
+        display: block;
+        .axis {
+            line,
+            path {
+                stroke-width: 1;
+                fill: none;
+                stroke: @axis-color;
+                shape-rendering: crispEdges;
+            }
         }
-      }
-      path.domain {
-        opacity: 0;
-      }
+        .axis.facet-axis {
+            .tick {
+                line {
+                    opacity: 0;
+                }
+
+                text {
+                    font-weight: bold;
+                }
+            }
+            path.domain {
+                opacity: 0;
+            }
+        }
+        .tick text {
+            font-size: 11px;
+        }
+        .grid {
+            path {
+                fill: none;
+                shape-rendering: crispEdges;
+            }
+            line {
+                fill: none;
+                stroke: fade(@axis-color, 50%);
+                stroke-width: 1px;
+                shape-rendering: crispEdges;
+            }
+            .line path {
+                shape-rendering: auto;
+            }
+        }
+        .label {
+            font-size: 11px;
+            font-weight: bold;
+
+            .label-token {
+                font-size: 11px;
+                font-weight: bold;
+                letter-spacing: 1px;
+            }
+
+            .label-token-1,
+            .label-token-2 {
+                font-weight: normal;
+            }
+
+            .label-token-2 {
+                fill: gray;
+            }
+
+            .label-token-delimiter {
+                font-weight: normal;
+                fill: gray;
+            }
+        }
     }
-    .tick text {
-      font-size: 11px;
+
+    /* Scatterplot  */
+    &__dot {
+        opacity: 0.6;
+        transition: stroke-width 0.1s ease, opacity 0.1s ease;
+        stroke-width: 0;
+        cursor: pointer;
     }
-    .grid {
-      path {
+
+    /* Linechart  */
+    &__line {
         fill: none;
-        shape-rendering: crispEdges;
-      }
-      line {
-        fill: none;
-        stroke: fade(@axis-color, 50%);
-        stroke-width: 1px;
-        shape-rendering: crispEdges;
-      }
-      .line path {
-        shape-rendering: auto;
-      }
     }
-    .label {
-      font-size: 11px;
-      font-weight: bold;
-
-      .label-token {
-        font-size: 11px;
-        font-weight: bold;
-        letter-spacing: 1px;
-      }
-
-      .label-token-1,
-      .label-token-2 {
-        font-weight: normal;
-      }
-
-      .label-token-2 {
-        fill: gray;
-      }
-
-      .label-token-delimiter {
-        font-weight: normal;
-        fill: gray;
-      }
+    &__dot-line {
+        opacity: 1;
     }
-  }
+    /*  Bar  */
+    &__bar {
+        //fill: steelblue;
+    }
 
-  /* Scatterplot  */
-  &__dot {
-    opacity: 0.6;
-    transition: stroke-width 0.1s ease, opacity 0.1s ease;
-    stroke-width: 0;
-    cursor: pointer;
-  }
+    /*  PLUGINS  */
 
-  /* Linechart  */
-  &__line {
-    fill: none;
-  }
-  &__dot-line {
-    opacity: 1;
-  }
-  /*  Bar  */
-  &__bar {
-    //fill: steelblue;
-  }
-
-  /*  PLUGINS  */
-
-  /*  Highlighter  */
-  &__dot.highlighted {
-    stroke-width: 6;
-    stroke-opacity: 0.4;
-    opacity: 1;
-  }
+    /*  Highlighter  */
+    &__dot.highlighted {
+        stroke-width: 6;
+        stroke-opacity: 0.4;
+        opacity: 1;
+    }
 }

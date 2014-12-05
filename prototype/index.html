@@ -4,23 +4,36 @@
     <meta charset="UTF-8">
     <title></title>
     <link rel="stylesheet" href="../css/layout.css"/>
+    <link rel="stylesheet" href="../css/legend.css"/>
     <link rel="stylesheet" href="../css/graphic-elements.css"/>
 
 </head>
 <body>
-<style>
-    div {
-        border: 1px solid #006600;
-    }
-</style>
-<div class="graphical-report_layout" style="width: 800px;height:500px;">
-    <div class="graphical-report_container__top">top</div>
-    <div class="graphical-report_container__center">
-        <div class="graphical-report_container__center-left">left</div>
-        <div class="graphical-report_container__center-center" id="placeChart">center</div>
-        <div class="graphical-report_container__center-right" style="width:300px" id="placeLegend">right</div>
+
+<div class="graphical-report__layout">
+    <div class="graphical-report__layout__header">top</div>
+    <div class="graphical-report__layout__container">
+        <div class="graphical-report__layout__sidebar">left</div>
+        <div class="graphical-report__layout__content" id="placeChart">center</div>
+        <div class="graphical-report__layout__sidebar-right" id="placeLegend">
+            <div class="graphical-report__legend">
+                <div class="graphical-report__legend__title">Entity type</div>
+                <div class="graphical-report__legend__item">
+                    <div class="graphical-report__legend__example" style="background: #f00"></div>Feature
+                </div>
+                <div class="graphical-report__legend__item">
+                    <div class="graphical-report__legend__example" style="background: #ff0"></div>User Story
+                </div>
+                <div class="graphical-report__legend__item">
+                    <div class="graphical-report__legend__example" style="background: #00f"></div>Bug
+                </div>
+                <div class="graphical-report__legend__item disabled" >
+                    <div class="graphical-report__legend__example" style="border-color: #0ff"></div>Task
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="graphical-report_container__bottom">bottom</div>
+    <div class="graphical-report__layout__footer">bottom</div>
 </div>
 <template id="list">
     <h4><%=name%></h4>

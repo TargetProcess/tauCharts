@@ -1,30 +1,49 @@
-.graphical-report_layout {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+@import "variable";
+@import "mixins";
+@import "base";
+
+.graphical-report {
+
+    &__layout {
+        .flexbox;
+        .flex-align(@params:stretch);
+        .flex-direction-column;
+        height: 100%;
+        overflow: auto;
+
+        &__header {
+            .flex;
+            padding: 20px;
+        }
+
+        &__container {
+            .flexbox;
+            .flex(@flex-grow: 1);
+            padding: 20px;
+        }
+
+        &__footer {
+            .flex;
+            padding: 20px;
+        }
+
+        &__sidebar {
+            .flex;
+            padding: 20px;
+        }
+
+        &__content {
+            .flex(@flex-grow: 1);
+            padding: 20px;
+        }
+
+        &__sidebar-right {
+            .flex(@flex-basis: 300px);
+            padding: 20px 25px;
+        }
+    }
 }
 
-.graphical-report_container__top {
-  order: 1;
-}
 
-.graphical-report_container__center {
-  order: 2;
-  flex-grow: 1;
-  display: inline-flex;
-  flex-direction: row;
-  &-left {
-    order: 1;
-  }
-  &-center {
-    order: 2;
-    flex-grow: 1;
-  }
-  &-right {
-    order: 3;
-  }
-}
 
-.graphical-report_container__bottom {
-  order: 3;
-}
+

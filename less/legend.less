@@ -1,0 +1,40 @@
+@import "variable";
+
+.graphical-report {
+    &__legend {
+
+        &__title,
+        &__item {
+            margin: 0 0 10px 0;
+        }
+
+        &__title {
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        &__item {
+            padding-left: 25px;
+            position: relative;
+            font-size: 13px;
+
+            &:disabled,
+            &.disabled {
+                color: @font-gray;
+            }
+        }
+
+        &__example {
+            width: 15px;
+            height: 15px;
+            box-sizing: border-box;
+            border: 1px solid transparent;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+
+        }
+    }
+}
