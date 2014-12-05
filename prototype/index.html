@@ -38,8 +38,8 @@
     var dat = [];
     for (var i = -6.14; i <= 6.14; i += 0.1) {
         dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
-        dat.push({x: i, y: Math.sin(i), type: 'cos', t: 'w'});
-        dat.push({x: i, y: Math.cos(i), type: 'sin', t: 'w'});
+       // dat.push({x: i, y: Math.sin(i), type: 'cos', t: 'w'});
+        //dat.push({x: i, y: Math.cos(i), type: 'sin', t: 'w'});
         dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'x'});
     }
     var chart = new tauCharts.Chart({
