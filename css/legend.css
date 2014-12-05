@@ -1,0 +1,28 @@
+.graphical-report__legend__title,
+.graphical-report__legend__item {
+  margin: 0 0 10px 0;
+}
+.graphical-report__legend__title {
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 13px;
+}
+.graphical-report__legend__item {
+  padding-left: 25px;
+  position: relative;
+  font-size: 13px;
+}
+.graphical-report__legend__item:disabled,
+.graphical-report__legend__item.disabled {
+  color: #cccccc;
+}
+.graphical-report__legend__example {
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
