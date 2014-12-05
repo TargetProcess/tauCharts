@@ -5,6 +5,7 @@
     <title></title>
     <link rel="stylesheet" href="../css/layout.css"/>
     <link rel="stylesheet" href="../css/graphic-elements.css"/>
+
 </head>
 <body>
 <style>
@@ -12,17 +13,24 @@
         border: 1px solid #006600;
     }
 </style>
-<div class="graphical-report_layout" style="width: 500px;height:500px;">
+<div class="graphical-report_layout" style="width: 800px;height:500px;">
     <div class="graphical-report_container__top">top</div>
     <div class="graphical-report_container__center">
         <div class="graphical-report_container__center-left">left</div>
-        <div class="graphical-report_container__center-center">center</div>
-        <div class="graphical-report_container__center-right">right dfas fd saf sa fd saf sdf sad </div>
+        <div class="graphical-report_container__center-center" id="placeChart">center</div>
+        <div class="graphical-report_container__center-right" style="width:300px" id="placeLegend">right</div>
     </div>
     <div class="graphical-report_container__bottom">bottom</div>
 </div>
-<script src="../libs/d3.js"></script>
-<script src="../libs/underscore.js"></script>
+<template id="list">
+    <h4><%=name%></h4>
+    <ul><%=items%></ul>
+</template>
+<template id="itemList">
+    <li class="<%=color%>"><%=color%>-<%=value%></li>
+</template>
+<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 <script src="../build/tauCharts.js"></script>
 <script src="../plugins/legend.js"></script>
 

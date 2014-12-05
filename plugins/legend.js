@@ -33,14 +33,15 @@
                     return colorMap;
                 }, {});
             },
-            template: _.template('<ul><%=items%></ul>'),
-            itemTemplate:_.template('<li><%=color%>-<%=value%></li>'),
+            template: _.template(_.unescape(document.querySelector('#list').innerHTML)),
+            itemTemplate:_.template(_.unescape(document.querySelector('#itemList').innerHTML)),
             onRender: function (chart) {
                 //var config = chart.getConfig();
+                console.log(document.querySelector('#list').innerHTML)
                 var items = _.map(this._getColorMap(chart), function (item, key) {
                     return this.itemTemplate({color:item,value:key});
                 },this).join('');
-                document.querySelectorAll('.graphical-report_container__center-right')[0].innerHTML = this.template({items:items});
+                document.querySelector('#placeLegend').innerHTML = this.template({items:items, name:'CategoryName'});
             },
             render: function () {
 
