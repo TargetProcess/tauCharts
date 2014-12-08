@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.0 - 2014-12-04
+/*! tauCharts - v0.2.1 - 2014-12-08
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1604,12 +1604,14 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   FORMATS_MAP["x-time-year"] = FORMATS_MAP["year"];
   /* jshint ignore:end */
 
-  var identity = (function (x) {
-    return (((x === null) || (typeof x === "undefined")) ? "" : x).toString();
-  });
-
   var FormatterRegistry = {
-    get: function (formatAlias) {
+    get: function (formatAlias, nullOrUndefinedAlias) {
+      var nullAlias = nullOrUndefinedAlias || "";
+
+      var identity = (function (x) {
+        return (((x === null) || (typeof x === "undefined")) ? nullAlias : x).toString();
+      });
+
       var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
       var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
 
@@ -1788,7 +1790,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     if (x.scaleDim) {
       var axisScale = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient);
 
-      var formatter = FormatterRegistry.get(x.guide.tickFormat);
+      var formatter = FormatterRegistry.get(x.guide.tickFormat, x.guide.tickFormatNullAlias);
       if (formatter !== null) {
         axisScale.ticks(Math.round(size / x.guide.density));
         axisScale.tickFormat(formatter);
@@ -2107,12 +2109,14 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var x = unit.guide.x.label.text;
         if (x) {
           xLabels.push(x);
+          unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty("tickFormatNullAlias") ? unit.guide.x.tickFormatNullAlias : "No " + x;
           unit.guide.x.label.text = "";
         }
 
         var y = unit.guide.y.label.text;
         if (y) {
           yLabels.push(y);
+          unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty("tickFormatNullAlias") ? unit.guide.y.tickFormatNullAlias : "No " + y;
           unit.guide.y.label.text = "";
         }
 
@@ -2185,9 +2189,9 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var xIsEmptyAxis = (xValues.length === 0);
         var yIsEmptyAxis = (yValues.length === 0);
 
-        var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
+        var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
-        var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+        var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
 
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
         var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
@@ -3664,15 +3668,25 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
 define('elements/size',["exports"], function (exports) {
   
 
-  var sizeScale = function (values, maxSize) {
+  var sizeScale = function (values, minSize, maxSize) {
     values = _.filter(values, _.isFinite);
 
-    var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
-    var domainWidth = domain[0] === 0 ? domain[1] : Math.max(1, domain[1] / domain[0]);
+    var k = 1;
+    var xMin = 0;
+    if (values.length > 0) {
+      var min = Math.min.apply(null, values);
+      var max = Math.max.apply(null, values);
 
-    var range = [Math.max(1, maxSize / (Math.log(domainWidth) + 1)), maxSize];
+      var len = Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]);
 
-    return d3.scale.linear().range(range).domain(domain);
+      xMin = (min < 0) ? min : 0;
+      k = (len === 0) ? 1 : ((maxSize - minSize) / len);
+    }
+
+    return function (x) {
+      var nx = (x !== null) ? parseFloat(x) : 0;
+      return (_.isFinite(nx)) ? (minSize + ((nx - xMin) * k)) : maxSize;
+    };
   };
 
   exports.sizeScale = sizeScale;
@@ -3695,7 +3709,7 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
     var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
       return x !== 0;
     })) / 2;
-    var size = sizeScale(node.domain(node.size.scaleDim), maxAxisSize);
+    var size = sizeScale(node.domain(node.size.scaleDim), 1, maxAxisSize);
 
     var update = function () {
       return this.attr("r", function (d) {
