@@ -270,7 +270,7 @@ var SpecEngineTypeMap = {
 
                 var maxYTickSize = getMaxTickLabelSize(
                     yValues,
-                    FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.x.tickFormatNullAlias),
+                    FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias),
                     settings.getAxisTickLabelSize,
                     settings.yAxisTickLabelLimit);
 
