@@ -1,3 +1,7 @@
+.graphical-report__legend {
+  padding: 20px;
+  width: 200px;
+}
 .graphical-report__legend__title,
 .graphical-report__legend__item {
   margin: 0 0 10px 0;

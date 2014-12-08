@@ -8,6 +8,8 @@ var getLayout = function () {
     centerContainer.classList.add(CSS_PREFIX + 'layout__container');
     var content = document.createElement('div');
     content.classList.add(CSS_PREFIX + 'layout__content');
+    var m = document.createElement('div');
+    content.appendChild(m);
     var leftSidebar = document.createElement('div');
     leftSidebar.classList.add(CSS_PREFIX + 'layout__sidebar');
     var rightSidebar = document.createElement('div');
@@ -19,6 +21,7 @@ var getLayout = function () {
     layout.appendChild(bottom);
     centerContainer.appendChild(leftSidebar);
     centerContainer.appendChild(content);
+    content = m;
     centerContainer.appendChild(rightSidebar);
     /* jshint ignore:start */
     return {

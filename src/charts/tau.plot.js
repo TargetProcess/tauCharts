@@ -123,8 +123,9 @@ export class Plot extends Emitter {
 
         return _.defaults(configSettings || {}, localSettings);
     }
+
     insertToLeftSidebar(el) {
-        this._layout.rightSidebar.innerHTML = el;
+        return utilsDom.appendTo(el, this._layout.rightSidebar);
     }
 
     /* addLine (conf) {
@@ -155,7 +156,7 @@ export class Plot extends Emitter {
         containerNode.appendChild(this._layout.layout);
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
-        var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.content));
+        var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.content.parentNode));
 
         if (this.config.data.length === 0) {
             this._layout.content.innerHTML = this._emptyContainer;

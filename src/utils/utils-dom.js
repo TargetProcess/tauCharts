@@ -1,9 +1,25 @@
 /**
  * Internal method to return CSS value for given element and property
  */
-var utilsDom =  {
+var tempDiv = document.createElement('div');
 
-    getScrollbarWidth: function() {
+var utilsDom = {
+    append: function (el, container) {
+        this.appendTo(el, container);
+        return container;
+    },
+    appendTo: function (el, container) {
+        var node;
+        if (el instanceof Node) {
+            node = el;
+        } else {
+            tempDiv.insertAdjacentHTML('afterbegin', el);
+            node = tempDiv.childNodes[0];
+        }
+        container.appendChild(node);
+        return node;
+    },
+    getScrollbarWidth: function () {
         var div = document.createElement("div");
         div.style.overflow = "scroll";
         div.style.visibility = "hidden";
@@ -24,11 +40,11 @@ var utilsDom =  {
         return window.getComputedStyle(el, undefined).getPropertyValue(prop);
     },
 
-    getStyleAsNum: function(el, prop) {
+    getStyleAsNum: function (el, prop) {
         return parseInt(this.getStyle(el, prop) || 0, 10);
     },
 
-    getContainerSize : function(el) {
+    getContainerSize: function (el) {
         var pl = this.getStyleAsNum(el, 'padding-left');
         var pr = this.getStyleAsNum(el, 'padding-right');
         var pb = this.getStyleAsNum(el, 'padding-bottom');
@@ -49,7 +65,7 @@ var utilsDom =  {
         };
     },
 
-    getAxisTickLabelSize: function(text) {
+    getAxisTickLabelSize: function (text) {
 
         var tmpl = [
             '<svg class="graphical-report__svg">',
@@ -74,7 +90,7 @@ var utilsDom =  {
         div.style.border = '1px solid green';
         document.body.appendChild(div);
 
-        div.innerHTML = compiled({ xTick: text });
+        div.innerHTML = compiled({xTick: text});
 
         var textNode = d3.select(div).selectAll('.x.axis .tick text')[0][0];
 
