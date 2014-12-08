@@ -72,12 +72,14 @@ export class DSLReader {
     renderGraph(styledGraph, target, chart) {
         styledGraph.options.container = target;
         var renderRecursively = (unit) => {
-            this.UnitsRegistry.get(unit.type).draw(this.domain.mix(unit), function (childUnit) {
+            var unitMeta = this.domain.mix(unit);
+            this.UnitsRegistry.get(unit.type).draw(unitMeta, (childUnit) => {
                 childUnit.parentUnit = unit;
                 renderRecursively(childUnit);
             });
+
             if (chart) {
-                chart.fire('unitready', unit);
+                chart.fire('unitready', unitMeta);
             }
         };
         styledGraph.parentUnit = null;
