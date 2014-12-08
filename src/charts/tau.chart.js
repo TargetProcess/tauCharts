@@ -28,8 +28,9 @@ const status = {
 /* jshint ignore:start */
 var strategyNormalizeAxis = {
     [status.SUCCESS]: (axis) => axis,
-    [status.FAIL]: () => {
-        throw new Error('This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
+    [status.FAIL]: (axis) => {
+        throw new Error(axis.messages.join('\n') ||
+        'This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
     [status.WARNING]: (axis, config) => {
         var measure = axis[config.indexMeasureAxis[0]];
@@ -41,17 +42,24 @@ var strategyNormalizeAxis = {
 /* jshint ignore:end */
 function validateAxis(dimensions, axis) {
     return axis.reduce(function (result, item, index) {
-        if (dimensions[item].type === 'measure') {
-            result.countMeasureAxis++;
-            result.indexMeasureAxis.push(index);
-        }
-        if (dimensions[item].type !== 'measure' && result.countMeasureAxis === 1) {
-            result.status = status.WARNING;
-        } else if (result.countMeasureAxis > 1) {
+        var dimension = dimensions[item];
+        if (!dimension){
             result.status = status.FAIL;
+            result.messages.push('Undefined dimension "'+item+'"');
+        } else if (result.status != status.FAIL) {
+            if (dimension.type === 'measure') {
+                result.countMeasureAxis++;
+                result.indexMeasureAxis.push(index);
+            }
+            if (dimension.type !== 'measure' && result.countMeasureAxis === 1) {
+                result.status = status.WARNING;
+            } else if (result.countMeasureAxis > 1) {
+                result.status = status.FAIL;
+                result.messages.push('There are more then one measure dimensions');
+            }
         }
         return result;
-    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: []});
+    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: []});
 }
 function transformConfig(type, config) {
     var x = normalizeSettings(config.x);
