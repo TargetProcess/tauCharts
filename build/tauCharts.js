@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.1 - 2014-12-08
+/*! tauCharts - v0.2.2 - 2014-12-08
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -443,12 +443,12 @@ var requirejs, require, define;
 
 define("../node_modules/almond/almond", function(){});
 
-/**
- * Internal method to return CSS value for given element and property
- */
 define('utils/utils-dom',["exports"], function (exports) {
   
 
+  /**
+   * Internal method to return CSS value for given element and property
+   */
   var utilsDom = {
     getScrollbarWidth: function () {
       var div = document.createElement("div");
@@ -539,7 +539,6 @@ define('dsl-reader',["exports"], function (exports) {
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -554,7 +553,6 @@ define('dsl-reader',["exports"], function (exports) {
         writable: true,
         value: function (spec) {
           var _this = this;
-
           var buildRecursively = function (unit) {
             return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
           };
@@ -628,7 +626,6 @@ define('dsl-reader',["exports"], function (exports) {
         writable: true,
         value: function (styledGraph, target, chart) {
           var _this2 = this;
-
           styledGraph.options.container = target;
           var renderRecursively = function (unit) {
             _this2.UnitsRegistry.get(unit.type).draw(_this2.domain.mix(unit), function (childUnit) {
@@ -660,7 +657,6 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   // jshint ignore: start
   var classes = function (el) {
     return {
@@ -672,6 +668,8 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
     };
   };
+
+
 
   var indexOf = function (arr, obj) {
     return arr.indexOf(obj);
@@ -984,22 +982,21 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
       switch (place[1]) {
         case "left":
-
           if (target.right - this.width <= winPos.left) {
             place[1] = "right";
           }
           break;
         case "right":
-
           if (target.left + this.width >= winPos.right) {
             place[1] = "left";
           }
           break;
-        default: if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
-          place[1] = "left";
-        } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
-          place[1] = "right";
-        }
+        default:
+          if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
+            place[1] = "left";
+          } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
+            place[1] = "right";
+          }
       }
     } else {
       if (target.left - this.width - spacing <= winPos.left) {
@@ -1009,22 +1006,21 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
       switch (place[1]) {
         case "top":
-
           if (target.bottom - this.height <= winPos.top) {
             place[1] = "bottom";
           }
           break;
         case "bottom":
-
           if (target.top + this.height >= winPos.bottom) {
             place[1] = "top";
           }
           break;
-        default: if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
-          place[1] = "top";
-        } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
-          place[1] = "bottom";
-        }
+        default:
+          if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
+            place[1] = "top";
+          } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
+            place[1] = "bottom";
+          }
       }
     }
 
@@ -1073,65 +1069,53 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
     var top, left;
     switch (this.curPlace) {
       case "top":
-
         top = target.top - this.height - spacing;
         left = target.left + target.width / 2 - this.width / 2;
         break;
       case "top-left":
-
         top = target.top - this.height - spacing;
         left = target.right - this.width;
         break;
       case "top-right":
-
         top = target.top - this.height - spacing;
         left = target.left;
         break;
 
       case "bottom":
-
         top = target.bottom + spacing;
         left = target.left + target.width / 2 - this.width / 2;
         break;
       case "bottom-left":
-
         top = target.bottom + spacing;
         left = target.right - this.width;
         break;
       case "bottom-right":
-
         top = target.bottom + spacing;
         left = target.left;
         break;
 
       case "left":
-
         top = target.top + target.height / 2 - this.height / 2;
         left = target.left - this.width - spacing;
         break;
       case "left-top":
-
         top = target.bottom - this.height;
         left = target.left - this.width - spacing;
         break;
       case "left-bottom":
-
         top = target.top;
         left = target.left - this.width - spacing;
         break;
 
       case "right":
-
         top = target.top + target.height / 2 - this.height / 2;
         left = target.right + spacing;
         break;
       case "right-top":
-
         top = target.bottom - this.height;
         left = target.right + spacing;
         break;
       case "right-bottom":
-
         top = target.top;
         left = target.right + spacing;
         break;
@@ -1326,12 +1310,12 @@ define('event',["exports"], function (exports) {
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
   var NULL_HANDLER = {};
   var events = {};
+
 
   /**
    * Creates new type of event or returns existing one, if it was created before.
@@ -1391,8 +1375,18 @@ define('event',["exports"], function (exports) {
     return eventFunction;
   }
 
+  /**
+   * Base class for event dispatching. It provides interface for instance
+   * to add and remove handler for desired events, and call it when event happens.
+   * @class
+   */
+
   var Emitter = (function () {
-    var Emitter = function Emitter() {
+    var Emitter =
+    /**
+     * @constructor
+     */
+    function Emitter() {
       this.handler = null;
       this.emit_destroy = createDispatcher("destroy");
     };
@@ -1400,6 +1394,13 @@ define('event',["exports"], function (exports) {
     _classProps(Emitter, null, {
       addHandler: {
         writable: true,
+
+
+        /**
+         * Adds new event handler to object.
+         * @param {object} callbacks Callback set.
+         * @param {object=} context Context object.
+         */
         value: function (callbacks, context) {
           context = context || this;
           // add handler
@@ -1427,6 +1428,14 @@ define('event',["exports"], function (exports) {
       },
       removeHandler: {
         writable: true,
+
+
+        /**
+         * Removes event handler set from object. For this operation parameters
+         * must be the same (equivalent) as used for addHandler method.
+         * @param {object} callbacks Callback set.
+         * @param {object=} context Context object.
+         */
         value: function (callbacks, context) {
           var cursor = this;
           var prev;
@@ -1446,10 +1455,17 @@ define('event',["exports"], function (exports) {
               return;
             }
           }
+
+
         }
       },
       destroy: {
         writable: true,
+
+
+        /**
+         * @destructor
+         */
         value: function () {
           // fire object destroy event handlers
           this.emit_destroy();
@@ -1541,12 +1557,10 @@ define('utils/utils',["exports"], function (exports) {
 
   exports.utils = utils;
 });
-/* jshint ignore:start */
 define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   
 
   var d3 = _d3;
-
   /* jshint ignore:end */
   var FORMATS_MAP = {
     "x-num-auto": function (x) {
@@ -1599,9 +1613,9 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   FORMATS_MAP["x-time-hour"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-day"] = FORMATS_MAP["x-time-auto"];
   FORMATS_MAP["x-time-week"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-month"] = FORMATS_MAP["month"];
-  FORMATS_MAP["x-time-quarter"] = FORMATS_MAP["quarter"];
-  FORMATS_MAP["x-time-year"] = FORMATS_MAP["year"];
+  FORMATS_MAP["x-time-month"] = FORMATS_MAP.month;
+  FORMATS_MAP["x-time-quarter"] = FORMATS_MAP.quarter;
+  FORMATS_MAP["x-time-year"] = FORMATS_MAP.year;
   /* jshint ignore:end */
 
   var FormatterRegistry = {
@@ -1647,7 +1661,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var _ = _underscore;
   var d3 = _d3;
-
   /* jshint ignore:end */
 
   var translate = function (left, top) {
@@ -1659,6 +1672,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var getOrientation = function (scaleOrient) {
     return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
   };
+
 
   var cutText = function (textString, widthLimit) {
     textString.each(function () {
@@ -1950,6 +1964,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
 
+
   var applyCustomProps = function (targetUnit, customUnit) {
     var guide = customUnit.guide || {};
     var guide_x = guide.hasOwnProperty("x") ? guide.x : {};
@@ -2183,6 +2198,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
         var yValues = yMeta.values;
 
+
         unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
         unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
@@ -2192,6 +2208,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
         var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+
 
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
         var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
@@ -2238,6 +2255,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var distToXAxisLabel = settings.distToXAxisLabel;
         var distToYAxisLabel = settings.distToYAxisLabel;
 
+
         var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
         unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
 
@@ -2246,11 +2264,14 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
         unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
 
+
         unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
         unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
+
         var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
         var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
 
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
@@ -2281,6 +2302,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       return SpecEngineTypeMap[engineName](spec, meta, settings);
     }, srcSpec);
   };
+
 
   var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
     var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
@@ -2366,6 +2388,8 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var TMatrix = _matrix.TMatrix;
+
+
 
   var specUnitSummary = function (spec, boxOpt) {
     var box = boxOpt ? boxOpt : { depth: -1, paddings: [] };
@@ -2485,20 +2509,21 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
 
   exports.LayoutEngineFactory = LayoutEngineFactory;
 });
-//plugins
-/** @class
- * @extends Plugin */
 define('plugins',["exports"], function (exports) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
+  //plugins
+  /** @class
+   * @extends Plugin */
   var Plugins = (function () {
-    var Plugins = function Plugins(plugins, chart) {
+    var Plugins =
+    /** @constructs */
+    function Plugins(plugins, chart) {
       this.chart = chart;
       this._plugins = plugins.map(this.initPlugin, this);
     };
@@ -2508,7 +2533,6 @@ define('plugins',["exports"], function (exports) {
         writable: true,
         value: function (plugin) {
           var _this = this;
-
           if (plugin.init) {
             plugin.init(this.chart);
           }
@@ -2540,6 +2564,7 @@ define('plugins',["exports"], function (exports) {
       }, this);
     };
   };
+
 
   exports.propagateDatumEvents = propagateDatumEvents;
   exports.Plugins = Plugins;
@@ -2637,7 +2662,6 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -2645,7 +2669,6 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
   var utils = _utilsUtils.utils;
   var _ = _underscore;
   var d3 = _d3;
-
   /* jshint ignore:end */
 
   var autoScaleMethods = {
@@ -2919,6 +2942,7 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
 
   var utils = _utilsUtils.utils;
 
+
   var DataProcessor = {
     isYFunctionOfX: function (data, xFields, yFields) {
       var isRelationAFunction = true;
@@ -3070,7 +3094,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
-
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -3158,6 +3181,17 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       },
       addBalloon: {
         writable: true,
+        /* addLine (conf) {
+             var unitContainer = this._spec.unit.unit;
+              while(true) {
+                 if(unitContainer[0].unit) {
+                     unitContainer = unitContainer[0].unit;
+                 } else {
+                     break;
+                 }
+             }
+             unitContainer.push(conf);
+         }*/
         value: function (conf) {
           return new Tooltip("", conf || {});
         }
@@ -3182,6 +3216,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
             return;
           }
           containerNode.innerHTML = "";
+
 
           var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
 
@@ -3229,6 +3264,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           size.height = screenH - scrollH;
           size.width = screenW - scrollW;
 
+
           // optimize full spec depending on size
           var localSettings = this.config.settings;
           var traverseToDeep = function (root, size) {
@@ -3262,6 +3298,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           };
 
           traverseToDeep(fullSpec.unit, size);
+
 
           var reader = new DSLReader(domainMixin, UnitsRegistry);
 
@@ -3311,6 +3348,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
   var Plot = _tauPlot.Plot;
   var utils = _utilsUtils.utils;
   var DataProcessor = _dataProcessor.DataProcessor;
+
 
   var convertAxis = function (data) {
     return (!data) ? null : data;
@@ -3540,6 +3578,7 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
+
   var FacetAlgebra = {
     CROSS: function (root, dimX, dimY) {
       var domainX = root.domain(dimX);
@@ -3697,7 +3736,6 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
   var sizeScale = _size.sizeScale;
-
   var point = function (node) {
     var options = node.options;
 
@@ -3736,7 +3774,6 @@ define('utils/css-class-map',["exports", "../const"], function (exports, _const)
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   var arrayNumber = [1, 2, 3, 4, 5];
   var countLineClasses = arrayNumber.map(function (i) {
     return CSS_PREFIX + "line-opacity-" + i;
@@ -3771,7 +3808,6 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
   var CSS_PREFIX = _const.CSS_PREFIX;
   var getLineClassesByWidth = _utilsCssClassMap.getLineClassesByWidth;
   var getLineClassesByCount = _utilsCssClassMap.getLineClassesByCount;
-
   var line = function (node) {
     var options = node.options;
 
@@ -3843,6 +3879,7 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
     });
     /*}*/
 
+
     var updatePaths = function () {
       this.attr("d", line);
     };
@@ -3859,7 +3896,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   var BAR_GROUP = "i-role-bar-group";
   var isMeasure = function (dim) {
     return dim.dimType === "measure";
@@ -3905,10 +3941,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
-
       (function () {
         xMin = Math.min.apply(null, xScale.domain());
-
         var startPoint = (xMin <= 0) ? 0 : xMin;
 
         _ref = getSizesParams({
@@ -3920,7 +3954,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref.tickWidth;
         intervalWidth = _ref.intervalWidth;
         offsetCategory = _ref.offsetCategory;
-
         /* jshint ignore:end */
         calculateX = isMeasure(node.x) ? function (d) {
           return xScale(Math.min(startPoint, d[node.x.scaleDim]));
@@ -3946,10 +3979,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
-
       (function () {
         yMin = Math.min.apply(null, yScale.domain());
-
         var startPoint = (yMin <= 0) ? 0 : yMin;
 
         _ref2 = getSizesParams({
@@ -3961,7 +3992,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref2.tickWidth;
         intervalWidth = _ref2.intervalWidth;
         offsetCategory = _ref2.offsetCategory;
-
         /* jshint ignore:end */
         calculateX = function (d) {
           return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
@@ -4018,6 +4048,7 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
+
   var inheritRootProps = function (unit, root, props) {
     var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
     r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
@@ -4066,12 +4097,14 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
 
       var container = options.container.append("g").attr("class", "graphical-report__" + "cell " + "cell").attr("transform", utilsDraw.translate(L, T));
 
+
       var translate = function (left, top) {
         return "translate(" + left + "," + top + ")";
       };
       var rotate = function (angle) {
         return "rotate(" + angle + ")";
       };
+
 
       var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
         var container = this;
@@ -4105,6 +4138,7 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
+
 
   var CoordsParallelLine = {
     draw: function (node) {
@@ -4177,6 +4211,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CoordsParallel = _elementsCoordsParallel.CoordsParallel;
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
+
 
   var setupElementNode = function (node, dimensions) {
     dimensions.forEach(function (dimName) {
@@ -4254,7 +4289,6 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var nodeMap = _nodeMap.nodeMap;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
-
   var colorBrewers = {};
   var plugins = {};
 

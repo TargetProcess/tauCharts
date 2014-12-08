@@ -128,29 +128,39 @@
                 return _.compact(fields.concat(y, x).reverse());
 
             },
+            isLine: function (data) {
+                return data.elementData.key && Array.isArray(data.elementData.values);
+            },
             onElementMouseOver: function (chart, data) {
                 clearInterval(this._interval);
-                var coord = d3.mouse(data.element);
                 var key = this._generateKey(data.cellData.$where);
-                var item = _.min(this._dataWithCoords[key], function (a) {
-                    return this._calculateLength(a.x, a.y, coord[0], coord[1]);
-                }, this);
+                var coord = d3.mouse(data.element);
+                var item = data.elementData;
+                var isLine = this.isLine(data);
+                if (isLine) {
+                    var dataWithCoord = this._dataWithCoords[key];
+                    var filteredData = dataWithCoord.filter(function (value) {
+                        return _.contains(item.values, value.item);
+                    });
+                    var itemWithCoord = _.min(filteredData, function (a) {
+                        return this._calculateLength(a.x, a.y, coord[0], coord[1]);
+                    }, this);
+                    item = itemWithCoord.item;
+                    this._drawPoint(d3.select(data.element.parentNode), itemWithCoord.x, itemWithCoord.y, this._unitMeta[key].options.color.get(data.elementData.key));
+                }
                 if (this._currentElement === item) {
                     return;
-                }
-                if (data.elementData.key && Array.isArray(data.elementData.values)) {
-                    this._drawPoint(d3.select(data.element.parentNode), item.x, item.y, this._unitMeta[key].options.color.get(data.elementData.key));
                 }
                 var content = this._elementTooltip.querySelectorAll('.i-role-content');
                 if (content[0]) {
                     var fields = this._getFields(this._unitMeta[key]);
-                    content[0].innerHTML = this.render(item.item, fields);
+                    content[0].innerHTML = this.render(item, fields);
                 } else {
                     console.log('template should contain i-role-content class');
                 }
 
                 this._show();
-                this._currentElement = item.item;
+                this._currentElement = item;
             },
             onElementMouseOut: function () {
                 this._hide();
