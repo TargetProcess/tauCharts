@@ -41,7 +41,7 @@
                 var items = _.map(this._getColorMap(chart), function (item, key) {
                     return this.itemTemplate({color:item,value:key});
                 },this).join('');
-                document.querySelector('#placeLegend').innerHTML = this.template({items:items, name:'CategoryName'});
+                chart.insertToLeftSidebar(this.template({items:items, name:'CategoryName'}));
             },
             render: function () {
 

@@ -1,24 +1,32 @@
+import {CSS_PREFIX} from '../const';
 var getLayout = function () {
-    var container = document.createElement('div');
-    var top = document.createElement('div');
+    var layout = document.createElement('div');
+    layout.classList.add(CSS_PREFIX + 'layout');
+    var header = document.createElement('div');
+    header.classList.add(CSS_PREFIX + 'layout__header');
     var centerContainer = document.createElement('div');
-    var center = document.createElement('div');
-    var left = document.createElement('div');
-    var right = document.createElement('div');
+    centerContainer.classList.add(CSS_PREFIX + 'layout__container');
+    var content = document.createElement('div');
+    content.classList.add(CSS_PREFIX + 'layout__content');
+    var leftSidebar = document.createElement('div');
+    leftSidebar.classList.add(CSS_PREFIX + 'layout__sidebar');
+    var rightSidebar = document.createElement('div');
+    rightSidebar.classList.add(CSS_PREFIX + 'layout__sidebar-right');
     var bottom = document.createElement('div');
-    container.appendChild(top);
-    container.appendChild(centerContainer);
-    container.appendChild(bottom);
-    centerContainer.appendChild(left);
-    centerContainer.appendChild(center);
-    centerContainer.appendChild(right);
+    bottom.classList.add(CSS_PREFIX + 'layout__footer');
+    layout.appendChild(header);
+    layout.appendChild(centerContainer);
+    layout.appendChild(bottom);
+    centerContainer.appendChild(leftSidebar);
+    centerContainer.appendChild(content);
+    centerContainer.appendChild(rightSidebar);
     /* jshint ignore:start */
     return {
-        container,
-        top,
-        center,
-        left,
-        right,
+        layout,
+        header,
+        content,
+        leftSidebar,
+        rightSidebar,
         bottom
     };
     /* jshint ignore:end */

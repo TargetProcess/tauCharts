@@ -14,6 +14,8 @@
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../css/tooltip.css"/>
     <link href="../css/colorbrewer.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
@@ -33,7 +35,9 @@
         input {
             width: 500px;
         }
-
+        .graphical-report__layout__sidebar-right {
+            width: 1000px;
+        }
         .blue {
             stroke: blue;
             fill: blue;
@@ -70,11 +74,15 @@
 </head>
 <body>
 <template id="list">
-    <h4><%=name%></h4>
-    <ul><%=items%></ul>
+    <div class="graphical-report__legend">
+        <div class="graphical-report__legend__title"><%=name%></div>
+        <%=items%>
+    </div>
 </template>
 <template id="itemList">
-    <li class="<%=color%>"><%=color%>-<%=value%></li>
+    <div class="graphical-report__legend__item">
+        <div class="graphical-report__legend__example <%=color%>" ></div><%=value%>
+    </div>
 </template>
 <div style="float: left;padding: 20px">
     <label for="data">data</label><br/>
@@ -287,11 +295,7 @@ require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 
             size: 'y'
         });
         chart.renderTo(
-                '#chart-container',
-                {
-                    width: 600,
-                    height: 600
-                });
+                '#chart-container');
     }
 
     function generateTable(data) {

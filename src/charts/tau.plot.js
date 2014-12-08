@@ -123,6 +123,9 @@ export class Plot extends Emitter {
 
         return _.defaults(configSettings || {}, localSettings);
     }
+    insertToLeftSidebar(el) {
+        this._layout.rightSidebar.innerHTML = el;
+    }
 
     /* addLine (conf) {
      var unitContainer = this._spec.unit.unit;
@@ -148,16 +151,17 @@ export class Plot extends Emitter {
         if (containerNode === null) {
             throw new Error('Target element not found');
         }
-        containerNode.appendChild(this._layout.container);
-        container = d3.select(this._layout.center);
+        var content = this._layout.content;
+        containerNode.appendChild(this._layout.layout);
+        container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
-        var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.center));
+        var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.content));
 
         if (this.config.data.length === 0) {
-            this._layout.center.innerHTML = this._emptyContainer;
+            this._layout.content.innerHTML = this._emptyContainer;
             return;
         }
-        this._layout.center.innerHTML = '';
+        this._layout.content.innerHTML = '';
 
 
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
