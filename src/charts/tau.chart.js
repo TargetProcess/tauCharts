@@ -225,7 +225,15 @@ class Chart extends Plot {
         }
         config.settings = this.setupSettings(config.settings);
         config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
-        super(typesChart[config.type](config));
+        var chartFactory = typesChart[config.type];
+        if (_.isFunction(chartFactory)) {
+            super(chartFactory(config));
+        }
+        else {
+            throw new Error('Chart type ' + config.type + 'is not supported. Use one of ' +
+                _.keys(typesChart).join(', ') + '.'
+            );
+        }
     }
     destroy() {
         var index = Chart.winAware.indexOf(this);
