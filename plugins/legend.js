@@ -53,13 +53,17 @@
                 }, {});
             },
             containerTemplate: '<div class="graphical-report__legend"></div>',
-            template: _.template(_.unescape(document.querySelector('#list').innerHTML)),
-            itemTemplate: _.template(_.unescape(document.querySelector('#itemList').innerHTML)),
+            template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
+            itemTemplate: _.template([
+                '<div class="graphical-report__legend__item">',
+                '<div class="graphical-report__legend__example <%=color%>" ></div><%=value%>',
+                '</div>'
+            ].join('')),
             onRender: function (chart) {
                 var items = _.map(this._getColorMap(chart), function (item, key) {
                     return this.itemTemplate({color: item, value: key});
                 }, this).join('');
-                this._container.innerHTML = this.template({items: items, name: 'CategoryName'});
+                this._container.innerHTML = this.template({items: items, name: this._unit.options.color.dimension});
             },
             render: function () {
 
