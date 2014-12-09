@@ -130,14 +130,12 @@ define(function (require) {
             var height = parseInt(svg.attr('height'),10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if(!modernizer.flexbox) {
-                expectedWidth = 279;
-                expectedHeight = 133;
+            if(modernizer.flexbox) {
+                expect(width).to.equal(expectedWidth);
+                expect(height).to.equal(expectedHeight);
             }
 
-            expect(width).to.equal(expectedWidth);
 
-            expect(height).to.equal(expectedHeight);
         });
 
         it("should infer size from target (where target = ID selector)", function () {
@@ -150,14 +148,12 @@ define(function (require) {
             var height = parseInt(svg.attr('height'),10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if(!modernizer.flexbox) {
-                expectedWidth = 279;
-                expectedHeight = 133;
+            if(modernizer.flexbox) {
+                expect(width).to.equal(expectedWidth);
+                expect(height).to.equal(expectedHeight);
             }
 
-            expect(width).to.equal(expectedWidth);
 
-            expect(height).to.equal(expectedHeight);
         });
 
         it("should auto exclude null values", function () {
