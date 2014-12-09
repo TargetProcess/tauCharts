@@ -1,3 +1,54 @@
+.graphical-report__layout {
+  display: -webkit-box;
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: stretch;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  -ms-flex-direction: column;
+  -webkit-box-orient: vertical;
+  flex-direction: column;
+  height: 100%;
+  overflow: auto;
+}
+.graphical-report__layout__header {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.graphical-report__layout__container {
+  display: -webkit-box;
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex: 1 1 auto;
+  -webkit-box-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+.graphical-report__layout__footer {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.graphical-report__layout__sidebar {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.graphical-report__layout__content {
+  -ms-flex: 1 0 auto;
+  -webkit-box-flex: 1 0 auto;
+  flex: 1 0 auto;
+}
+.graphical-report__layout__content div {
+  overflow: auto;
+}
+.graphical-report__layout__sidebar-right {
+  -ms-flex: 0 0 auto;
+  -webkit-box-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
 /* region Generate .color@{n}-@{i}  function  */
 .graphical-report__svg .color10-1 {
   stroke: #e41a1c;
