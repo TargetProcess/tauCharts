@@ -85,7 +85,11 @@ module.exports = function(grunt) {
                     {
                         src:  'plugins/tooltip.js',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.min.js'
-                    }
+                    }/*,
+                    {
+                        src:  'plugins/legend.js',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.min.js'
+                    }*/
                 ]
 
             }
@@ -104,7 +108,11 @@ module.exports = function(grunt) {
                     {
                         src: 'css/tooltip.css',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.min.css'
-                    }
+                    }/*,
+                    {
+                        src: 'css/legend.css',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.min.css'
+                    }*/
                 ]
             }
         },
@@ -126,11 +134,19 @@ module.exports = function(grunt) {
                     {
                         src: 'plugins/tooltip.js',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.js'
-                    },
+                    }/*,
+                    {
+                        src: 'plugins/legend.js',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.js'
+                    }*/,
                     {
                         src: 'css/tooltip.css',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.css'
-                    }
+                    }/*,
+                    {
+                        src: 'css/legend.css',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.css'
+                    }*/
                 ]
             }
         },

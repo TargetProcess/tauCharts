@@ -4,10 +4,6 @@
 var tempDiv = document.createElement('div');
 
 var utilsDom = {
-    append: function (el, container) {
-        this.appendTo(el, container);
-        return container;
-    },
     appendTo: function (el, container) {
         var node;
         if (el instanceof Node) {

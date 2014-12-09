@@ -124,7 +124,7 @@ export class Plot extends Emitter {
         return _.defaults(configSettings || {}, localSettings);
     }
 
-    insertToLeftSidebar(el) {
+    insertToRightSidebar(el) {
         return utilsDom.appendTo(el, this._layout.rightSidebar);
     }
 

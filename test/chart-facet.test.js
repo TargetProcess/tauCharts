@@ -59,7 +59,7 @@ define(function(require){
             });
             assert.equal(facetSpec.errors(bar.config.spec), false,'spec right');
             assert.equal(bar.config.spec.unit.unit[0].unit[0].flip, false,'spec right');
-        })
+        });
     });
     describe('simple facet charts with two measure dimensions', function () {
         var testData = [

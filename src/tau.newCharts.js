@@ -39,6 +39,8 @@ var api = {
         add: function(name, brewer) {
             if (!(name in plugins)) {
                 plugins[name] = brewer;
+            } else {
+                throw new Error('Plugins is already registred.');
             }
         },
         get: function(name) {

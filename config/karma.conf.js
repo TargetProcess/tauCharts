@@ -21,7 +21,7 @@ module.exports = function (config) {
             {pattern: 'css/layout.css', included: true},
             {pattern: 'libs/**', included: false},
             {pattern: 'node_modules/chai/*.js', included: false},
-            {pattern: 'tau_modules/**/*.js', included: false},
+            {pattern: 'tau_modules/**', included: false},
             {pattern: 'test/*test.js', included: false},
             'test/tests-main.js'
         ],

@@ -28,7 +28,7 @@
         return {
             init: function (chart) {
                 if (this.isNeedLegend(chart)) {
-                    this._container = chart.insertToLeftSidebar(this.containerTemplate);
+                    this._container = chart.insertToRightSidebar(this.containerTemplate);
                 }
             },
             isNeedLegend: function (chart) {
@@ -61,10 +61,12 @@
                 '</div>'
             ].join('')),
             onRender: function (chart) {
-                var items = _.map(this._getColorMap(chart), function (item, key) {
-                    return this.itemTemplate({color: item, value: key});
-                }, this).join('');
-                this._container.innerHTML = this.template({items: items, name: this._unit.options.color.dimension});
+                if(this._container) {
+                    var items = _.map(this._getColorMap(chart), function (item, key) {
+                        return this.itemTemplate({color: item, value: key});
+                    }, this).join('');
+                    this._container.innerHTML = this.template({items: items, name: this._unit.options.color.dimension});
+                }
             },
             render: function () {
 
