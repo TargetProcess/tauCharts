@@ -1,0 +1,55 @@
+@import "variable";
+
+.graphical-report {
+    &__legend {
+        padding: 20px;
+        width: 140px;
+        &__title,
+        &__item {
+            margin: 0 0 10px 0;
+        }
+
+        &__title {
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        &__item {
+            padding-left: 25px;
+            position: relative;
+            font-size: 13px;
+
+            &:disabled,
+            &.disabled {
+                color: @font-gray;
+            }
+        }
+
+        &__example {
+            width: 15px;
+            height: 15px;
+            box-sizing: border-box;
+            border: 1px solid transparent;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+
+        }
+    }
+}
+
+@category-colors: #e41a1c, #377eb8, #4daf4a, #984ea3, #ff7f00, #E9E964, #a65628, #f781bf, #999999, #222222;
+
+@list_category-colors: length(@category-colors);
+
+.generate-colors(@n; @i: 1) when (@i =< @n) {
+
+    .graphical-report__legend__item .color@{n}-@{i} {
+        background: extract(@category-colors, @i);
+    }
+
+    .generate-colors(@n; (@i + 1));
+}
+.generate-colors(@list_category-colors);

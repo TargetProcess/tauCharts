@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.2 - 2014-12-08
+/*! tauCharts - v0.2.3 - 2014-12-09
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -449,7 +449,20 @@ define('utils/utils-dom',["exports"], function (exports) {
   /**
    * Internal method to return CSS value for given element and property
    */
+  var tempDiv = document.createElement("div");
+
   var utilsDom = {
+    appendTo: function (el, container) {
+      var node;
+      if (el instanceof Node) {
+        node = el;
+      } else {
+        tempDiv.insertAdjacentHTML("afterbegin", el);
+        node = tempDiv.childNodes[0];
+      }
+      container.appendChild(node);
+      return node;
+    },
     getScrollbarWidth: function () {
       var div = document.createElement("div");
       div.style.overflow = "scroll";
@@ -628,12 +641,14 @@ define('dsl-reader',["exports"], function (exports) {
           var _this2 = this;
           styledGraph.options.container = target;
           var renderRecursively = function (unit) {
-            _this2.UnitsRegistry.get(unit.type).draw(_this2.domain.mix(unit), function (childUnit) {
+            var unitMeta = _this2.domain.mix(unit);
+            _this2.UnitsRegistry.get(unit.type).draw(unitMeta, function (childUnit) {
               childUnit.parentUnit = unit;
               renderRecursively(childUnit);
             });
+
             if (chart) {
-              chart.fire("unitready", unit);
+              chart.fire("unitready", unitMeta);
             }
           };
           styledGraph.parentUnit = null;
@@ -2207,7 +2222,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
         var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
-        var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+        var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
 
 
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
@@ -3089,7 +3104,50 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
 
   exports.DataProcessor = DataProcessor;
 });
-define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../event", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor"], function (exports, _dslReader, _apiBalloon, _event, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor) {
+define('utils/layuot-template',["exports", "../const"], function (exports, _const) {
+  
+
+  var CSS_PREFIX = _const.CSS_PREFIX;
+  var getLayout = function () {
+    var layout = document.createElement("div");
+    layout.classList.add(CSS_PREFIX + "layout");
+    var header = document.createElement("div");
+    header.classList.add(CSS_PREFIX + "layout__header");
+    var centerContainer = document.createElement("div");
+    centerContainer.classList.add(CSS_PREFIX + "layout__container");
+    var content = document.createElement("div");
+    content.classList.add(CSS_PREFIX + "layout__content");
+    var m = document.createElement("div");
+    content.appendChild(m);
+    var leftSidebar = document.createElement("div");
+    leftSidebar.classList.add(CSS_PREFIX + "layout__sidebar");
+    var rightSidebar = document.createElement("div");
+    rightSidebar.classList.add(CSS_PREFIX + "layout__sidebar-right");
+    var bottom = document.createElement("div");
+    bottom.classList.add(CSS_PREFIX + "layout__footer");
+    layout.appendChild(header);
+    layout.appendChild(centerContainer);
+    layout.appendChild(bottom);
+    centerContainer.appendChild(leftSidebar);
+    centerContainer.appendChild(content);
+    content = m;
+    centerContainer.appendChild(rightSidebar);
+    /* jshint ignore:start */
+    return {
+      layout: layout,
+      header: header,
+      content: content,
+      leftSidebar: leftSidebar,
+      rightSidebar: rightSidebar,
+      bottom: bottom
+    };
+    /* jshint ignore:end */
+  };
+
+
+  exports.getLayout = getLayout;
+});
+define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../event", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor", "../utils/layuot-template"], function (exports, _dslReader, _apiBalloon, _event, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
@@ -3122,13 +3180,68 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
   var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
   var DataProcessor = _dataProcessor.DataProcessor;
+  var getLayout = _utilsLayuotTemplate.getLayout;
+
+
+  var traverseFromDeep = function (root) {
+    var r;
+
+    if (!root.unit) {
+      r = { w: 0, h: 0 };
+    } else {
+      var s = traverseFromDeep(root.unit[0]);
+      var g = root.guide;
+      var xmd = g.x.$minimalDomain || 1;
+      var ymd = g.y.$minimalDomain || 1;
+      var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
+      var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
+
+      r = {
+        w: maxW + g.padding.l + g.padding.r,
+        h: maxH + g.padding.t + g.padding.b
+      };
+    }
+
+    return r;
+  };
+
+  var traverseToDeep = function (root, size, localSettings) {
+    var mdx = root.guide.x.$minimalDomain || 1;
+    var mdy = root.guide.y.$minimalDomain || 1;
+
+    var perTickX = size.width / mdx;
+    var perTickY = size.height / mdy;
+
+    var densityKoeff = localSettings.xMinimumDensityKoeff;
+    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+      root.guide.x.rotate = 0;
+      root.guide.x.textAnchor = "middle";
+      root.guide.x.tickFormatWordWrapLimit = perTickX;
+      var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
+
+      var xDelta = 0 - s + root.guide.x.$maxTickTextH;
+
+      root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
+      root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
+    }
+
+    var newSize = {
+      width: perTickX,
+      height: perTickY
+    };
+
+    if (root.unit) {
+      traverseToDeep(root.unit[0], newSize, localSettings);
+    }
+  };
+
   var Plot = (function (Emitter) {
     var Plot = function Plot(config) {
       Emitter.call(this);
+      this._layout = getLayout();
       this.setupConfig(config);
       //plugins
       this._plugins = new Plugins(this.config.plugins, this);
-      this._emptyContainer = config.emptyContainer || "";
     };
 
     _extends(Plot, Emitter);
@@ -3143,7 +3256,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
             plugins: [],
             settings: {}
           });
-
+          this._emptyContainer = config.emptyContainer || "";
           // TODO: remove this particular config cases
           this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
           this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
@@ -3158,6 +3271,12 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           if (diffLength > 0) {
             this.config.settings.log(diffLength + " data points were excluded, because they have undefined values.", "WARN");
           }
+        }
+      },
+      getConfig: {
+        writable: true,
+        value: function () {
+          return this.config;
         }
       },
       setupMetaInfo: {
@@ -3179,18 +3298,26 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           return _.defaults(configSettings || {}, localSettings);
         }
       },
+      insertToRightSidebar: {
+        writable: true,
+        value: function (el) {
+          return utilsDom.appendTo(el, this._layout.rightSidebar);
+        }
+      },
       addBalloon: {
         writable: true,
+
+
         /* addLine (conf) {
-             var unitContainer = this._spec.unit.unit;
-              while(true) {
-                 if(unitContainer[0].unit) {
-                     unitContainer = unitContainer[0].unit;
-                 } else {
-                     break;
-                 }
-             }
-             unitContainer.push(conf);
+         var unitContainer = this._spec.unit.unit;
+          while(true) {
+         if(unitContainer[0].unit) {
+         unitContainer = unitContainer[0].unit;
+         } else {
+         break;
+         }
+         }
+         unitContainer.push(conf);
          }*/
         value: function (conf) {
           return new Tooltip("", conf || {});
@@ -3199,23 +3326,24 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       renderTo: {
         writable: true,
         value: function (target, xSize) {
-          // this.addLine({type:'ELEMENT.LINE', isGuide:true});
           var container = d3.select(target);
-          var containerNode = container[0][0];
+          var containerNode = container.node();
           this.target = target;
           this.targetSizes = xSize;
           if (containerNode === null) {
             throw new Error("Target element not found");
           }
-
+          var content = this._layout.content;
+          containerNode.appendChild(this._layout.layout);
+          container = d3.select(this._layout.content);
           //todo don't compute width if width or height were passed
-          var size = _.defaults(xSize || {}, utilsDom.getContainerSize(containerNode));
+          var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.content.parentNode));
 
           if (this.config.data.length === 0) {
-            containerNode.innerHTML = this._emptyContainer;
+            this._layout.content.innerHTML = this._emptyContainer;
             return;
           }
-          containerNode.innerHTML = "";
+          this._layout.content.innerHTML = "";
 
 
           var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
@@ -3223,28 +3351,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
 
           var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
-
-          var traverseFromDeep = function (root) {
-            var r;
-
-            if (!root.unit) {
-              r = { w: 0, h: 0 };
-            } else {
-              var s = traverseFromDeep(root.unit[0]);
-              var g = root.guide;
-              var xmd = g.x.$minimalDomain || 1;
-              var ymd = g.y.$minimalDomain || 1;
-              var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
-              var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
-
-              r = {
-                w: maxW + g.padding.l + g.padding.r,
-                h: maxH + g.padding.t + g.padding.b
-              };
-            }
-
-            return r;
-          };
 
           var optimalSize = traverseFromDeep(fullSpec.unit);
           var recommendedWidth = optimalSize.w;
@@ -3267,37 +3373,8 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
           // optimize full spec depending on size
           var localSettings = this.config.settings;
-          var traverseToDeep = function (root, size) {
-            var mdx = root.guide.x.$minimalDomain || 1;
-            var mdy = root.guide.y.$minimalDomain || 1;
 
-            var perTickX = size.width / mdx;
-            var perTickY = size.height / mdy;
-
-            var densityKoeff = localSettings.xMinimumDensityKoeff;
-            if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
-              root.guide.x.rotate = 0;
-              root.guide.x.textAnchor = "middle";
-              root.guide.x.tickFormatWordWrapLimit = perTickX;
-              var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
-
-              var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-
-              root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
-              root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
-            }
-
-            var newSize = {
-              width: perTickX,
-              height: perTickY
-            };
-
-            if (root.unit) {
-              traverseToDeep(root.unit[0], newSize);
-            }
-          };
-
-          traverseToDeep(fullSpec.unit, size);
+          traverseToDeep(fullSpec.unit, size, localSettings);
 
 
           var reader = new DSLReader(domainMixin, UnitsRegistry);
@@ -3743,7 +3820,7 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
     var yScale = options.yScale;
 
     var color = utilsDraw.generateColor(node);
-
+    node.options.color = color;
     var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
       return x !== 0;
     })) / 2;
@@ -3926,7 +4003,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
     var options = node.options;
 
     var color = utilsDraw.generateColor(node);
-
+    node.options.color = color;
     var partition = node.partition();
 
     var categories = d3.nest().key(function (d) {
@@ -4319,6 +4396,8 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       add: function (name, brewer) {
         if (!(name in plugins)) {
           plugins[name] = brewer;
+        } else {
+          throw new Error("Plugins is already registred.");
         }
       },
       get: function (name) {

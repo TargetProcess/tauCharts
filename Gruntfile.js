@@ -85,6 +85,10 @@ module.exports = function(grunt) {
                     {
                         src:  'plugins/tooltip.js',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.min.js'
+                    },
+                    {
+                        src:  'plugins/legend.js',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.min.js'
                     }
                 ]
 
@@ -104,6 +108,10 @@ module.exports = function(grunt) {
                     {
                         src: 'css/tooltip.css',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.min.css'
+                    },
+                    {
+                        src: 'css/legend.css',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.min.css'
                     }
                 ]
             }
@@ -128,8 +136,16 @@ module.exports = function(grunt) {
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.js'
                     },
                     {
+                        src: 'plugins/legend.js',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.js'
+                    },
+                    {
                         src: 'css/tooltip.css',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.css'
+                    },
+                    {
+                        src: 'css/legend.css',
+                        dest: 'build/plugins/<%= pkg.name %>.legend.css'
                     }
                 ]
             }
@@ -163,7 +179,9 @@ module.exports = function(grunt) {
                 },
                 files: {
                     "css/tooltip.css": "less/tooltip.less",
-                    "css/graphic-elements.css": "less/graphic-elements.less"
+                    "css/graphic-elements.css": "less/graphic-elements.less",
+                    "css/layout.css": "less/layout.less",
+                    "css/legend.css": "less/legend.less"
                 }
             }
         },
@@ -179,14 +197,21 @@ module.exports = function(grunt) {
                     "d3.js": "d3/d3.js",
                     "underscore.js": "underscore/underscore.js",
                     "jquery.js": "jquery/dist/jquery.js",
+                    "modernizer.js": "modernizer/modernizr.js",
                     "js-schema.js": "js-schema/js-schema.debug.js",
                     "es5-shim.js": "es5-shim/es5-shim.js"
                 }
             }
         },
         watch: {
-            files: '<%= jshint.all.src %>',
-            tasks: ['jshint', 'compile:dev']
+            js:{
+                files: ['<%= jshint.all.src %>'],
+                tasks: ['jshint', 'compile:dev','less']
+            },
+            less:{
+                files: ['less/*.less'],
+                tasks: ['less']
+            }
         }
     });
     // load local tasks
@@ -206,7 +231,7 @@ module.exports = function(grunt) {
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch']);
+    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
     grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat', 'uglify', 'shell:gitadd']);
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);

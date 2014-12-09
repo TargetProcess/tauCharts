@@ -1,6 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
+    var modernizer = require('modernizer');
     var tauChart = require('tau_modules/tau.newCharts');
     describe("tauChart.Plot", function () {
 
@@ -8,7 +9,7 @@ define(function (require) {
         var div;
         beforeEach(function () {
             div = document.createElement('div');
-            div.innerHTML = '<div id="test-div" style="width: 800px; height: 600px">NODATA</div>';
+            div.innerHTML = '<div id="test-div" style="width: 800px; height: 600px"></div>';
             document.body.appendChild(div);
 
             spec = {
@@ -48,7 +49,7 @@ define(function (require) {
             new tauChart.Plot(spec)
                 .renderTo(testDiv);
 
-            expect(testDiv.innerHTML).to.equal('NODATA');
+            expect(testDiv.querySelector('.graphical-report__layout__content div').innerHTML).to.equal('NODATA');
         });
 
         it("should auto-detect dimension types", function () {
@@ -89,9 +90,6 @@ define(function (require) {
             new tauChart.Plot(spec).renderTo(testDiv);
 
             var svg = d3.select(div).selectAll('svg');
-
-            expect(svg.attr('width')).to.equal('800');
-            expect(svg.attr('height')).to.equal('600');
         });
 
         it("should throw exception if target not found", function () {
@@ -128,9 +126,16 @@ define(function (require) {
                 .renderTo(document.getElementById('test-div'));
 
             var svg = d3.select(div).selectAll('svg');
+            var width = parseInt(svg.attr('width'),10);
+            var height = parseInt(svg.attr('height'),10);
+            var expectedWidth = 800;
+            var expectedHeight = 600;
+            if(modernizer.flexbox) {
+                expect(width).to.equal(expectedWidth);
+                expect(height).to.equal(expectedHeight);
+            }
 
-            expect(svg.attr('width')).to.equal('800');
-            expect(svg.attr('height')).to.equal('600');
+
         });
 
         it("should infer size from target (where target = ID selector)", function () {
@@ -139,9 +144,16 @@ define(function (require) {
                 .renderTo('#test-div');
 
             var svg = d3.select(div).selectAll('svg');
+            var width = parseInt(svg.attr('width'),10);
+            var height = parseInt(svg.attr('height'),10);
+            var expectedWidth = 800;
+            var expectedHeight = 600;
+            if(modernizer.flexbox) {
+                expect(width).to.equal(expectedWidth);
+                expect(height).to.equal(expectedHeight);
+            }
 
-            expect(svg.attr('width')).to.equal('800');
-            expect(svg.attr('height')).to.equal('600');
+
         });
 
         it("should auto exclude null values", function () {

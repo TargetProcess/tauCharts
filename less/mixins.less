@@ -1,0 +1,24 @@
+.flexbox() {
+    display: -webkit-box;
+    display: -webkit-flexbox;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.flex-align(@params) {
+    -ms-flex-align: @params;
+    -webkit-align-items: @params;
+    align-items: @params;
+}
+
+.flex-direction-column() {
+    -ms-flex-direction: column;
+    -webkit-box-orient: vertical;
+    flex-direction: column;
+}
+
+.flex(@flex-grow:0, @flex-shrink:1, @flex-basis:auto) {
+    -ms-flex: @flex-grow @flex-shrink @flex-basis;
+    -webkit-box-flex: @flex-grow @flex-shrink @flex-basis;
+    flex: @flex-grow @flex-shrink @flex-basis;
+}

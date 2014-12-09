@@ -12,6 +12,7 @@ requirejs.config({
         'd3':'libs/d3',
         'jquery':'libs/jquery',
         'js-schema':'libs/js-schema',
+        'modernizer':'libs/modernizer',
         'underscore':'libs/underscore',
         'schemes':'test/utils/schemes',
         'testUtils':'test/utils/utils',
@@ -27,6 +28,9 @@ requirejs.config({
       'js-schema':{
           deps:['libs/es5-shim'],
           exports:'schema'
+      },
+      'modernizer':{
+          exports:'Modernizr'
       }
     },
     // ask Require.js to load these files (all our tests)

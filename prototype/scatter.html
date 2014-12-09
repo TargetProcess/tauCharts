@@ -14,6 +14,8 @@
     <!-- css -->
     <link href="../css/default.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../css/tooltip.css"/>
     <link href="../css/colorbrewer.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
@@ -33,7 +35,9 @@
         input {
             width: 500px;
         }
-
+       /* .graphical-report__layout__sidebar-right {
+            width: 1000px;
+        }*/
         .blue {
             stroke: blue;
             fill: blue;
@@ -69,6 +73,15 @@
     <title></title>
 </head>
 <body>
+<template id="list">
+        <div class="graphical-report__legend__title"><%=name%></div>
+        <%=items%>
+</template>
+<template id="itemList">
+    <div class="graphical-report__legend__item">
+        <div class="graphical-report__legend__example <%=color%>" ></div><%=value%>
+    </div>
+</template>
 <div style="float: left;padding: 20px">
     <label for="data">data</label><br/>
     <textarea style='width:600px;height: 350px' id="data"></textarea>
@@ -117,7 +130,7 @@ requirejs.config({
     }
 });
 
-require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 'src/addons/color-brewer', 'underscore'], function(tauCharts) {
+require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function(tauCharts) {
     /** @class Tooltip
      * @extends Plugin */
     /* Usage
@@ -273,18 +286,14 @@ require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 
                  autoScale:false
                  }*/
             },
-            plugins: [tauCharts.api.plugins.get('tooltip')()],
+            plugins: [tauCharts.api.plugins.get('tooltip')(),tauCharts.api.plugins.get('legend')()],
             y: ['t','y'],
             x: ['x', 'type'],
             color: 'type',
             size: 'y'
         });
         chart.renderTo(
-                '#chart-container',
-                {
-                    width: 600,
-                    height: 600
-                });
+                '#chart-container');
     }
 
     function generateTable(data) {

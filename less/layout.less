@@ -1,0 +1,45 @@
+@import "variable";
+@import "mixins";
+
+.graphical-report {
+
+  &__layout {
+    .flexbox;
+    .flex-align(@params:stretch);
+    .flex-direction-column;
+    height: 100%;
+    overflow: auto;
+
+    &__header {
+      .flex;
+    }
+
+    &__container {
+      .flexbox;
+      .flex(@flex-grow: 1);
+    }
+
+    &__footer {
+      .flex;
+    }
+
+    &__sidebar {
+      .flex;
+    }
+
+    &__content {
+      .flex(@flex-grow: 1;@flex-shrink:0;);
+      div {
+        overflow: auto;
+      }
+    }
+
+    &__sidebar-right {
+      .flex(@flex-shrink:0;);
+    }
+  }
+}
+
+
+
+

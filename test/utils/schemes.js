@@ -1,4 +1,4 @@
-define(['js-schema'],function(schema){
+define(['js-schema'], function (schema) {
     var schemes = {};
     (function (schemes) {
 
@@ -69,14 +69,19 @@ define(['js-schema'],function(schema){
 
             })
         });
+        var config = schema({
+            data: Array,
+            spec: Object
+        });
         schemes.dimensions = dimensions;
         schemes.point = point;
         schemes.interval = interval;
         schemes.bar = bar;
         schemes.line = lineSpec;
-        schemes.scatterplot = scatterplot
+        schemes.scatterplot = scatterplot;
+        schemes.config = config;
     }(schemes));
 
-    return  schemes;
+    return schemes;
 });
 

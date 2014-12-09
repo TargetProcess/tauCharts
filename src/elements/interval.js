@@ -31,7 +31,7 @@ var interval = function (node) {
     var options = node.options;
 
     var color = utilsDraw.generateColor(node);
-
+    node.options.color = color;
     var partition = node.partition();
 
     var categories = d3
