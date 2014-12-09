@@ -17,7 +17,8 @@
     <script src="dataTp.js"></script>
 
     <!-- css -->
-    <link href="../css/default.css" rel="stylesheet"/>
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
     <link href="../css/tooltip.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
@@ -100,63 +101,51 @@
 <body>
 
 <div id="datetime-container" class="cc" style="width: 1605px">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="chart-container-extract" class="cc">
-    <div class="cc-empty"></div>
+    
 </div>
 
 <div id="chart-container-default" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="chart-priority-container-default" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="chart-priority-container-extract" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="parallel-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="facet-of-facets-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="scatter-fit-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="scatter-auto-scale-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="complex-container-default" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="complex-container-extract" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="bars-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="null-complex-object-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 
 <div id="no-data-container" class="cc">
-    <div class="cc-empty"></div>
 </div>
 <script src="../build/tauCharts.js"></script>
 <script src="../plugins/tooltip.js"></script>
 <script src="../plugins/highlighter.js"></script>
+<script src="../plugins/legend.js"></script>
 <script>
     var facet2x2 = {
         dimensions: {
@@ -313,8 +302,7 @@
                 {
                     type: 'ELEMENT.POINT',
                     color: 'effort',
-                    size: 'cycleTime',
-                    shape: null
+                    size: 'cycleTime'
                 }
             ]
         }
@@ -545,7 +533,8 @@
                 data: rawData,
                 spec: scatter,
                 plugins: [
-                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']}),
+                    tauCharts.api.plugins.get('legend')()
                 ]
             }).renderTo('#scatter-auto-scale-container');
 

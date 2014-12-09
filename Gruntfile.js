@@ -181,6 +181,7 @@ module.exports = function(grunt) {
                     "d3.js": "d3/d3.js",
                     "underscore.js": "underscore/underscore.js",
                     "jquery.js": "jquery/dist/jquery.js",
+                    "modernizer.js": "modernizer/modernizr.js",
                     "js-schema.js": "js-schema/js-schema.debug.js",
                     "es5-shim.js": "es5-shim/es5-shim.js"
                 }

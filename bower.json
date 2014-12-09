@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "jquery": "2.1.1",
+    "modernizer": "2.8.2",
     "js-schema": "0.7.0",
     "es5-shim": "latest"
   }

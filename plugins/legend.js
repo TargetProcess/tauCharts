@@ -44,10 +44,11 @@
                 var color = this._unit.options.color;
                 var colorDimension = color.dimension;
                 var data = chart.getData();
-                var groups = _.groupBy(data, function (item) {
+                var keys = _.map(data, function (item) {
                     return item[colorDimension];
                 });
-                return _.keys(groups).reduce(function (colorMap, item) {
+            //    debugger
+                return _.unique(keys).reduce(function (colorMap, item) {
                     colorMap[item] = color.get(item);
                     return colorMap;
                 }, {});
