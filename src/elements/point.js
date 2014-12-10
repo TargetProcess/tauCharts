@@ -7,23 +7,17 @@ var point = function (node) {
 
     var xScale = options.xScale;
     var yScale = options.yScale;
+    var color = options.color;
 
-    var color = utilsDraw.generateColor(node);
-    node.options.color = color;
     var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) / 2;
     var size = sizeScale(node.domain(node.size.scaleDim), 1, maxAxisSize);
 
     var update = function () {
         return this
-            .attr('r', (d) => {
-                var s = size(d[node.size.scaleDim]);
-                return (!_.isFinite(s)) ? maxAxisSize : s;
-            })
-            .attr('class', (d) => {
-                return CSS_PREFIX + 'dot' + ' dot i-role-datum ' + color.get(d[color.dimension]);
-            })
-            .attr('cx', (d) => xScale(d[node.x.scaleDim]))
-            .attr('cy', (d) => yScale(d[node.y.scaleDim]));
+            .attr('r',      (d) => size(d[node.size.scaleDim]))
+            .attr('cx',     (d) => xScale(d[node.x.scaleDim]))
+            .attr('cy',     (d) => yScale(d[node.y.scaleDim]))
+            .attr('class',  (d) => CSS_PREFIX + 'dot' + ' dot i-role-datum ' + color.get(d[color.dimension]));
     };
 
     var elements = options.container.selectAll('.dot').data(node.partition());

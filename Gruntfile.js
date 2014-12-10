@@ -89,6 +89,10 @@ module.exports = function(grunt) {
                     {
                         src:  'plugins/legend.js',
                         dest: 'build/plugins/<%= pkg.name %>.legend.min.js'
+                    },
+                    {
+                        src:  'plugins/trendline.js',
+                        dest: 'build/plugins/<%= pkg.name %>.trendline.min.js'
                     }
                 ]
 
@@ -112,6 +116,10 @@ module.exports = function(grunt) {
                     {
                         src: 'css/legend.css',
                         dest: 'build/plugins/<%= pkg.name %>.legend.min.css'
+                    },
+                    {
+                        src: 'css/trendline.css',
+                        dest: 'build/plugins/<%= pkg.name %>.trendline.min.css'
                     }
                 ]
             }
@@ -140,12 +148,20 @@ module.exports = function(grunt) {
                         dest: 'build/plugins/<%= pkg.name %>.legend.js'
                     },
                     {
+                        src: 'plugins/trendline.js',
+                        dest: 'build/plugins/<%= pkg.name %>.trendline.js'
+                    },
+                    {
                         src: 'css/tooltip.css',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.css'
                     },
                     {
                         src: 'css/legend.css',
                         dest: 'build/plugins/<%= pkg.name %>.legend.css'
+                    },
+                    {
+                        src: 'css/trendline.css',
+                        dest: 'build/plugins/<%= pkg.name %>.trendline.css'
                     }
                 ]
             }
@@ -181,7 +197,8 @@ module.exports = function(grunt) {
                     "css/tooltip.css": "less/tooltip.less",
                     "css/graphic-elements.css": "less/graphic-elements.less",
                     "css/layout.css": "less/layout.less",
-                    "css/legend.css": "less/legend.less"
+                    "css/legend.css": "less/legend.less",
+                    "css/trendline.css": "less/trendline.less"
                 }
             }
         },
