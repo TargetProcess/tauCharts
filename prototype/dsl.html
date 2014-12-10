@@ -391,18 +391,8 @@
                     unit: {
                         type: 'COORDS.RECT',
                         guide: {
-                            padding: {l:40, r:0, t:8, b:60},
-                            showGridLines: 'xy',
                             x: {
-                                autoScale: true,
-                                tickFormat: 'month',
-                                tickPeriod: 'month',
-                                rotate: 45,
-                                textAnchor: 'start'
-                            },
-                            y: {
-                                autoScale: true,
-                                tickFormat: 's'
+                                tickPeriod: 'month'
                             }
                         },
                         x: 'xdate',
@@ -615,29 +605,24 @@
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
+        data = data.map(function(x) {
+            x.month = new Date(x.month.replace(/ /g, ''));
+            return x;
+        });
+
         var facet2x1 = {
             dimensions: {
-                month: { type: 'category' },
+                month: { type: 'measure', scale: 'time' },
                 team: { type: 'category' },
                 count: { type: 'measure' }
             },
             unit: {
                 type: 'COORDS.RECT',
-                guide: {
-                    padding: { l:104, b:80, r:8, t:8 },
-                    y: {label: { text: 'TargetProcess Teams', padding: 80 }}
-                },
                 x: null,
                 y: 'team',
                 unit: [
                     {
                         type: 'COORDS.RECT',
-                        guide: {
-                            padding: { l:56, b:32, r:8, t:8 },
-                            showGridLines: 'xy',
-                            x: {label: 'Month'},
-                            y: {label: { text: 'Count', padding: 36 }}
-                        },
                         x: 'month',
                         y: 'count',
                         unit: [

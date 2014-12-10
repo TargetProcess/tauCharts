@@ -260,9 +260,21 @@
         lines.exit().remove();
     };
 
+    var isApplicable = function(unitMeta) {
+        var x = unitMeta.x.dimType;
+        var y = unitMeta.y.dimType;
+        return _.every([x, y], function(dimType) {
+            return dimType && (dimType != 'category');
+        });
+    };
+
     function trendline(xSettings) {
 
-        var settings = xSettings || {};
+        var settings = _.defaults(
+            xSettings || {},
+            {
+                type: 'linear'
+            });
 
         return {
 
@@ -272,14 +284,9 @@
 
             onUnitReady: function (chart, unitMeta) {
 
-                if (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0) {
+                if (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0 && isApplicable(unitMeta)) {
 
                     var options = unitMeta.options;
-
-                    var container = options.container;
-                    var xScale = options.xScale;
-                    var yScale = options.yScale;
-                    var cScale = options.color;
 
                     var x = unitMeta.x.scaleDim;
                     var y = unitMeta.y.scaleDim;
@@ -287,23 +294,27 @@
 
                     var categories = unitMeta.groupBy(unitMeta.partition(), c);
 
-                    categories.forEach(function(segment, i) {
+                    categories.forEach(function(segment, index) {
                         var sKey = segment.key;
                         var sVal = segment.values;
 
                         var src = sVal.map(function(item) {
-                            var ix = item[x];
-                            var iy = item[y];
+                            var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
+                            var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
                             return [ix, iy];
                         });
 
-                        var regression = regressionsHub('linear', src);
-                        drawTrendLine(i, regression.points, xScale, yScale, cScale.get(sKey), container);
+                        var regression = regressionsHub(settings.type, src);
+                        drawTrendLine(
+                            index,
+                            regression.points,
+                            options.xScale,
+                            options.yScale,
+                            options.color.get(sKey),
+                            options.container);
                     });
                 }
-            },
-
-            destroy: function () {}
+            }
         };
     }
 
