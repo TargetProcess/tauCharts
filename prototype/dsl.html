@@ -207,21 +207,13 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            guide: {
-                padding: {l: 120, b: 48, r: 0, t: 0},
-                x: {label: {text: 'Projects', padding: 32}},
-                y: {label: {text: 'Severity', padding: 100}}
-            },
             x: 'project',
             y: 'severity',
             unit: [
                 {
                     type: 'COORDS.RECT',
                     guide: {
-                        showGridLines: 'xy',
-                        padding: {l: 54, b: 28, r: 16, t: 16},
-                        x: {tickLabel: 'val', padding: 8, label: ''},
-                        y: {padding: 8, label: 'effort'}
+                        x: {tickLabel: 'val'},
                     },
                     x: 'priority',
                     y: 'effort',

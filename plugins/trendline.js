@@ -261,6 +261,13 @@
     };
 
     var isApplicable = function(unitMeta) {
+
+        var isElement = (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
+
+        if (!isElement) {
+            return false;
+        }
+
         var x = unitMeta.x.dimType;
         var y = unitMeta.y.dimType;
         return _.every([x, y], function(dimType) {
@@ -284,36 +291,37 @@
 
             onUnitReady: function (chart, unitMeta) {
 
-                if (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0 && isApplicable(unitMeta)) {
-
-                    var options = unitMeta.options;
-
-                    var x = unitMeta.x.scaleDim;
-                    var y = unitMeta.y.scaleDim;
-                    var c = unitMeta.color.scaleDim;
-
-                    var categories = unitMeta.groupBy(unitMeta.partition(), c);
-
-                    categories.forEach(function(segment, index) {
-                        var sKey = segment.key;
-                        var sVal = segment.values;
-
-                        var src = sVal.map(function(item) {
-                            var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
-                            var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
-                            return [ix, iy];
-                        });
-
-                        var regression = regressionsHub(settings.type, src);
-                        drawTrendLine(
-                            index,
-                            regression.points,
-                            options.xScale,
-                            options.yScale,
-                            options.color.get(sKey),
-                            options.container);
-                    });
+                if (!isApplicable(unitMeta)) {
+                    return;
                 }
+
+                var options = unitMeta.options;
+
+                var x = unitMeta.x.scaleDim;
+                var y = unitMeta.y.scaleDim;
+                var c = unitMeta.color.scaleDim;
+
+                var categories = unitMeta.groupBy(unitMeta.partition(), c);
+
+                categories.forEach(function (segment, index) {
+                    var sKey = segment.key;
+                    var sVal = segment.values;
+
+                    var src = sVal.map(function (item) {
+                        var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
+                        var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
+                        return [ix, iy];
+                    });
+
+                    var regression = regressionsHub(settings.type, src);
+                    drawTrendLine(
+                        index,
+                        regression.points,
+                        options.xScale,
+                        options.yScale,
+                        options.color.get(sKey),
+                        options.container);
+                });
             }
         };
     }
