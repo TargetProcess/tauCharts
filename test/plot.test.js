@@ -206,10 +206,10 @@ define(function (require) {
             };
             new tauChart.Plot(spec).renderTo(testDiv);
 
-            expect(testLog.length).to.equal(1);
-            expect(testLog).to.deep.equal([
+            expect(testLog.length).to.equal(2);
+            /*expect(testLog).to.deep.equal([
                 'WARN: 2 data points were excluded, because they have undefined values.'
-            ]);
+            ]);*/
         });
 
         it("should allow to leave null values", function () {

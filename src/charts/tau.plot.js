@@ -69,6 +69,10 @@ var traverseToDeep = (root, size, localSettings) => {
 export class Plot extends Emitter {
     constructor(config) {
         super();
+        this._filtersStore = {
+            filters: {},
+            tick: 0
+        };
         this._layout = getLayout();
         this.setupConfig(config);
         //plugins
@@ -91,15 +95,22 @@ export class Plot extends Emitter {
         this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
         var prevLength = this.config.data.length;
-        this.config.data = this.config.settings.excludeNull ?
-            DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) :
-            this.config.data;
+        var log = this.config.settings.log;
+        if (this.config.settings.excludeNull) {
+            this.addFilter({
+                tag: 'default',
+                predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
+                    log([item, 'point was excluded, because it has undefined values.'], 'WARN');
+                })
+            });
+        }
+        /* this.config.data = this.config.settings.excludeNull ?
+         DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) :
+         this.config.data;*/
         var currLength = this.config.data.length;
         var diffLength = prevLength - currLength;
         if (diffLength > 0) {
-            this.config.settings.log(
-                diffLength + ' data points were excluded, because they have undefined values.',
-                'WARN');
+
         }
     }
 
@@ -157,15 +168,15 @@ export class Plot extends Emitter {
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
         var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.content.parentNode));
-
-        if (this.config.data.length === 0) {
+        var drawData = this.getData();
+        if (drawData.length === 0) {
             this._layout.content.innerHTML = this._emptyContainer;
             return;
         }
         this._layout.content.innerHTML = '';
 
 
-        var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
+        var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
         var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
 
@@ -215,11 +226,37 @@ export class Plot extends Emitter {
     }
 
     getData() {
-        return this.config.data;
+        var filters = _.chain(this._filtersStore.filters)
+            .values()
+            .flatten()
+            .pluck('predicate')
+            .value();
+        return _.filter(
+            this.config.data,
+            _.reduce(
+                filters,
+                (newPredicate, filter) => (x) => newPredicate(x) && filter(x),
+                ()=>true
+            )
+        );
     }
 
     setData(data) {
         this.config.data = data;
         this.renderTo(this.target, this.targetSizes);
     }
+
+    addFilter(filter) {
+        var tag = filter.tag;
+        var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
+        var id = this._filtersStore.tick++;
+        filter.id = id;
+        filters.push(filter);
+        return id;
+    }
+
+    /*
+     removeFilter() {
+
+     }*/
 }

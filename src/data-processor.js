@@ -39,7 +39,7 @@ var DataProcessor = {
                 },
                 {});
         }
-        catch(ex) {
+        catch (ex) {
 
             if (ex.message !== 'RelationIsNotAFunction') {
                 throw ex;
@@ -54,26 +54,22 @@ var DataProcessor = {
         };
     },
 
-    excludeNullValues: (dimensions, srcData) => {
-
-        var fields = [];
-        Object.keys(dimensions).forEach((k) => {
+    excludeNullValues: (dimensions, onExclude) => {
+        var fields = Object.keys(dimensions).reduce((fields, k) => {
             var d = dimensions[k];
             if ((!d.hasOwnProperty('hasNull') || d.hasNull) && ((d.type === 'measure') || (d.scale === 'period'))) {
                 // rule: exclude null values of "measure" type or "period" scale
                 fields.push(k);
             }
-        });
-
-        var r;
-        if (fields.length === 0) {
-            r = srcData;
-        }
-        else {
-            r = srcData.filter((row) => !fields.some((f) => (!row.hasOwnProperty(f) || (row[f] === null))));
-        }
-
-        return r;
+            return fields;
+        }, []);
+        return (row) => {
+            var result = !fields.some((f) => (!(f in row) || (row[f] === null)));
+            if (!result) {
+                onExclude(row);
+            }
+            return result;
+        };
     },
 
     autoAssignScales: function (dimensions) {
@@ -82,7 +78,7 @@ var DataProcessor = {
         var scaleMap = {
             category: 'ordinal',
             order: 'ordinal',
-            measure:'linear'
+            measure: 'linear'
         };
 
         var r = {};

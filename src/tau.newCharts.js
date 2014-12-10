@@ -26,24 +26,24 @@ var api = {
     _: _,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
-        add: function(name, brewer) {
+        add: function (name, brewer) {
             if (!(name in colorBrewers)) {
                 colorBrewers[name] = brewer;
             }
         },
-        get: function(name) {
+        get: function (name) {
             return colorBrewers[name];
         }
     },
     plugins: {
-        add: function(name, brewer) {
+        add: function (name, brewer) {
             if (!(name in plugins)) {
                 plugins[name] = brewer;
             } else {
                 throw new Error('Plugins is already registred.');
             }
         },
-        get: function(name) {
+        get: function (name) {
             return plugins[name];
         }
     },
@@ -51,7 +51,7 @@ var api = {
 
         log: (msg, type) => {
             type = type || 'INFO';
-            console.log(type + ': ' + msg);
+            console[type.toLowerCase()].apply(console, msg);
         },
 
         excludeNull: true,
