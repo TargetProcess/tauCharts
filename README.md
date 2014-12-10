@@ -5,10 +5,6 @@ tauCharts is a Javascript charting library based on D3. Designed with passion.
 
 Official website: [www.taucharts.com](http://www.taucharts.com)
 
-Licensing: [Creative Common Attribution-NonCommercial 3.0](http://creativecommons.org/licenses/by-nc/3.0/)
-
-Have a questions? [Contact us](mailto:michael@targetprocess.com)
-
 =========
 
 ##Documentation
@@ -20,3 +16,9 @@ http://api.taucharts.com/
 ##Usage:
 
 See [prototype](https://github.com/TargetProcess/tauCharts/tree/master/prototype) for some examples of usage
+
+##license
+
+Licensing: [Creative Common Attribution-NonCommercial 3.0](http://creativecommons.org/licenses/by-nc/3.0/)
+
+Have a questions? [Contact us](mailto:michael@targetprocess.com)
