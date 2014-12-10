@@ -20,7 +20,7 @@
 .graphical-report__legend__item.disabled {
   color: #cccccc;
 }
-.graphical-report__legend__example {
+.graphical-report__legend__guide {
   width: 15px;
   height: 15px;
   box-sizing: border-box;

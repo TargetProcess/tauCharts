@@ -193,4 +193,5 @@
     }
 
     tauCharts.api.plugins.add('tooltip', tooltip);
+    return tooltip;
 });

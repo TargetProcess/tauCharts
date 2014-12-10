@@ -289,8 +289,8 @@ require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 
             plugins: [tauCharts.api.plugins.get('tooltip')(),tauCharts.api.plugins.get('legend')()],
             y: ['t','y'],
             x: ['x', 'type'],
-            color: 'type',
-            size: 'y'
+            color: 'type'
+           /* size: 'y'*/
         });
         chart.renderTo(
                 '#chart-container');

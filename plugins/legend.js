@@ -11,7 +11,7 @@
     }
 })(function (tauCharts) {
     var dfs = function (node) {
-        if (node.color && node.size) {
+        if (node.color) {
             return node;
         }
         var i, children = node.unit || [], child, found;
@@ -57,7 +57,7 @@
             template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
             itemTemplate: _.template([
                 '<div class="graphical-report__legend__item">',
-                '<div class="graphical-report__legend__example <%=color%>" ></div><%=value%>',
+                '<div class="graphical-report__legend__guide <%=color%>" ></div><%=value%>',
                 '</div>'
             ].join('')),
             onRender: function (chart) {
@@ -67,12 +67,9 @@
                     }, this).join('');
                     this._container.innerHTML = this.template({items: items, name: this._unit.options.color.dimension});
                 }
-            },
-            render: function () {
-
             }
-
         };
     };
     tauCharts.api.plugins.add('legend', legend);
+    return legend;
 });

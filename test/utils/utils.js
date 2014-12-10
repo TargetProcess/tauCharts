@@ -112,10 +112,42 @@ define(function (require) {
             });
         });
     }
+    function describeChart(name, config, data, fn, options) {
+        options = options || {};
+        config.data = data;
+        describe(name, function () {
+            var context = {
+                element: null,
+                chart: null
+            };
+
+            beforeEach(function () {
+                context.element = document.createElement('div');
+                document.body.appendChild(context.element);
+
+                tauChart.Plot.globalSettings = testChartSettings;
+
+                context.chart = new tauChart.Chart(config);
+                if(options.autoWidth) {
+                    context.chart.renderTo(context.element);
+                } else {
+                    context.chart.renderTo(context.element, {width: 800, height: 800});
+                }
+
+            });
+
+            fn(context);
+
+            afterEach(function () {
+                context.element.parentNode.removeChild(context.element);
+            });
+        });
+    }
     
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,
+        describeChart: describeChart,
         getDots: getDots,
         getLine: getLine,
         attrib: attrib,
@@ -123,5 +155,5 @@ define(function (require) {
         position: position,
         getGroupBar: getGroupBar,
         chartSettings: testChartSettings
-    }
+    };
 });
