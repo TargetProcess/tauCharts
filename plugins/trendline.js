@@ -275,23 +275,57 @@
         });
     };
 
+    var isElement = function(unitMeta) {
+        return (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
+    };
+
     function trendline(xSettings) {
 
         var settings = _.defaults(
             xSettings || {},
             {
-                type: 'linear'
+                type: 'linear',
+                showPanel: true,
+                showTrend: true
             });
 
         return {
 
             init: function (chart) {
+
                 this._chart = chart;
+
+                if (settings.showPanel) {
+
+                    this._container = chart.insertToRightSidebar(this.containerTemplate);
+
+                    this.uiChangeEventsDispatcher = function(e) {
+
+                        var target = e.target;
+                        var selector = target.classList;
+
+                        if (selector.contains('i-role-show-trend')) {
+                            settings.showTrend = target.checked;
+                        }
+
+                        if (selector.contains('i-role-change-model')) {
+                            settings.type = target.value;
+                        }
+
+                        this._chart.refresh();
+
+                    }.bind(this);
+                }
             },
 
             onUnitReady: function (chart, unitMeta) {
 
+                if (!settings.showTrend || !isElement(unitMeta)) {
+                    return;
+                }
+
                 if (!isApplicable(unitMeta)) {
+                    this.error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
                     return;
                 }
 
@@ -322,6 +356,39 @@
                         options.color.get(sKey),
                         options.container);
                 });
+            },
+
+            containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
+            template: _.template([
+                '<div class="graphical-report__trendlinepanel__title">',
+                '<input type="checkbox" class="i-role-show-trend" <%= showTrend %> />',
+                '<%= title %>',
+                '</div>',
+                '<div>',
+                '<select class="i-role-change-model graphical-report__trendlinepanel__control">',
+                '<%= models %> />',
+                '</select>',
+                '</div>',
+                '<div><%= error %></div>',
+                '</div>'
+            ].join('')),
+
+            onRender: function (chart) {
+
+                if (this._container) {
+                    this._container.innerHTML = this.template({
+                        title: 'Trend line',
+                        showTrend: settings.showTrend ? 'checked' : '',
+                        models: ['linear', 'exponential', 'logarithmic'].map(function(x) {
+                            var selected = (settings.type === x) ? 'selected' : '';
+                            return '<option ' + selected + ' value="' + x + '">' + x + '</option>'
+                        }),
+                        error: this.error
+                    });
+
+                    this._container.removeEventListener('change', this.uiChangeEventsDispatcher);
+                    this._container.addEventListener('change', this.uiChangeEventsDispatcher, false);
+                }
             }
         };
     }
