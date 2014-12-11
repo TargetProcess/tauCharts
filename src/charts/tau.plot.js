@@ -149,9 +149,9 @@ export class Plot extends Emitter {
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
         var size = xSize || {};
-        if(!size.x || !size.y) {
+        if(!size.width || !size.height) {
             size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode)); 
-        } 
+        }
             
         var drawData = this.getData();
         if (drawData.length === 0) {
