@@ -240,7 +240,7 @@ export class Plot extends Emitter {
     }
 
     refresh() {
-        this.renderTo(this.target, this.targetSizes);
+        this.renderTo(this._target, this._targetSizes);
     }
 
     /*
