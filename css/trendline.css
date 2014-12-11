@@ -5,10 +5,6 @@
   padding: 20px;
   width: 140px;
 }
-.graphical-report__trendlinepanel h3 {
-  font-weight: normal;
-  font-size: 11px;
-}
 .graphical-report__trendlinepanel__title {
   margin: 0 0 10px 0;
   text-transform: uppercase;
@@ -17,6 +13,9 @@
 }
 .graphical-report__trendlinepanel__control {
   width: 100%;
+}
+.graphical-report__trendlinepanel__hide {
+  display: none;
 }
 .graphical-report__trendline {
   fill: none;
