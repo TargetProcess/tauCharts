@@ -317,6 +317,8 @@
                         this._chart.refresh();
 
                     }.bind(this);
+
+                    this._container.addEventListener('change', this.uiChangeEventsDispatcher, false);
                 }
             },
 
@@ -391,9 +393,6 @@
                         error: this.error,
                         hideControls: this.hasError ? 'graphical-report__trendlinepanel__hide' : ''
                     });
-
-                    this._container.removeEventListener('change', this.uiChangeEventsDispatcher);
-                    this._container.addEventListener('change', this.uiChangeEventsDispatcher, false);
                 }
             }
         };
