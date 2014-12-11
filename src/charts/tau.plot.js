@@ -104,14 +104,6 @@ export class Plot extends Emitter {
                 })
             });
         }
-        /* this.config.data = this.config.settings.excludeNull ?
-         DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) :
-         this.config.data;*/
-        var currLength = this.config.data.length;
-        var diffLength = prevLength - currLength;
-        if (diffLength > 0) {
-
-        }
     }
 
     getConfig() {
@@ -139,18 +131,7 @@ export class Plot extends Emitter {
         return utilsDom.appendTo(el, this._layout.rightSidebar);
     }
 
-    /* addLine (conf) {
-     var unitContainer = this._spec.unit.unit;
 
-     while(true) {
-     if(unitContainer[0].unit) {
-     unitContainer = unitContainer[0].unit;
-     } else {
-     break;
-     }
-     }
-     unitContainer.push(conf);
-     }*/
     addBalloon(conf) {
         return new Tooltip('', conf || {});
     }
@@ -158,8 +139,8 @@ export class Plot extends Emitter {
     renderTo(target, xSize) {
         var container = d3.select(target);
         var containerNode = container.node();
-        this.target = target;
-        this.targetSizes = xSize;
+        this._target = target;
+        this._targetSizes = xSize;
         if (containerNode === null) {
             throw new Error('Target element not found');
         }
@@ -243,7 +224,7 @@ export class Plot extends Emitter {
 
     setData(data) {
         this.config.data = data;
-        this.renderTo(this.target, this.targetSizes);
+        this.renderTo(this._target, this._targetSizes);
     }
 
     addFilter(filter) {
@@ -252,6 +233,9 @@ export class Plot extends Emitter {
         var id = this._filtersStore.tick++;
         filter.id = id;
         filters.push(filter);
+        if(this._target && this._targetSizes) {
+            this.renderTo(this._target, this._targetSizes);
+        }
         return id;
     }
 

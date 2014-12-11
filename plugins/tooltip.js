@@ -103,8 +103,14 @@
                 }, this).join('');
             },
             _exclude: function () {
-                var dataChart = this._chart.getData();
-                this._chart.setData(_.without(dataChart, this._currentElement));
+                this._chart.addFilter({
+                    tag: 'exclude',
+                    predicate: (function (element) {
+                        return function (item) {
+                            return item != element;
+                        };
+                    }(this._currentElement))
+                });
                 this.onExcludeData(this._currentElement);
             },
             _calculateLength: function (x1, y1, x2, y2) {
