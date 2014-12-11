@@ -51,6 +51,9 @@ var api = {
 
         log: (msg, type) => {
             type = type || 'INFO';
+            if(!Array.isArray(msg)) {
+                msg = [msg];
+            }
             console[type.toLowerCase()].apply(console, msg);
         },
 

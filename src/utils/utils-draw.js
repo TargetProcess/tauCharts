@@ -270,7 +270,7 @@ var generateColor = function(node) {
     var brewer = colorGuide.brewer || defaultRangeColor;
 
     if (utils.isArray(brewer)) {
-        domain = node.domain(colorDim).map((x) => (new String(x)).toString());
+        domain = node.domain(colorDim).map((x) => String(x).toString());
         range = brewer;
     }
     else {
@@ -281,7 +281,7 @@ var generateColor = function(node) {
     var getClass = (d) => domain.indexOf(d) > -1 ? calculateClass(d) : 'color-default';
 
     return {
-        get: (d) => getClass((new String(d)).toString()),
+        get: (d) => getClass(String(d).toString()),
         dimension: colorDim
     };
 };

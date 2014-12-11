@@ -140,24 +140,25 @@ export class Plot extends Emitter {
         var container = d3.select(target);
         var containerNode = container.node();
         this._target = target;
-
+        this._targetSizes = xSize;
         if (containerNode === null) {
             throw new Error('Target element not found');
         }
-
         var content = this._layout.content;
         containerNode.appendChild(this._layout.layout);
         container = d3.select(this._layout.content);
-
         //todo don't compute width if width or height were passed
-        var size = xSize ? xSize : utilsDom.getContainerSize(this._layout.content.parentNode);
-        this._targetSizes = size;
-
+        var size = xSize || {};
+        if(!size.x || !size.y) {
+            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode)); 
+        } 
+            
         var drawData = this.getData();
         if (drawData.length === 0) {
             this._layout.content.innerHTML = this._emptyContainer;
             return;
         }
+        this._targetSizes = size;
         this._layout.content.innerHTML = '';
 
 
@@ -216,7 +217,6 @@ export class Plot extends Emitter {
             .flatten()
             .pluck('predicate')
             .value();
-
         return _.filter(
             this.config.data,
             _.reduce(
