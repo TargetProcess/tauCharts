@@ -99,9 +99,13 @@
             font-size: 11px;
         }
         .grid {
+            .grid-lines {
+                path {
+                    shape-rendering: crispEdges;
+                }
+            }
             path {
                 fill: none;
-                shape-rendering: crispEdges;
             }
             line {
                 fill: none;
