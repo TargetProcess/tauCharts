@@ -299,6 +299,8 @@
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
 
+                    this.hasError = false;
+
                     this.uiChangeEventsDispatcher = function(e) {
 
                         var target = e.target;
@@ -326,6 +328,7 @@
 
                 if (!isApplicable(unitMeta)) {
                     this.error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
+                    this.hasError = true;
                     return;
                 }
 
@@ -361,14 +364,16 @@
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
                 '<div class="graphical-report__trendlinepanel__title">',
-                '<input type="checkbox" class="i-role-show-trend" <%= showTrend %> />',
+                '<input type="checkbox" class="i-role-show-trend <%= hideControls %>" <%= showTrend %> />',
                 '<%= title %>',
                 '</div>',
+
                 '<div>',
-                '<select class="i-role-change-model graphical-report__trendlinepanel__control">',
+                '<select class="i-role-change-model graphical-report__trendlinepanel__control <%= hideControls %>">',
                 '<%= models %> />',
                 '</select>',
                 '</div>',
+
                 '<div><%= error %></div>',
                 '</div>'
             ].join('')),
@@ -378,12 +383,13 @@
                 if (this._container) {
                     this._container.innerHTML = this.template({
                         title: 'Trend line',
-                        showTrend: settings.showTrend ? 'checked' : '',
+                        showTrend: (settings.showTrend && !this.hasError) ? 'checked' : '',
                         models: ['linear', 'exponential', 'logarithmic'].map(function(x) {
                             var selected = (settings.type === x) ? 'selected' : '';
                             return '<option ' + selected + ' value="' + x + '">' + x + '</option>'
                         }),
-                        error: this.error
+                        error: this.error,
+                        hideControls: this.hasError ? 'graphical-report__trendlinepanel__hide' : ''
                     });
 
                     this._container.removeEventListener('change', this.uiChangeEventsDispatcher);
