@@ -9,12 +9,13 @@ var point = function (node) {
     var yScale = options.yScale;
     var color = options.color;
 
-    var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) / 2;
-    var size = sizeScale(node.domain(node.size.scaleDim), 1, maxAxisSize);
+    var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) * 0.5;
+    var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter((x) => x !== 0)) * 0.5;
+    var sScale = sizeScale(node.domain(node.size.scaleDim), 2, minTickStep, minFontSize);
 
     var update = function () {
         return this
-            .attr('r',      (d) => size(d[node.size.scaleDim]))
+            .attr('r',      (d) => sScale(d[node.size.scaleDim]))
             .attr('cx',     (d) => xScale(d[node.x.scaleDim]))
             .attr('cy',     (d) => yScale(d[node.y.scaleDim]))
             .attr('class',  (d) => CSS_PREFIX + 'dot' + ' dot i-role-datum ' + color.get(d[color.dimension]));

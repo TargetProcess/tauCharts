@@ -246,6 +246,8 @@ define(function(require) {
         };
     };
 
+    var minimalRadius = 2;
+
     describePlot(
         "Point elements with large size domain",
         scatterplotSpec,
@@ -253,8 +255,8 @@ define(function(require) {
         function() {
             it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(1, 1);
-                expect(sizes[1]).to.be.closeTo(5, 0);
+                expect(sizes[0]).to.be.closeTo(3.3, 0); // ~ 100 * Math.pow(3.3 - 2, 2) == Math.pow(15 - 2, 2)
+                expect(sizes[1]).to.be.closeTo(15, 0);
             });
         });
 
@@ -265,8 +267,8 @@ define(function(require) {
         function() {
             it("should have sizes in small range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(3, 0);
-                expect(sizes[1]).to.be.closeTo(5, 0);
+                expect(sizes[0]).to.be.closeTo(11.1923, 0.0001);
+                expect(sizes[1]).to.be.closeTo(15, 0);
             });
         });
 
@@ -277,21 +279,21 @@ define(function(require) {
         function() {
             it("should have proportional sizes", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(3, 0);
-                expect(sizes[1]).to.be.closeTo(5, 0);
+                expect(sizes[0]).to.be.closeTo(11.1923, 0.0001);
+                expect(sizes[1]).to.be.closeTo(15, 0);
             });
         });
 
     describePlot(
         "Point elements with  size domain values including 0",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 5}, {x: 1, y: 1, size: 8}],
+        [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 4}, {x: 1, y: 1, size: 8}],
         function() {
             it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(1, 0);
-                expect(sizes[1]).to.be.closeTo(3.5, 0);
-                expect(sizes[2]).to.be.closeTo(5, 0);
+                expect(sizes[0]).to.be.closeTo(minimalRadius, 0);
+                expect(sizes[1]).to.be.closeTo(11.1924, 0.0001);
+                expect(sizes[2]).to.be.closeTo(15, 0);
             });
         });
 
