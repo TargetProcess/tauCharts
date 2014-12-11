@@ -1,9 +1,9 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
+
 const BAR_GROUP = 'i-role-bar-group';
-var isMeasure = function (dim) {
-    return dim.dimType === 'measure';
-};
+
+var isMeasure = (dim) => dim.dimType === 'measure';
 
 var getSizesParams = function (params) {
     var tickWidth, intervalWidth, offsetCategory;
@@ -30,22 +30,16 @@ var interval = function (node) {
 
     var options = node.options;
 
-    var color = utilsDraw.generateColor(node);
-    node.options.color = color;
-    var partition = node.partition();
-
-    var categories = d3
-        .nest()
-        .key((d) => d[color.dimension])
-        .entries(partition);
-
     var xScale = options.xScale,
         yScale = options.yScale,
+        color = options.color,
         calculateX,
         calculateY,
         calculateWidth,
         calculateHeight,
         calculateTranslate;
+
+    var categories = node.groupBy(node.partition(), color.dimension);
 
     if (node.flip) {
 

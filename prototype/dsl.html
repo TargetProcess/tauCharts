@@ -21,10 +21,12 @@
     <link href="../css/legend.css" rel="stylesheet"/>
     <link href="../css/graphic-elements.css" rel="stylesheet"/>
     <link href="../css/tooltip.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
           type='text/css'>
     <style>
+
         .axes.nest .axis.nest text {
             font-size: 10px;
         }
@@ -146,6 +148,7 @@
 <script src="../plugins/tooltip.js"></script>
 <script src="../plugins/highlighter.js"></script>
 <script src="../plugins/legend.js"></script>
+<script src="../plugins/trendline.js"></script>
 <script>
     var facet2x2 = {
         dimensions: {
@@ -204,21 +207,13 @@
         },
         unit: {
             type: 'COORDS.RECT',
-            guide: {
-                padding: {l: 120, b: 48, r: 0, t: 0},
-                x: {label: {text: 'Projects', padding: 32}},
-                y: {label: {text: 'Severity', padding: 100}}
-            },
             x: 'project',
             y: 'severity',
             unit: [
                 {
                     type: 'COORDS.RECT',
                     guide: {
-                        showGridLines: 'xy',
-                        padding: {l: 54, b: 28, r: 16, t: 16},
-                        x: {tickLabel: 'val', padding: 8, label: ''},
-                        y: {padding: 8, label: 'effort'}
+                        x: {tickLabel: 'val'},
                     },
                     x: 'priority',
                     y: 'effort',
@@ -388,18 +383,8 @@
                     unit: {
                         type: 'COORDS.RECT',
                         guide: {
-                            padding: {l:40, r:0, t:8, b:60},
-                            showGridLines: 'xy',
                             x: {
-                                autoScale: true,
-                                tickFormat: 'month',
-                                tickPeriod: 'month',
-                                rotate: 45,
-                                textAnchor: 'start'
-                            },
-                            y: {
-                                autoScale: true,
-                                tickFormat: 's'
+                                tickPeriod: 'month'
                             }
                         },
                         x: 'xdate',
@@ -411,7 +396,10 @@
                         ]
                     }
                 },
-                plugins: [tauCharts.api.plugins.get('tooltip')({fields:['count']})]
+                plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('tooltip')({fields:['count']})
+                ]
             }).renderTo('#datetime-container');
 
 
@@ -483,6 +471,7 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-default');
@@ -493,6 +482,7 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-extract');
@@ -534,6 +524,7 @@
                 spec: scatter,
                 plugins: [
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']}),
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('legend')()
                 ]
             }).renderTo('#scatter-auto-scale-container');
@@ -612,29 +603,24 @@
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
+        data = data.map(function(x) {
+            x.month = new Date(x.month.replace(/ /g, ''));
+            return x;
+        });
+
         var facet2x1 = {
             dimensions: {
-                month: { type: 'category' },
+                month: { type: 'measure', scale: 'time' },
                 team: { type: 'category' },
                 count: { type: 'measure' }
             },
             unit: {
                 type: 'COORDS.RECT',
-                guide: {
-                    padding: { l:104, b:80, r:8, t:8 },
-                    y: {label: { text: 'TargetProcess Teams', padding: 80 }}
-                },
                 x: null,
                 y: 'team',
                 unit: [
                     {
                         type: 'COORDS.RECT',
-                        guide: {
-                            padding: { l:56, b:32, r:8, t:8 },
-                            showGridLines: 'xy',
-                            x: {label: 'Month'},
-                            y: {label: { text: 'Count', padding: 36 }}
-                        },
                         x: 'month',
                         y: 'count',
                         unit: [
@@ -659,6 +645,7 @@
                     data: data,
                     spec: facet2x1,
                     plugins: [
+                        tauCharts.api.plugins.get('trendline')(),
                         tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
                     ]
                 }).renderTo('#bars-container');

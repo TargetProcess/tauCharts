@@ -1,0 +1,30 @@
+@import "variable";
+
+.graphical-report {
+
+    &__trendlinepanel {
+        padding: 20px;
+        width: 140px;
+
+        &__title {
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        &__control {
+            width: 100%;
+        }
+
+        &__hide {
+            display: none;
+        }
+    }
+
+    /* TrendLine */
+    &__trendline {
+        fill: none;
+        stroke-dasharray: 7, 5;
+    }
+}

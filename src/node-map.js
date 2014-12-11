@@ -38,6 +38,8 @@ var setupElementNode = (node, dimensions) => {
     };
     node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 
+    node.options.color = utilsDraw.generateColor(node);
+
     return node;
 };
 

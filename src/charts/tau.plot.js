@@ -239,6 +239,10 @@ export class Plot extends Emitter {
         return id;
     }
 
+    refresh() {
+        this.renderTo(this.target, this.targetSizes);
+    }
+
     /*
      removeFilter() {
 

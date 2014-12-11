@@ -224,6 +224,9 @@ export class UnitDomainMixin {
         unit.scaleMeta = this.fnScaleMeta;
         unit.scaleTo = this.fnScaleTo;
         unit.partition = (() => unit.data || unit.source(unit.$where));
+        unit.groupBy = ((srcValues, splitByProperty) => {
+            return d3.nest().key((d) => d[splitByProperty]).entries(srcValues);
+        });
         return unit;
     }
 }
