@@ -26,5 +26,14 @@
     &__trendline {
         fill: none;
         stroke-dasharray: 7, 5;
+        &__tip {
+            display: none;
+            font-size: 11px;
+            stroke: none;
+        }
     }
+}
+
+.graphical-report__trendline.active .graphical-report__trendline__tip {
+    display: block;
 }
