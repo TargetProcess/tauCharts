@@ -8,6 +8,15 @@
   font-size: 11px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  /* Fade */
+}
+.graphical-report__tooltip.fade {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.graphical-report__tooltip.fade.in {
+  opacity: 1;
+  transition-duration: 100ms;
 }
 .graphical-report__tooltip__content {
   padding: 15px 15px 10px 15px;
