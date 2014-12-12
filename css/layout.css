@@ -45,7 +45,8 @@
   overflow: auto;
 }
 .graphical-report__layout__sidebar-right {
-  -ms-flex: 0 0 auto;
-  -webkit-box-flex: 0 0 auto;
-  flex: 0 0 auto;
+  position: relative;
+  -ms-flex: 0 0 160px;
+  -webkit-box-flex: 0 0 160px;
+  flex: 0 0 160px;
 }
