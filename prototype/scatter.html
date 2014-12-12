@@ -132,7 +132,7 @@
         }
     });
 
-    require(['tau_modules/tau.newCharts', 'src/addons/color.brewer', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function (tauCharts, brewer ) {
+    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function (tauCharts, brewer ) {
         /** @class Tooltip
          * @extends Plugin */
         /* Usage
@@ -288,7 +288,8 @@
                      autoScale:false
                      }*/
                     color: {
-                        label: {text: 'fas dasf asdf asd'}
+                        label: {text: 'fas dasf asdf asd'},
+                        brewer: {'s':'ds'}
                     }
                 }],
                 plugins: [tauCharts.api.plugins.get('tooltip')(), tauCharts.api.plugins.get('legend')()],
