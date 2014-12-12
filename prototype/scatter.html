@@ -35,9 +35,10 @@
         input {
             width: 500px;
         }
-       /* .graphical-report__layout__sidebar-right {
-            width: 1000px;
-        }*/
+
+        /* .graphical-report__layout__sidebar-right {
+             width: 1000px;
+         }*/
         .blue {
             stroke: blue;
             fill: blue;
@@ -74,12 +75,13 @@
 </head>
 <body>
 <template id="list">
-        <div class="graphical-report__legend__title"><%=name%></div>
-        <%=items%>
+    <div class="graphical-report__legend__title"><%=name%></div>
+    <%=items%>
 </template>
 <template id="itemList">
     <div class="graphical-report__legend__item">
-        <div class="graphical-report__legend__example <%=color%>" ></div><%=value%>
+        <div class="graphical-report__legend__example <%=color%>"></div>
+        <%=value%>
     </div>
 </template>
 <div style="float: left;padding: 20px">
@@ -113,215 +115,218 @@
     <table id="table"></table>
 </div>
 <script>
-requirejs.config({
-    // Karma serves files from '/base'
-    baseUrl: location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1'),
-    paths: {
-        'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
-        'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min',
-        'schemes': 'test/utils/schemes',
-        'testUtils': 'test/utils/utils',
-        'es5-shim': 'libs/es5-shim'
-    },
-    map: {
-        '*': {
-            'tauCharts': 'tau_modules/tau.newCharts'
-        }
-    }
-});
-
-require(['tau_modules/tau.newCharts', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function(tauCharts) {
-    /** @class Tooltip
-     * @extends Plugin */
-    /* Usage
-     .plugins(tau.plugins.tooltip('effort', 'priority'))
-     accepts a list of data fields names as properties
-     */
-    var Tooltip = {
-
-        init: function(data) {
-            function generateTable(data) {
-                var headers = Object.keys(data[0]);
-                var rows = data.map(function(item, key) {
-                    var map = headers.map(function(key) {
-                        return item[key];
-                    });
-                    map['key'] = JSON.stringify(item);
-                    return map;
-                });
-                var $table = $('#table');
-                $table.empty();
-                var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
-                $table.append(rowHtml);
-                var keyValue = {};
-                var s = _.each(rows, function(arr, index) {
-                    var rowHtml = '<tr >';
-                    rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
-                    keyValue[arr.key] = {
-                        $el: $(rowHtml),
-                        index: index
-                    };
-
-
-                    $table.append(keyValue[arr.key].$el);
-                });
-
-
-                //debugger
-                return {
-                    keyValues: keyValue,
-                    $table: $table
-                };
+    requirejs.config({
+        // Karma serves files from '/base'
+        baseUrl: location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1'),
+        paths: {
+            'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
+            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min',
+            'schemes': 'test/utils/schemes',
+            'testUtils': 'test/utils/utils',
+            'es5-shim': 'libs/es5-shim'
+        },
+        map: {
+            '*': {
+                'tauCharts': 'tau_modules/tau.newCharts'
             }
+        }
+    });
 
-            var generateTable2 = generateTable(data);
-            this.keyValues = generateTable2.keyValues;
-            this.table = generateTable2.$table;
-        },
-        /**
-         * @param {ElementContext} context
-         * @param {ChartElementTools} tools
+    require(['tau_modules/tau.newCharts', 'src/addons/color.brewer', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function (tauCharts, brewer ) {
+        /** @class Tooltip
+         * @extends Plugin */
+        /* Usage
+         .plugins(tau.plugins.tooltip('effort', 'priority'))
+         accepts a list of data fields names as properties
          */
-        mouseover: function(context, tools) {
-            this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
-            // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
-        },
-        render: function(context) {
-            var $points = $(context.node()).find('circle');
-            this.table.find('tr')
-                    .on('mouseover', function() {
-                        $points.get(($(this).index() - 1)).classList.add('highlighted');
-                    })
-                    .on('mouseleave', function() {
-                        $points.each(function() {
-                            this.classList.remove('highlighted');
+        var Tooltip = {
+
+            init: function (data) {
+                function generateTable(data) {
+                    var headers = Object.keys(data[0]);
+                    var rows = data.map(function (item, key) {
+                        var map = headers.map(function (key) {
+                            return item[key];
                         });
+                        map['key'] = JSON.stringify(item);
+                        return map;
                     });
-        },
+                    var $table = $('#table');
+                    $table.empty();
+                    var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
+                    $table.append(rowHtml);
+                    var keyValue = {};
+                    var s = _.each(rows, function (arr, index) {
+                        var rowHtml = '<tr >';
+                        rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
+                        keyValue[arr.key] = {
+                            $el: $(rowHtml),
+                            index: index
+                        };
 
-        /**
-         * @param {ElementContext} context
-         * @param {ChartElementTools} tools
-         */
-        mouseout: function(context, tools) {
-            $('tr').removeClass('highClass');
-        }
-    };
 
-    //tauPlugins.add('tableHighlight', Tooltip);
-    var dat = [];
-    for (var i = -6.14; i <= 6.14; i += 0.5) {
-        dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
-        dat.push({x: i, y: Math.sin(i), type: 'cos', t: 'w'});
-        dat.push({x: i, y: Math.cos(i), type: 'sin', t: 'w'});
-        dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'x'});
-    }
-    var defData = dat;
+                        $table.append(keyValue[arr.key].$el);
+                    });
 
-    function getFieldData($field) {
-        try {
-            return JSON.parse($field.val())
-        } catch (e) {
-            return $field.val();
-        }
 
-    }
+                    //debugger
+                    return {
+                        keyValues: keyValue,
+                        $table: $table
+                    };
+                }
 
-    var $color = $('#color').val('team');
-    var $type = $('#type');
-    var $size = $('#size').val('count');
-    var $y = $('#y').val('count');
-    var $x = $('#x').val('team');
-    var $data = $('#data').val(JSON.stringify(defData));
-    $('#colorSettings').click(function() {
-        return $color.val(JSON.stringify({
-            dimension: 'team',
-            brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
-        }))
-    });
-    $('select,input[type=checkbox]').change(function() {
-        try {
-            drawChart();
-        } catch (e) {
-            $('#chart-container').empty();
-            console.error(e);
-        }
-    });
-    $('textarea,input').on('input', function() {
-        try {
-            drawChart();
-        } catch (e) {
-            $('#chart-container').empty();
-            console.error(e);
-        }
-    });
-    drawChart();
-    /* try {
-     drawChart();
-     } catch (e) {
-     $('#chart-container').empty();
-     console.error(e);
-     }*/
-
-    function drawChart() {
-        var data = JSON.parse($data.val());
-        $('#chart-container').empty();
-        var color;
-        if ($('#brewer').prop('checked')) {
-            color = {
-                dimension: getFieldData($color),
-                brewer: tauBrewer(getFieldData($('#hue')), getFieldData($('#number')))
-            }
-        } else {
-            color = getFieldData($color)
-        }
-        var chart = new tauCharts.Chart({
-            data: data,
-            type: getFieldData($type),
-            guide: {
-                /* x:{
-                 autoScale:false
-                 },
-                 y:{
-                 autoScale:false
-                 }*/
+                var generateTable2 = generateTable(data);
+                this.keyValues = generateTable2.keyValues;
+                this.table = generateTable2.$table;
             },
-            plugins: [tauCharts.api.plugins.get('tooltip')(),tauCharts.api.plugins.get('legend')()],
-            y: ['t','y'],
-            x: ['x', 'type'],
-            color: 'type'
-           /* size: 'y'*/
-        });
-        chart.renderTo(
-                '#chart-container');
-    }
+            /**
+             * @param {ElementContext} context
+             * @param {ChartElementTools} tools
+             */
+            mouseover: function (context, tools) {
+                this.keyValues[JSON.stringify(context.datum)].$el.addClass('highClass');
+                // $('#'+JSON.stringify(context.datum.tr)).addClass('highClass');
+            },
+            render: function (context) {
+                var $points = $(context.node()).find('circle');
+                this.table.find('tr')
+                        .on('mouseover', function () {
+                            $points.get(($(this).index() - 1)).classList.add('highlighted');
+                        })
+                        .on('mouseleave', function () {
+                            $points.each(function () {
+                                this.classList.remove('highlighted');
+                            });
+                        });
+            },
 
-    function generateTable(data) {
-        var headers = Object.keys(data[0]);
-        var rows = data.map(function(item, key) {
-            var map = headers.map(function(key) {
-                return item[key];
+            /**
+             * @param {ElementContext} context
+             * @param {ChartElementTools} tools
+             */
+            mouseout: function (context, tools) {
+                $('tr').removeClass('highClass');
+            }
+        };
+
+        //tauPlugins.add('tableHighlight', Tooltip);
+        var dat = [];
+        for (var i = -6.14; i <= 6.14; i += 0.5) {
+            dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
+            dat.push({x: i, y: Math.sin(i), type: 'cos', t: 'w'});
+            dat.push({x: i, y: Math.cos(i), type: 'sin', t: 'w'});
+            dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'x'});
+        }
+        var defData = dat;
+
+        function getFieldData($field) {
+            try {
+                return JSON.parse($field.val())
+            } catch (e) {
+                return $field.val();
+            }
+
+        }
+
+        var $color = $('#color').val('team');
+        var $type = $('#type');
+        var $size = $('#size').val('count');
+        var $y = $('#y').val('count');
+        var $x = $('#x').val('team');
+        var $data = $('#data').val(JSON.stringify(defData));
+        $('#colorSettings').click(function () {
+            return $color.val(JSON.stringify({
+                dimension: 'team',
+                brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
+            }))
+        });
+        $('select,input[type=checkbox]').change(function () {
+            try {
+                drawChart();
+            } catch (e) {
+                $('#chart-container').empty();
+                console.error(e);
+            }
+        });
+        $('textarea,input').on('input', function () {
+            try {
+                drawChart();
+            } catch (e) {
+                $('#chart-container').empty();
+                console.error(e);
+            }
+        });
+        drawChart();
+        /* try {
+         drawChart();
+         } catch (e) {
+         $('#chart-container').empty();
+         console.error(e);
+         }*/
+
+        function drawChart() {
+            var data = JSON.parse($data.val());
+            $('#chart-container').empty();
+            var color;
+            if ($('#brewer').prop('checked')) {
+                color = {
+                    dimension: getFieldData($color),
+                    brewer: tauBrewer(getFieldData($('#hue')), getFieldData($('#number')))
+                }
+            } else {
+                color = getFieldData($color)
+            }
+            var chart = new tauCharts.Chart({
+                data: data,
+                type: getFieldData($type),
+                guide: [{}, {
+                    /* x:{
+                     autoScale:false
+                     },
+                     y:{
+                     autoScale:false
+                     }*/
+                    color: {
+                        label: {text: 'fas dasf asdf asd'}
+                    }
+                }],
+                plugins: [tauCharts.api.plugins.get('tooltip')(), tauCharts.api.plugins.get('legend')()],
+                y: ['t', 'y'],
+                x: ['x', 'type'],
+                color: 'x'
+                /* size: 'y'*/
             });
-            map['key'] = JSON.stringify(item);
-            return map;
-        });
-        var $table = $('#table');
-        $table.empty();
-        var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
-        $table.append(rowHtml);
-        var keyValue = {};
-        var s = _.each(rows, function(arr) {
-            var rowHtml = '<tr >';
-            rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
-            keyValue[arr.key] = $(rowHtml);
-            $table.append(keyValue[arr.key]);
-        });
+            chart.renderTo(
+                    '#chart-container');
+        }
+
+        function generateTable(data) {
+            var headers = Object.keys(data[0]);
+            var rows = data.map(function (item, key) {
+                var map = headers.map(function (key) {
+                    return item[key];
+                });
+                map['key'] = JSON.stringify(item);
+                return map;
+            });
+            var $table = $('#table');
+            $table.empty();
+            var rowHtml = $('<tr><th>' + headers.join('</th><th>') + '</th></tr>');
+            $table.append(rowHtml);
+            var keyValue = {};
+            var s = _.each(rows, function (arr) {
+                var rowHtml = '<tr >';
+                rowHtml += '<td>' + arr.join('</td><td>') + '</td></tr>';
+                keyValue[arr.key] = $(rowHtml);
+                $table.append(keyValue[arr.key]);
+            });
 
 
-        return keyValue;
-    }
+            return keyValue;
+        }
 
-})
+    })
 </script>
 </body>
 </html>

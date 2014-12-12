@@ -11,7 +11,7 @@ var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.
 
 
 var cutText = (textString, widthLimit) => {
-    textString.each(function() {
+    textString.each(function () {
         var textD3 = d3.select(this);
         var tokens = textD3.text().split(/\s+/).reverse();
 
@@ -46,7 +46,7 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
         return nodeX;
     };
 
-    textNode.each(function() {
+    textNode.each(function () {
         var textD3 = d3.select(this),
             tokens = textD3.text().split(/\s+/),
             lineHeight = 1.1, // ems
@@ -61,7 +61,9 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
         var lines = tokens.reduce(
             (memo, next) => {
 
-                if (stopReduce) return memo;
+                if (stopReduce) {
+                    return memo;
+                }
 
                 var isLimit = memo.length === linesLimit;
                 var last = memo[memo.length - 1];
@@ -164,7 +166,7 @@ var decorateTickLabel = (nodeScale, x) => {
     }
 };
 
-var fnDrawDimAxis = function(x, AXIS_POSITION, size) {
+var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
     var container = this;
     if (x.scaleDim) {
 
@@ -190,7 +192,7 @@ var fnDrawDimAxis = function(x, AXIS_POSITION, size) {
     }
 };
 
-var fnDrawGrid = function(node, H, W) {
+var fnDrawGrid = function (node, H, W) {
 
     var container = this;
 
@@ -261,7 +263,7 @@ var fnDrawGrid = function(node, H, W) {
     return grid;
 };
 var defaultRangeColor = _.times(10, (i) => 'color10-' + (1 + i));
-var generateColor = function(node) {
+var generateColor = function (node) {
     var range, domain;
     var colorGuide = node.guide.color || {};
     var colorParam = node.color;
@@ -285,45 +287,53 @@ var generateColor = function(node) {
         dimension: colorDim
     };
 };
+var extendLabel = function (guide, dimension, extend) {
+    guide[dimension] = _.defaults(guide[dimension] || {}, {
+        label: ''
+    });
+    guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : {text: guide[dimension].label};
+    guide[dimension].label = _.defaults(guide[dimension].label, {
+        padding: 32,
+        rotate: 0,
+        textAnchor: 'middle'
+    }, extend || {});
+    return guide[dimension];
+};
+var extendAxis = function (guide, dimension, extend) {
+    guide[dimension] = _.defaults(guide[dimension], {
+        padding: 0,
+        density: 30,
+        rotate: 0,
+        tickPeriod: null,
+        tickFormat: null,
+        autoScale: true
+    }, extend);
+    guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
+    return guide[dimension];
+};
 
 var applyNodeDefaults = (node) => {
     node.options = node.options || {};
     node.guide = node.guide || {};
     node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
 
-    node.guide.x = _.defaults(node.guide.x || {}, {
-        label: '',
-        padding: 0,
-        density: 30,
+    node.guide.x = extendLabel(node.guide, 'x');
+    node.guide.x = extendAxis(node.guide, 'x', {
         cssClass: 'x axis',
         scaleOrient: 'bottom',
-        rotate: 0,
-        textAnchor: 'middle',
-        tickPeriod: null,
-        tickFormat: null,
-        autoScale: true
+        textAnchor: 'middle'
     });
-    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : {text: node.guide.x.label};
-    node.guide.x.label = _.defaults(node.guide.x.label, {padding: 32, rotate: 0, textAnchor: 'middle'});
 
-    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
-
-    node.guide.y = _.defaults(node.guide.y || {}, {
-        label: '',
-        padding: 0,
-        density: 30,
+    node.guide.y = extendLabel(node.guide, 'y');
+    node.guide.y = extendAxis(node.guide, 'y', {
         cssClass: 'y axis',
         scaleOrient: 'left',
-        rotate: 0,
-        textAnchor: 'end',
-        tickPeriod: null,
-        tickFormat: null,
-        autoScale: true
+        textAnchor: 'end'
     });
-    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : {text: node.guide.y.label};
-    node.guide.y.label = _.defaults(node.guide.y.label, {padding: 32, rotate: -90, textAnchor: 'middle'});
 
-    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
+    node.guide.size = extendLabel(node.guide, 'size');
+    node.guide.color = extendLabel(node.guide, 'color');
+
 
     return node;
 };

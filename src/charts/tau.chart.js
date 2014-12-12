@@ -76,8 +76,7 @@ function transformConfig(type, config) {
         type: 'COORDS.RECT',
         unit: []
     };
-    var elementGuide = guide[guide.length-1];
-    var colorGuide = elementGuide && elementGuide.color || {};
+
     for (var i = maxDeep; i > 0; i--) {
         var currentX = x.pop();
         var currentY = y.pop();
@@ -91,7 +90,7 @@ function transformConfig(type, config) {
                 color: config.color,
                 size: config.size,
                 flip: config.flip,
-                colorGuide: colorGuide
+                colorGuide: currentGuide.color
             }));
             spec.guide = _.defaults(
                 currentGuide,

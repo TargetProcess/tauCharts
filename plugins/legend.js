@@ -47,7 +47,6 @@
                 var keys = _.map(data, function (item) {
                     return item[colorDimension];
                 });
-            //    debugger
                 return _.unique(keys).reduce(function (colorMap, item) {
                     colorMap[item] = color.get(item);
                     return colorMap;
@@ -61,11 +60,14 @@
                 '</div>'
             ].join('')),
             onRender: function (chart) {
-                if(this._container) {
+                if (this._container) {
                     var items = _.map(this._getColorMap(chart), function (item, key) {
                         return this.itemTemplate({color: item, value: key});
                     }, this).join('');
-                    this._container.innerHTML = this.template({items: items, name: this._unit.options.color.dimension});
+                    this._container.innerHTML = this.template({
+                        items: items,
+                        name: this._unit.guide.color.label.text || this._unit.options.color.dimension
+                    });
                 }
             }
         };

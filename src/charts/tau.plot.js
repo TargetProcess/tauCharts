@@ -94,7 +94,6 @@ export class Plot extends Emitter {
         this.config.settings = this.setupSettings(this.config.settings);
         this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
-        var prevLength = this.config.data.length;
         var log = this.config.settings.log;
         if (this.config.settings.excludeNull) {
             this.addFilter({
