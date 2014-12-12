@@ -148,10 +148,10 @@ export class Plot extends Emitter {
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
         var size = xSize || {};
-        if(!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode)); 
+        if (!size.width || !size.height) {
+            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
         }
-            
+
         var drawData = this.getData();
         if (drawData.length === 0) {
             this._layout.content.innerHTML = this._emptyContainer;
@@ -210,10 +210,12 @@ export class Plot extends Emitter {
         this.fire('render', svgXElement.node());
     }
 
-    getData() {
+    getData(param) {
+        param = param || {};
         var filters = _.chain(this._filtersStore.filters)
             .values()
             .flatten()
+            .reject((filter)=>_.contains(param.excludeFilter, filter.tag))
             .pluck('predicate')
             .value();
         return _.filter(
@@ -237,7 +239,7 @@ export class Plot extends Emitter {
         var id = this._filtersStore.tick++;
         filter.id = id;
         filters.push(filter);
-        if(this._target && this._targetSizes) {
+        if (this._target && this._targetSizes) {
             this.renderTo(this._target, this._targetSizes);
         }
         return id;
@@ -247,8 +249,13 @@ export class Plot extends Emitter {
         this.renderTo(this._target, this._targetSizes);
     }
 
-    /*
-     removeFilter() {
 
-     }*/
+    removeFilter(id) {
+        _.each(this._filtersStore.filters, (filters, key) => {
+            this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
+        });
+        if (this._target && this._targetSizes) {
+            this.renderTo(this._target, this._targetSizes);
+        }
+    }
 }

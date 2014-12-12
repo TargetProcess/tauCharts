@@ -21,6 +21,7 @@
   padding-left: 25px;
   position: relative;
   font-size: 13px;
+  cursor: pointer;
 }
 .graphical-report__legend__item:disabled,
 .graphical-report__legend__item.disabled {

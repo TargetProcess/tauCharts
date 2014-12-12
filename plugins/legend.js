@@ -28,8 +28,40 @@
         return {
             init: function (chart) {
                 if (this.isNeedLegend(chart)) {
+                    this._currentFilters = {};
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
+                    this._container.addEventListener('click', function (e) {
+                        var target = e.target;
+                        while (target !== e.currentTarget && target !== null) {
+                            if (target.classList.contains('graphical-report__legend__item')) {
+                                this._toggleLegendItem(target, chart);
+                            }
+                            target = target.parentNode;
+                        }
+
+                    }.bind(this));
                 }
+            },
+            _toggleLegendItem: function (target, chart) {
+                var value = target.getAttribute('data-value');
+                var currentFilterID = this._currentFilters[value];
+                if (currentFilterID) {
+                    this._currentFilters[value] = null;
+                    chart.removeFilter(currentFilterID);
+                } else {
+                    this._currentFilters[value] = 1;
+                    var parsedValue = JSON.parse(value);
+                    var filter = {
+                        tag: 'legend',
+                        predicate: function (item) {
+                            return item[parsedValue.dimension] !== parsedValue.value;
+                        }
+                    };
+                    this._currentFilters[value] = chart.addFilter(filter);
+
+                }
+
+
             },
             isNeedLegend: function (chart) {
                 var conf = chart.getConfig();
@@ -40,10 +72,8 @@
                     this._unit = unit;
                 }
             },
-            _getColorMap: function (chart) {
-                var color = this._unit.options.color;
-                var colorDimension = color.dimension;
-                var data = chart.getData();
+            _getColorMap: function (chart, color, colorDimension) {
+                var data = chart.getData({excludeFilter: ['legend']});
                 var keys = _.map(data, function (item) {
                     return item[colorDimension];
                 });
@@ -55,14 +85,23 @@
             containerTemplate: '<div class="graphical-report__legend"></div>',
             template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
             itemTemplate: _.template([
-                '<div class="graphical-report__legend__item">',
-                '<div class="graphical-report__legend__guide <%=color%>" ></div><%=value%>',
+                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item <%=classDisabled%>">',
+                '<div class="graphical-report__legend__guide <%=color%>" ></div><%=label%>',
                 '</div>'
             ].join('')),
             onRender: function (chart) {
                 if (this._container) {
-                    var items = _.map(this._getColorMap(chart), function (item, key) {
-                        return this.itemTemplate({color: item, value: key});
+                    var color = this._unit.options.color;
+                    var colorDimension = color.dimension;
+                    var items = _.map(this._getColorMap(chart, color, colorDimension), function (item, key) {
+                        var value = JSON.stringify({dimension: colorDimension, value: key});
+                        console.log(this._currentFilters[value]);
+                        return this.itemTemplate({
+                            color: item,
+                            classDisabled: this._currentFilters[value] ? 'disabled' : '',
+                            label: _.escape(key),
+                            value: value
+                        });
                     }, this).join('');
                     this._container.innerHTML = this.template({
                         items: items,

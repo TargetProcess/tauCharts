@@ -288,14 +288,13 @@
                      autoScale:false
                      }*/
                     color: {
-                        label: {text: 'fas dasf asdf asd'},
-                        brewer: {'s':'ds'}
+                        label: {text: 'fas dasf asdf asd'}
                     }
                 }],
                 plugins: [tauCharts.api.plugins.get('tooltip')(), tauCharts.api.plugins.get('legend')()],
                 y: ['t', 'y'],
                 x: ['x', 'type'],
-                color: 'x'
+                color: 'type'
                 /* size: 'y'*/
             });
             chart.renderTo(
