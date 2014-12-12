@@ -51,12 +51,12 @@
 }
 /* region Generate .color@{n}-@{i}  function  */
 .graphical-report__svg .color10-1 {
-  stroke: #e41a1c;
-  fill: #e41a1c;
-}
-.graphical-report__svg .color10-2 {
   stroke: #377eb8;
   fill: #377eb8;
+}
+.graphical-report__svg .color10-2 {
+  stroke: #e41a1c;
+  fill: #e41a1c;
 }
 .graphical-report__svg .color10-3 {
   stroke: #4daf4a;
@@ -177,9 +177,11 @@
 .graphical-report__svg .tick text {
   font-size: 11px;
 }
+.graphical-report__svg .grid .grid-lines path {
+  shape-rendering: crispEdges;
+}
 .graphical-report__svg .grid path {
   fill: none;
-  shape-rendering: crispEdges;
 }
 .graphical-report__svg .grid line {
   fill: none;

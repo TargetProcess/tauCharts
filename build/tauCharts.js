@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.4 - 2014-12-10
+/*! tauCharts - v0.2.5 - 2014-12-12
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1897,7 +1897,9 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     var brewer = colorGuide.brewer || defaultRangeColor;
 
     if (utils.isArray(brewer)) {
-      domain = node.domain(colorDim);
+      domain = node.domain(colorDim).map(function (x) {
+        return String(x).toString();
+      });
       range = brewer;
     } else {
       domain = Object.keys(brewer);
@@ -1912,7 +1914,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
 
     return {
       get: function (d) {
-        return getClass(d);
+        return getClass(String(d).toString());
       },
       dimension: colorDim
     };
@@ -2915,6 +2917,11 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
           unit.partition = (function () {
             return unit.data || unit.source(unit.$where);
           });
+          unit.groupBy = (function (srcValues, splitByProperty) {
+            return d3.nest().key(function (d) {
+              return d[splitByProperty];
+            }).entries(srcValues);
+          });
           return unit;
         }
       }
@@ -3005,28 +3012,24 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
       };
     },
 
-    excludeNullValues: function (dimensions, srcData) {
-      var fields = [];
-      Object.keys(dimensions).forEach(function (k) {
+    excludeNullValues: function (dimensions, onExclude) {
+      var fields = Object.keys(dimensions).reduce(function (fields, k) {
         var d = dimensions[k];
         if ((!d.hasOwnProperty("hasNull") || d.hasNull) && ((d.type === "measure") || (d.scale === "period"))) {
           // rule: exclude null values of "measure" type or "period" scale
           fields.push(k);
         }
-      });
-
-      var r;
-      if (fields.length === 0) {
-        r = srcData;
-      } else {
-        r = srcData.filter(function (row) {
-          return !fields.some(function (f) {
-            return (!row.hasOwnProperty(f) || (row[f] === null));
-          });
+        return fields;
+      }, []);
+      return function (row) {
+        var result = !fields.some(function (f) {
+          return (!(f in row) || (row[f] === null));
         });
-      }
-
-      return r;
+        if (!result) {
+          onExclude(row);
+        }
+        return result;
+      };
     },
 
     autoAssignScales: function (dimensions) {
@@ -3238,6 +3241,10 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
   var Plot = (function (Emitter) {
     var Plot = function Plot(config) {
       Emitter.call(this);
+      this._filtersStore = {
+        filters: {},
+        tick: 0
+      };
       this._layout = getLayout();
       this.setupConfig(config);
       //plugins
@@ -3265,11 +3272,14 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
           var prevLength = this.config.data.length;
-          this.config.data = this.config.settings.excludeNull ? DataProcessor.excludeNullValues(this.config.spec.dimensions, this.config.data) : this.config.data;
-          var currLength = this.config.data.length;
-          var diffLength = prevLength - currLength;
-          if (diffLength > 0) {
-            this.config.settings.log(diffLength + " data points were excluded, because they have undefined values.", "WARN");
+          var log = this.config.settings.log;
+          if (this.config.settings.excludeNull) {
+            this.addFilter({
+              tag: "default",
+              predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
+                log([item, "point was excluded, because it has undefined values."], "WARN");
+              })
+            });
           }
         }
       },
@@ -3306,19 +3316,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       },
       addBalloon: {
         writable: true,
-
-
-        /* addLine (conf) {
-         var unitContainer = this._spec.unit.unit;
-          while(true) {
-         if(unitContainer[0].unit) {
-         unitContainer = unitContainer[0].unit;
-         } else {
-         break;
-         }
-         }
-         unitContainer.push(conf);
-         }*/
         value: function (conf) {
           return new Tooltip("", conf || {});
         }
@@ -3328,8 +3325,8 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         value: function (target, xSize) {
           var container = d3.select(target);
           var containerNode = container.node();
-          this.target = target;
-          this.targetSizes = xSize;
+          this._target = target;
+          this._targetSizes = xSize;
           if (containerNode === null) {
             throw new Error("Target element not found");
           }
@@ -3337,16 +3334,21 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           containerNode.appendChild(this._layout.layout);
           container = d3.select(this._layout.content);
           //todo don't compute width if width or height were passed
-          var size = _.defaults(xSize || {}, utilsDom.getContainerSize(this._layout.content.parentNode));
+          var size = xSize || {};
+          if (!size.width || !size.height) {
+            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+          }
 
-          if (this.config.data.length === 0) {
+          var drawData = this.getData();
+          if (drawData.length === 0) {
             this._layout.content.innerHTML = this._emptyContainer;
             return;
           }
+          this._targetSizes = size;
           this._layout.content.innerHTML = "";
 
 
-          var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, this.config.data);
+          var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
           var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
 
@@ -3390,15 +3392,46 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       getData: {
         writable: true,
         value: function () {
-          return this.config.data;
+          var filters = _.chain(this._filtersStore.filters).values().flatten().pluck("predicate").value();
+          return _.filter(this.config.data, _.reduce(filters, function (newPredicate, filter) {
+            return function (x) {
+              return newPredicate(x) && filter(x);
+            };
+          }, function () {
+            return true;
+          }));
         }
       },
       setData: {
         writable: true,
         value: function (data) {
           this.config.data = data;
-          this.renderTo(this.target, this.targetSizes);
+          this.renderTo(this._target, this._targetSizes);
         }
+      },
+      addFilter: {
+        writable: true,
+        value: function (filter) {
+          var tag = filter.tag;
+          var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
+          var id = this._filtersStore.tick++;
+          filter.id = id;
+          filters.push(filter);
+          if (this._target && this._targetSizes) {
+            this.renderTo(this._target, this._targetSizes);
+          }
+          return id;
+        }
+      },
+      refresh: {
+        writable: true,
+        value: function () {
+          this.renderTo(this._target, this._targetSizes);
+        }
+
+        /*
+         removeFilter() {
+           }*/
       }
     });
 
@@ -3784,24 +3817,40 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
 define('elements/size',["exports"], function (exports) {
   
 
-  var sizeScale = function (values, minSize, maxSize) {
-    values = _.filter(values, _.isFinite);
+  var f = function (x) {
+    return Math.sqrt(x);
+  };
+
+  var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
+    var values = _.filter(srcValues, _.isFinite);
+
+    if (values.length === 0) {
+      return function (x) {
+        return normalSize;
+      };
+    }
 
     var k = 1;
     var xMin = 0;
-    if (values.length > 0) {
-      var min = Math.min.apply(null, values);
-      var max = Math.max.apply(null, values);
 
-      var len = Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]);
+    var min = Math.min.apply(null, values);
+    var max = Math.max.apply(null, values);
 
-      xMin = (min < 0) ? min : 0;
-      k = (len === 0) ? 1 : ((maxSize - minSize) / len);
-    }
+    var len = f(Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]));
+
+    xMin = (min < 0) ? min : 0;
+    k = (len === 0) ? 1 : ((maxSize - minSize) / len);
 
     return function (x) {
-      var nx = (x !== null) ? parseFloat(x) : 0;
-      return (_.isFinite(nx)) ? (minSize + ((nx - xMin) * k)) : maxSize;
+      var numX = (x !== null) ? parseFloat(x) : 0;
+
+      if (!_.isFinite(numX)) {
+        return maxSize;
+      }
+
+      var posX = (numX - xMin); // translate to positive x domain
+
+      return (minSize + (f(posX) * k));
     };
   };
 
@@ -3818,24 +3867,25 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
 
     var xScale = options.xScale;
     var yScale = options.yScale;
+    var color = options.color;
 
-    var color = utilsDraw.generateColor(node);
-    node.options.color = color;
-    var maxAxisSize = _.max([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
+    var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
       return x !== 0;
-    })) / 2;
-    var size = sizeScale(node.domain(node.size.scaleDim), 1, maxAxisSize);
+    })) * 0.5;
+    var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter(function (x) {
+      return x !== 0;
+    })) * 0.5;
+    var sScale = sizeScale(node.domain(node.size.scaleDim), 2, minTickStep, minFontSize);
 
     var update = function () {
       return this.attr("r", function (d) {
-        var s = size(d[node.size.scaleDim]);
-        return (!_.isFinite(s)) ? maxAxisSize : s;
-      }).attr("class", function (d) {
-        return CSS_PREFIX + "dot" + " dot i-role-datum " + color.get(d[color.dimension]);
+        return sScale(d[node.size.scaleDim]);
       }).attr("cx", function (d) {
         return xScale(d[node.x.scaleDim]);
       }).attr("cy", function (d) {
         return yScale(d[node.y.scaleDim]);
+      }).attr("class", function (d) {
+        return CSS_PREFIX + "dot" + " dot i-role-datum " + color.get(d[color.dimension]);
       });
     };
 
@@ -3890,15 +3940,15 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
 
     var xScale = options.xScale;
     var yScale = options.yScale;
+    var color = options.color;
+
     node.size = {};
-    var color = utilsDraw.generateColor(node);
-    options.color = color;
-    var categories = d3.nest().key(function (d) {
-      return d[color.dimension];
-    }).entries(node.partition());
+
+    var categories = node.groupBy(node.partition(), color.dimension);
+
     var widthClass = getLineClassesByWidth(options.width);
     var countClass = getLineClassesByCount(categories.length);
-    var updateLines = function (d) {
+    var updateLines = function () {
       this.attr("class", function (d) {
         return [CSS_PREFIX + "line i-role-datum ", "line", color.get(d.key), widthClass, countClass].join(" ");
       });
@@ -3933,33 +3983,16 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
       elements.enter().append("circle").call(update);
     };
 
-    var line;
-    /*if(node.isGuide) {
-        var  i = 0;
-        line = d3
-            .svg
-            .line()
-            .x((d) => {
-                if(i) {
-                    return xScale.rangeExtent()[1];
-                } else {
-                    i++;
-                    return 0;
-                }
-            })
-            .y((d) => yScale(45));
-    } else {*/
-    line = d3.svg.line().x(function (d) {
+    var line = d3.svg.line().x(function (d) {
       return xScale(d[node.x.scaleDim]);
     }).y(function (d) {
       return yScale(d[node.y.scaleDim]);
     });
-    /*}*/
-
 
     var updatePaths = function () {
       this.attr("d", line);
     };
+
     drawPointsIfNeed(categories);
     var lines = options.container.selectAll(".line").data(categories);
     lines.call(updateLines);
@@ -3973,7 +4006,10 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
+
+
   var BAR_GROUP = "i-role-bar-group";
+
   var isMeasure = function (dim) {
     return dim.dimType === "measure";
   };
@@ -4002,15 +4038,9 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   var interval = function (node) {
     var options = node.options;
 
-    var color = utilsDraw.generateColor(node);
-    node.options.color = color;
-    var partition = node.partition();
+    var xScale = options.xScale, yScale = options.yScale, color = options.color, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate;
 
-    var categories = d3.nest().key(function (d) {
-      return d[color.dimension];
-    }).entries(partition);
-
-    var xScale = options.xScale, yScale = options.yScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate;
+    var categories = node.groupBy(node.partition(), color.dimension);
 
     if (node.flip) {
       var xMin;
@@ -4321,6 +4351,8 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
     };
     node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
 
+    node.options.color = utilsDraw.generateColor(node);
+
     return node;
   };
 
@@ -4407,7 +4439,10 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
     globalSettings: {
       log: function (msg, type) {
         type = type || "INFO";
-        console.log(type + ": " + msg);
+        if (!Array.isArray(msg)) {
+          msg = [msg];
+        }
+        console[type.toLowerCase()].apply(console, msg);
       },
 
       excludeNull: true,

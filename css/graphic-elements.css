@@ -177,9 +177,11 @@
 .graphical-report__svg .tick text {
   font-size: 11px;
 }
+.graphical-report__svg .grid .grid-lines path {
+  shape-rendering: crispEdges;
+}
 .graphical-report__svg .grid path {
   fill: none;
-  shape-rendering: crispEdges;
 }
 .graphical-report__svg .grid line {
   fill: none;

@@ -103,12 +103,21 @@
                 }, this).join('');
             },
             _exclude: function () {
-                var dataChart = this._chart.getData();
-                this._chart.setData(_.without(dataChart, this._currentElement));
+                this._chart.addFilter({
+                    tag: 'exclude',
+                    predicate: (function (element) {
+                        return function (item) {
+                            return JSON.stringify(item) !== JSON.stringify(element);
+                        };
+                    }(this._currentElement))
+                });
                 this.onExcludeData(this._currentElement);
             },
             _calculateLength: function (x1, y1, x2, y2) {
                 return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+            },
+            _calculateLengthToLine: function (x0, y0, x1, y1, x2, y2) {
+                return Math.abs((x2 - x1) * (y0 - y1) - (y2 - y1) * (x0 - x1)) / Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
             },
             _generateKey: function (data) {
                 return JSON.stringify(data);
@@ -117,7 +126,7 @@
                 if (this._dataFields) {
                     return this._dataFields;
                 }
-                var fields = [unit.size.scaleDim, unit.color.scaleDim];
+                var fields = [unit.size && unit.size.scaleDim, unit.color && unit.color.scaleDim];
                 var x = [];
                 var y = [];
                 while (unit = unit.parentUnit) {
@@ -142,7 +151,25 @@
                     var filteredData = dataWithCoord.filter(function (value) {
                         return _.contains(item.values, value.item);
                     });
-                    var itemWithCoord = _.min(filteredData, function (a) {
+                    var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
+                        var secondPoint;
+                        if ((index + 1) === data.length) {
+                            secondPoint = data[index - 1];
+                        } else {
+                            secondPoint = data[index + 1];
+                        }
+                        var h = this._calculateLengthToLine(coord[0], coord[1], point.x, point.y, secondPoint.x, secondPoint.y);
+                        if (h < memo.h) {
+                            memo.h = h;
+                            memo.points = {
+                                point1: point,
+                                point2: secondPoint
+                            };
+                        }
+                        return memo;
+                    }.bind(this), {h: Infinity, points: {}});
+
+                    var itemWithCoord = _.min(nearLine.points, function (a) {
                         return this._calculateLength(a.x, a.y, coord[0], coord[1]);
                     }, this);
                     item = itemWithCoord.item;
