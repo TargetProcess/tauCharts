@@ -54,7 +54,7 @@
                     var filter = {
                         tag: 'legend',
                         predicate: function (item) {
-                            return item[parsedValue.dimension] !== parsedValue.value;
+                            return item[parsedValue.dimension] != parsedValue.value;
                         }
                     };
                     this._currentFilters[value] = chart.addFilter(filter);
@@ -93,9 +93,14 @@
                 if (this._container) {
                     var color = this._unit.options.color;
                     var colorDimension = color.dimension;
-                    var items = _.map(this._getColorMap(chart, color, colorDimension), function (item, key) {
+                    var colorBrewer = this._getColorMap(chart, color, colorDimension);
+                    var conf = chart.getConfig();
+                    var configUnit = dfs(conf.spec.unit);
+                    configUnit.guide = configUnit.guide || {};
+                    configUnit.guide.color =  this._unit.guide.color;
+                    configUnit.guide.color.brewer = colorBrewer;
+                    var items = _.map(colorBrewer, function (item, key) {
                         var value = JSON.stringify({dimension: colorDimension, value: key});
-                        console.log(this._currentFilters[value]);
                         return this.itemTemplate({
                             color: item,
                             classDisabled: this._currentFilters[value] ? 'disabled' : '',
