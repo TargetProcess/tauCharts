@@ -228,9 +228,8 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
-    var drawTrendLine = function(index, dots, xScale, yScale, trendColor, container) {
+    var drawTrendLine = function(trendLineId, dots, message, xScale, yScale, trendColor, container) {
 
-        var trendLineId = 'i-trendline-' + index;
         var trendCssClass = [
             'graphical-report__trendline',
 
@@ -248,6 +247,13 @@
 
         var updateLines = function () {
             this.attr('class', trendCssClass);
+
+            var text = this.selectAll('.graphical-report__trendline__tip');
+            text.remove();
+            this.append('text')
+                .attr('class', 'graphical-report__trendline__tip')
+                .text(message);
+
             var paths = this.selectAll('path').data(function(d) { return [d] });
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);
@@ -353,14 +359,38 @@
                     });
 
                     var regression = regressionsHub(settings.type, src);
-                    drawTrendLine(
-                        index,
-                        regression.points,
-                        options.xScale,
-                        options.yScale,
-                        options.color.get(sKey),
-                        options.container);
+                    var dots = _.sortBy(regression.points, function(p) { return p[0]; });
+                    if (dots.length > 1) {
+                        drawTrendLine(
+                            'i-trendline-' + index,
+                            dots,
+                            regression.string,
+                            options.xScale,
+                            options.yScale,
+                            options.color.get(sKey),
+                            options.container);
+                    }
                 });
+
+                var handleMouse = function (isActive) {
+                    return function() {
+                        var m = d3.mouse(this);
+                        var g = d3.select(this);
+                        g.classed({
+                            'active': isActive,
+                            'graphical-report__line-width-1': !isActive,
+                            'graphical-report__line-width-2': isActive
+                        });
+                        g.select('.graphical-report__trendline__tip')
+                            .attr('x', m[0] + 3)
+                            .attr('y', m[1] - 3);
+                    };
+                };
+
+                options.container
+                    .selectAll('.graphical-report__trendline')
+                    .on('mouseenter', handleMouse(true))
+                    .on('mouseleave', handleMouse(false));
             },
 
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',

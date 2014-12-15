@@ -59,7 +59,7 @@
                 this._dataWithCoords = {};
                 this._unitMeta = {};
                 this._templateItem = _.template(this.itemTemplate);
-                this._tooltip = chart.addBalloon({spacing: 5, auto: true});
+                this._tooltip = chart.addBalloon({spacing: 3, auto: true,effectClass:'fade'});
                 this._elementTooltip = this._tooltip.getElement();
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
@@ -140,10 +140,9 @@
             isLine: function (data) {
                 return data.elementData.key && Array.isArray(data.elementData.values);
             },
-            onElementMouseOver: function (chart, data) {
+            _onElementMouseOver: _.debounce(function (chart, data, mosueCoord, placeCoord) {
                 clearInterval(this._interval);
                 var key = this._generateKey(data.cellData.$where);
-                var coord = d3.mouse(data.element);
                 var item = data.elementData;
                 var isLine = this.isLine(data);
                 if (isLine) {
@@ -158,7 +157,7 @@
                         } else {
                             secondPoint = data[index + 1];
                         }
-                        var h = this._calculateLengthToLine(coord[0], coord[1], point.x, point.y, secondPoint.x, secondPoint.y);
+                        var h = this._calculateLengthToLine(mosueCoord[0], mosueCoord[1], point.x, point.y, secondPoint.x, secondPoint.y);
                         if (h < memo.h) {
                             memo.h = h;
                             memo.points = {
@@ -170,7 +169,7 @@
                     }.bind(this), {h: Infinity, points: {}});
 
                     var itemWithCoord = _.min(nearLine.points, function (a) {
-                        return this._calculateLength(a.x, a.y, coord[0], coord[1]);
+                        return this._calculateLength(a.x, a.y, mosueCoord[0], mosueCoord[1]);
                     }, this);
                     item = itemWithCoord.item;
                     this._drawPoint(d3.select(data.element.parentNode), itemWithCoord.x, itemWithCoord.y, this._unitMeta[key].options.color.get(data.elementData.key));
@@ -186,16 +185,20 @@
                     console.log('template should contain i-role-content class');
                 }
 
-                this._show();
+                this._show(placeCoord);
                 this._currentElement = item;
+            }, 250),
+            onElementMouseOver: function (chart, data) {
+                var placeCoord = d3.mouse(document.body);
+                var coord = d3.mouse(data.element);
+                this._onElementMouseOver(chart, data, coord, placeCoord);
             },
-            onElementMouseOut: function () {
+            onElementMouseOut: function (mouseСoord, placeCoord) {
                 this._hide();
             },
-            _show: function () {
+            _show: function (placeCoord) {
                 this._tooltip.show();
-                var el = d3.mouse(this._elementTooltip.parentNode);
-                this._tooltip.position(el[0], el[1]).updateSize();
+                this._tooltip.position(placeCoord[0], placeCoord[1]).updateSize();
             },
             _hide: function () {
                 this._interval = setTimeout(function () {

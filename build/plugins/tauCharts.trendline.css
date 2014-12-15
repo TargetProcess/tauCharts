@@ -3,7 +3,6 @@
 }
 .graphical-report__trendlinepanel {
   padding: 20px;
-  width: 140px;
 }
 .graphical-report__trendlinepanel__title {
   margin: 0 0 10px 0;
@@ -20,4 +19,12 @@
 .graphical-report__trendline {
   fill: none;
   stroke-dasharray: 7, 5;
+}
+.graphical-report__trendline__tip {
+  display: none;
+  font-size: 11px;
+  stroke: none;
+}
+.graphical-report__trendline.active .graphical-report__trendline__tip {
+  display: block;
 }

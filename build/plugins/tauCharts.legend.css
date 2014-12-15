@@ -1,6 +1,5 @@
 .graphical-report__legend {
   padding: 20px;
-  width: 140px;
 }
 .graphical-report__legend__title,
 .graphical-report__legend__item {
@@ -15,6 +14,7 @@
   padding-left: 25px;
   position: relative;
   font-size: 13px;
+  cursor: pointer;
 }
 .graphical-report__legend__item:disabled,
 .graphical-report__legend__item.disabled {
@@ -59,4 +59,7 @@
 }
 .graphical-report__legend__item .color10-10 {
   background: #222222;
+}
+.graphical-report__legend__item .color-default {
+  background: #377eb8;
 }

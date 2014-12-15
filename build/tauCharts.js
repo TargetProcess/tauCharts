@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.5 - 2014-12-12
+/*! tauCharts - v0.2.5 - 2014-12-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1732,7 +1732,9 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
 
       var stopReduce = false;
       var lines = tokens.reduce(function (memo, next) {
-        if (stopReduce) return memo;
+        if (stopReduce) {
+          return memo;
+        }
 
         var isLimit = memo.length === linesLimit;
         var last = memo[memo.length - 1];
@@ -1919,45 +1921,53 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
       dimension: colorDim
     };
   };
+  var extendLabel = function (guide, dimension, extend) {
+    guide[dimension] = _.defaults(guide[dimension] || {}, {
+      label: ""
+    });
+    guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : { text: guide[dimension].label };
+    guide[dimension].label = _.defaults(guide[dimension].label, {
+      padding: 32,
+      rotate: 0,
+      textAnchor: "middle"
+    }, extend || {});
+    return guide[dimension];
+  };
+  var extendAxis = function (guide, dimension, extend) {
+    guide[dimension] = _.defaults(guide[dimension], {
+      padding: 0,
+      density: 30,
+      rotate: 0,
+      tickPeriod: null,
+      tickFormat: null,
+      autoScale: true
+    }, extend);
+    guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
+    return guide[dimension];
+  };
 
   var applyNodeDefaults = function (node) {
     node.options = node.options || {};
     node.guide = node.guide || {};
     node.guide.padding = _.defaults(node.guide.padding || {}, { l: 0, b: 0, r: 0, t: 0 });
 
-    node.guide.x = _.defaults(node.guide.x || {}, {
-      label: "",
-      padding: 0,
-      density: 30,
+    node.guide.x = extendLabel(node.guide, "x");
+    node.guide.x = extendAxis(node.guide, "x", {
       cssClass: "x axis",
       scaleOrient: "bottom",
-      rotate: 0,
-      textAnchor: "middle",
-      tickPeriod: null,
-      tickFormat: null,
-      autoScale: true
+      textAnchor: "middle"
     });
-    node.guide.x.label = _.isObject(node.guide.x.label) ? node.guide.x.label : { text: node.guide.x.label };
-    node.guide.x.label = _.defaults(node.guide.x.label, { padding: 32, rotate: 0, textAnchor: "middle" });
 
-    node.guide.x.tickFormat = node.guide.x.tickFormat || node.guide.x.tickPeriod;
-
-    node.guide.y = _.defaults(node.guide.y || {}, {
-      label: "",
-      padding: 0,
-      density: 30,
+    node.guide.y = extendLabel(node.guide, "y");
+    node.guide.y = extendAxis(node.guide, "y", {
       cssClass: "y axis",
       scaleOrient: "left",
-      rotate: 0,
-      textAnchor: "end",
-      tickPeriod: null,
-      tickFormat: null,
-      autoScale: true
+      textAnchor: "end"
     });
-    node.guide.y.label = _.isObject(node.guide.y.label) ? node.guide.y.label : { text: node.guide.y.label };
-    node.guide.y.label = _.defaults(node.guide.y.label, { padding: 32, rotate: -90, textAnchor: "middle" });
 
-    node.guide.y.tickFormat = node.guide.y.tickFormat || node.guide.y.tickPeriod;
+    node.guide.size = extendLabel(node.guide, "size");
+    node.guide.color = extendLabel(node.guide, "color");
+
 
     return node;
   };
@@ -3111,30 +3121,25 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
+  var createElement = function (cssClass, parent) {
+    var tag = "div";
+    var element = document.createElement(tag);
+    element.classList.add(CSS_PREFIX + cssClass);
+    if (parent) {
+      parent.appendChild(element);
+    }
+    return element;
+  };
   var getLayout = function () {
-    var layout = document.createElement("div");
-    layout.classList.add(CSS_PREFIX + "layout");
-    var header = document.createElement("div");
-    header.classList.add(CSS_PREFIX + "layout__header");
-    var centerContainer = document.createElement("div");
-    centerContainer.classList.add(CSS_PREFIX + "layout__container");
-    var content = document.createElement("div");
-    content.classList.add(CSS_PREFIX + "layout__content");
-    var m = document.createElement("div");
-    content.appendChild(m);
-    var leftSidebar = document.createElement("div");
-    leftSidebar.classList.add(CSS_PREFIX + "layout__sidebar");
-    var rightSidebar = document.createElement("div");
-    rightSidebar.classList.add(CSS_PREFIX + "layout__sidebar-right");
-    var bottom = document.createElement("div");
-    bottom.classList.add(CSS_PREFIX + "layout__footer");
-    layout.appendChild(header);
-    layout.appendChild(centerContainer);
-    layout.appendChild(bottom);
-    centerContainer.appendChild(leftSidebar);
-    centerContainer.appendChild(content);
-    content = m;
-    centerContainer.appendChild(rightSidebar);
+    var layout = createElement("layout");
+    var header = createElement("layout__header", layout);
+    var centerContainer = createElement("layout__container", layout);
+    var leftSidebar = createElement("layout__sidebar", centerContainer);
+    var contentContainer = createElement("layout__content", centerContainer);
+    var content = createElement("layout__content__wrap", contentContainer);
+    var rightSidebarContainer = createElement("layout__sidebar-right", centerContainer);
+    var rightSidebar = createElement("layout__sidebar-right__wrap", rightSidebarContainer);
+    var footer = createElement("layout__footer", layout);
     /* jshint ignore:start */
     return {
       layout: layout,
@@ -3142,7 +3147,7 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
       content: content,
       leftSidebar: leftSidebar,
       rightSidebar: rightSidebar,
-      bottom: bottom
+      footer: footer
     };
     /* jshint ignore:end */
   };
@@ -3271,7 +3276,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           this.config.settings = this.setupSettings(this.config.settings);
           this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
-          var prevLength = this.config.data.length;
           var log = this.config.settings.log;
           if (this.config.settings.excludeNull) {
             this.addFilter({
@@ -3391,8 +3395,11 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       },
       getData: {
         writable: true,
-        value: function () {
-          var filters = _.chain(this._filtersStore.filters).values().flatten().pluck("predicate").value();
+        value: function (param) {
+          param = param || {};
+          var filters = _.chain(this._filtersStore.filters).values().flatten().reject(function (filter) {
+            return _.contains(param.excludeFilter, filter.tag);
+          }).pluck("predicate").value();
           return _.filter(this.config.data, _.reduce(filters, function (newPredicate, filter) {
             return function (x) {
               return newPredicate(x) && filter(x);
@@ -3428,10 +3435,20 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         value: function () {
           this.renderTo(this._target, this._targetSizes);
         }
-
-        /*
-         removeFilter() {
-           }*/
+      },
+      removeFilter: {
+        writable: true,
+        value: function (id) {
+          var _this = this;
+          _.each(this._filtersStore.filters, function (filters, key) {
+            _this._filtersStore.filters[key] = _.reject(filters, function (item) {
+              return item.id === id;
+            });
+          });
+          if (this._target && this._targetSizes) {
+            this.renderTo(this._target, this._targetSizes);
+          }
+        }
       }
     });
 
@@ -3541,8 +3558,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       type: "COORDS.RECT",
       unit: []
     };
-    var elementGuide = guide[guide.length - 1];
-    var colorGuide = elementGuide && elementGuide.color || {};
+
     for (var i = maxDeep; i > 0; i--) {
       var currentX = x.pop();
       var currentY = y.pop();
@@ -3556,7 +3572,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
           color: config.color,
           size: config.size,
           flip: config.flip,
-          colorGuide: colorGuide
+          colorGuide: currentGuide.color
         }));
         spec.guide = _.defaults(currentGuide, {
           x: { label: currentX },
