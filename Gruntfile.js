@@ -203,6 +203,7 @@ module.exports = function(grunt) {
                 },
                 files: {
                     "css/tooltip.css": "less/tooltip.less",
+                    "css/base.css": "less/base.less",
                     "css/graphic-elements.css": "less/graphic-elements.less",
                     "css/layout.css": "less/layout.less",
                     "css/legend.css": "less/legend.less",

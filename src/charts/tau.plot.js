@@ -249,7 +249,9 @@ export class Plot extends Emitter {
         this.renderTo(this._target, this._targetSizes);
     }
 
-
+    resize(sizes = {}) {
+        this.renderTo(this._target, sizes);
+    }
     removeFilter(id) {
         _.each(this._filtersStore.filters, (filters, key) => {
             this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);

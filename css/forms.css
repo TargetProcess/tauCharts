@@ -3,6 +3,7 @@
 }
 .graphical-report__checkbox {
   position: relative;
+  display: block;
 }
 .graphical-report__checkbox__input {
   position: absolute;
