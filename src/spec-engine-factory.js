@@ -2,22 +2,29 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
 
+
+function extendGuide(guide, targetUnit, dimension, properties) {
+    var guide_dim =  guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    _.each(properties, (prop) => {
+        _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
+    });
+    _.extend(targetUnit.guide[dimension], _.omit.apply(_,[guide_dim].concat[properties]));
+}
+
 var applyCustomProps = (targetUnit, customUnit) => {
     var guide = customUnit.guide || {};
-    var guide_x = guide.hasOwnProperty('x') ? guide.x : {};
-    var guide_y = guide.hasOwnProperty('y') ? guide.y : {};
-    var guide_padding = guide.hasOwnProperty('padding') ? guide.padding : {};
+    var config = {
+        'x': ['label'],
+        'y': ['label'],
+        'size': ['label'],
+        'color': ['label'],
+        'padding': []
+    };
 
-    _.extend(targetUnit.guide.padding, guide_padding);
-
-    _.extend(targetUnit.guide.x.label, guide_x.label);
-    _.extend(targetUnit.guide.x, _.omit(guide_x, 'label'));
-
-    _.extend(targetUnit.guide.y.label, guide_y.label);
-    _.extend(targetUnit.guide.y, _.omit(guide_y, 'label'));
-
-    _.extend(targetUnit.guide, _.omit(guide, 'x', 'y', 'padding'));
-
+    _.each(config, (properties, name)=> {
+        extendGuide(guide, targetUnit, name, properties);
+    });
+    _.extend(targetUnit.guide,  _.omit.apply(_, [guide].concat(_.keys(config))));
     return targetUnit;
 };
 
@@ -54,7 +61,7 @@ var createSelectorPredicates = (root) => {
 var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize, axisLabelLimit) {
 
     if (domainValues.length === 0) {
-        return { width: 0, height: 0 };
+        return {width: 0, height: 0};
     }
 
     if (formatter === null) {
