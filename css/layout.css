@@ -1,3 +1,6 @@
+.graphical-report__chart {
+  font-family: OpenSans, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
 .graphical-report__layout {
   display: -webkit-box;
   display: -webkit-flexbox;
