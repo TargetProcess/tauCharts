@@ -280,17 +280,9 @@
             var chart = new tauCharts.Chart({
                 data: data,
                 type: getFieldData($type),
-                guide: {
-                    x:{
-                        label:'reras fdsa '
-                     },
-                    color:{
-                        brewer:brewer('YlGnBu',9)
-                    }
-                },
                 plugins: [tauCharts.api.plugins.get('tooltip')(), tauCharts.api.plugins.get('legend')()],
-                y: 'x',//['t', 'y'],
-                x: 'y',//['x', 'type'],
+                y: ['t', 'y'],
+                x: ['x', 'type'],
                 color: 'type'
                 /* size: 'y'*/
             });

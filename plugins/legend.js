@@ -47,6 +47,7 @@
                 var currentFilterID = this._currentFilters[value];
                 if (currentFilterID) {
                     this._currentFilters[value] = null;
+                    target.classList.remove('disabled');
                     chart.removeFilter(currentFilterID);
                 } else {
                     this._currentFilters[value] = 1;
@@ -57,8 +58,8 @@
                             return item[parsedValue.dimension] != parsedValue.value;
                         }
                     };
+                    target.classList.add('disabled');
                     this._currentFilters[value] = chart.addFilter(filter);
-
                 }
 
 
