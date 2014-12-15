@@ -93,6 +93,7 @@
                 }
             },
             render: function (data, fields) {
+                fields = _.unique(fields);
                 return fields.map(function (field) {
                     var v = data[field];
                     var value = (_.isNull(v) || _.isUndefined(v)) ? ('No ' + field) : v;
@@ -101,6 +102,9 @@
                         value: value
                     });
                 }, this).join('');
+            },
+            onRender:function(){
+                this._hide();
             },
             _exclude: function () {
                 this._chart.addFilter({

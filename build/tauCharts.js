@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.7 - 2014-12-15
+/*! tauCharts - v0.2.8 - 2014-12-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -3441,6 +3441,13 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         writable: true,
         value: function () {
           this.renderTo(this._target, this._targetSizes);
+        }
+      },
+      resize: {
+        writable: true,
+        value: function (sizes) {
+          if (sizes === undefined) sizes = {};
+          this.renderTo(this._target, sizes);
         }
       },
       removeFilter: {

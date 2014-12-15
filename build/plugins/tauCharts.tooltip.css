@@ -19,6 +19,7 @@
   transition-duration: 100ms;
 }
 .graphical-report__tooltip__content {
+  overflow: hidden;
   padding: 15px 15px 10px 15px;
 }
 .graphical-report__tooltip__exclude {

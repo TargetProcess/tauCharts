@@ -1,5 +1,6 @@
 .graphical-report__legend {
   padding: 20px;
+  width: 120px;
 }
 .graphical-report__legend__title,
 .graphical-report__legend__item {
