@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.5 - 2014-12-15
+/*! tauCharts - v0.2.7 - 2014-12-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1992,22 +1992,29 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
 
 
+
+  function extendGuide(guide, targetUnit, dimension, properties) {
+    var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    _.each(properties, function (prop) {
+      _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
+    });
+    _.extend(targetUnit.guide[dimension], _.omit.apply(_, [guide_dim].concat[properties]));
+  }
+
   var applyCustomProps = function (targetUnit, customUnit) {
     var guide = customUnit.guide || {};
-    var guide_x = guide.hasOwnProperty("x") ? guide.x : {};
-    var guide_y = guide.hasOwnProperty("y") ? guide.y : {};
-    var guide_padding = guide.hasOwnProperty("padding") ? guide.padding : {};
+    var config = {
+      x: ["label"],
+      y: ["label"],
+      size: ["label"],
+      color: ["label"],
+      padding: []
+    };
 
-    _.extend(targetUnit.guide.padding, guide_padding);
-
-    _.extend(targetUnit.guide.x.label, guide_x.label);
-    _.extend(targetUnit.guide.x, _.omit(guide_x, "label"));
-
-    _.extend(targetUnit.guide.y.label, guide_y.label);
-    _.extend(targetUnit.guide.y, _.omit(guide_y, "label"));
-
-    _.extend(targetUnit.guide, _.omit(guide, "x", "y", "padding"));
-
+    _.each(config, function (properties, name) {
+      extendGuide(guide, targetUnit, name, properties);
+    });
+    _.extend(targetUnit.guide, _.omit.apply(_, [guide].concat(_.keys(config))));
     return targetUnit;
   };
 
