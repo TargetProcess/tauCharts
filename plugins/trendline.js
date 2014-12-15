@@ -395,13 +395,16 @@
 
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
-                '<div class="graphical-report__trendlinepanel__title">',
-                '<input type="checkbox" class="i-role-show-trend <%= hideControls %>" <%= showTrend %> />',
-                '<%= title %>',
+                '<div class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
+                '<span class="graphical-report__checkbox__icon"></span>',
+                '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend <%= hideControls %>" <%= showTrend %> />',
+                '<span class="graphical-report__checkbox__text">',
+                    '<%= title %>',
+                '</span>',
                 '</div>',
 
                 '<div>',
-                '<select class="i-role-change-model graphical-report__trendlinepanel__control <%= hideControls %>">',
+                '<select class="i-role-change-model graphical-report__select graphical-report__trendlinepanel__control <%= hideControls %>">',
                 '<%= models %> />',
                 '</select>',
                 '</div>',
