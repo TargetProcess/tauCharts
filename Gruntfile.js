@@ -110,6 +110,10 @@ module.exports = function(grunt) {
                         dest: 'build/css/<%= pkg.name %>.colorbrewer.min.css'
                     },
                     {
+                        src: 'css/forms.css',
+                        dest: 'build/plugins/<%= pkg.name %>.forms.min.css'
+                    },
+                    {
                         src: 'css/tooltip.css',
                         dest: 'build/plugins/<%= pkg.name %>.tooltip.min.css'
                     },
@@ -134,6 +138,10 @@ module.exports = function(grunt) {
                     {
                         src: 'css/colorbrewer.css',
                         dest: 'build/css/<%= pkg.name %>.colorbrewer.css'
+                    },
+                    {
+                        src: 'css/forms.css',
+                        dest: 'build/css/<%= pkg.name %>.forms.css'
                     },
                     {
                         src: 'src/addons/color-brewer.js',
@@ -198,6 +206,7 @@ module.exports = function(grunt) {
                     "css/graphic-elements.css": "less/graphic-elements.less",
                     "css/layout.css": "less/layout.less",
                     "css/legend.css": "less/legend.less",
+                    "css/forms.css": "less/forms.less",
                     "css/trendline.css": "less/trendline.less"
                 }
             }
