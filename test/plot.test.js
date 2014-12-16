@@ -130,10 +130,10 @@ define(function (require) {
             var height = parseInt(svg.attr('height'),10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            /*if(modernizer.flexbox) {
+            if(modernizer.flexbox) {
                 expect(width).to.equal(expectedWidth);
                 expect(height).to.equal(expectedHeight);
-            }*/
+            }
 
 
         });
@@ -148,10 +148,10 @@ define(function (require) {
             var height = parseInt(svg.attr('height'),10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            /*if(modernizer.flexbox) {
+            if(modernizer.flexbox) {
                 expect(width).to.equal(expectedWidth);
                 expect(height).to.equal(expectedHeight);
-            }*/
+            }
             //todo rework resize test
             plot.resize({width:500,height:500});
             svg = d3.select(div).selectAll('svg');
@@ -166,8 +166,8 @@ define(function (require) {
             width =  parseInt(svg.attr('width'),10);
             height = parseInt(svg.attr('height'),10);
             if(modernizer.flexbox) {
-                expect(width).to.equal(640);
-                expect(height).to.equal(600);
+                expect(width).to.equal(expectedWidth);
+                expect(height).to.equal(expectedHeight);
             }
         });
 
