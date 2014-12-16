@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.10 - 2014-12-16
+/*! tauCharts - v0.2.11 - 2014-12-16
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1926,22 +1926,23 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
       label: ""
     });
     guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : { text: guide[dimension].label };
-    guide[dimension].label = _.defaults(guide[dimension].label, {
+    guide[dimension].label = _.defaults(guide[dimension].label, extend || {}, {
       padding: 32,
       rotate: 0,
       textAnchor: "middle"
-    }, extend || {});
+    });
+
     return guide[dimension];
   };
   var extendAxis = function (guide, dimension, extend) {
-    guide[dimension] = _.defaults(guide[dimension], {
+    guide[dimension] = _.defaults(guide[dimension], extend || {}, {
       padding: 0,
       density: 30,
       rotate: 0,
       tickPeriod: null,
       tickFormat: null,
       autoScale: true
-    }, extend);
+    });
     guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
     return guide[dimension];
   };
@@ -1958,7 +1959,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
       textAnchor: "middle"
     });
 
-    node.guide.y = extendLabel(node.guide, "y");
+    node.guide.y = extendLabel(node.guide, "y", { rotate: -90 });
     node.guide.y = extendAxis(node.guide, "y", {
       cssClass: "y axis",
       scaleOrient: "left",
