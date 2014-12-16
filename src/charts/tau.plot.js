@@ -160,7 +160,6 @@ export class Plot extends Emitter {
         this._targetSizes = size;
         this._layout.content.innerHTML = '';
 
-
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
         var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
@@ -207,6 +206,7 @@ export class Plot extends Emitter {
             this
         );
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
+        this._layout.rightSidebar.style.maxHeight = size.height + 'px';
         this.fire('render', svgXElement.node());
     }
 
