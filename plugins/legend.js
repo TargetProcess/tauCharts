@@ -32,7 +32,7 @@
                     var target = e.target;
                     while (target !== e.currentTarget && target !== null) {
                         if (target.classList.contains('graphical-report__legend__item')) {
-                            callback(e,target);
+                            callback(e, target);
                         }
                         target = target.parentNode;
                     }
@@ -48,22 +48,26 @@
                     this._delegateEvent(this._container, 'mouseover', 'graphical-report__legend__item', function (e, currentTarget) {
                         this._highlightToggle(currentTarget, chart, true);
                     }.bind(this));
-                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item', function (e, currentTarget) {
+                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item:not(.disabled)', function (e, currentTarget) {
                         this._highlightToggle(currentTarget, chart, false);
                     }.bind(this));
                 }
             },
             _highlightToggle: function (target, chart, toggle) {
                 var svg = chart.getSVG();
+                var d3Chart = d3.select(svg);
+                if(target.classList.contains('disabled')) {
+                    toggle = false;
+                }
                 if (toggle) {
                     var value = JSON.parse(target.getAttribute('data-value'));
                     var color = value.color;
-                    d3.select(svg).selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
-                    d3.select(svg).selectAll('.i-role-datum.' + color).classed({'graphical-report__highlighted': true});
-                    svg.classList.toggle('graphical-report__highlighted_chart', true);
+                    d3Chart.selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
+                    d3Chart.selectAll('.i-role-datum.' + color).classed({'graphical-report__highlighted': true});
+                    d3Chart.classed({'graphical-report__highlighted_chart': true});
                 } else {
-                    d3.select(svg).selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
-                    svg.classList.toggle('graphical-report__highlighted_chart', false);
+                    d3Chart.selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
+                    d3Chart.classed({'graphical-report__highlighted_chart': false});
                 }
 
             },
