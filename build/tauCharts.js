@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.11 - 2014-12-16
+/*! tauCharts - v0.2.12 - 2014-12-16
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -3254,6 +3254,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
   var Plot = (function (Emitter) {
     var Plot = function Plot(config) {
       Emitter.call(this);
+      this._svg = null;
       this._filtersStore = {
         filters: {},
         tick: 0
@@ -3335,6 +3336,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       renderTo: {
         writable: true,
         value: function (target, xSize) {
+          this._svg = null;
           var container = d3.select(target);
           var containerNode = container.node();
           this._target = target;
@@ -3396,9 +3398,10 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
           var renderGraph = reader.calcLayout(layoutGraph, size);
           var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), this);
+          this._svg = svgXElement.node();
           svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
           this._layout.rightSidebar.style.maxHeight = size.height + "px";
-          this.fire("render", svgXElement.node());
+          this.fire("render", this._svg);
         }
       },
       getData: {
@@ -3422,6 +3425,12 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         value: function (data) {
           this.config.data = data;
           this.renderTo(this._target, this._targetSizes);
+        }
+      },
+      getSVG: {
+        writable: true,
+        value: function () {
+          return this._svg;
         }
       },
       addFilter: {

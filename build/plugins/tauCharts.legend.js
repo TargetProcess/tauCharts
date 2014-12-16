@@ -24,23 +24,52 @@
         }
     };
     var _ = tauCharts.api._;
+    var d3 = tauCharts.api.d3;
     var legend = function () {
         return {
-            init: function (chart) {
-                if (this.isNeedLegend(chart)) {
-                    this._currentFilters = {};
-                    this._container = chart.insertToRightSidebar(this.containerTemplate);
-                    this._container.addEventListener('click', function (e) {
-                        var target = e.target;
-                        while (target !== e.currentTarget && target !== null) {
-                            if (target.classList.contains('graphical-report__legend__item')) {
-                                this._toggleLegendItem(target, chart);
-                            }
-                            target = target.parentNode;
+            _delegateEvent: function (element, eventName, selector, callback) {
+                element.addEventListener(eventName, function (e) {
+                    var target = e.target;
+                    while (target !== e.currentTarget && target !== null) {
+                        if (target.classList.contains('graphical-report__legend__item')) {
+                            callback(e, target);
                         }
-
+                        target = target.parentNode;
+                    }
+                });
+            },
+            init: function (chart) {
+                if (this._isNeedLegend(chart)) {
+                    this._currentFilters = {};
+                    this._container = chart.insertToRightSidebar(this._containerTemplate);
+                    this._delegateEvent(this._container, 'click', 'graphical-report__legend__item', function (e, currentTarget) {
+                        this._toggleLegendItem(currentTarget, chart);
+                    }.bind(this));
+                    this._delegateEvent(this._container, 'mouseover', 'graphical-report__legend__item', function (e, currentTarget) {
+                        this._highlightToggle(currentTarget, chart, true);
+                    }.bind(this));
+                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item:not(.disabled)', function (e, currentTarget) {
+                        this._highlightToggle(currentTarget, chart, false);
                     }.bind(this));
                 }
+            },
+            _highlightToggle: function (target, chart, toggle) {
+                var svg = chart.getSVG();
+                var d3Chart = d3.select(svg);
+                if(target.classList.contains('disabled')) {
+                    toggle = false;
+                }
+                if (toggle) {
+                    var value = JSON.parse(target.getAttribute('data-value'));
+                    var color = value.color;
+                    d3Chart.selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
+                    d3Chart.selectAll('.i-role-datum.' + color).classed({'graphical-report__highlighted': true});
+                    d3Chart.classed({'graphical-report__highlighted_chart': true});
+                } else {
+                    d3Chart.selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
+                    d3Chart.classed({'graphical-report__highlighted_chart': false});
+                }
+
             },
             _toggleLegendItem: function (target, chart) {
                 var value = target.getAttribute('data-value');
@@ -64,7 +93,7 @@
 
 
             },
-            isNeedLegend: function (chart) {
+            _isNeedLegend: function (chart) {
                 var conf = chart.getConfig();
                 return Boolean(dfs(conf.spec.unit));
             },
@@ -83,9 +112,9 @@
                     return colorMap;
                 }, {});
             },
-            containerTemplate: '<div class="graphical-report__legend"></div>',
-            template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
-            itemTemplate: _.template([
+            _containerTemplate: '<div class="graphical-report__legend"></div>',
+            _template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
+            _itemTemplate: _.template([
                 '<div data-value=\'<%=value%>\' class="graphical-report__legend__item <%=classDisabled%>">',
                 '<div class="graphical-report__legend__guide <%=color%>" ></div><%=label%>',
                 '</div>'
@@ -98,18 +127,18 @@
                     var conf = chart.getConfig();
                     var configUnit = dfs(conf.spec.unit);
                     configUnit.guide = configUnit.guide || {};
-                    configUnit.guide.color =  this._unit.guide.color;
+                    configUnit.guide.color = this._unit.guide.color;
                     configUnit.guide.color.brewer = colorBrewer;
                     var items = _.map(colorBrewer, function (item, key) {
-                        var value = JSON.stringify({dimension: colorDimension, value: key});
-                        return this.itemTemplate({
+                        var value = JSON.stringify({dimension: colorDimension, value: key, color: item});
+                        return this._itemTemplate({
                             color: item,
                             classDisabled: this._currentFilters[value] ? 'disabled' : '',
                             label: _.escape(key),
                             value: value
                         });
                     }, this).join('');
-                    this._container.innerHTML = this.template({
+                    this._container.innerHTML = this._template({
                         items: items,
                         name: this._unit.guide.color.label.text || this._unit.options.color.dimension
                     });
