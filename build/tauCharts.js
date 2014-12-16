@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.8 - 2014-12-15
+/*! tauCharts - v0.2.9 - 2014-12-16
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -3358,7 +3358,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           this._targetSizes = size;
           this._layout.content.innerHTML = "";
 
-
           var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
           var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
@@ -3397,6 +3396,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           var renderGraph = reader.calcLayout(layoutGraph, size);
           var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), this);
           svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
+          this._layout.rightSidebar.style.maxHeight = size.height + "px";
           this.fire("render", svgXElement.node());
         }
       },
