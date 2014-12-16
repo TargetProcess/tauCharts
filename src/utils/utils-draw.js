@@ -292,22 +292,31 @@ var extendLabel = function (guide, dimension, extend) {
         label: ''
     });
     guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : {text: guide[dimension].label};
-    guide[dimension].label = _.defaults(guide[dimension].label, {
-        padding: 32,
-        rotate: 0,
-        textAnchor: 'middle'
-    }, extend || {});
+    guide[dimension].label = _.defaults(
+        guide[dimension].label,
+        extend || {},
+        {
+            padding: 32,
+            rotate: 0,
+            textAnchor: 'middle'
+        }
+    );
+
     return guide[dimension];
 };
 var extendAxis = function (guide, dimension, extend) {
-    guide[dimension] = _.defaults(guide[dimension], {
-        padding: 0,
-        density: 30,
-        rotate: 0,
-        tickPeriod: null,
-        tickFormat: null,
-        autoScale: true
-    }, extend);
+    guide[dimension] = _.defaults(
+        guide[dimension],
+        extend || {},
+        {
+            padding: 0,
+            density: 30,
+            rotate: 0,
+            tickPeriod: null,
+            tickFormat: null,
+            autoScale: true
+        }
+    );
     guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
     return guide[dimension];
 };
@@ -324,7 +333,7 @@ var applyNodeDefaults = (node) => {
         textAnchor: 'middle'
     });
 
-    node.guide.y = extendLabel(node.guide, 'y');
+    node.guide.y = extendLabel(node.guide, 'y',{rotate: -90});
     node.guide.y = extendAxis(node.guide, 'y', {
         cssClass: 'y axis',
         scaleOrient: 'left',
