@@ -69,6 +69,7 @@ var traverseToDeep = (root, size, localSettings) => {
 export class Plot extends Emitter {
     constructor(config) {
         super();
+        this._svg = null;
         this._filtersStore = {
             filters: {},
             tick: 0
@@ -136,6 +137,7 @@ export class Plot extends Emitter {
     }
 
     renderTo(target, xSize) {
+        this._svg = null;
         var container = d3.select(target);
         var containerNode = container.node();
         this._target = target;
@@ -205,9 +207,10 @@ export class Plot extends Emitter {
                 .attr("height", size.height),
             this
         );
+        this._svg = svgXElement.node();
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this._layout.rightSidebar.style.maxHeight = size.height + 'px';
-        this.fire('render', svgXElement.node());
+        this.fire('render', this._svg);
     }
 
     getData(param) {
@@ -232,7 +235,9 @@ export class Plot extends Emitter {
         this.config.data = data;
         this.renderTo(this._target, this._targetSizes);
     }
-
+    getSVG() {
+        return this._svg;
+    }
     addFilter(filter) {
         var tag = filter.tag;
         var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
