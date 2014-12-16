@@ -147,26 +147,50 @@
     /* Linechart  */
     &__line {
         fill: none;
+        transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
     }
     &__dot-line {
         opacity: 1;
+        transition: stroke-opacity 0.2s ease;
     }
     /*  Bar  */
     &__bar {
+        shape-rendering: crispEdges;
+        transition: opacity 0.2s ease;
         //fill: steelblue;
     }
 
     /*  PLUGINS  */
 
     /*  Highlighter  */
-    &__dot.highlighted {
+    &__highlighted_chart &__dot&__highlighted {
         stroke-width: 6;
         stroke-opacity: 0.4;
         opacity: 1;
     }
-    &__highlighted {
-        stroke-width: 6;
-        stroke-opacity: 0.4;
+
+    &__highlighted_chart &__line&__highlighted {
+        stroke-opacity: 1;
+        stroke-width: 3;
+    }
+
+    &__highlighted_chart &__bar&__highlighted {
+        stroke-opacity: 1;
         opacity: 1;
     }
+
+    &__highlighted_chart &__line, {
+        stroke-opacity: 0.2;
+        
+    }
+
+    &__highlighted_chart &__bar{
+        opacity: 0.2;
+
+    }
+
+    &__highlighted_chart &__dot{
+        opacity: 0.2;
+    }
+
 }

@@ -60,8 +60,10 @@
                     var color = value.color;
                     d3.select(svg).selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
                     d3.select(svg).selectAll('.i-role-datum.' + color).classed({'graphical-report__highlighted': true});
+                    svg.classList.toggle('graphical-report__highlighted_chart', true);
                 } else {
                     d3.select(svg).selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
+                    svg.classList.toggle('graphical-report__highlighted_chart', false);
                 }
 
             },

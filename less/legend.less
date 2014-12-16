@@ -7,9 +7,16 @@
         width: 160px;
         box-sizing: border-box;
 
-        &__title,
+        &__title{
+            margin: 0 0 10px 10px;
+        }
+
         &__item {
-            margin: 0 0 10px 0;
+            padding: 10px 30px;
+
+            &:hover {
+                background-color: rgba(189, 195, 205, 0.2);
+            }
         }
 
         &__title {
@@ -19,7 +26,6 @@
         }
 
         &__item {
-            padding-left: 25px;
             position: relative;
             font-size: 13px;
             cursor: pointer;
@@ -36,8 +42,8 @@
             border: 1px solid transparent;
             border-radius: 50%;
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 10px;
+            left: 10px;
 
         }
     }
@@ -48,6 +54,11 @@
     .graphical-report__legend__item .color@{n}-@{i} {
         background: extract(@category-colors, @i);
     }
+
+    .graphical-report__legend__item.disabled .color@{n}-@{i} {
+        border: 1px solid extract(@category-colors, @i);
+        background-color: transparent;
+    }    
 
     .generate-colors(@n; (@i + 1));
 }
