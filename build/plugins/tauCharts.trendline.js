@@ -397,7 +397,7 @@
             template: _.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
                 '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend <%= hideControls %>" <%= showTrend %> />',
-                '<span class="graphical-report__checkbox__icon"></span>',
+                '<span class="graphical-report__checkbox__icon <%= hideControls %>"></span>',
                 '<span class="graphical-report__checkbox__text">',
                     '<%= title %>',
                 '</span>',
@@ -409,7 +409,7 @@
                 '</select>',
                 '</div>',
 
-                '<div><%= error %></div>',
+                '<div class="graphical-report__error-message"><%= error %></div>',
                 '</div>'
             ].join('')),
 
