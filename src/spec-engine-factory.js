@@ -131,7 +131,7 @@ var getTickFormat = (dim, meta, defaultFormats) => {
 };
 
 
-var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertical) {
+var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
 
 console.log('calcUnitGuide');
 
@@ -262,20 +262,35 @@ console.log('calcUnitGuide');
     unit.guide.x.density = settings.xDensityKoeff * xTickBox.w;
     unit.guide.y.density = settings.yDensityKoeff * yTickBox.h;
 
-    //unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
-    //unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
+    if (!inlineLabels) {
+        unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
+        unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
-    unit.guide.x.label.padding = 0 + xFontLabelHeight;
-    unit.guide.y.label.padding = 0;
+        let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+        let yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
-    var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
-    var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+        unit.guide.padding.b = xAxisPadding + xLabelPadding;
+        unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
-    unit.guide.padding.b = xAxisPadding + xLabelPadding;
-    unit.guide.padding.l = yAxisPadding + yLabelPadding;
+        unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+        unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+    }
+    else {
+        unit.guide.x.label.padding = 0;
+        unit.guide.y.label.padding = 0 - distToYAxisLabel;
 
-    unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
-    unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+        let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+        let yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
+        unit.guide.padding.b = xAxisPadding + xLabelPadding;
+        unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+        unit.guide.padding.b = xAxisPadding + xFontH;
+        unit.guide.padding.l = yAxisPadding + yFontW;
+
+        unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+        unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+    }
 
     unit.guide.x.tickFontHeight = maxXTickSize.height;
     unit.guide.y.tickFontHeight = maxYTickSize.height;
@@ -559,6 +574,7 @@ var SpecEngineTypeMap = {
                             },
                             settings),
                         true,
+                        true,
                         true);
                 }
 
@@ -573,12 +589,13 @@ var SpecEngineTypeMap = {
                         {
                             xAxisPadding: 0,
                             yAxisPadding: 0,
-                            distToXAxisLabel: 0,
-                            distToYAxisLabel: 0
+                            distToXAxisLabel: 2,
+                            distToYAxisLabel: 2
                         },
                         settings),
                     false,
-                    true);
+                    true,
+                    false);
             });
 
         return spec;
