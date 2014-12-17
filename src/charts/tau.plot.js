@@ -138,6 +138,7 @@ export class Plot extends Emitter {
 
     renderTo(target, xSize) {
         this._svg = null;
+        this._defaultSize  = _.clone(xSize);
         var container = d3.select(target);
         var containerNode = container.node();
         this._target = target;
@@ -150,6 +151,7 @@ export class Plot extends Emitter {
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
         var size = xSize || {};
+        this._layout.content.innerHTML = '';
         if (!size.width || !size.height) {
             size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
         }
@@ -233,7 +235,7 @@ export class Plot extends Emitter {
 
     setData(data) {
         this.config.data = data;
-        this.renderTo(this._target, this._targetSizes);
+        this.refresh();
     }
     getSVG() {
         return this._svg;
@@ -244,14 +246,14 @@ export class Plot extends Emitter {
         var id = this._filtersStore.tick++;
         filter.id = id;
         filters.push(filter);
-        if (this._target && this._targetSizes) {
-            this.renderTo(this._target, this._targetSizes);
-        }
+        this.refresh();
         return id;
     }
 
     refresh() {
-        this.renderTo(this._target, this._targetSizes);
+        if(this._target) {
+            this.renderTo(this._target,this._defaultSize);
+        }
     }
 
     resize(sizes = {}) {
@@ -261,8 +263,6 @@ export class Plot extends Emitter {
         _.each(this._filtersStore.filters, (filters, key) => {
             this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
         });
-        if (this._target && this._targetSizes) {
-            this.renderTo(this._target, this._targetSizes);
-        }
+        this.refresh();
     }
 }
