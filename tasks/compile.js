@@ -53,6 +53,13 @@ module.exports = function (grunt) {
                 },
                 optimize: 'none',
                 done: function (done, response) {
+                    var bowerConfig = grunt.file.readJSON('bower.json');
+                    var componentConfig = grunt.file.readJSON('component.json');
+                    var currentVersion = grunt.config.get('pkg').version;
+                    bowerConfig.version = currentVersion;
+                    componentConfig.version = currentVersion;
+                    grunt.file.write('bower.json', JSON.stringify(bowerConfig, null, 2));
+                    grunt.file.write('component.json', JSON.stringify(componentConfig, null, 2));
                     done();
                 },
 
