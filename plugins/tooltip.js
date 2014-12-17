@@ -18,7 +18,9 @@
      */
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
-
+    var dim = function (x0, x1, y0, y1) {
+                return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+        };
     function tooltip(settings) {
         settings = settings || {};
         return {
@@ -121,7 +123,21 @@
                 return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
             },
             _calculateLengthToLine: function (x0, y0, x1, y1, x2, y2) {
-                return Math.abs((x2 - x1) * (y0 - y1) - (y2 - y1) * (x0 - x1)) / Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+                var a1 = {x: (x1 - x0), y: (y1 - y0)};
+                var b1 = {x: (x2 - x0), y: (y2 - y0)};
+                var a1b1 = a1.x * b1.x + a1.y * b1.y;
+                if (a1b1 < 0) {
+                    return dim(x0, x2, y0, y2);
+                }
+
+                var a2 = {x: (x0 - x1), y: (y0 - y1)};
+                var b2 = {x: (x2 - x1), y: (y2 - y1)};
+                var a2b2 = a2.x * b2.x + a2.y * b2.y;
+                if (a2b2 < 0) {
+                    return dim(x1, x2, y1, y2);
+                }
+
+                return Math.abs(((x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)) / dim(x0, x1, y0, y1));
             },
             _generateKey: function (data) {
                 return JSON.stringify(data);
@@ -157,11 +173,13 @@
                     var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
                         var secondPoint;
                         if ((index + 1) === data.length) {
-                            secondPoint = data[index - 1];
+                            var temp = point;
+                            point = data[index - 1];
+                            secondPoint = temp;
                         } else {
                             secondPoint = data[index + 1];
                         }
-                        var h = this._calculateLengthToLine(mosueCoord[0], mosueCoord[1], point.x, point.y, secondPoint.x, secondPoint.y);
+                        var h = this._calculateLengthToLine(point.x, point.y, secondPoint.x, secondPoint.y, mosueCoord[0], mosueCoord[1]);
                         if (h < memo.h) {
                             memo.h = h;
                             memo.points = {
