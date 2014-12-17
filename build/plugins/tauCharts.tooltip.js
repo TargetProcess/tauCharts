@@ -19,8 +19,9 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
     var dim = function (x0, x1, y0, y1) {
-                return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
-        };
+        return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+    };
+
     function tooltip(settings) {
         settings = settings || {};
         return {
@@ -41,7 +42,8 @@
                 if (this.circle) {
                     this.circle.remove();
                 }
-                this.circle = container.append("circle")
+                this.circle = container
+                    .append("circle")
                     .attr("cx", x)
                     .attr("cy", y)
                     .attr('class', color)
@@ -52,6 +54,10 @@
                 this.circle.node().addEventListener('mouseleave', function () {
                     this._hide();
                 }.bind(this), false);
+            },
+            formatters:{},
+            _getFormatter:function(field){
+                return this.formatters[field] || _.identity;
             },
             init: function (chart) {
                 this._chart = chart;
@@ -101,11 +107,11 @@
                     var value = (_.isNull(v) || _.isUndefined(v)) ? ('No ' + field) : v;
                     return this._templateItem({
                         label: field,
-                        value: value
+                        value: this._getFormatter(field)(value)
                     });
                 }, this).join('');
             },
-            onRender:function(){
+            onRender: function () {
                 this._hide();
             },
             _exclude: function () {
@@ -214,7 +220,7 @@
                 var placeCoord = d3.mouse(document.body);
                 var coord = d3.mouse(data.element);
                 clearTimeout(this._timeoutShowId);
-                this._timeoutShowId = _.delay(this._onElementMouseOver.bind(this),200, chart, data, coord, placeCoord);
+                this._timeoutShowId = _.delay(this._onElementMouseOver.bind(this), 200, chart, data, coord, placeCoord);
             },
             onElementMouseOut: function (mouseСoord, placeCoord) {
                 this._hide();
