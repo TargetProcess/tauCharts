@@ -409,7 +409,7 @@
                 '</select>',
                 '</div>',
 
-                '<div class="graphical-report__error-message"><%= error %></div>',
+                '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>',
                 '</div>'
             ].join('')),
 
