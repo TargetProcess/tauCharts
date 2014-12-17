@@ -122,12 +122,7 @@ export class UnitDomainMixin {
 
                 category: getDomainSortStrategy('category'),
 
-                order: (dim, fnMapperId, domain) => {
-                    var metaOrder = getOrder(dim);
-                    return (metaOrder) ?
-                        _.union(domain, metaOrder) : // arguments order is important
-                        domain;
-                },
+                order: getDomainSortStrategy('order'),
 
                 measure: getDomainSortStrategy('measure'),
 
@@ -192,7 +187,6 @@ export class UnitDomainMixin {
 
             var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
             var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
-
             return {
                 extract: (x) => fVal(fMap(x)),
                 values: autoScaledVals,
@@ -207,7 +201,6 @@ export class UnitDomainMixin {
             var dimx = _.defaults({}, meta[scaleDim]);
 
             var info = _scaleMeta(scaleDim, options);
-
             var func = rangeMethods[dimx.scale](info.values, interval, opts);
 
             var wrap = (domainPropObject) => func(info.extract(domainPropObject));

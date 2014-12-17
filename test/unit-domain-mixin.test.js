@@ -195,9 +195,9 @@ define(function (require) {
 
 
             var scalePriority = unit.scaleTo('priority', [0, 90], {map: 'name'});
-            expect(scalePriority(data[0].priority)).to.equal(15);
-            expect(scalePriority(data[1].priority)).to.equal(45);
-            expect(scalePriority(data[2].priority)).to.equal(75);
+            expect(scalePriority(data[1].priority)).to.equal(15); // null
+            expect(scalePriority(data[0].priority)).to.equal(45); // 1
+            expect(scalePriority(data[2].priority)).to.equal(75); // 3
             assert.equal(scalePriority.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
 
             var propName = 'business value';
@@ -208,12 +208,11 @@ define(function (require) {
 
             var scaleRole = unit.scaleTo('role', [0, 100]);
 
-            expect(scaleRole('Feature Owner')).to.equal(10);
-            expect(scaleRole('Some Unknown role')).to.equal(30);
+            expect(scaleRole('Product Owner')).to.equal(10);
+            expect(scaleRole('Feature Owner')).to.equal(30);
             expect(scaleRole('QA')).to.equal(50);
-
-            expect(scaleRole('Product Owner')).to.equal(70);
-            expect(scaleRole('Developer')).to.equal(90);
+            expect(scaleRole('Developer')).to.equal(70);
+            expect(scaleRole('Some Unknown role')).to.equal(90);
 
             assert.equal(scaleRole.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
         });
