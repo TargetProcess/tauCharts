@@ -20,7 +20,6 @@
   display: none;
 }
 .graphical-report__trendline {
-  fill: none;
   stroke-dasharray: 7, 5;
 }
 .graphical-report__trendline__tip {
