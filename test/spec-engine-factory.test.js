@@ -116,7 +116,7 @@ define(function (require) {
             expect(x.rotate).to.equal(90);
             expect(x.textAnchor).to.equal('start');
             expect(x.tickFormat).to.equal(null);
-            expect(x.label.text).to.equal('TEAM');
+            expect(x.label.text).to.equal('team');
             expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
@@ -126,7 +126,7 @@ define(function (require) {
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal('x-num-auto');
-            expect(y.label.text).to.equal('COUNT');
+            expect(y.label.text).to.equal('count');
             expect(y.tickFontHeight).to.equal(10);
 
             // 20 padding to X axis line
@@ -166,7 +166,7 @@ define(function (require) {
             expect(x.rotate).to.equal(0);
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal('x-num-auto');
-            expect(x.label.text).to.equal('COUNT');
+            expect(x.label.text).to.equal('count');
             expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
@@ -176,7 +176,7 @@ define(function (require) {
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal('x-time-quarter');
-            expect(y.label.text).to.equal('DATE');
+            expect(y.label.text).to.equal('date');
             expect(y.tickFontHeight).to.equal(10);
 
             // 20 padding to X axis line
@@ -251,7 +251,7 @@ define(function (require) {
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
             expect(x.tickFormatNullAlias).to.equal('No team');
-            expect(x.label.text).to.equal('TEAM > DATE');
+            expect(x.label.text).to.equal('team > date');
             expect(x.tickFontHeight).to.equal(10);
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width * measurer.xDensityKoeff);
 
@@ -295,7 +295,7 @@ define(function (require) {
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');
             expect(py.tickFontHeight).to.equal(10);
-            expect(py.label.text).to.equal('COUNT');
+            expect(py.label.text).to.equal('count');
             expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width * measurer.yDensityKoeff);
 
 

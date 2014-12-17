@@ -52,8 +52,11 @@ var traverseToDeep = (root, size, localSettings) => {
 
         var xDelta = 0 - s + root.guide.x.$maxTickTextH;
 
-        root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
-        root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
+        root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
+
+        if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
+            root.guide.x.label.padding += xDelta;
+        }
     }
 
     var newSize = {

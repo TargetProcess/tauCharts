@@ -15,7 +15,11 @@ var FORMATS_MAP = {
 
     'day': d3.time.format('%d-%b-%Y'),
 
+    'day-short': d3.time.format('%d-%b'),
+
     'week': d3.time.format('%d-%b-%Y'),
+
+    'week-short': d3.time.format('%d-%b'),
 
     'week-range': (x) => {
         var sWeek = new Date(x);
@@ -29,6 +33,13 @@ var FORMATS_MAP = {
         var d = new Date(x);
         var m = d.getMonth();
         var formatSpec = (m === 0) ? '%B, %Y' : '%B';
+        return d3.time.format(formatSpec)(x);
+    },
+
+    'month-short': (x) => {
+        var d = new Date(x);
+        var m = d.getMonth();
+        var formatSpec = (m === 0) ? '%b \'%Y' : '%b';
         return d3.time.format(formatSpec)(x);
     },
 

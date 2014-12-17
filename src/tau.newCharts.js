@@ -77,8 +77,8 @@ var api = {
         xAxisPadding: 20,
         yAxisPadding: 20,
 
-        xFontLabelHeight: 15,
-        yFontLabelHeight: 15,
+        xFontLabelHeight: 10,
+        yFontLabelHeight: 10,
 
         xDensityKoeff: 2.2,
         xMinimumDensityKoeff: 1.1,
