@@ -4,7 +4,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var $ = require('jquery');
-    var tauChart = require('tau_modules/tau.newCharts');
+    var tauCharts = require('tau_modules/tau.newCharts');
     var div, spec;
     var config = {
 
@@ -54,7 +54,7 @@ define(function (require) {
         });
 
         it('api test element events', function (done) {
-            var plot = new tauChart.Plot(config);
+            var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
             var event = ['elementclick', 'elementmouseover', 'elementmouseout', 'elementmousemove'];
             event.forEach(function (e) {
@@ -140,7 +140,7 @@ define(function (require) {
                     }
                 ]
             };
-            var plot = new tauChart.Plot(config);
+            var plot = new tauCharts.Plot(config);
             plot.fire('elementclick');
             plot.fire('customevent');
             plot.destroy();
@@ -152,7 +152,7 @@ define(function (require) {
 
         });
         it('api test insertToRightSidebar', function () {
-            var plot = new tauChart.Plot(config);
+            var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
             var $div = $('<div>test</div>>');
             var divTest = $div.get(0);
@@ -168,7 +168,7 @@ define(function (require) {
 
         });
         it('api test set and get data', function (done) {
-            var plot = new tauChart.Plot(config);
+            var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
 
             expect(plot.getData()).to.eql(config.data);
@@ -182,22 +182,59 @@ define(function (require) {
 
         });
         it('api test getConfig', function () {
-            var plot = new tauChart.Plot(config);
+            var plot = new tauCharts.Plot(config);
             var configChart = plot.getConfig();
             expect(schemes.config.errors(configChart)).to.not.be.ok;
         });
+        it('api test getSVG', function () {
+            var plot = new tauCharts.Plot(config);
+            var svg = plot.getSVG();
+            expect(svg).to.be.equals(null);
+            plot.renderTo(div);
+            svg = plot.getSVG();
+            expect(svg).to.eql(div.querySelectorAll('svg')[0]);
+
+        });
+        it('api test filters', function () {
+            var newConfig = tauCharts.api._.clone(config);
+            newConfig.data = [{x:1,y:2, z: 'category1'},{x:3,y:4, z: 'category2'},{x:3,y:1, z: 'category3'}];
+            var plot = new tauCharts.Plot(newConfig);
+            var id = plot.addFilter({tag:'testFilter', predicate:function(item){
+                   return item.z === 'category3';
+            }});
+
+            expect(plot.getData()).to.be.eql([newConfig.data[2]]);
+            var id2 = plot.addFilter({tag:'testFilter2', predicate:function(item){
+                return item.z !== 'category2';
+            }});
+            expect(plot.getData({excludeFilter: ['testFilter']})).to.be.eql([newConfig.data[0], newConfig.data[2]]);
+            plot.removeFilter(id);
+            expect(plot.getData()).to.be.eql([newConfig.data[0], newConfig.data[2]]);
+            plot.renderTo(div);
+            var svg = plot.getSVG();
+            expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(2);
+            plot.removeFilter(id2);
+            svg = plot.getSVG();
+            expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(3);
+            id = plot.addFilter({tag:'testFilter', predicate:function(item){
+                return item.z === 'category3';
+            }});
+            svg = plot.getSVG();
+            expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(1);
+
+        });
         it('api test add balloon', function () {
-            var plot = new tauChart.Plot(config);
+            var plot = new tauCharts.Plot(config);
             var balloon = plot.addBalloon();
             expect(balloon).to.be.instanceof(Balloon);
         });
         it('register plugins', function () {
             var myPlugins = {myPlugins: true};
             var myPlugins2 = {myPlugins: false};
-            tauChart.api.plugins.add('myPlugins', myPlugins);
-            expect(tauChart.api.plugins.get('myPlugins')).to.eql(myPlugins);
+            tauCharts.api.plugins.add('myPlugins', myPlugins);
+            expect(tauCharts.api.plugins.get('myPlugins')).to.eql(myPlugins);
             expect(function(){
-                tauChart.api.plugins.add('myPlugins', myPlugins2);
+                tauCharts.api.plugins.add('myPlugins', myPlugins2);
             }).to.throw(Error);
 
 
