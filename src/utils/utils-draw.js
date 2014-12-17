@@ -159,8 +159,7 @@ var decorateTickLabel = (nodeScale, x) => {
     if (x.guide.tickFormatWordWrap) {
         ticks
             .call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines, x.guide.$maxTickTextH, !isHorizontal);
-    }
-    else {
+    } else {
         ticks
             .call(cutText, x.guide.tickFormatWordWrapLimit);
     }

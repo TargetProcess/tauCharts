@@ -45,7 +45,7 @@
                     .attr('class', color)
                     .attr("r", 4);
                 this.circle.node().addEventListener('mouseover', function () {
-                    clearTimeout(this._interval);
+                    clearTimeout(this._timeoutHideId);
                 }.bind(this), false);
                 this.circle.node().addEventListener('mouseleave', function () {
                     this._hide();
@@ -55,15 +55,15 @@
                 this._chart = chart;
                 this._dataFields = settings.fields;
                 _.extend(this, _.omit(settings, 'fields'));
-                this._interval = null;
+                this._timeoutHideId = null;
                 this._dataWithCoords = {};
                 this._unitMeta = {};
                 this._templateItem = _.template(this.itemTemplate);
-                this._tooltip = chart.addBalloon({spacing: 3, auto: true,effectClass:'fade'});
+                this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
-                    clearTimeout(this._interval);
+                    clearTimeout(this._timeoutHideId);
                 }.bind(this), false);
                 elementTooltip.addEventListener('mouseleave', function () {
                     this._hide();
@@ -144,8 +144,8 @@
             isLine: function (data) {
                 return data.elementData.key && Array.isArray(data.elementData.values);
             },
-            _onElementMouseOver: _.debounce(function (chart, data, mosueCoord, placeCoord) {
-                clearInterval(this._interval);
+            _onElementMouseOver: function (chart, data, mosueCoord, placeCoord) {
+                clearTimeout(this._timeoutHideId);
                 var key = this._generateKey(data.cellData.$where);
                 var item = data.elementData;
                 var isLine = this.isLine(data);
@@ -191,21 +191,22 @@
 
                 this._show(placeCoord);
                 this._currentElement = item;
-            }, 250),
+            },
             onElementMouseOver: function (chart, data) {
                 var placeCoord = d3.mouse(document.body);
                 var coord = d3.mouse(data.element);
-                this._onElementMouseOver(chart, data, coord, placeCoord);
+                clearTimeout(this._timeoutShowId);
+                this._timeoutShowId = _.delay(this._onElementMouseOver.bind(this),200, chart, data, coord, placeCoord);
             },
             onElementMouseOut: function (mouseСoord, placeCoord) {
                 this._hide();
             },
             _show: function (placeCoord) {
-                this._tooltip.show();
-                this._tooltip.position(placeCoord[0], placeCoord[1]).updateSize();
+                this._tooltip.show(placeCoord[0], placeCoord[1]).updateSize();
             },
             _hide: function () {
-                this._interval = setTimeout(function () {
+                clearTimeout(this._timeoutShowId);
+                this._timeoutHideId = setTimeout(function () {
                     this._currentElement = null;
                     this._tooltip.hide();
                     if (this.circle) {
