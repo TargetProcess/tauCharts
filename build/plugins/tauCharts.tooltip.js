@@ -18,7 +18,9 @@
      */
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
-
+    var dim = function (x0, x1, y0, y1) {
+                return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+        };
     function tooltip(settings) {
         settings = settings || {};
         return {
@@ -45,7 +47,7 @@
                     .attr('class', color)
                     .attr("r", 4);
                 this.circle.node().addEventListener('mouseover', function () {
-                    clearTimeout(this._interval);
+                    clearTimeout(this._timeoutHideId);
                 }.bind(this), false);
                 this.circle.node().addEventListener('mouseleave', function () {
                     this._hide();
@@ -55,15 +57,15 @@
                 this._chart = chart;
                 this._dataFields = settings.fields;
                 _.extend(this, _.omit(settings, 'fields'));
-                this._interval = null;
+                this._timeoutHideId = null;
                 this._dataWithCoords = {};
                 this._unitMeta = {};
                 this._templateItem = _.template(this.itemTemplate);
-                this._tooltip = chart.addBalloon({spacing: 3, auto: true,effectClass:'fade'});
+                this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
-                    clearTimeout(this._interval);
+                    clearTimeout(this._timeoutHideId);
                 }.bind(this), false);
                 elementTooltip.addEventListener('mouseleave', function () {
                     this._hide();
@@ -121,7 +123,21 @@
                 return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
             },
             _calculateLengthToLine: function (x0, y0, x1, y1, x2, y2) {
-                return Math.abs((x2 - x1) * (y0 - y1) - (y2 - y1) * (x0 - x1)) / Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+                var a1 = {x: (x1 - x0), y: (y1 - y0)};
+                var b1 = {x: (x2 - x0), y: (y2 - y0)};
+                var a1b1 = a1.x * b1.x + a1.y * b1.y;
+                if (a1b1 < 0) {
+                    return dim(x0, x2, y0, y2);
+                }
+
+                var a2 = {x: (x0 - x1), y: (y0 - y1)};
+                var b2 = {x: (x2 - x1), y: (y2 - y1)};
+                var a2b2 = a2.x * b2.x + a2.y * b2.y;
+                if (a2b2 < 0) {
+                    return dim(x1, x2, y1, y2);
+                }
+
+                return Math.abs(((x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)) / dim(x0, x1, y0, y1));
             },
             _generateKey: function (data) {
                 return JSON.stringify(data);
@@ -144,8 +160,8 @@
             isLine: function (data) {
                 return data.elementData.key && Array.isArray(data.elementData.values);
             },
-            _onElementMouseOver: _.debounce(function (chart, data, mosueCoord, placeCoord) {
-                clearInterval(this._interval);
+            _onElementMouseOver: function (chart, data, mosueCoord, placeCoord) {
+                clearTimeout(this._timeoutHideId);
                 var key = this._generateKey(data.cellData.$where);
                 var item = data.elementData;
                 var isLine = this.isLine(data);
@@ -157,11 +173,13 @@
                     var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
                         var secondPoint;
                         if ((index + 1) === data.length) {
-                            secondPoint = data[index - 1];
+                            var temp = point;
+                            point = data[index - 1];
+                            secondPoint = temp;
                         } else {
                             secondPoint = data[index + 1];
                         }
-                        var h = this._calculateLengthToLine(mosueCoord[0], mosueCoord[1], point.x, point.y, secondPoint.x, secondPoint.y);
+                        var h = this._calculateLengthToLine(point.x, point.y, secondPoint.x, secondPoint.y, mosueCoord[0], mosueCoord[1]);
                         if (h < memo.h) {
                             memo.h = h;
                             memo.points = {
@@ -191,21 +209,22 @@
 
                 this._show(placeCoord);
                 this._currentElement = item;
-            }, 250),
+            },
             onElementMouseOver: function (chart, data) {
                 var placeCoord = d3.mouse(document.body);
                 var coord = d3.mouse(data.element);
-                this._onElementMouseOver(chart, data, coord, placeCoord);
+                clearTimeout(this._timeoutShowId);
+                this._timeoutShowId = _.delay(this._onElementMouseOver.bind(this),200, chart, data, coord, placeCoord);
             },
             onElementMouseOut: function (mouseСoord, placeCoord) {
                 this._hide();
             },
             _show: function (placeCoord) {
-                this._tooltip.show();
-                this._tooltip.position(placeCoord[0], placeCoord[1]).updateSize();
+                this._tooltip.show(placeCoord[0], placeCoord[1]).updateSize();
             },
             _hide: function () {
-                this._interval = setTimeout(function () {
+                clearTimeout(this._timeoutShowId);
+                this._timeoutHideId = setTimeout(function () {
                     this._currentElement = null;
                     this._tooltip.hide();
                     if (this.circle) {

@@ -2,7 +2,10 @@
   /* TrendLine */
 }
 .graphical-report__trendlinepanel {
-  padding: 20px;
+  padding: 20px 0 20px 20px;
+  margin-right: 20px;
+  width: 160px;
+  box-sizing: border-box;
 }
 .graphical-report__trendlinepanel__title {
   margin: 0 0 10px 0;
