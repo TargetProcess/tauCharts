@@ -432,4 +432,6 @@
     }
 
     tauCharts.api.plugins.add('trendline', trendline);
+
+    return trendline;
 });
