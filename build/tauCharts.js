@@ -1,4 +1,4 @@
-/*! tauCharts - v0.2.17 - 2014-12-17
+/*! tauCharts - v0.2.18 - 2014-12-18
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -443,12 +443,12 @@ var requirejs, require, define;
 
 define("../node_modules/almond/almond", function(){});
 
+/**
+ * Internal method to return CSS value for given element and property
+ */
 define('utils/utils-dom',["exports"], function (exports) {
   
 
-  /**
-   * Internal method to return CSS value for given element and property
-   */
   var tempDiv = document.createElement("div");
 
   var utilsDom = {
@@ -552,6 +552,7 @@ define('dsl-reader',["exports"], function (exports) {
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
+
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -566,6 +567,7 @@ define('dsl-reader',["exports"], function (exports) {
         writable: true,
         value: function (spec) {
           var _this = this;
+
           var buildRecursively = function (unit) {
             return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
           };
@@ -639,6 +641,7 @@ define('dsl-reader',["exports"], function (exports) {
         writable: true,
         value: function (styledGraph, target, chart) {
           var _this2 = this;
+
           styledGraph.options.container = target;
           var renderRecursively = function (unit) {
             var unitMeta = _this2.domain.mix(unit);
@@ -672,6 +675,7 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
+
   // jshint ignore: start
   var classes = function (el) {
     return {
@@ -683,8 +687,6 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
     };
   };
-
-
 
   var indexOf = function (arr, obj) {
     return arr.indexOf(obj);
@@ -997,21 +999,22 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
       switch (place[1]) {
         case "left":
+
           if (target.right - this.width <= winPos.left) {
             place[1] = "right";
           }
           break;
         case "right":
+
           if (target.left + this.width >= winPos.right) {
             place[1] = "left";
           }
           break;
-        default:
-          if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
-            place[1] = "left";
-          } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
-            place[1] = "right";
-          }
+        default: if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
+          place[1] = "left";
+        } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
+          place[1] = "right";
+        }
       }
     } else {
       if (target.left - this.width - spacing <= winPos.left) {
@@ -1021,21 +1024,22 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
       switch (place[1]) {
         case "top":
+
           if (target.bottom - this.height <= winPos.top) {
             place[1] = "bottom";
           }
           break;
         case "bottom":
+
           if (target.top + this.height >= winPos.bottom) {
             place[1] = "top";
           }
           break;
-        default:
-          if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
-            place[1] = "top";
-          } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
-            place[1] = "bottom";
-          }
+        default: if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
+          place[1] = "top";
+        } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
+          place[1] = "bottom";
+        }
       }
     }
 
@@ -1084,53 +1088,65 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
     var top, left;
     switch (this.curPlace) {
       case "top":
+
         top = target.top - this.height - spacing;
         left = target.left + target.width / 2 - this.width / 2;
         break;
       case "top-left":
+
         top = target.top - this.height - spacing;
         left = target.right - this.width;
         break;
       case "top-right":
+
         top = target.top - this.height - spacing;
         left = target.left;
         break;
 
       case "bottom":
+
         top = target.bottom + spacing;
         left = target.left + target.width / 2 - this.width / 2;
         break;
       case "bottom-left":
+
         top = target.bottom + spacing;
         left = target.right - this.width;
         break;
       case "bottom-right":
+
         top = target.bottom + spacing;
         left = target.left;
         break;
 
       case "left":
+
         top = target.top + target.height / 2 - this.height / 2;
         left = target.left - this.width - spacing;
         break;
       case "left-top":
+
         top = target.bottom - this.height;
         left = target.left - this.width - spacing;
         break;
       case "left-bottom":
+
         top = target.top;
         left = target.left - this.width - spacing;
         break;
 
       case "right":
+
         top = target.top + target.height / 2 - this.height / 2;
         left = target.right + spacing;
         break;
       case "right-top":
+
         top = target.bottom - this.height;
         left = target.right + spacing;
         break;
       case "right-bottom":
+
         top = target.top;
         left = target.right + spacing;
         break;
@@ -1325,12 +1341,12 @@ define('event',["exports"], function (exports) {
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
+
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
   var NULL_HANDLER = {};
   var events = {};
-
 
   /**
    * Creates new type of event or returns existing one, if it was created before.
@@ -1390,18 +1406,8 @@ define('event',["exports"], function (exports) {
     return eventFunction;
   }
 
-  /**
-   * Base class for event dispatching. It provides interface for instance
-   * to add and remove handler for desired events, and call it when event happens.
-   * @class
-   */
-
   var Emitter = (function () {
-    var Emitter =
-    /**
-     * @constructor
-     */
-    function Emitter() {
+    var Emitter = function Emitter() {
       this.handler = null;
       this.emit_destroy = createDispatcher("destroy");
     };
@@ -1409,13 +1415,6 @@ define('event',["exports"], function (exports) {
     _classProps(Emitter, null, {
       addHandler: {
         writable: true,
-
-
-        /**
-         * Adds new event handler to object.
-         * @param {object} callbacks Callback set.
-         * @param {object=} context Context object.
-         */
         value: function (callbacks, context) {
           context = context || this;
           // add handler
@@ -1443,14 +1442,6 @@ define('event',["exports"], function (exports) {
       },
       removeHandler: {
         writable: true,
-
-
-        /**
-         * Removes event handler set from object. For this operation parameters
-         * must be the same (equivalent) as used for addHandler method.
-         * @param {object} callbacks Callback set.
-         * @param {object=} context Context object.
-         */
         value: function (callbacks, context) {
           var cursor = this;
           var prev;
@@ -1470,17 +1461,10 @@ define('event',["exports"], function (exports) {
               return;
             }
           }
-
-
         }
       },
       destroy: {
         writable: true,
-
-
-        /**
-         * @destructor
-         */
         value: function () {
           // fire object destroy event handlers
           this.emit_destroy();
@@ -1572,10 +1556,12 @@ define('utils/utils',["exports"], function (exports) {
 
   exports.utils = utils;
 });
+/* jshint ignore:start */
 define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   
 
   var d3 = _d3;
+
   /* jshint ignore:end */
   var FORMATS_MAP = {
     "x-num-auto": function (x) {
@@ -1590,7 +1576,11 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
 
     day: d3.time.format("%d-%b-%Y"),
 
+    "day-short": d3.time.format("%d-%b"),
+
     week: d3.time.format("%d-%b-%Y"),
+
+    "week-short": d3.time.format("%d-%b"),
 
     "week-range": function (x) {
       var sWeek = new Date(x);
@@ -1607,6 +1597,13 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
       return d3.time.format(formatSpec)(x);
     },
 
+    "month-short": function (x) {
+      var d = new Date(x);
+      var m = d.getMonth();
+      var formatSpec = (m === 0) ? "%b '%Y" : "%b";
+      return d3.time.format(formatSpec)(x);
+    },
+
     "month-year": d3.time.format("%B, %Y"),
 
     quarter: function (x) {
@@ -1620,18 +1617,6 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
 
     "x-time-auto": null
   };
-
-  /* jshint ignore:start */
-  FORMATS_MAP["x-time-ms"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-sec"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-min"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-hour"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-day"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-week"] = FORMATS_MAP["x-time-auto"];
-  FORMATS_MAP["x-time-month"] = FORMATS_MAP.month;
-  FORMATS_MAP["x-time-quarter"] = FORMATS_MAP.quarter;
-  FORMATS_MAP["x-time-year"] = FORMATS_MAP.year;
-  /* jshint ignore:end */
 
   var FormatterRegistry = {
     get: function (formatAlias, nullOrUndefinedAlias) {
@@ -1676,6 +1661,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var _ = _underscore;
   var d3 = _d3;
+
   /* jshint ignore:end */
 
   var translate = function (left, top) {
@@ -1687,7 +1673,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var getOrientation = function (scaleOrient) {
     return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
   };
-
 
   var cutText = function (textString, widthLimit) {
     textString.each(function () {
@@ -1782,8 +1767,9 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   };
 
   var decorateAxisLabel = function (nodeScale, x) {
-    var koeff = ("h" === getOrientation(x.guide.scaleOrient)) ? 1 : -1;
-    var labelTextNode = nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", "label").attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor);
+    var orient = getOrientation(x.guide.scaleOrient);
+    var koeff = ("h" === orient) ? 1 : -1;
+    var labelTextNode = nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", x.guide.label.cssClass).attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor);
 
     var delimiter = " > ";
     var tags = x.guide.label.text.split(delimiter);
@@ -1795,6 +1781,14 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
         labelTextNode.append("tspan").attr("class", "label-token-delimiter label-token-delimiter-" + i).text(delimiter);
       }
     });
+
+    if (x.guide.label.dock === "right") {
+      var box = nodeScale.node().getBBox();
+      labelTextNode.attr("x", (orient === "h") ? box.width : 0);
+    } else if (x.guide.label.dock === "left") {
+      var box = nodeScale.node().getBBox();
+      labelTextNode.attr("x", (orient === "h") ? 0 : (10 - box.height));
+    }
   };
 
   var decorateTickLabel = function (nodeScale, x) {
@@ -1929,7 +1923,9 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     guide[dimension].label = _.defaults(guide[dimension].label, extend || {}, {
       padding: 32,
       rotate: 0,
-      textAnchor: "middle"
+      textAnchor: "middle",
+      cssClass: "label",
+      dock: null
     });
 
     return guide[dimension];
@@ -1969,7 +1965,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     node.guide.size = extendLabel(node.guide, "size");
     node.guide.color = extendLabel(node.guide, "color");
 
-
     return node;
   };
 
@@ -1991,8 +1986,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
-
-
 
   function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
@@ -2113,6 +2106,175 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
   };
 
+  var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+    var dimX = meta.dimension(unit.x);
+    var dimY = meta.dimension(unit.y);
+
+    var isXContinues = (dimX.dimType === "measure");
+    var isYContinues = (dimY.dimType === "measure");
+
+    var xScaleOptions = {
+      map: unit.guide.x.tickLabel,
+      min: unit.guide.x.tickMin,
+      max: unit.guide.x.tickMax,
+      period: unit.guide.x.tickPeriod,
+      autoScale: unit.guide.x.autoScale
+    };
+
+    var yScaleOptions = {
+      map: unit.guide.y.tickLabel,
+      min: unit.guide.y.tickMin,
+      max: unit.guide.y.tickMax,
+      period: unit.guide.y.tickPeriod,
+      autoScale: unit.guide.y.autoScale
+    };
+
+    var xMeta = meta.scaleMeta(unit.x, xScaleOptions);
+    var xValues = xMeta.values;
+    var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
+    var yValues = yMeta.values;
+
+    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
+    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+
+    if (["day", "week", "month"].indexOf(unit.guide.x.tickFormat) >= 0) {
+      unit.guide.x.tickFormat += "-short";
+    }
+
+    if (["day", "week", "month"].indexOf(unit.guide.y.tickFormat) >= 0) {
+      unit.guide.y.tickFormat += "-short";
+    }
+
+    var xIsEmptyAxis = (xValues.length === 0);
+    var yIsEmptyAxis = (yValues.length === 0);
+
+    var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
+
+    var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+
+    var xAxisPadding = settings.xAxisPadding;
+    var yAxisPadding = settings.yAxisPadding;
+
+    var isXVertical = allowXVertical ? !isXContinues : false;
+    var isYVertical = allowYVertical ? !isYContinues : false;
+
+    unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
+    unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
+
+    unit.guide.x.rotate = isXVertical ? +90 : 0;
+    unit.guide.x.textAnchor = isXVertical ? "start" : unit.guide.x.textAnchor;
+
+    unit.guide.y.rotate = isYVertical ? -90 : 0;
+    unit.guide.y.textAnchor = isYVertical ? "middle" : unit.guide.y.textAnchor;
+
+    var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
+    var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
+
+    unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
+    unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
+
+    var xTickBox = isXVertical ? { w: maxXTickSize.height, h: maxXTickSize.width } : { h: maxXTickSize.height, w: maxXTickSize.width };
+
+    if (maxXTickSize.width > settings.xAxisTickLabelLimit) {
+      unit.guide.x.tickFormatWordWrap = true;
+      unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
+
+      var guessLinesCount = Math.ceil(maxXTickSize.width / settings.xAxisTickLabelLimit);
+      var koeffLinesCount = Math.min(guessLinesCount, settings.xTickWordWrapLinesLimit);
+      var textLinesHeight = koeffLinesCount * maxXTickSize.height;
+
+      if (isXVertical) {
+        xTickBox.h = settings.xAxisTickLabelLimit;
+        xTickBox.w = textLinesHeight;
+      } else {
+        xTickBox.h = textLinesHeight;
+        xTickBox.w = settings.xAxisTickLabelLimit;
+      }
+    }
+
+    var yTickBox = isYVertical ? { w: maxYTickSize.height, h: maxYTickSize.width } : { h: maxYTickSize.height, w: maxYTickSize.width };
+
+    if (maxYTickSize.width > settings.yAxisTickLabelLimit) {
+      unit.guide.y.tickFormatWordWrap = true;
+      unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
+
+      var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
+      var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
+      var textLinesHeight = koeffLinesCount * maxYTickSize.height;
+
+      if (isYVertical) {
+        yTickBox.w = textLinesHeight;
+        yTickBox.h = settings.yAxisTickLabelLimit;
+      } else {
+        yTickBox.w = settings.yAxisTickLabelLimit;
+        yTickBox.h = textLinesHeight;
+      }
+    }
+
+    var xFontH = xTickWidth + xTickBox.h;
+    var yFontW = yTickWidth + yTickBox.w;
+
+    var xFontLabelHeight = settings.xFontLabelHeight;
+    var yFontLabelHeight = settings.yFontLabelHeight;
+
+    var distToXAxisLabel = settings.distToXAxisLabel;
+    var distToYAxisLabel = settings.distToYAxisLabel;
+
+    unit.guide.x.density = settings.xDensityKoeff * xTickBox.w;
+    unit.guide.y.density = settings.yDensityKoeff * yTickBox.h;
+
+    if (!inlineLabels) {
+      unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
+      unit.guide.y.label.padding = -xFontLabelHeight + ((unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0);
+
+      var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+      var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
+      unit.guide.padding.b = xAxisPadding + xLabelPadding - xTickWidth;
+      unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+      unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+      unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+    } else {
+      var pd = (xAxisPadding - xFontLabelHeight) / 2;
+      unit.guide.x.label.padding = 0 + xFontLabelHeight - distToXAxisLabel + pd;
+      unit.guide.y.label.padding = 0 - distToYAxisLabel + pd;
+
+      unit.guide.x.label.cssClass += " inline";
+      unit.guide.x.label.dock = "right";
+      unit.guide.x.label.textAnchor = "end";
+
+      unit.guide.y.label.cssClass += " inline";
+      unit.guide.y.label.dock = "right";
+      unit.guide.y.label.textAnchor = "end";
+
+      //unit.guide.x.label.dock = 'left';
+      //unit.guide.x.label.textAnchor = 'start';
+      //unit.guide.y.label.dock = 'left';
+      //unit.guide.y.label.textAnchor = 'start';
+
+      unit.guide.padding.b = xAxisPadding + xFontH;
+      unit.guide.padding.l = yAxisPadding + yFontW;
+
+      unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+      unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+    }
+
+    unit.guide.x.tickFontHeight = maxXTickSize.height;
+    unit.guide.y.tickFontHeight = maxYTickSize.height;
+
+    unit.guide.x.$minimalDomain = xValues.length;
+    unit.guide.y.$minimalDomain = yValues.length;
+
+    unit.guide.x.$maxTickTextW = maxXTickSize.width;
+    unit.guide.x.$maxTickTextH = maxXTickSize.height;
+
+    unit.guide.y.$maxTickTextW = maxYTickSize.width;
+    unit.guide.y.$maxTickTextH = maxYTickSize.height;
+
+    return unit;
+  };
+
   var SpecEngineTypeMap = {
     NONE: function (srcSpec, meta, settings) {
       var spec = utils.clone(srcSpec);
@@ -2174,15 +2336,11 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       });
 
       if (xUnit) {
-        xUnit.guide.x.label.text = xLabels.map(function (x) {
-          return x.toUpperCase();
-        }).join(" > ");
+        xUnit.guide.x.label.text = xLabels.join(" > ");
       }
 
       if (yUnit) {
-        yUnit.guide.y.label.text = yLabels.map(function (x) {
-          return x.toUpperCase();
-        }).join(" > ");
+        yUnit.guide.y.label.text = yLabels.join(" > ");
       }
 
       return spec;
@@ -2233,7 +2391,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
         var yValues = yMeta.values;
 
-
         unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
         unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
@@ -2243,7 +2400,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
         var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
-
 
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
         var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
@@ -2290,7 +2446,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var distToXAxisLabel = settings.distToXAxisLabel;
         var distToYAxisLabel = settings.distToYAxisLabel;
 
-
         var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
         unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
 
@@ -2299,14 +2454,11 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
         unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
 
-
         unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
         unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
-
         var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
         var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
-
 
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
@@ -2329,6 +2481,37 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         return unit;
       });
       return spec;
+    },
+
+    "BUILD-COMPACT": function (srcSpec, meta, settings) {
+      var spec = utils.clone(srcSpec);
+      fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
+        if (selectorPredicates.isLeaf) {
+          return unit;
+        }
+
+        if (selectorPredicates.isLeafParent) {
+          unit.guide.showGridLines = unit.guide.hasOwnProperty("showGridLines") ? unit.guide.showGridLines : "xy";
+
+          return calcUnitGuide(unit, meta, _.defaults({
+            xTickWordWrapLinesLimit: 1,
+            yTickWordWrapLinesLimit: 1
+          }, settings), true, false, true);
+        }
+
+        // facet level
+        unit.guide.x.cssClass += " facet-axis compact";
+        unit.guide.y.cssClass += " facet-axis compact";
+
+        return calcUnitGuide(unit, meta, _.defaults({
+          xAxisPadding: 0,
+          yAxisPadding: 0,
+          distToXAxisLabel: 0,
+          distToYAxisLabel: 0
+        }, settings), false, true, false);
+      });
+
+      return spec;
     }
   };
 
@@ -2338,6 +2521,11 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     }, srcSpec);
   };
 
+  SpecEngineTypeMap.COMPACT = function (srcSpec, meta, settings) {
+    return ["BUILD-LABELS", "BUILD-COMPACT"].reduce(function (spec, engineName) {
+      return SpecEngineTypeMap[engineName](spec, meta, settings);
+    }, srcSpec);
+  };
 
   var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
     var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
@@ -2423,8 +2611,6 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var TMatrix = _matrix.TMatrix;
-
-
 
   var specUnitSummary = function (spec, boxOpt) {
     var box = boxOpt ? boxOpt : { depth: -1, paddings: [] };
@@ -2544,21 +2730,20 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
 
   exports.LayoutEngineFactory = LayoutEngineFactory;
 });
+//plugins
+/** @class
+ * @extends Plugin */
 define('plugins',["exports"], function (exports) {
   
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
+
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
-  //plugins
-  /** @class
-   * @extends Plugin */
   var Plugins = (function () {
-    var Plugins =
-    /** @constructs */
-    function Plugins(plugins, chart) {
+    var Plugins = function Plugins(plugins, chart) {
       this.chart = chart;
       this._plugins = plugins.map(this.initPlugin, this);
     };
@@ -2568,6 +2753,7 @@ define('plugins',["exports"], function (exports) {
         writable: true,
         value: function (plugin) {
           var _this = this;
+
           if (plugin.init) {
             plugin.init(this.chart);
           }
@@ -2599,7 +2785,6 @@ define('plugins',["exports"], function (exports) {
       }, this);
     };
   };
-
 
   exports.propagateDatumEvents = propagateDatumEvents;
   exports.Plugins = Plugins;
@@ -2697,6 +2882,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
+
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -2704,6 +2890,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
   var utils = _utilsUtils.utils;
   var _ = _underscore;
   var d3 = _d3;
+
   /* jshint ignore:end */
 
   var autoScaleMethods = {
@@ -2976,7 +3163,6 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
 
   var utils = _utilsUtils.utils;
 
-
   var DataProcessor = {
     isYFunctionOfX: function (data, xFields, yFields) {
       var isRelationAFunction = true;
@@ -3123,6 +3309,7 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
+
   var createElement = function (cssClass, parent) {
     var tag = "div";
     var element = document.createElement(tag);
@@ -3154,7 +3341,6 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
     /* jshint ignore:end */
   };
 
-
   exports.getLayout = getLayout;
 });
 define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../event", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor", "../utils/layuot-template"], function (exports, _dslReader, _apiBalloon, _event, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate) {
@@ -3162,6 +3348,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
   var _classProps = function (child, staticProps, instanceProps) {
     if (staticProps) Object.defineProperties(child, staticProps);
+
     if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
   };
 
@@ -3191,7 +3378,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
   var DataProcessor = _dataProcessor.DataProcessor;
   var getLayout = _utilsLayuotTemplate.getLayout;
-
 
   var traverseFromDeep = function (root) {
     var r;
@@ -3231,8 +3417,11 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
       var xDelta = 0 - s + root.guide.x.$maxTickTextH;
 
-      root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
-      root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
+      root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
+
+      if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
+        root.guide.x.label.padding += xDelta;
+      }
     }
 
     var newSize = {
@@ -3275,8 +3464,14 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           // TODO: remove this particular config cases
           this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
           this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
-
           this.config.settings = this.setupSettings(this.config.settings);
+          if (!utils.isArray(this.config.settings.specEngine)) {
+            this.config.settings.specEngine = [{
+              width: Number.MAX_VALUE,
+              name: this.config.settings.specEngine
+            }];
+          }
+
           this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
           var log = this.config.settings.log;
@@ -3359,7 +3554,11 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
           var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
-          var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
+          var specItem = _.find(this.config.settings.specEngine, function (item) {
+            return (size.width <= item.width);
+          });
+
+          var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
 
           var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
 
@@ -3381,12 +3580,10 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           size.height = screenH - scrollH;
           size.width = screenW - scrollW;
 
-
           // optimize full spec depending on size
           var localSettings = this.config.settings;
 
           traverseToDeep(fullSpec.unit, size, localSettings);
-
 
           var reader = new DSLReader(domainMixin, UnitsRegistry);
 
@@ -3453,6 +3650,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         writable: true,
         value: function (sizes) {
           if (sizes === undefined) sizes = {};
+
           this.renderTo(this._target, sizes);
         }
       },
@@ -3460,6 +3658,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         writable: true,
         value: function (id) {
           var _this = this;
+
           _.each(this._filtersStore.filters, function (filters, key) {
             _this._filtersStore.filters[key] = _.reject(filters, function (item) {
               return item.id === id;
@@ -3493,7 +3692,6 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
   var Plot = _tauPlot.Plot;
   var utils = _utilsUtils.utils;
   var DataProcessor = _dataProcessor.DataProcessor;
-
 
   var convertAxis = function (data) {
     return (!data) ? null : data;
@@ -3722,7 +3920,6 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
-
   var FacetAlgebra = {
     CROSS: function (root, dimX, dimY) {
       var domainX = root.domain(dimX);
@@ -3896,6 +4093,7 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
   var sizeScale = _size.sizeScale;
+
   var point = function (node) {
     var options = node.options;
 
@@ -3935,6 +4133,7 @@ define('utils/css-class-map',["exports", "../const"], function (exports, _const)
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
+
   var arrayNumber = [1, 2, 3, 4, 5];
   var countLineClasses = arrayNumber.map(function (i) {
     return CSS_PREFIX + "line-opacity-" + i;
@@ -3969,6 +4168,7 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
   var CSS_PREFIX = _const.CSS_PREFIX;
   var getLineClassesByWidth = _utilsCssClassMap.getLineClassesByWidth;
   var getLineClassesByCount = _utilsCssClassMap.getLineClassesByCount;
+
   var line = function (node) {
     var options = node.options;
 
@@ -4041,7 +4241,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
 
-
   var BAR_GROUP = "i-role-bar-group";
 
   var isMeasure = function (dim) {
@@ -4082,8 +4281,10 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
+
       (function () {
         xMin = Math.min.apply(null, xScale.domain());
+
         var startPoint = (xMin <= 0) ? 0 : xMin;
 
         _ref = getSizesParams({
@@ -4095,6 +4296,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref.tickWidth;
         intervalWidth = _ref.intervalWidth;
         offsetCategory = _ref.offsetCategory;
+
         /* jshint ignore:end */
         calculateX = isMeasure(node.x) ? function (d) {
           return xScale(Math.min(startPoint, d[node.x.scaleDim]));
@@ -4120,8 +4322,10 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
+
       (function () {
         yMin = Math.min.apply(null, yScale.domain());
+
         var startPoint = (yMin <= 0) ? 0 : yMin;
 
         _ref2 = getSizesParams({
@@ -4133,6 +4337,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref2.tickWidth;
         intervalWidth = _ref2.intervalWidth;
         offsetCategory = _ref2.offsetCategory;
+
         /* jshint ignore:end */
         calculateX = function (d) {
           return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
@@ -4189,7 +4394,6 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
-
   var inheritRootProps = function (unit, root, props) {
     var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
     r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
@@ -4238,14 +4442,12 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
 
       var container = options.container.append("g").attr("class", "graphical-report__" + "cell " + "cell").attr("transform", utilsDraw.translate(L, T));
 
-
       var translate = function (left, top) {
         return "translate(" + left + "," + top + ")";
       };
       var rotate = function (angle) {
         return "rotate(" + angle + ")";
       };
-
 
       var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
         var container = this;
@@ -4279,7 +4481,6 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
-
 
   var CoordsParallelLine = {
     draw: function (node) {
@@ -4352,7 +4553,6 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CoordsParallel = _elementsCoordsParallel.CoordsParallel;
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
-
 
   var setupElementNode = function (node, dimensions) {
     dimensions.forEach(function (dimName) {
@@ -4432,6 +4632,7 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var nodeMap = _nodeMap.nodeMap;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
+
   var colorBrewers = {};
   var plugins = {};
 
@@ -4480,7 +4681,13 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       },
 
       excludeNull: true,
-      specEngine: "AUTO",
+      specEngine: [{
+        name: "COMPACT",
+        width: 600
+      }, {
+        name: "AUTO",
+        width: Number.MAX_VALUE
+      }],
       layoutEngine: "EXTRACT",
       getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
 
@@ -4499,8 +4706,8 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       xAxisPadding: 20,
       yAxisPadding: 20,
 
-      xFontLabelHeight: 15,
-      yFontLabelHeight: 15,
+      xFontLabelHeight: 10,
+      yFontLabelHeight: 10,
 
       xDensityKoeff: 2.2,
       xMinimumDensityKoeff: 1.1,
@@ -4510,15 +4717,15 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       defaultFormats: {
         measure: "x-num-auto",
         "measure:time": "x-time-auto",
-        "measure:time:year": "x-time-year",
-        "measure:time:quarter": "x-time-quarter",
-        "measure:time:month": "x-time-month",
-        "measure:time:week": "x-time-week",
-        "measure:time:day": "x-time-day",
-        "measure:time:hour": "x-time-hour",
-        "measure:time:min": "x-time-min",
-        "measure:time:sec": "x-time-sec",
-        "measure:time:ms": "x-time-ms"
+        "measure:time:year": "year",
+        "measure:time:quarter": "quarter",
+        "measure:time:month": "month",
+        "measure:time:week": "x-time-auto",
+        "measure:time:day": "x-time-auto",
+        "measure:time:hour": "x-time-auto",
+        "measure:time:min": "x-time-auto",
+        "measure:time:sec": "x-time-auto",
+        "measure:time:ms": "x-time-auto"
       }
     }
   };
