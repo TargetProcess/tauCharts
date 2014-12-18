@@ -39,27 +39,18 @@
             font-size: 12px;
             margin-left: 5px;
         }
+    }
 
-        &__hide {
-            display: none;
-        }
+    &__trendlinepanel.applicable-false &__checkbox__input,
+    &__trendlinepanel.applicable-false &__trendlinepanel__control,
+    &__trendlinepanel.applicable-false &__checkbox__icon {
+        display: none;
     }
 
     /* TrendLine */
     &__trendline {
         stroke-dasharray: 4, 4;
-        &__tip {
-            display: none;
-            font-size: 11px;
-            stroke: none;
-        }
-
-        &.active &__tip {
-            display: block;
-        }
     }
-
-
 }
 
 

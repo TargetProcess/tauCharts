@@ -653,6 +653,10 @@
 
     new tauCharts.Chart(
             {
+                plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
+                ],
                 "type": "scatterplot",
                 "x": "entityType",
                 "y": "userStory",
