@@ -139,25 +139,9 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     var isXContinues = (dimX.dimType === 'measure');
     var isYContinues = (dimY.dimType === 'measure');
 
-    var xScaleOptions = {
-        map: unit.guide.x.tickLabel,
-        min: unit.guide.x.tickMin,
-        max: unit.guide.x.tickMax,
-        period: unit.guide.x.tickPeriod,
-        autoScale: unit.guide.x.autoScale
-    };
-
-    var yScaleOptions = {
-        map: unit.guide.y.tickLabel,
-        min: unit.guide.y.tickMin,
-        max: unit.guide.y.tickMax,
-        period: unit.guide.y.tickPeriod,
-        autoScale: unit.guide.y.autoScale
-    };
-
-    var xMeta = meta.scaleMeta(unit.x, xScaleOptions);
+    var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
     var xValues = xMeta.values;
-    var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
+    var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
     var yValues = yMeta.values;
 
     unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
@@ -433,25 +417,9 @@ var SpecEngineTypeMap = {
                 var isXContinues = (dimX.dimType === 'measure');
                 var isYContinues = (dimY.dimType === 'measure');
 
-                var xScaleOptions = {
-                    map: unit.guide.x.tickLabel,
-                    min: unit.guide.x.tickMin,
-                    max: unit.guide.x.tickMax,
-                    period: unit.guide.x.tickPeriod,
-                    autoScale: unit.guide.x.autoScale
-                };
-
-                var yScaleOptions = {
-                    map: unit.guide.y.tickLabel,
-                    min: unit.guide.y.tickMin,
-                    max: unit.guide.y.tickMax,
-                    period: unit.guide.y.tickPeriod,
-                    autoScale: unit.guide.y.autoScale
-                };
-
-                var xMeta = meta.scaleMeta(unit.x, xScaleOptions);
+                var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
                 var xValues = xMeta.values;
-                var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
+                var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
                 var yValues = yMeta.values;
 
 

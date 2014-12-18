@@ -80,23 +80,8 @@ var coords = {
         var W = options.width - (padding.l + padding.r);
         var H = options.height - (padding.t + padding.b);
 
-        var tickX = {
-            map: node.x.guide.tickLabel,
-            min: node.x.guide.tickMin,
-            max: node.x.guide.tickMax,
-            period: node.x.guide.tickPeriod,
-            autoScale: node.x.guide.autoScale
-        };
-        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-
-        var tickY = {
-            map: node.y.guide.tickLabel,
-            min: node.y.guide.tickMin,
-            max: node.y.guide.tickMax,
-            period: node.y.guide.tickPeriod,
-            autoScale: node.y.guide.autoScale
-        };
-        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
+        node.x.scaleObj = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide);
+        node.y.scaleObj = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide);
 
         node.x.guide.size = W;
         node.y.guide.size = H;

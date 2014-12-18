@@ -167,8 +167,17 @@ export class UnitDomainMixin {
             return domainSortedAsc.map(fnMapperId);
         };
 
-        var _scaleMeta = (scaleDim, options) => {
-            var opts = options || {};
+        var _scaleMeta = (scaleDim, xOptions) => {
+
+            var opts = {};
+            var options = xOptions || {};
+
+            opts.map = options.hasOwnProperty('map') ? options.map : options.tickLabel;
+            opts.min = options.hasOwnProperty('min') ? options.min : options.tickMin;
+            opts.max = options.hasOwnProperty('max') ? options.max : options.tickMax;
+            opts.period = options.hasOwnProperty('period') ? options.period : options.tickPeriod;
+            opts.autoScale = options.autoScale;
+
             var dimx = _.defaults({}, meta[scaleDim]);
 
             var fValHub = {

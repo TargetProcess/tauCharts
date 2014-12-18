@@ -340,6 +340,12 @@
                 var y = unitMeta.y.scaleDim;
                 var c = unitMeta.color.scaleDim;
 
+                //var xAutoScaleVals = unitMeta.scaleMeta(x, unitMeta.guide.x).values;
+                var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
+
+                var minY = _.min(yAutoScaleVals);
+                var maxY = _.max(yAutoScaleVals);
+
                 var categories = unitMeta.groupBy(unitMeta.partition(), c);
 
                 categories.forEach(function (segment, index) {
@@ -353,7 +359,12 @@
                     });
 
                     var regression = regressionsHub(settings.type, src);
-                    var dots = _.sortBy(regression.points, function(p) { return p[0]; });
+                    var dots = _(regression.points)
+                        .chain()
+                        .sortBy(function(p) { return p[0]; })
+                        .filter(function(p) { return ((minY <= p[1]) && (p[1] <= maxY)); })
+                        .value();
+
                     if (dots.length > 1) {
                         drawTrendLine(
                             'i-trendline-' + index,

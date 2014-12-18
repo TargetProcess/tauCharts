@@ -20,23 +20,8 @@ var setupElementNode = (node, dimensions) => {
     node.x.guide = node.guide.x;
     node.y.guide = node.guide.y;
 
-    var tickX = {
-        map: node.x.guide.tickLabel,
-        min: node.x.guide.tickMin,
-        max: node.x.guide.tickMax,
-        period: node.x.guide.tickPeriod,
-        autoScale: node.x.guide.autoScale
-    };
-    node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], tickX);
-
-    var tickY = {
-        map: node.y.guide.tickLabel,
-        min: node.y.guide.tickMin,
-        max: node.y.guide.tickMax,
-        period: node.y.guide.tickPeriod,
-        autoScale: node.y.guide.autoScale
-    };
-    node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], tickY);
+    node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide);
+    node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide);
 
     node.options.color = utilsDraw.generateColor(node);
 
