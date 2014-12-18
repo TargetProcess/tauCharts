@@ -88,6 +88,13 @@
                 opacity: 0;
             }
         }
+        .axis.facet-axis.compact {
+            .tick {
+                text {
+                    font-weight: normal;
+                }
+            }
+        }
         .tick text {
             font-size: 11px;
         }
@@ -118,6 +125,7 @@
                 font-size: 11px;
                 font-weight: bold;
                 letter-spacing: 1px;
+                text-transform: uppercase;
             }
 
             .label-token-1,
@@ -130,6 +138,12 @@
             }
 
             .label-token-delimiter {
+                font-weight: normal;
+                fill: gray;
+            }
+        }
+        .label.inline {
+            .label-token {
                 font-weight: normal;
                 fill: gray;
             }

@@ -52,8 +52,11 @@ var traverseToDeep = (root, size, localSettings) => {
 
         var xDelta = 0 - s + root.guide.x.$maxTickTextH;
 
-        root.guide.x.label.padding = (root.guide.x.label.padding > 0) ? root.guide.x.label.padding + xDelta : root.guide.x.label.padding;
-        root.guide.padding.b = (root.guide.padding.b > 0) ? root.guide.padding.b + xDelta : root.guide.padding.b;
+        root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
+
+        if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
+            root.guide.x.label.padding += xDelta;
+        }
     }
 
     var newSize = {
@@ -91,8 +94,16 @@ export class Plot extends Emitter {
         // TODO: remove this particular config cases
         this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
         this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
-
         this.config.settings = this.setupSettings(this.config.settings);
+        if (!utils.isArray(this.config.settings.specEngine)) {
+            this.config.settings.specEngine = [
+                {
+                    width: Number.MAX_VALUE,
+                    name: this.config.settings.specEngine
+                }
+            ];
+        }
+
         this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
         var log = this.config.settings.log;
@@ -166,7 +177,9 @@ export class Plot extends Emitter {
 
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
-        var specEngine = SpecEngineFactory.get(this.config.settings.specEngine, this.config.settings);
+        var specItem = _.find(this.config.settings.specEngine, (item) => (size.width <= item.width));
+
+        var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
 
         var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
 

@@ -130,6 +130,198 @@ var getTickFormat = (dim, meta, defaultFormats) => {
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
 };
 
+
+var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+
+    var dimX = meta.dimension(unit.x);
+    var dimY = meta.dimension(unit.y);
+
+    var isXContinues = (dimX.dimType === 'measure');
+    var isYContinues = (dimY.dimType === 'measure');
+
+    var xScaleOptions = {
+        map: unit.guide.x.tickLabel,
+        min: unit.guide.x.tickMin,
+        max: unit.guide.x.tickMax,
+        period: unit.guide.x.tickPeriod,
+        autoScale: unit.guide.x.autoScale
+    };
+
+    var yScaleOptions = {
+        map: unit.guide.y.tickLabel,
+        min: unit.guide.y.tickMin,
+        max: unit.guide.y.tickMax,
+        period: unit.guide.y.tickPeriod,
+        autoScale: unit.guide.y.autoScale
+    };
+
+    var xMeta = meta.scaleMeta(unit.x, xScaleOptions);
+    var xValues = xMeta.values;
+    var yMeta = meta.scaleMeta(unit.y, yScaleOptions);
+    var yValues = yMeta.values;
+
+    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
+    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+
+    if (['day', 'week', 'month'].indexOf(unit.guide.x.tickFormat) >= 0) {
+        unit.guide.x.tickFormat += '-short';
+    }
+
+    if (['day', 'week', 'month'].indexOf(unit.guide.y.tickFormat) >= 0) {
+        unit.guide.y.tickFormat += '-short';
+    }
+
+    var xIsEmptyAxis = (xValues.length === 0);
+    var yIsEmptyAxis = (yValues.length === 0);
+
+    var maxXTickSize = getMaxTickLabelSize(
+        xValues,
+        FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias),
+        settings.getAxisTickLabelSize,
+        settings.xAxisTickLabelLimit);
+
+    var maxYTickSize = getMaxTickLabelSize(
+        yValues,
+        FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias),
+        settings.getAxisTickLabelSize,
+        settings.yAxisTickLabelLimit);
+
+
+    var xAxisPadding = settings.xAxisPadding;
+    var yAxisPadding = settings.yAxisPadding;
+
+    var isXVertical = allowXVertical ? !isXContinues : false;
+    var isYVertical = allowYVertical ? !isYContinues : false;
+
+    unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
+    unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
+
+    unit.guide.x.rotate = isXVertical ? +90 : 0;
+    unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
+
+    unit.guide.y.rotate = isYVertical ? -90 : 0;
+    unit.guide.y.textAnchor = isYVertical ? 'middle' : unit.guide.y.textAnchor;
+
+    var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
+    var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
+
+    unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
+    unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
+
+
+    var xTickBox = isXVertical ?
+        {w: maxXTickSize.height, h: maxXTickSize.width} :
+        {h: maxXTickSize.height, w: maxXTickSize.width};
+
+    if (maxXTickSize.width > settings.xAxisTickLabelLimit) {
+
+        unit.guide.x.tickFormatWordWrap = true;
+        unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
+
+        let guessLinesCount = Math.ceil(maxXTickSize.width / settings.xAxisTickLabelLimit);
+        let koeffLinesCount = Math.min(guessLinesCount, settings.xTickWordWrapLinesLimit);
+        let textLinesHeight = koeffLinesCount * maxXTickSize.height;
+
+        if (isXVertical) {
+            xTickBox.h = settings.xAxisTickLabelLimit;
+            xTickBox.w = textLinesHeight;
+        }
+        else {
+            xTickBox.h = textLinesHeight;
+            xTickBox.w = settings.xAxisTickLabelLimit;
+        }
+    }
+
+
+    var yTickBox = isYVertical ?
+        {w: maxYTickSize.height, h: maxYTickSize.width} :
+        {h: maxYTickSize.height, w: maxYTickSize.width};
+
+    if (maxYTickSize.width > settings.yAxisTickLabelLimit) {
+
+        unit.guide.y.tickFormatWordWrap = true;
+        unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
+
+        let guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
+        let koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
+        let textLinesHeight = koeffLinesCount * maxYTickSize.height;
+
+        if (isYVertical) {
+            yTickBox.w = textLinesHeight;
+            yTickBox.h = settings.yAxisTickLabelLimit;
+        }
+        else {
+            yTickBox.w = settings.yAxisTickLabelLimit;
+            yTickBox.h = textLinesHeight;
+        }
+    }
+
+    var xFontH = xTickWidth + xTickBox.h;
+    var yFontW = yTickWidth + yTickBox.w;
+
+    var xFontLabelHeight = settings.xFontLabelHeight;
+    var yFontLabelHeight = settings.yFontLabelHeight;
+
+    var distToXAxisLabel = settings.distToXAxisLabel;
+    var distToYAxisLabel = settings.distToYAxisLabel;
+
+    unit.guide.x.density = settings.xDensityKoeff * xTickBox.w;
+    unit.guide.y.density = settings.yDensityKoeff * yTickBox.h;
+
+    if (!inlineLabels) {
+        unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
+        unit.guide.y.label.padding = -xFontLabelHeight + ((unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0);
+
+        let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+        let yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
+        unit.guide.padding.b = xAxisPadding + xLabelPadding - xTickWidth;
+        unit.guide.padding.l = yAxisPadding + yLabelPadding;
+
+        unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+        unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+    }
+    else {
+        var pd = (xAxisPadding - xFontLabelHeight) / 2;
+        unit.guide.x.label.padding = 0 + xFontLabelHeight - distToXAxisLabel + pd;
+        unit.guide.y.label.padding = 0 - distToYAxisLabel + pd;
+
+        unit.guide.x.label.cssClass += ' inline';
+        unit.guide.x.label.dock = 'right';
+        unit.guide.x.label.textAnchor = 'end';
+
+        unit.guide.y.label.cssClass += ' inline';
+        unit.guide.y.label.dock = 'right';
+        unit.guide.y.label.textAnchor = 'end';
+
+        //unit.guide.x.label.dock = 'left';
+        //unit.guide.x.label.textAnchor = 'start';
+        //unit.guide.y.label.dock = 'left';
+        //unit.guide.y.label.textAnchor = 'start';
+
+        unit.guide.padding.b = xAxisPadding + xFontH;
+        unit.guide.padding.l = yAxisPadding + yFontW;
+
+        unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+        unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+    }
+
+    unit.guide.x.tickFontHeight = maxXTickSize.height;
+    unit.guide.y.tickFontHeight = maxYTickSize.height;
+
+    unit.guide.x.$minimalDomain = xValues.length;
+    unit.guide.y.$minimalDomain = yValues.length;
+
+    unit.guide.x.$maxTickTextW = maxXTickSize.width;
+    unit.guide.x.$maxTickTextH = maxXTickSize.height;
+
+    unit.guide.y.$maxTickTextW = maxYTickSize.width;
+    unit.guide.y.$maxTickTextH = maxYTickSize.height;
+
+    return unit;
+};
+
+
 var SpecEngineTypeMap = {
 
     'NONE': (srcSpec, meta, settings) => {
@@ -202,11 +394,11 @@ var SpecEngineTypeMap = {
             });
 
         if (xUnit) {
-            xUnit.guide.x.label.text = xLabels.map((x) => x.toUpperCase()).join(' > ');
+            xUnit.guide.x.label.text = xLabels.join(' > ');
         }
 
         if (yUnit) {
-            yUnit.guide.y.label.text = yLabels.map((x) => x.toUpperCase()).join(' > ');
+            yUnit.guide.y.label.text = yLabels.join(' > ');
         }
 
         return spec;
@@ -366,11 +558,73 @@ var SpecEngineTypeMap = {
                 return unit;
             });
         return spec;
+    },
+
+    'BUILD-COMPACT': (srcSpec, meta, settings) => {
+
+        var spec = utils.clone(srcSpec);
+        fnTraverseSpec(
+            utils.clone(spec.unit),
+            spec.unit,
+            (selectorPredicates, unit) => {
+
+                if (selectorPredicates.isLeaf) {
+                    return unit;
+                }
+
+                if (selectorPredicates.isLeafParent) {
+
+                    unit.guide.showGridLines = unit.guide.hasOwnProperty('showGridLines') ?
+                        unit.guide.showGridLines :
+                        'xy';
+
+                    return calcUnitGuide(
+                        unit,
+                        meta,
+                        _.defaults(
+                            {
+                                xTickWordWrapLinesLimit: 1,
+                                yTickWordWrapLinesLimit: 1
+                            },
+                            settings),
+                        true,
+                        false,
+                        true);
+                }
+
+                // facet level
+                unit.guide.x.cssClass += ' facet-axis compact';
+                unit.guide.y.cssClass += ' facet-axis compact';
+
+                return calcUnitGuide(
+                    unit,
+                    meta,
+                    _.defaults(
+                        {
+                            xAxisPadding: 0,
+                            yAxisPadding: 0,
+                            distToXAxisLabel: 0,
+                            distToYAxisLabel: 0
+                        },
+                        settings),
+                    false,
+                    true,
+                    false);
+            });
+
+        return spec;
     }
 };
 
 SpecEngineTypeMap.AUTO = (srcSpec, meta, settings) => {
     return ['BUILD-LABELS', 'BUILD-GUIDE'].reduce(
+        (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
+        srcSpec
+    );
+};
+
+SpecEngineTypeMap.COMPACT = (srcSpec, meta, settings) => {
+    return ['BUILD-LABELS', 'BUILD-COMPACT'].reduce(
         (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
         srcSpec
     );

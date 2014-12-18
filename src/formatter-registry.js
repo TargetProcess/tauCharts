@@ -15,7 +15,11 @@ var FORMATS_MAP = {
 
     'day': d3.time.format('%d-%b-%Y'),
 
+    'day-short': d3.time.format('%d-%b'),
+
     'week': d3.time.format('%d-%b-%Y'),
+
+    'week-short': d3.time.format('%d-%b'),
 
     'week-range': (x) => {
         var sWeek = new Date(x);
@@ -32,6 +36,13 @@ var FORMATS_MAP = {
         return d3.time.format(formatSpec)(x);
     },
 
+    'month-short': (x) => {
+        var d = new Date(x);
+        var m = d.getMonth();
+        var formatSpec = (m === 0) ? '%b \'%Y' : '%b';
+        return d3.time.format(formatSpec)(x);
+    },
+
     'month-year': d3.time.format('%B, %Y'),
 
     'quarter': (x) => {
@@ -45,18 +56,6 @@ var FORMATS_MAP = {
 
     'x-time-auto': null
 };
-
-/* jshint ignore:start */
-FORMATS_MAP['x-time-ms']        = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-sec']       = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-min']       = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-hour']      = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-day']       = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-week']      = FORMATS_MAP['x-time-auto'];
-FORMATS_MAP['x-time-month']     = FORMATS_MAP['month'];
-FORMATS_MAP['x-time-quarter']   = FORMATS_MAP['quarter'];
-FORMATS_MAP['x-time-year']      = FORMATS_MAP['year'];
-/* jshint ignore:end */
 
 var FormatterRegistry = {
 

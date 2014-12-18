@@ -113,11 +113,12 @@ var decorateAxisTicks = (nodeScale, x, size) => {
 };
 
 var decorateAxisLabel = (nodeScale, x) => {
-    var koeff = ('h' === getOrientation(x.guide.scaleOrient)) ? 1 : -1;
+    var orient = getOrientation(x.guide.scaleOrient);
+    var koeff = ('h' === orient) ? 1 : -1;
     var labelTextNode = nodeScale
         .append('text')
         .attr('transform', rotate(x.guide.label.rotate))
-        .attr('class', 'label')
+        .attr('class', x.guide.label.cssClass)
         .attr('x', koeff * x.guide.size * 0.5)
         .attr('y', koeff * x.guide.label.padding)
         .style('text-anchor', x.guide.label.textAnchor);
@@ -139,6 +140,15 @@ var decorateAxisLabel = (nodeScale, x) => {
                 .text(delimiter);
         }
     });
+
+    if (x.guide.label.dock === 'right') {
+        let box = nodeScale.node().getBBox();
+        labelTextNode.attr('x', (orient === 'h') ? box.width : 0);
+    }
+    else if (x.guide.label.dock === 'left') {
+        let box = nodeScale.node().getBBox();
+        labelTextNode.attr('x', (orient === 'h') ? 0 : (10 - box.height));
+    }
 };
 
 var decorateTickLabel = (nodeScale, x) => {
@@ -297,7 +307,9 @@ var extendLabel = function (guide, dimension, extend) {
         {
             padding: 32,
             rotate: 0,
-            textAnchor: 'middle'
+            textAnchor: 'middle',
+            cssClass: 'label',
+            dock: null
         }
     );
 

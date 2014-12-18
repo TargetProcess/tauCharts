@@ -33,16 +33,16 @@ define(function (require) {
 
         defaultFormats: {
             'measure': 'x-num-auto',
-            'measure:time': 'x-time-auto',
-            'measure:time:year': 'x-time-year',
-            'measure:time:quarter': 'x-time-quarter',
-            'measure:time:month': 'x-time-month',
-            'measure:time:week': 'x-time-week',
-            'measure:time:day': 'x-time-day',
-            'measure:time:hour': 'x-time-hour',
-            'measure:time:min': 'x-time-min',
-            'measure:time:sec': 'x-time-sec',
-            'measure:time:ms': 'x-time-ms'
+            'measure:time'          : 'x-time-auto',
+            'measure:time:year'     : 'year',
+            'measure:time:quarter'  : 'quarter',
+            'measure:time:month'    : 'month',
+            'measure:time:week'     : 'x-time-auto',
+            'measure:time:day'      : 'x-time-auto',
+            'measure:time:hour'     : 'x-time-auto',
+            'measure:time:min'      : 'x-time-auto',
+            'measure:time:sec'      : 'x-time-auto',
+            'measure:time:ms'       : 'x-time-auto'
         }
     };
 
