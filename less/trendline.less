@@ -1,5 +1,21 @@
 @import "variable";
 
+//Generate colors for trendlines
+.generate-colors(@n; @i: 1) when (@i =< @n) {
+    .graphical-report__svg  .graphical-report__trendline.color@{n}-@{i} {
+        stroke: darken(extract(@category-colors, @i), 15%);
+    }
+    .generate-colors(@n; (@i + 1));
+}
+
+.generate-colors(@list_category-colors);
+.graphical-report__svg {
+    .graphical-report__trendline.color-default {
+        stroke: darken(@default-color, 15%);
+    }
+}
+
+
 .graphical-report {
 
     &__trendlinepanel {
@@ -31,7 +47,7 @@
 
     /* TrendLine */
     &__trendline {
-        stroke-dasharray: 7, 5;
+        stroke-dasharray: 4, 4;
         &__tip {
             display: none;
             font-size: 11px;
