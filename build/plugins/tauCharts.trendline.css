@@ -53,17 +53,11 @@
   font-size: 12px;
   margin-left: 5px;
 }
-.graphical-report__trendlinepanel__hide {
+.graphical-report__trendlinepanel.applicable-false .graphical-report__checkbox__input,
+.graphical-report__trendlinepanel.applicable-false .graphical-report__trendlinepanel__control,
+.graphical-report__trendlinepanel.applicable-false .graphical-report__checkbox__icon {
   display: none;
 }
 .graphical-report__trendline {
   stroke-dasharray: 4, 4;
-}
-.graphical-report__trendline__tip {
-  display: none;
-  font-size: 11px;
-  stroke: none;
-}
-.graphical-report__trendline.active .graphical-report__trendline__tip {
-  display: block;
 }

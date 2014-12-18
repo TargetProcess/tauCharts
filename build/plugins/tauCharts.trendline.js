@@ -228,7 +228,7 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
-    var drawTrendLine = function(trendLineId, dots, message, xScale, yScale, trendColor, container) {
+    var drawTrendLine = function(trendLineId, dots, xScale, yScale, trendColor, container) {
 
         var trendCssClass = [
             'graphical-report__trendline',
@@ -247,12 +247,6 @@
 
         var updateLines = function () {
             this.attr('class', trendCssClass);
-
-            var text = this.selectAll('.graphical-report__trendline__tip');
-            text.remove();
-            this.append('text')
-                .attr('class', 'graphical-report__trendline__tip')
-                .text(message);
 
             var paths = this.selectAll('path').data(function(d) { return [d] });
             paths.call(updatePaths);
@@ -305,7 +299,7 @@
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
 
-                    this.hasError = false;
+                    this.isApplicable = true;
 
                     this.uiChangeEventsDispatcher = function(e) {
 
@@ -336,7 +330,7 @@
 
                 if (!isApplicable(unitMeta)) {
                     this.error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
-                    this.hasError = true;
+                    this.isApplicable = false;
                     return;
                 }
 
@@ -345,6 +339,12 @@
                 var x = unitMeta.x.scaleDim;
                 var y = unitMeta.y.scaleDim;
                 var c = unitMeta.color.scaleDim;
+
+                //var xAutoScaleVals = unitMeta.scaleMeta(x, unitMeta.guide.x).values;
+                var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
+
+                var minY = _.min(yAutoScaleVals);
+                var maxY = _.max(yAutoScaleVals);
 
                 var categories = unitMeta.groupBy(unitMeta.partition(), c);
 
@@ -359,12 +359,16 @@
                     });
 
                     var regression = regressionsHub(settings.type, src);
-                    var dots = _.sortBy(regression.points, function(p) { return p[0]; });
+                    var dots = _(regression.points)
+                        .chain()
+                        .sortBy(function(p) { return p[0]; })
+                        .filter(function(p) { return ((minY <= p[1]) && (p[1] <= maxY)); })
+                        .value();
+
                     if (dots.length > 1) {
                         drawTrendLine(
                             'i-trendline-' + index,
                             dots,
-                            regression.string,
                             options.xScale,
                             options.yScale,
                             options.color.get(sKey),
@@ -374,16 +378,12 @@
 
                 var handleMouse = function (isActive) {
                     return function() {
-                        var m = d3.mouse(this);
                         var g = d3.select(this);
                         g.classed({
                             'active': isActive,
                             'graphical-report__line-width-1': !isActive,
                             'graphical-report__line-width-2': isActive
                         });
-                        g.select('.graphical-report__trendline__tip')
-                            .attr('x', m[0] + 3)
-                            .attr('y', m[1] - 3);
                     };
                 };
 
@@ -396,35 +396,39 @@
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
-                '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend <%= hideControls %>" <%= showTrend %> />',
-                '<span class="graphical-report__checkbox__icon <%= hideControls %>"></span>',
+                '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend" <%= showTrend %> />',
+                '<span class="graphical-report__checkbox__icon"></span>',
                 '<span class="graphical-report__checkbox__text">',
                     '<%= title %>',
                 '</span>',
                 '</label>',
 
                 '<div>',
-                '<select class="i-role-change-model graphical-report__select graphical-report__trendlinepanel__control <%= hideControls %>">',
+                '<select class="i-role-change-model graphical-report__select graphical-report__trendlinepanel__control">',
                 '<%= models %> />',
                 '</select>',
                 '</div>',
 
-                '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>',
-                '</div>'
+                '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
             ].join('')),
 
             onRender: function (chart) {
 
                 if (this._container) {
+                    var classToAdd = this.isApplicable ? 'applicable-true' : 'applicable-false';
+                    var classToDel = this.isApplicable ? 'applicable-false' : 'applicable-true';
+
+                    this._container.classList.add(classToAdd);
+                    this._container.classList.remove(classToDel);
+
                     this._container.innerHTML = this.template({
                         title: 'Trend line',
-                        showTrend: (settings.showTrend && !this.hasError) ? 'checked' : '',
+                        error: this.error,
+                        showTrend: (settings.showTrend && this.isApplicable) ? 'checked' : '',
                         models: ['linear', 'exponential', 'logarithmic'].map(function(x) {
                             var selected = (settings.type === x) ? 'selected' : '';
                             return '<option ' + selected + ' value="' + x + '">' + x + '</option>'
-                        }),
-                        error: this.error,
-                        hideControls: this.hasError ? 'graphical-report__trendlinepanel__hide' : ''
+                        })
                     });
                 }
             }
