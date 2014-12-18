@@ -32,14 +32,14 @@ module.exports = function(grunt) {
             },
             dist: {
                 src: ['build/tauCharts.js'],
-                dest: 'build/<%= pkg.name %>.js'
+                dest: 'build/tauCharts.js'
             }
         },
         compile: {
             build: {
                 cwd: "src/",
                 src: src,
-                dest: "build/<%= pkg.name %>.js"
+                dest: "build/tauCharts.js"
             },
             dev: {
                 cwd: "src/",
