@@ -1,5 +1,5 @@
 .graphical-report__legend {
-  padding: 20px 0 20px 20px;
+  padding: 20px 0 20px 10px;
   margin-right: 20px;
   width: 160px;
   box-sizing: border-box;
@@ -12,6 +12,10 @@
 }
 .graphical-report__legend__item:hover {
   background-color: rgba(189, 195, 205, 0.2);
+}
+.graphical-report__legend__item .color-default {
+  background: #377eb8;
+  border-radius: 4px;
 }
 .graphical-report__legend__title {
   text-transform: uppercase;
@@ -26,6 +30,9 @@
 .graphical-report__legend__item:disabled,
 .graphical-report__legend__item.disabled {
   color: #cccccc;
+}
+.graphical-report__legend__item.disabled .graphical-report__legend__guide {
+  background: transparent;
 }
 .graphical-report__legend__guide {
   width: 15px;
@@ -106,7 +113,4 @@
 .graphical-report__legend__item.disabled .color10-10 {
   border: 1px solid #222222;
   background-color: transparent;
-}
-.graphical-report__legend__item .color-default {
-  background: #377eb8;
 }

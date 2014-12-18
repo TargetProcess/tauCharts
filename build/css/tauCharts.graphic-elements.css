@@ -328,8 +328,7 @@
   transition: opacity 0.2s ease;
 }
 .graphical-report__highlighted_chart .graphical-report__dot.graphical-report__highlighted {
-  stroke-width: 6;
-  stroke-opacity: 0.4;
+  stroke-width: 2;
   opacity: 1;
 }
 .graphical-report__highlighted_chart .graphical-report__line.graphical-report__highlighted {
