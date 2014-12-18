@@ -13,7 +13,8 @@
     }
   ],
   "dependencies": {
-    "gitbook-plugin-jsbin": "0.0.5"
+    "d3": "~3.4.3",
+    "underscore": "~1.6.0"
   },
   "repository": {
     "type": "git",
