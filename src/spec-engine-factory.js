@@ -269,13 +269,13 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.y.density = settings.yDensityKoeff * yTickBox.h;
 
     if (!inlineLabels) {
-        unit.guide.x.label.padding = xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
-        unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
+        unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
+        unit.guide.y.label.padding = -xFontLabelHeight + ((unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0);
 
         let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
         let yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
-        unit.guide.padding.b = xAxisPadding + xLabelPadding;
+        unit.guide.padding.b = xAxisPadding + xLabelPadding - xTickWidth;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
         unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
@@ -298,12 +298,6 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         //unit.guide.x.label.textAnchor = 'start';
         //unit.guide.y.label.dock = 'left';
         //unit.guide.y.label.textAnchor = 'start';
-
-        let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
-        let yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
-
-        unit.guide.padding.b = xAxisPadding + xLabelPadding;
-        unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
         unit.guide.padding.b = xAxisPadding + xFontH;
         unit.guide.padding.l = yAxisPadding + yFontW;
@@ -594,7 +588,7 @@ var SpecEngineTypeMap = {
                             },
                             settings),
                         true,
-                        true,
+                        false,
                         true);
                 }
 

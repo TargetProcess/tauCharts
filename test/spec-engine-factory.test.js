@@ -175,7 +175,7 @@ define(function (require) {
             expect(y.cssClass).to.equal('y axis');
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
-            expect(y.tickFormat).to.equal('x-time-quarter');
+            expect(y.tickFormat).to.equal('quarter');
             expect(y.label.text).to.equal('date');
             expect(y.tickFontHeight).to.equal(10);
 
@@ -286,7 +286,7 @@ define(function (require) {
 
             expect(part.guide.showGridLines).to.equal('xy');
 
-            expect(px.tickFormat).to.equal('x-time-quarter');
+            expect(px.tickFormat).to.equal('quarter');
             expect(px.tickFormatNullAlias).to.equal('No date');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
@@ -358,6 +358,120 @@ define(function (require) {
             expect(full.unit.guide.x.tickFormatNullAlias).to.equal('(NIL)');
             expect(full.unit.guide.showGridLines).to.equal('x');
             expect(part.guide.showGridLines).to.equal('');
+        });
+
+        it("should support [COMPACT] spec engine (facet)", function () {
+
+            var spec = {
+                "dimensions": {
+                    "team": {
+                        "type": "order",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "measure",
+                        "scale": "time"
+                    }
+                },
+                "unit": {
+                    "type": "COORDS.RECT",
+                    "x": "team",
+                    "y": null,
+                    "unit": [
+                        {
+                            "type": "COORDS.RECT",
+                            "x": "date",
+                            "y": "count",
+                            "unit": [
+                                {
+                                    "type": "ELEMENT.INTERVAL"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+
+            var testSpecEngine = SpecEngineFactory.get("COMPACT", measurer);
+
+            var full = testSpecEngine(spec, meta);
+
+            var x = full.unit.guide.x;
+            var y = full.unit.guide.y;
+
+            expect(full.unit.guide.hasOwnProperty('showGridLines')).to.equal(false);
+
+            expect(x.autoScale).to.equal(true);
+            expect(x.scaleOrient).to.equal('bottom');
+            expect(x.padding).to.equal(0);
+            expect(x.cssClass).to.equal('x axis facet-axis compact');
+            expect(x.rotate).to.equal(0);
+            expect(x.textAnchor).to.equal('middle');
+            expect(x.tickFormat).to.equal(null);
+            expect(x.tickFormatNullAlias).to.equal('No team');
+            expect(x.label.text).to.equal('team > date');
+            expect(x.label.cssClass).to.equal('label');
+            expect(x.label.dock).to.equal(null);
+            expect(x.tickFontHeight).to.equal(10);
+            expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width * measurer.xDensityKoeff);
+
+            expect(y.autoScale).to.equal(true);
+            expect(y.scaleOrient).to.equal('left');
+            expect(y.padding).to.equal(0);
+            expect(y.cssClass).to.equal('y axis facet-axis compact');
+            expect(y.rotate).to.equal(-90);
+            expect(y.textAnchor).to.equal('middle');
+            expect(y.tickFormat).to.equal(null);
+            expect(typeof y.tickFormatNullAlias).to.equal('undefined');
+            expect(y.label.text).to.equal('');
+            expect(y.label.cssClass).to.equal('label');
+            expect(y.label.dock).to.equal(null);
+            expect(y.tickFontHeight).to.equal(0);
+            expect(y.density).to.equal(0); // empty axis
+
+            expect(full.unit.guide.padding.b).to.equal(40);
+
+            // y is null axis
+            expect(full.unit.guide.padding.l).to.equal(0);
+            expect(full.unit.guide.padding.r).to.equal(0);
+            expect(full.unit.guide.padding.t).to.equal(0);
+
+
+            var part = full.unit.unit[0];
+            var px = part.guide.x;
+            var py = part.guide.y;
+
+            expect(part.guide.showGridLines).to.equal('xy');
+
+            expect(px.tickFormat).to.equal('quarter');
+            expect(px.tickFormatNullAlias).to.equal('No date');
+            expect(px.tickFontHeight).to.equal(10);
+            expect(px.label.text).to.equal('');
+            expect(px.label.dock).to.equal('right');
+            expect(px.label.padding).to.equal(-2.5);
+            expect(px.label.cssClass).to.equal('label inline');
+            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width * measurer.xDensityKoeff);
+
+            expect(py.tickFormat).to.equal('x-num-auto');
+            expect(py.tickFormatNullAlias).to.equal('No count');
+            expect(py.tickFontHeight).to.equal(10);
+            expect(py.label.text).to.equal('count');
+            expect(py.label.dock).to.equal('right');
+            expect(py.label.padding).to.equal(-17.5);
+            expect(py.label.cssClass).to.equal('label inline');
+            expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width * measurer.yDensityKoeff);
+
+
+            var elem = part.unit[0];
+
+            expect(elem.guide.x.tickFontHeight).to.equal(10);
+            expect(elem.guide.y.tickFontHeight).to.equal(10);
         });
     });
 });
