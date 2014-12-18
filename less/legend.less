@@ -1,5 +1,19 @@
 @import "variable";
 
+.generate-colors(@n; @i: 1) when (@i =< @n) {
+
+    .graphical-report__legend__item .color@{n}-@{i} {
+        background: extract(@category-colors, @i);
+    }
+
+    .graphical-report__legend__item.disabled .color@{n}-@{i} {
+        border: 1px solid extract(@category-colors, @i);
+        background-color: transparent;
+    }
+
+    .generate-colors(@n; (@i + 1));
+}
+
 .graphical-report {
     &__legend {
         padding: 20px 0 20px 20px;
@@ -17,6 +31,11 @@
             &:hover {
                 background-color: rgba(189, 195, 205, 0.2);
             }
+
+            .color-default {
+                background: @default-color;
+            }
+
         }
 
         &__title {
@@ -35,6 +54,10 @@
             }
         }
 
+        &__item.disabled &__guide{
+            background: transparent;
+        }
+
         &__guide {
             width: 15px;
             height: 15px;
@@ -49,20 +72,4 @@
     }
 }
 
-.generate-colors(@n; @i: 1) when (@i =< @n) {
-
-    .graphical-report__legend__item .color@{n}-@{i} {
-        background: extract(@category-colors, @i);
-    }
-
-    .graphical-report__legend__item.disabled .color@{n}-@{i} {
-        border: 1px solid extract(@category-colors, @i);
-        background-color: transparent;
-    }    
-
-    .generate-colors(@n; (@i + 1));
-}
 .generate-colors(@list_category-colors);
-.graphical-report__legend__item .color-default {
-    background: @default-color;
-}
