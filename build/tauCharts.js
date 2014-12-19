@@ -1,4 +1,4 @@
-/*! taucharts - v0.2.21 - 2014-12-18
+/*! taucharts - v0.2.21 - 2014-12-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -443,12 +443,12 @@ var requirejs, require, define;
 
 define("../node_modules/almond/almond", function(){});
 
-/**
- * Internal method to return CSS value for given element and property
- */
 define('utils/utils-dom',["exports"], function (exports) {
   
 
+  /**
+   * Internal method to return CSS value for given element and property
+   */
   var tempDiv = document.createElement("div");
 
   var utilsDom = {
@@ -550,116 +550,99 @@ define('utils/utils-dom',["exports"], function (exports) {
 define('dsl-reader',["exports"], function (exports) {
   
 
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
   var DSLReader = (function () {
     var DSLReader = function DSLReader(domainMixin, UnitsRegistry) {
       this.domain = domainMixin;
       this.UnitsRegistry = UnitsRegistry;
     };
 
-    _classProps(DSLReader, null, {
-      buildGraph: {
-        writable: true,
-        value: function (spec) {
-          var _this = this;
+    DSLReader.prototype.buildGraph = function (spec) {
+      var _this = this;
+      var buildRecursively = function (unit) {
+        return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
+      };
+      return buildRecursively(spec.unit);
+    };
 
-          var buildRecursively = function (unit) {
-            return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
-          };
-          return buildRecursively(spec.unit);
+    DSLReader.prototype.calcLayout = function (graph, size) {
+      graph.options = { top: 0, left: 0, width: size.width, height: size.height };
+
+      var fnTraverseLayout = function (node) {
+        if (!node.$matrix) {
+          return node;
         }
-      },
-      calcLayout: {
-        writable: true,
-        value: function (graph, size) {
-          graph.options = { top: 0, left: 0, width: size.width, height: size.height };
 
-          var fnTraverseLayout = function (node) {
-            if (!node.$matrix) {
-              return node;
-            }
+        var options = node.options;
+        var padding = node.guide.padding;
 
-            var options = node.options;
-            var padding = node.guide.padding;
+        var innerW = options.width - (padding.l + padding.r);
+        var innerH = options.height - (padding.t + padding.b);
 
-            var innerW = options.width - (padding.l + padding.r);
-            var innerH = options.height - (padding.t + padding.b);
+        var nRows = node.$matrix.sizeR();
+        var nCols = node.$matrix.sizeC();
 
-            var nRows = node.$matrix.sizeR();
-            var nCols = node.$matrix.sizeC();
+        var cellW = innerW / nCols;
+        var cellH = innerH / nRows;
 
-            var cellW = innerW / nCols;
-            var cellH = innerH / nRows;
-
-            var calcLayoutStrategy;
-            if (node.guide.split) {
-              calcLayoutStrategy = {
-                calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return cellHeight / lenIndex;
-                }),
-                calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex;
-                })
-              };
-            } else {
-              calcLayoutStrategy = {
-                calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return cellHeight;
-                }),
-                calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return rowIndex * cellH;
-                })
-              };
-            }
-
-            node.$matrix.iterate(function (iRow, iCol, subNodes) {
-              var len = subNodes.length;
-
-              _.each(subNodes, function (node, i) {
-                node.options = {
-                  width: cellW,
-                  left: iCol * cellW,
-                  height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
-                  top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
-                };
-                fnTraverseLayout(node);
-              });
-            });
-
-            return node;
+        var calcLayoutStrategy;
+        if (node.guide.split) {
+          calcLayoutStrategy = {
+            calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return cellHeight / lenIndex;
+            }),
+            calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex;
+            })
           };
-
-          return fnTraverseLayout(graph);
-        }
-      },
-      renderGraph: {
-        writable: true,
-        value: function (styledGraph, target, chart) {
-          var _this2 = this;
-
-          styledGraph.options.container = target;
-          var renderRecursively = function (unit) {
-            var unitMeta = _this2.domain.mix(unit);
-            _this2.UnitsRegistry.get(unit.type).draw(unitMeta, function (childUnit) {
-              childUnit.parentUnit = unit;
-              renderRecursively(childUnit);
-            });
-
-            if (chart) {
-              chart.fire("unitready", unitMeta);
-            }
+        } else {
+          calcLayoutStrategy = {
+            calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return cellHeight;
+            }),
+            calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return rowIndex * cellH;
+            })
           };
-          styledGraph.parentUnit = null;
-          renderRecursively(styledGraph);
-          return styledGraph.options.container;
         }
-      }
-    });
+
+        node.$matrix.iterate(function (iRow, iCol, subNodes) {
+          var len = subNodes.length;
+
+          _.each(subNodes, function (node, i) {
+            node.options = {
+              width: cellW,
+              left: iCol * cellW,
+              height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
+              top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
+            };
+            fnTraverseLayout(node);
+          });
+        });
+
+        return node;
+      };
+
+      return fnTraverseLayout(graph);
+    };
+
+    DSLReader.prototype.renderGraph = function (styledGraph, target, chart) {
+      var _this2 = this;
+      styledGraph.options.container = target;
+      var renderRecursively = function (unit) {
+        var unitMeta = _this2.domain.mix(unit);
+        _this2.UnitsRegistry.get(unit.type).draw(unitMeta, function (childUnit) {
+          childUnit.parentUnit = unit;
+          renderRecursively(childUnit);
+        });
+
+        if (chart) {
+          chart.fire("unitready", unitMeta);
+        }
+      };
+      styledGraph.parentUnit = null;
+      renderRecursively(styledGraph);
+      return styledGraph.options.container;
+    };
 
     return DSLReader;
   })();
@@ -675,7 +658,6 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   // jshint ignore: start
   var classes = function (el) {
     return {
@@ -687,6 +669,8 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
     };
   };
+
+
 
   var indexOf = function (arr, obj) {
     return arr.indexOf(obj);
@@ -999,22 +983,21 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
       switch (place[1]) {
         case "left":
-
           if (target.right - this.width <= winPos.left) {
             place[1] = "right";
           }
           break;
         case "right":
-
           if (target.left + this.width >= winPos.right) {
             place[1] = "left";
           }
           break;
-        default: if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
-          place[1] = "left";
-        } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
-          place[1] = "right";
-        }
+        default:
+          if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
+            place[1] = "left";
+          } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
+            place[1] = "right";
+          }
       }
     } else {
       if (target.left - this.width - spacing <= winPos.left) {
@@ -1024,22 +1007,21 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
       }
       switch (place[1]) {
         case "top":
-
           if (target.bottom - this.height <= winPos.top) {
             place[1] = "bottom";
           }
           break;
         case "bottom":
-
           if (target.top + this.height >= winPos.bottom) {
             place[1] = "top";
           }
           break;
-        default: if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
-          place[1] = "top";
-        } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
-          place[1] = "bottom";
-        }
+        default:
+          if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
+            place[1] = "top";
+          } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
+            place[1] = "bottom";
+          }
       }
     }
 
@@ -1088,65 +1070,53 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
     var top, left;
     switch (this.curPlace) {
       case "top":
-
         top = target.top - this.height - spacing;
         left = target.left + target.width / 2 - this.width / 2;
         break;
       case "top-left":
-
         top = target.top - this.height - spacing;
         left = target.right - this.width;
         break;
       case "top-right":
-
         top = target.top - this.height - spacing;
         left = target.left;
         break;
 
       case "bottom":
-
         top = target.bottom + spacing;
         left = target.left + target.width / 2 - this.width / 2;
         break;
       case "bottom-left":
-
         top = target.bottom + spacing;
         left = target.right - this.width;
         break;
       case "bottom-right":
-
         top = target.bottom + spacing;
         left = target.left;
         break;
 
       case "left":
-
         top = target.top + target.height / 2 - this.height / 2;
         left = target.left - this.width - spacing;
         break;
       case "left-top":
-
         top = target.bottom - this.height;
         left = target.left - this.width - spacing;
         break;
       case "left-bottom":
-
         top = target.top;
         left = target.left - this.width - spacing;
         break;
 
       case "right":
-
         top = target.top + target.height / 2 - this.height / 2;
         left = target.right + spacing;
         break;
       case "right-top":
-
         top = target.bottom - this.height;
         left = target.right + spacing;
         break;
       case "right-bottom":
-
         top = target.top;
         left = target.right + spacing;
         break;
@@ -1339,14 +1309,9 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
 define('event',["exports"], function (exports) {
   
 
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
   var NULL_HANDLER = {};
   var events = {};
+
 
   /**
    * Creates new type of event or returns existing one, if it was created before.
@@ -1406,73 +1371,72 @@ define('event',["exports"], function (exports) {
     return eventFunction;
   }
 
+  /**
+   * Base class for event dispatching. It provides interface for instance
+   * to add and remove handler for desired events, and call it when event happens.
+   * @class
+   */
+
   var Emitter = (function () {
-    var Emitter = function Emitter() {
+    var Emitter =
+    /**
+     * @constructor
+     */
+    function Emitter() {
       this.handler = null;
       this.emit_destroy = createDispatcher("destroy");
     };
 
-    _classProps(Emitter, null, {
-      addHandler: {
-        writable: true,
-        value: function (callbacks, context) {
-          context = context || this;
-          // add handler
-          this.handler = {
-            callbacks: callbacks,
-            context: context,
-            handler: this.handler
-          };
-        }
-      },
-      on: {
-        writable: true,
-        value: function (name, callback, context) {
-          var obj = {};
-          obj[name] = callback;
-          this.addHandler(obj, context);
-          return obj;
-        }
-      },
-      fire: {
-        writable: true,
-        value: function (name, data) {
-          createDispatcher.call(this, name).call(this, data);
-        }
-      },
-      removeHandler: {
-        writable: true,
-        value: function (callbacks, context) {
-          var cursor = this;
-          var prev;
+    Emitter.prototype.addHandler = function (callbacks, context) {
+      context = context || this;
+      // add handler
+      this.handler = {
+        callbacks: callbacks,
+        context: context,
+        handler: this.handler
+      };
+    };
 
-          context = context || this;
+    Emitter.prototype.on = function (name, callback, context) {
+      var obj = {};
+      obj[name] = callback;
+      this.addHandler(obj, context);
+      return obj;
+    };
 
-          // search for handler and remove it
-          while (prev = cursor, cursor = cursor.handler) {
-            // jshint ignore:line
-            if (cursor.callbacks === callbacks && cursor.context === context) {
-              // make it non-callable
-              cursor.callbacks = NULL_HANDLER;
+    Emitter.prototype.fire = function (name, data) {
+      createDispatcher.call(this, name).call(this, data);
+    };
 
-              // remove from list
-              prev.handler = cursor.handler;
+    Emitter.prototype.removeHandler = function (callbacks, context) {
+      var cursor = this;
+      var prev;
 
-              return;
-            }
-          }
-        }
-      },
-      destroy: {
-        writable: true,
-        value: function () {
-          // fire object destroy event handlers
-          this.emit_destroy();
-          // drop event handlers if any
-          this.handler = null;
+      context = context || this;
+
+      // search for handler and remove it
+      while (prev = cursor, cursor = cursor.handler) {
+        // jshint ignore:line
+        if (cursor.callbacks === callbacks && cursor.context === context) {
+          // make it non-callable
+          cursor.callbacks = NULL_HANDLER;
+
+          // remove from list
+          prev.handler = cursor.handler;
+
+          return;
         }
       }
-    });
+
+
+    };
+
+    Emitter.prototype.destroy = function () {
+      // fire object destroy event handlers
+      this.emit_destroy();
+      // drop event handlers if any
+      this.handler = null;
+    };
 
     return Emitter;
   })();
@@ -1556,12 +1520,10 @@ define('utils/utils',["exports"], function (exports) {
 
   exports.utils = utils;
 });
-/* jshint ignore:start */
 define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   
 
   var d3 = _d3;
-
   /* jshint ignore:end */
   var FORMATS_MAP = {
     "x-num-auto": function (x) {
@@ -1661,7 +1623,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var _ = _underscore;
   var d3 = _d3;
-
   /* jshint ignore:end */
 
   var translate = function (left, top) {
@@ -1673,6 +1634,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var getOrientation = function (scaleOrient) {
     return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
   };
+
 
   var cutText = function (textString, widthLimit) {
     textString.each(function () {
@@ -1965,6 +1927,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     node.guide.size = extendLabel(node.guide, "size");
     node.guide.color = extendLabel(node.guide, "color");
 
+
     return node;
   };
 
@@ -1986,6 +1949,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
+
+
 
   function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
@@ -2106,6 +2071,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
   };
 
+
   var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);
@@ -2136,6 +2102,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
     var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
 
+
     var xAxisPadding = settings.xAxisPadding;
     var yAxisPadding = settings.yAxisPadding;
 
@@ -2157,6 +2124,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
     unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
+
     var xTickBox = isXVertical ? { w: maxXTickSize.height, h: maxXTickSize.width } : { h: maxXTickSize.height, w: maxXTickSize.width };
 
     if (maxXTickSize.width > settings.xAxisTickLabelLimit) {
@@ -2175,6 +2143,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         xTickBox.w = settings.xAxisTickLabelLimit;
       }
     }
+
 
     var yTickBox = isYVertical ? { w: maxYTickSize.height, h: maxYTickSize.width } : { h: maxYTickSize.height, w: maxYTickSize.width };
 
@@ -2258,6 +2227,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
     return unit;
   };
+
 
   var SpecEngineTypeMap = {
     NONE: function (srcSpec, meta, settings) {
@@ -2359,6 +2329,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
         var yValues = yMeta.values;
 
+
         unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
         unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
@@ -2368,6 +2339,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
         var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
+
 
         var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
         var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
@@ -2414,6 +2386,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var distToXAxisLabel = settings.distToXAxisLabel;
         var distToYAxisLabel = settings.distToYAxisLabel;
 
+
         var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
         unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
 
@@ -2422,11 +2395,14 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
         unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
 
+
         unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
         unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
+
         var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
         var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
+
 
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
@@ -2494,6 +2470,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       return SpecEngineTypeMap[engineName](spec, meta, settings);
     }, srcSpec);
   };
+
 
   var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
     var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
@@ -2579,6 +2556,8 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
   var utils = _utilsUtils.utils;
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var TMatrix = _matrix.TMatrix;
+
+
 
   var specUnitSummary = function (spec, boxOpt) {
     var box = boxOpt ? boxOpt : { depth: -1, paddings: [] };
@@ -2698,43 +2677,33 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
 
   exports.LayoutEngineFactory = LayoutEngineFactory;
 });
-//plugins
-/** @class
- * @extends Plugin */
 define('plugins',["exports"], function (exports) {
   
 
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
+  //plugins
+  /** @class
+   * @extends Plugin */
   var Plugins = (function () {
-    var Plugins = function Plugins(plugins, chart) {
+    var Plugins =
+    /** @constructs */
+    function Plugins(plugins, chart) {
       this.chart = chart;
       this._plugins = plugins.map(this.initPlugin, this);
     };
 
-    _classProps(Plugins, null, {
-      initPlugin: {
-        writable: true,
-        value: function (plugin) {
-          var _this = this;
-
-          if (plugin.init) {
-            plugin.init(this.chart);
-          }
-          this.chart.on("destroy", plugin.destroy || (function () {}));
-          Object.keys(plugin).forEach(function (name) {
-            if (name.indexOf("on") === 0) {
-              var event = name.substr(2);
-              _this.chart.on(event.toLowerCase(), plugin[name].bind(plugin));
-            }
-          });
-        }
+    Plugins.prototype.initPlugin = function (plugin) {
+      var _this = this;
+      if (plugin.init) {
+        plugin.init(this.chart);
       }
-    });
+      this.chart.on("destroy", plugin.destroy || (function () {}));
+      Object.keys(plugin).forEach(function (name) {
+        if (name.indexOf("on") === 0) {
+          var event = name.substr(2);
+          _this.chart.on(event.toLowerCase(), plugin[name].bind(plugin));
+        }
+      });
+    };
 
     return Plugins;
   })();
@@ -2753,6 +2722,7 @@ define('plugins',["exports"], function (exports) {
       }, this);
     };
   };
+
 
   exports.propagateDatumEvents = propagateDatumEvents;
   exports.Plugins = Plugins;
@@ -2848,17 +2818,10 @@ define('unit-domain-period-generator',["exports"], function (exports) {
 define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./utils/utils", "underscore", "d3"], function (exports, _unitDomainPeriodGenerator, _utilsUtils, _underscore, _d3) {
   
 
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
   var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
   var utils = _utilsUtils.utils;
   var _ = _underscore;
   var d3 = _d3;
-
   /* jshint ignore:end */
 
   var autoScaleMethods = {
@@ -3080,27 +3043,22 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
       };
     };
 
-    _classProps(UnitDomainMixin, null, {
-      mix: {
-        writable: true,
-        value: function (unit) {
-          unit.dimension = this.fnDimension;
-          unit.source = this.fnSource;
-          unit.domain = this.fnDomain;
-          unit.scaleMeta = this.fnScaleMeta;
-          unit.scaleTo = this.fnScaleTo;
-          unit.partition = (function () {
-            return unit.data || unit.source(unit.$where);
-          });
-          unit.groupBy = (function (srcValues, splitByProperty) {
-            return d3.nest().key(function (d) {
-              return d[splitByProperty];
-            }).entries(srcValues);
-          });
-          return unit;
-        }
-      }
-    });
+    UnitDomainMixin.prototype.mix = function (unit) {
+      unit.dimension = this.fnDimension;
+      unit.source = this.fnSource;
+      unit.domain = this.fnDomain;
+      unit.scaleMeta = this.fnScaleMeta;
+      unit.scaleTo = this.fnScaleTo;
+      unit.partition = (function () {
+        return unit.data || unit.source(unit.$where);
+      });
+      unit.groupBy = (function (srcValues, splitByProperty) {
+        return d3.nest().key(function (d) {
+          return d[splitByProperty];
+        }).entries(srcValues);
+      });
+      return unit;
+    };
 
     return UnitDomainMixin;
   })();
@@ -3138,6 +3096,7 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
   
 
   var utils = _utilsUtils.utils;
+
 
   var DataProcessor = {
     isYFunctionOfX: function (data, xFields, yFields) {
@@ -3285,7 +3244,6 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   var createElement = function (cssClass, parent) {
     var tag = "div";
     var element = document.createElement(tag);
@@ -3317,16 +3275,11 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
     /* jshint ignore:end */
   };
 
+
   exports.getLayout = getLayout;
 });
 define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../event", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor", "../utils/layuot-template"], function (exports, _dslReader, _apiBalloon, _event, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate) {
   
-
-  var _classProps = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
 
   var _extends = function (child, parent) {
     child.prototype = Object.create(parent.prototype, {
@@ -3354,6 +3307,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
   var DataProcessor = _dataProcessor.DataProcessor;
   var getLayout = _utilsLayuotTemplate.getLayout;
+
 
   var traverseFromDeep = function (root) {
     var r;
@@ -3426,224 +3380,193 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
     _extends(Plot, Emitter);
 
-    _classProps(Plot, null, {
-      setupConfig: {
-        writable: true,
-        value: function (config) {
-          this.config = _.defaults(config, {
-            spec: {},
-            data: [],
-            plugins: [],
-            settings: {}
-          });
-          this._emptyContainer = config.emptyContainer || "";
-          // TODO: remove this particular config cases
-          this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
-          this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
-          this.config.settings = this.setupSettings(this.config.settings);
-          if (!utils.isArray(this.config.settings.specEngine)) {
-            this.config.settings.specEngine = [{
-              width: Number.MAX_VALUE,
-              name: this.config.settings.specEngine
-            }];
-          }
-
-          this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
-
-          var log = this.config.settings.log;
-          if (this.config.settings.excludeNull) {
-            this.addFilter({
-              tag: "default",
-              predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
-                log([item, "point was excluded, because it has undefined values."], "WARN");
-              })
-            });
-          }
-        }
-      },
-      getConfig: {
-        writable: true,
-        value: function () {
-          return this.config;
-        }
-      },
-      setupMetaInfo: {
-        writable: true,
-        value: function (dims, data) {
-          var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
-          return DataProcessor.autoAssignScales(meta);
-        }
-      },
-      setupSettings: {
-        writable: true,
-        value: function (configSettings) {
-          var globalSettings = Plot.globalSettings;
-          var localSettings = {};
-          Object.keys(globalSettings).forEach(function (k) {
-            localSettings[k] = (_.isFunction(globalSettings[k])) ? globalSettings[k] : utils.clone(globalSettings[k]);
-          });
-
-          return _.defaults(configSettings || {}, localSettings);
-        }
-      },
-      insertToRightSidebar: {
-        writable: true,
-        value: function (el) {
-          return utilsDom.appendTo(el, this._layout.rightSidebar);
-        }
-      },
-      addBalloon: {
-        writable: true,
-        value: function (conf) {
-          return new Tooltip("", conf || {});
-        }
-      },
-      renderTo: {
-        writable: true,
-        value: function (target, xSize) {
-          this._svg = null;
-          this._defaultSize = _.clone(xSize);
-          var container = d3.select(target);
-          var containerNode = container.node();
-          this._target = target;
-          this._targetSizes = xSize;
-          if (containerNode === null) {
-            throw new Error("Target element not found");
-          }
-          var content = this._layout.content;
-          containerNode.appendChild(this._layout.layout);
-          container = d3.select(this._layout.content);
-          //todo don't compute width if width or height were passed
-          var size = xSize || {};
-          this._layout.content.innerHTML = "";
-          if (!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
-          }
-
-          var drawData = this.getData();
-          if (drawData.length === 0) {
-            this._layout.content.innerHTML = this._emptyContainer;
-            return;
-          }
-          this._targetSizes = size;
-          this._layout.content.innerHTML = "";
-
-          var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
-
-          var specItem = _.find(this.config.settings.specEngine, function (item) {
-            return (size.width <= item.width);
-          });
-
-          var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
-
-          var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
-
-          var optimalSize = traverseFromDeep(fullSpec.unit);
-          var recommendedWidth = optimalSize.w;
-          var recommendedHeight = optimalSize.h;
-
-          var scrollSize = utilsDom.getScrollbarWidth();
-
-          var deltaW = (size.width - recommendedWidth);
-          var deltaH = (size.height - recommendedHeight);
-
-          var screenW = (deltaW >= 0) ? size.width : recommendedWidth;
-          var scrollW = (deltaH >= 0) ? 0 : scrollSize;
-
-          var screenH = (deltaH >= 0) ? size.height : recommendedHeight;
-          var scrollH = (deltaW >= 0) ? 0 : scrollSize;
-
-          size.height = screenH - scrollH;
-          size.width = screenW - scrollW;
-
-          // optimize full spec depending on size
-          var localSettings = this.config.settings;
-
-          traverseToDeep(fullSpec.unit, size, localSettings);
-
-          var reader = new DSLReader(domainMixin, UnitsRegistry);
-
-          var logicXGraph = reader.buildGraph(fullSpec);
-          var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
-          var renderGraph = reader.calcLayout(layoutGraph, size);
-          var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), this);
-          this._svg = svgXElement.node();
-          svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
-          this._layout.rightSidebar.style.maxHeight = size.height + "px";
-          this.fire("render", this._svg);
-        }
-      },
-      getData: {
-        writable: true,
-        value: function (param) {
-          param = param || {};
-          var filters = _.chain(this._filtersStore.filters).values().flatten().reject(function (filter) {
-            return _.contains(param.excludeFilter, filter.tag);
-          }).pluck("predicate").value();
-          return _.filter(this.config.data, _.reduce(filters, function (newPredicate, filter) {
-            return function (x) {
-              return newPredicate(x) && filter(x);
-            };
-          }, function () {
-            return true;
-          }));
-        }
-      },
-      setData: {
-        writable: true,
-        value: function (data) {
-          this.config.data = data;
-          this.refresh();
-        }
-      },
-      getSVG: {
-        writable: true,
-        value: function () {
-          return this._svg;
-        }
-      },
-      addFilter: {
-        writable: true,
-        value: function (filter) {
-          var tag = filter.tag;
-          var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
-          var id = this._filtersStore.tick++;
-          filter.id = id;
-          filters.push(filter);
-          this.refresh();
-          return id;
-        }
-      },
-      refresh: {
-        writable: true,
-        value: function () {
-          if (this._target) {
-            this.renderTo(this._target, this._defaultSize);
-          }
-        }
-      },
-      resize: {
-        writable: true,
-        value: function (sizes) {
-          if (sizes === undefined) sizes = {};
-
-          this.renderTo(this._target, sizes);
-        }
-      },
-      removeFilter: {
-        writable: true,
-        value: function (id) {
-          var _this = this;
-
-          _.each(this._filtersStore.filters, function (filters, key) {
-            _this._filtersStore.filters[key] = _.reject(filters, function (item) {
-              return item.id === id;
-            });
-          });
-          this.refresh();
-        }
+    Plot.prototype.setupConfig = function (config) {
+      this.config = _.defaults(config, {
+        spec: {},
+        data: [],
+        plugins: [],
+        settings: {}
+      });
+      this._emptyContainer = config.emptyContainer || "";
+      // TODO: remove this particular config cases
+      this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
+      this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
+      this.config.settings = this.setupSettings(this.config.settings);
+      if (!utils.isArray(this.config.settings.specEngine)) {
+        this.config.settings.specEngine = [{
+          width: Number.MAX_VALUE,
+          name: this.config.settings.specEngine
+        }];
       }
-    });
+
+      this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+
+      var log = this.config.settings.log;
+      if (this.config.settings.excludeNull) {
+        this.addFilter({
+          tag: "default",
+          predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
+            log([item, "point was excluded, because it has undefined values."], "WARN");
+          })
+        });
+      }
+    };
+
+    Plot.prototype.getConfig = function () {
+      return this.config;
+    };
+
+    Plot.prototype.setupMetaInfo = function (dims, data) {
+      var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
+      return DataProcessor.autoAssignScales(meta);
+    };
+
+    Plot.prototype.setupSettings = function (configSettings) {
+      var globalSettings = Plot.globalSettings;
+      var localSettings = {};
+      Object.keys(globalSettings).forEach(function (k) {
+        localSettings[k] = (_.isFunction(globalSettings[k])) ? globalSettings[k] : utils.clone(globalSettings[k]);
+      });
+
+      return _.defaults(configSettings || {}, localSettings);
+    };
+
+    Plot.prototype.insertToRightSidebar = function (el) {
+      return utilsDom.appendTo(el, this._layout.rightSidebar);
+    };
+
+    Plot.prototype.addBalloon = function (conf) {
+      return new Tooltip("", conf || {});
+    };
+
+    Plot.prototype.renderTo = function (target, xSize) {
+      this._svg = null;
+      this._defaultSize = _.clone(xSize);
+      var container = d3.select(target);
+      var containerNode = container.node();
+      this._target = target;
+      this._targetSizes = xSize;
+      if (containerNode === null) {
+        throw new Error("Target element not found");
+      }
+      var content = this._layout.content;
+      containerNode.appendChild(this._layout.layout);
+      container = d3.select(this._layout.content);
+      //todo don't compute width if width or height were passed
+      var size = xSize || {};
+      this._layout.content.innerHTML = "";
+      if (!size.width || !size.height) {
+        size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+      }
+
+      var drawData = this.getData();
+      if (drawData.length === 0) {
+        this._layout.content.innerHTML = this._emptyContainer;
+        return;
+      }
+      this._targetSizes = size;
+      this._layout.content.innerHTML = "";
+
+      var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
+
+      var specItem = _.find(this.config.settings.specEngine, function (item) {
+        return (size.width <= item.width);
+      });
+
+      var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
+
+      var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
+
+      var optimalSize = traverseFromDeep(fullSpec.unit);
+      var recommendedWidth = optimalSize.w;
+      var recommendedHeight = optimalSize.h;
+
+      var scrollSize = utilsDom.getScrollbarWidth();
+
+      var deltaW = (size.width - recommendedWidth);
+      var deltaH = (size.height - recommendedHeight);
+
+      var screenW = (deltaW >= 0) ? size.width : recommendedWidth;
+      var scrollW = (deltaH >= 0) ? 0 : scrollSize;
+
+      var screenH = (deltaH >= 0) ? size.height : recommendedHeight;
+      var scrollH = (deltaW >= 0) ? 0 : scrollSize;
+
+      size.height = screenH - scrollH;
+      size.width = screenW - scrollW;
+
+
+      // optimize full spec depending on size
+      var localSettings = this.config.settings;
+
+      traverseToDeep(fullSpec.unit, size, localSettings);
+
+
+      var reader = new DSLReader(domainMixin, UnitsRegistry);
+
+      var logicXGraph = reader.buildGraph(fullSpec);
+      var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
+      var renderGraph = reader.calcLayout(layoutGraph, size);
+      var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), this);
+      this._svg = svgXElement.node();
+      svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
+      this._layout.rightSidebar.style.maxHeight = size.height + "px";
+      this.fire("render", this._svg);
+    };
+
+    Plot.prototype.getData = function (param) {
+      param = param || {};
+      var filters = _.chain(this._filtersStore.filters).values().flatten().reject(function (filter) {
+        return _.contains(param.excludeFilter, filter.tag);
+      }).pluck("predicate").value();
+      return _.filter(this.config.data, _.reduce(filters, function (newPredicate, filter) {
+        return function (x) {
+          return newPredicate(x) && filter(x);
+        };
+      }, function () {
+        return true;
+      }));
+    };
+
+    Plot.prototype.setData = function (data) {
+      this.config.data = data;
+      this.refresh();
+    };
+
+    Plot.prototype.getSVG = function () {
+      return this._svg;
+    };
+
+    Plot.prototype.addFilter = function (filter) {
+      var tag = filter.tag;
+      var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
+      var id = this._filtersStore.tick++;
+      filter.id = id;
+      filters.push(filter);
+      this.refresh();
+      return id;
+    };
+
+    Plot.prototype.refresh = function () {
+      if (this._target) {
+        this.renderTo(this._target, this._defaultSize);
+      }
+    };
+
+    Plot.prototype.resize = function (sizes) {
+      if (sizes === undefined) sizes = {};
+      this.renderTo(this._target, sizes);
+    };
+
+    Plot.prototype.removeFilter = function (id) {
+      var _this = this;
+      _.each(this._filtersStore.filters, function (filters, key) {
+        _this._filtersStore.filters[key] = _.reject(filters, function (item) {
+          return item.id === id;
+        });
+      });
+      this.refresh();
+    };
 
     return Plot;
   })(Emitter);
@@ -3668,6 +3591,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
   var Plot = _tauPlot.Plot;
   var utils = _utilsUtils.utils;
   var DataProcessor = _dataProcessor.DataProcessor;
+
 
   var convertAxis = function (data) {
     return (!data) ? null : data;
@@ -3701,15 +3625,18 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
     _strategyNormalizeAxis[status.SUCCESS] = function (axis) {
       return axis;
     };
+
     _strategyNormalizeAxis[status.FAIL] = function () {
       throw new Error("This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
     };
+
     _strategyNormalizeAxis[status.WARNING] = function (axis, config) {
       var measure = axis[config.indexMeasureAxis[0]];
       var newAxis = _.without(axis, measure);
       newAxis.push(measure);
       return newAxis;
     };
+
     return _strategyNormalizeAxis;
   })({});
   /* jshint ignore:end */
@@ -3896,6 +3823,7 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
+
   var FacetAlgebra = {
     CROSS: function (root, dimX, dimY) {
       var domainX = root.domain(dimX);
@@ -4054,7 +3982,6 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
   var sizeScale = _size.sizeScale;
-
   var point = function (node) {
     var options = node.options;
 
@@ -4094,7 +4021,6 @@ define('utils/css-class-map',["exports", "../const"], function (exports, _const)
   
 
   var CSS_PREFIX = _const.CSS_PREFIX;
-
   var arrayNumber = [1, 2, 3, 4, 5];
   var countLineClasses = arrayNumber.map(function (i) {
     return CSS_PREFIX + "line-opacity-" + i;
@@ -4129,7 +4055,6 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
   var CSS_PREFIX = _const.CSS_PREFIX;
   var getLineClassesByWidth = _utilsCssClassMap.getLineClassesByWidth;
   var getLineClassesByCount = _utilsCssClassMap.getLineClassesByCount;
-
   var line = function (node) {
     var options = node.options;
 
@@ -4202,6 +4127,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
 
+
   var BAR_GROUP = "i-role-bar-group";
 
   var isMeasure = function (dim) {
@@ -4242,10 +4168,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
-
       (function () {
         xMin = Math.min.apply(null, xScale.domain());
-
         var startPoint = (xMin <= 0) ? 0 : xMin;
 
         _ref = getSizesParams({
@@ -4257,7 +4181,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref.tickWidth;
         intervalWidth = _ref.intervalWidth;
         offsetCategory = _ref.offsetCategory;
-
         /* jshint ignore:end */
         calculateX = isMeasure(node.x) ? function (d) {
           return xScale(Math.min(startPoint, d[node.x.scaleDim]));
@@ -4283,10 +4206,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var tickWidth;
       var intervalWidth;
       var offsetCategory;
-
       (function () {
         yMin = Math.min.apply(null, yScale.domain());
-
         var startPoint = (yMin <= 0) ? 0 : yMin;
 
         _ref2 = getSizesParams({
@@ -4298,7 +4219,6 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         tickWidth = _ref2.tickWidth;
         intervalWidth = _ref2.intervalWidth;
         offsetCategory = _ref2.offsetCategory;
-
         /* jshint ignore:end */
         calculateX = function (d) {
           return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
@@ -4355,6 +4275,7 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
   var utils = _utilsUtils.utils;
   var TMatrix = _matrix.TMatrix;
 
+
   var inheritRootProps = function (unit, root, props) {
     var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
     r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
@@ -4403,12 +4324,14 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
 
       var container = options.container.append("g").attr("class", "graphical-report__" + "cell " + "cell").attr("transform", utilsDraw.translate(L, T));
 
+
       var translate = function (left, top) {
         return "translate(" + left + "," + top + ")";
       };
       var rotate = function (angle) {
         return "rotate(" + angle + ")";
       };
+
 
       var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
         var container = this;
@@ -4442,6 +4365,7 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CSS_PREFIX = _const.CSS_PREFIX;
+
 
   var CoordsParallelLine = {
     draw: function (node) {
@@ -4515,6 +4439,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var CoordsParallel = _elementsCoordsParallel.CoordsParallel;
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
 
+
   var setupElementNode = function (node, dimensions) {
     dimensions.forEach(function (dimName) {
       node[dimName] = node.dimension(node[dimName], node);
@@ -4578,7 +4503,6 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
   var nodeMap = _nodeMap.nodeMap;
   var UnitsRegistry = _unitsRegistry.UnitsRegistry;
-
   var colorBrewers = {};
   var plugins = {};
 
