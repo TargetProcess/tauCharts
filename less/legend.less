@@ -4,10 +4,10 @@
 
     .graphical-report__legend__item .color@{n}-@{i} {
         background: extract(@category-colors, @i);
+        border: 1px solid extract(@category-colors, @i);
     }
 
     .graphical-report__legend__item.disabled .color@{n}-@{i} {
-        border: 1px solid extract(@category-colors, @i);
         background-color: transparent;
     }
 
