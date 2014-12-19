@@ -62,11 +62,11 @@
                 if (toggle) {
                     var value = JSON.parse(target.getAttribute('data-value'));
                     var color = value.color;
-                    d3Chart.selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
-                    d3Chart.selectAll('.i-role-datum.' + color).classed({'graphical-report__highlighted': true});
+                    d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
+                    d3Chart.selectAll('.i-role-element.' + color).classed({'graphical-report__highlighted': true});
                     d3Chart.classed({'graphical-report__highlighted_chart': true});
                 } else {
-                    d3Chart.selectAll('.i-role-datum').classed({'graphical-report__highlighted': false});
+                    d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
                     d3Chart.classed({'graphical-report__highlighted_chart': false});
                 }
 

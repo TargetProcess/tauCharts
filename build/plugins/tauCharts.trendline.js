@@ -233,6 +233,9 @@
         var trendCssClass = [
             'graphical-report__trendline',
 
+            'graphical-report__line',
+            'i-role-element',
+
             'graphical-report__line-width-1',
             'graphical-report__line-opacity-1',
 

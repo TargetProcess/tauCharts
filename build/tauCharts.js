@@ -1,4 +1,4 @@
-/*! taucharts - v0.2.21 - 2014-12-19
+/*! taucharts - v0.2.23 - 2014-12-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -4005,7 +4005,7 @@ define('elements/point',["exports", "../utils/utils-draw", "../const", "./size"]
       }).attr("cy", function (d) {
         return yScale(d[node.y.scaleDim]);
       }).attr("class", function (d) {
-        return CSS_PREFIX + "dot" + " dot i-role-datum " + color.get(d[color.dimension]);
+        return CSS_PREFIX + "dot" + " dot i-role-element i-role-datum " + color.get(d[color.dimension]);
       });
     };
 
@@ -4070,7 +4070,7 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
     var countClass = getLineClassesByCount(categories.length);
     var updateLines = function () {
       this.attr("class", function (d) {
-        return [CSS_PREFIX + "line i-role-datum ", "line", color.get(d.key), widthClass, countClass].join(" ");
+        return [CSS_PREFIX + "line i-role-element i-role-datum ", "line", color.get(d.key), widthClass, countClass].join(" ");
       });
       var paths = this.selectAll("path").data(function (d) {
         return [d.values];
@@ -4089,7 +4089,7 @@ define('elements/line',["exports", "../utils/utils-draw", "./point", "../const",
       }, []);
       var update = function () {
         return this.attr("r", 1.5).attr("class", function (d) {
-          return CSS_PREFIX + "dot-line dot-line i-role-datum " + CSS_PREFIX + "dot " + "i-role-datum " + color.get(d[color.dimension]);
+          return CSS_PREFIX + "dot-line dot-line i-role-element " + CSS_PREFIX + "dot " + "i-role-datum " + color.get(d[color.dimension]);
         }).attr("cx", function (d) {
           return xScale(d[node.x.scaleDim]);
         }).attr("cy", function (d) {
@@ -4245,7 +4245,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
     var updateBar = function () {
       return this.attr("class", function (d) {
-        return ("i-role-datum bar " + CSS_PREFIX + "bar " + color.get(d[color.dimension]));
+        return ("i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + color.get(d[color.dimension]));
       }).attr("x", calculateX).attr("y", calculateY).attr("width", calculateWidth).attr("height", calculateHeight);
     };
 
