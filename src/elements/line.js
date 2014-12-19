@@ -17,7 +17,7 @@ var line = function (node) {
     var widthClass = getLineClassesByWidth(options.width);
     var countClass = getLineClassesByCount(categories.length);
     var updateLines = function () {
-        this.attr('class', (d) => [CSS_PREFIX + 'line i-role-datum ', 'line', color.get(d.key), widthClass, countClass].join(' '));
+        this.attr('class', (d) => [CSS_PREFIX + 'line i-role-element i-role-datum ', 'line', color.get(d.key), widthClass, countClass].join(' '));
         var paths = this.selectAll('path').data((d) => [d.values]);
         paths.call(updatePaths);
         paths.enter().append('path').call(updatePaths);
@@ -34,7 +34,7 @@ var line = function (node) {
         var update = function () {
             return this
                 .attr('r', 1.5)
-                .attr('class', (d) => CSS_PREFIX + 'dot-line dot-line i-role-datum ' + CSS_PREFIX + 'dot ' + 'i-role-datum ' + color.get(d[color.dimension]))
+                .attr('class', (d) => CSS_PREFIX + 'dot-line dot-line i-role-element ' + CSS_PREFIX + 'dot ' + 'i-role-datum ' + color.get(d[color.dimension]))
                 .attr('cx', (d) => xScale(d[node.x.scaleDim]))
                 .attr('cy', (d) => yScale(d[node.y.scaleDim]));
         };

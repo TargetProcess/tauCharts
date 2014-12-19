@@ -87,7 +87,7 @@ var interval = function (node) {
 
     var updateBar = function () {
         return this
-            .attr('class', (d) => ('i-role-datum bar ' + CSS_PREFIX + 'bar ' + color.get(d[color.dimension])))
+            .attr('class', (d) => ('i-role-element i-role-datum bar ' + CSS_PREFIX + 'bar ' + color.get(d[color.dimension])))
             .attr('x', calculateX)
             .attr('y', calculateY)
             .attr('width', calculateWidth)

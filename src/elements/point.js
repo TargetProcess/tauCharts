@@ -18,7 +18,7 @@ var point = function (node) {
             .attr('r',      (d) => sScale(d[node.size.scaleDim]))
             .attr('cx',     (d) => xScale(d[node.x.scaleDim]))
             .attr('cy',     (d) => yScale(d[node.y.scaleDim]))
-            .attr('class',  (d) => CSS_PREFIX + 'dot' + ' dot i-role-datum ' + color.get(d[color.dimension]));
+            .attr('class',  (d) => CSS_PREFIX + 'dot' + ' dot i-role-element i-role-datum ' + color.get(d[color.dimension]));
     };
 
     var elements = options.container.selectAll('.dot').data(node.partition());
