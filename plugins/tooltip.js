@@ -27,7 +27,11 @@
         return {
             template: [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
-                '<div class="i-role-exclude graphical-report__tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
+                '<div class="i-role-exclude graphical-report__tooltip__exclude">',
+                    '<div class="graphical-report__tooltip__exclude__wrap">',
+                        '<span class="tau-icon-close-gray"></span>Exclude',
+                    '</div>',
+                '</div>'
             ].join(''),
             itemTemplate: [
                 '<div class="graphical-report__tooltip__list__item">',

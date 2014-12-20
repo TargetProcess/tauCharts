@@ -32,41 +32,7 @@
 </head>
 <body>
 <div id="template" class="tooltip">
-    <div class="tooltip__content">
-        <div class="tooltip__list">
-            <div class="tooltip__list__item">
-                <div class="tooltip__list__elem">Effort</div>
-                <div class="tooltip__list__elem">
-                    44<span class="tooltip__gray-text">pt</span>
-                </div>
-            </div>
-            <div class="tooltip__list__item">
-                <div class="tooltip__list__elem">Project</div>
-                <div class="tooltip__list__elem">TP3
-                </div>
-            </div>
-            <div class="tooltip__list__item">
-                <div class="tooltip__list__elem">Cycle Time</div>
-                <div class="tooltip__list__elem">
-                    12<span class="tooltip__gray-text">d</span>
-                </div>
-            </div>
-            <div class="tooltip__list__item">
-                <div class="tooltip__list__elem">Entity type</div>
-                <div class="tooltip__list__elem">User Story
-                </div>
-            </div>
-            <div class="tooltip__list__item">
-                <div class="tooltip__list__elem">Time spent</div>
-                <div class="tooltip__list__elem">
-                    34<span class="tooltip__gray-text">h</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="tooltip__exclude">
-        <span class="tau-icon-close-gray"></span>Exclude
-    </div>
+    <div class="i-role-content graphical-report__tooltip__content"><div class="graphical-report__tooltip__list__item"><div class="graphical-report__tooltip__list__elem">type</div><div class="graphical-report__tooltip__list__elem">sin</div></div></div><div class="i-role-exclude graphical-report__tooltip__exclude"><div class="i-role-exclude graphical-report__tooltip__exclude__wrap"><span class="tau-icon-close-gray"></span>Exclude</div></div>
 </div>
 <a id="tooltipTarget">show tooltip</a>
 
@@ -153,7 +119,7 @@
         }());
     }
     System.baseURL = location.pathname.replace(/(.+)(prototype\/\w+\.html)/, '$1src/');
-    System.import('api/tooltip').then(function(m) {
+    System.import('api/balloon').then(function(m) {
         var s = document.getElementById('tooltipTarget');
         var dragger = new DragAndReset(s);
         var tip = new m.Tooltip(document.getElementById('template').innerHTML, {place: 'top', auto: 1, spacing: 10});
