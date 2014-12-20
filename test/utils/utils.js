@@ -1,5 +1,6 @@
 define(function (require) {
     var tauChart = require('tau_modules/tau.newCharts'),
+        $ = require('jquery'),
         d3 = require('d3');
 
     var testChartSettings = {
@@ -33,16 +34,16 @@ define(function (require) {
 
         defaultFormats: {
             'measure': 'x-num-auto',
-            'measure:time'          : 'x-time-auto',
-            'measure:time:year'     : 'year',
-            'measure:time:quarter'  : 'quarter',
-            'measure:time:month'    : 'month',
-            'measure:time:week'     : 'x-time-auto',
-            'measure:time:day'      : 'x-time-auto',
-            'measure:time:hour'     : 'x-time-auto',
-            'measure:time:min'      : 'x-time-auto',
-            'measure:time:sec'      : 'x-time-auto',
-            'measure:time:ms'       : 'x-time-auto'
+            'measure:time': 'x-time-auto',
+            'measure:time:year': 'year',
+            'measure:time:quarter': 'quarter',
+            'measure:time:month': 'month',
+            'measure:time:week': 'x-time-auto',
+            'measure:time:day': 'x-time-auto',
+            'measure:time:hour': 'x-time-auto',
+            'measure:time:min': 'x-time-auto',
+            'measure:time:sec': 'x-time-auto',
+            'measure:time:ms': 'x-time-auto'
         }
     };
 
@@ -59,7 +60,7 @@ define(function (require) {
     }
 
     function attrib(el, prop) {
-        return el.getAttribute(prop)
+        return el.getAttribute(prop);
     }
 
     var hasClass = function (element, value) {
@@ -112,6 +113,7 @@ define(function (require) {
             });
         });
     }
+
     function describeChart(name, config, data, fn, options) {
         options = options || {};
         config.data = data;
@@ -128,7 +130,7 @@ define(function (require) {
                 tauChart.Plot.globalSettings = testChartSettings;
 
                 context.chart = new tauChart.Chart(config);
-                if(options.autoWidth) {
+                if (options.autoWidth) {
                     context.chart.renderTo(context.element);
                 } else {
                     context.chart.renderTo(context.element, {width: 800, height: 800});
@@ -143,7 +145,7 @@ define(function (require) {
             });
         });
     }
-    
+
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,
@@ -154,6 +156,13 @@ define(function (require) {
         hasClass: hasClass,
         position: position,
         getGroupBar: getGroupBar,
-        chartSettings: testChartSettings
+        Deferred: $.Deferred,
+        chartSettings: testChartSettings,
+        simulateEvent: function (name, element) {
+            var evt = document.createEvent("MouseEvents");
+            evt.initMouseEvent(name, true, true, window,
+                0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            element.dispatchEvent(evt);
+        }
     };
 });

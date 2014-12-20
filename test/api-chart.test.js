@@ -3,6 +3,7 @@ define(function (require) {
     var Balloon = require('tau_modules/api/balloon').Tooltip;
     var expect = require('chai').expect;
     var schemes = require('schemes');
+    var utils = require('testUtils');
     var $ = require('jquery');
     var tauCharts = require('tau_modules/tau.newCharts');
     var div, spec;
@@ -56,6 +57,7 @@ define(function (require) {
         it('api test element events', function (done) {
             var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
+            var simulateEvent = utils.simulateEvent;
             var event = ['elementclick', 'elementmouseover', 'elementmouseout', 'elementmousemove'];
             event.forEach(function (e) {
                 plot.on(e, function (chart, data) {
@@ -69,12 +71,6 @@ define(function (require) {
 
                 });
             });
-            function simulateEvent(name, element) {
-                var evt = document.createEvent("MouseEvents");
-                evt.initMouseEvent(name, true, true, window,
-                    0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                element.dispatchEvent(evt);
-            }
 
             simulateEvent('click', $('circle')[0]);
             simulateEvent('mouseover', $('circle')[0]);
@@ -88,6 +84,22 @@ define(function (require) {
             var autoSubscribePlugin2 = null;
             var subscribeInPlugin = null;
             var destroyPlugin1 = null;
+            var newVar = {
+                init: function (chart) {
+                    initPlugin = chart;
+                    chart.on('elementclick', function (chart) {
+                        subscribeInPlugin = chart;
+                    });
+                },
+                onElementClick: function (chart) {
+                    autoSubscribePlugin = chart;
+                },
+                destroy: function (chart) {
+                    destroyPlugin1 = chart;
+                    // should call with context plugin
+                    expect(newVar).to.eql(this);
+                }
+            };
             var config = {
 
                 layoutEngine: 'DEFAULT',
@@ -107,20 +119,7 @@ define(function (require) {
                     }
                 },
                 plugins: [
-                    {
-                        init: function (chart) {
-                            initPlugin = chart;
-                            chart.on('elementclick', function (chart) {
-                                subscribeInPlugin = chart;
-                            });
-                        },
-                        onElementClick: function (chart) {
-                            autoSubscribePlugin = chart;
-                        },
-                        destroy: function (chart) {
-                            destroyPlugin1 = chart;
-                        }
-                    },
+                    newVar,
                     {
                         onCustomEvent: function (chart) {
                             autoSubscribePlugin2 = chart;

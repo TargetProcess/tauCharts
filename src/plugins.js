@@ -3,7 +3,7 @@
  * @extends Plugin */
 class Plugins {
     /** @constructs */
-        constructor(plugins, chart) {
+    constructor(plugins, chart) {
         this.chart = chart;
         this._plugins = plugins.map(this.initPlugin, this);
     }
@@ -12,7 +12,7 @@ class Plugins {
         if (plugin.init) {
             plugin.init(this.chart);
         }
-        this.chart.on('destroy', plugin.destroy || (()=> {
+        this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (()=> {
         }));
         Object.keys(plugin).forEach((name)=> {
             if (name.indexOf('on') === 0) {
@@ -24,10 +24,10 @@ class Plugins {
 }
 
 var elementEvents = ['click', 'mouseover', 'mouseout', 'mousemove'];
-var propagateDatumEvents = function(chart) {
-    return function() {
-        elementEvents.forEach(function(name) {
-            this.on(name, function(d) {
+var propagateDatumEvents = function (chart) {
+    return function () {
+        elementEvents.forEach(function (name) {
+            this.on(name, function (d) {
                 chart.fire('element' + name, {
                     elementData: d,
                     element: this,
