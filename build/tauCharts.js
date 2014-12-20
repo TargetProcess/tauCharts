@@ -1,4 +1,4 @@
-/*! taucharts - v0.2.23 - 2014-12-19
+/*! taucharts - v0.2.24 - 2014-12-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -2696,7 +2696,7 @@ define('plugins',["exports"], function (exports) {
       if (plugin.init) {
         plugin.init(this.chart);
       }
-      this.chart.on("destroy", plugin.destroy || (function () {}));
+      this.chart.on("destroy", plugin.destroy && plugin.destroy.bind(plugin) || (function () {}));
       Object.keys(plugin).forEach(function (name) {
         if (name.indexOf("on") === 0) {
           var event = name.substr(2);
