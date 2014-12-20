@@ -59,8 +59,8 @@
                     this._hide();
                 }.bind(this), false);
             },
-            formatters:{},
-            _getFormatter:function(field){
+            formatters: {},
+            _getFormatter: function (field) {
                 return this.formatters[field] || _.identity;
             },
             init: function (chart) {
@@ -82,9 +82,12 @@
                 }.bind(this), false);
                 elementTooltip.addEventListener('click', function (e) {
                     var target = e.target;
-                    if (target.classList.contains('i-role-exclude')) {
-                        this._exclude();
-                        this._hide();
+                    while (target !== e.currentTarget && target !== null) {
+                        if (target.classList.contains('i-role-exclude')) {
+                            this._exclude();
+                            this._hide();
+                        }
+                        target = target.parentNode;
                     }
                 }.bind(this), false);
                 elementTooltip.insertAdjacentHTML('afterbegin', this.template);

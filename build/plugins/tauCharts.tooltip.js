@@ -27,7 +27,11 @@
         return {
             template: [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
-                '<div class="i-role-exclude graphical-report__tooltip__exclude"><span class="tau-icon-close-gray"></span>Exclude</div>',
+                '<div class="i-role-exclude graphical-report__tooltip__exclude">',
+                    '<div class="graphical-report__tooltip__exclude__wrap">',
+                        '<span class="tau-icon-close-gray"></span>Exclude',
+                    '</div>',
+                '</div>'
             ].join(''),
             itemTemplate: [
                 '<div class="graphical-report__tooltip__list__item">',
@@ -55,8 +59,8 @@
                     this._hide();
                 }.bind(this), false);
             },
-            formatters:{},
-            _getFormatter:function(field){
+            formatters: {},
+            _getFormatter: function (field) {
                 return this.formatters[field] || _.identity;
             },
             init: function (chart) {
@@ -78,9 +82,12 @@
                 }.bind(this), false);
                 elementTooltip.addEventListener('click', function (e) {
                     var target = e.target;
-                    if (target.classList.contains('i-role-exclude')) {
-                        this._exclude();
-                        this._hide();
+                    while (target !== e.currentTarget && target !== null) {
+                        if (target.classList.contains('i-role-exclude')) {
+                            this._exclude();
+                            this._hide();
+                        }
+                        target = target.parentNode;
                     }
                 }.bind(this), false);
                 elementTooltip.insertAdjacentHTML('afterbegin', this.template);

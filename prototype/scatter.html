@@ -209,7 +209,6 @@
                 data: data,
                 type: getFieldData($type),
                 plugins: [tauCharts.api.plugins.get('tooltip')({
-                    fields:['type'],
                     formatters:{
                         entityType:function(e) {
                             return e;
@@ -220,7 +219,7 @@
                     }
                 }), tauCharts.api.plugins.get('legend')()],
                 y: ['y'],
-                x: ['x'],
+                x: ['t','x'],
                 color: 'type',
                 guide:[{
                     y: {

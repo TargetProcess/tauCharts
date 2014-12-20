@@ -31,7 +31,7 @@
                 element.addEventListener(eventName, function (e) {
                     var target = e.target;
                     while (target !== e.currentTarget && target !== null) {
-                        if (target.classList.contains('graphical-report__legend__item')) {
+                        if (target.classList.contains(selector)) {
                             callback(e, target);
                         }
                         target = target.parentNode;
@@ -48,7 +48,7 @@
                     this._delegateEvent(this._container, 'mouseover', 'graphical-report__legend__item', function (e, currentTarget) {
                         this._highlightToggle(currentTarget, chart, true);
                     }.bind(this));
-                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item:not(.disabled)', function (e, currentTarget) {
+                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item', function (e, currentTarget) {
                         this._highlightToggle(currentTarget, chart, false);
                     }.bind(this));
                 }
