@@ -39,6 +39,8 @@ var interval = function (node) {
         calculateHeight,
         calculateTranslate;
 
+    var minimalHeight = 1;
+
     var categories = node.groupBy(node.partition(), color.dimension);
 
     if (node.flip) {
@@ -56,7 +58,13 @@ var interval = function (node) {
         /* jshint ignore:end */
         calculateX = isMeasure(node.x) ? (d) => xScale(Math.min(startPoint, d[node.x.scaleDim])) : 0;
         calculateY = (d) =>  yScale(d[node.y.scaleDim]) - (tickWidth / 2);
-        calculateWidth = isMeasure(node.x) ? (d) => Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint)) : (d) => xScale(d[node.x.scaleDim]);
+        calculateWidth = isMeasure(node.x) ?
+            ((d) => {
+                var valX = d[node.x.scaleDim];
+                var h = Math.abs(xScale(valX) - xScale(startPoint));
+                return (valX === 0) ? h : Math.max(minimalHeight, h);
+            }) :
+            ((d) => xScale(d[node.x.scaleDim]));
         calculateHeight = (d)=> intervalWidth;
         calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
 
@@ -75,13 +83,17 @@ var interval = function (node) {
         /* jshint ignore:end */
         calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         calculateY = isMeasure(node.y) ?
-            (d) => yScale(Math.max(startPoint, d[node.y.scaleDim])) :
-            (d) => yScale(d[node.y.scaleDim]);
+            ((d) => yScale(Math.max(startPoint, d[node.y.scaleDim]))) :
+            ((d) => yScale(d[node.y.scaleDim]));
 
         calculateWidth = (d)=> intervalWidth;
         calculateHeight = isMeasure(node.y) ?
-            (d) => Math.abs(yScale(d[node.y.scaleDim]) - yScale(startPoint)) :
-            (d) => (options.height - yScale(d[node.y.scaleDim]));
+            ((d) => {
+                var valY = d[node.y.scaleDim];
+                var h = Math.abs(yScale(valY) - yScale(startPoint));
+                return (valY === 0) ? h : Math.max(minimalHeight, h);
+            }) :
+            ((d) => (options.height - yScale(d[node.y.scaleDim])));
         calculateTranslate = (d, index) => utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
     }
 
