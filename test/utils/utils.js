@@ -115,7 +115,7 @@ define(function (require) {
     }
 
     function describeChart(name, config, data, fn, options) {
-        options = options || {};
+        options = _.defaults(options || {}, {autoResize: false});
         config.data = data;
         describe(name, function () {
             var context = {
