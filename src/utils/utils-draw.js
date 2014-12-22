@@ -13,28 +13,31 @@ var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.
 var cutText = (textString, widthLimit) => {
     textString.each(function () {
         var textD3 = d3.select(this);
-        var tokens = textD3.text().split(/\s+/).reverse();
+        var tokens = textD3.text().split(/\s+/);
 
-        textD3.text(null);
-
-        var line = [];
-        var word;
         var stop = false;
-        while (!stop && (word = tokens.pop())) {
-            line.push(word);
-            textD3.text(line.join(' '));
-            if (textD3.node().getComputedTextLength() > widthLimit) {
+        var parts = tokens.reduce((memo, t, i) => {
 
-                line.pop();
+            if (stop) {
+                return memo;
+            }
 
-                var str = line.join(' ');
-                str += '...';
-
-                textD3.text(str);
-
+            var text = (i > 0) ? [memo, t].join(' ') : t;
+            var len = textD3.text(text).node().getComputedTextLength();
+            if (len < widthLimit) {
+                memo = text;
+            }
+            else {
+                var available = Math.floor(widthLimit / len * text.length);
+                memo = text.substr(0, available) + '...';
                 stop = true;
             }
-        }
+
+            return memo;
+
+        }, '');
+
+        textD3.text(parts);
     });
 };
 
@@ -58,19 +61,23 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
         var tempSpan = addLine(textD3, null, lineHeight, x, y, dy, 0);
 
         var stopReduce = false;
-        var lines = tokens.reduce(
-            (memo, next) => {
+        var tokensCount = (tokens.length - 1);
+        var lines = tokens
+            .reduce((memo, next, i) => {
 
                 if (stopReduce) {
                     return memo;
                 }
 
-                var isLimit = memo.length === linesLimit;
+                var isLimit = (memo.length === linesLimit) || (i === tokensCount);
                 var last = memo[memo.length - 1];
-                var over = tempSpan.text(last + next).node().getComputedTextLength() > widthLimit;
+                var text = (last !== '') ? (last + ' ' + next) : next;
+                var tLen = tempSpan.text(text).node().getComputedTextLength();
+                var over = tLen > widthLimit;
 
                 if (over && isLimit) {
-                    memo[memo.length - 1] = last + '...';
+                    var available = Math.floor(widthLimit / tLen * text.length);
+                    memo[memo.length - 1] = text.substr(0, available) + '...';
                     stopReduce = true;
                 }
 
@@ -79,13 +86,13 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
                 }
 
                 if (!over) {
-                    memo[memo.length - 1] = last + ' ' + next;
+                    memo[memo.length - 1] = text;
                 }
 
                 return memo;
 
-            },
-            ['']);
+            }, [''])
+            .filter((l) => l.length > 0);
 
         y = isY ? (-1 * (lines.length - 1) * Math.floor(tickLabelFontHeight * 0.5)) : y;
         lines.forEach((text, i) => addLine(textD3, text, lineHeight, x, y, dy, i));
@@ -366,7 +373,9 @@ var utilsDraw = {
     fnDrawDimAxis,
     fnDrawGrid,
     generateColor,
-    applyNodeDefaults
+    applyNodeDefaults,
+    cutText,
+    wrapText
 };
 /* jshint ignore:end */
 
