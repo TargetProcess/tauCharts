@@ -9,9 +9,7 @@ var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
 
-var cutText = (textString, widthLimit, getComputedTextLength) => {
-
-    getComputedTextLength = getComputedTextLength || ((d3Text) => d3Text.node().getComputedTextLength());
+var cutText = (textString, widthLimit, getComputedTextLength = ((d3Text) => d3Text.node().getComputedTextLength())) => {
 
     textString.each(function () {
         var textD3 = d3.select(this);
@@ -43,9 +41,7 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
     });
 };
 
-var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
-
-    getComputedTextLength = getComputedTextLength || ((d3Text) => d3Text.node().getComputedTextLength());
+var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength = ((d3Text) => d3Text.node().getComputedTextLength())) => {
 
     var addLine = (targetD3, text, lineHeight, x, y, dy, lineNumber) => {
         var dyNew = (lineNumber * lineHeight) + dy;
