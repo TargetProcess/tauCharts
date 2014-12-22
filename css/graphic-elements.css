@@ -308,6 +308,7 @@
 .graphical-report__svg .label.inline .label-token {
   font-weight: normal;
   fill: gray;
+  text-transform: none;
 }
 .graphical-report__dot {
   opacity: 0.6;
