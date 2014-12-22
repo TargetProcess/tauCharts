@@ -154,7 +154,7 @@ var typesChart = {
                 var secondaryY = ys.slice(0, ys.length - 1);
                 var colorProp = config.color;
 
-                var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter((x) => x !== null );
+                var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter((x) => x !== null);
 
                 var variantIndex = -1;
                 var variations = [
@@ -162,7 +162,7 @@ var typesChart = {
                     [[primaryY].concat(rest), primaryX]
                 ];
                 var isMatchAny = variations.some((item, i) => {
-                    var domainFields  = item[0];
+                    var domainFields = item[0];
                     var rangeProperty = item[1];
                     var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
                     if (r.result) {
@@ -217,11 +217,49 @@ var typesChart = {
         return transformConfig('ELEMENT.INTERVAL', config);
     }
 };
-
-export class Chart extends Plot {
+class Chart extends Plot {
     constructor(config) {
-        config.settings   = this.setupSettings(config.settings);
+        config = _.defaults(config, {autoResize: true});
+        if(config.autoResize) {
+            Chart.winAware.push(this);
+        }
+        config.settings = this.setupSettings(config.settings);
         config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
         super(typesChart[config.type](config));
     }
+    destroy() {
+        var index = Chart.winAware.indexOf(this);
+        if (index !== -1) {
+            Chart.winAware.splice(index, 1);
+        }
+        super();
+    }
 }
+Chart.resizeOnWindowEvent = (function () {
+
+    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+            return setTimeout(fn, 17);
+        };
+    var rIndex;
+
+    function requestReposition() {
+        if (rIndex || !Chart.winAware.length) {
+            return;
+        }
+        rIndex = rAF(resize);
+    }
+
+    function resize() {
+        rIndex = 0;
+        var chart;
+        for (var i = 0, l = Chart.winAware.length; i < l; i++) {
+            chart = Chart.winAware[i];
+            chart.resize();
+        }
+    }
+
+    return requestReposition;
+}());
+Chart.winAware = [];
+window.addEventListener('resize', Chart.resizeOnWindowEvent);
+export {Chart};

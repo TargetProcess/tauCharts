@@ -1,5 +1,5 @@
 define(function (require) {
-    var tauChart = require('tau_modules/tau.newCharts'),
+    var tauCharts = require('tau_modules/tau.newCharts'),
         $ = require('jquery'),
         d3 = require('d3');
 
@@ -91,9 +91,9 @@ define(function (require) {
                 context.element = document.createElement('div');
                 document.body.appendChild(context.element);
 
-                tauChart.Plot.globalSettings = testChartSettings;
+                tauCharts.Plot.globalSettings = testChartSettings;
 
-                context.chart = new tauChart.Plot({
+                context.chart = new tauCharts.Plot({
                     layoutEngine: 'DEFAULT',
                     specEngine: 'DEFAULT',
                     spec: spec,
@@ -124,12 +124,13 @@ define(function (require) {
             };
 
             beforeEach(function () {
+                tauCharts.Chart.winAware = [];
                 context.element = document.createElement('div');
                 document.body.appendChild(context.element);
 
-                tauChart.Plot.globalSettings = testChartSettings;
+                tauCharts.Plot.globalSettings = testChartSettings;
 
-                context.chart = new tauChart.Chart(config);
+                context.chart = new tauCharts.Chart(config);
                 if (options.autoWidth) {
                     context.chart.renderTo(context.element);
                 } else {
