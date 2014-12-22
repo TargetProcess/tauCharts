@@ -6,6 +6,9 @@ define(function (require) {
 
     describe("utils-draw", function () {
         var div;
+        var textLenMeasurer = function(d3Text) {
+            return d3Text.text().length * 8;
+        };
         beforeEach(function () {
             div = document.createElement('div');
             div.innerHTML = [
@@ -27,29 +30,29 @@ define(function (require) {
 
         it("should cut continuous text", function () {
             var d3Text = d3.select(div).selectAll('text.long');
-            utilsDraw.cutText(d3Text, 100);
+            utilsDraw.cutText(d3Text, 100, textLenMeasurer);
             expect(d3Text.text()).to.equal('0123456789AB...');
         });
 
         it("should cut intermittent text", function () {
             var d3Text = d3.select(div).selectAll('text.word');
-            utilsDraw.cutText(d3Text, 100);
-            expect(d3Text.text()).to.equal('012345 6789A ...');
+            utilsDraw.cutText(d3Text, 100, textLenMeasurer);
+            expect(d3Text.text()).to.equal('012345 6789A...');
         });
 
         it("should wrap text", function () {
             var d3Text = d3.select(div).selectAll('text.wrap');
-            utilsDraw.wrapText(d3Text, 100, 3, 10, true);
+            utilsDraw.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
             expect(d3Text.node().innerHTML).to.equal([
                 '<tspan x="0" y="-10" dy="10em">Lorem ipsum</tspan>',
-                '<tspan x="0" y="-10" dy="11.1em">dolor sit amet,</tspan>',
-                '<tspan x="0" y="-10" dy="12.2em">consectetur adipi...</tspan>'
+                '<tspan x="0" y="-10" dy="11.1em">dolor sit</tspan>',
+                '<tspan x="0" y="-10" dy="12.2em">amet, consec...</tspan>'
             ].join(''));
         });
 
         it("should wrap continuous text", function () {
             var d3Text = d3.select(div).selectAll('text.long');
-            utilsDraw.wrapText(d3Text, 100, 3, 10, true);
+            utilsDraw.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
             expect(d3Text.node().innerHTML).to.equal([
                 '<tspan x="0" y="0" dy="10em">0123456789AB...</tspan>'
             ].join(''));
@@ -57,7 +60,7 @@ define(function (require) {
 
         it("should wrap several continuous text tokens", function () {
             var d3Text = d3.select(div).selectAll('text.longwrap');
-            utilsDraw.wrapText(d3Text, 100, 3, 10, true);
+            utilsDraw.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
             expect(d3Text.node().innerHTML).to.equal([
                 '<tspan x="0" y="0" dy="10em">0123456789AB...</tspan>'
             ].join(''));

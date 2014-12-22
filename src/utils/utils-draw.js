@@ -9,8 +9,10 @@ var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
 
+var cutText = (textString, widthLimit, getComputedTextLength) => {
 
-var cutText = (textString, widthLimit) => {
+    getComputedTextLength = getComputedTextLength || ((d3Text) => d3Text.node().getComputedTextLength());
+
     textString.each(function () {
         var textD3 = d3.select(this);
         var tokens = textD3.text().split(/\s+/);
@@ -23,7 +25,7 @@ var cutText = (textString, widthLimit) => {
             }
 
             var text = (i > 0) ? [memo, t].join(' ') : t;
-            var len = textD3.text(text).node().getComputedTextLength();
+            var len = getComputedTextLength(textD3.text(text));
             if (len < widthLimit) {
                 memo = text;
             }
@@ -41,12 +43,18 @@ var cutText = (textString, widthLimit) => {
     });
 };
 
-var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
+var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
+
+    getComputedTextLength = getComputedTextLength || ((d3Text) => d3Text.node().getComputedTextLength());
 
     var addLine = (targetD3, text, lineHeight, x, y, dy, lineNumber) => {
         var dyNew = (lineNumber * lineHeight) + dy;
-        var nodeX = targetD3.append('tspan').attr('x', x).attr('y', y).attr('dy', dyNew + 'em').text(text);
-        return nodeX;
+        return targetD3
+            .append('tspan')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('dy', dyNew + 'em')
+            .text(text);
     };
 
     textNode.each(function () {
@@ -72,7 +80,7 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) => {
                 var isLimit = (memo.length === linesLimit) || (i === tokensCount);
                 var last = memo[memo.length - 1];
                 var text = (last !== '') ? (last + ' ' + next) : next;
-                var tLen = tempSpan.text(text).node().getComputedTextLength();
+                var tLen = getComputedTextLength(tempSpan.text(text));
                 var over = tLen > widthLimit;
 
                 if (over && isLimit) {
