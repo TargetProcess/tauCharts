@@ -8,19 +8,13 @@ define(function (require) {
         var d = testUtils.Deferred();
         var datum = chart.getSVG().querySelectorAll('.i-role-datum')[0];
         testUtils.simulateEvent('mouseover', datum);
-        setTimeout(function () {
-            d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
-        }, 400);
-        return d;
+        return d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
     };
     var hideTooltip = function (expect, chart) {
         var d = testUtils.Deferred();
         var datum = chart.getSVG().querySelectorAll('.i-role-datum')[0];
         testUtils.simulateEvent('mouseout', datum);
-        setTimeout(function () {
-            d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
-        }, 400);
-        return d;
+        return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
     };
     var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
     chartType.forEach(function (item) {
@@ -61,6 +55,11 @@ define(function (require) {
             }],
             function (context) {
                 it("should work tooltip", function (done) {
+                    var originTimeout = window.setTimeout;
+                    window.setTimeout = function () {
+                        var arg = Array.prototype.slice.call(arguments, 0, 1);
+                        arguments[0].apply(null, arg);
+                    };
                     this.timeout(5000);
                     showTooltip(expect, context.chart).then(function (content) {
                         var items = content[0].querySelectorAll('.graphical-report__tooltip__list__item');
@@ -82,39 +81,37 @@ define(function (require) {
                             var excluder = document.querySelectorAll('.i-role-exclude')[0];
                             testUtils.simulateEvent('click', excluder);
                             var d = testUtils.Deferred();
-                            setTimeout(function () {
-                                content = document.querySelectorAll('.graphical-report__tooltip__content');
-                                expect(content.length).not.be.ok;
-                                var data = context.chart.getData();
-                                var expected = tauCharts.api._.sortBy(data,function (a) {
-                                    return a.x;
-                                });
-                                expect(expected).to.be.eql(
-                                    [{
-                                        x: 2,
-                                        y: 1,
-                                        color: 'green'
+                            content = document.querySelectorAll('.graphical-report__tooltip__content');
+                            expect(content.length).not.be.ok;
+                            var data = context.chart.getData();
+                            var expected = tauCharts.api._.sortBy(data, function (a) {
+                                return a.x;
+                            });
+                            expect(expected).to.be.eql(
+                                [{
+                                    x: 2,
+                                    y: 1,
+                                    color: 'green'
 
-                                    }, {
-                                        x: 4,
-                                        y: 2,
-                                        color: 'yellow'
+                                }, {
+                                    x: 4,
+                                    y: 2,
+                                    color: 'yellow'
 
-                                    }, {
-                                        x: 5,
-                                        y: 2,
-                                        color: 'yellow'
+                                }, {
+                                    x: 5,
+                                    y: 2,
+                                    color: 'yellow'
 
-                                    }, {
-                                        x: 6,
-                                        y: 1,
-                                        color: 'green'
+                                }, {
+                                    x: 6,
+                                    y: 1,
+                                    color: 'green'
 
-                                    }]
-                                );
-                                d.resolve();
-                            }, 400);
-                            return d;
+                                }]
+                            );
+
+                            return d.resolve();
                         }).then(function () {
                             return showTooltip(expect, context.chart);
                         }).then(function () {
@@ -123,7 +120,9 @@ define(function (require) {
                             context.chart.destroy();
                             content = document.querySelectorAll('.graphical-report__tooltip__content');
                             expect(content.length).not.be.ok;
+                            window.setTimeout = originTimeout;
                             done();
+
                         });
                 });
             },

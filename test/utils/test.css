@@ -1,0 +1,8 @@
+.graphical-report__tooltip.fade {
+    opacity: 0;
+    transition: none !important;
+}
+.graphical-report__tooltip.fade.in {
+    opacity: 1;
+    transition-duration: 0s;
+}
