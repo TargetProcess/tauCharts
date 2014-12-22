@@ -16,12 +16,16 @@
         font-size: 11px;
         background: @bgColor;
         box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+
         /* Fade */
         &.fade { opacity: 0; transition: opacity 200ms ease-out; }
         &.fade.in { opacity: 1; transition-duration: 100ms; }
+
         &__content {
             overflow: hidden;
             padding: 15px 15px 10px 15px;
+            box-sizing: border-box;
+            max-width: ~"calc(100% - 26px)";
         }
 
         &__exclude {

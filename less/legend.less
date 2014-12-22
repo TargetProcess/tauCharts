@@ -23,10 +23,16 @@
 
         &__title{
             margin: 0 0 10px 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 13px;
         }
 
         &__item {
-            padding: 10px 30px;
+            padding: 11px 30px 10px 30px;
+            position: relative;
+            font-size: 13px;
+            cursor: pointer;
 
             &:hover {
                 background-color: rgba(189, 195, 205, 0.2);
@@ -37,22 +43,11 @@
                 border-radius: 4px;
             }
 
-        }
-
-        &__title {
-            text-transform: uppercase;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        &__item {
-            position: relative;
-            font-size: 13px;
-            cursor: pointer;
             &:disabled,
             &.disabled {
                 color: @font-gray;
             }
+
         }
 
         &__item.disabled &__guide{
@@ -67,7 +62,7 @@
             border-style: solid;
             border-radius: 50%;
             position: absolute;
-            top: 10px;
+            top: 12px;
             left: 10px;
 
         }
