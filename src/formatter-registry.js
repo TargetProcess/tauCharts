@@ -21,14 +21,6 @@ var FORMATS_MAP = {
 
     'week-short': d3.time.format('%d-%b'),
 
-    'week-range': (x) => {
-        var sWeek = new Date(x);
-        var clone = new Date(x);
-        var eWeek = new Date(clone.setDate(clone.getDate() + 7));
-        var format = d3.time.format('%d-%b-%Y');
-        return format(sWeek) + ' - ' + format(eWeek);
-    },
-
     'month': (x) => {
         var d = new Date(x);
         var m = d.getMonth();

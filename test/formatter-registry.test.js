@@ -54,7 +54,6 @@ define(function (require) {
 
             expect(registry.get('day')(oct30)).to.equal('30-Oct-2014');
             expect(registry.get('week')(nov02)).to.equal('02-Nov-2014');
-            expect(registry.get('week-range')(nov02)).to.equal('02-Nov-2014 - 09-Nov-2014');
 
             expect(registry.get('month')(jan01)).to.equal('January, 2013');
             expect(registry.get('month')(oct30)).to.equal('October');
