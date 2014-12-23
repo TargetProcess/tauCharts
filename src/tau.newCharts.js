@@ -75,7 +75,7 @@ var api = {
         yAxisTickLabelLimit: 100,
 
         xTickWordWrapLinesLimit: 2,
-        yTickWordWrapLinesLimit: 3,
+        yTickWordWrapLinesLimit: 2,
 
         xTickWidth: 6 + 3,
         yTickWidth: 6 + 3,
@@ -89,10 +89,10 @@ var api = {
         xFontLabelHeight: 10,
         yFontLabelHeight: 10,
 
-        xDensityKoeff: 2.2,
-        xMinimumDensityKoeff: 1.1,
-        yDensityKoeff: 2.2,
-        yMinimumDensityKoeff: 1.1,
+        'xDensityPadding': 4,
+        'yDensityPadding': 4,
+        'xDensityPadding:measure': 8,
+        'yDensityPadding:measure': 8,
 
         defaultFormats: {
             'measure': 'x-num-auto',

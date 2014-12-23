@@ -35,7 +35,7 @@ var traverseFromDeep = (root) => {
     return r;
 };
 
-var traverseToDeep = (root, size, localSettings) => {
+var traverseToDeep = (meta, root, size, localSettings) => {
 
     var mdx = root.guide.x.$minimalDomain || 1;
     var mdy = root.guide.y.$minimalDomain || 1;
@@ -43,8 +43,12 @@ var traverseToDeep = (root, size, localSettings) => {
     var perTickX = size.width / mdx;
     var perTickY = size.height / mdy;
 
-    var densityKoeff = localSettings.xMinimumDensityKoeff;
-    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+    var dimX = meta.dimension(root.x);
+    var xDensityPadding = localSettings.hasOwnProperty('xDensityPadding:' + dimX.dimType) ?
+        localSettings['xDensityPadding:' + dimX.dimType] :
+        localSettings.xDensityPadding;
+
+    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
         root.guide.x.rotate = 0;
         root.guide.x.textAnchor = 'middle';
         root.guide.x.tickFormatWordWrapLimit = perTickX;
@@ -65,7 +69,7 @@ var traverseToDeep = (root, size, localSettings) => {
     };
 
     if (root.unit) {
-        traverseToDeep(root.unit[0], newSize, localSettings);
+        traverseToDeep(meta, root.unit[0], newSize, localSettings);
     }
 };
 
@@ -205,7 +209,7 @@ export class Plot extends Emitter {
         // optimize full spec depending on size
         var localSettings = this.config.settings;
 
-        traverseToDeep(fullSpec.unit, size, localSettings);
+        traverseToDeep(domainMixin.mix({}), fullSpec.unit, size, localSettings);
 
 
         var reader = new DSLReader(domainMixin, UnitsRegistry);

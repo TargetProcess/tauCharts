@@ -29,8 +29,10 @@ define(function (require) {
         xFontLabelHeight: 15,
         yFontLabelHeight: 15,
 
-        xDensityKoeff: 2.2,
-        yDensityKoeff: 2.2,
+        "xDensityPadding": 4,
+        "xDensityPadding:measure": 8,
+        "yDensityPadding": 4,
+        "yDensityPadding:measure": 8,
 
         defaultFormats: {
             'measure': 'x-num-auto',

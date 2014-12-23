@@ -253,7 +253,7 @@ define(function (require) {
             expect(x.tickFormatNullAlias).to.equal('No team');
             expect(x.label.text).to.equal('team > date');
             expect(x.tickFontHeight).to.equal(10);
-            expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width * measurer.xDensityKoeff);
+            expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
             expect(y.autoScale).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
@@ -265,7 +265,7 @@ define(function (require) {
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
             expect(y.label.text).to.equal('');
             expect(y.tickFontHeight).to.equal(0);
-            expect(y.density).to.equal(0); // empty axis
+            expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
 
             // 20 padding to X axis line
             // 9  tick mark size
@@ -290,13 +290,13 @@ define(function (require) {
             expect(px.tickFormatNullAlias).to.equal('No date');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
-            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width * measurer.xDensityKoeff);
+            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
 
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');
             expect(py.tickFontHeight).to.equal(10);
             expect(py.label.text).to.equal('count');
-            expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width * measurer.yDensityKoeff);
+            expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width + measurer['yDensityPadding:measure'] * 2);
 
 
             var elem = part.unit[0];
@@ -419,7 +419,7 @@ define(function (require) {
             expect(x.label.cssClass).to.equal('label');
             expect(x.label.dock).to.equal(null);
             expect(x.tickFontHeight).to.equal(10);
-            expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width * measurer.xDensityKoeff);
+            expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
             expect(y.autoScale).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
@@ -433,7 +433,7 @@ define(function (require) {
             expect(y.label.cssClass).to.equal('label');
             expect(y.label.dock).to.equal(null);
             expect(y.tickFontHeight).to.equal(0);
-            expect(y.density).to.equal(0); // empty axis
+            expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
 
             expect(full.unit.guide.padding.b).to.equal(40);
 
@@ -456,7 +456,7 @@ define(function (require) {
             expect(px.label.dock).to.equal('right');
             expect(px.label.padding).to.equal(-2.5);
             expect(px.label.cssClass).to.equal('label inline');
-            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width * measurer.xDensityKoeff);
+            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
 
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');
@@ -465,7 +465,7 @@ define(function (require) {
             expect(py.label.dock).to.equal('right');
             expect(py.label.padding).to.equal(-17.5);
             expect(py.label.cssClass).to.equal('label inline');
-            expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width * measurer.yDensityKoeff);
+            expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width + measurer['yDensityPadding:measure'] * 2);
 
 
             var elem = part.unit[0];

@@ -139,6 +139,14 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     var isXContinues = (dimX.dimType === 'measure');
     var isYContinues = (dimY.dimType === 'measure');
 
+    var xDensityPadding = settings.hasOwnProperty('xDensityPadding:' + dimX.dimType) ?
+        settings['xDensityPadding:' + dimX.dimType] :
+        settings.xDensityPadding;
+
+    var yDensityPadding = settings.hasOwnProperty('yDensityPadding:' + dimY.dimType) ?
+        settings['yDensityPadding:' + dimY.dimType] :
+        settings.yDensityPadding;
+
     var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
     var xValues = xMeta.values;
     var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
@@ -249,8 +257,8 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     var distToXAxisLabel = settings.distToXAxisLabel;
     var distToYAxisLabel = settings.distToYAxisLabel;
 
-    unit.guide.x.density = settings.xDensityKoeff * xTickBox.w;
-    unit.guide.y.density = settings.yDensityKoeff * yTickBox.h;
+    unit.guide.x.density = xTickBox.w + xDensityPadding * 2;
+    unit.guide.y.density = yTickBox.h + yDensityPadding * 2;
 
     if (!inlineLabels) {
         unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
@@ -417,6 +425,14 @@ var SpecEngineTypeMap = {
                 var isXContinues = (dimX.dimType === 'measure');
                 var isYContinues = (dimY.dimType === 'measure');
 
+                var xDensityPadding = settings.hasOwnProperty('xDensityPadding:' + dimX.dimType) ?
+                    settings['xDensityPadding:' + dimX.dimType] :
+                    settings.xDensityPadding;
+
+                var yDensityPadding = settings.hasOwnProperty('yDensityPadding:' + dimY.dimType) ?
+                    settings['yDensityPadding:' + dimY.dimType] :
+                    settings.yDensityPadding;
+
                 var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
                 var xValues = xMeta.values;
                 var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
@@ -489,12 +505,12 @@ var SpecEngineTypeMap = {
 
 
                 var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
-                unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
+                unit.guide.x.density = xTickLabelW + xDensityPadding * 2;
 
                 var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
                 var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
                 var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
-                unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
+                unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
 
 
                 unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
