@@ -1,4 +1,4 @@
-/*! taucharts - v0.2.27 - 2014-12-23
+/*! taucharts - v0.2.28 - 2014-12-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1554,7 +1554,7 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
     "month-short": function (x) {
       var d = new Date(x);
       var m = d.getMonth();
-      var formatSpec = (m === 0) ? "%b '%Y" : "%b";
+      var formatSpec = (m === 0) ? "%b '%y" : "%b";
       return d3.time.format(formatSpec)(x);
     },
 
@@ -1648,7 +1648,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
           memo = text;
         } else {
           var available = Math.floor(widthLimit / len * text.length);
-          memo = text.substr(0, available) + "...";
+          memo = text.substr(0, available - 4) + "...";
           stop = true;
         }
 
@@ -1691,7 +1691,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
 
         if (over && isLimit) {
           var available = Math.floor(widthLimit / tLen * text.length);
-          memo[memo.length - 1] = text.substr(0, available) + "...";
+          memo[memo.length - 1] = text.substr(0, available - 4) + "...";
           stopReduce = true;
         }
 
@@ -1750,11 +1750,11 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     });
 
     if (x.guide.label.dock === "right") {
-      var box = nodeScale.node().getBBox();
-      labelTextNode.attr("x", (orient === "h") ? box.width : 0);
+      var box = nodeScale.selectAll("path.domain").node().getBBox();
+      labelTextNode.attr("x", (orient === "h") ? (box.width) : 0);
     } else if (x.guide.label.dock === "left") {
-      var box = nodeScale.node().getBBox();
-      labelTextNode.attr("x", (orient === "h") ? 0 : (10 - box.height));
+      var box = nodeScale.selectAll("path.domain").node().getBBox();
+      labelTextNode.attr("x", (orient === "h") ? 0 : (-box.height));
     }
   };
 
@@ -2086,6 +2086,10 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     var isXContinues = (dimX.dimType === "measure");
     var isYContinues = (dimY.dimType === "measure");
 
+    var xDensityPadding = settings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? settings["xDensityPadding:" + dimX.dimType] : settings.xDensityPadding;
+
+    var yDensityPadding = settings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? settings["yDensityPadding:" + dimY.dimType] : settings.yDensityPadding;
+
     var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
     var xValues = xMeta.values;
     var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
@@ -2180,8 +2184,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     var distToXAxisLabel = settings.distToXAxisLabel;
     var distToYAxisLabel = settings.distToYAxisLabel;
 
-    unit.guide.x.density = settings.xDensityKoeff * xTickBox.w;
-    unit.guide.y.density = settings.yDensityKoeff * yTickBox.h;
+    unit.guide.x.density = xTickBox.w + xDensityPadding * 2;
+    unit.guide.y.density = yTickBox.h + yDensityPadding * 2;
 
     if (!inlineLabels) {
       unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
@@ -2331,6 +2335,10 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var isXContinues = (dimX.dimType === "measure");
         var isYContinues = (dimY.dimType === "measure");
 
+        var xDensityPadding = settings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? settings["xDensityPadding:" + dimX.dimType] : settings.xDensityPadding;
+
+        var yDensityPadding = settings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? settings["yDensityPadding:" + dimY.dimType] : settings.yDensityPadding;
+
         var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
         var xValues = xMeta.values;
         var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
@@ -2395,12 +2403,12 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
 
         var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
-        unit.guide.x.density = settings.xDensityKoeff * xTickLabelW;
+        unit.guide.x.density = xTickLabelW + xDensityPadding * 2;
 
         var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
         var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
         var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
-        unit.guide.y.density = settings.yDensityKoeff * yTickLabelH;
+        unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
 
 
         unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
@@ -2458,7 +2466,9 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
           xAxisPadding: 0,
           yAxisPadding: 0,
           distToXAxisLabel: 0,
-          distToYAxisLabel: 0
+          distToYAxisLabel: 0,
+          xTickWordWrapLinesLimit: 1,
+          yTickWordWrapLinesLimit: 1
         }, settings), false, true, false);
       });
 
@@ -3338,15 +3348,20 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
     return r;
   };
 
-  var traverseToDeep = function (root, size, localSettings) {
+  var traverseToDeep = function (meta, root, size, localSettings) {
     var mdx = root.guide.x.$minimalDomain || 1;
     var mdy = root.guide.y.$minimalDomain || 1;
 
     var perTickX = size.width / mdx;
     var perTickY = size.height / mdy;
 
-    var densityKoeff = localSettings.xMinimumDensityKoeff;
-    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (densityKoeff * root.guide.x.$maxTickTextW))) {
+    var dimX = meta.dimension(root.x);
+    var dimY = meta.dimension(root.y);
+    var xDensityPadding = localSettings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? localSettings["xDensityPadding:" + dimX.dimType] : localSettings.xDensityPadding;
+
+    var yDensityPadding = localSettings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? localSettings["yDensityPadding:" + dimY.dimType] : localSettings.yDensityPadding;
+
+    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
       root.guide.x.rotate = 0;
       root.guide.x.textAnchor = "middle";
       root.guide.x.tickFormatWordWrapLimit = perTickX;
@@ -3361,13 +3376,17 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       }
     }
 
+    if (root.guide.y.hide !== true && root.guide.y.rotate !== 0 && (root.guide.y.tickFormatWordWrapLines === 1) && (perTickY > (root.guide.y.$maxTickTextW + yDensityPadding * 2))) {
+      root.guide.y.tickFormatWordWrapLimit = (perTickY - yDensityPadding * 2);
+    }
+
     var newSize = {
       width: perTickX,
       height: perTickY
     };
 
     if (root.unit) {
-      traverseToDeep(root.unit[0], newSize, localSettings);
+      traverseToDeep(meta, root.unit[0], newSize, localSettings);
     }
   };
 
@@ -3506,7 +3525,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       // optimize full spec depending on size
       var localSettings = this.config.settings;
 
-      traverseToDeep(fullSpec.unit, size, localSettings);
+      traverseToDeep(domainMixin.mix({}), fullSpec.unit, size, localSettings);
 
 
       var reader = new DSLReader(domainMixin, UnitsRegistry);
@@ -3633,8 +3652,8 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       return axis;
     };
 
-    _strategyNormalizeAxis[status.FAIL] = function () {
-      throw new Error("This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
+    _strategyNormalizeAxis[status.FAIL] = function (axis, data) {
+      throw new Error((data.messages || []).join("\n") || "This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
     };
 
     _strategyNormalizeAxis[status.WARNING] = function (axis, config) {
@@ -3647,26 +3666,33 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
     return _strategyNormalizeAxis;
   })({});
   /* jshint ignore:end */
-  function validateAxis(dimensions, axis) {
+  function validateAxis(dimensions, axis, axisName) {
     return axis.reduce(function (result, item, index) {
-      if (dimensions[item].type === "measure") {
-        result.countMeasureAxis++;
-        result.indexMeasureAxis.push(index);
-      }
-      if (dimensions[item].type !== "measure" && result.countMeasureAxis === 1) {
-        result.status = status.WARNING;
-      } else if (result.countMeasureAxis > 1) {
+      var dimension = dimensions[item];
+      if (!dimension) {
         result.status = status.FAIL;
+        result.messages.push("Undefined dimension \"" + item + "\" for axis \"" + axisName + "\"");
+      } else if (result.status != status.FAIL) {
+        if (dimension.type === "measure") {
+          result.countMeasureAxis++;
+          result.indexMeasureAxis.push(index);
+        }
+        if (dimension.type !== "measure" && result.countMeasureAxis === 1) {
+          result.status = status.WARNING;
+        } else if (result.countMeasureAxis > 1) {
+          result.status = status.FAIL;
+          result.messages.push("There are more then one measure dimensions for axis \"" + axisName + "\"");
+        }
       }
       return result;
-    }, { status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [] });
+    }, { status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [] });
   }
   function transformConfig(type, config) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
 
-    var validatedX = validateAxis(config.dimensions, x);
-    var validatedY = validateAxis(config.dimensions, y);
+    var validatedX = validateAxis(config.dimensions, x, "x");
+    var validatedY = validateAxis(config.dimensions, y, "y");
     x = strategyNormalizeAxis[validatedX.status](x, validatedX);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY);
     var guide = normalizeSettings(config.guide);
@@ -3815,7 +3841,12 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       }
       config.settings = this.setupSettings(config.settings);
       config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
-      Plot.call(this, typesChart[config.type](config));
+      var chartFactory = typesChart[config.type];
+      if (_.isFunction(chartFactory)) {
+        Plot.call(this, chartFactory(config));
+      } else {
+        throw new Error("Chart type " + config.type + " is not supported. Use one of " + _.keys(typesChart).join(", ") + ".");
+      }
     };
 
     _extends(Chart, Plot);
@@ -4615,7 +4646,7 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       yAxisTickLabelLimit: 100,
 
       xTickWordWrapLinesLimit: 2,
-      yTickWordWrapLinesLimit: 3,
+      yTickWordWrapLinesLimit: 2,
 
       xTickWidth: 6 + 3,
       yTickWidth: 6 + 3,
@@ -4629,10 +4660,10 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       xFontLabelHeight: 10,
       yFontLabelHeight: 10,
 
-      xDensityKoeff: 2.2,
-      xMinimumDensityKoeff: 1.1,
-      yDensityKoeff: 2.2,
-      yMinimumDensityKoeff: 1.1,
+      xDensityPadding: 4,
+      yDensityPadding: 4,
+      "xDensityPadding:measure": 8,
+      "yDensityPadding:measure": 8,
 
       defaultFormats: {
         measure: "x-num-auto",

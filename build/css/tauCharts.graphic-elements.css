@@ -266,6 +266,12 @@
 .graphical-report__svg .axis.facet-axis.compact .tick text {
   font-weight: normal;
 }
+.graphical-report__svg .axis.facet-axis.compact .label {
+  font-weight: normal;
+}
+.graphical-report__svg .axis.facet-axis.compact .label .label-token {
+  font-weight: normal;
+}
 .graphical-report__svg .tick text {
   font-size: 11px;
 }
