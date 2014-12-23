@@ -663,4 +663,68 @@ define(function (require) {
                 });
             });
         });
+
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH MEASURE (:time) AXIS as Y / MEASURE (:number) as X",
+        {
+            dimensions: {
+                "time": {
+                    "type": "measure",
+                    "scale": "time"
+                },
+                "count": {
+                    "type": "measure"
+                }
+            },
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'count',
+                y: 'time',
+                guide: {
+                    x: { autoScale: false },
+                    y: { autoScale: false }
+                },
+                unit: [
+                    {
+                        type: 'ELEMENT.INTERVAL',
+                        flip: true
+                    }
+                ]
+            }
+        },
+        [
+            { time: testUtils.toLocalDate('2014-02-01'), count: 1000 },
+            { time: testUtils.toLocalDate('2014-02-02'), count: 500 },
+            { time: testUtils.toLocalDate('2014-02-03'), count: 1 },
+            { time: testUtils.toLocalDate('2014-02-04'), count: 0 },
+            { time: testUtils.toLocalDate('2014-02-05'), count: -1 },
+            { time: testUtils.toLocalDate('2014-02-06'), count: -500 },
+            { time: testUtils.toLocalDate('2014-02-07'), count: -1000 }
+        ],
+        function () {
+            it("should group contain interval element", function () {
+
+                var minimalHeight = 1;
+
+                var coords = [
+                    [
+                        400,
+                        200,
+                        minimalHeight,
+                        0,
+                        minimalHeight,
+                        200,
+                        400
+                    ]
+                ];
+
+                var bars = getGroupBar();
+
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
+        });
 });
