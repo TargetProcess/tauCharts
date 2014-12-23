@@ -588,7 +588,9 @@ var SpecEngineTypeMap = {
                             xAxisPadding: 0,
                             yAxisPadding: 0,
                             distToXAxisLabel: 0,
-                            distToYAxisLabel: 0
+                            distToYAxisLabel: 0,
+                            xTickWordWrapLinesLimit: 1,
+                            yTickWordWrapLinesLimit: 1
                         },
                         settings),
                     false,

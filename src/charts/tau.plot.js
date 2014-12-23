@@ -44,11 +44,19 @@ var traverseToDeep = (meta, root, size, localSettings) => {
     var perTickY = size.height / mdy;
 
     var dimX = meta.dimension(root.x);
+    var dimY = meta.dimension(root.y);
     var xDensityPadding = localSettings.hasOwnProperty('xDensityPadding:' + dimX.dimType) ?
         localSettings['xDensityPadding:' + dimX.dimType] :
         localSettings.xDensityPadding;
 
-    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
+    var yDensityPadding = localSettings.hasOwnProperty('yDensityPadding:' + dimY.dimType) ?
+        localSettings['yDensityPadding:' + dimY.dimType] :
+        localSettings.yDensityPadding;
+
+    if (root.guide.x.hide !== true &&
+        root.guide.x.rotate !== 0 &&
+        (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
+
         root.guide.x.rotate = 0;
         root.guide.x.textAnchor = 'middle';
         root.guide.x.tickFormatWordWrapLimit = perTickX;
@@ -61,6 +69,14 @@ var traverseToDeep = (meta, root, size, localSettings) => {
         if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
             root.guide.x.label.padding += xDelta;
         }
+    }
+
+    if (root.guide.y.hide !== true &&
+        root.guide.y.rotate !== 0 &&
+        (root.guide.y.tickFormatWordWrapLines === 1) &&
+        (perTickY > (root.guide.y.$maxTickTextW + yDensityPadding * 2))) {
+
+        root.guide.y.tickFormatWordWrapLimit = (perTickY - yDensityPadding * 2);
     }
 
     var newSize = {

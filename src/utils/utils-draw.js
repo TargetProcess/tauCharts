@@ -31,7 +31,7 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
             }
             else {
                 var available = Math.floor(widthLimit / len * text.length);
-                memo = text.substr(0, available) + '...';
+                memo = text.substr(0, available - 4) + '...';
                 stop = true;
             }
 
@@ -85,7 +85,7 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
 
                 if (over && isLimit) {
                     var available = Math.floor(widthLimit / tLen * text.length);
-                    memo[memo.length - 1] = text.substr(0, available) + '...';
+                    memo[memo.length - 1] = text.substr(0, available - 4) + '...';
                     stopReduce = true;
                 }
 
