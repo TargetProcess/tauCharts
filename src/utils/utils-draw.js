@@ -157,12 +157,12 @@ var decorateAxisLabel = (nodeScale, x) => {
     });
 
     if (x.guide.label.dock === 'right') {
-        let box = nodeScale.node().getBBox();
-        labelTextNode.attr('x', (orient === 'h') ? box.width : 0);
+        let box = nodeScale.selectAll('path.domain').node().getBBox();
+        labelTextNode.attr('x', (orient === 'h') ? (box.width) : 0);
     }
     else if (x.guide.label.dock === 'left') {
-        let box = nodeScale.node().getBBox();
-        labelTextNode.attr('x', (orient === 'h') ? 0 : (10 - box.height));
+        let box = nodeScale.selectAll('path.domain').node().getBBox();
+        labelTextNode.attr('x', (orient === 'h') ? 0 : (-box.height));
     }
 };
 
