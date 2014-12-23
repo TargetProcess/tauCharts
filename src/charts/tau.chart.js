@@ -28,8 +28,9 @@ const status = {
 /* jshint ignore:start */
 var strategyNormalizeAxis = {
     [status.SUCCESS]: (axis) => axis,
-    [status.FAIL]: () => {
-        throw new Error('This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
+    [status.FAIL]: (axis, data) => {
+        throw new Error((data.messages || []).join('\n') ||
+        'This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
     [status.WARNING]: (axis, config) => {
         var measure = axis[config.indexMeasureAxis[0]];
@@ -39,26 +40,33 @@ var strategyNormalizeAxis = {
     }
 };
 /* jshint ignore:end */
-function validateAxis(dimensions, axis) {
+function validateAxis(dimensions, axis, axisName) {
     return axis.reduce(function (result, item, index) {
-        if (dimensions[item].type === 'measure') {
-            result.countMeasureAxis++;
-            result.indexMeasureAxis.push(index);
-        }
-        if (dimensions[item].type !== 'measure' && result.countMeasureAxis === 1) {
-            result.status = status.WARNING;
-        } else if (result.countMeasureAxis > 1) {
+        var dimension = dimensions[item];
+        if (!dimension){
             result.status = status.FAIL;
+            result.messages.push('Undefined dimension "'+item+'" for axis "'+axisName+'"');
+        } else if (result.status != status.FAIL) {
+            if (dimension.type === 'measure') {
+                result.countMeasureAxis++;
+                result.indexMeasureAxis.push(index);
+            }
+            if (dimension.type !== 'measure' && result.countMeasureAxis === 1) {
+                result.status = status.WARNING;
+            } else if (result.countMeasureAxis > 1) {
+                result.status = status.FAIL;
+                result.messages.push('There are more then one measure dimensions for axis "'+axisName+'"');
+            }
         }
         return result;
-    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: []});
+    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: []});
 }
 function transformConfig(type, config) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
 
-    var validatedX = validateAxis(config.dimensions, x);
-    var validatedY = validateAxis(config.dimensions, y);
+    var validatedX = validateAxis(config.dimensions, x, 'x');
+    var validatedY = validateAxis(config.dimensions, y, 'y');
     x = strategyNormalizeAxis[validatedX.status](x, validatedX);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY);
     var guide = normalizeSettings(config.guide);
@@ -225,7 +233,15 @@ class Chart extends Plot {
         }
         config.settings = this.setupSettings(config.settings);
         config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
-        super(typesChart[config.type](config));
+        var chartFactory = typesChart[config.type];
+        if (_.isFunction(chartFactory)) {
+            super(chartFactory(config));
+        }
+        else {
+            throw new Error('Chart type ' + config.type + ' is not supported. Use one of ' +
+                _.keys(typesChart).join(', ') + '.'
+            );
+        }
     }
     destroy() {
         var index = Chart.winAware.indexOf(this);
