@@ -28,8 +28,8 @@ const status = {
 /* jshint ignore:start */
 var strategyNormalizeAxis = {
     [status.SUCCESS]: (axis) => axis,
-    [status.FAIL]: (axis) => {
-        throw new Error(axis.messages.join('\n') ||
+    [status.FAIL]: (axis, data) => {
+        throw new Error((data.messages || []).join('\n') ||
         'This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
     [status.WARNING]: (axis, config) => {
@@ -40,12 +40,12 @@ var strategyNormalizeAxis = {
     }
 };
 /* jshint ignore:end */
-function validateAxis(dimensions, axis) {
+function validateAxis(dimensions, axis, axisName) {
     return axis.reduce(function (result, item, index) {
         var dimension = dimensions[item];
         if (!dimension){
             result.status = status.FAIL;
-            result.messages.push('Undefined dimension "'+item+'"');
+            result.messages.push('Undefined dimension "'+item+'" for axis "'+axisName+'"');
         } else if (result.status != status.FAIL) {
             if (dimension.type === 'measure') {
                 result.countMeasureAxis++;
@@ -55,7 +55,7 @@ function validateAxis(dimensions, axis) {
                 result.status = status.WARNING;
             } else if (result.countMeasureAxis > 1) {
                 result.status = status.FAIL;
-                result.messages.push('There are more then one measure dimensions');
+                result.messages.push('There are more then one measure dimensions for axis "'+axisName+'"');
             }
         }
         return result;
@@ -65,8 +65,8 @@ function transformConfig(type, config) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
 
-    var validatedX = validateAxis(config.dimensions, x);
-    var validatedY = validateAxis(config.dimensions, y);
+    var validatedX = validateAxis(config.dimensions, x, 'x');
+    var validatedY = validateAxis(config.dimensions, y, 'y');
     x = strategyNormalizeAxis[validatedX.status](x, validatedX);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY);
     var guide = normalizeSettings(config.guide);
@@ -238,7 +238,7 @@ class Chart extends Plot {
             super(chartFactory(config));
         }
         else {
-            throw new Error('Chart type ' + config.type + 'is not supported. Use one of ' +
+            throw new Error('Chart type ' + config.type + ' is not supported. Use one of ' +
                 _.keys(typesChart).join(', ') + '.'
             );
         }
