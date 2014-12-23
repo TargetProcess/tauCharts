@@ -23,6 +23,8 @@
 .graphical-report__tooltip__content {
   overflow: hidden;
   padding: 15px 15px 10px 15px;
+  box-sizing: border-box;
+  max-width: calc(100% - 26px);
 }
 .graphical-report__tooltip__exclude {
   border-right: 1px solid #dde2e7;

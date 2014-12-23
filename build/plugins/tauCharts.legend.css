@@ -6,9 +6,15 @@
 }
 .graphical-report__legend__title {
   margin: 0 0 10px 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 13px;
 }
 .graphical-report__legend__item {
-  padding: 10px 30px;
+  padding: 11px 30px 10px 30px;
+  position: relative;
+  font-size: 13px;
+  cursor: pointer;
 }
 .graphical-report__legend__item:hover {
   background-color: rgba(189, 195, 205, 0.2);
@@ -16,16 +22,6 @@
 .graphical-report__legend__item .color-default {
   background: #377eb8;
   border-radius: 4px;
-}
-.graphical-report__legend__title {
-  text-transform: uppercase;
-  font-weight: 600;
-  font-size: 13px;
-}
-.graphical-report__legend__item {
-  position: relative;
-  font-size: 13px;
-  cursor: pointer;
 }
 .graphical-report__legend__item:disabled,
 .graphical-report__legend__item.disabled {
@@ -42,7 +38,7 @@
   border-style: solid;
   border-radius: 50%;
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 10px;
 }
 .graphical-report__legend__item .color10-1 {

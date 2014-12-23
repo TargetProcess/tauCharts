@@ -1,4 +1,4 @@
-/*! taucharts - v0.2.26 - 2014-12-22
+/*! taucharts - v0.2.27 - 2014-12-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2014 Taucraft Limited; Licensed Creative Commons */
 (function (root, factory) {
@@ -1544,14 +1544,6 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
 
     "week-short": d3.time.format("%d-%b"),
 
-    "week-range": function (x) {
-      var sWeek = new Date(x);
-      var clone = new Date(x);
-      var eWeek = new Date(clone.setDate(clone.getDate() + 7));
-      var format = d3.time.format("%d-%b-%Y");
-      return format(sWeek) + " - " + format(eWeek);
-    },
-
     month: function (x) {
       var d = new Date(x);
       var m = d.getMonth();
@@ -1635,39 +1627,46 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
   };
 
+  var cutText = function (textString, widthLimit, getComputedTextLength) {
+    getComputedTextLength = getComputedTextLength || (function (d3Text) {
+      return d3Text.node().getComputedTextLength();
+    });
 
-  var cutText = function (textString, widthLimit) {
     textString.each(function () {
       var textD3 = d3.select(this);
-      var tokens = textD3.text().split(/\s+/).reverse();
+      var tokens = textD3.text().split(/\s+/);
 
-      textD3.text(null);
-
-      var line = [];
-      var word;
       var stop = false;
-      while (!stop && (word = tokens.pop())) {
-        line.push(word);
-        textD3.text(line.join(" "));
-        if (textD3.node().getComputedTextLength() > widthLimit) {
-          line.pop();
+      var parts = tokens.reduce(function (memo, t, i) {
+        if (stop) {
+          return memo;
+        }
 
-          var str = line.join(" ");
-          str += "...";
-
-          textD3.text(str);
-
+        var text = (i > 0) ? [memo, t].join(" ") : t;
+        var len = getComputedTextLength(textD3.text(text));
+        if (len < widthLimit) {
+          memo = text;
+        } else {
+          var available = Math.floor(widthLimit / len * text.length);
+          memo = text.substr(0, available) + "...";
           stop = true;
         }
-      }
+
+        return memo;
+      }, "");
+
+      textD3.text(parts);
     });
   };
 
-  var wrapText = function (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY) {
+  var wrapText = function (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) {
+    getComputedTextLength = getComputedTextLength || (function (d3Text) {
+      return d3Text.node().getComputedTextLength();
+    });
+
     var addLine = function (targetD3, text, lineHeight, x, y, dy, lineNumber) {
       var dyNew = (lineNumber * lineHeight) + dy;
-      var nodeX = targetD3.append("tspan").attr("x", x).attr("y", y).attr("dy", dyNew + "em").text(text);
-      return nodeX;
+      return targetD3.append("tspan").attr("x", x).attr("y", y).attr("dy", dyNew + "em").text(text);
     };
 
     textNode.each(function () {
@@ -1678,17 +1677,21 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
       var tempSpan = addLine(textD3, null, lineHeight, x, y, dy, 0);
 
       var stopReduce = false;
-      var lines = tokens.reduce(function (memo, next) {
+      var tokensCount = (tokens.length - 1);
+      var lines = tokens.reduce(function (memo, next, i) {
         if (stopReduce) {
           return memo;
         }
 
-        var isLimit = memo.length === linesLimit;
+        var isLimit = (memo.length === linesLimit) || (i === tokensCount);
         var last = memo[memo.length - 1];
-        var over = tempSpan.text(last + next).node().getComputedTextLength() > widthLimit;
+        var text = (last !== "") ? (last + " " + next) : next;
+        var tLen = getComputedTextLength(tempSpan.text(text));
+        var over = tLen > widthLimit;
 
         if (over && isLimit) {
-          memo[memo.length - 1] = last + "...";
+          var available = Math.floor(widthLimit / tLen * text.length);
+          memo[memo.length - 1] = text.substr(0, available) + "...";
           stopReduce = true;
         }
 
@@ -1697,11 +1700,13 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
         }
 
         if (!over) {
-          memo[memo.length - 1] = last + " " + next;
+          memo[memo.length - 1] = text;
         }
 
         return memo;
-      }, [""]);
+      }, [""]).filter(function (l) {
+        return l.length > 0;
+      });
 
       y = isY ? (-1 * (lines.length - 1) * Math.floor(tickLabelFontHeight * 0.5)) : y;
       lines.forEach(function (text, i) {
@@ -1939,7 +1944,9 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     fnDrawDimAxis: fnDrawDimAxis,
     fnDrawGrid: fnDrawGrid,
     generateColor: generateColor,
-    applyNodeDefaults: applyNodeDefaults
+    applyNodeDefaults: applyNodeDefaults,
+    cutText: cutText,
+    wrapText: wrapText
   };
   exports.utilsDraw = utilsDraw;
 });
@@ -3800,9 +3807,12 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       return transformConfig("ELEMENT.INTERVAL", config);
     }
   };
-
   var Chart = (function (Plot) {
     var Chart = function Chart(config) {
+      config = _.defaults(config, { autoResize: true });
+      if (config.autoResize) {
+        Chart.winAware.push(this);
+      }
       config.settings = this.setupSettings(config.settings);
       config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
       Plot.call(this, typesChart[config.type](config));
@@ -3810,9 +3820,43 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
 
     _extends(Chart, Plot);
 
+    Chart.prototype.destroy = function () {
+      var index = Chart.winAware.indexOf(this);
+      if (index !== -1) {
+        Chart.winAware.splice(index, 1);
+      }
+      Plot.prototype.destroy.call(this);
+    };
+
     return Chart;
   })(Plot);
 
+  Chart.resizeOnWindowEvent = (function () {
+    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+      return setTimeout(fn, 17);
+    };
+    var rIndex;
+
+    function requestReposition() {
+      if (rIndex || !Chart.winAware.length) {
+        return;
+      }
+      rIndex = rAF(resize);
+    }
+
+    function resize() {
+      rIndex = 0;
+      var chart;
+      for (var i = 0, l = Chart.winAware.length; i < l; i++) {
+        chart = Chart.winAware[i];
+        chart.resize();
+      }
+    }
+
+    return requestReposition;
+  }());
+  Chart.winAware = [];
+  window.addEventListener("resize", Chart.resizeOnWindowEvent);
   exports.Chart = Chart;
 });
 define('elements/coords',["exports", "../utils/utils-draw", "../const", "../utils/utils", "../matrix"], function (exports, _utilsUtilsDraw, _const, _utilsUtils, _matrix) {
@@ -4160,6 +4204,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
     var xScale = options.xScale, yScale = options.yScale, color = options.color, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate;
 
+    var minimalHeight = 1;
+
     var categories = node.groupBy(node.partition(), color.dimension);
 
     if (node.flip) {
@@ -4188,11 +4234,13 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         calculateY = function (d) {
           return yScale(d[node.y.scaleDim]) - (tickWidth / 2);
         };
-        calculateWidth = isMeasure(node.x) ? function (d) {
-          return Math.abs(xScale(d[node.x.scaleDim]) - xScale(startPoint));
-        } : function (d) {
+        calculateWidth = isMeasure(node.x) ? (function (d) {
+          var valX = d[node.x.scaleDim];
+          var h = Math.abs(xScale(valX) - xScale(startPoint));
+          return (valX === 0) ? h : Math.max(minimalHeight, h);
+        }) : (function (d) {
           return xScale(d[node.x.scaleDim]);
-        };
+        });
         calculateHeight = function (d) {
           return intervalWidth;
         };
@@ -4223,20 +4271,22 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         calculateX = function (d) {
           return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         };
-        calculateY = isMeasure(node.y) ? function (d) {
+        calculateY = isMeasure(node.y) ? (function (d) {
           return yScale(Math.max(startPoint, d[node.y.scaleDim]));
-        } : function (d) {
+        }) : (function (d) {
           return yScale(d[node.y.scaleDim]);
-        };
+        });
 
         calculateWidth = function (d) {
           return intervalWidth;
         };
-        calculateHeight = isMeasure(node.y) ? function (d) {
-          return Math.abs(yScale(d[node.y.scaleDim]) - yScale(startPoint));
-        } : function (d) {
+        calculateHeight = isMeasure(node.y) ? (function (d) {
+          var valY = d[node.y.scaleDim];
+          var h = Math.abs(yScale(valY) - yScale(startPoint));
+          return (valY === 0) ? h : Math.max(minimalHeight, h);
+        }) : (function (d) {
           return (options.height - yScale(d[node.y.scaleDim]));
-        };
+        });
         calculateTranslate = function (d, index) {
           return utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
         };
