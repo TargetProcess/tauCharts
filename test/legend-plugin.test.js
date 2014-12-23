@@ -76,5 +76,54 @@ define(function (require) {
             autoWidth: true
         }
     );
+    describeChart(
+        "legend should toggle by color",
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            plugins: [legend()]
+        },
+        [{
+            x: 2,
+            y: 2,
+            color: 'yellow'
+
+        }, {
+            x: 3,
+            y: 4,
+            color: 'green'
+
+        }],
+        function (context) {
+            it("shouldn't render spec", function (done) {
+                var chart = context.chart;
+                var item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__item')[0];
+                expect(chart.getSVG().querySelectorAll('.color10-1').length).to.be.equals(1);
+                testUtils.simulateEvent('click',item1);
+                var svg = chart.getSVG();
+                expect(svg.querySelectorAll('.color10-1').length).to.be.equals(0);
+                expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+                item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__item')[0];
+                expect(item1.classList.contains('disabled')).to.be.ok;
+                expect(item1.querySelectorAll('.color10-1').length).to.be.ok;
+                done();
+               // testUtils.simulateEvent('click', item1);
+               /* setTimeout(function(){
+                    svg = chart.getSVG();
+
+                    expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
+                    expect(item1.classList.contains('disabled')).not.be.ok;
+                    done();
+                });
+*/
+                // expectLegend(expect, context.chart);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 
 });
