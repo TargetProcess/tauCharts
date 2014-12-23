@@ -62,12 +62,10 @@ define(function (require) {
             expect(registry.get('year')(oct30)).to.equal('2014');
             expect(registry.get('quarter')(oct30)).to.equal('Q4 2014');
 
-
             expect(registry.get('day-short')(oct30)).to.equal('30-Oct');
             expect(registry.get('week-short')(nov02)).to.equal('02-Nov');
-            expect(registry.get('month-short')(jan01)).to.equal('Jan \'2013');
+            expect(registry.get('month-short')(jan01)).to.equal('Jan \'13');
             expect(registry.get('month-short')(oct30)).to.equal('Oct');
-
 
             expect(registry.get('x-num-auto')(22000)).to.equal('22k');
             expect(registry.get('x-num-auto')(22000000)).to.equal('22M');

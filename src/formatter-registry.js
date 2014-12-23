@@ -31,7 +31,7 @@ var FORMATS_MAP = {
     'month-short': (x) => {
         var d = new Date(x);
         var m = d.getMonth();
-        var formatSpec = (m === 0) ? '%b \'%Y' : '%b';
+        var formatSpec = (m === 0) ? '%b \'%y' : '%b';
         return d3.time.format(formatSpec)(x);
     },
 
