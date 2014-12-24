@@ -176,9 +176,7 @@ define(function(require) {
                 ]
             }
         },
-        testData.concat(
-            {x: 3, y: 3, color: 'blue', size: 8}
-        ),
+        testData.concat({x: 3, y: 3, color: 'blue', size: 8}),
         function() {
             it("should render point with right color", function() {
                 var dots = getDots();
@@ -188,53 +186,6 @@ define(function(require) {
                 assert.ok(hasClass(dots[3], 'YlGn q2-3'), 'has brewer class');
             });
         });
-
-    describePlot(
-        "Point element color was presented  with brewer as function",
-        {
-            unit: {
-                type: 'COORDS.RECT',
-                x: 'x',
-                y: 'y',
-                guide: {
-                    x: {autoScale: false},
-                    y: {autoScale: false}
-                },
-                unit: [
-                    {
-                        type: 'ELEMENT.POINT',
-                        x: 'x',
-                        y: 'y',
-                        color: 'color',
-                        guide: {
-                            color: {
-                                brewer: function(value, defaultBrewer){
-                                    if (value == 'grey-brown-crimson') {
-                                        return 'grey_brown_crimson';
-                                    }
-                                    else {
-                                        return defaultBrewer(value);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        testData.concat(
-            {x: 3, y: 3, color: 'blue', size: 8},
-            {x: 4, y: 4, color: 'grey-brown-crimson', size: 8}
-        ),
-        function() {
-            it("should render point with right color", function() {
-               var dots = getDots();
-               expect(hasClass(dots[0], 'color10-1')).to.be.ok;
-               expect(hasClass(dots[4], 'grey_brown_crimson')).to.be.ok;
-            });
-        });
-
-
 
     describePlot(
         "Point element color was presented  with brewer as array an register to tauChart",
@@ -264,11 +215,10 @@ define(function(require) {
         function() {
             it("should render point with right color", function() {
                 var dots = getDots();
-
-                expect(hasClass(dots[0], 'YlGn q0-3')).to.be.ok;
-                expect(hasClass(dots[1], 'YlGn q1-3')).to.be.ok;
-                expect(hasClass(dots[2], 'YlGn q1-3')).to.be.ok;
-                expect(hasClass(dots[3], 'YlGn q2-3')).to.be.ok;
+                assert.ok(hasClass(dots[0], 'YlGn q0-3'), 'has brewer class');
+                assert.ok(hasClass(dots[1], 'YlGn q1-3'), 'has brewer class');
+                assert.ok(hasClass(dots[2], 'YlGn q1-3'), 'has brewer class');
+                assert.ok(hasClass(dots[3], 'YlGn q2-3'), 'has brewer class');
             });
         });
 
@@ -362,23 +312,4 @@ define(function(require) {
                 expect(sizes[2]).to.be.equal(sizes[0]);
             });
         });
-
-    describe('Color brewer', function(){
-        it('should fail on invalid brewer', function(){
-            expect(function(){
-                new tauCharts.Chart({
-                    type: 'bar',
-                    x: 'x',
-                    y: 'y',
-                    color: 'color',
-                    guide: {
-                        color: {
-                            brewer: 1
-                        }
-                    },
-                    data: [{x: 1, y: 1, color: 'test'}]
-                }).renderTo(document.createElement('div'));
-            }).to.throw('This brewer is not supported')
-        })
-    });
 });
