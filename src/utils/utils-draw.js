@@ -286,28 +286,51 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
+
 var defaultRangeColor = _.times(10, (i) => 'color10-' + (1 + i));
+
 var generateColor = function (node) {
-    var range, domain;
+    var getClass;
+
     var colorGuide = node.guide.color || {};
-    var colorParam = node.color;
+    var colorDim = node.color.scaleDim;
 
-    var colorDim = colorParam.scaleDim;
-    var brewer = colorGuide.brewer || defaultRangeColor;
+    var buildArrayGetClass = function(brewer){
+        var domain = node.domain(colorDim);
+        if (domain.length === 0 || (domain.length === 1 && domain[0]===null)){
+            return _.constant('color-default');
+        } else {
+            var fullDomain = domain.map((x) => String(x).toString());
+            return d3.scale.ordinal().range(brewer).domain(fullDomain);
+        }
+    };
 
-    if (utils.isArray(brewer)) {
-        domain = node.domain(colorDim).map((x) => String(x).toString());
-        range = brewer;
+    var buildObjectGetClass = function(brewer, defaultGetClass){
+        var domain = _.keys(brewer);
+        var range = _.values(brewer);
+
+        var calculateClass = d3.scale.ordinal().range(range).domain(domain);
+        return (d) => domain.indexOf(d) > -1 ? calculateClass(d) : defaultGetClass(d);
+    };
+
+    var wrapString = (f)=>(d)=>f(String(d).toString());
+
+    var brewer = colorGuide.brewer;
+    if (!brewer) {
+        getClass = wrapString(buildArrayGetClass(defaultRangeColor));
+    } else if (_.isArray(brewer)) {
+        getClass = wrapString(buildArrayGetClass(brewer));
+    } else if (_.isFunction(brewer)) {
+        var defaultBrewer = wrapString(buildArrayGetClass(defaultRangeColor));
+        getClass = (d)=>brewer(d, defaultBrewer);
+    } else if (_.isObject(brewer)) {
+        getClass = buildObjectGetClass(brewer, _.constant('color-default'));
+    } else {
+        throw new Error('This brewer is not supported');
     }
-    else {
-        domain = Object.keys(brewer);
-        range = domain.map((key) => brewer[key]);
-    }
-    var calculateClass = d3.scale.ordinal().range(range).domain(domain);
-    var getClass = (d) => domain.indexOf(d) > -1 ? calculateClass(d) : 'color-default';
 
     return {
-        get: (d) => getClass(String(d).toString()),
+        get: getClass,
         dimension: colorDim
     };
 };
