@@ -654,10 +654,23 @@ define(function (require) {
                     ]
                 ];
 
+                var ys = [
+                    [
+                        0,      // count = 1000
+                        200,    // count = 500
+                        399,    // count = 1 (minus minimal height)
+                        400,    // count = 0
+                        400,    // count = -1
+                        400,    // count = -500
+                        400     // count = -1000
+                    ]
+                ];
+
                 var bars = getGroupBar();
 
                 _.each(bars, function (bar, barIndex) {
                     _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
                         expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
                     });
                 });
@@ -718,10 +731,23 @@ define(function (require) {
                     ]
                 ];
 
+                var xs = [
+                    [
+                        400,    // count = 1000
+                        400,    // count = 500
+                        400,    // count = 1
+                        400,    // count = 0
+                        399,    // count = -1 (minus minimal height)
+                        200,    // count = -500
+                        0       // count = -1000
+                    ]
+                ];
+
                 var bars = getGroupBar();
 
                 _.each(bars, function (bar, barIndex) {
                     _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
                         expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
                     });
                 });

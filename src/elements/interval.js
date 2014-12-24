@@ -56,7 +56,28 @@ var interval = function (node) {
             size: options.height
         });
         /* jshint ignore:end */
-        calculateX = isMeasure(node.x) ? (d) => xScale(Math.min(startPoint, d[node.x.scaleDim])) : 0;
+        calculateX = isMeasure(node.x) ?
+            ((d) => {
+                var valX = d[node.x.scaleDim];
+                var h = Math.abs(xScale(valX) - xScale(startPoint));
+                var dotX = xScale(Math.min(startPoint, valX));
+
+                var delta = (h - minimalHeight);
+                var isTooSmall = (delta < 0);
+                var offset = 0;
+                if (valX > 0) {
+                    offset = minimalHeight + delta;
+                }
+
+                if (valX < 0) {
+                    offset = -minimalHeight;
+                }
+
+                return (!isTooSmall) ?
+                    (dotX) :
+                    (dotX + offset);
+            }) :
+            0;
         calculateY = (d) =>  yScale(d[node.y.scaleDim]) - (tickWidth / 2);
         calculateWidth = isMeasure(node.x) ?
             ((d) => {
@@ -83,7 +104,13 @@ var interval = function (node) {
         /* jshint ignore:end */
         calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         calculateY = isMeasure(node.y) ?
-            ((d) => yScale(Math.max(startPoint, d[node.y.scaleDim]))) :
+            ((d) => {
+                var valY = d[node.y.scaleDim];
+                var dotY = yScale(Math.max(startPoint, valY));
+                var h = Math.abs(yScale(valY) - yScale(startPoint));
+                var isTooSmall = (h < minimalHeight);
+                return (isTooSmall && (valY > 0)) ? (dotY - minimalHeight) : dotY;
+            }) :
             ((d) => yScale(d[node.y.scaleDim]));
 
         calculateWidth = (d)=> intervalWidth;
