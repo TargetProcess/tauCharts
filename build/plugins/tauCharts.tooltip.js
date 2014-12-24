@@ -66,7 +66,8 @@
             init: function (chart) {
                 this._chart = chart;
                 this._dataFields = settings.fields;
-                _.extend(this, _.omit(settings, 'fields'));
+                this._getDataFields = settings.getFields;
+                _.extend(this, _.omit(settings, 'fields', 'getFields'));
                 this._timeoutHideId = null;
                 this._dataWithCoords = {};
                 this._unitMeta = {};
@@ -118,7 +119,10 @@
                     });
                 }, this).join('');
             },
-            onRender: function () {
+            onRender: function (chart) {
+                if (_.isFunction(this._getDataFields)) {
+                    this._dataFields = this._getDataFields(chart);
+                }
                 this._hide();
             },
             _exclude: function () {
@@ -159,6 +163,7 @@
                 if (this._dataFields) {
                     return this._dataFields;
                 }
+
                 var fields = [unit.size && unit.size.scaleDim, unit.color && unit.color.scaleDim];
                 var x = [];
                 var y = [];
