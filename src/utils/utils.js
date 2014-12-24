@@ -7,8 +7,23 @@ var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRu
     return rootRef;
 };
 
+var cloneDeep = function(obj) {
+    if (_.isArray(obj)) {
+        return _.map(obj, cloneDeep);
+    } else if (typeof obj === 'object' && obj !== null) {
+        var result = {};
+        _.each(obj, function(value, key) {
+            result[key] = cloneDeep(value);
+        });
+
+        return result;
+    } else {
+        return obj;
+    }
+};
+
 var utils = {
-    clone: (obj) => JSON.parse(JSON.stringify(obj)),
+    clone: cloneDeep,
     isArray: (obj) => Array.isArray(obj),
 
     autoScale: (domain) => {

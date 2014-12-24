@@ -4,7 +4,7 @@ import {FormatterRegistry} from './formatter-registry';
 
 
 function extendGuide(guide, targetUnit, dimension, properties) {
-    var guide_dim =  guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    var guide_dim =  guide[dimension] || {};
     _.each(properties, (prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
