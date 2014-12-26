@@ -341,7 +341,7 @@
 
                 var x = unitMeta.x.scaleDim;
                 var y = unitMeta.y.scaleDim;
-                var c = unitMeta.color.scaleDim;
+                var color = unitMeta.color.scaleDim;
 
                 //var xAutoScaleVals = unitMeta.scaleMeta(x, unitMeta.guide.x).values;
                 var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
@@ -349,7 +349,8 @@
                 var minY = _.min(yAutoScaleVals);
                 var maxY = _.max(yAutoScaleVals);
 
-                var categories = unitMeta.groupBy(unitMeta.partition(), c);
+                var partition = unitMeta.partition();
+                var categories = options.color.group(partition);
 
                 categories.forEach(function (segment, index) {
                     var sKey = segment.key;

@@ -330,11 +330,18 @@ var generateColor = function (node) {
     var valueMeta = node.scaleMeta(colorDim);
     var labelMeta = node.scaleMeta(colorDim, colorGuide);
 
+    var group = (data)=>
+        _.chain(data)
+            .groupBy((item)=>valueMeta.extract(item[colorDim]))
+            .map((values)=>({key: values[0][colorDim], values: values}))
+            .value();
+
     return {
         get: getClass,
         dimension: colorDim,
-        values: valueMeta,
-        labels: labelMeta
+        getValue: valueMeta.extract,
+        getLabel: labelMeta.extract,
+        group: group
     };
 };
 var extendLabel = function (guide, dimension, extend) {

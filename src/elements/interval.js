@@ -41,7 +41,7 @@ var interval = function (node) {
 
     var minimalHeight = 1;
 
-    var categories = node.groupBy(node.partition(), color.dimension);
+    var categories = color.group(node.partition());
 
     if (node.flip) {
 

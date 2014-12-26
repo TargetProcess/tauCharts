@@ -87,7 +87,7 @@
                     var filter = {
                         tag: 'legend',
                         predicate: function (item) {
-                            return color.values.extract(item[parsedValue.dimension]) != parsedValue.value;
+                            return color.getValue(item[parsedValue.dimension]) != parsedValue.value;
                         }
                     };
                     target.classList.add('disabled');
@@ -112,12 +112,12 @@
                 return _.chain(data)
                     .pluck(colorDimension)
                     .unique(function(item){
-                        return color.values.extract(item)
+                        return color.getValue(item)
                     })
                     .map(function(item){
                         return {
-                            value: color.values.extract(item),
-                            label: color.labels.extract(item),
+                            value: color.getValue(item),
+                            label: color.getLabel(item),
                             color: color.get(item)
                         };
                     })
@@ -136,6 +136,16 @@
                     var color = this._unit.options.color;
                     var colorDimension = color.dimension;
                     var colorMap = this._getColorMap(chart, color, colorDimension);
+
+                    var conf = chart.getConfig();
+                    var configUnit = dfs(conf.spec.unit);
+                    configUnit.guide = configUnit.guide || {};
+                    configUnit.guide.color = this._unit.guide.color;
+                    configUnit.guide.color.brewer = _.reduce(colorMap, function(brewer, item){
+                        brewer[item.value] = item.color;
+                        return brewer;
+                    }, {});
+
 
                     var items = _.map(colorMap, function (item) {
                         var value = JSON.stringify({value:item.value, color:item.color, dimension:colorDimension});
