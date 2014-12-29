@@ -280,5 +280,54 @@ define(function (require) {
             expect(testLog.length).to.equal(0);
             expect(testLog).to.deep.equal([]);
         });
+
+        it("should support [select] method", function () {
+            var testDiv = document.getElementById('test-div');
+            var spec = {
+                spec: {
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'x',
+                        y: 'y',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT'
+                            }
+                        ]
+                    }
+                },
+                data: [
+                    {
+                        x: 1,
+                        y: 2
+                    },
+                    {
+                        x: 11,
+                        y: 22
+                    },
+                    {
+                        x: 33,
+                        y: 22
+                    }
+                ]
+            };
+
+            var plot = new tauChart.Plot(spec);
+            plot.renderTo(testDiv);
+
+            var allElements = plot.select(function(unitNode) {
+                return true;
+            });
+            expect(allElements.length).to.equal(2);
+            expect(allElements[0].type).to.equal('COORDS.RECT');
+            expect(allElements[1].type).to.equal('ELEMENT.POINT');
+
+            var someElements = plot.select(function(unitNode) {
+                var parent = (unitNode.parentUnit || {});
+                return parent.type === 'COORDS.RECT';
+            });
+            expect(someElements.length).to.equal(1);
+            expect(someElements[0].type).to.equal('ELEMENT.POINT');
+        });
     });
 });

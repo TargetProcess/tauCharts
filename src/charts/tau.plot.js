@@ -168,6 +168,7 @@ export class Plot extends Emitter {
     }
 
     renderTo(target, xSize) {
+        this._renderGraph = null;
         this._svg = null;
         this._defaultSize  = _.clone(xSize);
         var container = d3.select(target);
@@ -243,6 +244,7 @@ export class Plot extends Emitter {
                 .attr("height", size.height),
             (unitMeta) => chart.fire('unitready', unitMeta)
         );
+        this._renderGraph = renderGraph;
         this._svg = svgXElement.node();
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this._layout.rightSidebar.style.maxHeight = size.height + 'px';
@@ -271,9 +273,11 @@ export class Plot extends Emitter {
         this.config.data = data;
         this.refresh();
     }
+
     getSVG() {
         return this._svg;
     }
+
     addFilter(filter) {
         var tag = filter.tag;
         var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
@@ -284,19 +288,46 @@ export class Plot extends Emitter {
         return id;
     }
 
+    removeFilter(id) {
+        _.each(this._filtersStore.filters, (filters, key) => {
+            this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
+        });
+        this.refresh();
+    }
+
     refresh() {
-        if(this._target) {
-            this.renderTo(this._target,this._defaultSize);
+        if (this._target) {
+            this.renderTo(this._target, this._defaultSize);
         }
     }
 
     resize(sizes = {}) {
         this.renderTo(this._target, sizes);
     }
-    removeFilter(id) {
-        _.each(this._filtersStore.filters, (filters, key) => {
-            this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
+
+    select(queryFilter) {
+
+        var r = [];
+
+        if (!this._renderGraph) {
+            return r;
+        }
+
+        var fnTraverseLayout = (node, iterator) => {
+            iterator(node);
+            if (node.$matrix) {
+                node.$matrix.iterate((r, c, subNodes) => {
+                    subNodes.forEach((subNode) => fnTraverseLayout(subNode, iterator));
+                });
+            }
+        };
+
+        fnTraverseLayout(this._renderGraph, (node) => {
+            if (queryFilter(node)) {
+                r.push(node);
+            }
         });
-        this.refresh();
+
+        return r;
     }
 }
