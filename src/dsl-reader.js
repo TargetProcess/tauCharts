@@ -69,18 +69,19 @@ export class DSLReader {
         return fnTraverseLayout(graph);
     }
 
-    renderGraph(styledGraph, target, chart) {
+    renderGraph(styledGraph, target, xIterator) {
+        var iterator = xIterator || ((x) => x);
         styledGraph.options.container = target;
         var renderRecursively = (unit) => {
             var unitMeta = this.domain.mix(unit);
-            this.UnitsRegistry.get(unit.type).draw(unitMeta, (childUnit) => {
-                childUnit.parentUnit = unit;
-                renderRecursively(childUnit);
-            });
+            this.UnitsRegistry
+                .get(unit.type)
+                .draw(unitMeta, (childUnit) => {
+                    childUnit.parentUnit = unit;
+                    renderRecursively(childUnit);
+                });
 
-            if (chart) {
-                chart.fire('unitready', unitMeta);
-            }
+            iterator(unitMeta);
         };
         styledGraph.parentUnit = null;
         renderRecursively(styledGraph);

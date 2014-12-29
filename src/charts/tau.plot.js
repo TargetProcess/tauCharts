@@ -230,6 +230,7 @@ export class Plot extends Emitter {
 
         var reader = new DSLReader(domainMixin, UnitsRegistry);
 
+        var chart = this;
         var logicXGraph = reader.buildGraph(fullSpec);
         var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
         var renderGraph = reader.calcLayout(layoutGraph, size);
@@ -240,7 +241,7 @@ export class Plot extends Emitter {
                 .attr("class", CSS_PREFIX + 'svg')
                 .attr("width", size.width)
                 .attr("height", size.height),
-            this
+            (unitMeta) => chart.fire('unitready', unitMeta)
         );
         this._svg = svgXElement.node();
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
