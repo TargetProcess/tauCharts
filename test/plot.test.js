@@ -284,6 +284,9 @@ define(function (require) {
         it("should support [select] method", function () {
             var testDiv = document.getElementById('test-div');
             var spec = {
+                settings: {
+                    layoutEngine: 'NONE'
+                },
                 spec: {
                     unit: {
                         type: 'COORDS.RECT',
