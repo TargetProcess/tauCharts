@@ -42,6 +42,7 @@
                 if (this._isNeedLegend(chart)) {
                     this._currentFilters = {};
                     this._container = chart.insertToRightSidebar(this._containerTemplate);
+
                     this._delegateEvent(this._container, 'click', 'graphical-report__legend__item', function (e, currentTarget) {
                         this._toggleLegendItem(currentTarget, chart);
                     }.bind(this));
@@ -72,6 +73,8 @@
 
             },
             _toggleLegendItem: function (target, chart) {
+                var color = this._unit.options.color;
+
                 var value = target.getAttribute('data-value');
                 var currentFilterID = this._currentFilters[value];
                 if (currentFilterID) {
@@ -84,7 +87,7 @@
                     var filter = {
                         tag: 'legend',
                         predicate: function (item) {
-                            return item[parsedValue.dimension] != parsedValue.value;
+                            return color.getValue(item[parsedValue.dimension]) != parsedValue.value;
                         }
                     };
                     target.classList.add('disabled');
@@ -102,16 +105,25 @@
                     this._unit = unit;
                 }
             },
-            _getColorMap: function (chart, color, colorDimension) {
+
+            _getColorMap: function(chart, color, colorDimension){
                 var data = chart.getData({excludeFilter: ['legend']});
-                var keys = _.map(data, function (item) {
-                    return item[colorDimension];
-                });
-                return _.unique(keys).reduce(function (colorMap, item) {
-                    colorMap[item] = color.get(item);
-                    return colorMap;
-                }, {});
+
+                return _.chain(data)
+                    .pluck(colorDimension)
+                    .unique(function(item){
+                        return color.getValue(item)
+                    })
+                    .map(function(item){
+                        return {
+                            value: color.getValue(item),
+                            label: color.getLabel(item),
+                            color: color.get(item)
+                        };
+                    })
+                    .value();
             },
+
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
             _itemTemplate: _.template([
@@ -123,21 +135,28 @@
                 if (this._container) {
                     var color = this._unit.options.color;
                     var colorDimension = color.dimension;
-                    var colorBrewer = this._getColorMap(chart, color, colorDimension);
+                    var colorMap = this._getColorMap(chart, color, colorDimension);
+
                     var conf = chart.getConfig();
                     var configUnit = dfs(conf.spec.unit);
                     configUnit.guide = configUnit.guide || {};
                     configUnit.guide.color = this._unit.guide.color;
-                    configUnit.guide.color.brewer = colorBrewer;
-                    var items = _.map(colorBrewer, function (item, key) {
-                        var value = JSON.stringify({dimension: colorDimension, value: key, color: item});
+                    configUnit.guide.color.brewer = _.reduce(colorMap, function(brewer, item){
+                        brewer[item.value] = item.color;
+                        return brewer;
+                    }, {});
+
+
+                    var items = _.map(colorMap, function (item) {
+                        var value = JSON.stringify({value:item.value, color:item.color, dimension:colorDimension});
                         return this._itemTemplate({
-                            color: item,
+                            color: item.color,
                             classDisabled: this._currentFilters[value] ? 'disabled' : '',
-                            label: _.escape(key),
+                            label: _.escape(item.label),
                             value: value
                         });
                     }, this).join('');
+
                     this._container.innerHTML = this._template({
                         items: items,
                         name: this._unit.guide.color.label.text || this._unit.options.color.dimension

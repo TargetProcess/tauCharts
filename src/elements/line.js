@@ -12,7 +12,7 @@ var line = function (node) {
 
     node.size = {};
 
-    var categories = node.groupBy(node.partition(), color.dimension);
+    var categories = color.group(node.partition());
 
     var widthClass = getLineClassesByWidth(options.width);
     var countClass = getLineClassesByCount(categories.length);
