@@ -316,6 +316,12 @@ define(function (require) {
             };
 
             var plot = new tauChart.Plot(spec);
+
+            var nonReady = plot.select(function(unitNode) {
+                return true;
+            });
+            expect(nonReady.length).to.equal(0);
+
             plot.renderTo(testDiv);
 
             var allElements = plot.select(function(unitNode) {
