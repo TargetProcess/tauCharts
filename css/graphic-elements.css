@@ -315,6 +315,7 @@
   font-weight: normal;
   fill: gray;
   text-transform: none;
+  letter-spacing: 0px;
 }
 .graphical-report__dot {
   opacity: 0.6;
