@@ -315,11 +315,7 @@ export class Plot extends Emitter {
 
         var fnTraverseLayout = (node, iterator) => {
             iterator(node);
-            if (node.$matrix) {
-                node.$matrix.iterate((r, c, subNodes) => {
-                    subNodes.forEach((subNode) => fnTraverseLayout(subNode, iterator));
-                });
-            }
+            (node.childUnits || []).forEach((subNode) => fnTraverseLayout(subNode, iterator));
         };
 
         fnTraverseLayout(this._renderGraph, (node) => {

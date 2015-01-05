@@ -35,20 +35,20 @@ var nodeMap = {
         draw: (node, continueTraverse) => {
             node.x = node.dimension(node.x, node);
             node.y = node.dimension(node.y, node);
-            coords.draw(node, continueTraverse);
+            return coords.draw(node, continueTraverse);
         }
     },
 
     'ELEMENT.POINT': (node) => {
-        point(setupElementNode(node, ['x', 'y', 'color', 'size']));
+        return point(setupElementNode(node, ['x', 'y', 'color', 'size']));
     },
 
     'ELEMENT.LINE': (node) => {
-        line(setupElementNode(node, ['x', 'y', 'color']));
+        return line(setupElementNode(node, ['x', 'y', 'color']));
     },
 
     'ELEMENT.INTERVAL': function (node) {
-        interval(setupElementNode(node, ['x', 'y', 'color']));
+        return interval(setupElementNode(node, ['x', 'y', 'color']));
     },
 
     'COORDS.PARALLEL': CoordsParallel,

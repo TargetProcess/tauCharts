@@ -66,7 +66,7 @@ var coords = {
         return root;
     },
 
-    draw: function(node, continueTraverse) {
+    draw: function(node) {
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -104,14 +104,7 @@ var coords = {
             utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
         }
 
-        var grid = utilsDraw.fnDrawGrid.call(container, node, H, W);
-
-        node.$matrix.iterate((iRow, iCol, subNodes) => {
-            subNodes.forEach((node) => {
-                node.options = _.extend({container: grid}, node.options);
-                continueTraverse(node);
-            });
-        });
+        return utilsDraw.fnDrawGrid.call(container, node, H, W);
     }
 };
 export {coords};
