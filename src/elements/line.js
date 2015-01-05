@@ -23,14 +23,7 @@ var line = function (node) {
         paths.enter().append('path').call(updatePaths);
         paths.exit().remove();
     };
-    var drawPointsIfNeed = function (categories) {
-        var data = categories.reduce(function (data, item) {
-            var values = item.values;
-            if (values.length === 1) {
-                data.push(values[0]);
-            }
-            return data;
-        }, []);
+    var drawPoints = function (points) {
         var update = function () {
             return this
                 .attr('r', 1.5)
@@ -39,7 +32,7 @@ var line = function (node) {
                 .attr('cy', (d) => yScale(d[node.y.scaleDim]));
         };
 
-        var elements = options.container.selectAll('.dot-line').data(data);
+        var elements = options.container.selectAll('.dot-line').data(points);
         elements.call(update);
         elements.exit().remove();
         elements.enter().append('circle').call(update);
@@ -55,7 +48,19 @@ var line = function (node) {
         this.attr('d', line);
     };
 
-    drawPointsIfNeed(categories);
+
+    var points = categories.reduce(function (memo, item) {
+        var values = item.values;
+        if (values.length === 1) {
+            memo.push(values[0]);
+        }
+        return memo;
+    }, []);
+
+    if (points.length > 0) {
+        drawPoints(points);
+    }
+
     var lines = options.container.selectAll('.line').data(categories);
     lines.call(updateLines);
     lines.enter().append('g').call(updateLines);
