@@ -126,7 +126,7 @@ var interval = function (node) {
 
     var updateBar = function () {
         return this
-            .attr('class', (d) => ('i-role-element i-role-datum bar ' + CSS_PREFIX + 'bar ' + color.get(d[color.dimension])))
+            .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${color.get(d[color.dimension])}`))
             .attr('x', calculateX)
             .attr('y', calculateY)
             .attr('width', calculateWidth)
@@ -134,9 +134,7 @@ var interval = function (node) {
     };
 
     var updateBarContainer = function () {
-
-        this
-            .attr('class', BAR_GROUP)
+        this.attr('class', BAR_GROUP)
             .attr('transform', calculateTranslate);
         var bars = this.selectAll('bar').data((d) => d.values);
         bars.call(updateBar);
@@ -144,7 +142,7 @@ var interval = function (node) {
         bars.exit().remove();
     };
 
-    var elements = options.container.selectAll('.' + BAR_GROUP).data(categories);
+    var elements = options.container.selectAll(`.${BAR_GROUP}`).data(categories);
     elements.call(updateBarContainer);
     elements.enter().append('g').call(updateBarContainer);
     elements.exit().remove();
