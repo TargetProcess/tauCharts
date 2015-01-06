@@ -17,13 +17,11 @@ var getSizesParams = function (params) {
         offsetCategory = intervalWidth;
     }
 
-    /* jshint ignore:start */
     return {
         tickWidth,
         intervalWidth,
         offsetCategory
     };
-    /* jshint ignore:end */
 };
 
 var interval = function (node) {
@@ -45,17 +43,16 @@ var interval = function (node) {
 
     if (node.flip) {
 
-        var xMin = Math.min.apply(null, xScale.domain());
+        var xMin = Math.min(...xScale.domain());
         let startPoint = (xMin <= 0) ? 0 : xMin;
 
-        /* jshint ignore:start */
-        var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
+        let {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
             domain: yScale.domain,
             dim: node.y,
             categories: categories,
             size: options.height
         });
-        /* jshint ignore:end */
+
         calculateX = isMeasure(node.x) ?
             ((d) => {
                 var valX = d[node.x.scaleDim];
@@ -91,17 +88,16 @@ var interval = function (node) {
 
     } else {
 
-        var yMin = Math.min.apply(null, yScale.domain());
+        var yMin = Math.min(...yScale.domain());
         let startPoint = (yMin <= 0) ? 0 : yMin;
 
-        /* jshint ignore:start */
-        var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
+        let {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
             domain: xScale.domain,
             dim: node.x,
             categories: categories,
             size: options.width
         });
-        /* jshint ignore:end */
+
         calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         calculateY = isMeasure(node.y) ?
             ((d) => {
