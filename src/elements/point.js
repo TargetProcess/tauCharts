@@ -1,4 +1,3 @@
-import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 
 var point = function (node) {

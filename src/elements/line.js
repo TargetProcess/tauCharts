@@ -1,7 +1,6 @@
-import {utilsDraw} from '../utils/utils-draw';
-import {point} from './point';
 import {CSS_PREFIX} from '../const';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
+
 var line = function (node) {
 
     var options = node.options;
