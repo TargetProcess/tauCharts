@@ -274,6 +274,6 @@ module.exports = function (grunt) {
     var buildWithoutPublish = ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin'];
     grunt.registerTask('build', buildWithoutPublish);
     grunt.registerTask('publish', buildWithoutPublish.concat(['copy:copybuild', 'clean', 'gh-pages']));
-    grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint', 'build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);
 };
