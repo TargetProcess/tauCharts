@@ -1,5 +1,5 @@
 /*global module:false*/
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
     // Project configuration.
     var src = [
@@ -34,21 +34,21 @@ module.exports = function(grunt) {
                 src: ['build/development/tauCharts.js'],
                 dest: 'build/development/tauCharts.js'
             },
-            prodJS:{
-                src:['build/development/tauCharts.js','build/development/plugins/*.js'],
-                dest:'build/production/tauCharts.min.js'
-            }/*,
-            prodCSS:{
-                src:['build/tauCharts.js','plugins*//*.js'],
-                dest:'build/production/tauCharts.min.js'
-            }*/
+            prodJS: {
+                src: ['build/development/tauCharts.js', 'build/development/plugins/*.js'],
+                dest: 'build/production/tauCharts.min.js'
+            },
+            prodCSS: {
+                src: ['build/development/**/*.css'],
+                dest: 'build/production/tauCharts.min.css'
+            }
         },
-        'gh-pages':{
-            options:{
-                base:'dist',
+        'gh-pages': {
+            options: {
+                base: 'build',
                 branch: 'release'
             },
-            src:['**/*']
+            src: ['**/*','!production','!development']
         },
         compile: {
             build: {
@@ -72,7 +72,7 @@ module.exports = function(grunt) {
             },
             unit: {
                 reporters: ["dots", "coverage"],
-                preprocessors: {"tau_modules/**/*.js": "coverage","plugins/*.js": "coverage"}
+                preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"}
             },
             travis: {
                 preprocessors: {"tau_modules/**/*.js": "coverage"},
@@ -88,103 +88,96 @@ module.exports = function(grunt) {
                 banner: '<%= banner %>'
             },
             dist: {
-                src: '<%= concat.dist.dest %>',
-                dest: 'build/<%= pkg.name %>.min.js'
-            },
-            plugins: {
-                files: [
-                    {
-                        src:  'src/addons/color-brewer.js',
-                        dest: 'build/<%= pkg.name %>.color-brewer.min.js'
-                    },
-                    {
-                        src:  'plugins/tooltip.js',
-                        dest: 'build/plugins/<%= pkg.name %>.tooltip.min.js'
-                    },
-                    {
-                        src:  'plugins/legend.js',
-                        dest: 'build/plugins/<%= pkg.name %>.legend.min.js'
-                    },
-                    {
-                        src:  'plugins/trendline.js',
-                        dest: 'build/plugins/<%= pkg.name %>.trendline.min.js'
-                    }
-                ]
-
+                src: '<%= concat.prodJS.dest %>',
+                dest: 'build/production/tauCharts.min.js'
             }
         },
         cssmin: {
             build: {
                 files: [
                     {
-                        src: 'css/graphic-elements.css',
-                        dest: 'build/css/<%= pkg.name %>.graphic-elements.min.css'
-                    },
-                    {
-                        src: 'css/colorbrewer.css',
-                        dest: 'build/css/<%= pkg.name %>.colorbrewer.min.css'
-                    },
-                    {
-                        src: 'css/forms.css',
-                        dest: 'build/plugins/<%= pkg.name %>.forms.min.css'
-                    },
-                    {
-                        src: 'css/tooltip.css',
-                        dest: 'build/plugins/<%= pkg.name %>.tooltip.min.css'
-                    },
-                    {
-                        src: 'css/legend.css',
-                        dest: 'build/plugins/<%= pkg.name %>.legend.min.css'
-                    },
-                    {
-                        src: 'css/trendline.css',
-                        dest: 'build/plugins/<%= pkg.name %>.trendline.min.css'
+                        src: 'build/production/tauCharts.min.css',
+                        dest: 'build/production/tauCharts.min.css'
                     }
                 ]
             }
         },
         copy: {
+            copybuild: {
+              files:[
+                  {
+                      src: 'build/production/**',
+                      expand:true,
+                      dest: 'build/'
+                  },
+                  {
+                      src: 'build/development/**',
+                      expand:true,
+                      dest: 'build/'
+                  }
+              ]
+            },
             build: {
                 files: [
                     {
+                        src: 'bower.json',
+                        dest: 'build/bower.json'
+                    },
+                    {
+                        src: 'package.json',
+                        dest: 'build/package.json'
+                    },
+                    {
+                        src: 'component.json',
+                        dest: 'build/component.json'
+                    },
+                    {
+                        src: 'license.md',
+                        dest: 'build/license.md'
+                    },
+                    {
+                        src: 'README.md',
+                        dest: 'build/README.md'
+                    },
+                    {
                         src: 'css/graphic-elements.css',
-                        dest: 'build/development/css/<%= pkg.name %>.graphic-elements.css'
+                        dest: 'build/development/css/tauCharts.graphic-elements.css'
                     },
                     {
                         src: 'css/colorbrewer.css',
-                        dest: 'build/development/css/<%= pkg.name %>.colorbrewer.css'
+                        dest: 'build/development/css/tauCharts.colorbrewer.css'
                     },
                     {
                         src: 'css/forms.css',
-                        dest: 'build/development/css/<%= pkg.name %>.forms.css'
+                        dest: 'build/development/css/tauCharts.forms.css'
                     },
                     {
                         src: 'src/addons/color-brewer.js',
-                        dest: 'build/development/<%= pkg.name %>.color-brewer.js'
+                        dest: 'build/development/tauCharts.color-brewer.js'
                     },
                     {
                         src: 'plugins/tooltip.js',
-                        dest: 'build/development/plugins/<%= pkg.name %>.tooltip.js'
+                        dest: 'build/development/plugins/tauCharts.tooltip.js'
                     },
                     {
                         src: 'plugins/legend.js',
-                        dest: 'build/development/plugins/<%= pkg.name %>.legend.js'
+                        dest: 'build/development/plugins/tauCharts.legend.js'
                     },
                     {
                         src: 'plugins/trendline.js',
-                        dest: 'build/development/plugins/<%= pkg.name %>.trendline.js'
+                        dest: 'build/development/plugins/tauCharts.trendline.js'
                     },
                     {
                         src: 'css/tooltip.css',
-                        dest: 'build/development/plugins/<%= pkg.name %>.tooltip.css'
+                        dest: 'build/development/plugins/tauCharts.tooltip.css'
                     },
                     {
                         src: 'css/legend.css',
-                        dest: 'build/development/plugins/<%= pkg.name %>.legend.css'
+                        dest: 'build/development/plugins/tauCharts.legend.css'
                     },
                     {
                         src: 'css/trendline.css',
-                        dest: 'build/development/plugins/<%= pkg.name %>.trendline.css'
+                        dest: 'build/development/plugins/tauCharts.trendline.css'
                     }
                 ]
             }
@@ -192,8 +185,8 @@ module.exports = function(grunt) {
         shell: {
             gitadd: {
                 command: [
-                    'git add build/<%= pkg.name %>.js',
-                    'git add build/<%= pkg.name %>.min.js'
+                    'git add build/tauCharts.js',
+                    'git add build/tauCharts.min.js'
                 ].join('&&'),
                 options: {
                     stdout: true
@@ -246,11 +239,11 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            js:{
+            js: {
                 files: ['<%= jshint.all.src %>'],
-                tasks: ['jshint', 'compile:dev','less']
+                tasks: ['jshint', 'compile:dev', 'less']
             },
-            less:{
+            less: {
                 files: ['less/*.less'],
                 tasks: ['less']
             }
@@ -271,11 +264,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-gh-pages');
-
+    grunt.loadNpmTasks('grunt-contrib-rename');
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
-    grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat:dist','concat:prod', 'uglify'/*,'gh-pages'*/]);
+    grunt.registerTask('build', ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin','copy:copybuild', 'gh-pages']);
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);
 };
