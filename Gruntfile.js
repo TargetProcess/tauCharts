@@ -123,23 +123,23 @@ module.exports = function (grunt) {
                       src: 'build/development/**',
                       expand:true,
                       dest: 'build/'
+                  },
+                  {
+                      src: 'bower.json',
+                      dest: 'build/bower.json'
+                  },
+                  {
+                      src: 'package.json',
+                      dest: 'build/package.json'
+                  },
+                  {
+                      src: 'component.json',
+                      dest: 'build/component.json'
                   }
               ]
             },
             build: {
                 files: [
-                    {
-                        src: 'bower.json',
-                        dest: 'build/bower.json'
-                    },
-                    {
-                        src: 'package.json',
-                        dest: 'build/package.json'
-                    },
-                    {
-                        src: 'component.json',
-                        dest: 'build/component.json'
-                    },
                     {
                         src: 'license.md',
                         dest: 'build/license.md'
