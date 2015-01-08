@@ -111,6 +111,11 @@ module.exports = function (grunt) {
                       dest: 'build/'
                   },
                   {
+                      src: 'examples/**',
+                      expand:true,
+                      dest: 'build/'
+                  },
+                  {
                       src: 'build/development/**',
                       expand:true,
                       dest: 'build/'
