@@ -19,6 +19,6 @@ See [prototype](https://github.com/TargetProcess/tauCharts/tree/master/examples)
 
 ##license
 
-Licensing: [Creative Common Attribution-NonCommercial 3.0](http://creativecommons.org/licenses/by-nc/3.0/)
+Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Have a questions? [Contact us](mailto:michael@targetprocess.com)
