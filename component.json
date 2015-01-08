@@ -1,0 +1,9 @@
+{
+  "name": "tauCharts",
+  "version": "0.2.29",
+  "ignore": [
+    "/*",
+    "!build/**",
+    "!License.txt"
+  ]
+}

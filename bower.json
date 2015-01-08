@@ -1,0 +1,31 @@
+{
+  "name": "tauCharts",
+  "version": "0.2.29",
+  "homepage": "https://github.com/TargetProcess/tauCharts",
+  "description": "Simple charts library based on d3",
+  "keywords": [
+    "d3",
+    "charts"
+  ],
+  "main": [
+    "build/production/tauCharts.min.js",
+    "build/production/tauCharts.min.css"
+  ],
+  "license": "Apache License 2.0",
+  "private": false,
+  "ignore": [
+    "/*",
+    "!build/**",
+    "!license.txt"
+  ],
+  "dependencies": {
+    "d3": "~3.4.3",
+    "underscore": "~1.6.0"
+  },
+  "devDependencies": {
+    "jquery": "2.1.1",
+    "modernizer": "2.8.2",
+    "js-schema": "0.7.0",
+    "es5-shim": "latest"
+  }
+}
