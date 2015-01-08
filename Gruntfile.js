@@ -48,7 +48,7 @@ module.exports = function (grunt) {
                 base: 'build',
                 branch: 'release'
             },
-            src: ['**/*','!production','!development']
+            src: ['!**/production/**','!**/development/**','**/*']
         },
         compile: {
             build: {
