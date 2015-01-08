@@ -151,7 +151,7 @@ export class UnitDomainMixin {
         var _domain = (dim, fnSort) => {
 
             if (!meta[dim]) {
-                return [null];
+                return [];
             }
 
             var fnMapperId = getValueMapper(dim);

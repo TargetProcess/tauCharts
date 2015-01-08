@@ -5,13 +5,13 @@ import {TMatrix} from '../matrix';
 
 var FacetAlgebra = {
 
-    'CROSS': function(root, dimX, dimY) {
+    'CROSS': function(root, dimX, domainX, dimY, domainY) {
 
-        var domainX = root.domain(dimX);
-        var domainY = root.domain(dimY).reverse();
+        var domX = domainX.length === 0 ? [null] : domainX;
+        var domY = domainY.length === 0 ? [null] : domainY.reverse();
 
-        return _(domainY).map((rowVal) => {
-            return _(domainX).map((colVal) => {
+        return _(domY).map((rowVal) => {
+            return _(domX).map((colVal) => {
 
                 var r = {};
 
@@ -46,7 +46,7 @@ var coords = {
         var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
         var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
-        var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.y));
+        var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.domain(root.x), root.y, root.domain(root.y)));
         var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
         matrixOfPrFilters.iterate((row, col, $whereRC) => {

@@ -116,6 +116,8 @@ define(function (require) {
                     new Date(data[2].time).getTime(),
                     new Date(data[0].time).getTime()
                 ]);
+
+            expect(unit.domain('non-existent-dim')).to.deep.equal([]);
         });
 
         it("should decorate with [scaleTo] method", function () {
