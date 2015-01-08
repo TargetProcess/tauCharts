@@ -145,16 +145,12 @@ module.exports = function (grunt) {
                         dest: 'build/README.md'
                     },
                     {
-                        src: 'css/graphic-elements.css',
-                        dest: 'build/development/css/tauCharts.graphic-elements.css'
+                        src: 'css/tauCharts.css',
+                        dest: 'build/development/css/tauCharts.css'
                     },
                     {
                         src: 'css/colorbrewer.css',
                         dest: 'build/development/css/tauCharts.colorbrewer.css'
-                    },
-                    {
-                        src: 'css/forms.css',
-                        dest: 'build/development/css/tauCharts.forms.css'
                     },
                     {
                         src: 'src/addons/color-brewer.js',
@@ -216,11 +212,11 @@ module.exports = function (grunt) {
                 },
                 files: {
                     "css/tooltip.css": "less/tooltip.less",
+                    "css/colorbrewer.css": "less/colorbrewer.less",
                     "css/base.css": "less/base.less",
-                    "css/graphic-elements.css": "less/graphic-elements.less",
+                    "css/tauCharts.css": "less/tauCharts.less",
                     "css/layout.css": "less/layout.less",
                     "css/legend.css": "less/legend.less",
-                    "css/forms.css": "less/forms.less",
                     "css/trendline.css": "less/trendline.less"
                 }
             }
