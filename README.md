@@ -15,7 +15,7 @@ http://api.taucharts.com/
 
 ##Usage:
 
-See [prototype](https://github.com/TargetProcess/tauCharts/tree/master/prototype) for some examples of usage
+See [prototype](https://github.com/TargetProcess/tauCharts/tree/master/examples) for some examples of usage
 
 ##license
 

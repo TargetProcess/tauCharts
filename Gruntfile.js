@@ -48,7 +48,7 @@ module.exports = function (grunt) {
                 base: 'build',
                 branch: 'release'
             },
-            src: ['!**/production/**','!**/development/**','**/*']
+            src: ['**/*']
         },
         compile: {
             build: {
@@ -220,6 +220,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+        clean: ['build/production/', 'build/development/'],
         bowercopy: {
             options: {
                 // clean: true
@@ -265,10 +266,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-gh-pages');
     grunt.loadNpmTasks('grunt-contrib-rename');
+    grunt.loadNpmTasks('grunt-contrib-clean');
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
-    grunt.registerTask('build', ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin','copy:copybuild', 'gh-pages']);
+    grunt.registerTask('build', ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin','copy:copybuild', 'clean', 'gh-pages']);
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);
 };
