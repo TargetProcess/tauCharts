@@ -98,6 +98,10 @@ module.exports = function (grunt) {
                     {
                         src: 'build/production/tauCharts.min.css',
                         dest: 'build/production/tauCharts.min.css'
+                    },
+                    {
+                        src: 'css/base.css',
+                        dest: 'build/production/tauCharts.normalize.min.css'
                     }
                 ]
             }
@@ -139,6 +143,10 @@ module.exports = function (grunt) {
                     {
                         src: 'license.md',
                         dest: 'build/license.md'
+                    },
+                    {
+                        src: 'License.txt',
+                        dest: 'build/license.txt'
                     },
                     {
                         src: 'README.md',

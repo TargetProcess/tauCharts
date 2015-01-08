@@ -11,12 +11,12 @@
     "build/tauCharts.js",
     "build/css/tauCharts.graphic-elements.css"
   ],
-  "license": "MIT",
+  "license": "Apache License 2.0",
   "private": false,
   "ignore": [
     "/*",
     "!build/**",
-    "!License.txt"
+    "!license.txt"
   ],
   "dependencies": {
     "d3": "~3.4.3",

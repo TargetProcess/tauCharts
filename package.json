@@ -12,8 +12,8 @@
   ],
   "licenses": [
     {
-      "type": "Creative Commons",
-      "url": "https://github.com/TargetProcess/tauCharts/blob/master/LICENSE.txt"
+      "type": "Apache License 2.0",
+      "url": "https://github.com/TargetProcess/tauCharts/blob/master/license.md"
     }
   ],
   "dependencies": {
