@@ -2989,7 +2989,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
       var _domain = function (dim, fnSort) {
         if (!meta[dim]) {
-          return [null];
+          return [];
         }
 
         var fnMapperId = getValueMapper(dim);
@@ -3934,12 +3934,12 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
 
 
   var FacetAlgebra = {
-    CROSS: function (root, dimX, dimY) {
-      var domainX = root.domain(dimX);
-      var domainY = root.domain(dimY).reverse();
+    CROSS: function (root, dimX, domainX, dimY, domainY) {
+      var domX = domainX.length === 0 ? [null] : domainX;
+      var domY = domainY.length === 0 ? [null] : domainY.reverse();
 
-      return _(domainY).map(function (rowVal) {
-        return _(domainX).map(function (colVal) {
+      return _(domY).map(function (rowVal) {
+        return _(domX).map(function (colVal) {
           var r = {};
 
           if (dimX) {
@@ -3977,7 +3977,7 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
       });
       var unitFunc = TFuncMap(isFacet ? "CROSS" : "");
 
-      var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.y));
+      var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.domain(root.x), root.y, root.domain(root.y)));
       var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
       matrixOfPrFilters.iterate(function (row, col, $whereRC) {
