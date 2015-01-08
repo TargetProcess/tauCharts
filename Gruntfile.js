@@ -31,15 +31,30 @@ module.exports = function(grunt) {
                 stripBanners: true
             },
             dist: {
-                src: ['build/tauCharts.js'],
-                dest: 'build/tauCharts.js'
-            }
+                src: ['build/development/tauCharts.js'],
+                dest: 'build/development/tauCharts.js'
+            },
+            prodJS:{
+                src:['build/development/tauCharts.js','build/development/plugins/*.js'],
+                dest:'build/production/tauCharts.min.js'
+            }/*,
+            prodCSS:{
+                src:['build/tauCharts.js','plugins*//*.js'],
+                dest:'build/production/tauCharts.min.js'
+            }*/
+        },
+        'gh-pages':{
+            options:{
+                base:'dist',
+                branch: 'release'
+            },
+            src:['**/*']
         },
         compile: {
             build: {
                 cwd: "src/",
                 src: src,
-                dest: "build/tauCharts.js"
+                dest: "build/development/tauCharts.js"
             },
             dev: {
                 cwd: "src/",
@@ -133,43 +148,43 @@ module.exports = function(grunt) {
                 files: [
                     {
                         src: 'css/graphic-elements.css',
-                        dest: 'build/css/<%= pkg.name %>.graphic-elements.css'
+                        dest: 'build/development/css/<%= pkg.name %>.graphic-elements.css'
                     },
                     {
                         src: 'css/colorbrewer.css',
-                        dest: 'build/css/<%= pkg.name %>.colorbrewer.css'
+                        dest: 'build/development/css/<%= pkg.name %>.colorbrewer.css'
                     },
                     {
                         src: 'css/forms.css',
-                        dest: 'build/css/<%= pkg.name %>.forms.css'
+                        dest: 'build/development/css/<%= pkg.name %>.forms.css'
                     },
                     {
                         src: 'src/addons/color-brewer.js',
-                        dest: 'build/<%= pkg.name %>.color-brewer.js'
+                        dest: 'build/development/<%= pkg.name %>.color-brewer.js'
                     },
                     {
                         src: 'plugins/tooltip.js',
-                        dest: 'build/plugins/<%= pkg.name %>.tooltip.js'
+                        dest: 'build/development/plugins/<%= pkg.name %>.tooltip.js'
                     },
                     {
                         src: 'plugins/legend.js',
-                        dest: 'build/plugins/<%= pkg.name %>.legend.js'
+                        dest: 'build/development/plugins/<%= pkg.name %>.legend.js'
                     },
                     {
                         src: 'plugins/trendline.js',
-                        dest: 'build/plugins/<%= pkg.name %>.trendline.js'
+                        dest: 'build/development/plugins/<%= pkg.name %>.trendline.js'
                     },
                     {
                         src: 'css/tooltip.css',
-                        dest: 'build/plugins/<%= pkg.name %>.tooltip.css'
+                        dest: 'build/development/plugins/<%= pkg.name %>.tooltip.css'
                     },
                     {
                         src: 'css/legend.css',
-                        dest: 'build/plugins/<%= pkg.name %>.legend.css'
+                        dest: 'build/development/plugins/<%= pkg.name %>.legend.css'
                     },
                     {
                         src: 'css/trendline.css',
-                        dest: 'build/plugins/<%= pkg.name %>.trendline.css'
+                        dest: 'build/development/plugins/<%= pkg.name %>.trendline.css'
                     }
                 ]
             }
@@ -255,11 +270,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-bowercopy');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-gh-pages');
 
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
-    grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat', 'uglify', 'shell:gitadd']);
+    grunt.registerTask('build', ['bowercopy', 'less', 'copy', 'cssmin', 'compile:build', 'concat:dist','concat:prod', 'uglify'/*,'gh-pages'*/]);
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);
 };
