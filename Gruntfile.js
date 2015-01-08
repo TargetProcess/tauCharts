@@ -271,7 +271,9 @@ module.exports = function (grunt) {
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
-    grunt.registerTask('build', ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin','copy:copybuild', 'clean', 'gh-pages']);
+    var buildWithoutPublish = ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin'];
+    grunt.registerTask('build', buildWithoutPublish);
+    grunt.registerTask('publish', buildWithoutPublish.concat(['copy:copybuild', 'clean', 'gh-pages']));
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'compile:build', 'karma:travis']);
     grunt.registerTask('watching', ['default']);
 };
