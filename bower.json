@@ -8,8 +8,8 @@
     "charts"
   ],
   "main": [
-    "build/tauCharts.js",
-    "build/css/tauCharts.graphic-elements.css"
+    "build/production/tauCharts.min.js",
+    "build/production/tauCharts.min.css"
   ],
   "license": "Apache License 2.0",
   "private": false,
