@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.0 - 2015-01-08
+/*! taucharts - v0.3.0 - 2015-01-12
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -3036,7 +3036,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
         var fVal = (fValHub[fKey] || fValHub["*"])(opts);
 
         var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
-        var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
+        var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : originalValues;
         return {
           extract: function (x) {
             return fVal(fMap(x));
@@ -3938,16 +3938,20 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
       var domX = domainX.length === 0 ? [null] : domainX;
       var domY = domainY.length === 0 ? [null] : domainY.reverse();
 
+      var convert = function (v) {
+        return (v instanceof Date) ? v.getTime() : v;
+      };
+
       return _(domY).map(function (rowVal) {
         return _(domX).map(function (colVal) {
           var r = {};
 
           if (dimX) {
-            r[dimX] = colVal;
+            r[dimX] = convert(colVal);
           }
 
           if (dimY) {
-            r[dimY] = rowVal;
+            r[dimY] = convert(rowVal);
           }
 
           return r;
@@ -3977,7 +3981,9 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
       });
       var unitFunc = TFuncMap(isFacet ? "CROSS" : "");
 
-      var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.domain(root.x), root.y, root.domain(root.y)));
+      var domainX = root.scaleMeta(root.x, root.guide.x).values;
+      var domainY = root.scaleMeta(root.y, root.guide.y).values;
+      var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, domainX, root.y, domainY));
       var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
       matrixOfPrFilters.iterate(function (row, col, $whereRC) {
