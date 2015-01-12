@@ -6,6 +6,7 @@ define(function (require) {
     var testUtils = require('testUtils');
     var getGroupBar = testUtils.getGroupBar;
     var attrib = testUtils.attrib;
+    var _ = require('underscore');
     var testData = [
         {x: 'a', y: 1, color: 'red', size: 6},
         {x: 'b', y: 0.5, color: 'green', size: 6},
@@ -25,10 +26,11 @@ define(function (require) {
      }*/
 
     var describePlot = testUtils.describePlot;
+    var describeChart = testUtils.describeChart;
     var expectCoordsElement = function (expect, coords) {
         var bars = getGroupBar();
 
-        var convertToFixed = function(x) {
+        var convertToFixed = function (x) {
             return parseFloat(x).toFixed(4);
         };
 
@@ -395,7 +397,7 @@ define(function (require) {
                     "x": {
                         "label": "Create Date",
                         "autoScale": true,
-                        "tickFormat":"%j",
+                        "tickFormat": "%j",
                         "tickPeriod": "day"
                     }
                 },
@@ -455,13 +457,13 @@ define(function (require) {
                         "label": "Create Date",
                         "autoScale": true,
                         "tickPeriod": "day",
-                        "tickFormat":"%j"
+                        "tickFormat": "%j"
                     }
                 },
                 unit: [
                     {
                         type: 'ELEMENT.INTERVAL',
-                        flip:true
+                        flip: true
                     }
                 ]
             }
@@ -507,8 +509,8 @@ define(function (require) {
                 x: 'count',
                 y: 'time',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -518,9 +520,9 @@ define(function (require) {
             }
         },
         [
-            { time: testUtils.toLocalDate('2014-02-03'), count: 0 },
-            { time: testUtils.toLocalDate('2014-02-02'), count: 5 },
-            { time: testUtils.toLocalDate('2014-02-01'), count: 10 }
+            {time: testUtils.toLocalDate('2014-02-03'), count: 0},
+            {time: testUtils.toLocalDate('2014-02-02'), count: 5},
+            {time: testUtils.toLocalDate('2014-02-01'), count: 10}
         ],
         function () {
             it("should group contain interval element", function () {
@@ -562,8 +564,8 @@ define(function (require) {
                 y: 'count',
                 x: 'time',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -574,9 +576,9 @@ define(function (require) {
             }
         },
         [
-            { time: testUtils.toLocalDate('2014-02-03'), count: 0 },
-            { time: testUtils.toLocalDate('2014-02-02'), count: 5 },
-            { time: testUtils.toLocalDate('2014-02-01'), count: 10 }
+            {time: testUtils.toLocalDate('2014-02-03'), count: 0},
+            {time: testUtils.toLocalDate('2014-02-02'), count: 5},
+            {time: testUtils.toLocalDate('2014-02-01'), count: 10}
         ],
         function () {
             it("should group contain interval element", function () {
@@ -618,8 +620,8 @@ define(function (require) {
                 y: 'count',
                 x: 'time',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -629,13 +631,13 @@ define(function (require) {
             }
         },
         [
-            { time: testUtils.toLocalDate('2014-02-01'), count: 1000 },
-            { time: testUtils.toLocalDate('2014-02-02'), count: 500 },
-            { time: testUtils.toLocalDate('2014-02-03'), count: 1 },
-            { time: testUtils.toLocalDate('2014-02-04'), count: 0 },
-            { time: testUtils.toLocalDate('2014-02-05'), count: -1 },
-            { time: testUtils.toLocalDate('2014-02-06'), count: -500 },
-            { time: testUtils.toLocalDate('2014-02-07'), count: -1000 }
+            {time: testUtils.toLocalDate('2014-02-01'), count: 1000},
+            {time: testUtils.toLocalDate('2014-02-02'), count: 500},
+            {time: testUtils.toLocalDate('2014-02-03'), count: 1},
+            {time: testUtils.toLocalDate('2014-02-04'), count: 0},
+            {time: testUtils.toLocalDate('2014-02-05'), count: -1},
+            {time: testUtils.toLocalDate('2014-02-06'), count: -500},
+            {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
         ],
         function () {
             it("should group contain interval element", function () {
@@ -694,8 +696,8 @@ define(function (require) {
                 x: 'count',
                 y: 'time',
                 guide: {
-                    x: { autoScale: false },
-                    y: { autoScale: false }
+                    x: {autoScale: false},
+                    y: {autoScale: false}
                 },
                 unit: [
                     {
@@ -706,13 +708,13 @@ define(function (require) {
             }
         },
         [
-            { time: testUtils.toLocalDate('2014-02-01'), count: 1000 },
-            { time: testUtils.toLocalDate('2014-02-02'), count: 500 },
-            { time: testUtils.toLocalDate('2014-02-03'), count: 1 },
-            { time: testUtils.toLocalDate('2014-02-04'), count: 0 },
-            { time: testUtils.toLocalDate('2014-02-05'), count: -1 },
-            { time: testUtils.toLocalDate('2014-02-06'), count: -500 },
-            { time: testUtils.toLocalDate('2014-02-07'), count: -1000 }
+            {time: testUtils.toLocalDate('2014-02-01'), count: 1000},
+            {time: testUtils.toLocalDate('2014-02-02'), count: 500},
+            {time: testUtils.toLocalDate('2014-02-03'), count: 1},
+            {time: testUtils.toLocalDate('2014-02-04'), count: 0},
+            {time: testUtils.toLocalDate('2014-02-05'), count: -1},
+            {time: testUtils.toLocalDate('2014-02-06'), count: -500},
+            {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
         ],
         function () {
             it("should group contain interval element", function () {
@@ -753,4 +755,44 @@ define(function (require) {
                 });
             });
         });
+
+    describeChart("legend should toggle by color",
+        {
+            type: 'bar',
+            x: ['type', 'y'],
+            y: 'x',
+            color: 'color'
+        },
+        [{
+            x: 2,
+            y: "2",
+            type: true,
+            color: 'yellow'
+
+        }, {
+            x: 2,
+            y: "4",
+            type: false,
+            color: 'yellow'
+
+        }, {
+            x: 3,
+            y: "4",
+            type: false,
+            color: 'green'
+
+        }],
+        function (context) {
+            it("all bar for facet chart should have equal width", function () {
+                var svg = context.chart.getSVG();
+                var width = _.map(svg.querySelectorAll('.i-role-element'), function (item) {
+                    return item.getAttribute('width');
+                });
+                expect(_.unique(width).length).to.equals(1);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
