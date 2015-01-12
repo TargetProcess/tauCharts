@@ -4201,8 +4201,9 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   };
 
   var getSizesParams = function (params) {
-    var tickWidth = params.size / (params.domain().length);
-    var intervalWidth = tickWidth / (params.categories.length + 1);
+    var countGroup = params.domain().length;
+    var tickWidth = params.size / (countGroup);
+    var intervalWidth = tickWidth / (countGroup + 1);
     return {
       tickWidth: tickWidth,
       intervalWidth: intervalWidth,

@@ -133,20 +133,20 @@
         /** @class Tooltip
          * @extends Plugin */
         var dat = [
-            {x: 1, y: 2, type: true, t: 'x'},
-            {x: 2, y: 4, type: false, t: 'x'},
-            {x: 3, y: 4, type: false, t: 'x'},
-            {x: 4, y: 4, type: false, t: 'x'},
-            {x: 5, y: 4, type: false, t: 'x'},
-            {x: 6, y: 4, type: false, t: 'x'},
-            {x: 7, y: 4, type: false, t: 'x'},
-            {x: 8, y: 2, type: true, t: 'x'},
-            {x: 9, y: 2, type: true, t: 'x'},
-            {x: 10, y: 2, type: true, t: 'x'},
-            {x: 11, y: 2, type: true, t: 'x'},
-            {x: 12, y: 2, type: true, t: 'x'},
-            {x: 13, y: 2, type: true, t: 'x'},
-            {x: 13, y: 6, type: true, t: 'x'}
+            {x: "1", y: 2, type: true, t: 'x'},
+            {x: "2", y: 4, type: false, t: 'x'},
+            {x: "3", y: 4, type: false, t: 'x'},
+            {x: "4", y: 4, type: false, t: 'x'},
+            {x: "5", y: 4, type: false, t: 'x'},
+            {x: "6", y: 4, type: false, t: 'x'},
+            {x: "7", y: 4, type: false, t: 'x'},
+            {x: "8", y: 2, type: false, t: 'x'},
+            {x: "9", y: 2, type: false, t: 'x'},
+            {x: "10", y: 2, type: false, t: 'x'},
+            {x: "11", y: 2, type: false, t: 'x'},
+            {x: "12", y: 2, type: false, t: 'x'},
+            {x: "13", y: 2, type: false, t: 'x'},
+            {x: "13", y: 6, type: false, t: 'x'}
         ];
        /* for (var i = -6.14; i <= 6.14; i += 0.5) {
             dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
@@ -228,7 +228,7 @@
                     }
                 }), tauCharts.api.plugins.get('legend')(),tauCharts.api.plugins.get('trendline')()],
                 y: ['y'],
-                x: ['t','x'],
+                x: ['type','x'],
                 color: 'x',
                 guide:[{
                     y: {
