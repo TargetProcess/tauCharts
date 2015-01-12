@@ -99,7 +99,7 @@ define(function (require) {
         function (context) {
             it("shouldn't render spec", function (done) {
                 var chart = context.chart;
-                var item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__item')[0];
+                var item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__guide.color10-1')[0].parentNode;
                 expect(chart.getSVG().querySelectorAll('.color10-1').length).to.be.equals(1);
                 testUtils.simulateEvent('click',item1);
                 var svg = chart.getSVG();
