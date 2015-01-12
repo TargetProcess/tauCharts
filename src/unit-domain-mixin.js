@@ -195,7 +195,7 @@ export class UnitDomainMixin {
             var fVal = (fValHub[fKey] || fValHub['*'])(opts);
 
             var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
-            var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
+            var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : originalValues;
             return {
                 extract: (x) => fVal(fMap(x)),
                 values: autoScaledVals,

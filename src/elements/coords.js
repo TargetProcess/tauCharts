@@ -10,17 +10,19 @@ var FacetAlgebra = {
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY.reverse();
 
+        var convert = (v) => (v instanceof Date) ? v.getTime() : v;
+
         return _(domY).map((rowVal) => {
             return _(domX).map((colVal) => {
 
                 var r = {};
 
                 if (dimX) {
-                    r[dimX] = colVal;
+                    r[dimX] = convert(colVal);
                 }
 
                 if (dimY) {
-                    r[dimY] = rowVal;
+                    r[dimY] = convert(rowVal);
                 }
 
                 return r;
@@ -46,7 +48,9 @@ var coords = {
         var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
         var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
-        var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.domain(root.x), root.y, root.domain(root.y)));
+        var domainX = root.scaleMeta(root.x, root.guide.x).values;
+        var domainY = root.scaleMeta(root.y, root.guide.y).values;
+        var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, domainX, root.y, domainY));
         var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
         matrixOfPrFilters.iterate((row, col, $whereRC) => {
