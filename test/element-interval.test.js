@@ -756,7 +756,7 @@ define(function (require) {
             });
         });
 
-    describeChart("legend should toggle by color",
+    describeChart("interval width for facet",
         {
             type: 'bar',
             x: ['type', 'y'],
@@ -790,6 +790,37 @@ define(function (require) {
                 });
                 expect(_.unique(width).length).to.equals(1);
             });
+        },
+        {
+            autoWidth: false
+        }
+    );
+
+    describeChart("interval offset should right if color dim not defined",
+        {
+            type: 'bar',
+            x: 'y',
+            y: 'x'
+        },
+        [{
+            x: 2,
+            y: "2"
+        }, {
+            x: 2,
+            y: "4"
+        }, {
+            x: 3,
+            y: "5"
+        }],
+        function (context) {
+                it('test position',function(){
+                    var svg = context.chart.getSVG();
+                    var offsets = _.map(svg.querySelectorAll('.i-role-bar-group'), function (item) {
+                        return item.getAttribute('transform');
+                    });
+                    expect(offsets).to.eql(["translate(66.66666666666667,0)"]);
+                });
+
         },
         {
             autoWidth: false

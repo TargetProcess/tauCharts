@@ -6,9 +6,10 @@ const BAR_GROUP = 'i-role-bar-group';
 var isMeasure = (dim) => dim.dimType === 'measure';
 
 var getSizesParams = (params) => {
-    var countGroup = params.domain().length;
-    var tickWidth = params.size / ( countGroup);
-    var intervalWidth = tickWidth / (countGroup + 1);
+    var countDomainValue = params.domain().length;
+    var countCategory = params.isCategory ? countDomainValue : 1;
+    var tickWidth = params.size / countDomainValue;
+    var intervalWidth = tickWidth / (countCategory + 1);
     return {
         tickWidth,
         intervalWidth,
@@ -18,7 +19,7 @@ var getSizesParams = (params) => {
 
 var flipHub = {
 
-    NORM: (node, xScale, yScale, width, height, categories, defaultSizeParams) => {
+    NORM: (node, xScale, yScale, width, height, defaultSizeParams, isCategory) => {
         let minimalHeight = 1;
         let yMin = Math.min(...yScale.domain());
         let isYNumber = !isNaN(yMin);
@@ -29,7 +30,7 @@ var flipHub = {
             defaultSizeParams :
             getSizesParams({
                 domain: xScale.domain,
-                categories: categories,
+                isCategory: isCategory,
                 size: width
             });
 
@@ -58,7 +59,7 @@ var flipHub = {
         return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
 
-    FLIP: (node, xScale, yScale, width, height, categories, defaultSizeParams) => {
+    FLIP: (node, xScale, yScale, width, height, defaultSizeParams, isCategory) => {
         let minimalHeight = 1;
         let xMin = Math.min(...xScale.domain());
         let isXNumber = !isNaN(xMin);
@@ -69,7 +70,7 @@ var flipHub = {
             defaultSizeParams :
             getSizesParams({
                 domain: yScale.domain,
-                categories: categories,
+                isCategory: isCategory,
                 size: height
             });
 
@@ -116,12 +117,13 @@ var interval = function (node) {
         yScale,
         options.width,
         options.height,
-        categories,
         {
             tickWidth: 5,
             intervalWidth: 5,
             offsetCategory: 0
-        });
+        },
+        color.dimension
+    );
 
     var updateBar = function () {
         return this
