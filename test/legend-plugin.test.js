@@ -9,10 +9,12 @@ define(function (require) {
         expect(legendBlock).to.be.ok;
         expect(legendBlock.querySelector('.graphical-report__legend__title').textContent).to.equal('color');
         var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
-        expect(nodeList[0].parentNode.textContent).to.equal('yellow');
+        expect(nodeList[0].parentNode.textContent).to.equal('No color');
         expect(nodeList[0].classList.contains('color10-1')).to.be.ok;
-        expect(nodeList[1].parentNode.textContent).to.equal('green');
+        expect(nodeList[1].parentNode.textContent).to.equal('yellow');
         expect(nodeList[1].classList.contains('color10-2')).to.be.ok;
+        expect(nodeList[2].parentNode.textContent).to.equal('green');
+        expect(nodeList[2].classList.contains('color10-3')).to.be.ok;
     };
     var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
     chartType.forEach(function (item) {
@@ -26,6 +28,11 @@ define(function (require) {
                 plugins: [legend()]
             },
             [{
+                x: 2,
+                y: 2,
+                color: null
+
+            },{
                 x: 2,
                 y: 2,
                 color: 'yellow'
@@ -146,6 +153,34 @@ define(function (require) {
         function (context) {
             it("shouldn't render spec", function () {
                 AssertToogleOnClick(context,expect);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+
+    describeChart(
+        "legend should have right label for null value",
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            plugins: [legend()]
+        },
+        [{
+            x: 2,
+            y: 2,
+            color: undefined
+
+        }],
+        function (context) {
+            it("should No color", function () {
+                var sidebar = context.chart._layout.rightSidebar;
+                var legendBlock = sidebar.querySelector('.graphical-report__legend');
+                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                expect(nodeList[0].parentNode.textContent).to.equal('No color');
             });
         },
         {

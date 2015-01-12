@@ -134,10 +134,11 @@
                     var data = _.reduce(colorMap.values, function (data, item) {
                         var originValue = {dimension: colorDimension, value: item.value, color: item.color};
                         var value = JSON.stringify(originValue);
+                        var label = _.escape(item.value != null ? item.value : 'No ' + colorDimension);
                         data.items.push(this._itemTemplate({
                             color: item.color,
                             classDisabled: this._currentFilters[value] ? 'disabled' : '',
-                            label: _.escape(item.value),
+                            label: label,
                             value: value
                         }));
                         data.storageValues[value] = originValue;
