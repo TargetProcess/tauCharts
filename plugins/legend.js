@@ -75,7 +75,7 @@
             _toggleLegendItem: function (target, chart) {
                 var value = target.getAttribute('data-value');
                 var currentFilterID = this._currentFilters[value];
-                if (currentFilterID) {
+                if (currentFilterID !== undefined) {
                     this._currentFilters[value] = null;
                     target.classList.remove('disabled');
                     chart.removeFilter(currentFilterID);
