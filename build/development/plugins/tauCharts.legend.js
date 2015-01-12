@@ -74,9 +74,10 @@
             },
             _toggleLegendItem: function (target, chart) {
                 var value = target.getAttribute('data-value');
-                var currentFilterID = this._currentFilters[value];
-                if (currentFilterID !== undefined) {
-                    this._currentFilters[value] = null;
+
+                if (this._currentFilters.hasOwnProperty(value)) {
+                    var currentFilterID = this._currentFilters[value];
+                    delete this._currentFilters[value];
                     target.classList.remove('disabled');
                     chart.removeFilter(currentFilterID);
                 } else {
@@ -91,9 +92,8 @@
                     target.classList.add('disabled');
                     this._currentFilters[value] = chart.addFilter(filter);
                 }
-
-
             },
+
             _isNeedLegend: function (chart) {
                 var conf = chart.getConfig();
                 return Boolean(dfs(conf.spec.unit));
@@ -134,10 +134,11 @@
                     var data = _.reduce(colorMap.values, function (data, item) {
                         var originValue = {dimension: colorDimension, value: item.value, color: item.color};
                         var value = JSON.stringify(originValue);
+                        var label = _.escape(item.value != null ? item.value : 'No ' + colorDimension);
                         data.items.push(this._itemTemplate({
                             color: item.color,
                             classDisabled: this._currentFilters[value] ? 'disabled' : '',
-                            label: _.escape(item.value),
+                            label: label,
                             value: value
                         }));
                         data.storageValues[value] = originValue;

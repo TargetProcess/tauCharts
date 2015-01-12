@@ -133,7 +133,7 @@
         /** @class Tooltip
          * @extends Plugin */
         var dat = [
-            {x: "1", y: 2, type: true, t: 'x'},
+           /* {x: undefined, y: 2, type: true, t: 'x'},
             {x: "2", y: 4, type: false, t: 'x'},
             {x: "3", y: 4, type: false, t: 'x'},
             {x: "4", y: 4, type: false, t: 'x'},
@@ -145,8 +145,9 @@
             {x: "10", y: 2, type: false, t: 'x'},
             {x: "11", y: 2, type: false, t: 'x'},
             {x: "12", y: 2, type: false, t: 'x'},
-            {x: "13", y: 2, type: false, t: 'x'},
-            {x: "13", y: 6, type: false, t: 'x'}
+            {x: "13", y: 2, type: false, t: 'x'},*/
+            {x: "13", y: 6, type: false, t: 'x'},
+            {x: "15", y: 6, type: false, t: 'x'}
         ];
        /* for (var i = -6.14; i <= 6.14; i += 0.5) {
             dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
@@ -227,12 +228,12 @@
                         }
                     }
                 }), tauCharts.api.plugins.get('legend')(),tauCharts.api.plugins.get('trendline')()],
-                y: ['y'],
-                x: ['type','x'],
-                color: 'x',
+                y: ['x'],
+                x: ['y'],
+               // color: 'x',
                 guide:[{
                     y: {
-                        label:'mylabel'
+                        label:'Day of Mounth'
                     },
                     color:{
                         label:'dfsa'

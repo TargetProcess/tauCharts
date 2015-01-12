@@ -1858,36 +1858,59 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     return "color10-" + (1 + i);
   });
   var generateColor = function (node) {
-    var range, domain;
+    var getClass;
     var colorGuide = node.guide.color || {};
-    var colorParam = node.color;
+    var colorDim = node.color.scaleDim;
+    var defaultColorClass = _.constant("color-default");
 
-    var colorDim = colorParam.scaleDim;
-    var brewer = colorGuide.brewer || defaultRangeColor;
-
-    if (utils.isArray(brewer)) {
-      domain = node.domain(colorDim).map(function (x) {
-        return String(x).toString();
-      });
-      range = brewer;
-    } else {
-      domain = Object.keys(brewer);
-      range = domain.map(function (key) {
-        return brewer[key];
-      });
-    }
-    var calculateClass = d3.scale.ordinal().range(range).domain(domain);
-    var getClass = function (d) {
-      return domain.indexOf(d) > -1 ? calculateClass(d) : "color-default";
+    var buildArrayGetClass = function (brewer) {
+      var domain = node.domain(colorDim);
+      if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
+        return defaultColorClass;
+      } else {
+        var fullDomain = domain.map(function (x) {
+          return String(x).toString();
+        });
+        return d3.scale.ordinal().range(brewer).domain(fullDomain);
+      }
     };
 
+    var buildObjectGetClass = function (brewer, defaultGetClass) {
+      var domain = _.keys(brewer);
+      var range = _.values(brewer);
+      var calculateClass = d3.scale.ordinal().range(range).domain(domain);
+      return function (d) {
+        return brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
+      };
+    };
+
+    var wrapString = function (f) {
+      return function (d) {
+        return f(String(d).toString());
+      };
+    };
+
+    var brewer = colorGuide.brewer;
+    if (!brewer) {
+      getClass = wrapString(buildArrayGetClass(defaultRangeColor));
+    } else if (_.isArray(brewer)) {
+      getClass = wrapString(buildArrayGetClass(brewer));
+    } else if (_.isFunction(brewer)) {
+      getClass = function (d) {
+        return brewer(d, wrapString(buildArrayGetClass(defaultRangeColor)));
+      };
+    } else if (_.isObject(brewer)) {
+      getClass = buildObjectGetClass(brewer, defaultColorClass);
+    } else {
+      throw new Error("This brewer is not supported");
+    }
+
     return {
-      get: function (d) {
-        return getClass(String(d).toString());
-      },
+      get: getClass,
       dimension: colorDim
     };
   };
+
   var extendLabel = function (guide, dimension, extend) {
     guide[dimension] = _.defaults(guide[dimension] || {}, {
       label: ""
@@ -3076,9 +3099,15 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
         return unit.data || unit.source(unit.$where);
       });
       unit.groupBy = (function (srcValues, splitByProperty) {
-        return d3.nest().key(function (d) {
-          return d[splitByProperty];
-        }).entries(srcValues);
+        var varMeta = unit.scaleMeta(splitByProperty);
+        return _.chain(srcValues).groupBy(function (item) {
+          return varMeta.extract(item[splitByProperty]);
+        }).map(function (values) {
+          return ({
+            key: varMeta.extract(values[0][splitByProperty]),
+            values: values
+          });
+        }).value();
       });
       return unit;
     };
@@ -4201,9 +4230,10 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   };
 
   var getSizesParams = function (params) {
-    var countGroup = params.domain().length;
-    var tickWidth = params.size / (countGroup);
-    var intervalWidth = tickWidth / (countGroup + 1);
+    var countDomainValue = params.domain().length;
+    var countCategory = params.isCategory ? countDomainValue : 1;
+    var tickWidth = params.size / countDomainValue;
+    var intervalWidth = tickWidth / (countCategory + 1);
     return {
       tickWidth: tickWidth,
       intervalWidth: intervalWidth,
@@ -4212,7 +4242,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   };
 
   var flipHub = {
-    NORM: function (node, xScale, yScale, width, height, categories, defaultSizeParams) {
+    NORM: function (node, xScale, yScale, width, height, defaultSizeParams, isCategory) {
       var minimalHeight = 1;
       var yMin = Math.min.apply(Math, _toArray(yScale.domain()));
       var isYNumber = !isNaN(yMin);
@@ -4221,7 +4251,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
       var _ref = isXNumber ? defaultSizeParams : getSizesParams({
         domain: xScale.domain,
-        categories: categories,
+        isCategory: isCategory,
         size: width
       });
       var tickWidth = _ref.tickWidth;
@@ -4260,7 +4290,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       return { calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
     },
 
-    FLIP: function (node, xScale, yScale, width, height, categories, defaultSizeParams) {
+    FLIP: function (node, xScale, yScale, width, height, defaultSizeParams, isCategory) {
       var minimalHeight = 1;
       var xMin = Math.min.apply(Math, _toArray(xScale.domain()));
       var isXNumber = !isNaN(xMin);
@@ -4269,7 +4299,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
       var _ref2 = isYNumber ? defaultSizeParams : getSizesParams({
         domain: yScale.domain,
-        categories: categories,
+        isCategory: isCategory,
         size: height
       });
       var tickWidth = _ref2.tickWidth;
@@ -4315,11 +4345,11 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
     var categories = node.groupBy(node.partition(), color.dimension);
     var method = flipHub[node.flip ? "FLIP" : "NORM"];
-    var _ref3 = method(node, xScale, yScale, options.width, options.height, categories, {
+    var _ref3 = method(node, xScale, yScale, options.width, options.height, {
       tickWidth: 5,
       intervalWidth: 5,
       offsetCategory: 0
-    });
+    }, color.dimension);
 
     var calculateX = _ref3.calculateX;
     var calculateY = _ref3.calculateY;
