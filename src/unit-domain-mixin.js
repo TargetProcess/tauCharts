@@ -227,7 +227,14 @@ export class UnitDomainMixin {
         unit.scaleTo = this.fnScaleTo;
         unit.partition = (() => unit.data || unit.source(unit.$where));
         unit.groupBy = ((srcValues, splitByProperty) => {
-            return d3.nest().key((d) => d[splitByProperty]).entries(srcValues);
+            var varMeta = unit.scaleMeta(splitByProperty);
+            return _.chain(srcValues)
+                .groupBy((item) => varMeta.extract(item[splitByProperty]))
+                .map((values) => ({
+                    key: varMeta.extract(values[0][splitByProperty]),
+                    values: values
+                }))
+                .value();
         });
         return unit;
     }

@@ -85,20 +85,32 @@ define(function (require) {
     );
     var AssertToogleOnClick = function (context, expect) {
         var chart = context.chart;
-        var item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__guide.color10-1')[0].parentNode;
-        expect(chart.getSVG().querySelectorAll('.color10-1').length).to.be.equals(1);
-        testUtils.simulateEvent('click', item1);
-        var svg = chart.getSVG();
-        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(0);
-        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
-        item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__guide.color10-1')[0].parentNode;
-        expect(item1.classList.contains('disabled')).to.be.ok;
-        expect(item1.querySelectorAll('.color10-1').length).to.be.ok;
-        testUtils.simulateEvent('click', item1);
+        var item1;
+        var svg;
+        var selector = '.graphical-report__legend__guide.color10-1';
+
+        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
+
         svg = chart.getSVG();
         expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
-        expect(item1.classList.contains('disabled')).not.be.ok;
+        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
 
+        testUtils.simulateEvent('click', item1);
+
+        svg = chart.getSVG();
+        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(0);
+        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+
+        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
+        expect(item1.classList.contains('disabled')).to.be.ok;
+        expect(item1.querySelectorAll('.color10-1').length).to.be.equals(1);
+
+        testUtils.simulateEvent('click', item1);
+
+        svg = chart.getSVG();
+        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
+        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+        expect(item1.classList.contains('disabled')).not.be.ok;
     };
     describeChart(
         "legend should toggle by color",
