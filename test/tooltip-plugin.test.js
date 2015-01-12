@@ -152,7 +152,6 @@ define(function (require) {
                 color: 'color',
                 plugins: [tooltip({
                     getFields: function(chart) {
-                        debugger;
                         expect(chart).to.be.ok;
 
                         if (chart.getData()[0].x === 2) {

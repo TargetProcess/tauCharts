@@ -3,7 +3,7 @@ define(function (require) {
     var testUtils = require('testUtils');
     var legend = require('plugins/legend');
     var describeChart = testUtils.describeChart;
-    var expectLegend = function(expect, chart) {
+    var expectLegend = function (expect, chart) {
         var sidebar = chart._layout.rightSidebar;
         var legendBlock = sidebar.querySelector('.graphical-report__legend');
         expect(legendBlock).to.be.ok;
@@ -14,8 +14,8 @@ define(function (require) {
         expect(nodeList[1].parentNode.textContent).to.equal('green');
         expect(nodeList[1].classList.contains('color10-2')).to.be.ok;
     };
-    var chartType = ['scatterplot','line','bar','horizontalBar'];
-    chartType.forEach(function(item){
+    var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
+    chartType.forEach(function (item) {
         describeChart(
             "legend for " + item,
             {
@@ -52,7 +52,7 @@ define(function (require) {
             type: 'line',
             x: 'x',
             y: 'y',
-           // color: 'color',
+            // color: 'color',
             plugins: [legend()]
         },
         [{
@@ -69,13 +69,30 @@ define(function (require) {
         function (context) {
             it("shouldn't render spec", function () {
                 expect(context.chart._layout.rightSidebar.childNodes.length).to.not.be.ok;
-               // expectLegend(expect, context.chart);
+                // expectLegend(expect, context.chart);
             });
         },
         {
             autoWidth: true
         }
     );
+    var AssertToogleOnClick = function (context, expect) {
+        var chart = context.chart;
+        var item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__guide.color10-1')[0].parentNode;
+        expect(chart.getSVG().querySelectorAll('.color10-1').length).to.be.equals(1);
+        testUtils.simulateEvent('click', item1);
+        var svg = chart.getSVG();
+        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(0);
+        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+        item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__guide.color10-1')[0].parentNode;
+        expect(item1.classList.contains('disabled')).to.be.ok;
+        expect(item1.querySelectorAll('.color10-1').length).to.be.ok;
+        testUtils.simulateEvent('click', item1);
+        svg = chart.getSVG();
+        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
+        expect(item1.classList.contains('disabled')).not.be.ok;
+
+    };
     describeChart(
         "legend should toggle by color",
         {
@@ -97,28 +114,38 @@ define(function (require) {
 
         }],
         function (context) {
-            it("shouldn't render spec", function (done) {
-                var chart = context.chart;
-                var item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__guide.color10-1')[0].parentNode;
-                expect(chart.getSVG().querySelectorAll('.color10-1').length).to.be.equals(1);
-                testUtils.simulateEvent('click',item1);
-                var svg = chart.getSVG();
-                expect(svg.querySelectorAll('.color10-1').length).to.be.equals(0);
-                expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
-                item1 = chart._layout.rightSidebar.querySelectorAll('.graphical-report__legend__item')[0];
-                expect(item1.classList.contains('disabled')).to.be.ok;
-                expect(item1.querySelectorAll('.color10-1').length).to.be.ok;
-                done();
-               // testUtils.simulateEvent('click', item1);
-               /* setTimeout(function(){
-                    svg = chart.getSVG();
+            it("shouldn't render spec", function () {
+                AssertToogleOnClick(context,expect);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 
-                    expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
-                    expect(item1.classList.contains('disabled')).not.be.ok;
-                    done();
-                });
-*/
-                // expectLegend(expect, context.chart);
+    describeChart(
+        "legend should toggle by color for boolean value",
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            plugins: [legend()]
+        },
+        [{
+            x: 2,
+            y: 2,
+            color: true
+
+        }, {
+            x: 3,
+            y: 4,
+            color: false
+
+        }],
+        function (context) {
+            it("shouldn't render spec", function () {
+                AssertToogleOnClick(context,expect);
             });
         },
         {
