@@ -327,6 +327,9 @@
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
                     var classToAdd = this._isApplicable ? 'applicable-true' : 'applicable-false';
+                    if(!this._isApplicable) {
+                        this._error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
+                    }
                     this._container.classList.add(classToAdd);
 
                     this.uiChangeEventsDispatcher = function (e) {
@@ -443,7 +446,7 @@
                 if (this._container) {
                     this._container.innerHTML = this.template({
                         title: 'Trend line',
-                        error: this.error,
+                        error: this._error,
                         showTrend: (settings.showTrend && this._isApplicable) ? 'checked' : '',
                         models: ['linear', 'exponential', 'logarithmic'].map(function (x) {
                             var selected = (settings.type === x) ? 'selected' : '';
