@@ -108,15 +108,21 @@
 
                 }
             },
+
+            renderItem: function(field, value, rawValue){
+                return this._templateItem({
+                    label: field,
+                    value: value
+                });
+            },
+
             render: function (data, fields) {
                 fields = _.unique(fields);
                 return fields.map(function (field) {
-                    var v = data[field];
-                    var value = (_.isNull(v) || _.isUndefined(v)) ? ('No ' + field) : v;
-                    return this._templateItem({
-                        label: field,
-                        value: this._getFormatter(field)(value)
-                    });
+                    var rawValue = data[field];
+                    var formattedValue = this._getFormatter(field)(rawValue);
+                    var value = (_.isNull(formattedValue) || _.isUndefined(formattedValue)) ? ('No ' + field) : formattedValue;
+                    return this.renderItem(field, value, rawValue);
                 }, this).join('');
             },
             onRender: function (chart) {
