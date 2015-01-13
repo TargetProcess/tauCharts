@@ -286,7 +286,7 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
-var defaultRangeColor = _.times(10, (i) => 'color10-' + (1 + i));
+var defaultRangeColor = _.times(20, (i) => 'color20-' + (1 + i));
 var generateColor = function (node) {
     var getClass;
     var colorGuide = node.guide.color || {};
