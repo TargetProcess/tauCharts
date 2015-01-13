@@ -13,6 +13,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
     <!-- css -->
     <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.normalize.min.css"/>
     <link href="../css/layout.css" rel="stylesheet"/>
     <link href="../css/legend.css" rel="stylesheet"/>
     <link href="../css/trendline.css" rel="stylesheet"/>
@@ -25,7 +26,15 @@
         .axes.nest .axis.nest text {
             font-size: 10px;
         }
-
+        body,#line {
+            height:100%
+        }
+        .color-us {
+            stroke:blue
+        }
+        .color-bug {
+            stroke:red
+        }
         .tau-chart {
             padding: 20px;
             width: 100%;
@@ -77,43 +86,7 @@
     <title></title>
 </head>
 <body>
-<template id="list">
-    <div class="graphical-report__legend__title"><%=name%></div>
-    <%=items%>
-</template>
-<template id="itemList">
-    <div class="graphical-report__legend__item">
-        <div class="graphical-report__legend__example <%=color%>"></div>
-        <%=value%>
-    </div>
-</template>
-<div style="float: left;padding: 20px">
-    <label for="data">data</label><br/>
-    <textarea style='width:600px;height: 350px' id="data"></textarea>
-</div>
-<div style="float: left; padding: 20px">
-    <label>
-        type
-        <select id="type">
-            <option value="scatterplot">scatter</option>
-            <option selected value="line">line</option>
-            <option value="bar">bar</option>
-            <option value="horizontalBar">horizontalBar</option>
-        </select>
-    </label><br/><br/>
-    <label>x<input id="x" type="text"/></label><br/><br/>
-    <label>y <input id="y" type="text"/></label><br/><br/>
-    <label> color <input id="color" type="text"/></label><br/><br/>
-    "String" or <a id="colorSettings">"{dimension: 'team', brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}}"</a>
-    <label for="brewer">Use brewer<input style="width:20px" id="brewer" type="checkbox"/></label> <label
-        for="hue">Hue<input style="width:50px" id="hue" type="text"/></label> <label for="number">Number<input
-        style="width:50px" id="number" type="number"/></label>
-    <br/><br/>
-    <label>size <input id="size" type="text"/></label><br/><br/>
-</div>
-<br style="clear: both;"/>
-
-<div id="chart-container" class="tau-chart" style="display:inline-block;margin:0;border: solid 1px; float: left"></div>
+<div id="line"></div>
 
 <script>
     requirejs.config({
@@ -136,120 +109,57 @@
     require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore','plugins/trendline'], function (tauCharts, brewer ) {
         /** @class Tooltip
          * @extends Plugin */
-        var dat = [
-           /* {x: undefined, y: 2, type: true, t: 'x'},
-            {x: "2", y: 4, type: false, t: 'x'},
-            {x: "3", y: 4, type: false, t: 'x'},
-            {x: "4", y: 4, type: false, t: 'x'},
-            {x: "5", y: 4, type: false, t: 'x'},
-            {x: "6", y: 4, type: false, t: 'x'},
-            {x: "7", y: 4, type: false, t: 'x'},
-            {x: "8", y: 2, type: false, t: 'x'},
-            {x: "9", y: 2, type: false, t: 'x'},
-            {x: "10", y: 2, type: false, t: 'x'},
-            {x: "11", y: 2, type: false, t: 'x'},
-            {x: "12", y: 2, type: false, t: 'x'},
-            {x: "13", y: 2, type: false, t: 'x'},*/
-            {x: 13, y: "9", type: true, t: 'x'},
-            {x: 13, y: 10, type: false, t: 'x'},
-            {x: 14, y: 15, type: false, t: 'x'},
-        ];
-       /* for (var i = -6.14; i <= 6.14; i += 0.5) {
-            dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
-            dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'w'});
-            dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'w'});
-            dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'x'});
-        }*/
-        var defData = dat;
-
-        function getFieldData($field) {
-            try {
-                return JSON.parse($field.val())
-            } catch (e) {
-                return $field.val();
-            }
-
-        }
-
-        var $color = $('#color').val('team');
-        var $type = $('#type');
-        var $size = $('#size').val('count');
-        var $y = $('#y').val('count');
-        var $x = $('#x').val('team');
-        var $data = $('#data').val(JSON.stringify(defData));
-        $('#colorSettings').click(function () {
-            return $color.val(JSON.stringify({
-                dimension: 'team',
-                brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
-            }))
-        });
-        $('select,input[type=checkbox]').change(function () {
-            try {
-                drawChart();
-            } catch (e) {
-                $('#chart-container').empty();
-                console.error(e);
-            }
-        });
-        $('textarea,input').on('input', function () {
-            try {
-                drawChart();
-            } catch (e) {
-                $('#chart-container').empty();
-                console.error(e);
-            }
-        });
-        drawChart();
-        /* try {
-         drawChart();
-         } catch (e) {
-         $('#chart-container').empty();
-         console.error(e);
-         }*/
-
-        function drawChart() {
-            var data = JSON.parse($data.val());
-            $('#chart-container').empty();
-            var color;
-            if ($('#brewer').prop('checked')) {
-                color = {
-                    dimension: getFieldData($color),
-                    brewer: tauBrewer(getFieldData($('#hue')), getFieldData($('#number')))
+        var defData = [{
+            type:'us', count:0, date:'12-2013'
+        },{
+            type:'us', count:10, date:'01-2014'
+        },{
+            type:'us', count:15, date:'02-2014'
+        },{
+            type:'us', count:12, date:'03-2014'
+        },{
+            type:'us', count:16, date:'04-2014'
+        },{
+            type:'us', count:13, date:'05-2014'
+        },{
+            type:'bug', count:21, date:'01-2014'
+        },{
+            type:'bug', count:19, date:'02-2014'
+        },{
+            type:'bug', count:23, date:'03-2014'
+        },{
+            type:'bug', count:26, date:'04-2014'
+        },{
+            type:'bug', count:23, date:'05-2014'
+        }];
+        var chart = new tauCharts.Chart({
+            guide:{
+                padding:{l:70, t:10, b:70,r:10},
+                showGridLines:'xy',
+                color:{
+                    brewer:{
+                        us:'color-us',
+                        bug:'color-bug'
+                    }
+                },
+                y:{
+                    label:{
+                        text:'Count of completed entities',
+                        padding:50
+                    }
+                },
+                x:{
+                    label:'Month'
                 }
-            } else {
-                color = getFieldData($color)
-            }
+            },
+            data: defData,
+            type: 'line',
+            x: 'date',
+            y: 'count',
+            color: 'type'
+        });
 
-            var chart = new tauCharts.Chart({
-                data: data,
-                type: getFieldData($type),
-                plugins: [tauCharts.api.plugins.get('tooltip')({
-                    formatters:{
-                        entityType:function(e) {
-                            return e;
-                        },
-                        entityTypeE:function(e) {
-                            return e;
-                        }
-                    }
-                }), /*tauCharts.api.plugins.get('legend')(),*/tauCharts.api.plugins.get('trendline')()],
-                y: ['x'],
-                x: ['type','y'],
-                color: 'type',
-                guide:[{
-                    y: {
-                        label:'Day of Mounth'
-                    },
-                    color:{
-                        label:'dfsa'
-                    }
-                }]
-                /* size: 'y'*/
-            });
-            chart.renderTo(
-                    '#chart-container');
-        }
-
+        chart.renderTo('#line');
     })
 </script>
 </body>

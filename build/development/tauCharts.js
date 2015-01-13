@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.0 - 2015-01-13
+/*! taucharts - v0.3.1 - 2015-01-13
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1854,8 +1854,8 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
 
     return grid;
   };
-  var defaultRangeColor = _.times(10, function (i) {
-    return "color10-" + (1 + i);
+  var defaultRangeColor = _.times(20, function (i) {
+    return "color20-" + (1 + i);
   });
   var generateColor = function (node) {
     var getClass;
@@ -4501,7 +4501,7 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
       var updateLines = function () {
         this.attr("class", function (d) {
-          return "graphical-report__" + "line" + " line " + "color10-9";
+          return "graphical-report__" + "line" + " line " + "color20-9";
         });
         var paths = this.selectAll("path").data(function (d) {
           return [d];

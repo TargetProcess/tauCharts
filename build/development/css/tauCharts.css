@@ -146,49 +146,89 @@
   opacity: 0.6;
 }
 /* region Generate .color@{n}-@{i}  function  */
-.graphical-report__svg .color10-1 {
-  stroke: #377eb8;
-  fill: #377eb8;
+.graphical-report__svg .color20-1 {
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
 }
-.graphical-report__svg .color10-2 {
-  stroke: #e41a1c;
-  fill: #e41a1c;
+.graphical-report__svg .color20-2 {
+  stroke: #df2b59;
+  fill: #df2b59;
 }
-.graphical-report__svg .color10-3 {
-  stroke: #4daf4a;
-  fill: #4daf4a;
+.graphical-report__svg .color20-3 {
+  stroke: #66da26;
+  fill: #66da26;
 }
-.graphical-report__svg .color10-4 {
-  stroke: #984ea3;
-  fill: #984ea3;
+.graphical-report__svg .color20-4 {
+  stroke: #4c3862;
+  fill: #4c3862;
 }
-.graphical-report__svg .color10-5 {
-  stroke: #ff7f00;
-  fill: #ff7f00;
+.graphical-report__svg .color20-5 {
+  stroke: #e5b011;
+  fill: #e5b011;
 }
-.graphical-report__svg .color10-6 {
-  stroke: #e9e964;
-  fill: #e9e964;
+.graphical-report__svg .color20-6 {
+  stroke: #3a3226;
+  fill: #3a3226;
 }
-.graphical-report__svg .color10-7 {
-  stroke: #a65628;
-  fill: #a65628;
+.graphical-report__svg .color20-7 {
+  stroke: #cb461a;
+  fill: #cb461a;
 }
-.graphical-report__svg .color10-8 {
-  stroke: #f781bf;
-  fill: #f781bf;
+.graphical-report__svg .color20-8 {
+  stroke: #c7ce23;
+  fill: #c7ce23;
 }
-.graphical-report__svg .color10-9 {
-  stroke: #999999;
-  fill: #999999;
+.graphical-report__svg .color20-9 {
+  stroke: #7fcdc2;
+  fill: #7fcdc2;
 }
-.graphical-report__svg .color10-10 {
-  stroke: #222222;
-  fill: #222222;
+.graphical-report__svg .color20-10 {
+  stroke: #cca1c8;
+  fill: #cca1c8;
+}
+.graphical-report__svg .color20-11 {
+  stroke: #c84cce;
+  fill: #c84cce;
+}
+.graphical-report__svg .color20-12 {
+  stroke: #54762e;
+  fill: #54762e;
+}
+.graphical-report__svg .color20-13 {
+  stroke: #746bc9;
+  fill: #746bc9;
+}
+.graphical-report__svg .color20-14 {
+  stroke: #953441;
+  fill: #953441;
+}
+.graphical-report__svg .color20-15 {
+  stroke: #5c7a76;
+  fill: #5c7a76;
+}
+.graphical-report__svg .color20-16 {
+  stroke: #c8bf87;
+  fill: #c8bf87;
+}
+.graphical-report__svg .color20-17 {
+  stroke: #bfc1c3;
+  fill: #bfc1c3;
+}
+.graphical-report__svg .color20-18 {
+  stroke: #8e5c31;
+  fill: #8e5c31;
+}
+.graphical-report__svg .color20-19 {
+  stroke: #71ce7b;
+  fill: #71ce7b;
+}
+.graphical-report__svg .color20-20 {
+  stroke: #be478b;
+  fill: #be478b;
 }
 .graphical-report__svg .color-default {
-  stroke: #377eb8;
-  fill: #377eb8;
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
 }
 /* endregion */
 /* region Generate .line-params-@{n}  function  */
