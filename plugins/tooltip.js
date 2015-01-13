@@ -176,7 +176,7 @@
 
             },
             isLine: function (data) {
-                return data.elementData.key && Array.isArray(data.elementData.values);
+                return data.elementData.hasOwnProperty('key') && Array.isArray(data.elementData.values);
             },
             _onElementMouseOver: function (chart, data, mosueCoord, placeCoord) {
                 clearTimeout(this._timeoutHideId);
