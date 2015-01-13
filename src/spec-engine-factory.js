@@ -325,6 +325,10 @@ var SpecEngineTypeMap = {
             (selectorPredicates, unit) => {
                 unit.guide.x.tickFontHeight = settings.getAxisTickLabelSize('X').height;
                 unit.guide.y.tickFontHeight = settings.getAxisTickLabelSize('Y').height;
+
+                unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
+                unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
+
                 return unit;
             });
         return spec;
