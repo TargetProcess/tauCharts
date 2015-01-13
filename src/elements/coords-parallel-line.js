@@ -32,7 +32,7 @@ var CoordsParallelLine = {
             });
 
         var updateLines = function () {
-            this.attr('class', (d) => 'graphical-report__' + 'line' + ' line ' + 'color10-9');
+            this.attr('class', (d) => 'graphical-report__' + 'line' + ' line ' + 'color20-9');
             var paths = this.selectAll('path').data((d) => [d]);
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);

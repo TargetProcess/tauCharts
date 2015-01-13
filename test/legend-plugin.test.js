@@ -4,17 +4,18 @@ define(function (require) {
     var legend = require('plugins/legend');
     var describeChart = testUtils.describeChart;
     var expectLegend = function (expect, chart) {
+        var prefix = 'color20';
         var sidebar = chart._layout.rightSidebar;
         var legendBlock = sidebar.querySelector('.graphical-report__legend');
         expect(legendBlock).to.be.ok;
         expect(legendBlock.querySelector('.graphical-report__legend__title').textContent).to.equal('color');
         var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
         expect(nodeList[0].parentNode.textContent).to.equal('No color');
-        expect(nodeList[0].classList.contains('color10-1')).to.be.ok;
+        expect(nodeList[0].classList.contains(prefix + '-1')).to.be.ok;
         expect(nodeList[1].parentNode.textContent).to.equal('yellow');
-        expect(nodeList[1].classList.contains('color10-2')).to.be.ok;
+        expect(nodeList[1].classList.contains(prefix + '-2')).to.be.ok;
         expect(nodeList[2].parentNode.textContent).to.equal('green');
-        expect(nodeList[2].classList.contains('color10-3')).to.be.ok;
+        expect(nodeList[2].classList.contains(prefix + '-3')).to.be.ok;
     };
     var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
     chartType.forEach(function (item) {
@@ -87,29 +88,30 @@ define(function (require) {
         var chart = context.chart;
         var item1;
         var svg;
-        var selector = '.graphical-report__legend__guide.color10-1';
+        var prefix = '.color20';
+        var selector = '.graphical-report__legend__guide' + prefix + '-1';
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
 
         svg = chart.getSVG();
-        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
-        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
 
         testUtils.simulateEvent('click', item1);
 
         svg = chart.getSVG();
-        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(0);
-        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(0);
+        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
         expect(item1.classList.contains('disabled')).to.be.ok;
-        expect(item1.querySelectorAll('.color10-1').length).to.be.equals(1);
+        expect(item1.querySelectorAll(prefix + '-1').length).to.be.equals(1);
 
         testUtils.simulateEvent('click', item1);
 
         svg = chart.getSVG();
-        expect(svg.querySelectorAll('.color10-1').length).to.be.equals(1);
-        expect(svg.querySelectorAll('.color10-2').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
         expect(item1.classList.contains('disabled')).not.be.ok;
     };
     describeChart(
