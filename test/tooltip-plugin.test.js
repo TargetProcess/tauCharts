@@ -131,7 +131,7 @@ define(function (require) {
                             window.setTimeout = originTimeout;
                             return hideTooltip(expect, context.chart);
                         })
-                        .always(function() {
+                        .always(function () {
                             done();
                         });
                 });
@@ -141,6 +141,51 @@ define(function (require) {
             }
         );
     });
+    describeChart(
+        "tooltip for line chart without",
+        {
+            type: 'line',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            plugins: [tooltip()]
+        },
+        [{
+            x: 2,
+            y: 2
+        }, {
+            x: 4,
+            y: 5
+        }],
+        function (context) {
+            it("should work tooltip", function (done) {
+                var originTimeout = stubTimeout();
+                this.timeout(5000);
+                showTooltip(expect, context.chart)
+                    .then(function () {
+                        var excluder = document.querySelectorAll('.i-role-exclude')[0];
+                        testUtils.simulateEvent('click', excluder);
+                        var d = testUtils.Deferred();
+                        var data = context.chart.getData();
+                        var expected = tauCharts.api._.sortBy(data, function (a) {
+                            return a.x;
+                        });
+                        expect(expected).to.be.eql(
+                            [{
+                                x: 4,
+                                y: 5
+                            }]
+                        );
+                        return d.resolve();
+                    })
+                    .always(function () {
+                        window.setTimeout = originTimeout;
+                        done();
+                    });
+            });
+
+        }
+    );
 
     chartType.forEach(function (item) {
         describeChart(
@@ -151,7 +196,7 @@ define(function (require) {
                 y: 'y',
                 color: 'color',
                 plugins: [tooltip({
-                    getFields: function(chart) {
+                    getFields: function (chart) {
                         expect(chart).to.be.ok;
 
                         if (chart.getData()[0].x === 2) {
@@ -171,7 +216,7 @@ define(function (require) {
                 it('should support getFields parameter', function (done) {
                     var originTimeout = stubTimeout();
                     showTooltip(expect, context.chart)
-                        .then(function(content) {
+                        .then(function (content) {
                             expect(content.length).to.be.ok;
                             var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
                             var texts = _.pluck(tooltipElements, 'textContent');
@@ -179,7 +224,7 @@ define(function (require) {
 
                             return hideTooltip(expect, context.chart);
                         })
-                        .then(function() {
+                        .then(function () {
                             context.chart.setData([{
                                 x: 3,
                                 y: 3,
@@ -188,14 +233,14 @@ define(function (require) {
 
                             return showTooltip(expect, context.chart);
                         })
-                        .then(function(content) {
+                        .then(function (content) {
                             expect(content.length).to.be.ok;
                             var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
                             var texts = _.pluck(tooltipElements, 'textContent');
                             expect(texts).to.be.eql(['y', '3']);
                             return hideTooltip(expect, context.chart);
                         })
-                        .always(function() {
+                        .always(function () {
                             window.setTimeout = originTimeout;
                             done();
                         })
