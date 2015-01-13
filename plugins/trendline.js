@@ -270,12 +270,18 @@
         lines.enter().append('g').call(updateLines);
         lines.exit().remove();
     };
-
+    var isElement = function (unitMeta) {
+        return (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
+    };
+    var coordHasElements = function(units){
+       return _.any(units,function(unit){
+            return isElement(unit);
+        });
+    };
     var isApplicable = function (dimensions) {
         return function (unitMeta) {
-            var isElement = (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
-
-            if (!isElement) {
+            var hasElement = (unitMeta.type && unitMeta.type.indexOf('COORDS.') === 0 && coordHasElements(unitMeta.unit));
+            if (!hasElement) {
                 return false;
             }
             var x = dimensions[unitMeta.x].type;
@@ -284,7 +290,6 @@
                 return dimType && (dimType !== 'category');
             });
         };
-
     };
 
     var dfs = function (node, predicate) {
@@ -301,9 +306,7 @@
         }
     };
 
-    var isElement = function (unitMeta) {
-        return (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
-    };
+
 
     function trendline(xSettings) {
 
@@ -321,7 +324,7 @@
 
                 this._chart = chart;
                 var conf = chart.getConfig();
-                this._isApplicable = dfs(conf.spec.unit,isApplicable(conf.dimensions));
+                this._isApplicable = dfs(conf.spec.unit,isApplicable(conf.spec.dimensions));
 
                 if (settings.showPanel) {
 
