@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.2 - 2015-01-14
+/*! taucharts - v0.3.3 - 2015-01-14
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -3780,7 +3780,8 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       y: config.y,
       color: config.color,
       guide: {
-        color: config.colorGuide
+        color: config.colorGuide,
+        size: config.sizeGuide
       },
       flip: config.flip,
       size: config.size
@@ -3870,7 +3871,8 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
           color: config.color,
           size: config.size,
           flip: config.flip,
-          colorGuide: currentGuide.color
+          colorGuide: currentGuide.color,
+          sizeGuide: currentGuide.size
         }));
         spec.guide = _.defaults(currentGuide, {
           x: { label: currentX },
