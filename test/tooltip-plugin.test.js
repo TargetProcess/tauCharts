@@ -5,6 +5,13 @@ define(function (require) {
     var tauCharts = require('tauCharts');
     var tooltip = require('plugins/tooltip');
     var describeChart = testUtils.describeChart;
+
+    var offsetHrs = new Date().getTimezoneOffset() / 60;
+    var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
+    var iso = function (str) {
+        return (str + '+' + offsetISO);
+    };
+
     var showTooltip = function (expect, chart, index) {
         var d = testUtils.Deferred();
         var datum = chart.getSVG().querySelectorAll('.i-role-datum')[index||0];
@@ -323,14 +330,14 @@ define(function (require) {
                     "id": 1,
                     "name": "TP3"
                 },
-                "date": new Date("2015-01-07T21:00:00.000Z"),
+                "date": new Date(iso("2015-01-08T00:00:00")),
                 "simple": 0.1,
                 "colorValue": "UserStory",
                 "sizeValue": 10
             },
             {
                 "complex": null,
-                "date": new Date("2015-01-08T21:00:00.000Z"),
+                "date": new Date(iso("2015-01-09T00:00:00")),
                 "simple": 0.9,
                 "colorValue": "Bug",
                 "sizeValue": 20
