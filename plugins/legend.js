@@ -70,7 +70,7 @@
                     d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
                     d3Chart.selectAll('.i-role-element.' + color)
                         .filter(function (item) {
-                            return item[originValue.dimension] === originValue.value;
+                            return (item[originValue.dimension] || _.chain(item.values).pluck(originValue.dimension).unique().first().value())  === originValue.value;
                         }).
                         classed({'graphical-report__highlighted': true});
                     d3Chart.classed({'graphical-report__highlighted_chart': true});
