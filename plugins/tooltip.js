@@ -5,7 +5,7 @@
         });
     } else if (typeof module === "object" && module.exports) {
         var tauPlugins = require('tauCharts');
-        module.exports = factory();
+        module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
