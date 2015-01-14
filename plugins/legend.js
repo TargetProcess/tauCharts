@@ -166,7 +166,7 @@
                                 color: item.color,
                                 classDisabled: this._currentFilters[value] ? 'disabled' : '',
                                 label: label,
-                                value: value
+                                value: _.escape(value)
                             }));
                             data.storageValues[value] = originValue;
                             return data;
