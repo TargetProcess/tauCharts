@@ -26,20 +26,27 @@
         .axes.nest .axis.nest text {
             font-size: 10px;
         }
-        body,#line {
-            height:100%
+
+        body, #line {
+            height: 100%
         }
+
         .color-us {
-            stroke:blue
+            stroke: blue;
+            fill:blue;
         }
+
         .color-bug {
-            stroke:red
+            stroke: red;
+            fill: red;
         }
+
         .tau-chart {
             padding: 20px;
             width: 100%;
             height: 640px;
         }
+
         .applicable-false {
             display: none;
         }
@@ -106,52 +113,51 @@
         }
     });
 
-    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore','plugins/trendline'], function (tauCharts, brewer ) {
+    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/highlighter', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline) {
         /** @class Tooltip
          * @extends Plugin */
         var defData = [{
-            type:'us', count:0, date:'12-2013'
-        },{
-            type:'us', count:10, date:'01-2014'
-        },{
-            type:'us', count:15, date:'02-2014'
-        },{
-            type:'us', count:12, date:'03-2014'
-        },{
-            type:'us', count:16, date:'04-2014'
-        },{
-            type:'us', count:13, date:'05-2014'
-        },{
-            type:'bug', count:21, date:'01-2014'
-        },{
-            type:'bug', count:19, date:'02-2014'
-        },{
-            type:'bug', count:23, date:'03-2014'
-        },{
-            type:'bug', count:26, date:'04-2014'
-        },{
-            type:'bug', count:23, date:'05-2014'
+            type: 'us', count: 0, date: 2
+        }, {
+            type: 'us', count: 10, date: 3
+        }, {
+            type: 'us', count: 15, date: 4
+        }, {
+            type: 'us', count: 12, date: 5
+        }, {
+            type: 'us', count: 16, date: 6
+        }, {
+            type: 'us', count: 13, date: 7
+        }, {
+            type: "bug 'mybug'", count: 21, date: 8
+        }, {
+            type: "bug 'dsadsmybug'", count: 19, date: 9
+        }, {
+            type: 'bug', count: 23, date: 10
+        }, {
+            type: 'bug', count: 26, date: 11
+        }, {
+            type: 'bug', count: 23, date: 12
         }];
         var chart = new tauCharts.Chart({
-            guide:{
-                padding:{l:70, t:10, b:70,r:10},
-                showGridLines:'xy',
-                color:{
-                    brewer:{
-                        us:'color-us',
-                        bug:'color-bug'
+            guide: {
+                color: {
+                    brewer: {
+                        us: 'color-us',
+                        bug: 'color-bug'
                     }
                 },
-                y:{
-                    label:{
-                        text:'Count of completed entities',
-                        padding:50
+                y: {
+                    label: {
+                        text: 'Count of completed entities',
+                        padding: 50
                     }
                 },
-                x:{
-                    label:'Month'
+                x: {
+                    label: 'Month'
                 }
             },
+            plugins: [legend(), trendline()],
             data: defData,
             type: 'line',
             x: 'date',
