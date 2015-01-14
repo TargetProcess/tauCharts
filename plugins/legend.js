@@ -64,10 +64,15 @@
                     toggle = false;
                 }
                 if (toggle) {
-                    var value = JSON.parse(target.getAttribute('data-value'));
-                    var color = value.color;
+                    var value = target.getAttribute('data-value');
+                    var originValue = this._storageValues[value];
+                    var color = originValue.color;
                     d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
-                    d3Chart.selectAll('.i-role-element.' + color).classed({'graphical-report__highlighted': true});
+                    d3Chart.selectAll('.i-role-element.' + color)
+                        .filter(function (item) {
+                            return item[originValue.dimension] === originValue.value;
+                        }).
+                        classed({'graphical-report__highlighted': true});
                     d3Chart.classed({'graphical-report__highlighted_chart': true});
                 } else {
                     d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
