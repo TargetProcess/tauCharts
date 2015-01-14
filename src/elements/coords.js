@@ -48,8 +48,8 @@ var coords = {
         var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
         var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
-        var domainX = root.scaleMeta(root.x, root.guide.x).values;
-        var domainY = root.scaleMeta(root.y, root.guide.y).values;
+        var domainX = root.scaleMeta(root.x, _.omit(root.guide.x, 'tickLabel')).values;
+        var domainY = root.scaleMeta(root.y, _.omit(root.guide.y, 'tickLabel')).values;
         var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, domainX, root.y, domainY));
         var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
