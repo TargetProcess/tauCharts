@@ -22,6 +22,20 @@
         return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
     };
 
+    var dfs = function (node, predicate) {
+        if (predicate(node)) {
+            return node;
+        }
+        var i, children = node.unit || [], child, found;
+        for (i = 0; i < children.length; i += 1) {
+            child = children[i];
+            found = dfs(child, predicate);
+            if (found) {
+                return found;
+            }
+        }
+    };
+
     function tooltip(settings) {
         settings = settings || {};
         return {
@@ -60,9 +74,8 @@
                 }.bind(this), false);
             },
             formatters: {},
-            _getFormatter: function (field) {
-                return this.formatters[field] || _.identity;
-            },
+            labels: {},
+
             init: function (chart) {
                 this._chart = chart;
                 this._dataFields = settings.fields;
@@ -74,6 +87,23 @@
                 this._templateItem = _.template(this.itemTemplate);
                 this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
+
+                var spec = chart.getConfig().spec;
+
+                var dimensionGuides = this._findDimensionGuides(spec);
+
+                var lastGuides = _.reduce(dimensionGuides, function(memo, guides, key){
+                    memo[key] = _.last(guides);
+                    return memo;
+                }, {});
+
+                var formatters = this._generateDefaultFormatters(lastGuides, spec.dimensions);
+                _.extend(this.formatters, formatters);
+
+                var labels = this._generateDefaultLabels(lastGuides);
+                _.extend(this.labels, labels);
+
+
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
                     clearTimeout(this._timeoutHideId);
@@ -92,6 +122,7 @@
                     }
                 }.bind(this), false);
                 elementTooltip.insertAdjacentHTML('afterbegin', this.template);
+
             },
             onUnitReady: function (chart, unitMeta) {
                 if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
@@ -109,10 +140,10 @@
                 }
             },
 
-            renderItem: function(field, value, rawValue){
+            renderItem: function(label, formattedValue, field, rawValue){
                 return this._templateItem({
-                    label: field,
-                    value: value
+                    label: label,
+                    value: formattedValue
                 });
             },
 
@@ -121,8 +152,9 @@
                 return fields.map(function (field) {
                     var rawValue = data[field];
                     var formattedValue = this._getFormatter(field)(rawValue);
-                    var value = (_.isNull(formattedValue) || _.isUndefined(formattedValue)) ? ('No ' + field) : formattedValue;
-                    return this.renderItem(field, value, rawValue);
+                    var label = this._getLabel(field);
+
+                    return this.renderItem(label, formattedValue, field, rawValue);
                 }, this).join('');
             },
             onRender: function (chart) {
@@ -131,6 +163,80 @@
                 }
                 this._hide();
             },
+
+            _getFormatter: function (field) {
+                return this.formatters[field] || _.identity;
+            },
+            _getLabel: function(field){
+                return this.labels[field] || field;
+            },
+
+            _generateDefaultLabels: function (lastGuides) {
+                return _.reduce(lastGuides, function (memo, lastGuide, key) {
+                    memo[key] = lastGuide.label || key;
+                    return memo;
+                }, {});
+            },
+
+            _generateDefaultFormatters: function (lastGuides, dimensions) {
+                return _.reduce(lastGuides, function (memo, lastGuide, key) {
+                    var getValue = function (rawValue) {
+                        if (rawValue == null) {
+                            return null;
+                        } else {
+                            var format = lastGuide.tickPeriod || lastGuide.tickFormat;
+                            if (format) {
+                                return tauCharts.api.tickFormat.get(format)(rawValue);
+                            } else if (lastGuide.tickLabel) {
+                                return rawValue[lastGuide.tickLabel];
+                            } else if (dimensions[key].value) {
+                                return rawValue[dimensions[key].value];
+                            } else {
+                                return rawValue;
+                            }
+                        }
+                    };
+
+                    memo[key] = function (rawValue) {
+                        var value = getValue(rawValue);
+                        return value == null ? 'No ' + lastGuide.label : value;
+                    };
+
+                    return memo;
+                }, {});
+            },
+
+            _findDimensionGuides: function(spec){
+                var dimensionGuideMap = {};
+
+                var collect = function(field, unit){
+                    var property = unit[field];
+                    if (property) {
+                        var guide = unit.guide[field];
+
+                        if (guide) {
+                            if (!dimensionGuideMap[property]) {
+                                dimensionGuideMap[property] = [];
+                            }
+
+                            dimensionGuideMap[property].push(guide)
+                        }
+                    }
+                };
+
+                dfs(spec.unit, function(unit){
+                    collect('x', unit);
+                    collect('y', unit);
+                    collect('color', unit);
+                    collect('size', unit);
+
+                    return false;
+                });
+
+                return dimensionGuideMap;
+
+            },
+
             _exclude: function () {
                 this._chart.addFilter({
                     tag: 'exclude',

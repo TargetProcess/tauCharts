@@ -13,7 +13,8 @@ var createElement = (type, config) => {
         y: config.y,
         color: config.color,
         guide: {
-            color: config.colorGuide
+            color: config.colorGuide,
+            size: config.sizeGuide
         },
         flip: config.flip,
         size: config.size
@@ -98,7 +99,8 @@ function transformConfig(type, config) {
                 color: config.color,
                 size: config.size,
                 flip: config.flip,
-                colorGuide: currentGuide.color
+                colorGuide: currentGuide.color,
+                sizeGuide: currentGuide.size
             }));
             spec.guide = _.defaults(
                 currentGuide,
