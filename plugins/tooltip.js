@@ -212,12 +212,13 @@
                 var collect = function(field, unit){
                     var property = unit[field];
                     if (property) {
-                        if (!dimensionGuideMap[property]) {
-                            dimensionGuideMap[property] = [];
-                        }
-
                         var guide = unit.guide[field];
+
                         if (guide) {
+                            if (!dimensionGuideMap[property]) {
+                                dimensionGuideMap[property] = [];
+                            }
+
                             dimensionGuideMap[property].push(guide)
                         }
                     }
@@ -226,6 +227,8 @@
                 dfs(spec.unit, function(unit){
                     collect('x', unit);
                     collect('y', unit);
+                    collect('color', unit);
+                    collect('size', unit);
 
                     return false;
                 });
