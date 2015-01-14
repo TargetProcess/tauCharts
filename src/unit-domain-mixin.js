@@ -220,9 +220,8 @@ export class UnitDomainMixin {
 
         this.fnScaleColor = (scaleDim, brewer, options) => {
             var opts = options || {};
-            var dimx = _.defaults({}, meta[scaleDim]);
 
-            var info = _scaleMeta(scaleDim, options);
+            var info = _scaleMeta(scaleDim, opts);
 
             var defaultColorClass = _.constant('color-default');
 
@@ -280,6 +279,61 @@ export class UnitDomainMixin {
 
             return wrap;
         };
+
+        this.fnScaleSize = (scaleDim, range, options) => {
+
+            var opts = options || {};
+
+            var minSize = range[0];
+            var maxSize = range[1];
+            var normalSize = range[range.length - 1];
+
+            var info = _scaleMeta(scaleDim, opts);
+
+            var f = (x) => Math.sqrt(x);
+
+            var values = _.filter(info.source, _.isFinite);
+
+            var func;
+
+            if (values.length === 0) {
+                func = ((x) => normalSize);
+            }
+            else {
+                var k = 1;
+                var xMin = 0;
+
+                var min = Math.min.apply(null, values);
+                var max = Math.max.apply(null, values);
+
+                var len = f(Math.max.apply(
+                    null,
+                    [
+                        Math.abs(min),
+                        Math.abs(max),
+                        max - min
+                    ]));
+
+                xMin = (min < 0) ? min : 0;
+                k = (len === 0) ? 1 : ((maxSize - minSize) / len);
+
+                func = (x) => {
+                    var numX = (x !== null) ? parseFloat(x) : 0;
+
+                    if (!_.isFinite(numX)) {
+                        return maxSize;
+                    }
+
+                    var posX = (numX - xMin); // translate to positive x domain
+
+                    return (minSize + (f(posX) * k));
+                };
+            }
+
+            var wrap = (domainPropObject) => func(info.extract(domainPropObject));
+
+            return wrap;
+        };
     }
 
     mix(unit) {
@@ -291,6 +345,7 @@ export class UnitDomainMixin {
         unit.scaleTo = this.fnScaleTo;
         unit.scaleDist = this.fnScaleTo;
         unit.scaleColor = this.fnScaleColor;
+        unit.scaleSize = this.fnScaleSize;
 
         unit.partition = (() => unit.data || unit.source(unit.$where));
         unit.groupBy = ((srcValues, splitByProperty) => {

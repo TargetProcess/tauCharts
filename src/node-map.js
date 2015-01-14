@@ -30,7 +30,9 @@ var setupElementNode = (node, dimensions) => {
     if (node.size) {
         var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) * 0.5;
         var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter((x) => x !== 0)) * 0.5;
-        node.options.sizeScale = sizeScale(node.domain(node.size.scaleDim), 2, minTickStep, minFontSize);
+        var guideSize = node.guide.size || {};
+        node.options.sizeScale = node.scaleSize(node.size.scaleDim, [2, minTickStep, minFontSize], guideSize);
+        //sizeScale(node.domain(node.size.scaleDim), 2, minTickStep, minFontSize);
     }
 
     return node;
