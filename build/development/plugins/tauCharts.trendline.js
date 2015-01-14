@@ -402,7 +402,7 @@
                             dots,
                             options.xScale,
                             options.yScale,
-                            options.color.get(sKey),
+                            options.color(sKey),
                             options.container,
                             sVal);
                     }

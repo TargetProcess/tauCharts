@@ -550,125 +550,105 @@ define('utils/utils-dom',["exports"], function (exports) {
 define('dsl-reader',["exports"], function (exports) {
   
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
   var DSLReader = (function () {
-    function DSLReader(domainMixin, UnitsRegistry) {
+    var DSLReader = function DSLReader(domainMixin, UnitsRegistry) {
       this.domain = domainMixin;
       this.UnitsRegistry = UnitsRegistry;
-    }
+    };
 
-    _prototypeProperties(DSLReader, null, {
-      buildGraph: {
-        value: function (spec) {
-          var _this = this;
-          var buildRecursively = function (unit) {
-            return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
+    DSLReader.prototype.buildGraph = function (spec) {
+      var _this = this;
+      var buildRecursively = function (unit) {
+        return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
+      };
+      return buildRecursively(spec.unit);
+    };
+
+    DSLReader.prototype.calcLayout = function (graph, size) {
+      graph.options = { top: 0, left: 0, width: size.width, height: size.height };
+
+      var fnTraverseLayout = function (root) {
+        if (!root.$matrix) {
+          return root;
+        }
+
+        var options = root.options;
+        var padding = root.guide.padding;
+
+        var innerW = options.width - (padding.l + padding.r);
+        var innerH = options.height - (padding.t + padding.b);
+
+        var nRows = root.$matrix.sizeR();
+        var nCols = root.$matrix.sizeC();
+
+        var cellW = innerW / nCols;
+        var cellH = innerH / nRows;
+
+        var calcLayoutStrategy;
+        if (root.guide.split) {
+          calcLayoutStrategy = {
+            calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return cellHeight / lenIndex;
+            }),
+            calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex;
+            })
           };
-          return buildRecursively(spec.unit);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      calcLayout: {
-        value: function (graph, size) {
-          graph.options = { top: 0, left: 0, width: size.width, height: size.height };
-
-          var fnTraverseLayout = function (root) {
-            if (!root.$matrix) {
-              return root;
-            }
-
-            var options = root.options;
-            var padding = root.guide.padding;
-
-            var innerW = options.width - (padding.l + padding.r);
-            var innerH = options.height - (padding.t + padding.b);
-
-            var nRows = root.$matrix.sizeR();
-            var nCols = root.$matrix.sizeC();
-
-            var cellW = innerW / nCols;
-            var cellH = innerH / nRows;
-
-            var calcLayoutStrategy;
-            if (root.guide.split) {
-              calcLayoutStrategy = {
-                calcHeight: function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return cellHeight / lenIndex;
-                },
-                calcTop: function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return (rowIndex + 1) * (cellHeight / lenIndex) * elIndex;
-                }
-              };
-            } else {
-              calcLayoutStrategy = {
-                calcHeight: function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return cellHeight;
-                },
-                calcTop: function (cellHeight, rowIndex, elIndex, lenIndex) {
-                  return rowIndex * cellH;
-                }
-              };
-            }
-
-            root.childUnits = root.childUnits || [];
-            root.$matrix.iterate(function (iRow, iCol, subNodes) {
-              var len = subNodes.length;
-              subNodes.forEach(function (subNode, i) {
-                subNode.options = {
-                  width: cellW,
-                  left: iCol * cellW,
-                  height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
-                  top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
-                };
-                root.childUnits.push(subNode);
-                fnTraverseLayout(subNode);
-              });
-            });
-
-            return root;
+        } else {
+          calcLayoutStrategy = {
+            calcHeight: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return cellHeight;
+            }),
+            calcTop: (function (cellHeight, rowIndex, elIndex, lenIndex) {
+              return rowIndex * cellH;
+            })
           };
+        }
 
-          return fnTraverseLayout(graph);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      renderGraph: {
-        value: function (styledGraph, target, xIterator) {
-          var _this2 = this;
-          var iterator = xIterator || function (x) {
-            return x;
-          };
-          styledGraph.options.container = target;
-          var renderRecursively = function (unit) {
-            var unitMeta = _this2.domain.mix(unit);
-            var subSpace = _this2.UnitsRegistry.get(unit.type).draw(unitMeta);
+        root.childUnits = root.childUnits || [];
+        root.$matrix.iterate(function (iRow, iCol, subNodes) {
+          var len = subNodes.length;
+          subNodes.forEach(function (subNode, i) {
+            subNode.options = {
+              width: cellW,
+              left: iCol * cellW,
+              height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
+              top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
+            };
+            root.childUnits.push(subNode);
+            fnTraverseLayout(subNode);
+          });
+        });
 
-            var children = unit.childUnits || [];
-            children.forEach(function (child) {
-              child.options = _.extend({ container: subSpace }, child.options);
-              child.parentUnit = unit;
-              renderRecursively(child);
-            });
+        return root;
+      };
 
-            iterator(unitMeta);
-          };
-          styledGraph.parentUnit = null;
-          renderRecursively(styledGraph);
-          return styledGraph.options.container;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      }
-    });
+      return fnTraverseLayout(graph);
+    };
+
+    DSLReader.prototype.renderGraph = function (styledGraph, target, xIterator) {
+      var _this2 = this;
+      var iterator = xIterator || (function (x) {
+        return x;
+      });
+      styledGraph.options.container = target;
+      var renderRecursively = function (unit) {
+        var unitMeta = _this2.domain.mix(unit);
+        var subSpace = _this2.UnitsRegistry.get(unit.type).draw(unitMeta);
+
+        var children = unit.childUnits || [];
+        children.forEach(function (child) {
+          child.options = _.extend({ container: subSpace }, child.options);
+          child.parentUnit = unit;
+          renderRecursively(child);
+        });
+
+        iterator(unitMeta);
+      };
+      styledGraph.parentUnit = null;
+      renderRecursively(styledGraph);
+      return styledGraph.options.container;
+    };
 
     return DSLReader;
   })();
@@ -818,7 +798,7 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
         return names[i];
       }
     }
-  })();
+  }());
   var objectCreate = Object.create;
   /**
    * Tooltip construnctor.
@@ -1294,15 +1274,14 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
     function reposition() {
       rIndex = 0;
       var tip;
-      for (var i = 0,
-          l = Tooltip.winAware.length; i < l; i++) {
+      for (var i = 0, l = Tooltip.winAware.length; i < l; i++) {
         tip = Tooltip.winAware[i];
         tip.position();
       }
     }
 
     return requestReposition;
-  })();
+  }());
   Tooltip.winAware = [];
 
   // Bind winAware repositioning to window resize event
@@ -1335,11 +1314,6 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
 });
 define('event',["exports"], function (exports) {
   
-
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
 
   var NULL_HANDLER = {};
   var events = {};
@@ -1410,111 +1384,69 @@ define('event',["exports"], function (exports) {
    */
 
   var Emitter = (function () {
+    var Emitter =
     /**
      * @constructor
      */
     function Emitter() {
       this.handler = null;
       this.emit_destroy = createDispatcher("destroy");
-    }
+    };
 
-    _prototypeProperties(Emitter, null, {
-      addHandler: {
+    Emitter.prototype.addHandler = function (callbacks, context) {
+      context = context || this;
+      // add handler
+      this.handler = {
+        callbacks: callbacks,
+        context: context,
+        handler: this.handler
+      };
+    };
 
-        /**
-         * Adds new event handler to object.
-         * @param {object} callbacks Callback set.
-         * @param {object=} context Context object.
-         */
-        value: function (callbacks, context) {
-          context = context || this;
-          // add handler
-          this.handler = {
-            callbacks: callbacks,
-            context: context,
-            handler: this.handler
-          };
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      on: {
-        value: function (name, callback, context) {
-          var obj = {};
-          obj[name] = callback;
-          this.addHandler(obj, context);
-          return obj;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      fire: {
-        value: function (name, data) {
-          createDispatcher.call(this, name).call(this, data);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      removeHandler: {
+    Emitter.prototype.on = function (name, callback, context) {
+      var obj = {};
+      obj[name] = callback;
+      this.addHandler(obj, context);
+      return obj;
+    };
 
-        /**
-         * Removes event handler set from object. For this operation parameters
-         * must be the same (equivalent) as used for addHandler method.
-         * @param {object} callbacks Callback set.
-         * @param {object=} context Context object.
-         */
-        value: function (callbacks, context) {
-          var cursor = this;
-          var prev;
+    Emitter.prototype.fire = function (name, data) {
+      createDispatcher.call(this, name).call(this, data);
+    };
 
-          context = context || this;
+    Emitter.prototype.removeHandler = function (callbacks, context) {
+      var cursor = this;
+      var prev;
 
-          // search for handler and remove it
-          while ((prev = cursor, cursor = cursor.handler)) {
-            // jshint ignore:line
-            if (cursor.callbacks === callbacks && cursor.context === context) {
-              // make it non-callable
-              cursor.callbacks = NULL_HANDLER;
+      context = context || this;
 
-              // remove from list
-              prev.handler = cursor.handler;
+      // search for handler and remove it
+      while (prev = cursor, cursor = cursor.handler) {
+        // jshint ignore:line
+        if (cursor.callbacks === callbacks && cursor.context === context) {
+          // make it non-callable
+          cursor.callbacks = NULL_HANDLER;
 
-              return;
-            }
-          }
+          // remove from list
+          prev.handler = cursor.handler;
 
-
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      destroy: {
-
-        /**
-         * @destructor
-         */
-        value: function () {
-          // fire object destroy event handlers
-          this.emit_destroy();
-          // drop event handlers if any
-          this.handler = null;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
+          return;
+        }
       }
-    });
+
+
+    };
+
+    Emitter.prototype.destroy = function () {
+      // fire object destroy event handlers
+      this.emit_destroy();
+      // drop event handlers if any
+      this.handler = null;
+    };
 
     return Emitter;
   })();
 
-  //
-  // export names
-  //
   exports.Emitter = Emitter;
 });
 define('utils/utils',["exports"], function (exports) {
@@ -1545,8 +1477,8 @@ define('utils/utils',["exports"], function (exports) {
       var top = Math.max.apply(null, domain);
 
       if (low === top) {
-        var k = top >= 0 ? -1 : 1;
-        var d = top || 1;
+        var k = (top >= 0) ? -1 : 1;
+        var d = (top || 1);
         top = top - k * d / m;
       }
 
@@ -1568,21 +1500,21 @@ define('utils/utils',["exports"], function (exports) {
       var deltaLow = low - extent[0];
       var deltaTop = extent[1] - top;
 
-      var limit = step / 2;
+      var limit = (step / 2);
 
       if (low >= 0) {
         // include 0 by default
         extent[0] = 0;
       } else {
-        var koeffLow = deltaLow <= limit ? step : 0;
-        extent[0] = extent[0] - koeffLow;
+        var koeffLow = (deltaLow <= limit) ? step : 0;
+        extent[0] = (extent[0] - koeffLow);
       }
 
       if (top <= 0) {
         // include 0 by default
         extent[1] = 0;
       } else {
-        var koeffTop = deltaTop <= limit ? step : 0;
+        var koeffTop = (deltaTop <= limit) ? step : 0;
         extent[1] = extent[1] + koeffTop;
       }
 
@@ -1597,14 +1529,12 @@ define('utils/utils',["exports"], function (exports) {
 define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   
 
-  /* jshint ignore:start */
   var d3 = _d3;
   /* jshint ignore:end */
   var FORMATS_MAP = {
-
     "x-num-auto": function (x) {
       var v = parseFloat(x.toFixed(2));
-      return Math.abs(v) < 1 ? v.toString() : d3.format("s")(v);
+      return (Math.abs(v) < 1) ? v.toString() : d3.format("s")(v);
     },
 
     percent: function (x) {
@@ -1623,14 +1553,14 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
     month: function (x) {
       var d = new Date(x);
       var m = d.getMonth();
-      var formatSpec = m === 0 ? "%B, %Y" : "%B";
+      var formatSpec = (m === 0) ? "%B, %Y" : "%B";
       return d3.time.format(formatSpec)(x);
     },
 
     "month-short": function (x) {
       var d = new Date(x);
       var m = d.getMonth();
-      var formatSpec = m === 0 ? "%b '%y" : "%b";
+      var formatSpec = (m === 0) ? "%b '%y" : "%b";
       return d3.time.format(formatSpec)(x);
     },
 
@@ -1639,7 +1569,7 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
     quarter: function (x) {
       var d = new Date(x);
       var m = d.getMonth();
-      var q = (m - m % 3) / 3;
+      var q = (m - (m % 3)) / 3;
       return "Q" + (q + 1) + " " + d.getFullYear();
     },
 
@@ -1649,13 +1579,12 @@ define('formatter-registry',["exports", "d3"], function (exports, _d3) {
   };
 
   var FormatterRegistry = {
-
     get: function (formatAlias, nullOrUndefinedAlias) {
       var nullAlias = nullOrUndefinedAlias || "";
 
-      var identity = function (x) {
-        return (x === null || typeof x === "undefined" ? nullAlias : x).toString();
-      };
+      var identity = (function (x) {
+        return (((x === null) || (typeof x === "undefined")) ? nullAlias : x).toString();
+      });
 
       var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
       var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
@@ -1690,7 +1619,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
 
   var utils = _utilsUtils.utils;
   var FormatterRegistry = _formatterRegistry.FormatterRegistry;
-  /* jshint ignore:start */
   var _ = _underscore;
   var d3 = _d3;
   /* jshint ignore:end */
@@ -1706,9 +1634,9 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   };
 
   var cutText = function (textString, widthLimit, getComputedTextLength) {
-    getComputedTextLength = getComputedTextLength || function (d3Text) {
+    getComputedTextLength = getComputedTextLength || (function (d3Text) {
       return d3Text.node().getComputedTextLength();
-    };
+    });
 
     textString.each(function () {
       var textD3 = d3.select(this);
@@ -1720,7 +1648,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
           return memo;
         }
 
-        var text = i > 0 ? [memo, t].join(" ") : t;
+        var text = (i > 0) ? [memo, t].join(" ") : t;
         var len = getComputedTextLength(textD3.text(text));
         if (len < widthLimit) {
           memo = text;
@@ -1738,37 +1666,32 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   };
 
   var wrapText = function (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) {
-    getComputedTextLength = getComputedTextLength || function (d3Text) {
+    getComputedTextLength = getComputedTextLength || (function (d3Text) {
       return d3Text.node().getComputedTextLength();
-    };
+    });
 
     var addLine = function (targetD3, text, lineHeight, x, y, dy, lineNumber) {
-      var dyNew = lineNumber * lineHeight + dy;
+      var dyNew = (lineNumber * lineHeight) + dy;
       return targetD3.append("tspan").attr("x", x).attr("y", y).attr("dy", dyNew + "em").text(text);
     };
 
     textNode.each(function () {
-      var textD3 = d3.select(this),
-          tokens = textD3.text().split(/\s+/),
-          lineHeight = 1.1,
-          // ems
-      x = textD3.attr("x"),
-          y = textD3.attr("y"),
-          dy = parseFloat(textD3.attr("dy"));
+      var textD3 = d3.select(this), tokens = textD3.text().split(/\s+/), lineHeight = 1.1, // ems
+      x = textD3.attr("x"), y = textD3.attr("y"), dy = parseFloat(textD3.attr("dy"));
 
       textD3.text(null);
       var tempSpan = addLine(textD3, null, lineHeight, x, y, dy, 0);
 
       var stopReduce = false;
-      var tokensCount = tokens.length - 1;
+      var tokensCount = (tokens.length - 1);
       var lines = tokens.reduce(function (memo, next, i) {
         if (stopReduce) {
           return memo;
         }
 
-        var isLimit = memo.length === linesLimit || i === tokensCount;
+        var isLimit = (memo.length === linesLimit) || (i === tokensCount);
         var last = memo[memo.length - 1];
-        var text = last !== "" ? last + " " + next : next;
+        var text = (last !== "") ? (last + " " + next) : next;
         var tLen = getComputedTextLength(tempSpan.text(text));
         var over = tLen > widthLimit;
 
@@ -1791,7 +1714,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
         return l.length > 0;
       });
 
-      y = isY ? -1 * (lines.length - 1) * Math.floor(tickLabelFontHeight * 0.5) : y;
+      y = isY ? (-1 * (lines.length - 1) * Math.floor(tickLabelFontHeight * 0.5)) : y;
       lines.forEach(function (text, i) {
         return addLine(textD3, text, lineHeight, x, y, dy, i);
       });
@@ -1807,10 +1730,10 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     var offsetSize = sectorSize / 2;
 
     if (x.scaleType === "ordinal" || x.scaleType === "period") {
-      var isHorizontal = "h" === getOrientation(x.guide.scaleOrient);
+      var isHorizontal = ("h" === getOrientation(x.guide.scaleOrient));
 
-      var key = isHorizontal ? "x" : "y";
-      var val = isHorizontal ? offsetSize : -offsetSize;
+      var key = (isHorizontal) ? "x" : "y";
+      var val = (isHorizontal) ? offsetSize : (-offsetSize);
 
       selection.attr(key + "1", val).attr(key + "2", val);
     }
@@ -1818,7 +1741,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
 
   var decorateAxisLabel = function (nodeScale, x) {
     var orient = getOrientation(x.guide.scaleOrient);
-    var koeff = "h" === orient ? 1 : -1;
+    var koeff = ("h" === orient) ? 1 : -1;
     var labelTextNode = nodeScale.append("text").attr("transform", rotate(x.guide.label.rotate)).attr("class", x.guide.label.cssClass).attr("x", koeff * x.guide.size * 0.5).attr("y", koeff * x.guide.label.padding).style("text-anchor", x.guide.label.textAnchor);
 
     var delimiter = " > ";
@@ -1827,22 +1750,22 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     tags.forEach(function (token, i) {
       labelTextNode.append("tspan").attr("class", "label-token label-token-" + i).text(token);
 
-      if (i < tLen - 1) {
+      if (i < (tLen - 1)) {
         labelTextNode.append("tspan").attr("class", "label-token-delimiter label-token-delimiter-" + i).text(delimiter);
       }
     });
 
     if (x.guide.label.dock === "right") {
       var box = nodeScale.selectAll("path.domain").node().getBBox();
-      labelTextNode.attr("x", orient === "h" ? box.width : 0);
+      labelTextNode.attr("x", (orient === "h") ? (box.width) : 0);
     } else if (x.guide.label.dock === "left") {
       var box = nodeScale.selectAll("path.domain").node().getBBox();
-      labelTextNode.attr("x", orient === "h" ? 0 : -box.height);
+      labelTextNode.attr("x", (orient === "h") ? 0 : (-box.height));
     }
   };
 
   var decorateTickLabel = function (nodeScale, x) {
-    var isHorizontal = "h" === getOrientation(x.guide.scaleOrient);
+    var isHorizontal = ("h" === getOrientation(x.guide.scaleOrient));
 
     var angle = x.guide.rotate;
 
@@ -1888,7 +1811,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     if (linesOptions.length > 0) {
       var gridLines = grid.append("g").attr("class", "grid-lines");
 
-      if (linesOptions.indexOf("x") > -1 && node.x.scaleDim) {
+      if ((linesOptions.indexOf("x") > -1) && node.x.scaleDim) {
         var x = node.x;
         var xGridAxis = d3.svg.axis().scale(x.scaleObj).orient(x.guide.scaleOrient).tickSize(H);
 
@@ -1910,7 +1833,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
         }
       }
 
-      if (linesOptions.indexOf("y") > -1 && node.y.scaleDim) {
+      if ((linesOptions.indexOf("y") > -1) && node.y.scaleDim) {
         var y = node.y;
         var yGridAxis = d3.svg.axis().scale(y.scaleObj).orient(y.guide.scaleOrient).tickSize(-W);
 
@@ -1997,8 +1920,6 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     cutText: cutText,
     wrapText: wrapText
   };
-  /* jshint ignore:end */
-
   exports.utilsDraw = utilsDraw;
 });
 define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", "./formatter-registry"], function (exports, _utilsUtils, _utilsUtilsDraw, _formatterRegistry) {
@@ -2094,7 +2015,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     var specifier = "*";
     if (dimType === "measure" && scaleType === "time") {
       var src = meta.source.filter(function (x) {
-        return x !== null;
+        return (x !== null);
       }).sort();
       var resolutionAvg = 0;
       if (src.length > 1) {
@@ -2134,8 +2055,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);
 
-    var isXContinues = dimX.dimType === "measure";
-    var isYContinues = dimY.dimType === "measure";
+    var isXContinues = (dimX.dimType === "measure");
+    var isYContinues = (dimY.dimType === "measure");
 
     var xDensityPadding = settings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? settings["xDensityPadding:" + dimX.dimType] : settings.xDensityPadding;
 
@@ -2157,8 +2078,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       unit.guide.y.tickFormat += "-short";
     }
 
-    var xIsEmptyAxis = xValues.length === 0;
-    var yIsEmptyAxis = yValues.length === 0;
+    var xIsEmptyAxis = (xValues.length === 0);
+    var yIsEmptyAxis = (yValues.length === 0);
 
     var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
@@ -2239,17 +2160,17 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     unit.guide.y.density = yTickBox.h + yDensityPadding * 2;
 
     if (!inlineLabels) {
-      unit.guide.x.label.padding = +xFontLabelHeight + (unit.guide.x.label.text ? xFontH + distToXAxisLabel : 0);
-      unit.guide.y.label.padding = -xFontLabelHeight + (unit.guide.y.label.text ? yFontW + distToYAxisLabel : 0);
+      unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
+      unit.guide.y.label.padding = -xFontLabelHeight + ((unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0);
 
-      var xLabelPadding = unit.guide.x.label.text ? unit.guide.x.label.padding + xFontLabelHeight : xFontH;
-      var yLabelPadding = unit.guide.y.label.text ? unit.guide.y.label.padding + yFontLabelHeight : yFontW;
+      var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+      var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
       unit.guide.padding.b = xAxisPadding + xLabelPadding - xTickWidth;
       unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
-      unit.guide.padding.b = unit.guide.x.hide ? 0 : unit.guide.padding.b;
-      unit.guide.padding.l = unit.guide.y.hide ? 0 : unit.guide.padding.l;
+      unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+      unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
     } else {
       var pd = (xAxisPadding - xFontLabelHeight) / 2;
       unit.guide.x.label.padding = 0 + xFontLabelHeight - distToXAxisLabel + pd;
@@ -2271,8 +2192,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       unit.guide.padding.b = xAxisPadding + xFontH;
       unit.guide.padding.l = yAxisPadding + yFontW;
 
-      unit.guide.padding.b = unit.guide.x.hide ? 0 : unit.guide.padding.b;
-      unit.guide.padding.l = unit.guide.y.hide ? 0 : unit.guide.padding.l;
+      unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+      unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
     }
 
     unit.guide.x.tickFontHeight = maxXTickSize.height;
@@ -2292,7 +2213,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
 
   var SpecEngineTypeMap = {
-
     NONE: function (srcSpec, meta, settings) {
       var spec = utils.clone(srcSpec);
       fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
@@ -2320,8 +2240,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
           return unit;
         }
 
-        if (!xUnit && unit.x) xUnit = unit;
-        if (!yUnit && unit.y) yUnit = unit;
+        if (!xUnit && unit.x) (xUnit = unit);
+        if (!yUnit && unit.y) (yUnit = unit);
 
         unit.guide = unit.guide || {};
 
@@ -2378,7 +2298,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
           unit.guide.showGridLines = "xy";
         }
 
-        var isFacetUnit = !selectorPredicates.isLeaf && !selectorPredicates.isLeafParent;
+        var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
         if (isFacetUnit) {
           // unit is a facet!
           unit.guide.x.cssClass += " facet-axis";
@@ -2388,8 +2308,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var dimX = meta.dimension(unit.x);
         var dimY = meta.dimension(unit.y);
 
-        var isXContinues = dimX.dimType === "measure";
-        var isYContinues = dimY.dimType === "measure";
+        var isXContinues = (dimX.dimType === "measure");
+        var isYContinues = (dimY.dimType === "measure");
 
         var xDensityPadding = settings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? settings["xDensityPadding:" + dimX.dimType] : settings.xDensityPadding;
 
@@ -2404,8 +2324,8 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
         unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
 
-        var xIsEmptyAxis = xValues.length === 0;
-        var yIsEmptyAxis = yValues.length === 0;
+        var xIsEmptyAxis = (xValues.length === 0);
+        var yIsEmptyAxis = (yValues.length === 0);
 
         var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
@@ -2431,18 +2351,18 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
         var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
 
-        if (!isXContinues && maxXTickH > settings.xAxisTickLabelLimit) {
+        if (!isXContinues && (maxXTickH > settings.xAxisTickLabelLimit)) {
           maxXTickH = settings.xAxisTickLabelLimit;
         }
 
-        if (!isXVertical && maxXTickSize.width > settings.xAxisTickLabelLimit) {
+        if (!isXVertical && (maxXTickSize.width > settings.xAxisTickLabelLimit)) {
           unit.guide.x.tickFormatWordWrap = true;
           unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
           maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
         }
 
         var maxYTickW = maxYTickSize.width;
-        if (!isYContinues && maxYTickW > settings.yAxisTickLabelLimit) {
+        if (!isYContinues && (maxYTickW > settings.yAxisTickLabelLimit)) {
           maxYTickW = settings.yAxisTickLabelLimit;
           unit.guide.y.tickFormatWordWrap = true;
           unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
@@ -2458,7 +2378,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         var distToYAxisLabel = settings.distToYAxisLabel;
 
 
-        var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, isXVertical ? maxXTickSize.height : maxXTickSize.width);
+        var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
         unit.guide.x.density = xTickLabelW + xDensityPadding * 2;
 
         var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
@@ -2467,19 +2387,19 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
         unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
 
 
-        unit.guide.x.label.padding = unit.guide.x.label.text ? xFontH + distToXAxisLabel : 0;
-        unit.guide.y.label.padding = unit.guide.y.label.text ? yFontW + distToYAxisLabel : 0;
+        unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
+        unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
 
-        var xLabelPadding = unit.guide.x.label.text ? unit.guide.x.label.padding + xFontLabelHeight : xFontH;
-        var yLabelPadding = unit.guide.y.label.text ? unit.guide.y.label.padding + yFontLabelHeight : yFontW;
+        var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
+        var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
 
 
         unit.guide.padding.b = xAxisPadding + xLabelPadding;
         unit.guide.padding.l = yAxisPadding + yLabelPadding;
 
-        unit.guide.padding.b = unit.guide.x.hide ? 0 : unit.guide.padding.b;
-        unit.guide.padding.l = unit.guide.y.hide ? 0 : unit.guide.padding.l;
+        unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
+        unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
 
         unit.guide.x.tickFontHeight = maxXTickSize.height;
         unit.guide.y.tickFontHeight = maxYTickSize.height;
@@ -2558,7 +2478,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
 
   var SpecEngineFactory = {
     get: function (typeName, settings) {
-      var engine = SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE;
+      var engine = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
       return function (srcSpec, meta) {
         return engine(srcSpec, meta, settings);
       };
@@ -2589,7 +2509,6 @@ define('matrix',["exports"], function (exports) {
     };
 
     Matrix.prototype = {
-
       iterate: function (iterator) {
         var cube = this.cube;
         _.each(cube, function (row, ir) {
@@ -2647,13 +2566,12 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
   };
 
   var LayoutEngineTypeMap = {
-
-    NONE: function (rootNode) {
+    NONE: (function (rootNode) {
       return rootNode;
-    },
+    }),
 
     EXTRACT: function (rootNode) {
-      var traverse = function (rootNodeMatrix, depth, rule) {
+      var traverse = (function (rootNodeMatrix, depth, rule) {
         var matrix = rootNodeMatrix;
 
         var rows = matrix.sizeR();
@@ -2662,10 +2580,10 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
         matrix.iterate(function (r, c, subNodes) {
           subNodes.forEach(function (unit) {
             return rule(unit, {
-              firstRow: r === 0,
-              firstCol: c === 0,
-              lastRow: r === rows - 1,
-              lastCol: c === cols - 1,
+              firstRow: (r === 0),
+              firstCol: (c === 0),
+              lastRow: (r === (rows - 1)),
+              lastCol: (c === (cols - 1)),
               depth: depth
             });
           });
@@ -2677,7 +2595,7 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
             traverse(unit.$matrix, depth - 1, rule);
           });
         });
-      };
+      });
 
       var coordNode = utils.clone(rootNode);
 
@@ -2719,14 +2637,14 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
       traverse(coordMatrix, box.depth, function (unit, selectorPredicates) {
         var depth = selectorPredicates.depth;
 
-        unit.guide.x.hide = unit.guide.x.hide ? unit.guide.x.hide : !selectorPredicates.lastRow;
-        unit.guide.y.hide = unit.guide.y.hide ? unit.guide.y.hide : !selectorPredicates.firstCol;
+        unit.guide.x.hide = (unit.guide.x.hide) ? unit.guide.x.hide : !selectorPredicates.lastRow;
+        unit.guide.y.hide = (unit.guide.y.hide) ? unit.guide.y.hide : !selectorPredicates.firstCol;
 
-        var positiveFeedbackLoop = depth > 1 ? 0 : distanceBetweenFacets;
-        var negativeFeedbackLoop = depth > 1 ? distanceBetweenFacets : 0;
+        var positiveFeedbackLoop = (depth > 1) ? 0 : distanceBetweenFacets;
+        var negativeFeedbackLoop = (depth > 1) ? distanceBetweenFacets : 0;
 
-        unit.guide.x.padding += box.paddings[depth].b;
-        unit.guide.y.padding += box.paddings[depth].l;
+        unit.guide.x.padding += (box.paddings[depth].b);
+        unit.guide.y.padding += (box.paddings[depth].l);
 
         unit.guide.x.padding -= negativeFeedbackLoop;
         unit.guide.y.padding -= negativeFeedbackLoop;
@@ -2744,10 +2662,9 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
   };
 
   var LayoutEngineFactory = {
-
-    get: function (typeName) {
-      return LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap.NONE;
-    }
+    get: (function (typeName) {
+      return (LayoutEngineTypeMap[typeName] || LayoutEngineTypeMap.NONE);
+    })
 
   };
 
@@ -2756,41 +2673,30 @@ define('layout-engine-factory',["exports", "./utils/utils", "./utils/utils-draw"
 define('plugins',["exports"], function (exports) {
   
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
   //plugins
   /** @class
    * @extends Plugin */
   var Plugins = (function () {
+    var Plugins =
     /** @constructs */
     function Plugins(plugins, chart) {
       this.chart = chart;
       this._plugins = plugins.map(this.initPlugin, this);
-    }
+    };
 
-    _prototypeProperties(Plugins, null, {
-      initPlugin: {
-        value: function (plugin) {
-          var _this = this;
-          if (plugin.init) {
-            plugin.init(this.chart);
-          }
-          this.chart.on("destroy", plugin.destroy && plugin.destroy.bind(plugin) || function () {});
-          Object.keys(plugin).forEach(function (name) {
-            if (name.indexOf("on") === 0) {
-              var event = name.substr(2);
-              _this.chart.on(event.toLowerCase(), plugin[name].bind(plugin));
-            }
-          });
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
+    Plugins.prototype.initPlugin = function (plugin) {
+      var _this = this;
+      if (plugin.init) {
+        plugin.init(this.chart);
       }
-    });
+      this.chart.on("destroy", plugin.destroy && plugin.destroy.bind(plugin) || (function () {}));
+      Object.keys(plugin).forEach(function (name) {
+        if (name.indexOf("on") === 0) {
+          var event = name.substr(2);
+          _this.chart.on(event.toLowerCase(), plugin[name].bind(plugin));
+        }
+      });
+    };
 
     return Plugins;
   })();
@@ -2818,7 +2724,6 @@ define('unit-domain-period-generator',["exports"], function (exports) {
   
 
   var PERIODS_MAP = {
-
     day: {
       cast: function (date) {
         return new Date(date.setHours(0, 0, 0, 0));
@@ -2855,7 +2760,7 @@ define('unit-domain-period-generator',["exports"], function (exports) {
         date = new Date(date.setHours(0, 0, 0, 0));
         date = new Date(date.setDate(1));
         var currentMonth = date.getMonth();
-        var firstQuarterMonth = currentMonth - currentMonth % 3;
+        var firstQuarterMonth = currentMonth - (currentMonth % 3);
         return new Date(date.setMonth(firstQuarterMonth));
       },
       next: function (prevDate) {
@@ -2877,7 +2782,6 @@ define('unit-domain-period-generator',["exports"], function (exports) {
   };
 
   var UnitDomainPeriodGenerator = {
-
     add: function (periodAlias, obj) {
       PERIODS_MAP[periodAlias.toLowerCase()] = obj;
       return this;
@@ -2904,17 +2808,54 @@ define('unit-domain-period-generator',["exports"], function (exports) {
 
   exports.UnitDomainPeriodGenerator = UnitDomainPeriodGenerator;
 });
-define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./utils/utils", "underscore", "d3"], function (exports, _unitDomainPeriodGenerator, _utilsUtils, _underscore, _d3) {
+define('size',["exports"], function (exports) {
   
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
+  var f = function (x) {
+    return Math.sqrt(x);
   };
+
+  var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
+    var values = _.filter(srcValues, _.isFinite);
+
+    if (values.length === 0) {
+      return function (x) {
+        return normalSize;
+      };
+    }
+
+    var k = 1;
+    var xMin = 0;
+
+    var min = Math.min.apply(null, values);
+    var max = Math.max.apply(null, values);
+
+    var len = f(Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]));
+
+    xMin = (min < 0) ? min : 0;
+    k = (len === 0) ? 1 : ((maxSize - minSize) / len);
+
+    return function (x) {
+      var numX = (x !== null) ? parseFloat(x) : 0;
+
+      if (!_.isFinite(numX)) {
+        return maxSize;
+      }
+
+      var posX = (numX - xMin); // translate to positive x domain
+
+      return (minSize + (f(posX) * k));
+    };
+  };
+
+  exports.sizeScale = sizeScale;
+});
+define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./utils/utils", "./size", "underscore", "d3"], function (exports, _unitDomainPeriodGenerator, _utilsUtils, _size, _underscore, _d3) {
+  
 
   var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
   var utils = _utilsUtils.utils;
-  /* jshint ignore:start */
+  var sizeScale = _size.sizeScale;
   var _ = _underscore;
   var d3 = _d3;
   /* jshint ignore:end */
@@ -2925,7 +2866,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
     },
 
     linear: function (inputValues, props) {
-      var domainParam = props.autoScale ? utils.autoScale(inputValues) : d3.extent(inputValues);
+      var domainParam = (props.autoScale) ? utils.autoScale(inputValues) : d3.extent(inputValues);
 
       var min = _.isNumber(props.min) ? props.min : domainParam[0];
       var max = _.isNumber(props.max) ? props.max : domainParam[1];
@@ -2935,8 +2876,8 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
     period: function (inputValues, props) {
       var domainParam = d3.extent(inputValues);
-      var min = _.isNull(props.min) || _.isUndefined(props.min) ? domainParam[0] : new Date(props.min).getTime();
-      var max = _.isNull(props.max) || _.isUndefined(props.max) ? domainParam[1] : new Date(props.max).getTime();
+      var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
+      var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
 
       var range = [new Date(Math.min(min, domainParam[0])), new Date(Math.max(max, domainParam[1]))];
 
@@ -2945,15 +2886,14 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
     time: function (inputValues, props) {
       var domainParam = d3.extent(inputValues);
-      var min = _.isNull(props.min) || _.isUndefined(props.min) ? domainParam[0] : new Date(props.min).getTime();
-      var max = _.isNull(props.max) || _.isUndefined(props.max) ? domainParam[1] : new Date(props.max).getTime();
+      var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
+      var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
 
       return [new Date(Math.min(min, domainParam[0])), new Date(Math.max(max, domainParam[1]))];
     }
   };
 
   var rangeMethods = {
-
     ordinal: function (inputValues, interval) {
       return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
     },
@@ -2972,25 +2912,25 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
   };
 
   var UnitDomainMixin = (function () {
-    function UnitDomainMixin(meta, data) {
+    var UnitDomainMixin = function UnitDomainMixin(meta, data) {
       var getPropMapper = function (prop) {
-        return function (propObj) {
-          var xObject = propObj || {};
+        return (function (propObj) {
+          var xObject = (propObj || {});
           return xObject.hasOwnProperty(prop) ? xObject[prop] : null;
-        };
+        });
       };
 
       var getValueMapper = function (dim) {
         var d = meta[dim] || {};
-        var f = d.value ? getPropMapper(d.value) : function (x) {
+        var f = d.value ? getPropMapper(d.value) : (function (x) {
           return x;
-        };
+        });
 
         var isTime = _.contains(["period", "time"], d.scale);
 
-        return isTime ? _.compose(function (v) {
-          return new Date(v).getTime();
-        }, f) : f;
+        return isTime ? _.compose((function (v) {
+          return (new Date(v)).getTime();
+        }), f) : f;
       };
 
       var getOrder = function (dim) {
@@ -3000,14 +2940,13 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
       var getDomainSortStrategy = function (type) {
         var map = {
-
           category: function (dim, fnMapperId, domain) {
             return domain;
           },
 
           order: function (dim, fnMapperId, domain) {
             var metaOrder = getOrder(dim);
-            return metaOrder ? _.union(metaOrder, domain) : // arguments order is important
+            return (metaOrder) ? _.union(metaOrder, domain) : // arguments order is important
             _.sortBy(domain, fnMapperId);
           },
 
@@ -3015,9 +2954,9 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
             return _.sortBy(domain, fnMapperId);
           },
 
-          "as-is": function (dim, fnMapperId, domain) {
+          "as-is": (function (dim, fnMapperId, domain) {
             return domain;
-          }
+          })
         };
 
         return map[type] || map["as-is"];
@@ -3025,7 +2964,6 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
       var getScaleSortStrategy = function (type) {
         var map = {
-
           category: getDomainSortStrategy("category"),
 
           order: getDomainSortStrategy("order"),
@@ -3056,9 +2994,9 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
           };
         });
         return _(data).filter(function (row) {
-          return _.every(predicates, function (p) {
+          return _.every(predicates, (function (p) {
             return p(row);
-          });
+          }));
         });
       };
 
@@ -3094,15 +3032,15 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
         var fValHub = {
           "order:period": function (xOptions) {
-            return function (x) {
+            return (function (x) {
               return UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x));
-            };
+            });
           },
 
           "*": function (opts) {
-            return function (x) {
+            return (function (x) {
               return x;
-            };
+            });
           }
         };
 
@@ -3135,16 +3073,15 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
         };
         // have to copy properties since d3 produce Function with methods
         Object.keys(func).forEach(function (p) {
-          return wrap[p] = func[p];
+          return (wrap[p] = func[p]);
         });
         return wrap;
       };
 
       this.fnScaleColor = function (scaleDim, brewer, options) {
         var opts = options || {};
-        var dimx = _.defaults({}, meta[scaleDim]);
 
-        var info = _scaleMeta(scaleDim, options);
+        var info = _scaleMeta(scaleDim, opts);
 
         var defaultColorClass = _.constant("color-default");
 
@@ -3153,7 +3090,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
         });
 
         var buildArrayGetClass = function (domain, brewer) {
-          if (domain.length === 0 || domain.length === 1 && domain[0] === null) {
+          if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
             return defaultColorClass;
           } else {
             var fullDomain = domain.map(function (x) {
@@ -3202,7 +3139,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
         wrap.legend = function (domainPropObject) {
           var value = info.extract(domainPropObject);
-          var label = opts.tickLabel ? (domainPropObject || {})[opts.tickLabel] : value;
+          var label = (opts.tickLabel) ? ((domainPropObject || {})[opts.tickLabel]) : (value);
           var color = func(value);
 
           return { value: value, color: color, label: label };
@@ -3210,41 +3147,53 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
         return wrap;
       };
-    }
 
-    _prototypeProperties(UnitDomainMixin, null, {
-      mix: {
-        value: function (unit) {
-          unit.dimension = this.fnDimension;
-          unit.source = this.fnSource;
-          unit.domain = this.fnDomain;
-          unit.scaleMeta = this.fnScaleMeta;
+      this.fnScaleSize = function (scaleDim, range, options) {
+        var opts = options || {};
 
-          unit.scaleTo = this.fnScaleTo;
-          unit.scaleDist = this.fnScaleTo;
-          unit.scaleColor = this.fnScaleColor;
+        var minSize = range[0];
+        var maxSize = range[1];
+        var normalSize = range[range.length - 1];
 
-          unit.partition = function () {
-            return unit.data || unit.source(unit.$where);
-          };
-          unit.groupBy = function (srcValues, splitByProperty) {
-            var varMeta = unit.scaleMeta(splitByProperty);
-            return _.chain(srcValues).groupBy(function (item) {
-              return varMeta.extract(item[splitByProperty]);
-            }).map(function (values) {
-              return {
-                key: varMeta.extract(values[0][splitByProperty]),
-                values: values
-              };
-            }).value();
-          };
-          return unit;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      }
-    });
+        var info = _scaleMeta(scaleDim, opts);
+
+        var func = sizeScale(info.source, minSize, maxSize, normalSize);
+
+        var wrap = function (domainPropObject) {
+          return func(info.extract(domainPropObject));
+        };
+
+        return wrap;
+      };
+    };
+
+    UnitDomainMixin.prototype.mix = function (unit) {
+      unit.dimension = this.fnDimension;
+      unit.source = this.fnSource;
+      unit.domain = this.fnDomain;
+      unit.scaleMeta = this.fnScaleMeta;
+
+      unit.scaleTo = this.fnScaleTo;
+      unit.scaleDist = this.fnScaleTo;
+      unit.scaleColor = this.fnScaleColor;
+      unit.scaleSize = this.fnScaleSize;
+
+      unit.partition = (function () {
+        return unit.data || unit.source(unit.$where);
+      });
+      unit.groupBy = (function (srcValues, splitByProperty) {
+        var varMeta = unit.scaleMeta(splitByProperty);
+        return _.chain(srcValues).groupBy(function (item) {
+          return varMeta.extract(item[splitByProperty]);
+        }).map(function (values) {
+          return ({
+            key: varMeta.extract(values[0][splitByProperty]),
+            values: values
+          });
+        }).value();
+      });
+      return unit;
+    };
 
     return UnitDomainMixin;
   })();
@@ -3257,13 +3206,12 @@ define('units-registry',["exports"], function (exports) {
   var UnitsMap = {};
 
   var UnitsRegistry = {
-
     add: function (unitType, xUnit) {
       var unit = {};
-      unit.draw = typeof xUnit === "function" ? xUnit : xUnit.draw;
-      unit.walk = xUnit.walk || function (x) {
+      unit.draw = (typeof xUnit === "function") ? xUnit : xUnit.draw;
+      unit.walk = xUnit.walk || (function (x) {
         return x;
-      };
+      });
       UnitsMap[unitType] = unit;
       return this;
     },
@@ -3286,7 +3234,6 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
 
 
   var DataProcessor = {
-
     isYFunctionOfX: function (data, xFields, yFields) {
       var isRelationAFunction = true;
       var error = null;
@@ -3336,7 +3283,7 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
     excludeNullValues: function (dimensions, onExclude) {
       var fields = Object.keys(dimensions).reduce(function (fields, k) {
         var d = dimensions[k];
-        if ((!d.hasOwnProperty("hasNull") || d.hasNull) && (d.type === "measure" || d.scale === "period")) {
+        if ((!d.hasOwnProperty("hasNull") || d.hasNull) && ((d.type === "measure") || (d.scale === "period"))) {
           // rule: exclude null values of "measure" type or "period" scale
           fields.push(k);
         }
@@ -3344,7 +3291,7 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
       }, []);
       return function (row) {
         var result = !fields.some(function (f) {
-          return !(f in row) || row[f] === null;
+          return (!(f in row) || (row[f] === null));
         });
         if (!result) {
           onExclude(row);
@@ -3413,7 +3360,7 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
             var detectedType = typeScalePair.type;
             var detectedScale = typeScalePair.scale;
 
-            var isInContraToPrev = memo[key].type !== null && memo[key].type !== detectedType;
+            var isInContraToPrev = (memo[key].type !== null && memo[key].type !== detectedType);
             memo[key].type = isInContraToPrev ? defaultDetect.type : detectedType;
             memo[key].scale = isInContraToPrev ? defaultDetect.scale : detectedScale;
           }
@@ -3469,46 +3416,16 @@ define('utils/layuot-template',["exports", "../const"], function (exports, _cons
 define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../event", "../spec-engine-factory", "../layout-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor", "../utils/layuot-template"], function (exports, _dslReader, _apiBalloon, _event, _specEngineFactory, _layoutEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate) {
   
 
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
-  var _get = function get(object, property, receiver) {
-    var desc = Object.getOwnPropertyDescriptor(object, property);
-
-    if (desc === undefined) {
-      var parent = Object.getPrototypeOf(object);
-
-      if (parent === null) {
-        return undefined;
-      } else {
-        return get(parent, property, receiver);
-      }
-    } else if ("value" in desc && desc.writable) {
-      return desc.value;
-    } else {
-      var getter = desc.get;
-      if (getter === undefined) {
-        return undefined;
-      }
-      return getter.call(receiver);
-    }
-  };
-
-  var _inherits = function (subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
+  var _extends = function (child, parent) {
+    child.prototype = Object.create(parent.prototype, {
       constructor: {
-        value: subClass,
+        value: child,
         enumerable: false,
         writable: true,
         configurable: true
       }
     });
-    if (superClass) subClass.__proto__ = superClass;
+    child.__proto__ = parent;
   };
 
   var DSLReader = _dslReader.DSLReader;
@@ -3537,8 +3454,8 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       var g = root.guide;
       var xmd = g.x.$minimalDomain || 1;
       var ymd = g.y.$minimalDomain || 1;
-      var maxW = Math.max(xmd * g.x.density, xmd * s.w);
-      var maxH = Math.max(ymd * g.y.density, ymd * s.h);
+      var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
+      var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
 
       r = {
         w: maxW + g.padding.l + g.padding.r,
@@ -3562,7 +3479,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
     var yDensityPadding = localSettings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? localSettings["yDensityPadding:" + dimY.dimType] : localSettings.yDensityPadding;
 
-    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && perTickX > root.guide.x.$maxTickTextW + xDensityPadding * 2) {
+    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
       root.guide.x.rotate = 0;
       root.guide.x.textAnchor = "middle";
       root.guide.x.tickFormatWordWrapLimit = perTickX;
@@ -3570,15 +3487,15 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
       var xDelta = 0 - s + root.guide.x.$maxTickTextH;
 
-      root.guide.padding.b += root.guide.padding.b > 0 ? xDelta : 0;
+      root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
 
-      if (root.guide.x.label.padding > s + localSettings.xAxisPadding) {
+      if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
         root.guide.x.label.padding += xDelta;
       }
     }
 
-    if (root.guide.y.hide !== true && root.guide.y.rotate !== 0 && root.guide.y.tickFormatWordWrapLines === 1 && perTickY > root.guide.y.$maxTickTextW + yDensityPadding * 2) {
-      root.guide.y.tickFormatWordWrapLimit = perTickY - yDensityPadding * 2;
+    if (root.guide.y.hide !== true && root.guide.y.rotate !== 0 && (root.guide.y.tickFormatWordWrapLines === 1) && (perTickY > (root.guide.y.$maxTickTextW + yDensityPadding * 2))) {
+      root.guide.y.tickFormatWordWrapLimit = (perTickY - yDensityPadding * 2);
     }
 
     var newSize = {
@@ -3592,8 +3509,8 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
   };
 
   var Plot = (function (Emitter) {
-    function Plot(config) {
-      _get(Object.getPrototypeOf(Plot.prototype), "constructor", this).call(this);
+    var Plot = function Plot(config) {
+      Emitter.call(this);
       this._svg = null;
       this._filtersStore = {
         filters: {},
@@ -3603,288 +3520,225 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
       this.setupConfig(config);
       //plugins
       this._plugins = new Plugins(this.config.plugins, this);
-    }
+    };
 
-    _inherits(Plot, Emitter);
+    _extends(Plot, Emitter);
 
-    _prototypeProperties(Plot, null, {
-      setupConfig: {
-        value: function (config) {
-          this.config = _.defaults(config, {
-            spec: {},
-            data: [],
-            plugins: [],
-            settings: {}
-          });
-          this._emptyContainer = config.emptyContainer || "";
-          // TODO: remove this particular config cases
-          this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
-          this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
-          this.config.settings = this.setupSettings(this.config.settings);
-          if (!utils.isArray(this.config.settings.specEngine)) {
-            this.config.settings.specEngine = [{
-              width: Number.MAX_VALUE,
-              name: this.config.settings.specEngine
-            }];
-          }
-
-          this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
-
-          var log = this.config.settings.log;
-          if (this.config.settings.excludeNull) {
-            this.addFilter({
-              tag: "default",
-              predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
-                log([item, "point was excluded, because it has undefined values."], "WARN");
-              })
-            });
-          }
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      getConfig: {
-        value: function () {
-          return this.config;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      setupMetaInfo: {
-        value: function (dims, data) {
-          var meta = dims ? dims : DataProcessor.autoDetectDimTypes(data);
-          return DataProcessor.autoAssignScales(meta);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      setupSettings: {
-        value: function (configSettings) {
-          var globalSettings = Plot.globalSettings;
-          var localSettings = {};
-          Object.keys(globalSettings).forEach(function (k) {
-            localSettings[k] = _.isFunction(globalSettings[k]) ? globalSettings[k] : utils.clone(globalSettings[k]);
-          });
-
-          return _.defaults(configSettings || {}, localSettings);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      insertToRightSidebar: {
-        value: function (el) {
-          return utilsDom.appendTo(el, this._layout.rightSidebar);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      addBalloon: {
-        value: function (conf) {
-          return new Tooltip("", conf || {});
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      renderTo: {
-        value: function (target, xSize) {
-          this._renderGraph = null;
-          this._svg = null;
-          this._defaultSize = _.clone(xSize);
-          var container = d3.select(target);
-          var containerNode = container.node();
-          this._target = target;
-          this._targetSizes = xSize;
-          if (containerNode === null) {
-            throw new Error("Target element not found");
-          }
-          var content = this._layout.content;
-          containerNode.appendChild(this._layout.layout);
-          container = d3.select(this._layout.content);
-          //todo don't compute width if width or height were passed
-          var size = xSize || {};
-          this._layout.content.innerHTML = "";
-          if (!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
-          }
-
-          var drawData = this.getData();
-          if (drawData.length === 0) {
-            this._layout.content.innerHTML = this._emptyContainer;
-            return;
-          }
-          this._targetSizes = size;
-          this._layout.content.innerHTML = "";
-
-          var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
-
-          var specItem = _.find(this.config.settings.specEngine, function (item) {
-            return size.width <= item.width;
-          });
-
-          var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
-
-          var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
-
-          var optimalSize = traverseFromDeep(fullSpec.unit);
-          var recommendedWidth = optimalSize.w;
-          var recommendedHeight = optimalSize.h;
-
-          var scrollSize = utilsDom.getScrollbarWidth();
-
-          var deltaW = size.width - recommendedWidth;
-          var deltaH = size.height - recommendedHeight;
-
-          var screenW = deltaW >= 0 ? size.width : recommendedWidth;
-          var scrollW = deltaH >= 0 ? 0 : scrollSize;
-
-          var screenH = deltaH >= 0 ? size.height : recommendedHeight;
-          var scrollH = deltaW >= 0 ? 0 : scrollSize;
-
-          size.height = screenH - scrollH;
-          size.width = screenW - scrollW;
-
-
-          // optimize full spec depending on size
-          var localSettings = this.config.settings;
-
-          traverseToDeep(domainMixin.mix({}), fullSpec.unit, size, localSettings);
-
-
-          var reader = new DSLReader(domainMixin, UnitsRegistry);
-
-          var chart = this;
-          var logicXGraph = reader.buildGraph(fullSpec);
-          var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
-          var renderGraph = reader.calcLayout(layoutGraph, size);
-          var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), function (unitMeta) {
-            return chart.fire("unitready", unitMeta);
-          });
-          this._renderGraph = renderGraph;
-          this._svg = svgXElement.node();
-          svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
-          this._layout.rightSidebar.style.maxHeight = size.height + "px";
-          this.fire("render", this._svg);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      getData: {
-        value: function (param) {
-          param = param || {};
-          var filters = _.chain(this._filtersStore.filters).values().flatten().reject(function (filter) {
-            return _.contains(param.excludeFilter, filter.tag);
-          }).pluck("predicate").value();
-          return _.filter(this.config.data, _.reduce(filters, function (newPredicate, filter) {
-            return function (x) {
-              return newPredicate(x) && filter(x);
-            };
-          }, function () {
-            return true;
-          }));
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      setData: {
-        value: function (data) {
-          this.config.data = data;
-          this.refresh();
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      getSVG: {
-        value: function () {
-          return this._svg;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      addFilter: {
-        value: function (filter) {
-          var tag = filter.tag;
-          var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
-          var id = this._filtersStore.tick++;
-          filter.id = id;
-          filters.push(filter);
-          this.refresh();
-          return id;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      removeFilter: {
-        value: function (id) {
-          var _this = this;
-          _.each(this._filtersStore.filters, function (filters, key) {
-            _this._filtersStore.filters[key] = _.reject(filters, function (item) {
-              return item.id === id;
-            });
-          });
-          this.refresh();
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      refresh: {
-        value: function () {
-          if (this._target) {
-            this.renderTo(this._target, this._defaultSize);
-          }
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      resize: {
-        value: function () {
-          var sizes = arguments[0] === undefined ? {} : arguments[0];
-          this.renderTo(this._target, sizes);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      select: {
-        value: function (queryFilter) {
-          var r = [];
-
-          if (!this._renderGraph) {
-            return r;
-          }
-
-          var fnTraverseLayout = function (node, iterator) {
-            iterator(node);
-            (node.childUnits || []).forEach(function (subNode) {
-              return fnTraverseLayout(subNode, iterator);
-            });
-          };
-
-          fnTraverseLayout(this._renderGraph, function (node) {
-            if (queryFilter(node)) {
-              r.push(node);
-            }
-          });
-
-          return r;
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
+    Plot.prototype.setupConfig = function (config) {
+      this.config = _.defaults(config, {
+        spec: {},
+        data: [],
+        plugins: [],
+        settings: {}
+      });
+      this._emptyContainer = config.emptyContainer || "";
+      // TODO: remove this particular config cases
+      this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
+      this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
+      this.config.settings = this.setupSettings(this.config.settings);
+      if (!utils.isArray(this.config.settings.specEngine)) {
+        this.config.settings.specEngine = [{
+          width: Number.MAX_VALUE,
+          name: this.config.settings.specEngine
+        }];
       }
-    });
+
+      this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+
+      var log = this.config.settings.log;
+      if (this.config.settings.excludeNull) {
+        this.addFilter({
+          tag: "default",
+          predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
+            log([item, "point was excluded, because it has undefined values."], "WARN");
+          })
+        });
+      }
+    };
+
+    Plot.prototype.getConfig = function () {
+      return this.config;
+    };
+
+    Plot.prototype.setupMetaInfo = function (dims, data) {
+      var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
+      return DataProcessor.autoAssignScales(meta);
+    };
+
+    Plot.prototype.setupSettings = function (configSettings) {
+      var globalSettings = Plot.globalSettings;
+      var localSettings = {};
+      Object.keys(globalSettings).forEach(function (k) {
+        localSettings[k] = (_.isFunction(globalSettings[k])) ? globalSettings[k] : utils.clone(globalSettings[k]);
+      });
+
+      return _.defaults(configSettings || {}, localSettings);
+    };
+
+    Plot.prototype.insertToRightSidebar = function (el) {
+      return utilsDom.appendTo(el, this._layout.rightSidebar);
+    };
+
+    Plot.prototype.addBalloon = function (conf) {
+      return new Tooltip("", conf || {});
+    };
+
+    Plot.prototype.renderTo = function (target, xSize) {
+      this._renderGraph = null;
+      this._svg = null;
+      this._defaultSize = _.clone(xSize);
+      var container = d3.select(target);
+      var containerNode = container.node();
+      this._target = target;
+      this._targetSizes = xSize;
+      if (containerNode === null) {
+        throw new Error("Target element not found");
+      }
+      var content = this._layout.content;
+      containerNode.appendChild(this._layout.layout);
+      container = d3.select(this._layout.content);
+      //todo don't compute width if width or height were passed
+      var size = xSize || {};
+      this._layout.content.innerHTML = "";
+      if (!size.width || !size.height) {
+        size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+      }
+
+      var drawData = this.getData();
+      if (drawData.length === 0) {
+        this._layout.content.innerHTML = this._emptyContainer;
+        return;
+      }
+      this._targetSizes = size;
+      this._layout.content.innerHTML = "";
+
+      var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
+
+      var specItem = _.find(this.config.settings.specEngine, function (item) {
+        return (size.width <= item.width);
+      });
+
+      var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
+
+      var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
+
+      var optimalSize = traverseFromDeep(fullSpec.unit);
+      var recommendedWidth = optimalSize.w;
+      var recommendedHeight = optimalSize.h;
+
+      var scrollSize = utilsDom.getScrollbarWidth();
+
+      var deltaW = (size.width - recommendedWidth);
+      var deltaH = (size.height - recommendedHeight);
+
+      var screenW = (deltaW >= 0) ? size.width : recommendedWidth;
+      var scrollW = (deltaH >= 0) ? 0 : scrollSize;
+
+      var screenH = (deltaH >= 0) ? size.height : recommendedHeight;
+      var scrollH = (deltaW >= 0) ? 0 : scrollSize;
+
+      size.height = screenH - scrollH;
+      size.width = screenW - scrollW;
+
+
+      // optimize full spec depending on size
+      var localSettings = this.config.settings;
+
+      traverseToDeep(domainMixin.mix({}), fullSpec.unit, size, localSettings);
+
+
+      var reader = new DSLReader(domainMixin, UnitsRegistry);
+
+      var chart = this;
+      var logicXGraph = reader.buildGraph(fullSpec);
+      var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
+      var renderGraph = reader.calcLayout(layoutGraph, size);
+      var svgXElement = reader.renderGraph(renderGraph, container.append("svg").attr("class", CSS_PREFIX + "svg").attr("width", size.width).attr("height", size.height), function (unitMeta) {
+        return chart.fire("unitready", unitMeta);
+      });
+      this._renderGraph = renderGraph;
+      this._svg = svgXElement.node();
+      svgXElement.selectAll(".i-role-datum").call(propagateDatumEvents(this));
+      this._layout.rightSidebar.style.maxHeight = size.height + "px";
+      this.fire("render", this._svg);
+    };
+
+    Plot.prototype.getData = function (param) {
+      param = param || {};
+      var filters = _.chain(this._filtersStore.filters).values().flatten().reject(function (filter) {
+        return _.contains(param.excludeFilter, filter.tag);
+      }).pluck("predicate").value();
+      return _.filter(this.config.data, _.reduce(filters, function (newPredicate, filter) {
+        return function (x) {
+          return newPredicate(x) && filter(x);
+        };
+      }, function () {
+        return true;
+      }));
+    };
+
+    Plot.prototype.setData = function (data) {
+      this.config.data = data;
+      this.refresh();
+    };
+
+    Plot.prototype.getSVG = function () {
+      return this._svg;
+    };
+
+    Plot.prototype.addFilter = function (filter) {
+      var tag = filter.tag;
+      var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
+      var id = this._filtersStore.tick++;
+      filter.id = id;
+      filters.push(filter);
+      this.refresh();
+      return id;
+    };
+
+    Plot.prototype.removeFilter = function (id) {
+      var _this = this;
+      _.each(this._filtersStore.filters, function (filters, key) {
+        _this._filtersStore.filters[key] = _.reject(filters, function (item) {
+          return item.id === id;
+        });
+      });
+      this.refresh();
+    };
+
+    Plot.prototype.refresh = function () {
+      if (this._target) {
+        this.renderTo(this._target, this._defaultSize);
+      }
+    };
+
+    Plot.prototype.resize = function (sizes) {
+      if (sizes === undefined) sizes = {};
+      this.renderTo(this._target, sizes);
+    };
+
+    Plot.prototype.select = function (queryFilter) {
+      var r = [];
+
+      if (!this._renderGraph) {
+        return r;
+      }
+
+      var fnTraverseLayout = function (node, iterator) {
+        iterator(node);
+        (node.childUnits || []).forEach(function (subNode) {
+          return fnTraverseLayout(subNode, iterator);
+        });
+      };
+
+      fnTraverseLayout(this._renderGraph, function (node) {
+        if (queryFilter(node)) {
+          r.push(node);
+        }
+      });
+
+      return r;
+    };
 
     return Plot;
   })(Emitter);
@@ -3894,55 +3748,16 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-processor"], function (exports, _tauPlot, _utilsUtils, _dataProcessor) {
   
 
-  var _defineProperty = function (obj, key, value) {
-    return Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  };
-
-  var _prototypeProperties = function (child, staticProps, instanceProps) {
-    if (staticProps) Object.defineProperties(child, staticProps);
-    if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
-  };
-
-  var _get = function get(object, property, receiver) {
-    var desc = Object.getOwnPropertyDescriptor(object, property);
-
-    if (desc === undefined) {
-      var parent = Object.getPrototypeOf(object);
-
-      if (parent === null) {
-        return undefined;
-      } else {
-        return get(parent, property, receiver);
-      }
-    } else if ("value" in desc && desc.writable) {
-      return desc.value;
-    } else {
-      var getter = desc.get;
-      if (getter === undefined) {
-        return undefined;
-      }
-      return getter.call(receiver);
-    }
-  };
-
-  var _inherits = function (subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
+  var _extends = function (child, parent) {
+    child.prototype = Object.create(parent.prototype, {
       constructor: {
-        value: subClass,
+        value: child,
         enumerable: false,
         writable: true,
         configurable: true
       }
     });
-    if (superClass) subClass.__proto__ = superClass;
+    child.__proto__ = parent;
   };
 
   var Plot = _tauPlot.Plot;
@@ -3951,11 +3766,11 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
 
 
   var convertAxis = function (data) {
-    return !data ? null : data;
+    return (!data) ? null : data;
   };
 
   var normalizeSettings = function (axis) {
-    return !utils.isArray(axis) ? [axis] : axis;
+    return (!utils.isArray(axis)) ? [axis] : axis;
   };
 
   var createElement = function (type, config) {
@@ -3978,26 +3793,24 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
     FAIL: "FAIL"
   };
   /* jshint ignore:start */
-  var strategyNormalizeAxis = (function () {
-    var _strategyNormalizeAxis = {};
-
-    _defineProperty(_strategyNormalizeAxis, status.SUCCESS, function (axis) {
+  var strategyNormalizeAxis = (function (_strategyNormalizeAxis) {
+    _strategyNormalizeAxis[status.SUCCESS] = function (axis) {
       return axis;
-    });
+    };
 
-    _defineProperty(_strategyNormalizeAxis, status.FAIL, function (axis, data) {
+    _strategyNormalizeAxis[status.FAIL] = function (axis, data) {
       throw new Error((data.messages || []).join("\n") || "This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
-    });
+    };
 
-    _defineProperty(_strategyNormalizeAxis, status.WARNING, function (axis, config) {
+    _strategyNormalizeAxis[status.WARNING] = function (axis, config) {
       var measure = axis[config.indexMeasureAxis[0]];
       var newAxis = _.without(axis, measure);
       newAxis.push(measure);
       return newAxis;
-    });
+    };
 
     return _strategyNormalizeAxis;
-  })();
+  })({});
   /* jshint ignore:end */
   function validateAxis(dimensions, axis, axisName) {
     return axis.reduce(function (result, item, index) {
@@ -4094,7 +3907,6 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       var log = config.settings.log;
 
       var lineOrientationStrategies = {
-
         none: function (config) {
           return null;
         },
@@ -4168,7 +3980,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
     }
   };
   var Chart = (function (Plot) {
-    function Chart(config) {
+    var Chart = function Chart(config) {
       config = _.defaults(config, { autoResize: true });
       if (config.autoResize) {
         Chart.winAware.push(this);
@@ -4177,28 +3989,21 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
       config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
       var chartFactory = typesChart[config.type];
       if (_.isFunction(chartFactory)) {
-        _get(Object.getPrototypeOf(Chart.prototype), "constructor", this).call(this, chartFactory(config));
+        Plot.call(this, chartFactory(config));
       } else {
         throw new Error("Chart type " + config.type + " is not supported. Use one of " + _.keys(typesChart).join(", ") + ".");
       }
-    }
+    };
 
-    _inherits(Chart, Plot);
+    _extends(Chart, Plot);
 
-    _prototypeProperties(Chart, null, {
-      destroy: {
-        value: function () {
-          var index = Chart.winAware.indexOf(this);
-          if (index !== -1) {
-            Chart.winAware.splice(index, 1);
-          }
-          _get(Object.getPrototypeOf(Chart.prototype), "destroy", this).call(this);
-        },
-        writable: true,
-        enumerable: true,
-        configurable: true
+    Chart.prototype.destroy = function () {
+      var index = Chart.winAware.indexOf(this);
+      if (index !== -1) {
+        Chart.winAware.splice(index, 1);
       }
-    });
+      Plot.prototype.destroy.call(this);
+    };
 
     return Chart;
   })(Plot);
@@ -4219,15 +4024,14 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
     function resize() {
       rIndex = 0;
       var chart;
-      for (var i = 0,
-          l = Chart.winAware.length; i < l; i++) {
+      for (var i = 0, l = Chart.winAware.length; i < l; i++) {
         chart = Chart.winAware[i];
         chart.resize();
       }
     }
 
     return requestReposition;
-  })();
+  }());
   Chart.winAware = [];
   window.addEventListener("resize", Chart.resizeOnWindowEvent);
   exports.Chart = Chart;
@@ -4242,13 +4046,12 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
 
 
   var FacetAlgebra = {
-
     CROSS: function (root, dimX, domainX, dimY, domainY) {
       var domX = domainX.length === 0 ? [null] : domainX;
       var domY = domainY.length === 0 ? [null] : domainY.reverse();
 
       var convert = function (v) {
-        return v instanceof Date ? v.getTime() : v;
+        return (v instanceof Date) ? v.getTime() : v;
       };
 
       return _(domY).map(function (rowVal) {
@@ -4270,9 +4073,9 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   };
 
   var TFuncMap = function (opName) {
-    return FacetAlgebra[opName] || function () {
+    return FacetAlgebra[opName] || (function () {
       return [[{}]];
-    };
+    });
   };
 
   var inheritRootProps = function (unit, root, props) {
@@ -4282,17 +4085,16 @@ define('elements/coords',["exports", "../utils/utils-draw", "../const", "../util
   };
 
   var coords = {
-
     walk: function (unit, continueTraverse) {
       var root = _.defaults(unit, { $where: {} });
 
       var isFacet = _.any(root.unit, function (n) {
-        return n.type.indexOf("COORDS.") === 0;
+        return (n.type.indexOf("COORDS.") === 0);
       });
       var unitFunc = TFuncMap(isFacet ? "CROSS" : "");
 
-      var domainX = root.scaleMeta(root.x, root.guide.x).values;
-      var domainY = root.scaleMeta(root.y, root.guide.y).values;
+      var domainX = root.scaleMeta(root.x, _.omit(root.guide.x, "tickLabel")).values;
+      var domainY = root.scaleMeta(root.y, _.omit(root.guide.y, "tickLabel")).values;
       var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, domainX, root.y, domainY));
       var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
@@ -4395,15 +4197,15 @@ define('elements/line',["exports", "../const", "../utils/css-class-map"], functi
 
     var xScale = options.xScale;
     var yScale = options.yScale;
-    var color = options.color;
+    var colorScale = options.color;
 
-    var categories = node.groupBy(node.partition(), color.dimension);
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
 
     var widthClass = getLineClassesByWidth(options.width);
     var countClass = getLineClassesByCount(categories.length);
     var updateLines = function () {
       this.attr("class", function (d) {
-        return "" + CSS_PREFIX + "line i-role-element i-role-datum line " + color.get(d.key) + " " + widthClass + " " + countClass;
+        return "" + CSS_PREFIX + "line i-role-element i-role-datum line " + colorScale(d.key) + " " + widthClass + " " + countClass;
       });
       var paths = this.selectAll("path").data(function (d) {
         return [d.values];
@@ -4415,7 +4217,7 @@ define('elements/line',["exports", "../const", "../utils/css-class-map"], functi
     var drawPoints = function (points) {
       var update = function () {
         return this.attr("r", 1.5).attr("class", function (d) {
-          return "" + CSS_PREFIX + "dot-line dot-line i-role-element " + CSS_PREFIX + "dot i-role-datum " + color.get(d[color.dimension]);
+          return "" + CSS_PREFIX + "dot-line dot-line i-role-element " + CSS_PREFIX + "dot i-role-datum " + colorScale(d[node.color.scaleDim]);
         }).attr("cx", function (d) {
           return xScale(d[node.x.scaleDim]);
         }).attr("cy", function (d) {
@@ -4481,7 +4283,7 @@ define('elements/point',["exports", "../const"], function (exports, _const) {
       }).attr("cy", function (d) {
         return yScale(d[node.y.scaleDim]);
       }).attr("class", function (d) {
-        return "" + CSS_PREFIX + "dot dot i-role-element i-role-datum " + colorScale.get(d[colorScale.dimension]);
+        return "" + CSS_PREFIX + "dot dot i-role-element i-role-datum " + colorScale(d[node.color.scaleDim]);
       });
     };
 
@@ -4523,12 +4325,11 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   };
 
   var flipHub = {
-
     NORM: function (node, xScale, yScale, width, height, defaultSizeParams, isCategory) {
       var minimalHeight = 1;
       var yMin = Math.min.apply(Math, _toArray(yScale.domain()));
       var isYNumber = !isNaN(yMin);
-      var startValue = !isYNumber || yMin <= 0 ? 0 : yMin;
+      var startValue = (!isYNumber || (yMin <= 0)) ? 0 : yMin;
       var isXNumber = isMeasure(node.x);
 
       var _ref = isXNumber ? defaultSizeParams : getSizesParams({
@@ -4542,28 +4343,28 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
 
       var calculateX = function (d) {
-        return xScale(d[node.x.scaleDim]) - tickWidth / 2;
+        return xScale(d[node.x.scaleDim]) - (tickWidth / 2);
       };
-      var calculateY = isYNumber ? function (d) {
+      var calculateY = isYNumber ? (function (d) {
         var valY = d[node.y.scaleDim];
         var dotY = yScale(Math.max(startValue, valY));
         var h = Math.abs(yScale(valY) - yScale(startValue));
-        var isTooSmall = h < minimalHeight;
-        return isTooSmall && valY > 0 ? dotY - minimalHeight : dotY;
-      } : function (d) {
+        var isTooSmall = (h < minimalHeight);
+        return (isTooSmall && (valY > 0)) ? (dotY - minimalHeight) : dotY;
+      }) : (function (d) {
         return yScale(d[node.y.scaleDim]);
-      };
+      });
 
       var calculateWidth = function (d) {
         return intervalWidth;
       };
-      var calculateHeight = isYNumber ? function (d) {
+      var calculateHeight = isYNumber ? (function (d) {
         var valY = d[node.y.scaleDim];
         var h = Math.abs(yScale(valY) - yScale(startValue));
-        return valY === 0 ? h : Math.max(minimalHeight, h);
-      } : function (d) {
-        return height - yScale(d[node.y.scaleDim]);
-      };
+        return (valY === 0) ? h : Math.max(minimalHeight, h);
+      }) : (function (d) {
+        return (height - yScale(d[node.y.scaleDim]));
+      });
 
       var calculateTranslate = function (d, index) {
         return utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
@@ -4576,7 +4377,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var minimalHeight = 1;
       var xMin = Math.min.apply(Math, _toArray(xScale.domain()));
       var isXNumber = !isNaN(xMin);
-      var startValue = !isXNumber || xMin <= 0 ? 0 : xMin;
+      var startValue = (!isXNumber || (xMin <= 0)) ? 0 : xMin;
       var isYNumber = isMeasure(node.y);
 
       var _ref2 = isYNumber ? defaultSizeParams : getSizesParams({
@@ -4589,26 +4390,26 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var offsetCategory = _ref2.offsetCategory;
 
 
-      var calculateX = isXNumber ? function (d) {
+      var calculateX = isXNumber ? (function (d) {
         var valX = d[node.x.scaleDim];
         var h = Math.abs(xScale(valX) - xScale(startValue));
         var dotX = xScale(Math.min(startValue, valX));
-        var delta = h - minimalHeight;
-        var offset = valX > 0 ? minimalHeight + delta : valX < 0 ? 0 - minimalHeight : 0;
+        var delta = (h - minimalHeight);
+        var offset = (valX > 0) ? (minimalHeight + delta) : ((valX < 0) ? (0 - minimalHeight) : 0);
 
-        var isTooSmall = delta < 0;
-        return isTooSmall ? dotX + offset : dotX;
-      } : 0;
+        var isTooSmall = (delta < 0);
+        return (isTooSmall) ? (dotX + offset) : (dotX);
+      }) : 0;
       var calculateY = function (d) {
-        return yScale(d[node.y.scaleDim]) - tickWidth / 2;
+        return yScale(d[node.y.scaleDim]) - (tickWidth / 2);
       };
-      var calculateWidth = isXNumber ? function (d) {
+      var calculateWidth = isXNumber ? (function (d) {
         var valX = d[node.x.scaleDim];
         var h = Math.abs(xScale(valX) - xScale(startValue));
-        return valX === 0 ? h : Math.max(minimalHeight, h);
-      } : function (d) {
+        return (valX === 0) ? h : Math.max(minimalHeight, h);
+      }) : (function (d) {
         return xScale(d[node.x.scaleDim]);
-      };
+      });
       var calculateHeight = function (d) {
         return intervalWidth;
       };
@@ -4623,28 +4424,26 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
   var interval = function (node) {
     var options = node.options;
 
-    var xScale = options.xScale,
-        yScale = options.yScale,
-        color = options.color;
+    var xScale = options.xScale, yScale = options.yScale, colorScale = options.color;
 
-    var categories = node.groupBy(node.partition(), color.dimension);
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
     var method = flipHub[node.flip ? "FLIP" : "NORM"];
-    var _method = method(node, xScale, yScale, options.width, options.height, {
+    var _ref3 = method(node, xScale, yScale, options.width, options.height, {
       tickWidth: 5,
       intervalWidth: 5,
       offsetCategory: 0
-    }, color.dimension);
+    }, node.color.scaleDim);
 
-    var calculateX = _method.calculateX;
-    var calculateY = _method.calculateY;
-    var calculateWidth = _method.calculateWidth;
-    var calculateHeight = _method.calculateHeight;
-    var calculateTranslate = _method.calculateTranslate;
+    var calculateX = _ref3.calculateX;
+    var calculateY = _ref3.calculateY;
+    var calculateWidth = _ref3.calculateWidth;
+    var calculateHeight = _ref3.calculateHeight;
+    var calculateTranslate = _ref3.calculateTranslate;
 
 
     var updateBar = function () {
       return this.attr("height", calculateHeight).attr("width", calculateWidth).attr("class", function (d) {
-        return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + color.get(d[color.dimension]);
+        return ("i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d[node.color.scaleDim]));
       }).attr("x", calculateX).attr("y", calculateY);
     };
 
@@ -4677,12 +4476,11 @@ define('elements/coords-parallel',["exports", "../utils/utils-draw", "../const",
 
   var inheritRootProps = function (unit, root, props) {
     var r = _.defaults(utils.clone(unit), _.pick.apply(_, [root].concat(props)));
-    r.guide = _.extend(utils.clone(root.guide || {}), r.guide || {});
+    r.guide = _.extend(utils.clone(root.guide || {}), (r.guide || {}));
     return r;
   };
 
   var CoordsParallel = {
-
     walk: function (unit, continueTraverse) {
       var root = _.defaults(unit, { $where: {} });
 
@@ -4761,7 +4559,6 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
 
   var CoordsParallelLine = {
-
     draw: function (node) {
       node.color = node.dimension(node.color, node);
 
@@ -4801,7 +4598,7 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
       var segment = options.width / (node.x.length - 1);
       var segmentMap = {};
       node.x.forEach(function (propName, i) {
-        segmentMap[propName] = i * segment;
+        segmentMap[propName] = (i * segment);
       });
 
       var fnLine = d3.svg.line().x(function (d) {
@@ -4823,49 +4620,7 @@ define('elements/coords-parallel-line',["exports", "../utils/utils-draw", "../co
 
   exports.CoordsParallelLine = CoordsParallelLine;
 });
-define('elements/size',["exports"], function (exports) {
-  
-
-  var f = function (x) {
-    return Math.sqrt(x);
-  };
-
-  var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
-    var values = _.filter(srcValues, _.isFinite);
-
-    if (values.length === 0) {
-      return function (x) {
-        return normalSize;
-      };
-    }
-
-    var k = 1;
-    var xMin = 0;
-
-    var min = Math.min.apply(null, values);
-    var max = Math.max.apply(null, values);
-
-    var len = f(Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]));
-
-    xMin = min < 0 ? min : 0;
-    k = len === 0 ? 1 : (maxSize - minSize) / len;
-
-    return function (x) {
-      var numX = x !== null ? parseFloat(x) : 0;
-
-      if (!_.isFinite(numX)) {
-        return maxSize;
-      }
-
-      var posX = numX - xMin; // translate to positive x domain
-
-      return minSize + f(posX) * k;
-    };
-  };
-
-  exports.sizeScale = sizeScale;
-});
-define('node-map',["exports", "./elements/coords", "./elements/line", "./elements/point", "./elements/interval", "./utils/utils-draw", "./elements/coords-parallel", "./elements/coords-parallel-line", "./elements/size"], function (exports, _elementsCoords, _elementsLine, _elementsPoint, _elementsInterval, _utilsUtilsDraw, _elementsCoordsParallel, _elementsCoordsParallelLine, _elementsSize) {
+define('node-map',["exports", "./elements/coords", "./elements/line", "./elements/point", "./elements/interval", "./utils/utils-draw", "./elements/coords-parallel", "./elements/coords-parallel-line"], function (exports, _elementsCoords, _elementsLine, _elementsPoint, _elementsInterval, _utilsUtilsDraw, _elementsCoordsParallel, _elementsCoordsParallelLine) {
   
 
   var coords = _elementsCoords.coords;
@@ -4875,7 +4630,6 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var utilsDraw = _utilsUtilsDraw.utilsDraw;
   var CoordsParallel = _elementsCoordsParallel.CoordsParallel;
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
-  var sizeScale = _elementsSize.sizeScale;
 
 
   var setupElementNode = function (node, dimensions) {
@@ -4904,14 +4658,14 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
       var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter(function (x) {
         return x !== 0;
       })) * 0.5;
-      node.options.sizeScale = sizeScale(node.domain(node.size.scaleDim), 2, minTickStep, minFontSize);
+      var guideSize = node.guide.size || {};
+      node.options.sizeScale = node.scaleSize(node.size.scaleDim, [2, minTickStep, minFontSize], guideSize);
     }
 
     return node;
   };
 
   var nodeMap = {
-
     "COORDS.RECT": {
       walk: coords.walk,
       draw: function (node, continueTraverse) {
@@ -4992,7 +4746,6 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       }
     },
     globalSettings: {
-
       log: function (msg, type) {
         type = type || "INFO";
         if (!Array.isArray(msg)) {
