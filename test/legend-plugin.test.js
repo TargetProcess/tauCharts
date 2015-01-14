@@ -2,6 +2,8 @@ define(function (require) {
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var legend = require('plugins/legend');
+    var trendline = require('plugins/trendline');
+    var _ = require('underscore');
     var describeChart = testUtils.describeChart;
     var expectLegend = function (expect, chart) {
         var prefix = 'color20';
@@ -84,7 +86,7 @@ define(function (require) {
             autoWidth: true
         }
     );
-    var AssertToogleOnClick = function (context, expect) {
+    var AssertToggleOnClick = function (context, expect) {
         var chart = context.chart;
         var item1;
         var svg;
@@ -114,14 +116,77 @@ define(function (require) {
         expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
         expect(item1.classList.contains('disabled')).not.be.ok;
     };
+    var AssertToggleOnHover = function (context, expect) {
+        var chart = context.chart;
+        var item1;
+        var svg;
+        var prefix = '.color20';
+        var selector = '.graphical-report__legend__guide' + prefix + '-1';
+
+        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
+
+        svg = chart.getSVG();
+        var  isHighlight = function(elements) {
+           return _.every(elements, function(element) {
+               return testUtils.hasClass(element, 'graphical-report__highlighted');
+           });
+        };
+
+        expect(isHighlight(svg.querySelectorAll(prefix + '-1'))).not.be.ok;
+        expect(isHighlight(svg.querySelectorAll(prefix + '-2'))).not.be.ok;
+
+        testUtils.simulateEvent('mouseover', item1);
+
+        expect(isHighlight(svg.querySelectorAll(prefix + '-1'))).to.be.ok;
+        expect(isHighlight(svg.querySelectorAll(prefix + '-2'))).not.be.ok;
+
+        testUtils.simulateEvent('mouseout', item1);
+
+        expect(isHighlight(svg.querySelectorAll(prefix + '-1'))).not.be.ok;
+        expect(isHighlight(svg.querySelectorAll(prefix + '-2'))).not.be.ok;
+    };
     describeChart(
-        "legend should toggle by color",
+        "legend should have right behavior on events for line chart",
+        {
+            type: 'line',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            plugins: [legend(),trendline()]
+        },
+        [{
+            x: 2,
+            y: 2,
+            color: 'yellow'
+
+        },{
+            x: 3,
+            y: 3,
+            color: 'yellow'
+
+        }, {
+            x: 3,
+            y: 4,
+            color: 'green'
+
+        }],
+        function(context) {
+            it("shouldn't render spec", function () {
+                AssertToggleOnHover(context,expect);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+    describeChart(
+        "legend should have right behavior on events",
         {
             type: 'scatterplot',
             x: 'x',
             y: 'y',
             color: 'color',
-            plugins: [legend()]
+            plugins: [legend(),trendline()]
         },
         [{
             x: 2,
@@ -135,8 +200,9 @@ define(function (require) {
 
         }],
         function (context) {
-            it("shouldn't render spec", function () {
-                AssertToogleOnClick(context,expect);
+            it("toggle by color", function () {
+                AssertToggleOnClick(context,expect);
+                AssertToggleOnHover(context,expect);
             });
         },
         {
@@ -166,7 +232,7 @@ define(function (require) {
         }],
         function (context) {
             it("shouldn't render spec", function () {
-                AssertToogleOnClick(context,expect);
+                AssertToggleOnClick(context,expect);
             });
         },
         {
