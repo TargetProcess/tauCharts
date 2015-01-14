@@ -7,14 +7,14 @@ var line = function (node) {
 
     var xScale = options.xScale;
     var yScale = options.yScale;
-    var color = options.color;
+    var colorScale = options.color;
 
-    var categories = node.groupBy(node.partition(), color.dimension);
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
 
     var widthClass = getLineClassesByWidth(options.width);
     var countClass = getLineClassesByCount(categories.length);
     var updateLines = function () {
-        this.attr('class', (d) => `${CSS_PREFIX}line i-role-element i-role-datum line ${color.get(d.key)} ${widthClass} ${countClass}`);
+        this.attr('class', (d) => `${CSS_PREFIX}line i-role-element i-role-datum line ${colorScale(d.key)} ${widthClass} ${countClass}`);
         var paths = this.selectAll('path').data((d) => [d.values]);
         paths.call(updatePaths);
         paths.enter().append('path').call(updatePaths);
@@ -24,7 +24,7 @@ var line = function (node) {
         var update = function () {
             return this
                 .attr('r', 1.5)
-                .attr('class', (d) => `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum ${color.get(d[color.dimension])}`)
+                .attr('class', (d) => `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum ${colorScale(d[node.color.scaleDim])}`)
                 .attr('cx', (d) => xScale(d[node.x.scaleDim]))
                 .attr('cy', (d) => yScale(d[node.y.scaleDim]));
         };

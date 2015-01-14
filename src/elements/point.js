@@ -14,7 +14,7 @@ var point = function (node) {
             .attr('r',      (d) => sizeScale(d[node.size.scaleDim]))
             .attr('cx',     (d) => xScale(d[node.x.scaleDim]))
             .attr('cy',     (d) => yScale(d[node.y.scaleDim]))
-            .attr('class',  (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${colorScale.get(d[colorScale.dimension])}`);
+            .attr('class',  (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${colorScale(d[node.color.scaleDim])}`);
     };
 
     var elements = options.container.selectAll('.dot').data(node.partition());

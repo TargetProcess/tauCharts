@@ -107,9 +107,9 @@ var interval = function (node) {
 
     var xScale = options.xScale,
         yScale = options.yScale,
-        color = options.color;
+        colorScale = options.color;
 
-    var categories = node.groupBy(node.partition(), color.dimension);
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
     var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
     var {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate} = method(
         node,
@@ -122,14 +122,14 @@ var interval = function (node) {
             intervalWidth: 5,
             offsetCategory: 0
         },
-        color.dimension
+        node.color.scaleDim
     );
 
     var updateBar = function () {
         return this
             .attr('height', calculateHeight)
             .attr('width', calculateWidth)
-            .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${color.get(d[color.dimension])}`))
+            .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[node.color.scaleDim])}`))
             .attr('x', calculateX)
             .attr('y', calculateY);
     };
