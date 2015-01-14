@@ -5,7 +5,6 @@ import {interval} from './elements/interval';
 import {utilsDraw} from './utils/utils-draw';
 import {CoordsParallel} from './elements/coords-parallel';
 import {CoordsParallelLine} from './elements/coords-parallel-line';
-import {sizeScale} from './elements/size';
 
 var setupElementNode = (node, dimensions) => {
 
@@ -32,7 +31,6 @@ var setupElementNode = (node, dimensions) => {
         var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter((x) => x !== 0)) * 0.5;
         var guideSize = node.guide.size || {};
         node.options.sizeScale = node.scaleSize(node.size.scaleDim, [2, minTickStep, minFontSize], guideSize);
-        //sizeScale(node.domain(node.size.scaleDim), 2, minTickStep, minFontSize);
     }
 
     return node;

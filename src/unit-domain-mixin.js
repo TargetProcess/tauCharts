@@ -1,5 +1,6 @@
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {utils} from './utils/utils';
+import {sizeScale} from './size';
 /* jshint ignore:start */
 import * as _ from 'underscore';
 import * as d3 from 'd3';
@@ -290,45 +291,7 @@ export class UnitDomainMixin {
 
             var info = _scaleMeta(scaleDim, opts);
 
-            var f = (x) => Math.sqrt(x);
-
-            var values = _.filter(info.source, _.isFinite);
-
-            var func;
-
-            if (values.length === 0) {
-                func = ((x) => normalSize);
-            }
-            else {
-                var k = 1;
-                var xMin = 0;
-
-                var min = Math.min.apply(null, values);
-                var max = Math.max.apply(null, values);
-
-                var len = f(Math.max.apply(
-                    null,
-                    [
-                        Math.abs(min),
-                        Math.abs(max),
-                        max - min
-                    ]));
-
-                xMin = (min < 0) ? min : 0;
-                k = (len === 0) ? 1 : ((maxSize - minSize) / len);
-
-                func = (x) => {
-                    var numX = (x !== null) ? parseFloat(x) : 0;
-
-                    if (!_.isFinite(numX)) {
-                        return maxSize;
-                    }
-
-                    var posX = (numX - xMin); // translate to positive x domain
-
-                    return (minSize + (f(posX) * k));
-                };
-            }
+            var func = sizeScale(info.source, minSize, maxSize, normalSize);
 
             var wrap = (domainPropObject) => func(info.extract(domainPropObject));
 

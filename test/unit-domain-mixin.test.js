@@ -219,6 +219,16 @@ define(function (require) {
             assert.equal(scaleRole.hasOwnProperty('rangeRoundBands'), true, 'should support d3 scale interface');
         });
 
+        it("should decorate with [scaleSize] method", function () {
+            var unit0 = decorator.mix({});
+            expect(unit0.hasOwnProperty('scaleSize')).to.be.ok;
+        });
+
+        it("should decorate with [scaleColor] method", function () {
+            var unit0 = decorator.mix({});
+            expect(unit0.hasOwnProperty('scaleColor')).to.be.ok;
+        });
+
         it("should decorate with [partition] method", function () {
 
             var unit0 = decorator.mix({

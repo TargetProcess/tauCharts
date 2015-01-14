@@ -1,7 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var assert = require('chai').assert;
-    var sizeScale = require('tau_modules/elements/size').sizeScale;
+    var sizeScale = require('tau_modules/size').sizeScale;
 
     var check = function(sizeScale, samples) {
         samples.forEach(function(s) {
