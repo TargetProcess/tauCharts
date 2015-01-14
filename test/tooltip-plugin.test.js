@@ -180,7 +180,11 @@ define(function (require) {
                         );
                         return d.resolve();
                     })
+                    .then(function(){
+                        return hideTooltip(expect, context.chart);
+                    })
                     .always(function () {
+
                         window.setTimeout = originTimeout;
                         done();
                     });
@@ -333,7 +337,7 @@ define(function (require) {
             }
     ],
         function (context) {
-            it('should support getFields parameter', function (done) {
+            it('should format labels', function (done) {
                 var originTimeout = stubTimeout();
 
                 var validateLabel = function($content, label, value){
