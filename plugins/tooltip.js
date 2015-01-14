@@ -212,7 +212,7 @@
                 var collect = function(field, unit){
                     var property = unit[field];
                     if (property) {
-                        var guide = unit.guide[field];
+                        var guide = (unit.guide || {})[field];
 
                         if (guide) {
                             if (!dimensionGuideMap[property]) {
