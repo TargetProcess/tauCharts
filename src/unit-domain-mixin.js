@@ -217,6 +217,69 @@ export class UnitDomainMixin {
             Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;
         };
+
+        this.fnScaleColor = (scaleDim, brewer, options) => {
+            var opts = options || {};
+            var dimx = _.defaults({}, meta[scaleDim]);
+
+            var info = _scaleMeta(scaleDim, options);
+
+            var defaultColorClass = _.constant('color-default');
+
+            var defaultRangeColor = _.times(20, (i) => 'color20-' + (1 + i));
+
+            var buildArrayGetClass = (domain, brewer) => {
+                if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
+                    return defaultColorClass;
+                }
+                else {
+                    var fullDomain = domain.map((x) => String(x).toString());
+                    return d3.scale.ordinal().range(brewer).domain(fullDomain);
+                }
+            };
+
+            var buildObjectGetClass = (brewer, defaultGetClass) => {
+                var domain = _.keys(brewer);
+                var range = _.values(brewer);
+                var calculateClass = d3.scale.ordinal().range(range).domain(domain);
+                return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
+            };
+
+            var wrapString = (f) => (d) => f(String(d).toString());
+
+            var func;
+            if (!brewer) {
+                func = wrapString(buildArrayGetClass(info.values, defaultRangeColor));
+            }
+            else if (_.isArray(brewer)) {
+                func = wrapString(buildArrayGetClass(info.values, brewer));
+            }
+            else if (_.isFunction(brewer)) {
+                func = (d) => brewer(d, wrapString(buildArrayGetClass(info.values, defaultRangeColor)));
+            }
+            else if (_.isObject(brewer)) {
+                func = buildObjectGetClass(brewer, defaultColorClass);
+            }
+            else {
+                throw new Error('This brewer is not supported');
+            }
+
+            var wrap = (domainPropObject) => func(info.extract(domainPropObject));
+
+            wrap.get = wrap;
+            wrap.dimension = scaleDim;
+
+            wrap.legend = (domainPropObject) => {
+
+                var value = info.extract(domainPropObject);
+                var label = (opts.tickLabel) ? ((domainPropObject || {})[opts.tickLabel]) : (value);
+                var color = func(value);
+
+                return {value, color, label};
+            };
+
+            return wrap;
+        };
     }
 
     mix(unit) {
@@ -224,7 +287,11 @@ export class UnitDomainMixin {
         unit.source = this.fnSource;
         unit.domain = this.fnDomain;
         unit.scaleMeta = this.fnScaleMeta;
+
         unit.scaleTo = this.fnScaleTo;
+        unit.scaleDist = this.fnScaleTo;
+        unit.scaleColor = this.fnScaleColor;
+
         unit.partition = (() => unit.data || unit.source(unit.$where));
         unit.groupBy = ((srcValues, splitByProperty) => {
             var varMeta = unit.scaleMeta(splitByProperty);

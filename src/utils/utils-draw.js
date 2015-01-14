@@ -286,51 +286,6 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
-var defaultRangeColor = _.times(20, (i) => 'color20-' + (1 + i));
-var generateColor = function (node) {
-    var getClass;
-    var colorGuide = node.guide.color || {};
-    var colorDim = node.color.scaleDim;
-    var defaultColorClass = _.constant('color-default');
-
-    var buildArrayGetClass = (brewer) => {
-        var domain = node.domain(colorDim);
-        if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
-            return defaultColorClass;
-        }
-        else {
-            var fullDomain = domain.map((x) => String(x).toString());
-            return d3.scale.ordinal().range(brewer).domain(fullDomain);
-        }
-    };
-
-    var buildObjectGetClass = (brewer, defaultGetClass) => {
-        var domain = _.keys(brewer);
-        var range = _.values(brewer);
-        var calculateClass = d3.scale.ordinal().range(range).domain(domain);
-        return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
-    };
-
-    var wrapString = (f) => (d) => f(String(d).toString());
-
-    var brewer = colorGuide.brewer;
-    if (!brewer) {
-        getClass = wrapString(buildArrayGetClass(defaultRangeColor));
-    } else if (_.isArray(brewer)) {
-        getClass = wrapString(buildArrayGetClass(brewer));
-    } else if (_.isFunction(brewer)) {
-        getClass = (d) => brewer(d, wrapString(buildArrayGetClass(defaultRangeColor)));
-    } else if (_.isObject(brewer)) {
-        getClass = buildObjectGetClass(brewer, defaultColorClass);
-    } else {
-        throw new Error('This brewer is not supported');
-    }
-
-    return {
-        get: getClass,
-        dimension: colorDim
-    };
-};
 
 var extendLabel = function (guide, dimension, extend) {
     guide[dimension] = _.defaults(guide[dimension] || {}, {
@@ -401,7 +356,6 @@ var utilsDraw = {
     getOrientation,
     fnDrawDimAxis,
     fnDrawGrid,
-    generateColor,
     applyNodeDefaults,
     cutText,
     wrapText

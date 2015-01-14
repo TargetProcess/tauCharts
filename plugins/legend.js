@@ -25,6 +25,9 @@
     };
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
+    var isEmpty = function(x) {
+        return (x === null) || (x === '') || (typeof x === 'undefined');
+    };
     var legend = function () {
         return {
             _delegateEvent: function (element, eventName, selector, callback) {
@@ -73,6 +76,7 @@
 
             },
             _toggleLegendItem: function (target, chart) {
+                var colorScale = this._unit.options.color;
                 var value = target.getAttribute('data-value');
 
                 if (this._currentFilters.hasOwnProperty(value)) {
@@ -86,7 +90,8 @@
                     var filter = {
                         tag: 'legend',
                         predicate: function (item) {
-                            return item[originValue.dimension] !== originValue.value;
+                            var propObject = item[originValue.dimension];
+                            return colorScale.legend(propObject).value !== originValue.value;
                         }
                     };
                     target.classList.add('disabled');
@@ -98,22 +103,32 @@
                 var conf = chart.getConfig();
                 return Boolean(dfs(conf.spec.unit));
             },
+
             onUnitReady: function (chart, unit) {
                 if (unit.type.indexOf('ELEMENT') !== -1) {
                     this._unit = unit;
                 }
             },
-            _getColorMap: function (chart, color, colorDimension) {
-                var data = chart.getData({excludeFilter: ['legend']});
-                var keys = _.map(data, function (item) {
-                    return item[colorDimension];
-                });
-                return _.unique(keys).reduce(function (colorMap, item) {
-                    colorMap.brewer[item] = color.get(item);
-                    colorMap.values.push({color: color.get(item), value: item});
-                    return colorMap;
-                }, {brewer: {}, values: []});
+
+            _getColorMap: function (data, colorScale, colorDimension) {
+
+                return _(data)
+                    .chain()
+                    .map(function (item) {
+                        return colorScale.legend(item[colorDimension]);
+                    })
+                    .uniq(function(legendItem) {
+                        return legendItem.value;
+                    })
+                    .value()
+                    .reduce(function (memo, item) {
+                        memo.brewer[item.value] = item.color;
+                        memo.values.push(item);
+                        return memo;
+                    },
+                    {brewer: {}, values: []});
             },
+
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend__title"><%=name%></div><%=items%>'),
             _itemTemplate: _.template([
@@ -121,33 +136,48 @@
                 '<div class="graphical-report__legend__guide <%=color%>" ></div><%=label%>',
                 '</div>'
             ].join('')),
+
             onRender: function (chart) {
                 if (this._container) {
-                    var color = this._unit.options.color;
-                    var colorDimension = color.dimension;
-                    var colorMap = this._getColorMap(chart, color, colorDimension);
+
+                    var colorScale = this._unit.options.color;
+                    var colorDimension = this._unit.color.scaleDim;
+
                     var conf = chart.getConfig();
                     var configUnit = dfs(conf.spec.unit);
                     configUnit.guide = configUnit.guide || {};
                     configUnit.guide.color = this._unit.guide.color;
+                    var colorScaleName = configUnit.guide.color.label.text || colorScale.dimension;
+
+                    var colorMap = this._getColorMap(chart.getData({excludeFilter: ['legend']}), colorScale, colorDimension);
+
                     configUnit.guide.color.brewer = colorMap.brewer;
-                    var data = _.reduce(colorMap.values, function (data, item) {
-                        var originValue = {dimension: colorDimension, value: item.value, color: item.color};
-                        var value = JSON.stringify(originValue);
-                        var label = _.escape(item.value != null ? item.value : 'No ' + colorDimension);
-                        data.items.push(this._itemTemplate({
-                            color: item.color,
-                            classDisabled: this._currentFilters[value] ? 'disabled' : '',
-                            label: label,
-                            value: _.escape(value)
-                        }));
-                        data.storageValues[value] = originValue;
-                        return data;
-                    }, {items: [], storageValues: {}}, this);
+                    var data = _.reduce(
+                        colorMap.values,
+                        function (data, item) {
+                            var originValue = {
+                                dimension: colorDimension,
+                                value: item.value,
+                                color: item.color
+                            };
+                            var value = JSON.stringify(originValue);
+                            var label = _.escape(isEmpty(item.label) ? ('No ' + colorScaleName) : item.label);
+                            data.items.push(this._itemTemplate({
+                                color: item.color,
+                                classDisabled: this._currentFilters[value] ? 'disabled' : '',
+                                label: label,
+                                value: value
+                            }));
+                            data.storageValues[value] = originValue;
+                            return data;
+                        },
+                        {items: [], storageValues: {}},
+                        this);
+
                     this._storageValues = data.storageValues;
                     this._container.innerHTML = this._template({
                         items: data.items.join(''),
-                        name: this._unit.guide.color.label.text || this._unit.options.color.dimension
+                        name: colorScaleName
                     });
                 }
             }

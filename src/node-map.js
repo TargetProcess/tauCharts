@@ -24,7 +24,8 @@ var setupElementNode = (node, dimensions) => {
     node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide);
     node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide);
 
-    node.options.color = utilsDraw.generateColor(node);
+    var guideColor = node.guide.color || {};
+    node.options.color = node.scaleColor(node.color.scaleDim, guideColor.brewer, guideColor);
 
     if (node.size) {
         var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) * 0.5;
