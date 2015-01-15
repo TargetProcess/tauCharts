@@ -277,21 +277,39 @@ define(function (require) {
 
         it("should decorate with [groupBy] method", function () {
             var unit = decorator.mix({});
+
+            var by = function(key) {
+                var k = JSON.stringify(key);
+                return function(item) {
+                    return JSON.stringify(item.key) === k;
+                };
+            };
+
             var groupByProjects = unit.groupBy(unit.source(), 'project');
             expect(groupByProjects.length).to.equal(2);
-            expect(groupByProjects[0].key).to.equal('TP3');
-            expect(groupByProjects[0].values.length).to.equal(1);
-            expect(groupByProjects[1].key).to.equal('TP2');
-            expect(groupByProjects[1].values.length).to.equal(2);
+
+            var g1 = groupByProjects.filter(by('TP3'))[0];
+            expect(g1.key).to.equal('TP3');
+            expect(g1.values.length).to.equal(1);
+
+            var g2 = groupByProjects.filter(by('TP2'))[0];
+            expect(g2.key).to.equal('TP2');
+            expect(g2.values.length).to.equal(2);
 
             var groupByPriority = unit.groupBy(unit.source(), 'priority');
             expect(groupByPriority.length).to.equal(3);
-            expect(groupByPriority[0].key).to.deep.equal({ id: 1, name: 'low' });
-            expect(groupByPriority[0].values.length).to.equal(1);
-            expect(groupByPriority[1].key).to.deep.equal({ id: 3, name: 'high' });
-            expect(groupByPriority[1].values.length).to.equal(1);
-            expect(groupByPriority[2].key).to.deep.equal(null);
-            expect(groupByPriority[2].values.length).to.equal(1);
+
+            var o1 = groupByPriority.filter(by({ id: 1, name: 'low' }))[0];
+            expect(o1.key).to.deep.equal({ id: 1, name: 'low' });
+            expect(o1.values.length).to.equal(1);
+
+            var o2 = groupByPriority.filter(by({ id: 3, name: 'high' }))[0];
+            expect(o2.key).to.deep.equal({ id: 3, name: 'high' });
+            expect(o2.values.length).to.equal(1);
+
+            var o3 = groupByPriority.filter(by(null))[0];
+            expect(o3.key).to.deep.equal(null);
+            expect(o3.values.length).to.equal(1);
         });
     });
 });
