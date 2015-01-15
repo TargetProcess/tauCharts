@@ -274,5 +274,24 @@ define(function (require) {
             });
             expect(unit5.partition()).to.deep.equal([data[1]]);
         });
+
+        it("should decorate with [groupBy] method", function () {
+            var unit = decorator.mix({});
+            var groupByProjects = unit.groupBy(unit.source(), 'project');
+            expect(groupByProjects.length).to.equal(2);
+            expect(groupByProjects[0].key).to.equal('TP3');
+            expect(groupByProjects[0].values.length).to.equal(1);
+            expect(groupByProjects[1].key).to.equal('TP2');
+            expect(groupByProjects[1].values.length).to.equal(2);
+
+            var groupByPriority = unit.groupBy(unit.source(), 'priority');
+            expect(groupByPriority.length).to.equal(3);
+            expect(groupByPriority[0].key).to.deep.equal({ id: 1, name: 'low' });
+            expect(groupByPriority[0].values.length).to.equal(1);
+            expect(groupByPriority[1].key).to.deep.equal({ id: 3, name: 'high' });
+            expect(groupByPriority[1].values.length).to.equal(1);
+            expect(groupByPriority[2].key).to.deep.equal(null);
+            expect(groupByPriority[2].values.length).to.equal(1);
+        });
     });
 });
