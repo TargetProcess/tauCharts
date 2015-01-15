@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.3 - 2015-01-14
+/*! taucharts - v0.3.4 - 2015-01-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -539,6 +539,9 @@ define('utils/utils-dom',["exports"], function (exports) {
       var rect = textNode.getBoundingClientRect();
       size.width = rect.right - rect.left;
       size.height = rect.bottom - rect.top;
+
+      var avgLetterSize = (text.length !== 0) ? (size.width / text.length) : 0;
+      size.width = size.width + (1.5 * avgLetterSize);
 
       document.body.removeChild(div);
 
@@ -3187,7 +3190,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
           return varMeta.extract(item[splitByProperty]);
         }).map(function (values) {
           return ({
-            key: varMeta.extract(values[0][splitByProperty]),
+            key: values[0][splitByProperty],
             values: values
           });
         }).value();

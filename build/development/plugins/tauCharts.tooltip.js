@@ -42,9 +42,9 @@
             template: [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
                 '<div class="i-role-exclude graphical-report__tooltip__exclude">',
-                    '<div class="graphical-report__tooltip__exclude__wrap">',
-                        '<span class="tau-icon-close-gray"></span>Exclude',
-                    '</div>',
+                '<div class="graphical-report__tooltip__exclude__wrap">',
+                '<span class="tau-icon-close-gray"></span>Exclude',
+                '</div>',
                 '</div>'
             ].join(''),
             itemTemplate: [
@@ -80,6 +80,7 @@
                 this._chart = chart;
                 this._dataFields = settings.fields;
                 this._getDataFields = settings.getFields;
+
                 _.extend(this, _.omit(settings, 'fields', 'getFields'));
                 this._timeoutHideId = null;
                 this._dataWithCoords = {};
@@ -92,7 +93,7 @@
 
                 var dimensionGuides = this._findDimensionGuides(spec);
 
-                var lastGuides = _.reduce(dimensionGuides, function(memo, guides, key){
+                var lastGuides = _.reduce(dimensionGuides, function (memo, guides, key) {
                     memo[key] = _.last(guides);
                     return memo;
                 }, {});
@@ -122,8 +123,14 @@
                     }
                 }.bind(this), false);
                 elementTooltip.insertAdjacentHTML('afterbegin', this.template);
+                this.afterInit(this._elementTooltip);
+            },
+
+            afterInit: function (elementTooltip) {
 
             },
+
+
             onUnitReady: function (chart, unitMeta) {
                 if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
                     var key = this._generateKey(unitMeta.$where);
@@ -140,7 +147,7 @@
                 }
             },
 
-            renderItem: function(label, formattedValue, field, rawValue){
+            renderItem: function (label, formattedValue, field, rawValue) {
                 return this._templateItem({
                     label: label,
                     value: formattedValue
@@ -157,6 +164,10 @@
                     return this.renderItem(label, formattedValue, field, rawValue);
                 }, this).join('');
             },
+            afterRender: function (toolteipElement) {
+
+            },
+
             onRender: function (chart) {
                 if (_.isFunction(this._getDataFields)) {
                     this._dataFields = this._getDataFields(chart);
@@ -167,7 +178,7 @@
             _getFormatter: function (field) {
                 return this.formatters[field] || _.identity;
             },
-            _getLabel: function(field){
+            _getLabel: function (field) {
                 return this.labels[field] || field;
             },
 
@@ -206,10 +217,10 @@
                 }, {});
             },
 
-            _findDimensionGuides: function(spec){
+            _findDimensionGuides: function (spec) {
                 var dimensionGuideMap = {};
 
-                var collect = function(field, unit){
+                var collect = function (field, unit) {
                     var property = unit[field];
                     if (property) {
                         var guide = (unit.guide || {})[field];
@@ -224,7 +235,7 @@
                     }
                 };
 
-                dfs(spec.unit, function(unit){
+                dfs(spec.unit, function (unit) {
                     collect('x', unit);
                     collect('y', unit);
                     collect('color', unit);
