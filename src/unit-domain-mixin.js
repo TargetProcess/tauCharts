@@ -316,7 +316,7 @@ export class UnitDomainMixin {
             return _.chain(srcValues)
                 .groupBy((item) => varMeta.extract(item[splitByProperty]))
                 .map((values) => ({
-                    key: varMeta.extract(values[0][splitByProperty]),
+                    key: values[0][splitByProperty],
                     values: values
                 }))
                 .value();

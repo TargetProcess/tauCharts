@@ -58,6 +58,7 @@
                 }
             },
             _highlightToggle: function (target, chart, toggle) {
+                var colorScale = this._unit.options.color;
                 var svg = chart.getSVG();
                 var d3Chart = d3.select(svg);
                 if (target.classList.contains('disabled')) {
@@ -67,18 +68,27 @@
                     var value = target.getAttribute('data-value');
                     var originValue = this._storageValues[value];
                     var color = originValue.color;
-                    d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
-                    d3Chart.selectAll('.i-role-element.' + color)
+
+                    d3Chart
+                        .selectAll('.i-role-element')
+                        .classed({'graphical-report__highlighted': false});
+
+                    d3Chart
+                        .selectAll('.i-role-element.' + color)
                         .filter(function (item) {
-                            return (item[originValue.dimension] || _.chain(item.values).pluck(originValue.dimension).unique().first().value())  === originValue.value;
-                        }).
-                        classed({'graphical-report__highlighted': true});
+                            var propObject = item.hasOwnProperty(originValue.dimension) ?
+                                item[originValue.dimension] :
+                                _.chain(item.values).pluck(originValue.dimension).unique().first().value();
+
+                            return colorScale.legend(propObject).value === originValue.value;
+                        })
+                        .classed({'graphical-report__highlighted': true});
+
                     d3Chart.classed({'graphical-report__highlighted_chart': true});
                 } else {
                     d3Chart.selectAll('.i-role-element').classed({'graphical-report__highlighted': false});
                     d3Chart.classed({'graphical-report__highlighted_chart': false});
                 }
-
             },
             _toggleLegendItem: function (target, chart) {
                 var colorScale = this._unit.options.color;
