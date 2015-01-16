@@ -38,6 +38,9 @@ define(function (require) {
             _.each(bar.childNodes, function (el, ind) {
                 expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x));
                 expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y));
+                if(coords[index][ind].width) {
+                    expect(convertToFixed(attrib(el, 'width'))).to.equal(convertToFixed(coords[index][ind].width));
+                }
             });
         });
 
@@ -83,23 +86,27 @@ define(function (require) {
                     [
                         {
                             "x": "0",
-                            "y": "457"
+                            "y": "457",
+                            "width":"66.66666666666667"
                         }
                     ],
                     [
                         {
                             "x": "266.66666666666663",
-                            "y": "514"
+                            "y": "514",
+                            "width":"66.66666666666667"
                         },
                         {
                             "x": "533.3333333333334",
-                            "y": "0"
+                            "y": "0",
+                            "width":"66.66666666666667"
                         }
                     ],
                     [
                         {
                             "x": "533.3333333333334",
-                            "y": "571"
+                            "y": "571",
+                            "width":"66.66666666666667"
                         }
                     ]
                 ]);

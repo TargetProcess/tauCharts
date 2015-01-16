@@ -7,7 +7,7 @@ var isMeasure = (dim) => dim.dimType === 'measure';
 
 var getSizesParams = (params) => {
     var countDomainValue = params.domain().length;
-    var countCategory = params.isCategory ? countDomainValue : 1;
+    var countCategory = params.category.length;
     var tickWidth = params.size / countDomainValue;
     var intervalWidth = tickWidth / (countCategory + 1);
     return {
@@ -19,7 +19,7 @@ var getSizesParams = (params) => {
 
 var flipHub = {
 
-    NORM: (node, xScale, yScale, width, height, defaultSizeParams, isCategory) => {
+    NORM: (node, xScale, yScale, width, height, defaultSizeParams, category) => {
         let minimalHeight = 1;
         let yMin = Math.min(...yScale.domain());
         let isYNumber = !isNaN(yMin);
@@ -30,7 +30,7 @@ var flipHub = {
             defaultSizeParams :
             getSizesParams({
                 domain: xScale.domain,
-                isCategory: isCategory,
+                category: category,
                 size: width
             });
 
@@ -59,7 +59,7 @@ var flipHub = {
         return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
 
-    FLIP: (node, xScale, yScale, width, height, defaultSizeParams, isCategory) => {
+    FLIP: (node, xScale, yScale, width, height, defaultSizeParams, category) => {
         let minimalHeight = 1;
         let xMin = Math.min(...xScale.domain());
         let isXNumber = !isNaN(xMin);
@@ -70,7 +70,7 @@ var flipHub = {
             defaultSizeParams :
             getSizesParams({
                 domain: yScale.domain,
-                isCategory: isCategory,
+                category: category,
                 size: height
             });
 
@@ -111,6 +111,7 @@ var interval = function (node) {
 
     var categories = node.groupBy(node.partition(), node.color.scaleDim);
     var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
+    var facetNode = node.parentUnit.parentUnit || node.parentUnit;
     var {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate} = method(
         node,
         xScale,
@@ -122,7 +123,7 @@ var interval = function (node) {
             intervalWidth: 5,
             offsetCategory: 0
         },
-        node.color.scaleDim
+        node.groupBy(facetNode.partition(), node.color.scaleDim)
     );
 
     var updateBar = function () {
