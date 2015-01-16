@@ -55,13 +55,13 @@ define(function (require) {
 
         var measurer = testUtils.chartSettings;
 
-        it("should support [DEFAULT] spec engine", function () {
+        it("should support [NONE] spec engine", function () {
 
             var spec = makeSpec('team', 'count');
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("DEFAULT", measurer);
+            var testSpecEngine = SpecEngineFactory.get("NONE", measurer);
 
             var full = testSpecEngine(spec, meta);
 
@@ -98,13 +98,13 @@ define(function (require) {
             expect(y.tickFormatWordWrapLimit).to.equal(100);
         });
 
-        it("should support [AUTO] spec engine (category / measure)", function () {
+        it("should support [AUTO-NO-OPTIMIZATION] spec engine (category / measure)", function () {
 
             var spec = makeSpec('team', 'count');
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
+            var testSpecEngine = SpecEngineFactory.get("AUTO-NO-OPTIMIZATION", measurer);
 
             var full = testSpecEngine(spec, meta);
 
@@ -148,13 +148,13 @@ define(function (require) {
             expect(full.unit.guide.padding.t).to.equal(0);
         });
 
-        it("should support [AUTO] spec engine (measure / time)", function () {
+        it("should support [AUTO-NO-OPTIMIZATION] spec engine (measure / time)", function () {
 
             var spec = makeSpec('count', 'date');
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
+            var testSpecEngine = SpecEngineFactory.get("AUTO-NO-OPTIMIZATION", measurer);
 
             var full = testSpecEngine(spec, meta);
 
@@ -198,7 +198,7 @@ define(function (require) {
             expect(full.unit.guide.padding.t).to.equal(0);
         });
 
-        it("should support [AUTO] spec engine (facet)", function () {
+        it("should support [AUTO-NO-OPTIMIZATION] spec engine (facet)", function () {
 
             var spec = {
                 "dimensions": {
@@ -236,7 +236,7 @@ define(function (require) {
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
+            var testSpecEngine = SpecEngineFactory.get("AUTO-NO-OPTIMIZATION", measurer);
 
             var full = testSpecEngine(spec, meta);
 
@@ -307,7 +307,7 @@ define(function (require) {
             expect(elem.guide.y.tickFontHeight).to.equal(10);
         });
 
-        it("should save user-defined guide within [AUTO] spec engine", function () {
+        it("should save user-defined guide within [AUTO-NO-OPTIMIZATION] spec engine", function () {
 
             var spec = {
                 "dimensions": {
@@ -352,7 +352,7 @@ define(function (require) {
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
+            var testSpecEngine = SpecEngineFactory.get("AUTO-NO-OPTIMIZATION", measurer);
 
             var full = testSpecEngine(spec, meta);
             var part = full.unit.unit[0];
@@ -362,7 +362,7 @@ define(function (require) {
             expect(part.guide.showGridLines).to.equal('');
         });
 
-        it("should support [COMPACT] spec engine (facet)", function () {
+        it("should support [COMPACT-NO-OPTIMIZATION] spec engine (facet)", function () {
 
             var spec = {
                 "dimensions": {
@@ -400,7 +400,7 @@ define(function (require) {
 
             var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
 
-            var testSpecEngine = SpecEngineFactory.get("COMPACT", measurer);
+            var testSpecEngine = SpecEngineFactory.get("COMPACT-NO-OPTIMIZATION", measurer);
 
             var full = testSpecEngine(spec, meta);
 
