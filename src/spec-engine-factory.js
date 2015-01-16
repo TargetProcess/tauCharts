@@ -745,7 +745,7 @@ var SpecEngineFactory = {
                 fullSpec = SpecEngineTypeMap['OPTIMAL-SIZE'](fullSpec, meta, settings);
             }
             return fullSpec;
-        }
+        };
     }
 };
 
