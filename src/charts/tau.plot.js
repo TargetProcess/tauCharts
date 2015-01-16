@@ -178,7 +178,7 @@ export class Plot extends Emitter {
         if (containerNode === null) {
             throw new Error('Target element not found');
         }
-        var content = this._layout.content;
+
         containerNode.appendChild(this._layout.layout);
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
