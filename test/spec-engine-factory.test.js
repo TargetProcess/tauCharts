@@ -53,7 +53,7 @@ define(function (require) {
             return specClone;
         };
 
-        var measurer = testUtils.chartSettings;
+        var measurer = _.defaults({ fitSize: false }, testUtils.chartSettings);
 
         it("should support [DEFAULT] spec engine", function () {
 

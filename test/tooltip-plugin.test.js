@@ -77,12 +77,13 @@ define(function (require) {
                 it("should work", function (done) {
                     var originTimeout = stubTimeout();
                     this.timeout(5000);
-                    showTooltip(expect, context.chart).then(function (content) {
-                        var items = content[0].querySelectorAll('.graphical-report__tooltip__list__item');
-                        expect(items[0].textContent).to.be.equal('x2');
-                        expect(items[1].textContent).to.be.equal('y2');
-                        expect(items[2].textContent).to.be.equal('coloryellow');
-                    })
+                    showTooltip(expect, context.chart)
+                        .then(function (content) {
+                            var items = content[0].querySelectorAll('.graphical-report__tooltip__list__item');
+                            expect(items[0].textContent).to.be.equal('x2');
+                            expect(items[1].textContent).to.be.equal('y2');
+                            expect(items[2].textContent).to.be.equal('coloryellow');
+                        })
                         .then(function () {
                             return hideTooltip(expect, context.chart);
                         })

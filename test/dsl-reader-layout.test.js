@@ -5,6 +5,11 @@ define(function (require) {
     var tauChart = require('tau_modules/tau.newCharts');
     var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
     var UnitsRegistry = require('tau_modules/units-registry').UnitsRegistry;
+
+    function globalChartSettings() {
+        return _.defaults({ fitSize: false }, testUtils.chartSettings);
+    }
+
     describe("DSL reader calcLayout() / renderGraph()", function () {
 
         var data = [
@@ -52,7 +57,7 @@ define(function (require) {
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
 
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             expect(reader.buildGraph.bind(reader, fullSpec))
                 .to
@@ -86,7 +91,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
@@ -162,7 +167,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
@@ -239,7 +244,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
@@ -317,7 +322,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var layoutGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
@@ -407,7 +412,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var draftLGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
@@ -486,7 +491,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var draftLGraph = api.LayoutEngineFactory.get('NONE')(logicXGraph);
@@ -577,7 +582,7 @@ define(function (require) {
             var domainMixin = new UnitDomainMixin(spec.dimensions, data);
             var api = tauChart.__api__;
             var reader = new api.DSLReader(domainMixin, UnitsRegistry);
-            var fullSpec = api.SpecEngineFactory.get('NONE', testUtils.chartSettings)(spec, domainMixin.mix({}));
+            var fullSpec = api.SpecEngineFactory.get('NONE', globalChartSettings())(spec, domainMixin.mix({}));
 
             var logicXGraph = reader.buildGraph(fullSpec);
             var draftLGraph = api.LayoutEngineFactory.get('EXTRACT')(logicXGraph);
