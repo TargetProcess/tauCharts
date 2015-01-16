@@ -11,8 +11,6 @@ define(function (require) {
             };
         },
 
-        scrollBarWidth: 10,
-
         xAxisTickLabelLimit: 100,
         yAxisTickLabelLimit: 100,
 
