@@ -4,7 +4,11 @@ import {DataProcessor} from '../data-processor';
 
 var convertAxis = (data) => (!data) ? null : data;
 
-var normalizeSettings = (axis) => (!utils.isArray(axis)) ? [axis] : axis;
+var normalizeSettings = (axis) => {
+    return (!utils.isArray(axis)) ?
+        [axis] :
+        (axis.length === 0) ? [null] : axis;
+};
 
 var createElement = (type, config) => {
     return {
