@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.4 - 2015-01-19
+/*! taucharts - v0.3.5 - 2015-01-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -3786,7 +3786,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
   };
 
   var normalizeSettings = function (axis) {
-    return (!utils.isArray(axis)) ? [axis] : axis;
+    return (!utils.isArray(axis)) ? [axis] : (axis.length === 0) ? [null] : axis;
   };
 
   var createElement = function (type, config) {
