@@ -68,7 +68,7 @@ define(function(require){
                     color: 'color',
                     size: 'size'
                 });
-            }).to.throw('There are more then one measure dimensions for axis "y"');
+            }).to.throw('There is more than one measure dimension for "y" axis');
         });
     });
 });
