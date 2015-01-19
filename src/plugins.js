@@ -12,9 +12,8 @@ class Plugins {
         if (plugin.init) {
             plugin.init(this.chart);
         }
-        this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (()=> {
-        }));
-        Object.keys(plugin).forEach((name)=> {
+        this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (() => {}));
+        Object.keys(plugin).forEach((name) => {
             if (name.indexOf('on') === 0) {
                 var event = name.substr(2);
                 this.chart.on(event.toLowerCase(), plugin[name].bind(plugin));

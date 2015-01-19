@@ -5,22 +5,24 @@ import {TMatrix} from '../matrix';
 
 var FacetAlgebra = {
 
-    'CROSS': function(root, dimX, dimY) {
+    'CROSS': function(root, dimX, domainX, dimY, domainY) {
 
-        var domainX = root.domain(dimX);
-        var domainY = root.domain(dimY).reverse();
+        var domX = domainX.length === 0 ? [null] : domainX;
+        var domY = domainY.length === 0 ? [null] : domainY.reverse();
 
-        return _(domainY).map((rowVal) => {
-            return _(domainX).map((colVal) => {
+        var convert = (v) => (v instanceof Date) ? v.getTime() : v;
+
+        return _(domY).map((rowVal) => {
+            return _(domX).map((colVal) => {
 
                 var r = {};
 
                 if (dimX) {
-                    r[dimX] = colVal;
+                    r[dimX] = convert(colVal);
                 }
 
                 if (dimY) {
-                    r[dimY] = rowVal;
+                    r[dimY] = convert(rowVal);
                 }
 
                 return r;
@@ -46,7 +48,9 @@ var coords = {
         var isFacet = _.any(root.unit, (n) => (n.type.indexOf('COORDS.') === 0));
         var unitFunc = TFuncMap(isFacet ? 'CROSS' : '');
 
-        var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, root.y));
+        var domainX = root.scaleMeta(root.x, _.omit(root.guide.x, 'tickLabel')).values;
+        var domainY = root.scaleMeta(root.y, _.omit(root.guide.y, 'tickLabel')).values;
+        var matrixOfPrFilters = new TMatrix(unitFunc(root, root.x, domainX, root.y, domainY));
         var matrixOfUnitNodes = new TMatrix(matrixOfPrFilters.sizeR(), matrixOfPrFilters.sizeC());
 
         matrixOfPrFilters.iterate((row, col, $whereRC) => {
@@ -66,7 +70,7 @@ var coords = {
         return root;
     },
 
-    draw: function(node, continueTraverse) {
+    draw: function(node) {
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -104,14 +108,7 @@ var coords = {
             utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
         }
 
-        var grid = utilsDraw.fnDrawGrid.call(container, node, H, W);
-
-        node.$matrix.iterate((iRow, iCol, subNodes) => {
-            subNodes.forEach((node) => {
-                node.options = _.extend({container: grid}, node.options);
-                continueTraverse(node);
-            });
-        });
+        return utilsDraw.fnDrawGrid.call(container, node, H, W);
     }
 };
 export {coords};

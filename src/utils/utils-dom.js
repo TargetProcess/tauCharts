@@ -100,6 +100,9 @@ var utilsDom = {
         size.width = rect.right - rect.left;
         size.height = rect.bottom - rect.top;
 
+        var avgLetterSize = (text.length !== 0) ? (size.width / text.length) : 0;
+        size.width = size.width + (1.5 * avgLetterSize);
+
         document.body.removeChild(div);
 
         return size;

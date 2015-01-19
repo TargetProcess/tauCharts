@@ -5,17 +5,17 @@
         });
     } else if (typeof module === "object" && module.exports) {
         var tauPlugins = require('tauCharts');
-        module.exports = factory();
+        module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
 
-    var regressionsHub = (function() {
+    var regressionsHub = (function () {
 
         'use strict';
 
-        var gaussianElimination = function(a, o) {
+        var gaussianElimination = function (a, o) {
             var i = 0, j = 0, k = 0, maxrow = 0, tmp = 0, n = a.length - 1, x = new Array(o);
             for (i = 0; i < n; i++) {
                 maxrow = i;
@@ -46,7 +46,7 @@
         // GREAT THANKS to Tom Alexander!
         // https://github.com/Tom-Alexander/regression-js
         var methods = {
-            linear: function(data) {
+            linear: function (data) {
                 var sum = [0, 0, 0, 0, 0], n = 0, results = [];
 
                 for (; n < data.length; n++) {
@@ -71,12 +71,12 @@
                     results.push(coordinate);
                 }
 
-                var string = 'y = ' + Math.round(gradient*100) / 100 + 'x + ' + Math.round(intercept*100) / 100;
+                var string = 'y = ' + Math.round(gradient * 100) / 100 + 'x + ' + Math.round(intercept * 100) / 100;
 
                 return {equation: [gradient, intercept], points: results, string: string};
             },
 
-            exponential: function(data) {
+            exponential: function (data) {
                 var sum = [0, 0, 0, 0, 0, 0], n = 0, results = [];
 
                 for (len = data.length; n < len; n++) {
@@ -99,12 +99,12 @@
                     results.push(coordinate);
                 }
 
-                var string = 'y = ' + Math.round(A*100) / 100 + 'e^(' + Math.round(B*100) / 100 + 'x)';
+                var string = 'y = ' + Math.round(A * 100) / 100 + 'e^(' + Math.round(B * 100) / 100 + 'x)';
 
                 return {equation: [A, B], points: results, string: string};
             },
 
-            logarithmic: function(data) {
+            logarithmic: function (data) {
                 var sum = [0, 0, 0, 0], n = 0, results = [];
 
                 for (len = data.length; n < len; n++) {
@@ -124,12 +124,12 @@
                     results.push(coordinate);
                 }
 
-                var string = 'y = ' + Math.round(A*100) / 100 + ' + ' + Math.round(B*100) / 100 + ' ln(x)';
+                var string = 'y = ' + Math.round(A * 100) / 100 + ' + ' + Math.round(B * 100) / 100 + ' ln(x)';
 
                 return {equation: [A, B], points: results, string: string};
             },
 
-            power: function(data) {
+            power: function (data) {
                 var sum = [0, 0, 0, 0], n = 0, results = [];
 
                 for (len = data.length; n < len; n++) {
@@ -145,17 +145,17 @@
                 var A = Math.pow(Math.E, (sum[2] - B * sum[0]) / n);
 
                 for (var i = 0, len = data.length; i < len; i++) {
-                    var coordinate = [data[i][0], A * Math.pow(data[i][0] , B)];
+                    var coordinate = [data[i][0], A * Math.pow(data[i][0], B)];
                     results.push(coordinate);
                 }
 
-                var string = 'y = ' + Math.round(A*100) / 100 + 'x^' + Math.round(B*100) / 100;
+                var string = 'y = ' + Math.round(A * 100) / 100 + 'x^' + Math.round(B * 100) / 100;
 
                 return {equation: [A, B], points: results, string: string};
             },
 
-            polynomial: function(data, order) {
-                if(typeof order == 'undefined'){
+            polynomial: function (data, order) {
+                if (typeof order == 'undefined') {
                     order = 2;
                 }
                 var lhs = [], rhs = [], results = [], a = 0, b = 0, i = 0, k = order + 1;
@@ -192,16 +192,16 @@
 
                 var string = 'y = ';
 
-                for(var i = equation.length-1; i >= 0; i--){
-                    if(i > 1) string += Math.round(equation[i]*100) / 100 + 'x^' + i + ' + ';
-                    else if (i == 1) string += Math.round(equation[i]*100) / 100 + 'x' + ' + ';
-                    else string += Math.round(equation[i]*100) / 100;
+                for (var i = equation.length - 1; i >= 0; i--) {
+                    if (i > 1) string += Math.round(equation[i] * 100) / 100 + 'x^' + i + ' + ';
+                    else if (i == 1) string += Math.round(equation[i] * 100) / 100 + 'x' + ' + ';
+                    else string += Math.round(equation[i] * 100) / 100;
                 }
 
                 return {equation: equation, points: results, string: string};
             },
 
-            lastvalue: function(data) {
+            lastvalue: function (data) {
                 var results = [];
                 var lastvalue = null;
                 for (var i = 0; i < data.length; i++) {
@@ -218,7 +218,7 @@
             }
         };
 
-        return (function(method, data, order) {
+        return (function (method, data, order) {
             if (typeof method == 'string') {
                 return methods[method](data, order);
             }
@@ -228,7 +228,7 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
-    var drawTrendLine = function(trendLineId, dots, xScale, yScale, trendColor, container) {
+    var drawTrendLine = function (trendLineId, dots, xScale, yScale, trendColor, container, originData) {
 
         var trendCssClass = [
             'graphical-report__trendline',
@@ -243,44 +243,69 @@
             trendColor].join(' ');
 
         var line = d3.svg.line()
-            .x(function (d) { return xScale(d[0]) })
-            .y(function (d) { return yScale(d[1]) });
+            .x(function (d) {
+                return xScale(d[0]);
+            })
+            .y(function (d) {
+                return yScale(d[1]);
+            });
 
-        var updatePaths = function () { this.attr('d', line) };
+        var updatePaths = function () {
+            this.attr('d', line);
+        };
 
         var updateLines = function () {
             this.attr('class', trendCssClass);
 
-            var paths = this.selectAll('path').data(function(d) { return [d] });
+            var paths = this.selectAll('path').data(function (d) {
+                return [d.dots];
+            });
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);
             paths.exit().remove();
         };
 
-        var lines = container.selectAll('.' + trendLineId).data([dots]);
+        var lines = container.selectAll('.' + trendLineId).data([{dots: dots, values: originData}]);
         lines.call(updateLines);
         lines.enter().append('g').call(updateLines);
         lines.exit().remove();
     };
-
-    var isApplicable = function(unitMeta) {
-
-        var isElement = (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
-
-        if (!isElement) {
-            return false;
-        }
-
-        var x = unitMeta.x.dimType;
-        var y = unitMeta.y.dimType;
-        return _.every([x, y], function(dimType) {
-            return dimType && (dimType != 'category');
-        });
-    };
-
-    var isElement = function(unitMeta) {
+    var isElement = function (unitMeta) {
         return (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
     };
+    var coordHasElements = function (units) {
+        return _.any(units, function (unit) {
+            return isElement(unit);
+        });
+    };
+    var isApplicable = function (dimensions) {
+        return function (unitMeta) {
+            var hasElement = (unitMeta.type && unitMeta.type.indexOf('COORDS.') === 0 && coordHasElements(unitMeta.unit));
+            if (!hasElement) {
+                return false;
+            }
+            var x = dimensions[unitMeta.x].type;
+            var y = dimensions[unitMeta.y].type;
+            return _.every([x, y], function (dimType) {
+                return dimType && (dimType !== 'category');
+            });
+        };
+    };
+
+    var dfs = function (node, predicate) {
+        if (predicate(node)) {
+            return node;
+        }
+        var i, children = node.unit || [], child, found;
+        for (i = 0; i < children.length; i += 1) {
+            child = children[i];
+            found = dfs(child, predicate);
+            if (found) {
+                return found;
+            }
+        }
+    };
+
 
     function trendline(xSettings) {
 
@@ -297,14 +322,19 @@
             init: function (chart) {
 
                 this._chart = chart;
+                var conf = chart.getConfig();
+                this._isApplicable = dfs(conf.spec.unit, isApplicable(conf.spec.dimensions));
 
                 if (settings.showPanel) {
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
+                    var classToAdd = this._isApplicable ? 'applicable-true' : 'applicable-false';
+                    if (!this._isApplicable) {
+                        this._error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
+                    }
+                    this._container.classList.add(classToAdd);
 
-                    this.isApplicable = true;
-
-                    this.uiChangeEventsDispatcher = function(e) {
+                    this.uiChangeEventsDispatcher = function (e) {
 
                         var target = e.target;
                         var selector = target.classList;
@@ -327,13 +357,7 @@
 
             onUnitReady: function (chart, unitMeta) {
 
-                if (!settings.showTrend || !isElement(unitMeta)) {
-                    return;
-                }
-
-                if (!isApplicable(unitMeta)) {
-                    this.error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
-                    this.isApplicable = false;
+                if (!settings.showTrend || !isElement(unitMeta) || !this._isApplicable) {
                     return;
                 }
 
@@ -364,8 +388,12 @@
                     var regression = regressionsHub(settings.type, src);
                     var dots = _(regression.points)
                         .chain()
-                        .sortBy(function(p) { return p[0]; })
-                        .filter(function(p) { return ((minY <= p[1]) && (p[1] <= maxY)); })
+                        .sortBy(function (p) {
+                            return p[0];
+                        })
+                        .filter(function (p) {
+                            return ((minY <= p[1]) && (p[1] <= maxY));
+                        })
                         .value();
 
                     if (dots.length > 1) {
@@ -374,13 +402,14 @@
                             dots,
                             options.xScale,
                             options.yScale,
-                            options.color.get(sKey),
-                            options.container);
+                            options.color(sKey),
+                            options.container,
+                            sVal);
                     }
                 });
 
                 var handleMouse = function (isActive) {
-                    return function() {
+                    return function () {
                         var g = d3.select(this);
                         g.classed({
                             'active': isActive,
@@ -402,7 +431,7 @@
                 '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend" <%= showTrend %> />',
                 '<span class="graphical-report__checkbox__icon"></span>',
                 '<span class="graphical-report__checkbox__text">',
-                    '<%= title %>',
+                '<%= title %>',
                 '</span>',
                 '</label>',
 
@@ -418,19 +447,13 @@
             onRender: function (chart) {
 
                 if (this._container) {
-                    var classToAdd = this.isApplicable ? 'applicable-true' : 'applicable-false';
-                    var classToDel = this.isApplicable ? 'applicable-false' : 'applicable-true';
-
-                    this._container.classList.add(classToAdd);
-                    this._container.classList.remove(classToDel);
-
                     this._container.innerHTML = this.template({
                         title: 'Trend line',
-                        error: this.error,
-                        showTrend: (settings.showTrend && this.isApplicable) ? 'checked' : '',
-                        models: ['linear', 'exponential', 'logarithmic'].map(function(x) {
+                        error: this._error,
+                        showTrend: (settings.showTrend && this._isApplicable) ? 'checked' : '',
+                        models: ['linear', 'exponential', 'logarithmic'].map(function (x) {
                             var selected = (settings.type === x) ? 'selected' : '';
-                            return '<option ' + selected + ' value="' + x + '">' + x + '</option>'
+                            return '<option ' + selected + ' value="' + x + '">' + x + '</option>';
                         })
                     });
                 }

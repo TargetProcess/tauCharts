@@ -7,6 +7,9 @@ var CoordsParallelLine = {
 
         node.color = node.dimension(node.color, node);
 
+        var guideColor = node.guide.color || {};
+        var color = node.scaleColor(node.color.scaleDim, guideColor.brewer, guideColor);
+
         var options = node.options;
 
         var scalesMap = node.x.reduce(
@@ -15,8 +18,6 @@ var CoordsParallelLine = {
                 return memo;
             },
             {});
-
-        var color = utilsDraw.generateColor(node);
 
         var categories = d3
             .nest()
@@ -32,7 +33,7 @@ var CoordsParallelLine = {
             });
 
         var updateLines = function () {
-            this.attr('class', (d) => 'graphical-report__' + 'line' + ' line ' + 'color10-9');
+            this.attr('class', (d) => 'graphical-report__' + 'line' + ' line ' + 'color20-9');
             var paths = this.selectAll('path').data((d) => [d]);
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);

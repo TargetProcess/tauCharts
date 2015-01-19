@@ -13,7 +13,8 @@ var createElement = (type, config) => {
         y: config.y,
         color: config.color,
         guide: {
-            color: config.colorGuide
+            color: config.colorGuide,
+            size: config.sizeGuide
         },
         flip: config.flip,
         size: config.size
@@ -43,9 +44,9 @@ var strategyNormalizeAxis = {
 function validateAxis(dimensions, axis, axisName) {
     return axis.reduce(function (result, item, index) {
         var dimension = dimensions[item];
-        if (!dimension){
+        if (!dimension) {
             result.status = status.FAIL;
-            result.messages.push('Undefined dimension "'+item+'" for axis "'+axisName+'"');
+            result.messages.push(`Undefined dimension "${item}" for axis "${axisName}"`);
         } else if (result.status != status.FAIL) {
             if (dimension.type === 'measure') {
                 result.countMeasureAxis++;
@@ -55,7 +56,7 @@ function validateAxis(dimensions, axis, axisName) {
                 result.status = status.WARNING;
             } else if (result.countMeasureAxis > 1) {
                 result.status = status.FAIL;
-                result.messages.push('There are more then one measure dimensions for axis "'+axisName+'"');
+                result.messages.push(`There is more than one measure dimension for "${axisName}" axis`);
             }
         }
         return result;
@@ -98,7 +99,8 @@ function transformConfig(type, config) {
                 color: config.color,
                 size: config.size,
                 flip: config.flip,
-                colorGuide: currentGuide.color
+                colorGuide: currentGuide.color,
+                sizeGuide: currentGuide.size
             }));
             spec.guide = _.defaults(
                 currentGuide,

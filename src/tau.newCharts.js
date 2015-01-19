@@ -68,8 +68,13 @@ var api = {
                 width: Number.MAX_VALUE
             }
         ],
+
+        fitSize: true,
+
         layoutEngine: 'EXTRACT',
         getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+
+        scrollBarWidth: utilsDom.getScrollbarWidth(),
 
         xAxisTickLabelLimit: 100,
         yAxisTickLabelLimit: 100,

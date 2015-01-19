@@ -1,5 +1,6 @@
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {utils} from './utils/utils';
+import {sizeScale} from './size';
 /* jshint ignore:start */
 import * as _ from 'underscore';
 import * as d3 from 'd3';
@@ -151,7 +152,7 @@ export class UnitDomainMixin {
         var _domain = (dim, fnSort) => {
 
             if (!meta[dim]) {
-                return [null];
+                return [];
             }
 
             var fnMapperId = getValueMapper(dim);
@@ -195,7 +196,7 @@ export class UnitDomainMixin {
             var fVal = (fValHub[fKey] || fValHub['*'])(opts);
 
             var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
-            var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : [];
+            var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : originalValues;
             return {
                 extract: (x) => fVal(fMap(x)),
                 values: autoScaledVals,
@@ -217,6 +218,85 @@ export class UnitDomainMixin {
             Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;
         };
+
+        this.fnScaleColor = (scaleDim, brewer, options) => {
+            var opts = options || {};
+
+            var info = _scaleMeta(scaleDim, opts);
+
+            var defaultColorClass = _.constant('color-default');
+
+            var defaultRangeColor = _.times(20, (i) => 'color20-' + (1 + i));
+
+            var buildArrayGetClass = (domain, brewer) => {
+                if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
+                    return defaultColorClass;
+                }
+                else {
+                    var fullDomain = domain.map((x) => String(x).toString());
+                    return d3.scale.ordinal().range(brewer).domain(fullDomain);
+                }
+            };
+
+            var buildObjectGetClass = (brewer, defaultGetClass) => {
+                var domain = _.keys(brewer);
+                var range = _.values(brewer);
+                var calculateClass = d3.scale.ordinal().range(range).domain(domain);
+                return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
+            };
+
+            var wrapString = (f) => (d) => f(String(d).toString());
+
+            var func;
+            if (!brewer) {
+                func = wrapString(buildArrayGetClass(info.values, defaultRangeColor));
+            }
+            else if (_.isArray(brewer)) {
+                func = wrapString(buildArrayGetClass(info.values, brewer));
+            }
+            else if (_.isFunction(brewer)) {
+                func = (d) => brewer(d, wrapString(buildArrayGetClass(info.values, defaultRangeColor)));
+            }
+            else if (_.isObject(brewer)) {
+                func = buildObjectGetClass(brewer, defaultColorClass);
+            }
+            else {
+                throw new Error('This brewer is not supported');
+            }
+
+            var wrap = (domainPropObject) => func(info.extract(domainPropObject));
+
+            wrap.get = wrap;
+            wrap.dimension = scaleDim;
+
+            wrap.legend = (domainPropObject) => {
+
+                var value = info.extract(domainPropObject);
+                var label = (opts.tickLabel) ? ((domainPropObject || {})[opts.tickLabel]) : (value);
+                var color = func(value);
+
+                return {value, color, label};
+            };
+
+            return wrap;
+        };
+
+        this.fnScaleSize = (scaleDim, range, options) => {
+
+            var opts = options || {};
+
+            var minSize = range[0];
+            var maxSize = range[1];
+            var normalSize = range[range.length - 1];
+
+            var info = _scaleMeta(scaleDim, opts);
+
+            var func = sizeScale(info.source, minSize, maxSize, normalSize);
+
+            var wrap = (domainPropObject) => func(info.extract(domainPropObject));
+
+            return wrap;
+        };
     }
 
     mix(unit) {
@@ -224,10 +304,22 @@ export class UnitDomainMixin {
         unit.source = this.fnSource;
         unit.domain = this.fnDomain;
         unit.scaleMeta = this.fnScaleMeta;
+
         unit.scaleTo = this.fnScaleTo;
+        unit.scaleDist = this.fnScaleTo;
+        unit.scaleColor = this.fnScaleColor;
+        unit.scaleSize = this.fnScaleSize;
+
         unit.partition = (() => unit.data || unit.source(unit.$where));
         unit.groupBy = ((srcValues, splitByProperty) => {
-            return d3.nest().key((d) => d[splitByProperty]).entries(srcValues);
+            var varMeta = unit.scaleMeta(splitByProperty);
+            return _.chain(srcValues)
+                .groupBy((item) => varMeta.extract(item[splitByProperty]))
+                .map((values) => ({
+                    key: values[0][splitByProperty],
+                    values: values
+                }))
+                .value();
         });
         return unit;
     }

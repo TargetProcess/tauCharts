@@ -17,14 +17,9 @@
     <script src="dataTp.js"></script>
 
     <!-- css -->
-    <link href="../css/layout.css" rel="stylesheet"/>
-    <link href="../css/legend.css" rel="stylesheet"/>
-    <link href="../css/graphic-elements.css" rel="stylesheet"/>
-    <link href="../css/tooltip.css" rel="stylesheet"/>
-    <link href="../css/trendline.css" rel="stylesheet"/>
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
-    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
-          type='text/css'>
+    <link href="../build/production/tauCharts.normalize.min.css" rel="stylesheet"/>
+    <link href="../build/production/tauCharts.min.css" rel="stylesheet"/>
+
     <style>
 
         .axes.nest .axis.nest text {
@@ -88,16 +83,16 @@
             }
         };
 
-//{
-//    dimensions: {
-//        project: { type: 'category' },
-//        team: { type: 'category' },
-//        cycleTime: { type: 'measure' },
-//        effort: { type: 'measure' }
-//    },
-//    data: [],
-//    unit: COORDS.RECT(DIM('project', 'team'), COORDS.RECT(DIM('cycleTime', 'effort'), ELEMENT.POINT('cycleTime', 'effort')))
-//}
+        //{
+        //    dimensions: {
+        //        project: { type: 'category' },
+        //        team: { type: 'category' },
+        //        cycleTime: { type: 'measure' },
+        //        effort: { type: 'measure' }
+        //    },
+        //    data: [],
+        //    unit: COORDS.RECT(DIM('project', 'team'), COORDS.RECT(DIM('cycleTime', 'effort'), ELEMENT.POINT('cycleTime', 'effort')))
+        //}
     </script>
 </head>
 <body>
@@ -106,7 +101,7 @@
 </div>
 
 <div id="chart-container-extract" class="cc">
-    
+
 </div>
 
 <div id="chart-container-default" class="cc">
@@ -144,11 +139,7 @@
 
 <div id="no-data-container" class="cc">
 </div>
-<script src="../build/tauCharts.js"></script>
-<script src="../plugins/tooltip.js"></script>
-<script src="../plugins/highlighter.js"></script>
-<script src="../plugins/legend.js"></script>
-<script src="../plugins/trendline.js"></script>
+<script src="../build/production/tauCharts.min.js"></script>
 <script>
     var facet2x2 = {
         dimensions: {

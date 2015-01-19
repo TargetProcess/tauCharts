@@ -19,7 +19,7 @@ module.exports = function (config) {
             {pattern: 'test/utils/*.js', included: false},
             {pattern: 'plugins/**', included: false},
             {pattern: 'css/tooltip.css', included: true},
-            {pattern: 'css/graphic-elements.css', included: true},
+            {pattern: 'css/tauCharts.css', included: true},
             {pattern: 'test/utils/test.css', included: true},
             {pattern: 'css/base.css', included: true},
             {pattern: 'libs/**', included: false},

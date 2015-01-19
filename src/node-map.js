@@ -23,7 +23,15 @@ var setupElementNode = (node, dimensions) => {
     node.options.xScale = node.x.scaleDim && node.scaleTo(node.x.scaleDim, [0, W], node.x.guide);
     node.options.yScale = node.y.scaleDim && node.scaleTo(node.y.scaleDim, [H, 0], node.y.guide);
 
-    node.options.color = utilsDraw.generateColor(node);
+    var guideColor = node.guide.color || {};
+    node.options.color = node.scaleColor(node.color.scaleDim, guideColor.brewer, guideColor);
+
+    if (node.size) {
+        var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) * 0.5;
+        var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter((x) => x !== 0)) * 0.5;
+        var guideSize = node.guide.size || {};
+        node.options.sizeScale = node.scaleSize(node.size.scaleDim, [2, minTickStep, minFontSize], guideSize);
+    }
 
     return node;
 };
@@ -35,20 +43,20 @@ var nodeMap = {
         draw: (node, continueTraverse) => {
             node.x = node.dimension(node.x, node);
             node.y = node.dimension(node.y, node);
-            coords.draw(node, continueTraverse);
+            return coords.draw(node, continueTraverse);
         }
     },
 
     'ELEMENT.POINT': (node) => {
-        point(setupElementNode(node, ['x', 'y', 'color', 'size']));
+        return point(setupElementNode(node, ['x', 'y', 'color', 'size']));
     },
 
     'ELEMENT.LINE': (node) => {
-        line(setupElementNode(node, ['x', 'y', 'color']));
+        return line(setupElementNode(node, ['x', 'y', 'color']));
     },
 
     'ELEMENT.INTERVAL': function (node) {
-        interval(setupElementNode(node, ['x', 'y', 'color']));
+        return interval(setupElementNode(node, ['x', 'y', 'color']));
     },
 
     'COORDS.PARALLEL': CoordsParallel,

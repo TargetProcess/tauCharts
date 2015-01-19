@@ -5,25 +5,100 @@ const BAR_GROUP = 'i-role-bar-group';
 
 var isMeasure = (dim) => dim.dimType === 'measure';
 
-var getSizesParams = function (params) {
-    var tickWidth, intervalWidth, offsetCategory;
-    if (isMeasure(params.dim)) {
-        tickWidth = 5;
-        intervalWidth = 5;
-        offsetCategory = 0;
-    } else {
-        tickWidth = params.size / (params.domain().length);
-        intervalWidth = tickWidth / (params.categories.length + 1);
-        offsetCategory = intervalWidth;
-    }
-
-    /* jshint ignore:start */
+var getSizesParams = (params) => {
+    var countDomainValue = params.domain().length;
+    var countCategory = params.category.length;
+    var tickWidth = params.size / countDomainValue;
+    var intervalWidth = tickWidth / (countCategory + 1);
     return {
         tickWidth,
         intervalWidth,
-        offsetCategory
+        offsetCategory: intervalWidth
     };
-    /* jshint ignore:end */
+};
+
+var flipHub = {
+
+    NORM: (node, xScale, yScale, width, height, defaultSizeParams, category) => {
+        let minimalHeight = 1;
+        let yMin = Math.min(...yScale.domain());
+        let isYNumber = !isNaN(yMin);
+        let startValue = (!isYNumber || (yMin <= 0)) ? 0 : yMin;
+        let isXNumber = isMeasure(node.x);
+
+        let {tickWidth, intervalWidth, offsetCategory} = isXNumber ?
+            defaultSizeParams :
+            getSizesParams({
+                domain: xScale.domain,
+                category: category,
+                size: width
+            });
+
+        let calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
+        let calculateY = isYNumber ?
+            ((d) => {
+                var valY = d[node.y.scaleDim];
+                var dotY = yScale(Math.max(startValue, valY));
+                var h = Math.abs(yScale(valY) - yScale(startValue));
+                var isTooSmall = (h < minimalHeight);
+                return (isTooSmall && (valY > 0)) ? (dotY - minimalHeight) : dotY;
+            }) :
+            ((d) => yScale(d[node.y.scaleDim]));
+
+        let calculateWidth = (d) => intervalWidth;
+        let calculateHeight = isYNumber ?
+            ((d) => {
+                var valY = d[node.y.scaleDim];
+                var h = Math.abs(yScale(valY) - yScale(startValue));
+                return (valY === 0) ? h : Math.max(minimalHeight, h);
+            }) :
+            ((d) => (height - yScale(d[node.y.scaleDim])));
+
+        let calculateTranslate = (d, index) => utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
+
+        return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
+    },
+
+    FLIP: (node, xScale, yScale, width, height, defaultSizeParams, category) => {
+        let minimalHeight = 1;
+        let xMin = Math.min(...xScale.domain());
+        let isXNumber = !isNaN(xMin);
+        let startValue = (!isXNumber || (xMin <= 0)) ? 0 : xMin;
+        let isYNumber = isMeasure(node.y);
+
+        let {tickWidth, intervalWidth, offsetCategory} = isYNumber ?
+            defaultSizeParams :
+            getSizesParams({
+                domain: yScale.domain,
+                category: category,
+                size: height
+            });
+
+        let calculateX = isXNumber ?
+            ((d) => {
+                var valX = d[node.x.scaleDim];
+                var h = Math.abs(xScale(valX) - xScale(startValue));
+                var dotX = xScale(Math.min(startValue, valX));
+                var delta = (h - minimalHeight);
+                var offset = (valX > 0) ? (minimalHeight + delta) : ((valX < 0) ? (0 - minimalHeight) : 0);
+
+                var isTooSmall = (delta < 0);
+                return (isTooSmall) ? (dotX + offset) : (dotX);
+            }) :
+            0;
+        let calculateY = (d) => yScale(d[node.y.scaleDim]) - (tickWidth / 2);
+        let calculateWidth = isXNumber ?
+            ((d) => {
+                var valX = d[node.x.scaleDim];
+                var h = Math.abs(xScale(valX) - xScale(startValue));
+                return (valX === 0) ? h : Math.max(minimalHeight, h);
+            }) :
+            ((d) => xScale(d[node.x.scaleDim]));
+        let calculateHeight = (d) => intervalWidth;
+        let calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
+
+        return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
+    }
 };
 
 var interval = function (node) {
@@ -32,84 +107,36 @@ var interval = function (node) {
 
     var xScale = options.xScale,
         yScale = options.yScale,
-        color = options.color,
-        calculateX,
-        calculateY,
-        calculateWidth,
-        calculateHeight,
-        calculateTranslate;
+        colorScale = options.color;
 
-    var minimalHeight = 1;
-
-    var categories = node.groupBy(node.partition(), color.dimension);
-
-    if (node.flip) {
-
-        var xMin = Math.min.apply(null, xScale.domain());
-        let startPoint = (xMin <= 0) ? 0 : xMin;
-
-        /* jshint ignore:start */
-        var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
-            domain: yScale.domain,
-            dim: node.y,
-            categories: categories,
-            size: options.height
-        });
-        /* jshint ignore:end */
-        calculateX = isMeasure(node.x) ? (d) => xScale(Math.min(startPoint, d[node.x.scaleDim])) : 0;
-        calculateY = (d) =>  yScale(d[node.y.scaleDim]) - (tickWidth / 2);
-        calculateWidth = isMeasure(node.x) ?
-            ((d) => {
-                var valX = d[node.x.scaleDim];
-                var h = Math.abs(xScale(valX) - xScale(startPoint));
-                return (valX === 0) ? h : Math.max(minimalHeight, h);
-            }) :
-            ((d) => xScale(d[node.x.scaleDim]));
-        calculateHeight = (d)=> intervalWidth;
-        calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
-
-    } else {
-
-        var yMin = Math.min.apply(null, yScale.domain());
-        let startPoint = (yMin <= 0) ? 0 : yMin;
-
-        /* jshint ignore:start */
-        var {tickWidth,intervalWidth, offsetCategory} = getSizesParams({
-            domain: xScale.domain,
-            dim: node.x,
-            categories: categories,
-            size: options.width
-        });
-        /* jshint ignore:end */
-        calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
-        calculateY = isMeasure(node.y) ?
-            ((d) => yScale(Math.max(startPoint, d[node.y.scaleDim]))) :
-            ((d) => yScale(d[node.y.scaleDim]));
-
-        calculateWidth = (d)=> intervalWidth;
-        calculateHeight = isMeasure(node.y) ?
-            ((d) => {
-                var valY = d[node.y.scaleDim];
-                var h = Math.abs(yScale(valY) - yScale(startPoint));
-                return (valY === 0) ? h : Math.max(minimalHeight, h);
-            }) :
-            ((d) => (options.height - yScale(d[node.y.scaleDim])));
-        calculateTranslate = (d, index) => utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
-    }
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
+    var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
+    var facetNode = node.parentUnit.parentUnit || node.parentUnit;
+    var {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate} = method(
+        node,
+        xScale,
+        yScale,
+        options.width,
+        options.height,
+        {
+            tickWidth: 5,
+            intervalWidth: 5,
+            offsetCategory: 0
+        },
+        node.groupBy(facetNode.partition(), node.color.scaleDim)
+    );
 
     var updateBar = function () {
         return this
-            .attr('class', (d) => ('i-role-element i-role-datum bar ' + CSS_PREFIX + 'bar ' + color.get(d[color.dimension])))
-            .attr('x', calculateX)
-            .attr('y', calculateY)
+            .attr('height', calculateHeight)
             .attr('width', calculateWidth)
-            .attr('height', calculateHeight);
+            .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[node.color.scaleDim])}`))
+            .attr('x', calculateX)
+            .attr('y', calculateY);
     };
 
     var updateBarContainer = function () {
-
-        this
-            .attr('class', BAR_GROUP)
+        this.attr('class', BAR_GROUP)
             .attr('transform', calculateTranslate);
         var bars = this.selectAll('bar').data((d) => d.values);
         bars.call(updateBar);
@@ -117,7 +144,7 @@ var interval = function (node) {
         bars.exit().remove();
     };
 
-    var elements = options.container.selectAll('.' + BAR_GROUP).data(categories);
+    var elements = options.container.selectAll(`.${BAR_GROUP}`).data(categories);
     elements.call(updateBarContainer);
     elements.enter().append('g').call(updateBarContainer);
     elements.exit().remove();

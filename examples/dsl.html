@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+
+    <!-- plugins -->
+
+
+    <!-- test data -->
+    <script src="data.js"></script>
+
+    <script src="countries.js"></script>
+    <script src="tpStories.js"></script>
+    <script src="dataTp.js"></script>
+
+    <!-- css -->
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/base.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link href="../css/tooltip.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
+    <style>
+
+        .axes.nest .axis.nest text {
+            font-size: 10px;
+        }
+        .bar {
+            fill: steelblue;
+        }
+        .cc {
+            display:inline-block;
+            margin:2px 2px 2px 2px;
+            float:left;
+            width: 800px;
+            height: 800px;
+            border: dotted 1px #000;
+            overflow: auto;
+        }
+
+        .cc-empty {
+            width: 260px;
+            height: 260px;
+            position: relative;
+            left: 33%;
+            top:33%;
+            background-image: url("http://siliconangle.com/files/2013/02/no-data.png");
+        }
+    </style>
+    <script>
+        var COORDS = {
+            RECT: function(dim, tail) {
+                var subUnits = _.isArray(tail) ? tail : [tail];
+                var isFacet = (subUnits[0].type === 'COORDS.RECT');
+                return {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: (isFacet ? '' : 'xy'),
+                        padding: {L: 64, B: 32, R: 8, T: 8}
+                    },
+                    axes: dim,
+                    unit: subUnits
+                };
+            }
+        };
+
+        var DIM = function(x, y) {
+            return [
+                x ? {scaleDim: x} : null,
+                y ? {scaleDim: y} : null
+            ];
+        };
+
+        var ELEMENT = {
+            POINT: function (x, y, color, size) {
+                return {
+                    type: 'ELEMENT.POINT',
+                    x: x,
+                    y: y,
+                    color: color,
+                    size: size
+                };
+            }
+        };
+
+//{
+//    dimensions: {
+//        project: { type: 'category' },
+//        team: { type: 'category' },
+//        cycleTime: { type: 'measure' },
+//        effort: { type: 'measure' }
+//    },
+//    data: [],
+//    unit: COORDS.RECT(DIM('project', 'team'), COORDS.RECT(DIM('cycleTime', 'effort'), ELEMENT.POINT('cycleTime', 'effort')))
+//}
+    </script>
+</head>
+<body>
+
+<div id="object-color-legend-container" class="cc"></div>
+
+<div id="xxx-datetime-container" class="cc"></div>
+
+<div id="datetime-container" class="cc" style="width: 1605px"></div>
+
+<div id="chart-container-extract" class="cc">
+    
+</div>
+
+<div id="chart-container-default" class="cc">
+</div>
+
+<div id="chart-priority-container-default" class="cc">
+</div>
+
+<div id="chart-priority-container-extract" class="cc">
+</div>
+
+<div id="parallel-container" class="cc">
+</div>
+
+<div id="facet-of-facets-container" class="cc">
+</div>
+
+<div id="scatter-fit-container" class="cc">
+</div>
+
+<div id="scatter-auto-scale-container" class="cc">
+</div>
+
+<div id="complex-container-default" class="cc">
+</div>
+
+<div id="complex-container-extract" class="cc">
+</div>
+
+<div id="bars-container" class="cc">
+</div>
+
+<div id="null-complex-object-container" class="cc">
+</div>
+
+<div id="no-data-container" class="cc">
+</div>
+<script src="../build/development/tauCharts.js"></script>
+<script src="../plugins/tooltip.js"></script>
+<script src="../plugins/highlighter.js"></script>
+<script src="../plugins/legend.js"></script>
+<script src="../plugins/trendline.js"></script>
+<script>
+
+    new tauCharts.Chart({
+
+        data: [
+            {"x1": {"id": 13, "name": "Tau Product Web Site - Scrum #1"}, "y1": 4},
+            {"x1": {"id": 2, "name": "Tau Product Web Site - Kanban"}, "y1": 2},
+            {"x1": {"id": 13, "name": "Tau Product Web Site - Scrum #1"}, "y1": 1},
+            {"x1": null, "y1": 1}
+        ],
+
+        "type": "scatterplot",
+        "color": "x1",
+        "size": null,
+        "x": ["x1"],
+        "y": ["y1"],
+        "guide": [
+            {
+                "x": {
+                    "label": "Project",
+                    "tickLabel": "name"
+                },
+                "y": {
+                    "label": "Count"
+                },
+                "color": {
+                    label: 'Project',
+                    "tickLabel": "name"
+                }
+            }
+        ],
+
+        "dimensions": {
+            "x1": {
+                "type": "category",
+                "scale": "ordinal",
+                "value": "id"
+            },
+            "y1": {
+                "type": "measure",
+                "scale": "linear"
+            }
+        },
+
+        plugins: [
+            tauCharts.api.plugins.get('tooltip')(),
+            tauCharts.api.plugins.get('legend')()
+        ]
+
+    }).renderTo('#object-color-legend-container');
+
+    new tauCharts.Chart({
+
+        data: [
+            {"x1": 6, "y1": 1415048400000, "y2": null},
+            {"x1": 1, "y1": 1416430800000, "y2": null},
+            {"x1": 1, "y1": 1416517200000, "y2": null},
+            {"x1": 1, "y1": 1418590800000, "y2": "About Us page"},
+            {"x1": 2, "y1": 1415566800000, "y2": "Advanced REST API"},
+            {"x1": 2, "y1": 1418590800000, "y2": "Contacts page"},
+            {"x1": 1, "y1": 1415653200000, "y2": "Delete User"},
+            {"x1": 2, "y1": 1418590800000, "y2": "Home page"},
+            {"x1": 2, "y1": 1419368400000, "y2": "Integrate Twitter feed"},
+            {"x1": 2, "y1": 1419368400000, "y2": "Put RSS Feeds on Home page"},
+            {"x1": 2, "y1": 1418590800000, "y2": "Support page"}
+        ],
+
+        "dimensions": {
+            "x1": {
+                "type": "measure",
+                "scale": "linear"
+            },
+            "y1": {
+                "type": "order",
+                "scale": "period"
+            },
+            "y2": {
+                "type": "category",
+                "scale": "ordinal"
+            }
+        },
+
+        "type": "horizontalBar",
+        "color": null,
+        "size": null,
+        "x": [
+            "x1"
+        ],
+        "y": [
+            "y1",
+            "y2"
+        ],
+        "guide": [
+            {
+                "y": {
+                    "label": "Create Date By Day",
+                    "tickPeriod": "day"
+                }
+            },
+            {
+                "x": {
+                    "label": "Count"
+                },
+                "y": {
+                    "label": "User Story"
+                }
+            }
+        ]
+
+    }).renderTo('#xxx-datetime-container');
+
+
+    var facet2x2 = {
+        dimensions: {
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: {l: 152, b: 48, r: 0, t: 0},
+                x: {label: { text: 'Projects', padding: 32}},
+                y: {label: { text: 'Teams', padding: 120}}
+            },
+            x: 'project',
+            y: 'team',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { l:54, b:28, r:16, t:16 },
+                        x: {padding: 8, label: ''},
+                        y: {padding: 8, label: 'effort'}
+                    },
+                    x: 'cycleTime',
+                    y: 'effort',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT',
+                            color: 'effort',
+                            size: 'cycleTime',
+                            shape: null
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var facetPriority = {
+        dimensions: {
+            priority: {
+                type: 'category',
+                value: 'key'
+            },
+            severity: {
+                type: 'order',
+                order: ['Must Have', 'Nice to have']
+            },
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            x: 'project',
+            y: 'severity',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        x: {tickLabel: 'val'},
+                    },
+                    x: 'priority',
+                    y: 'effort',
+                    unit: [
+                        {
+                            type: 'ELEMENT.POINT'
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var facetOfFacets = {
+        dimensions: {
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' },
+            name: { type: 'category' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+//            guide: {
+//                padding: {l: 0, b: 0, r: 0, t: 0}
+//            },
+//            x: null,
+//            y: null,
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { l:72, b:224, r:8, t:8 },
+                        y: {label: { text: 'Effort', padding:52}, tickMin: 0, tickMax: 100},
+                        x: {rotate: 90, textAnchor: 'start', hide: true}
+                    },
+                    y: 'effort',
+                    x: 'name',
+                    unit: [
+                        {type: 'ELEMENT.INTERVAL'}
+                    ]
+                },
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        showGridLines: 'xy',
+                        padding: { l:72, b:224, r:8, t:8 },
+                        y: {label: 'Cycle Time', tickMin: 0, tickMax: 100},
+                        x: {rotate: 45, textAnchor: 'start'}
+                    },
+                    x: 'name',
+                    y: 'cycleTime',
+                    unit: [
+                        {type: 'ELEMENT.POINT'},
+                        {type: 'ELEMENT.LINE'}
+                    ]
+                }
+            ]
+        }
+    };
+
+    var scatter = {
+        dimensions: {
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                showGridLines: 'xy',
+                padding: { l:56, b:46, r:8, t:8 },
+                x: {padding: 8, label: 'Cycle Time'},
+                y: {padding: 8, label: 'Effort'}
+            },
+            x: 'cycleTime',
+            y: 'effort',
+            unit: [
+                {
+                    type: 'ELEMENT.POINT',
+                    color: 'effort',
+                    size: 'cycleTime'
+                }
+            ]
+        }
+    };
+
+    var facet3x1 = {
+        dimensions: {
+            project: { type: 'category' },
+            team: { type: 'category' },
+            cycleTime: { type: 'measure' },
+            effort: { type: 'measure' }
+        },
+        unit: {
+            type: 'COORDS.RECT',
+            guide: {
+                padding: { l:46, b:32, r:0, t:2 },
+                y: {label: 'Projects'}
+            },
+            x: null,
+            y: 'project',
+            unit: [
+                {
+                    type: 'COORDS.RECT',
+                    guide: {
+                        padding: { l:120, b:4, r:8, t:4 },
+                        y: {label: { text: 'Teams', padding: 100 }}
+                    },
+                    x: null,
+                    y: 'team',
+                    unit: [
+                        {
+                            type: 'COORDS.RECT',
+                            guide: {
+                                showGridLines: 'xy',
+                                padding: { l:48, b:0, r:8, t:4 },
+                                x: {label: 'cycle time', padding: 4},
+                                y: {label: 'effort', padding: 4}
+                            },
+                            x: 'cycleTime',
+                            y: 'effort',
+                            unit: [
+                                {
+                                    type: 'ELEMENT.POINT',
+                                    color: 'effort',
+                                    size: 'cycleTime'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var dateTimeChart = new tauCharts.Plot(
+            {
+                layoutEngine: 'DEFAULT',
+                data: [
+                    {xdate: +new Date('2013-12-01T00:00:00Z'), count: 31},
+                    {xdate: +new Date('2014-01-01T00:00:00Z'), count: 27},
+                    {xdate: +new Date('2014-02-01T00:00:00Z'), count: 22},
+                    {xdate: +new Date('2014-03-01T00:00:00Z'), count: 13},
+                    {xdate: +new Date('2014-04-01T00:00:00Z'), count: 9},
+                    {xdate: +new Date('2014-05-01T00:00:00Z'), count: 5},
+                    {xdate: +new Date('2014-06-01T00:00:00Z'), count: 1},
+                    {xdate: +new Date('2014-07-01T00:00:00Z'), count: -3},
+                    {xdate: +new Date('2014-08-01T00:00:00Z'), count: -5},
+                    {xdate: +new Date('2014-09-01T00:00:00Z'), count: -7},
+                    {xdate: +new Date('2014-10-01T00:00:00Z'), count: -9},
+                    {xdate: +new Date('2014-11-01T00:00:00Z'), count: -11},
+                    {xdate: +new Date('2014-12-01T00:00:00Z'), count: -17},
+                    {xdate: +new Date('2015-01-01T00:00:00Z'), count: -27},
+                    {xdate: +new Date('2015-02-01T00:00:00Z'), count: -53}
+                ].map(function(x) {
+                            x.xdate = x.xdate + (new Date()).getTimezoneOffset() * 60 * 1000;
+                            return x;
+                        }),
+                spec: {
+                    dimensions: {
+                        xdate: {type: 'order', scale: 'period'},
+                        count: {type: 'measure'}
+                    },
+                    unit: {
+                        type: 'COORDS.RECT',
+                        guide: {
+                            x: {
+                                tickPeriod: 'month'
+                            }
+                        },
+                        x: 'xdate',
+                        y: 'count',
+                        unit: [
+                            { type: 'ELEMENT.INTERVAL' },
+                            { type: 'ELEMENT.POINT' },
+                            { type: 'ELEMENT.LINE' }
+                        ]
+                    }
+                },
+                plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('tooltip')({fields:['count']})
+                ]
+            }).renderTo('#datetime-container');
+
+
+    var parallelChart = new tauCharts.Plot(
+            {
+                specEngine: 'DEFAULT',
+                layoutEngine: 'DEFAULT',
+                data: [
+                    {car: "Toyota Prius+",       co2:  96, hp:  99, mpg: 3.8},
+                    {car: "Volvo S60",           co2: 135, hp: 150, mpg: 7.4},
+                    {car: "BMV X5",              co2: 197, hp: 306, mpg: 11.2},
+                    {car: "Infinity FX",         co2: 238, hp: 238, mpg: 11.2},
+                    {car: "Mercedes Vito",       co2: 203, hp:  95, mpg: 9.4},
+                    {car: "Peugeot 3008",        co2: 155, hp: 120, mpg: 9.2},
+                    {car: "Subaru Forester",     co2: 186, hp: 150, mpg: 10.4},
+                    {car: "Lexus RX",            co2: 233, hp: 188, mpg: 13.3},
+                    {car: "Bentley Continental", co2: 246, hp: 507, mpg: 15.4}
+                ],
+                spec: {
+                    dimensions: {
+                        co2: { type: 'measure' },
+                        mpg: { type: 'measure' },
+                        hp: { type: 'measure' }
+                    },
+                    unit: {
+                        type: 'COORDS.PARALLEL',
+                        guide: {
+                            padding: {l:40, r:0, t:8, b:8}
+                        },
+                        x: [
+                            'co2',
+                            'mpg',
+                            'hp'
+                        ],
+                        unit: [
+                            {
+                                type: 'PARALLEL/ELEMENT.LINE',
+                                color: 'car'
+                            }
+                        ]
+                    }
+                }
+            }).renderTo('#parallel-container');
+
+    var rawData = _.map(
+            getUserStories(),
+            function (r, i) {
+                r.cycleTime = r.name.length;
+                var k = i % 2;
+                r.priority = {
+                    key: k,
+                    val: k ? 'High': 'Low'
+                };
+
+                r.priorityName = k ? 'High': 'Low';
+
+                r.severity = k ? 'Must Have': 'Nice to have';
+
+                if (i === 7) {
+                    r.severity = 'Out of index';
+                }
+
+                return r;
+            });
+
+    new tauCharts.Plot(
+            {
+                layoutEngine: 'DEFAULT',
+                data: rawData,
+                spec: facet2x2,
+                plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#chart-container-default');
+
+    new tauCharts.Plot(
+            {
+                layoutEngine: 'EXTRACT',
+                data: rawData,
+                spec: facet2x2,
+                plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#chart-container-extract');
+
+
+    new tauCharts.Plot(
+            {
+                layoutEngine: 'DEFAULT',
+                data: rawData,
+                spec: facetPriority,
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']})
+                ]
+            }).renderTo('#chart-priority-container-default');
+
+    new tauCharts.Plot(
+            {
+                layoutEngine: 'EXTRACT',
+                data: rawData,
+                spec: facetPriority,
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort', 'priorityName', 'severity']})
+                ]
+            }).renderTo('#chart-priority-container-extract');
+
+    new tauCharts.Plot(
+            {
+                data: _(rawData).filter(function(x, i) { return i < 10; }),
+                spec: facetOfFacets,
+//                layoutEngine: 'DEFAULT',
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['name', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#facet-of-facets-container');
+
+    var scatterFitChart = new tauCharts.Plot(
+            {
+                data: rawData,
+                spec: scatter,
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']}),
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('legend')()
+                ]
+            }).renderTo('#scatter-auto-scale-container');
+
+    var scatterAutoScaleChart = new tauCharts.Plot(
+            {
+                data: rawData,
+                spec: {
+                    dimensions: {
+                        project: { type: 'category' },
+                        team: { type: 'category' },
+                        cycleTime: { type: 'measure' },
+                        effort: { type: 'measure' }
+                    },
+                    unit: {
+                        type: 'COORDS.RECT',
+                        guide: {
+                            showGridLines: 'xy',
+                            padding: { l:56, b:46, r:8, t:8 },
+                            x: {
+                                padding: 8,
+                                label: 'Cycle Time',
+                                autoScale: false
+                            },
+                            y: {
+                                padding: 8,
+                                label: 'Effort',
+                                autoScale: false
+                            }
+                        },
+                        x: 'cycleTime',
+                        y: 'effort',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT',
+                                color: 'effort',
+                                size: 'cycleTime',
+                                shape: null
+                            }
+                        ]
+                    }
+                },
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#scatter-fit-container');
+
+    new tauCharts.Plot(
+            {
+                layoutEngine: 'DEFAULT',
+                data: rawData,
+                spec: facet3x1,
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#complex-container-default');
+
+    new tauCharts.Plot(
+            {
+                layoutEngine: 'EXTRACT',
+                data: rawData,
+                spec: facet3x1,
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#complex-container-extract');
+
+    var noDataChart = new tauCharts.Plot(
+            {
+                data: [],
+                spec: facet3x1,
+                plugins: [
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+                ]
+            }).renderTo('#no-data-container');
+
+    getCountOfEntitiesByTeamOnMonth().then(function (data) {
+
+        data = data.map(function(x) {
+            x.month = new Date(x.month.replace(/ /g, ''));
+            return x;
+        });
+
+        var facet2x1 = {
+            dimensions: {
+                month: { type: 'measure', scale: 'time' },
+                team: { type: 'category' },
+                count: { type: 'measure' }
+            },
+            unit: {
+                type: 'COORDS.RECT',
+                x: null,
+                y: 'team',
+                unit: [
+                    {
+                        type: 'COORDS.RECT',
+                        x: 'month',
+                        y: 'count',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT'
+                            },
+                            {
+                                type: 'ELEMENT.INTERVAL'
+                            },
+                            {
+                                type: 'ELEMENT.LINE'
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        new tauCharts.Plot(
+                {
+                    layoutEngine: 'EXTRACT',
+                    data: data,
+                    spec: facet2x1,
+                    plugins: [
+                        tauCharts.api.plugins.get('trendline')(),
+                        tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
+                    ]
+                }).renderTo('#bars-container');
+    });
+
+    new tauCharts.Chart(
+            {
+                plugins: [
+                    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
+                ],
+                "type": "scatterplot",
+                "x": "entityType",
+                "y": "userStory",
+                "color": "effort",
+                "dimensions": {
+                    "entityType": {"type": "category"},
+                    "userStory": {"type": "category", "value": "id"},
+                    "effort": {"type": "measure"}
+                },
+                data: [
+                    {
+                        "entityType":"Bug",
+                        "userStory":{
+                            "id":2,
+                            "name":"ww"
+                        },
+                        "effort":0.0000
+                    },
+                    {
+                        "entityType":"Bug",
+                        "userStory":null,
+                        "effort":0.0000
+                    },
+                    {
+                        "entityType":"Bug",
+                        "userStory":null,
+                        "effort":0.0000
+                    },
+                    {
+                        "entityType":"Bug",
+                        "userStory":{
+                            "id":11,
+                            "name":"NoCustom"
+                        },
+                        "effort":0.0000
+                    }
+                ]
+            }
+    ).renderTo('#null-complex-object-container');
+
+</script>
+</body>
+</html>

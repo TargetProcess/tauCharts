@@ -1,4 +1,7 @@
 /.idea
+/css
+/build
+.grunt
 libs
 /tau_modules
 /bower_components/

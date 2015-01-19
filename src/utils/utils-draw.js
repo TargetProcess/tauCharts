@@ -286,31 +286,7 @@ var fnDrawGrid = function (node, H, W) {
 
     return grid;
 };
-var defaultRangeColor = _.times(10, (i) => 'color10-' + (1 + i));
-var generateColor = function (node) {
-    var range, domain;
-    var colorGuide = node.guide.color || {};
-    var colorParam = node.color;
 
-    var colorDim = colorParam.scaleDim;
-    var brewer = colorGuide.brewer || defaultRangeColor;
-
-    if (utils.isArray(brewer)) {
-        domain = node.domain(colorDim).map((x) => String(x).toString());
-        range = brewer;
-    }
-    else {
-        domain = Object.keys(brewer);
-        range = domain.map((key) => brewer[key]);
-    }
-    var calculateClass = d3.scale.ordinal().range(range).domain(domain);
-    var getClass = (d) => domain.indexOf(d) > -1 ? calculateClass(d) : 'color-default';
-
-    return {
-        get: (d) => getClass(String(d).toString()),
-        dimension: colorDim
-    };
-};
 var extendLabel = function (guide, dimension, extend) {
     guide[dimension] = _.defaults(guide[dimension] || {}, {
         label: ''
@@ -380,7 +356,6 @@ var utilsDraw = {
     getOrientation,
     fnDrawDimAxis,
     fnDrawGrid,
-    generateColor,
     applyNodeDefaults,
     cutText,
     wrapText

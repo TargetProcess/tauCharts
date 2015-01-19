@@ -34,7 +34,7 @@ var CoordsParallel = {
         return root;
     },
 
-    draw: function(node, continueTraverse) {
+    draw: function(node) {
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -80,17 +80,10 @@ var CoordsParallel = {
             fnDrawDimAxis.call(container, scale, [i * offset, 0]);
         });
 
-        var grid = container
+        return container
             .append('g')
             .attr('class', 'grid')
             .attr('transform', translate(0, 0));
-
-        node.$matrix.iterate((iRow, iCol, subNodes) => {
-            subNodes.forEach((node) => {
-                node.options = _.extend({container: grid}, node.options);
-                continueTraverse(node);
-            });
-        });
     }
 };
 export {CoordsParallel};

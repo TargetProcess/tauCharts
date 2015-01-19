@@ -53,7 +53,7 @@ define(function (require) {
             return specClone;
         };
 
-        var measurer = testUtils.chartSettings;
+        var measurer = _.defaults({ fitSize: false }, testUtils.chartSettings);
 
         it("should support [DEFAULT] spec engine", function () {
 
@@ -83,6 +83,7 @@ define(function (require) {
             expect(x.label.text).to.equal('');
             expect(x.density).to.equal(30);
             expect(x.tickFontHeight).to.equal(10);
+            expect(x.tickFormatWordWrapLimit).to.equal(100);
 
             expect(y.autoScale).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
@@ -94,6 +95,7 @@ define(function (require) {
             expect(y.label.text).to.equal('');
             expect(y.density).to.equal(30);
             expect(y.tickFontHeight).to.equal(10);
+            expect(y.tickFormatWordWrapLimit).to.equal(100);
         });
 
         it("should support [AUTO] spec engine (category / measure)", function () {

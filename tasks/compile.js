@@ -21,9 +21,13 @@ module.exports = function (grunt) {
         grunt.file.mkdir(tmpDir + '/' + 'charts');
         grunt.file.mkdir(tmpDir + '/' + 'utils');
         grunt.file.mkdir(tmpDir + '/' + 'elements');
+        var opts = {modules: "amd"};
+        if(!outputFile) {
+            opts.sourceMap = "inline";
+        }
         this.filesSrc.forEach(function (filename) {
 
-            var res = to5.transformFileSync(this.data.cwd + filename, {sourceMap: true, modules: "amd"});
+            var res = to5.transformFileSync(this.data.cwd + filename, opts);
 
             grunt.file.write(tmpDir + '/' + filename, res.code);
 
