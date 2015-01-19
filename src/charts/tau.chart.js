@@ -236,13 +236,12 @@ class Chart extends Plot {
         config.settings = this.setupSettings(config.settings);
         config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
         var chartFactory = typesChart[config.type];
+
         if (_.isFunction(chartFactory)) {
             super(chartFactory(config));
         }
         else {
-            throw new Error('Chart type ' + config.type + ' is not supported. Use one of ' +
-                _.keys(typesChart).join(', ') + '.'
-            );
+            throw new Error(`Chart type ${config.type} is not supported. Use one of ${_.keys(typesChart).join(', ')}.`);
         }
     }
     destroy() {
