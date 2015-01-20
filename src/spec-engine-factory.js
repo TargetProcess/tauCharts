@@ -691,7 +691,7 @@ var SpecEngineTypeMap = {
         var recommendedHeight = optimalSize.h;
 
         var size = settings.size;
-        var scrollSize = settings.scrollBarWidth;
+        var scrollSize = settings.getScrollBarWidth();
 
         var deltaW = (size.width - recommendedWidth);
         var deltaH = (size.height - recommendedHeight);

@@ -40,7 +40,7 @@ var api = {
             if (!(name in plugins)) {
                 plugins[name] = brewer;
             } else {
-                throw new Error('Plugins is already registred.');
+                throw new Error('Plugin is already registered.');
             }
         },
         get: function (name) {
@@ -74,7 +74,7 @@ var api = {
         layoutEngine: 'EXTRACT',
         getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
 
-        scrollBarWidth: utilsDom.getScrollbarWidth(),
+        getScrollBarWidth: utilsDom.getScrollbarWidth,
 
         xAxisTickLabelLimit: 100,
         yAxisTickLabelLimit: 100,
