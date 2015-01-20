@@ -1,5 +1,7 @@
 import {utils} from './utils/utils';
 
+var isObject = (obj) => obj === Object(obj);
+
 var DataProcessor = {
 
     isYFunctionOfX: (data, xFields, yFields) => {
@@ -11,7 +13,9 @@ var DataProcessor = {
                 (memo, item) => {
 
                     var fnVar = (hash, f) => {
-                        hash.push(item[f]);
+                        var propValue = item[f];
+                        var hashValue = isObject(propValue) ? JSON.stringify(propValue) : propValue;
+                        hash.push(hashValue);
                         return hash;
                     };
 
