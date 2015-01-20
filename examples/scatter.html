@@ -216,8 +216,13 @@
                         }
                     }
                 }), tauCharts.api.plugins.get('legend')()],
-                y: ['y'],
-                x: ['t','x'],
+                x: ['y'],
+                y: ['x'],
+                dimensions:{
+                    x:{
+                        type:'linear'
+                    }
+                },
                 color: 'type',
                 guide:[{
                     y: {
