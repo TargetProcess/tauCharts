@@ -59,6 +59,7 @@
     "karma-sauce-launcher": "~0.2.10",
     "karma-script-launcher": "~0.1.0",
     "karma-story-reporter": "~0.2.2",
-    "requirejs": "2.1.15"
+    "requirejs": "2.1.15",
+    "requirejs-text": "^2.0.12"
   }
 }

@@ -106,6 +106,7 @@
         map: {
             '*': {
                 'tauCharts': 'tau_modules/tau.newCharts',
+                'text': 'node_modules/requirejs-text/text',
                 'rgbcolor': 'bower_components/canvg/rgbcolor',
                 'stackblur': 'bower_components/canvg/StackBlur',
                 'canvg':'bower_components/canvg/canvg',
@@ -220,7 +221,7 @@
                     label: 'Month'
                 }
             },*/
-            plugins: [legend(), trendline(), exportTo(), tooltip()],
+            plugins: [legend(), trendline(), exportTo({cssPaths:['../css/tauCharts.css']}), tooltip()],
             data: defData,
             type: 'scatterplot',
             x: 'date',

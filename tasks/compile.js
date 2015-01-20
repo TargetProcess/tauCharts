@@ -90,7 +90,8 @@ module.exports = function (grunt) {
                         'rgbcolor': '../bower_components/canvg/rgbcolor',
                         'stackblur': '../bower_components/canvg/StackBlur',
                         'fetch':'../bower_components/fetch/fetch',
-                        'promise':'../bower_components/es6-promise/promise'
+                        'promise':'../bower_components/es6-promise/promise',
+                        'text': '../node_modules/requirejs-text/text'
                     }
                 },
                 optimize: 'none',

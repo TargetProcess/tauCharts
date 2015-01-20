@@ -1,12 +1,12 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define(['tauCharts', 'canvg', 'FileSaver', 'fetch', 'promise'], function (tauPlugins, canvg, saveAs) {
-            return factory(tauPlugins, canvg, saveAs);
+        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'text!./print.style.css', 'fetch'], function (tauPlugins, canvg, saveAs, Promise, printCss) {
+            return factory(tauPlugins, canvg, saveAs, window.Promise || Promise.Promise, printCss);
         });
     } else {
         factory(this.tauCharts, this.canvg, this.saveAs);
     }
-})(function (tauCharts, canvg, saveAs) {
+})(function (tauCharts, canvg, saveAs, Promise, printCss) {
     var _ = tauCharts.api.d3;
     var keyCode = {
         "BACKSPACE": 8,
@@ -26,8 +26,33 @@
         "TAB": 9,
         "UP": 38
     };
-
-    var isSupportFocusin = (function () {
+    var createStyleElement = function (styles, mediaType) {
+        mediaType = mediaType || 'all';
+        var style = document.createElement('style');
+        style.setAttribute('media', mediaType);
+        style.innerHTML = styles;
+        return style;
+    };
+    var printStyles = createStyleElement(printCss, 'print');
+    var imagePlaceHolder = document.createElement('img');
+    var removePrintStyles = function () {
+        if (printStyles.parentNode) {
+            printStyles.parentNode.removeChild(printStyles);
+        }
+        if (imagePlaceHolder.parentNode) {
+            imagePlaceHolder.parentNode.removeChild(imagePlaceHolder);
+        }
+    };
+    if ('onafterprint' in window) {
+        window.addEventListener('afterprint', removePrintStyles)
+    } else {
+        window.matchMedia('screen').addListener(removePrintStyles);
+    }
+    var focusinDetected;
+    var isSupportFocusin = function () {
+        if (focusinDetected) {
+            return focusinDetected;
+        }
         var hasIt = false;
 
         function swap() {
@@ -41,14 +66,14 @@
         document.body.appendChild(a); // append
         a.focus(); // focus
         document.body.removeChild(a); // remove again
-
+        isSupportFocusin = hasIt;
         return hasIt; // should be true if focusin is fired
-    })();
+    };
 
-    function exportTo() {
+    function exportTo(settings) {
         return {
-            _loadCss: function (css) {
-                var cssPromises = css.map(function (css) {
+            _loadCss: function () {
+                var cssPromises = this.cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
                         return r.text();
                     });
@@ -60,10 +85,9 @@
                     });
             },
             _toPng: function (chart) {
-                this._loadCss(['http://localhost:63342/tauCharts/css/tauCharts.css'])
+                this._loadCss()
                     .then(function (res) {
-                        var style = document.createElement('style');
-                        style.innerHTML = /*'@font-face { font-family: "OpenSans"; src: url(http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext); } '+ */res;
+                        var style = createStyleElement(res);
                         var svg = chart.getSVG();
                         var refChild = svg.firstChild;
                         svg.insertBefore(style, refChild);
@@ -72,6 +96,7 @@
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
                         canvg(canvas, svg.parentNode.innerHTML);
+                        style.parentNode.removeChild(style);
                         var dataURL = canvas.toDataURL("image/png");
                         var data = atob(dataURL.substring("data:image/png;base64,".length)),
                             asArray = new Uint8Array(data.length);
@@ -83,10 +108,31 @@
                         var blob = new Blob([asArray.buffer], {type: "image/png"});
                         saveAs(blob);
                     });
-
             },
             _toPrint: function (chart) {
-
+                this._loadCss()
+                    .then(function (res) {
+                        var style = createStyleElement(res);
+                        var svg = chart.getSVG().cloneNode(true);
+                        var defs = document.createElement('defs');
+                        var randText = document.createElement('text');
+                        randText.textContent = + new Date();
+                        defs.appendChild(randText);
+                        svg.insertBefore(defs, svg.firstChild);
+                        svg.insertBefore(style, svg.firstChild);
+                        svg.setAttribute("version", 1.1)
+                        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+                        var html = svg.outerHTML;
+                        var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
+                        var img = imagePlaceHolder;
+                        img.classList.add('graphical-report__print-block');
+                        document.body.appendChild(img);
+                        img.src = imgsrc;
+                        document.head.appendChild(printStyles);
+                        img.onload = function () {
+                            window.print();
+                        };
+                    })
             },
             _select: function (value, chart) {
                 value = value || '';
@@ -100,6 +146,7 @@
                     if (e.target.tagName.toLowerCase() === 'a') {
                         var value = e.target.getAttribute('data-value');
                         this._select(value, chart);
+                        popup.hide();
                     }
                 }.bind(this));
                 popupElement.addEventListener('keydown', function (e) {
@@ -127,18 +174,18 @@
                     e.preventDefault();
                 }.bind(this));
                 var timeoutID = null;
-
-                var focusin = isSupportFocusin ? 'focusin' : 'focus';
-                var focusout = isSupportFocusin ? 'focusout' : 'blur';
+                var iSF = isSupportFocusin();
+                var focusin = iSF ? 'focusin' : 'focus';
+                var focusout = iSF ? 'focusout' : 'blur';
                 popupElement.addEventListener(focusout, function () {
                     timeoutID = setTimeout(function () {
                         popup.hide();
                     }, 100);
 
-                }, !isSupportFocusin);
+                }, !iSF);
                 popupElement.addEventListener(focusin, function () {
                     clearTimeout(timeoutID);
-                }, !isSupportFocusin);
+                }, !iSF);
                 this._container.addEventListener('click', function () {
                     popup.toggle();
                     if (!popup.hidden) {
@@ -147,13 +194,19 @@
                 });
             },
             init: function (chart) {
+                settings = settings || {};
+                this.cssPaths = settings.cssPaths;
+                if (!this.cssPaths) {
+                    this.cssPaths = [];
+                    tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
+                }
                 this._container = chart.insertToHeader('<a class="graphical-report__export">Export</a>>');
                 var popup = chart.addBalloon({
                     place: 'bottom-left'
                 });
                 popup.content([
                     '<ul class="graphical-report__export__list">',
-                    '<li class="graphical-report__export__item"><a href="#" tabindex="1">print</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">print</a></li>',
                     '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">export to png</a></li>',
                     '</ul>'
                 ].join(''));
@@ -168,4 +221,5 @@
     tauCharts.api.plugins.add('exportTo', exportTo);
 
     return exportTo;
-});
+})
+;
