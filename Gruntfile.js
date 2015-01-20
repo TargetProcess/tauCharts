@@ -1,4 +1,5 @@
 /*global module:false*/
+var autoprefixer = require('autoprefixer-core');
 module.exports = function (grunt) {
 
     // Project configuration.
@@ -35,7 +36,7 @@ module.exports = function (grunt) {
                 dest: 'build/development/tauCharts.js'
             },
             prodJS: {
-                src: ['build/development/tauCharts.js','build/development/tauCharts.color-brewer.js', 'build/development/plugins/*.js'],
+                src: ['build/development/tauCharts.js', 'build/development/tauCharts.color-brewer.js', 'build/development/plugins/*.js'],
                 dest: 'build/production/tauCharts.min.js'
             },
             prodCSS: {
@@ -106,37 +107,45 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        postcss: {
+            options: {
+                processors: [
+                    autoprefixer({browsers: ['last 2 version']}).postcss
+                ]
+            },
+            dist: {src: 'css/*.css'}
+        },
         copy: {
             copybuild: {
-              files:[
-                  {
-                      src: 'build/production/**',
-                      expand:true,
-                      dest: 'build/'
-                  },
-                  {
-                      src: 'examples/**',
-                      expand:true,
-                      dest: 'build/'
-                  },
-                  {
-                      src: 'build/development/**',
-                      expand:true,
-                      dest: 'build/'
-                  },
-                  {
-                      src: 'bower.json',
-                      dest: 'build/bower.json'
-                  },
-                  {
-                      src: 'package.json',
-                      dest: 'build/package.json'
-                  },
-                  {
-                      src: 'component.json',
-                      dest: 'build/component.json'
-                  }
-              ]
+                files: [
+                    {
+                        src: 'build/production/**',
+                        expand: true,
+                        dest: 'build/'
+                    },
+                    {
+                        src: 'examples/**',
+                        expand: true,
+                        dest: 'build/'
+                    },
+                    {
+                        src: 'build/development/**',
+                        expand: true,
+                        dest: 'build/'
+                    },
+                    {
+                        src: 'bower.json',
+                        dest: 'build/bower.json'
+                    },
+                    {
+                        src: 'package.json',
+                        dest: 'build/package.json'
+                    },
+                    {
+                        src: 'component.json',
+                        dest: 'build/component.json'
+                    }
+                ]
             },
             build: {
                 files: [
@@ -275,11 +284,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-gh-pages');
     grunt.loadNpmTasks('grunt-contrib-rename');
+    grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-clean');
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
-    var buildWithoutPublish = ['bowercopy', 'less', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin'];
+    var buildWithoutPublish = ['bowercopy', 'less', 'postcss', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin'];
     grunt.registerTask('build', buildWithoutPublish);
     grunt.registerTask('publish', buildWithoutPublish.concat(['copy:copybuild', 'clean', 'gh-pages']));
     grunt.registerTask('travis', ['bowercopy', 'jshint', 'build', 'karma:travis']);

@@ -27,6 +27,7 @@
   "devDependencies": {
     "6to5": "2.12.2",
     "almond": "0.3.0",
+    "autoprefixer-core": "^5.0.0",
     "chai": "1.10.0",
     "grunt": "~0.4.5",
     "grunt-bowercopy": "^1.2.0",
@@ -43,6 +44,7 @@
     "grunt-devserver": "^0.6.0",
     "grunt-gh-pages": "^0.9.1",
     "grunt-karma": "0.9.0",
+    "grunt-postcss": "^0.3.0",
     "grunt-shell": "",
     "karma": "~0.12.28",
     "karma-chrome-launcher": "~0.1.7",
