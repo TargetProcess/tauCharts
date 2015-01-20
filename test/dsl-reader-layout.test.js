@@ -127,7 +127,7 @@ define(function (require) {
             });
 
             var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
-            expect(yGridTickLines.length).to.equal(2);
+            expect(yGridTickLines.length).to.equal(3);
             yGridTickLines.forEach(function (el) {
                 var expectedYCoords = '-25';
 
@@ -204,7 +204,7 @@ define(function (require) {
             });
 
             var yGridTickLines = layoutCanvas.selectAll('.cell .grid .grid-lines .grid-lines-y .tick line')[0];
-            expect(yGridTickLines.length).to.equal(2);
+            expect(yGridTickLines.length).to.equal(3);
             yGridTickLines.forEach(function (el) {
                 var expectedYCoords = '-25';
 
