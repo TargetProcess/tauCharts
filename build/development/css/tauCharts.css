@@ -286,6 +286,7 @@
 }
 .graphical-report__svg {
   display: block;
+  overflow: hidden;
 }
 .graphical-report__svg .axis line,
 .graphical-report__svg .axis path {

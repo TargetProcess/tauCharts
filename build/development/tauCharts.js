@@ -2637,7 +2637,7 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
       var recommendedHeight = optimalSize.h;
 
       var size = settings.size;
-      var scrollSize = settings.scrollBarWidth;
+      var scrollSize = settings.getScrollBarWidth();
 
       var deltaW = size.width - recommendedWidth;
       var deltaH = size.height - recommendedHeight;
@@ -5064,7 +5064,7 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
         if (!(name in plugins)) {
           plugins[name] = brewer;
         } else {
-          throw new Error("Plugins is already registred.");
+          throw new Error("Plugin is already registered.");
         }
       },
       get: function (name) {
@@ -5095,7 +5095,7 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       layoutEngine: "EXTRACT",
       getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
 
-      scrollBarWidth: utilsDom.getScrollbarWidth(),
+      getScrollBarWidth: utilsDom.getScrollbarWidth,
 
       xAxisTickLabelLimit: 100,
       yAxisTickLabelLimit: 100,
