@@ -27,6 +27,11 @@ export class Plot extends Emitter {
     }
 
     setupConfig(config) {
+
+        if (!config.spec && !config.spec.unit) {
+            throw new Error('Provide spec for plot');
+        }
+
         this.config = _.defaults(config, {
             spec: {},
             data: [],

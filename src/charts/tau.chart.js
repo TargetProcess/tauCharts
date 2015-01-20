@@ -4,7 +4,11 @@ import {DataProcessor} from '../data-processor';
 
 var convertAxis = (data) => (!data) ? null : data;
 
-var normalizeSettings = (axis) => (!utils.isArray(axis)) ? [axis] : axis;
+var normalizeSettings = (axis) => {
+    return (!utils.isArray(axis)) ?
+        [axis] :
+        (axis.length === 0) ? [null] : axis;
+};
 
 var createElement = (type, config) => {
     return {
@@ -46,7 +50,12 @@ function validateAxis(dimensions, axis, axisName) {
         var dimension = dimensions[item];
         if (!dimension) {
             result.status = status.FAIL;
-            result.messages.push(`Undefined dimension "${item}" for axis "${axisName}"`);
+            if(item) {
+                result.messages.push(`"${item}" dimension is undefined for "${axisName}" axis`);
+            } else {
+                result.messages.push(`"${axisName}" axis should be specified`);
+            }
+
         } else if (result.status != status.FAIL) {
             if (dimension.type === 'measure') {
                 result.countMeasureAxis++;
@@ -236,13 +245,12 @@ class Chart extends Plot {
         config.settings = this.setupSettings(config.settings);
         config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
         var chartFactory = typesChart[config.type];
+
         if (_.isFunction(chartFactory)) {
             super(chartFactory(config));
         }
         else {
-            throw new Error('Chart type ' + config.type + ' is not supported. Use one of ' +
-                _.keys(typesChart).join(', ') + '.'
-            );
+            throw new Error(`Chart type ${config.type} is not supported. Use one of ${_.keys(typesChart).join(', ')}.`);
         }
     }
     destroy() {
