@@ -50,7 +50,12 @@ function validateAxis(dimensions, axis, axisName) {
         var dimension = dimensions[item];
         if (!dimension) {
             result.status = status.FAIL;
-            result.messages.push(`Undefined dimension "${item}" for axis "${axisName}"`);
+            if(item) {
+                result.messages.push(`"${item}" dimension is undefined for "${axisName}" axis`);
+            } else {
+                result.messages.push(`"${axisName}" axis should be specified`);
+            }
+
         } else if (result.status != status.FAIL) {
             if (dimension.type === 'measure') {
                 result.countMeasureAxis++;

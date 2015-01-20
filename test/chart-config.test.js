@@ -40,7 +40,7 @@ define(function(require){
                         }
                     }
                 });
-            }).to.throw('Undefined dimension "x" for axis "x"');
+            }).to.throw('"x" dimension is undefined for "x" axis');
         });
 
         it('should throw on unknown dimensions without dimensions', function(){
@@ -54,7 +54,28 @@ define(function(require){
                     color: 'color',
                     size: 'size'
                 });
-            }).to.throw('Undefined dimension "project" for axis "y"');
+            }).to.throw('"project" dimension is undefined for "y" axis');
+        });
+        it('should throw if not specified x or y', function(){
+
+            expect(function(){
+                new tauChart.Chart({
+                    type: 'bar',
+                    data: testData,
+                    y: 'project',
+                    color: 'color',
+                    size: 'size'
+                });
+            }).to.throw('"x" axis should be specified');
+            expect(function(){
+                new tauChart.Chart({
+                    type: 'bar',
+                    data: testData,
+                    x: 'x',
+                    color: 'color',
+                    size: 'size'
+                });
+            }).to.throw('"y" axis should be specified');
         });
 
         it('should throw on several measures in facets', function(){
