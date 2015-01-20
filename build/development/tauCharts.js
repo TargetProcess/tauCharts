@@ -1809,13 +1809,43 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     var sectorSize = size / selection[0].length;
     var offsetSize = sectorSize / 2;
 
-    if (x.scaleType === "ordinal" || x.scaleType === "period") {
-      var isHorizontal = "h" === getOrientation(x.guide.scaleOrient);
+    var isHorizontal = "h" === getOrientation(x.guide.scaleOrient);
 
+    if (x.scaleType === "ordinal" || x.scaleType === "period") {
       var key = isHorizontal ? "x" : "y";
       var val = isHorizontal ? offsetSize : -offsetSize;
 
       selection.attr(key + "1", val).attr(key + "2", val);
+    }
+  };
+
+  var fixAxisBottomLine = function (nodeScale, x, size) {
+    var selection = nodeScale.selectAll(".tick line");
+
+    var isHorizontal = "h" === getOrientation(x.guide.scaleOrient);
+
+    if (isHorizontal) {
+      return;
+    }
+
+    var doApply = false;
+    var tickOffset = -1;
+
+    if (x.scaleType === "time") {
+      doApply = true;
+      tickOffset = 0;
+    } else if (x.scaleType === "ordinal" || x.scaleType === "period") {
+      doApply = true;
+      var sectorSize = size / selection[0].length;
+      var offsetSize = sectorSize / 2;
+      tickOffset = -offsetSize;
+    }
+
+    if (doApply) {
+      var tickGroupClone = nodeScale.select(".tick").node().cloneNode(true);
+      nodeScale.append(function () {
+        return tickGroupClone;
+      }).attr("transform", translate(0, size - tickOffset));
     }
   };
 
@@ -1926,6 +1956,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
         var yGridLines = gridLines.append("g").attr("class", "grid-lines-y").call(yGridAxis);
 
         decorateAxisTicks(yGridLines, y, H);
+        fixAxisBottomLine(yGridLines, y, H);
       }
 
       // TODO: make own axes and grid instead of using d3's in such tricky way
@@ -3445,6 +3476,10 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
   var utils = _utilsUtils.utils;
 
 
+  var isObject = function (obj) {
+    return obj === Object(obj);
+  };
+
   var DataProcessor = {
 
     isYFunctionOfX: function (data, xFields, yFields) {
@@ -3454,7 +3489,9 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
       try {
         data.reduce(function (memo, item) {
           var fnVar = function (hash, f) {
-            hash.push(item[f]);
+            var propValue = item[f];
+            var hashValue = isObject(propValue) ? JSON.stringify(propValue) : propValue;
+            hash.push(hashValue);
             return hash;
           };
 

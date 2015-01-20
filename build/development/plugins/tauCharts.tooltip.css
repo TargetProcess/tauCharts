@@ -2,10 +2,14 @@
   position: absolute;
   top: 0;
   left: 0;
-  max-width: 300px;
+  max-width: 500px;
   z-index: 900;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
-  align-items: stretch;
+  -webkit-align-items: stretch;
+      -ms-flex-align: stretch;
+          align-items: stretch;
   font-family: OpenSans, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px;
   background: rgba(255, 255, 255, 0.9);
@@ -38,8 +42,10 @@
 .graphical-report__tooltip__exclude__wrap {
   line-height: 26px;
   padding: 0 15px;
-  transform: rotate(-90deg);
-  transform-origin: 0 0 ;
+  -webkit-transform: rotate(-90deg);
+          transform: rotate(-90deg);
+  -webkit-transform-origin: 0 0 ;
+          transform-origin: 0 0 ;
   height: 100%;
   white-space: nowrap;
   position: absolute;

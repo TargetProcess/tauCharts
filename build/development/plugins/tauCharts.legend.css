@@ -21,7 +21,7 @@
 }
 .graphical-report__legend__item .color-default {
   background: #6fa1d9;
-  border-radius: 4px;
+  border-color: #6fa1d9;
 }
 .graphical-report__legend__item:disabled,
 .graphical-report__legend__item.disabled {
