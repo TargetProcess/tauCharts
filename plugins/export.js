@@ -49,8 +49,7 @@
         return style;
     };
     var printStyles = createStyleElement(printCss, 'print');
-    var imagePlaceHolder = document.createElement('img');
-    imagePlaceHolder.classList.add('graphical-report__print-block');
+    var imagePlaceHolder;
     var removePrintStyles = function () {
         if (printStyles.parentNode) {
             printStyles.parentNode.removeChild(printStyles);
@@ -88,7 +87,7 @@
 
     function exportTo(settings) {
         return {
-            _loadSvgWithCss: function (chart) {
+            _createDataUrl: function (chart) {
                 var cssPromises = this.cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
                         return r.text();
@@ -105,25 +104,18 @@
                         div.appendChild(svg);
                         d3.select(svg).attr("version", 1.1)
                             .attr("xmlns", "http://www.w3.org/2000/svg");
-                       // svg.insertBefore(style, svg.firstChild);
-                        var defs = document.createElement('defs');
-                        var randText = document.createElement('text');
-                        randText.textContent = +new Date();
-                        defs.appendChild(randText);
-                        defs.appendChild(style);
-                        svg.insertBefore(defs, svg.firstChild);
+                        svg.insertBefore(style, svg.firstChild);
                         this._renderAdditionalInfo(svg, chart);
-                        return svg;
-                    }.bind(this));
-            },
-            _toPng: function (chart) {
-                this._loadSvgWithCss(chart)
-                    .then(function (svg) {
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
                         canvg(canvas, svg.parentNode.innerHTML);
-                        var dataURL = canvas.toDataURL("image/png");
+                        return canvas.toDataURL("image/png");;
+                    }.bind(this));
+            },
+            _toPng: function (chart) {
+                this._createDataUrl(chart)
+                    .then(function (dataURL) {
                         var data = atob(dataURL.substring("data:image/png;base64,".length)),
                             asArray = new Uint8Array(data.length);
 
@@ -136,13 +128,13 @@
                     });
             },
             _toPrint: function (chart) {
-                this._loadSvgWithCss(chart)
-                    .then(function (svg) {
-                        var html = svg.parentNode.innerHTML;
-                        var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
+                this._createDataUrl(chart)
+                    .then(function (dataURL) {
+                        imagePlaceHolder = document.createElement('img');
+                        imagePlaceHolder.classList.add('graphical-report__print-block');
                         var img = imagePlaceHolder;
                         document.body.appendChild(img);
-                        img.src = imgsrc;
+                        img.src = dataURL;
                         document.head.appendChild(printStyles);
                         img.onload = function () {
                             window.print();
