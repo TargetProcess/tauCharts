@@ -137,8 +137,8 @@ var fixAxisTickOverflow = (nodeScale, x) => {
             return;
         }
 
-        var tick0 = parseFloat(timeTicks[0].attributes['transform'].value.replace('translate(', ''));
-        var tick1 = parseFloat(timeTicks[1].attributes['transform'].value.replace('translate(', ''));
+        var tick0 = parseFloat(timeTicks[0].attributes.transform.value.replace('translate(', ''));
+        var tick1 = parseFloat(timeTicks[1].attributes.transform.value.replace('translate(', ''));
 
         var tickStep = tick1 - tick0;
 
@@ -247,7 +247,8 @@ var decorateTickLabel = (nodeScale, x) => {
         .style('text-anchor', x.guide.textAnchor);
 
     if (angle === 90) {
-        ticks.attr('x', 9).attr('y', 0);
+        var dy = parseFloat(ticks.attr('dy')) / 2;
+        ticks.attr('x', 9).attr('y', 0).attr('dy', `${dy}em`);
     }
 
     if (x.guide.tickFormatWordWrap) {
