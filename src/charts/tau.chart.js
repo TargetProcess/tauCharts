@@ -37,10 +37,19 @@ var strategyNormalizeAxis = {
         throw new Error((data.messages || []).join('\n') ||
         'This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
-    [status.WARNING]: (axis, config) => {
-        var measure = axis[config.indexMeasureAxis[0]];
+    [status.WARNING]: (axis, config, guide) => {
+        var axisName = config.axis;
+        var index = config.indexMeasureAxis[0];
+        var measure = axis[index];
         var newAxis = _.without(axis, measure);
         newAxis.push(measure);
+
+        var measureGuide = guide[index][axisName] || {};
+        var categoryGuide = guide[guide.length - 1][axisName] || {};
+
+        guide[guide.length - 1][axisName] = measureGuide;
+        guide[index][axisName] = categoryGuide;
+
         return newAxis;
     }
 };
@@ -69,18 +78,15 @@ function validateAxis(dimensions, axis, axisName) {
             }
         }
         return result;
-    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: []});
+    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [], axis: axisName});
 }
 function transformConfig(type, config) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
 
-    var validatedX = validateAxis(config.dimensions, x, 'x');
-    var validatedY = validateAxis(config.dimensions, y, 'y');
-    x = strategyNormalizeAxis[validatedX.status](x, validatedX);
-    y = strategyNormalizeAxis[validatedY.status](y, validatedY);
-    var guide = normalizeSettings(config.guide);
     var maxDeep = Math.max(x.length, y.length);
+
+    var guide = normalizeSettings(config.guide);
 
     // feel the gaps if needed
     while (guide.length < maxDeep) {
@@ -89,6 +95,11 @@ function transformConfig(type, config) {
 
     // cut items
     guide = guide.slice(0, maxDeep);
+
+    var validatedX = validateAxis(config.dimensions, x, 'x');
+    var validatedY = validateAxis(config.dimensions, y, 'y');
+    x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
+    y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
     var spec = {
         type: 'COORDS.RECT',
