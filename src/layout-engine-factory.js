@@ -60,9 +60,11 @@ var LayoutEngineTypeMap = {
             (memo, item) => {
                 memo.l += item.l;
                 memo.b += item.b;
+                memo.r += item.r;
+                memo.t += item.t;
                 return memo;
             },
-            {l: 0, b: 0});
+            {l: 0, b: 0, r: 0, t: 0});
 
         var temp = utils.clone(globPadd);
         var axesPadd = box.paddings.reverse().map((item) => {
@@ -83,8 +85,8 @@ var LayoutEngineTypeMap = {
                 padding: {
                     l: globPadd.l - distanceBetweenFacets,
                     b: globPadd.b - distanceBetweenFacets,
-                    r: 0,
-                    t: 0
+                    r: globPadd.r + distanceBetweenFacets,
+                    t: globPadd.t + distanceBetweenFacets
                 }
             }
         });
