@@ -127,6 +127,43 @@ var decorateAxisTicks = (nodeScale, x, size) => {
     }
 };
 
+var fixAxisTickOverflow = (nodeScale, x) => {
+
+    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+
+    if (isHorizontal && (x.scaleType === 'time')) {
+        var timeTicks = nodeScale.selectAll('.tick')[0];
+        if (timeTicks.length < 2) {
+            return;
+        }
+
+        var tick0 = parseFloat(timeTicks[0].attributes['transform'].value.replace('translate(', ''));
+        var tick1 = parseFloat(timeTicks[1].attributes['transform'].value.replace('translate(', ''));
+
+        var tickStep = tick1 - tick0;
+
+        var maxTextLn = 0;
+        var iMaxTexts = -1;
+        var timeTexts = nodeScale.selectAll('.tick text')[0];
+        timeTexts.forEach((textNode, i) => {
+            var innerHTML = textNode.innerHTML || '';
+            var textLength = innerHTML.length;
+            if (textLength > maxTextLn) {
+                maxTextLn = textLength;
+                iMaxTexts = i;
+            }
+        });
+
+        if (iMaxTexts >= 0) {
+            var rect = timeTexts[iMaxTexts].getBoundingClientRect();
+            // 2px from each side
+            if ((tickStep - rect.width) < 8) {
+                nodeScale.classed({ 'graphical-report__d3-time-overflown': true });
+            }
+        }
+    }
+};
+
 var fixAxisBottomLine = (nodeScale, x, size) => {
 
     var selection = nodeScale.selectAll('.tick line');
@@ -245,6 +282,8 @@ var fnDrawDimAxis = function (x, AXIS_POSITION, size) {
         decorateAxisTicks(nodeScale, x, size);
         decorateTickLabel(nodeScale, x);
         decorateAxisLabel(nodeScale, x);
+
+        fixAxisTickOverflow(nodeScale, x);
     }
 };
 
