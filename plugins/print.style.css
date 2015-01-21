@@ -14,4 +14,6 @@ body * {
     left: 0;
     visibility: visible !important;
     display: block;
+    width: 100%;
+    /*height: 100%;*/
 }

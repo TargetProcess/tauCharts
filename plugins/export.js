@@ -1,13 +1,28 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
         define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'text!./print.style.css', 'fetch'], function (tauPlugins, canvg, saveAs, Promise, printCss) {
-            return factory(tauPlugins, canvg, saveAs, window.Promise || Promise.Promise, printCss);
+            window.Promise = window.Promise || Promise.Promise;
+            return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
         });
     } else {
         factory(this.tauCharts, this.canvg, this.saveAs);
     }
 })(function (tauCharts, canvg, saveAs, Promise, printCss) {
-    var _ = tauCharts.api.d3;
+    var d3 = tauCharts.api.d3;
+    var _ = tauCharts.api._;
+    var dfs = function (node) {
+        if (node.color) {
+            return node;
+        }
+        var i, children = node.unit || [], child, found;
+        for (i = 0; i < children.length; i += 1) {
+            child = children[i];
+            found = dfs(child);
+            if (found) {
+                return found;
+            }
+        }
+    };
     var keyCode = {
         "BACKSPACE": 8,
         "COMMA": 188,
@@ -35,6 +50,7 @@
     };
     var printStyles = createStyleElement(printCss, 'print');
     var imagePlaceHolder = document.createElement('img');
+    imagePlaceHolder.classList.add('graphical-report__print-block');
     var removePrintStyles = function () {
         if (printStyles.parentNode) {
             printStyles.parentNode.removeChild(printStyles);
@@ -44,7 +60,7 @@
         }
     };
     if ('onafterprint' in window) {
-        window.addEventListener('afterprint', removePrintStyles)
+        window.addEventListener('afterprint', removePrintStyles);
     } else {
         window.matchMedia('screen').addListener(removePrintStyles);
     }
@@ -72,7 +88,7 @@
 
     function exportTo(settings) {
         return {
-            _loadCss: function () {
+            _loadSvgWithCss: function (chart) {
                 var cssPromises = this.cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
                         return r.text();
@@ -82,21 +98,31 @@
                     .all(cssPromises)
                     .then(function (res) {
                         return res.join(' ');
-                    });
+                    }).then(function (res) {
+                        var style = createStyleElement(res);
+                        var div = document.createElement('div');
+                        var svg = chart.getSVG().cloneNode(true);
+                        div.appendChild(svg);
+                        d3.select(svg).attr("version", 1.1)
+                            .attr("xmlns", "http://www.w3.org/2000/svg");
+                       // svg.insertBefore(style, svg.firstChild);
+                        var defs = document.createElement('defs');
+                        var randText = document.createElement('text');
+                        randText.textContent = +new Date();
+                        defs.appendChild(randText);
+                        defs.appendChild(style);
+                        svg.insertBefore(defs, svg.firstChild);
+                        this._renderAdditionalInfo(svg, chart);
+                        return svg;
+                    }.bind(this));
             },
             _toPng: function (chart) {
-                this._loadCss()
-                    .then(function (res) {
-                        var style = createStyleElement(res);
-                        var svg = chart.getSVG();
-                        var refChild = svg.firstChild;
-                        svg.insertBefore(style, refChild);
-
+                this._loadSvgWithCss(chart)
+                    .then(function (svg) {
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
                         canvg(canvas, svg.parentNode.innerHTML);
-                        style.parentNode.removeChild(style);
                         var dataURL = canvas.toDataURL("image/png");
                         var data = atob(dataURL.substring("data:image/png;base64,".length)),
                             asArray = new Uint8Array(data.length);
@@ -110,29 +136,83 @@
                     });
             },
             _toPrint: function (chart) {
-                this._loadCss()
-                    .then(function (res) {
-                        var style = createStyleElement(res);
-                        var svg = chart.getSVG().cloneNode(true);
-                        var defs = document.createElement('defs');
-                        var randText = document.createElement('text');
-                        randText.textContent = + new Date();
-                        defs.appendChild(randText);
-                        svg.insertBefore(defs, svg.firstChild);
-                        svg.insertBefore(style, svg.firstChild);
-                        svg.setAttribute("version", 1.1)
-                        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
-                        var html = svg.outerHTML;
+                this._loadSvgWithCss(chart)
+                    .then(function (svg) {
+                        var html = svg.parentNode.innerHTML;
                         var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
                         var img = imagePlaceHolder;
-                        img.classList.add('graphical-report__print-block');
                         document.body.appendChild(img);
                         img.src = imgsrc;
                         document.head.appendChild(printStyles);
                         img.onload = function () {
                             window.print();
                         };
+                    });
+            },
+            _renderAdditionalInfo: function (svg, chart) {
+                var conf = chart.getConfig();
+                var configUnit = dfs(conf.spec.unit);
+                if(!configUnit) {
+                    return;
+                }
+                configUnit.guide = configUnit.guide || {};
+                configUnit.guide.color = this._unit.guide.color;
+                var colorScaleName = configUnit.guide.color.label.text || this._unit.options.color.dimension;
+                svg = d3.select(svg);
+                var width = parseInt(svg.attr('width'), 10);
+                var height = svg.attr('height');
+                svg.attr('width', width + 140);
+                var data = this._getColorMap(chart);
+                var draw = function () {
+                    this.attr('transform', function (d, index) {
+                        return 'translate(0,' + 20 * (index + 1) + ')';
+                    });
+                    this.append('circle')
+                        .attr('r', 6)
+                        .attr('class', function (d) {
+                            return d.color;
+                        });
+                    this.append('text').attr('x', 12).attr('y', 5)
+                        .text(function (d) {
+                            return d.label;
+                        }).style({
+                            'font-size': '13px'
+                        });
+                };
+                var container = svg.append('g')
+                    .attr('class', 'legend')
+                    .attr('transform', 'translate(' + (width + 10) + ',20)');
+                container.append('text').text(colorScaleName.toUpperCase()).style({
+                    'text-transform': 'uppercase',
+                    'font-weight': '600',
+                    'font-size': '13px'
+                });
+                container.selectAll('g')
+                    .data(data).enter().append('g').call(draw);
+            },
+            onUnitReady: function (chart, unit) {
+                if (unit.type.indexOf('ELEMENT') !== -1) {
+                    this._unit = unit;
+                }
+            },
+            _getColorMap: function (chart) {
+                var colorScale = this._unit.options.color;
+                var colorDimension = this._unit.color.scaleDim;
+                var data = chart.getData();
+                return _(data)
+                    .chain()
+                    .map(function (item) {
+                        return colorScale.legend(item[colorDimension]);
                     })
+                    .uniq(function (legendItem) {
+                        return legendItem.value;
+                    })
+                    .value()
+                    .reduce(function (memo, item) {
+                        memo.push(item);
+                        return memo;
+                    },
+                    []);
             },
             _select: function (value, chart) {
                 value = value || '';
