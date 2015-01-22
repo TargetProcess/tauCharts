@@ -255,7 +255,6 @@ module.exports = function (grunt) {
                 files: {
                     "d3.js": "d3/d3.js",
                     "underscore.js": "underscore/underscore.js",
-                    "html2canvas.js": "html2canvas/dist/html2canvas.js",
                     "jquery.js": "jquery/dist/jquery.js",
                     "modernizer.js": "modernizer/modernizr.js",
                     "js-schema.js": "js-schema/js-schema.debug.js",
