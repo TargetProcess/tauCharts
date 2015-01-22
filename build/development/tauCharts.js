@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.8 - 2015-01-22
+/*! taucharts - v0.3.7 - 2015-01-22
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -566,7 +566,7 @@ define('dsl-reader',["exports"], function (exports) {
 
     _prototypeProperties(DSLReader, null, {
       buildGraph: {
-        value: function (spec) {
+        value: function buildGraph(spec) {
           var _this = this;
           var buildRecursively = function (unit) {
             return _this.UnitsRegistry.get(unit.type).walk(_this.domain.mix(unit), buildRecursively);
@@ -578,7 +578,7 @@ define('dsl-reader',["exports"], function (exports) {
         configurable: true
       },
       calcLayout: {
-        value: function (graph, size) {
+        value: function calcLayout(graph, size) {
           graph.options = { top: 0, left: 0, width: size.width, height: size.height };
 
           var fnTraverseLayout = function (root) {
@@ -644,7 +644,7 @@ define('dsl-reader',["exports"], function (exports) {
         configurable: true
       },
       renderGraph: {
-        value: function (styledGraph, target, xIterator) {
+        value: function renderGraph(styledGraph, target, xIterator) {
           var _this2 = this;
           var iterator = xIterator || function (x) {
             return x;
@@ -1282,27 +1282,26 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
    * @return {Void}
    */
   Tooltip.reposition = (function () {
-    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
-      return setTimeout(fn, 17);
-    };
-    var rIndex;
-
-    function requestReposition() {
+    var requestReposition = function () {
       if (rIndex || !Tooltip.winAware.length) {
         return;
       }
       rIndex = rAF(reposition);
-    }
+    };
 
-    function reposition() {
+    var reposition = function () {
       rIndex = 0;
       var tip;
-      for (var i = 0,
-          l = Tooltip.winAware.length; i < l; i++) {
+      for (var i = 0, l = Tooltip.winAware.length; i < l; i++) {
         tip = Tooltip.winAware[i];
         tip.position();
       }
-    }
+    };
+
+    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+      return setTimeout(fn, 17);
+    };
+    var rIndex;
 
     return requestReposition;
   })();
@@ -1429,7 +1428,7 @@ define('event',["exports"], function (exports) {
          * @param {object} callbacks Callback set.
          * @param {object=} context Context object.
          */
-        value: function (callbacks, context) {
+        value: function addHandler(callbacks, context) {
           context = context || this;
           // add handler
           this.handler = {
@@ -1443,7 +1442,7 @@ define('event',["exports"], function (exports) {
         configurable: true
       },
       on: {
-        value: function (name, callback, context) {
+        value: function on(name, callback, context) {
           var obj = {};
           obj[name] = callback;
           this.addHandler(obj, context);
@@ -1454,7 +1453,7 @@ define('event',["exports"], function (exports) {
         configurable: true
       },
       fire: {
-        value: function (name, data) {
+        value: function fire(name, data) {
           createDispatcher.call(this, name).call(this, data);
         },
         writable: true,
@@ -1469,7 +1468,7 @@ define('event',["exports"], function (exports) {
          * @param {object} callbacks Callback set.
          * @param {object=} context Context object.
          */
-        value: function (callbacks, context) {
+        value: function removeHandler(callbacks, context) {
           var cursor = this;
           var prev;
 
@@ -1500,7 +1499,7 @@ define('event',["exports"], function (exports) {
         /**
          * @destructor
          */
-        value: function () {
+        value: function destroy() {
           // fire object destroy event handlers
           this.emit_destroy();
           // drop event handlers if any
@@ -2944,7 +2943,7 @@ define('plugins',["exports"], function (exports) {
 
     _prototypeProperties(Plugins, null, {
       initPlugin: {
-        value: function (plugin) {
+        value: function initPlugin(plugin) {
           var _this = this;
           if (plugin.init) {
             plugin.init(this.chart);
@@ -3445,7 +3444,7 @@ define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./util
 
     _prototypeProperties(UnitDomainMixin, null, {
       mix: {
-        value: function (unit) {
+        value: function mix(unit) {
           unit.dimension = this.fnDimension;
           unit.source = this.fnSource;
           unit.domain = this.fnDomain;
@@ -3781,7 +3780,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
 
     _prototypeProperties(Plot, null, {
       setupConfig: {
-        value: function (config) {
+        value: function setupConfig(config) {
           if (!config.spec && !config.spec.unit) {
             throw new Error("Provide spec for plot");
           }
@@ -3821,7 +3820,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       getConfig: {
-        value: function () {
+        value: function getConfig() {
           return this.config;
         },
         writable: true,
@@ -3829,7 +3828,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       setupMetaInfo: {
-        value: function (dims, data) {
+        value: function setupMetaInfo(dims, data) {
           var meta = dims ? dims : DataProcessor.autoDetectDimTypes(data);
           return DataProcessor.autoAssignScales(meta);
         },
@@ -3838,7 +3837,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       setupSettings: {
-        value: function (configSettings) {
+        value: function setupSettings(configSettings) {
           var globalSettings = Plot.globalSettings;
           var localSettings = {};
           Object.keys(globalSettings).forEach(function (k) {
@@ -3852,7 +3851,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       insertToRightSidebar: {
-        value: function (el) {
+        value: function insertToRightSidebar(el) {
           return utilsDom.appendTo(el, this._layout.rightSidebar);
         },
         writable: true,
@@ -3860,7 +3859,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       insertToHeader: {
-        value: function (el) {
+        value: function insertToHeader(el) {
           return utilsDom.appendTo(el, this._layout.header);
         },
         writable: true,
@@ -3868,7 +3867,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       addBalloon: {
-        value: function (conf) {
+        value: function addBalloon(conf) {
           return new Tooltip("", conf || {});
         },
         writable: true,
@@ -3876,7 +3875,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       renderTo: {
-        value: function (target, xSize) {
+        value: function renderTo(target, xSize) {
           this._renderGraph = null;
           this._svg = null;
           this._defaultSize = _.clone(xSize);
@@ -3939,7 +3938,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       getData: {
-        value: function (param) {
+        value: function getData(param) {
           param = param || {};
           var filters = _.chain(this._filtersStore.filters).values().flatten().reject(function (filter) {
             return _.contains(param.excludeFilter, filter.tag);
@@ -3957,7 +3956,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       setData: {
-        value: function (data) {
+        value: function setData(data) {
           this.config.data = data;
           this.refresh();
         },
@@ -3966,7 +3965,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       getSVG: {
-        value: function () {
+        value: function getSVG() {
           return this._svg;
         },
         writable: true,
@@ -3974,7 +3973,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       addFilter: {
-        value: function (filter) {
+        value: function addFilter(filter) {
           var tag = filter.tag;
           var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
           var id = this._filtersStore.tick++;
@@ -3988,7 +3987,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       removeFilter: {
-        value: function (id) {
+        value: function removeFilter(id) {
           var _this = this;
           _.each(this._filtersStore.filters, function (filters, key) {
             _this._filtersStore.filters[key] = _.reject(filters, function (item) {
@@ -4002,7 +4001,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       refresh: {
-        value: function () {
+        value: function refresh() {
           if (this._target) {
             this.renderTo(this._target, this._defaultSize);
           }
@@ -4012,7 +4011,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       resize: {
-        value: function () {
+        value: function resize() {
           var sizes = arguments[0] === undefined ? {} : arguments[0];
           this.renderTo(this._target, sizes);
         },
@@ -4021,7 +4020,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
         configurable: true
       },
       select: {
-        value: function (queryFilter) {
+        value: function select(queryFilter) {
           var r = [];
 
           if (!this._renderGraph) {
@@ -4368,7 +4367,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
 
     _prototypeProperties(Chart, null, {
       destroy: {
-        value: function () {
+        value: function destroy() {
           var index = Chart.winAware.indexOf(this);
           if (index !== -1) {
             Chart.winAware.splice(index, 1);
@@ -4385,27 +4384,26 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
   })(Plot);
 
   Chart.resizeOnWindowEvent = (function () {
-    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
-      return setTimeout(fn, 17);
-    };
-    var rIndex;
-
-    function requestReposition() {
+    var requestReposition = function () {
       if (rIndex || !Chart.winAware.length) {
         return;
       }
       rIndex = rAF(resize);
-    }
+    };
 
-    function resize() {
+    var resize = function () {
       rIndex = 0;
       var chart;
-      for (var i = 0,
-          l = Chart.winAware.length; i < l; i++) {
+      for (var i = 0, l = Chart.winAware.length; i < l; i++) {
         chart = Chart.winAware[i];
         chart.resize();
       }
-    }
+    };
+
+    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+      return setTimeout(fn, 17);
+    };
+    var rIndex;
 
     return requestReposition;
   })();
