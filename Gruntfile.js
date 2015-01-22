@@ -196,6 +196,10 @@ module.exports = function (grunt) {
                     {
                         src: 'css/trendline.css',
                         dest: 'build/development/plugins/tauCharts.trendline.css'
+                    },
+                    {
+                        src: 'css/export.css',
+                        dest: 'build/development/plugins/tauCharts.export.css'
                     }
                 ]
             }

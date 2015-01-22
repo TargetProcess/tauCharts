@@ -64,25 +64,25 @@
         window.matchMedia('screen').addListener(removePrintStyles);
     }
     var focusinDetected;
-    var isSupportFocusin = function () {
+    var isSupportFocusin = function isSupportFocusin() {
         if (focusinDetected) {
             return focusinDetected;
         }
         var hasIt = false;
 
         function swap() {
-            hasIt = true; // when fired, set hasIt to true
+            hasIt = true;
         }
 
-        var a = document.createElement('a'); // create test element
-        a.href = "#"; // to make it focusable
-        a.addEventListener('focusin', swap, false); // bind focusin
+        var a = document.createElement('a');
+        a.href = "#";
+        a.addEventListener('focusin', swap, false);
 
-        document.body.appendChild(a); // append
-        a.focus(); // focus
-        document.body.removeChild(a); // remove again
-        isSupportFocusin = hasIt;
-        return hasIt; // should be true if focusin is fired
+        document.body.appendChild(a);
+        a.focus();
+        document.body.removeChild(a);
+        focusinDetected = hasIt;
+        return hasIt;
     };
 
     function exportTo(settings) {
@@ -110,7 +110,7 @@
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
                         canvg(canvas, svg.parentNode.innerHTML);
-                        return canvas.toDataURL("image/png");;
+                        return canvas.toDataURL("image/png");
                     }.bind(this));
             },
             _toPng: function (chart) {
@@ -144,7 +144,7 @@
             _renderAdditionalInfo: function (svg, chart) {
                 var conf = chart.getConfig();
                 var configUnit = dfs(conf.spec.unit);
-                if(!configUnit) {
+                if (!configUnit) {
                     return;
                 }
                 configUnit.guide = configUnit.guide || {};
@@ -153,7 +153,7 @@
                 svg = d3.select(svg);
                 var width = parseInt(svg.attr('width'), 10);
                 var height = svg.attr('height');
-                svg.attr('width', width + 140);
+                svg.attr('width', width + 160);
                 var data = this._getColorMap(chart);
                 var draw = function () {
                     this.attr('transform', function (d, index) {
@@ -286,6 +286,9 @@
                 var popupElement = popup.getElement();
                 popupElement.setAttribute('tabindex', '-1');
                 this._handleMenu(popupElement, chart, popup);
+                chart.on('exportTo', function (chart, type) {
+                    this._select(type, chart);
+                }.bind(this));
             }
         };
     }
