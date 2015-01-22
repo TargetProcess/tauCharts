@@ -90,6 +90,10 @@ export class Plot extends Emitter {
         return utilsDom.appendTo(el, this._layout.rightSidebar);
     }
 
+    insertToHeader(el) {
+        return utilsDom.appendTo(el, this._layout.header);
+    }
+
 
     addBalloon(conf) {
         return new Tooltip('', conf || {});

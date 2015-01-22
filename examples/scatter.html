@@ -12,23 +12,44 @@
     <!-- src -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
     <!-- css -->
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.normalize.min.css"/>
     <link href="../css/tauCharts.css" rel="stylesheet"/>
     <link href="../css/layout.css" rel="stylesheet"/>
     <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
+    <link href="../css/export.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../css/tooltip.css"/>
     <link href="../css/colorbrewer.css" rel="stylesheet"/>
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <!--<link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
-          type='text/css'>
+          type='text/css'>-->
     <style>
         .axes.nest .axis.nest text {
             font-size: 10px;
+        }
+
+        body, #line {
+            height: 100%
+        }
+
+        .color-us {
+            stroke: blue;
+            fill:blue;
+        }
+
+        .color-bug {
+            stroke: red;
+            fill: red;
         }
 
         .tau-chart {
             padding: 20px;
             width: 100%;
             height: 640px;
+        }
+
+        .applicable-false {
+            display: none;
         }
 
         input {
@@ -73,167 +94,145 @@
     <title></title>
 </head>
 <body>
-<template id="list">
-    <div class="graphical-report__legend__title"><%=name%></div>
-    <%=items%>
-</template>
-<template id="itemList">
-    <div class="graphical-report__legend__item">
-        <div class="graphical-report__legend__example <%=color%>"></div>
-        <%=value%>
-    </div>
-</template>
-<div style="float: left;padding: 20px">
-    <label for="data">data</label><br/>
-    <textarea style='width:600px;height: 350px' id="data"></textarea>
-</div>
-<div style="float: left; padding: 20px">
-    <label>
-        type
-        <select id="type">
-            <option value="scatterplot">scatter</option>
-            <option selected value="line">line</option>
-            <option value="bar">bar</option>
-            <option value="horizontalBar">horizontalBar</option>
-        </select>
-    </label><br/><br/>
-    <label>x<input id="x" type="text"/></label><br/><br/>
-    <label>y <input id="y" type="text"/></label><br/><br/>
-    <label> color <input id="color" type="text"/></label><br/><br/>
-    "String" or <a id="colorSettings">"{dimension: 'team', brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}}"</a>
-    <label for="brewer">Use brewer<input style="width:20px" id="brewer" type="checkbox"/></label> <label
-        for="hue">Hue<input style="width:50px" id="hue" type="text"/></label> <label for="number">Number<input
-        style="width:50px" id="number" type="number"/></label>
-    <br/><br/>
-    <label>size <input id="size" type="text"/></label><br/><br/>
-</div>
-<br style="clear: both;"/>
-
-<div id="chart-container" class="tau-chart" style="display:inline-block;margin:0;border: solid 1px; float: left"></div>
-
+<div id="line"></div>
 <script>
     requirejs.config({
         // Karma serves files from '/base'
         baseUrl: location.pathname.replace(/(.+)(examples\/\w+\.html)/, '$1'),
         paths: {
             'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
-            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min',
-            'schemes': 'test/utils/schemes',
-            'testUtils': 'test/utils/utils',
-            'es5-shim': 'libs/es5-shim'
+            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min'
         },
         map: {
             '*': {
-                'tauCharts': 'tau_modules/tau.newCharts'
+                'tauCharts': 'tau_modules/tau.newCharts',
+                'text': 'node_modules/requirejs-text/text',
+                'rgbcolor': 'bower_components/canvg/rgbcolor',
+                'stackblur': 'bower_components/canvg/StackBlur',
+                'canvg':'bower_components/canvg/canvg',
+                'FileSaver':'bower_components/FileSaver.js/FileSaver',
+                'fetch':'bower_components/fetch/fetch',
+                'promise':'bower_components/es6-promise/promise'
             }
         }
     });
 
-    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/highlighter', 'plugins/tooltip', 'plugins/legend', 'underscore'], function (tauCharts, brewer ) {
+    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
          * @extends Plugin */
-        var dat = [
-            {x: 2, y: 2, type: 'sin', t: 'x'},
-            {x: 3, y: 2, type: 'sin', t: 'x'},
-            {x: 4, y: 2, type: 'sin', t: 'x'}
-        ];
-        for (var i = -6.14; i <= 6.14; i += 0.5) {
-            dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'x'});
-            dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'w'});
-            dat.push({x: i, y: Math.sin(i), type: 'sin', t: 'w'});
-            dat.push({x: i, y: Math.cos(i), type: 'cos', t: 'x'});
-        }
-        var defData = dat;
-
-        function getFieldData($field) {
-            try {
-                return JSON.parse($field.val())
-            } catch (e) {
-                return $field.val();
-            }
-
-        }
-
-        var $color = $('#color').val('team');
-        var $type = $('#type');
-        var $size = $('#size').val('count');
-        var $y = $('#y').val('count');
-        var $x = $('#x').val('team');
-        var $data = $('#data').val(JSON.stringify(defData));
-        $('#colorSettings').click(function () {
-            return $color.val(JSON.stringify({
-                dimension: 'team',
-                brewer: {'d': 'red', 'k': 'green', 'l': 'blue'}
-            }))
-        });
-        $('select,input[type=checkbox]').change(function () {
-            try {
-                drawChart();
-            } catch (e) {
-                $('#chart-container').empty();
-                console.error(e);
-            }
-        });
-        $('textarea,input').on('input', function () {
-            try {
-                drawChart();
-            } catch (e) {
-                $('#chart-container').empty();
-                console.error(e);
-            }
-        });
-        drawChart();
-        /* try {
-         drawChart();
-         } catch (e) {
-         $('#chart-container').empty();
-         console.error(e);
-         }*/
-
-        function drawChart() {
-            var data = JSON.parse($data.val());
-            $('#chart-container').empty();
-            var color;
-            if ($('#brewer').prop('checked')) {
-                color = {
-                    dimension: getFieldData($color),
-                    brewer: tauBrewer(getFieldData($('#hue')), getFieldData($('#number')))
+        var defData = [{
+            type: 'us', count: 0, date: 2
+        }, {
+            type: 'us', count: 10, date: 3
+        }, {
+            type: 'us', count: 15, date: 4
+        }, {
+            type: 'us', count: 12, date: 5
+        }, {
+            type: 'us', count: 16, date: 6
+        }, {
+            type: 'us', count: 13, date: 7
+        }, {
+            type: "bug 'mybug'", count: 21, date: 8
+        }, {
+            type: "bug 'dsadsmybug'", count: 19, date: 9
+        }, {
+            type: 'bug', count: 23, date: 10
+        }, {
+            type: 'bug', count: 26, date: 11
+        }, {
+            type: 'bug', count: 23, date: 12
+        },{
+            type: 'bug', count: 23, date: "12"
+        },{
+            type: 'bug', count: 23, date: "1d"
+        },{
+            type: 'bug', count: 23, date: "1da"
+        },{
+            type: 'bug', count: 23, date: "1ds"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1ddf dsadf fdsa fas df sd"
+        },{
+            type: 'bug', count: 23, date: "1ddfsa daf dsa fdsa sd"
+        },{
+            type: 'bug', count: 23, date: "1dsda dsa fdsa df sasd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dsadsd"
+        },{
+            type: 'bug', count: 23, date: "1ddsadsasd"
+        },{
+            type: 'bug', count: 23, date: "1dsadsasd"
+        },{
+            type: 'bug', count: 23, date: "1dsdssadd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1dsd"
+        },{
+            type: 'bug', count: 23, date: "1ddsss"
+        },{
+            type: 'bug', count: 23, date: "1sddss"
+        },{
+            type: 'bug', count: 23, date: "1dfdsss"
+        },{
+            type: 'bug', count: 23, date: "1dfsdf dsf sdss"
+        },{
+            type: 'bug', count: 23, date: "1dfd dfs af ds sss"
+        },{
+            type: 'bug', count: 23, date: "1fsdd ds fdsa ss"
+        },{
+            type: 'bug', count: 23, date: "1wa"
+        }].concat([1,2,3,4,5,6,7,8,9,10,11,12,13].map(function(item){
+                return {
+                        type: 'bug', count: item, date: "1wa" + item
+                    }
+        }));
+        var chart = new tauCharts.Chart({
+           /* guide: {
+                color: {
+                    brewer: {
+                        us: 'color-us',
+                        bug: 'color-bug'
+                    }
+                },
+                y: {
+                    label: {
+                        text: 'Count of completed entities',
+                        padding: 50
+                    }
+                },
+                x: {
+                    label: 'Month'
                 }
-            } else {
-                color = getFieldData($color)
-            }
+            },*/
+            plugins: [legend(), trendline(), exportTo({cssPaths:['../css/tauCharts.css']}), tooltip()],
+            data: defData,
+            type: 'scatterplot',
+            x: 'date',
+            y: 'count',
+            color: 'type'
+        });
 
-            var chart = new tauCharts.Chart({
-                data: data,
-                type: getFieldData($type),
-                plugins: [tauCharts.api.plugins.get('tooltip')({
-                    formatters:{
-                        entityType:function(e) {
-                            return e;
-                        },
-                        entityTypeE:function(e) {
-                            return e;
-                        }
-                    }
-                }), tauCharts.api.plugins.get('legend')()],
-                y: ['y'],
-                x: ['t','x'],
-                color: 'type',
-                guide:[{
-                    y: {
-                        label:'mylabel'
-                    },
-                    color:{
-                        label:'dfsa'
-                    }
-                }]
-                /* size: 'y'*/
-            });
-            chart.renderTo(
-                    '#chart-container');
-        }
-
+        chart.renderTo('#line');
     })
 </script>
+
 </body>
+
 </html>

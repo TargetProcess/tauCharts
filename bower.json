@@ -26,6 +26,10 @@
     "jquery": "2.1.1",
     "modernizer": "2.8.2",
     "js-schema": "0.7.0",
-    "es5-shim": "latest"
+    "es5-shim": "latest",
+    "canvg": "https://github.com/Mavrin/canvg.git",
+    "FileSaver.js": "https://github.com/eligrey/FileSaver.js.git",
+    "fetch": "~0.6.1",
+    "es6-promise": "~2.0.1"
   }
 }

@@ -196,6 +196,10 @@ module.exports = function (grunt) {
                     {
                         src: 'css/trendline.css',
                         dest: 'build/development/plugins/tauCharts.trendline.css'
+                    },
+                    {
+                        src: 'css/export.css',
+                        dest: 'build/development/plugins/tauCharts.export.css'
                     }
                 ]
             }
@@ -229,6 +233,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     "css/tooltip.css": "less/tooltip.less",
+                    "css/export.css": "less/export.less",
                     "css/colorbrewer.css": "less/colorbrewer.less",
                     "css/base.css": "less/base.less",
                     "css/tauCharts.css": "less/tauCharts.less",
