@@ -284,6 +284,9 @@
   color: #e17152;
   border-bottom: 1px solid rgba(225, 113, 82, 0.3);
 }
+.graphical-report__d3-time-overflown .tick:nth-child(even) {
+  display: none;
+}
 .graphical-report__svg {
   display: block;
   overflow: hidden;
