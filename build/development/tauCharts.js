@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.8 - 2015-01-23
+/*! taucharts - v0.3.9 - 2015-01-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -2164,37 +2164,6 @@ define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", 
     var dimType = dim.dimType;
     var scaleType = dim.scaleType;
     var specifier = "*";
-    if (dimType === "measure" && scaleType === "time") {
-      var src = meta.source.filter(function (x) {
-        return x !== null;
-      }).sort();
-      var resolutionAvg = 0;
-      if (src.length > 1) {
-        var i = 1;
-        var l = src.length;
-        var m = [];
-        while (i < l) {
-          m.push(src[i] - src[i - 1]);
-          ++i;
-        }
-
-        var s = m.reduce(function (sum, x) {
-          sum += x;
-          return sum;
-        }, 0);
-
-        resolutionAvg = s / m.length;
-      }
-
-      var resolutions = [[1000 * 60 * 60 * 24 * 365, "year"], [1000 * 60 * 60 * 24 * 30 * 3, "quarter"], [1000 * 60 * 60 * 24 * 30, "month"], [1000 * 60 * 60 * 24 * 7, "week"], [1000 * 60 * 60 * 24, "day"], [1000 * 60 * 60, "hour"], [1000 * 60, "min"], [1000, "sec"], [0, "ms"]];
-
-      var r = -1;
-      do {
-        ++r;
-      } while (resolutions[r][0] > resolutionAvg);
-
-      specifier = resolutions[r][1];
-    }
 
     var key = [dimType, scaleType, specifier].join(":");
     var tag = [dimType, scaleType].join(":");
@@ -5187,16 +5156,7 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
 
       defaultFormats: {
         measure: "x-num-auto",
-        "measure:time": "x-time-auto",
-        "measure:time:year": "year",
-        "measure:time:quarter": "quarter",
-        "measure:time:month": "month",
-        "measure:time:week": "x-time-auto",
-        "measure:time:day": "x-time-auto",
-        "measure:time:hour": "x-time-auto",
-        "measure:time:min": "x-time-auto",
-        "measure:time:sec": "x-time-auto",
-        "measure:time:ms": "x-time-auto"
+        "measure:time": "x-time-auto"
       }
     }
   };
