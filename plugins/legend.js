@@ -23,6 +23,10 @@
             }
         }
     };
+    var doEven = function (n) {
+        n = Math.round(n);
+        return n % 2 ? n + 1 : n;
+    };
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
     var isEmpty = function (x) {
@@ -157,12 +161,12 @@
                 '</div>'
             ].join('')),
             _itemSizeTemplate: _.template([
-                    '<div class="graphical-report__legend__row">',
-                        '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                            '<div class="graphical-report__legend__guide graphical-report__legend__guide--size" style="height: <%=diameter%>px;width: <%=diameter%>px"></div>',
-                        '</div>',
-                        '<div class="graphical-report__legend__cell"><%=value%></div>',
-                    '</div>'
+                '<div class="graphical-report__legend__row">',
+                '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
+                '<div class="graphical-report__legend__guide graphical-report__legend__guide--size" style="height: <%=diameter%>px;width: <%=diameter%>px"></div>',
+                '</div>',
+                '<div class="graphical-report__legend__cell"><%=value%></div>',
+                '</div>'
             ].join('')),
             _renderColorLegend: function (configUnit, chart) {
                 if (!configUnit.color) {
@@ -211,7 +215,9 @@
                 configUnit.guide = configUnit.guide || {};
                 configUnit.guide.size = this._unit.guide.size;
                 var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
-                var chartData = _.sortBy(chart.getData(), sizeDimension);
+                var chartData = _.sortBy(chart.getData(), function (el) {
+                    return sizeScale(el[sizeDimension]);
+                });
                 var chartDataLength = chartData.length;
                 var first = chartData[0][sizeDimension];
                 var last = chartData[chartDataLength - 1][sizeDimension];
@@ -227,7 +233,7 @@
                 var items = _.map(values,
                     function (value) {
                         return this._itemSizeTemplate({
-                            diameter: sizeScale(value)*2,
+                            diameter: doEven(sizeScale(value) * 2),
                             value: value
                         });
                     }, this).reverse();
