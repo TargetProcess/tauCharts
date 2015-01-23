@@ -21,7 +21,7 @@
         width: 160px;
         box-sizing: border-box;
 
-        &__title{
+        &__title {
             margin: 0 0 10px 10px;
             text-transform: uppercase;
             font-weight: 600;
@@ -50,13 +50,13 @@
 
         }
 
-        &__item.disabled &__guide{
+        &__item.disabled &__guide {
             background: transparent;
         }
 
         &__guide {
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             box-sizing: border-box;
             border-width: 1px;
             border-style: solid;
@@ -65,6 +65,40 @@
             top: 12px;
             left: 10px;
 
+            &--size {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: @default-color;
+                border-color: transparent;
+                opacity: 0.8;
+                border: none;
+            }
+        }
+
+        &__table {
+            display: table;
+        }
+
+        &__row {
+            display: table-row;
+        }
+        &__cell {
+            display: table-cell;
+            text-align: right;
+            padding: 15px 10px;
+            font-size: 13px;
+            height: 1em;
+            max-height: 1em;
+            vertical-align: middle;
+            position: relative;
+            min-width: 16px;
+
+            &:first-child {
+                padding-left: 0;
+                text-align: center;
+                vertical-align: middle;
+            }
         }
     }
 }
