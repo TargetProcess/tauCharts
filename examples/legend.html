@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
+    <!--<script src="../libs/underscore.js"></script>
+    <script src="../libs/jquery.js"></script>
+    <script src="../libs/d3.js"></script>-->
+    <!-- src -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
+    <!-- css -->
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.normalize.min.css"/>
+    <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
+    <link href="../css/export.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/tooltip.css"/>
+    <link href="../css/colorbrewer.css" rel="stylesheet"/>
+    <!--<link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+          type='text/css'>-->
+    <style>
+        .axes.nest .axis.nest text {
+            font-size: 10px;
+        }
+
+        body, #line {
+            height: 100%
+        }
+
+        .color-us {
+            stroke: blue;
+            fill:blue;
+        }
+
+        .color-bug {
+            stroke: red;
+            fill: red;
+        }
+
+        .tau-chart {
+            padding: 20px;
+            width: 100%;
+            height: 640px;
+        }
+
+        .applicable-false {
+            display: none;
+        }
+
+        input {
+            width: 500px;
+        }
+
+        /* .graphical-report__layout__sidebar-right {
+             width: 1000px;
+         }*/
+        .blue {
+            stroke: blue;
+            fill: blue;
+        }
+
+        .green {
+            stroke: green;
+            fill: green;
+        }
+
+        .red {
+            stroke: red;
+            fill: red;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        table td, table th {
+            padding: 10px;
+            border: 1px solid #000000;
+        }
+
+        tr {
+            cursor: pointer;
+        }
+
+        .highClass, tr:hover {
+            background: #377eb8;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+
+<div class="graphical-report__chart">
+    <div class="graphical-report__layout">
+        <div class="graphical-report__layout__header"><a class="graphical-report__export">Export</a></div>
+        <div class="graphical-report__layout__container">
+            <div class="graphical-report__layout__sidebar"></div>
+            <div class="graphical-report__layout__content">
+                <div class="graphical-report__layout__content__wrap">
+                </div>
+            </div>
+            <div class="graphical-report__layout__sidebar-right">
+                <div class="graphical-report__layout__sidebar-right__wrap">
+                    <div class="graphical-report__legend">
+                        <div class="graphical-report__legend__title">Entity Type</div>
+                        <div class="graphical-report__legend__item ">
+                            <div class="graphical-report__legend__guide color20-10"></div>
+                            UserStory
+                        </div>
+                    </div>
+
+
+                    <div class="graphical-report__legend">
+                        <div class="graphical-report__legend__title">Effort</div>
+                        <div class="graphical-report__legend__table">
+                            <div class="graphical-report__legend__row">
+                                <div class="graphical-report__legend__cell" style="width: 70px">
+                                    <div class="graphical-report__legend__guide graphical-report__legend__guide--size" style="height: 70px;width: 70px"></div>
+                                </div>
+                                <div class="graphical-report__legend__cell">10000k</div>
+                            </div>
+                            <div class="graphical-report__legend__row">
+                                <div class="graphical-report__legend__cell">
+                                    <div class="graphical-report__legend__guide graphical-report__legend__guide--size color-definite" style="height: 40px;width: 40px"></div>
+                                </div>
+                                <div class="graphical-report__legend__cell">1000k</div>
+                            </div>
+                            <div class="graphical-report__legend__row">
+                                <div class="graphical-report__legend__cell">
+                                    <div class="graphical-report__legend__guide graphical-report__legend__guide--size" style="height: 20px;width: 20px"></div>
+                                </div>
+                                <div class="graphical-report__legend__cell">100k</div>
+                            </div>
+                            <div class="graphical-report__legend__row">
+                                <div class="graphical-report__legend__cell">
+                                    <div class="graphical-report__legend__guide graphical-report__legend__guide--size" ></div>
+                                </div>
+                                <div class="graphical-report__legend__cell">10k</div>
+                            </div>
+                            <div class="graphical-report__legend__row">
+                                <div class="graphical-report__legend__cell">
+                                    <div class="graphical-report__legend__guide graphical-report__legend__guide--size" style="height: 3px;width: 3px"></div>
+                                </div>
+                                <div class="graphical-report__legend__cell">1k</div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="graphical-report__trendlinepanel applicable-false"><label
+                            class="graphical-report__trendlinepanel__title graphical-report__checkbox"><input
+                            type="checkbox" class="graphical-report__checkbox__input i-role-show-trend"><span
+                            class="graphical-report__checkbox__icon"></span><span
+                            class="graphical-report__checkbox__text">Trend line</span></label>
+
+                        <div><select
+                                class="i-role-change-model graphical-report__select graphical-report__trendlinepanel__control">
+                            <option selected="" value="linear">linear</option>
+                            ,
+                            <option value="exponential">exponential</option>
+                            ,
+                            <option value="logarithmic">logarithmic</option>
+                            /&gt;</select></div>
+                        <div class="graphical-report__trendlinepanel__error-message">Trend line can't be computed for
+                            categorical data. Each axis should be either a measure or a date.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="graphical-report__layout__footer"></div>
+    </div>
+</div>
+
+</body>
+
+</html>
