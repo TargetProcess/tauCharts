@@ -6,6 +6,12 @@ import {utilsDraw} from './utils/utils-draw';
 import {CoordsParallel} from './elements/coords-parallel';
 import {CoordsParallelLine} from './elements/coords-parallel-line';
 
+var fitSize = (w, h, maxRel, srcSize, minimalSize) => {
+    var minRefPoint = Math.min(w, h);
+    var minSize = minRefPoint * maxRel;
+    return Math.max(minimalSize, Math.min(srcSize, minSize));
+};
+
 var setupElementNode = (node, dimensions) => {
 
     dimensions.forEach((dimName) => {
@@ -27,10 +33,18 @@ var setupElementNode = (node, dimensions) => {
     node.options.color = node.scaleColor(node.color.scaleDim, guideColor.brewer, guideColor);
 
     if (node.size) {
+        var minimalSize = 2;
         var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) * 0.5;
         var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter((x) => x !== 0)) * 0.5;
         var guideSize = node.guide.size || {};
-        node.options.sizeScale = node.scaleSize(node.size.scaleDim, [2, minTickStep, minFontSize], guideSize);
+        node.options.sizeScale = node.scaleSize(
+            node.size.scaleDim,
+            [
+                minimalSize,
+                fitSize(W, H, 0.1, minTickStep, minimalSize),
+                fitSize(W, H, 0.1, minFontSize, minimalSize)
+            ],
+            guideSize);
     }
 
     return node;
