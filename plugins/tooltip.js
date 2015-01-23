@@ -197,7 +197,9 @@
                         } else {
                             var format = lastGuide.tickPeriod || lastGuide.tickFormat;
                             if (format) {
-                                return tauCharts.api.tickFormat.get(format)(rawValue);
+                                // very special case for dates
+                                var xFormat = (format === 'x-time-auto') ? 'day' : format;
+                                return tauCharts.api.tickFormat.get(xFormat)(rawValue);
                             } else if (lastGuide.tickLabel) {
                                 return rawValue[lastGuide.tickLabel];
                             } else if (dimensions[key].value) {
