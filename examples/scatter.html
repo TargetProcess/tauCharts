@@ -126,7 +126,7 @@
             type: 'us', count: 10, date: 3
         }, {
             type: 'us', count: 15, date: 4
-        }, {
+        },/*, {
             type: 'us', count: 12, date: 5
         }, {
             type: 'us', count: 16, date: 6
@@ -167,8 +167,8 @@
         },{
             type: 'bug', count: 23, date: "1dsd"
         },{
-            type: 'bug', count: 23, date: "1dsadsd"
-        },{
+            type: 'bug', count: 500, date: "1dsadsd"
+        },*//*,{
             type: 'bug', count: 23, date: "1ddsadsasd"
         },{
             type: 'bug', count: 23, date: "1dsadsasd"
@@ -192,12 +192,12 @@
             type: 'bug', count: 23, date: "1dfdsss"
         },{
             type: 'bug', count: 23, date: "1dfsdf dsf sdss"
-        },{
+        },*/{
             type: 'bug', count: 23, date: "1dfd dfs af ds sss"
         },{
             type: 'bug', count: 23, date: "1fsdd ds fdsa ss"
         },{
-            type: 'bug', count: 23, date: "1wa"
+            type: 'bug', count: 1000, date: "1wa"
         }].concat([1,2,3,4,5,6,7,8,9,10,11,12,13].map(function(item){
                 return {
                         type: 'bug', count: item, date: "1wa" + item
@@ -226,6 +226,7 @@
             type: 'scatterplot',
             x: 'date',
             y: 'count',
+            size:'count',
             color: 'type'
         });
 

@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.7 - 2015-01-22
+/*! taucharts - v0.3.8 - 2015-01-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -4654,6 +4654,7 @@ define('elements/point',["exports", "../const"], function (exports, _const) {
 
     var update = function () {
       return this.attr("r", function (d) {
+        console.log(d[node.size.scaleDim]);
         return sizeScale(d[node.size.scaleDim]);
       }).attr("cx", function (d) {
         return xScale(d[node.x.scaleDim]);
