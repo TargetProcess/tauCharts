@@ -4654,7 +4654,6 @@ define('elements/point',["exports", "../const"], function (exports, _const) {
 
     var update = function () {
       return this.attr("r", function (d) {
-        console.log(d[node.size.scaleDim]);
         return sizeScale(d[node.size.scaleDim]);
       }).attr("cx", function (d) {
         return xScale(d[node.x.scaleDim]);
@@ -5016,6 +5015,12 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
 
 
+  var fitSize = function (w, h, maxRel, srcSize, minimalSize) {
+    var minRefPoint = Math.min(w, h);
+    var minSize = minRefPoint * maxRel;
+    return Math.max(minimalSize, Math.min(srcSize, minSize));
+  };
+
   var setupElementNode = function (node, dimensions) {
     dimensions.forEach(function (dimName) {
       node[dimName] = node.dimension(node[dimName], node);
@@ -5036,6 +5041,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
     node.options.color = node.scaleColor(node.color.scaleDim, guideColor.brewer, guideColor);
 
     if (node.size) {
+      var minimalSize = 2;
       var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
         return x !== 0;
       })) * 0.5;
@@ -5043,7 +5049,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
         return x !== 0;
       })) * 0.5;
       var guideSize = node.guide.size || {};
-      node.options.sizeScale = node.scaleSize(node.size.scaleDim, [2, minTickStep, minFontSize], guideSize);
+      node.options.sizeScale = node.scaleSize(node.size.scaleDim, [minimalSize, fitSize(W, H, 0.1, minTickStep, minimalSize), fitSize(W, H, 0.1, minFontSize, minimalSize)], guideSize);
     }
 
     return node;
