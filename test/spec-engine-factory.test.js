@@ -177,7 +177,7 @@ define(function (require) {
             expect(y.cssClass).to.equal('y axis');
             expect(y.rotate).to.equal(0);
             expect(y.textAnchor).to.equal('end');
-            expect(y.tickFormat).to.equal('quarter');
+            expect(y.tickFormat).to.equal('x-time-auto');
             expect(y.label.text).to.equal('date');
             expect(y.tickFontHeight).to.equal(10);
 
@@ -190,10 +190,10 @@ define(function (require) {
 
             // 20 padding to Y axis line
             // 9  tick mark size
-            // 35 "Q1 2014" (7 * 5) iso string width
+            // 35 "January" (7 * 5) iso string width
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.equal(99);
+            expect(full.unit.guide.padding.l).to.equal(126.5);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });
@@ -288,11 +288,12 @@ define(function (require) {
 
             expect(part.guide.showGridLines).to.equal('xy');
 
-            expect(px.tickFormat).to.equal('quarter');
+            expect(px.tickFormat).to.equal('x-time-auto');
             expect(px.tickFormatNullAlias).to.equal('No date');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
-            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
+//          expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
+            expect(px.density).to.be.above(measurer.getAxisTickLabelSize('October 2014').width + measurer['xDensityPadding:measure'] * 2);
 
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');
@@ -451,14 +452,15 @@ define(function (require) {
 
             expect(part.guide.showGridLines).to.equal('xy');
 
-            expect(px.tickFormat).to.equal('quarter');
+            expect(px.tickFormat).to.equal('x-time-auto');
             expect(px.tickFormatNullAlias).to.equal('No date');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
             expect(px.label.dock).to.equal('right');
             expect(px.label.padding).to.equal(-2.5);
             expect(px.label.cssClass).to.equal('label inline');
-            expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
+//          expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
+            expect(px.density).to.be.above(measurer.getAxisTickLabelSize('October 2014').width + measurer['xDensityPadding:measure'] * 2);
 
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');

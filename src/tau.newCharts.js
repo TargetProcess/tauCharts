@@ -101,16 +101,7 @@ var api = {
 
         defaultFormats: {
             'measure': 'x-num-auto',
-            'measure:time'          : 'x-time-auto',
-            'measure:time:year'     : 'year',
-            'measure:time:quarter'  : 'quarter',
-            'measure:time:month'    : 'month',
-            'measure:time:week'     : 'x-time-auto',
-            'measure:time:day'      : 'x-time-auto',
-            'measure:time:hour'     : 'x-time-auto',
-            'measure:time:min'      : 'x-time-auto',
-            'measure:time:sec'      : 'x-time-auto',
-            'measure:time:ms'       : 'x-time-auto'
+            'measure:time': 'x-time-auto'
         }
     }
 };

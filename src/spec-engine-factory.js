@@ -84,46 +84,6 @@ var getTickFormat = (dim, meta, defaultFormats) => {
     var dimType = dim.dimType;
     var scaleType = dim.scaleType;
     var specifier = '*';
-    if (dimType === 'measure' && scaleType === 'time') {
-        let src = meta.source.filter((x) => (x !== null)).sort();
-        let resolutionAvg = 0;
-        if (src.length > 1) {
-            let i = 1;
-            let l = src.length;
-            let m = [];
-            while (i < l) {
-                m.push(src[i] - src[i - 1]);
-                ++i;
-            }
-
-            var s = m.reduce((sum, x) => {
-                sum += x;
-                return sum;
-            }, 0);
-
-            resolutionAvg = s / m.length;
-        }
-
-        var resolutions = [
-            [1000 * 60 * 60 * 24 * 365, 'year'],
-            [1000 * 60 * 60 * 24 * 30 * 3, 'quarter'],
-            [1000 * 60 * 60 * 24 * 30, 'month'],
-            [1000 * 60 * 60 * 24 * 7, 'week'],
-            [1000 * 60 * 60 * 24, 'day'],
-            [1000 * 60 * 60, 'hour'],
-            [1000 * 60, 'min'],
-            [1000, 'sec'],
-            [0, 'ms']
-        ];
-
-        let r = -1;
-        do {
-            ++r;
-        }
-        while (resolutions[r][0] > resolutionAvg);
-
-        specifier = resolutions[r][1];
-    }
 
     var key = [dimType, scaleType, specifier].join(':');
     var tag = [dimType, scaleType].join(':');
