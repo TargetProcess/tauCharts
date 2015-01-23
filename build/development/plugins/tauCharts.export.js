@@ -6499,6 +6499,12 @@ define("../bower_components/fetch/fetch", function(){});
                         popup.hide();
                     }
                 }.bind(this));
+                popupElement.addEventListener('mouseover', function (e) {
+                    if (e.target.tagName.toLowerCase() === 'a') {
+                        e.target.focus();
+                    }
+                }.bind(this));
+
                 popupElement.addEventListener('keydown', function (e) {
                     if (e.keyCode === keyCode.ESCAPE) {
                         popup.hide();
