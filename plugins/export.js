@@ -61,7 +61,11 @@
     if ('onafterprint' in window) {
         window.addEventListener('afterprint', removePrintStyles);
     } else {
-        window.matchMedia('screen').addListener(removePrintStyles);
+        window.matchMedia('screen').addListener(function(exp){
+            if(exp.matches) {
+                removePrintStyles();
+            }
+        });
     }
     var focusinDetected;
     var isSupportFocusin = function isSupportFocusin() {
