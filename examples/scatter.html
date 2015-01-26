@@ -106,18 +106,18 @@
         map: {
             '*': {
                 'tauCharts': 'tau_modules/tau.newCharts',
-              //  'text': 'node_modules/requirejs-text/text',
-              //  'rgbcolor': 'bower_components/canvg/rgbcolor',
-              //  'stackblur': 'bower_components/canvg/StackBlur',
-              //  'canvg':'bower_components/canvg/canvg',
-              //  'FileSaver':'bower_components/FileSaver.js/FileSaver',
-              //  'fetch':'bower_components/fetch/fetch',
-              //  'promise':'bower_components/es6-promise/promise'
+                'text': 'node_modules/requirejs-text/text',
+                'rgbcolor': 'bower_components/canvg/rgbcolor',
+                'stackblur': 'bower_components/canvg/StackBlur',
+                'canvg':'bower_components/canvg/canvg',
+                'FileSaver':'bower_components/FileSaver.js/FileSaver',
+                'fetch':'bower_components/fetch/fetch',
+                'promise':'bower_components/es6-promise/promise'
             }
         }
     });
 
-    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'build/development/plugins/tauCharts.export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
+    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
          * @extends Plugin */
         var defData = [{
