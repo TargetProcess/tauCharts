@@ -5999,7 +5999,7 @@ define('../node_modules/requirejs-text/text',['module'], function (module) {
 });
 
 
-define('../node_modules/requirejs-text/text!print.style.css',[],function () { return 'body > * {\n    visibility: hidden;\n}\nbody {\n    overflow: hidden;\n}\nbody * {\n    visibility: hidden !important;\n}\n\n.graphical-report__print-block {\n    position: absolute;\n    top: 0;\n    left: 0;\n    visibility: visible !important;\n    display: block;\n    width: 100%;\n    /*height: 100%;*/\n}\n';});
+define('../node_modules/requirejs-text/text!print.style.css',[],function () { return 'body > * {\n    visibility: hidden;\n}\nbody {\n    overflow: hidden;\n}\nbody * {\n    visibility: hidden !important;\n}\n\n.graphical-report__print-block {\n    position: absolute;\n    top: 0;\n    left: 0;\n    visibility: visible !important;\n    display: block !important;\n    width: 100%;\n    /*height: 100%;*/\n}\n';});
 
 (function() {
   
