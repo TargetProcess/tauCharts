@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.12 - 2015-01-26
+/*! taucharts - v0.3.13 - 2015-01-26
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -4984,9 +4984,9 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
   var CoordsParallelLine = _elementsCoordsParallelLine.CoordsParallelLine;
 
 
-  var fitSize = function (w, h, maxRel, srcSize, minimalSize) {
+  var fitSize = function (w, h, maxRelLimit, srcSize, minimalSize) {
     var minRefPoint = Math.min(w, h);
-    var minSize = minRefPoint * maxRel;
+    var minSize = minRefPoint * maxRelLimit;
     return Math.max(minimalSize, Math.min(srcSize, minSize));
   };
 
@@ -5010,7 +5010,8 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
     node.options.color = node.scaleColor(node.color.scaleDim, guideColor.brewer, guideColor);
 
     if (node.size) {
-      var minimalSize = 2;
+      var minimalSize = 1;
+      var maxRelLimit = 0.035;
       var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(function (x) {
         return x !== 0;
       })) * 0.5;
@@ -5018,7 +5019,7 @@ define('node-map',["exports", "./elements/coords", "./elements/line", "./element
         return x !== 0;
       })) * 0.5;
       var guideSize = node.guide.size || {};
-      node.options.sizeScale = node.scaleSize(node.size.scaleDim, [minimalSize, fitSize(W, H, 0.1, minTickStep, minimalSize), fitSize(W, H, 0.1, minFontSize, minimalSize)], guideSize);
+      node.options.sizeScale = node.scaleSize(node.size.scaleDim, [fitSize(W, H, maxRelLimit, 2, minimalSize), fitSize(W, H, maxRelLimit, minTickStep, minimalSize), fitSize(W, H, maxRelLimit, minFontSize, minimalSize)], guideSize);
     }
 
     return node;
