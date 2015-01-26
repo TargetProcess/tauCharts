@@ -92,7 +92,7 @@
     function exportTo(settings) {
         return {
             _createDataUrl: function (chart) {
-                var cssPromises = this.cssPaths.map(function (css) {
+                var cssPromises = this._cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
                         return r.text();
                     });
@@ -128,8 +128,8 @@
                         }
 
                         var blob = new Blob([asArray.buffer], {type: "image/png"});
-                        saveAs(blob);
-                    });
+                        saveAs(blob,this._fileName || 'export');
+                    }.bind(this));
             },
             _toPrint: function (chart) {
                 this._createDataUrl(chart)
@@ -277,7 +277,8 @@
             },
             init: function (chart) {
                 settings = settings || {};
-                this.cssPaths = settings.cssPaths;
+                this._cssPaths = settings.cssPaths;
+                this._fileName = settings.fileName;
                 if (!this.cssPaths) {
                     this.cssPaths = [];
                     tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
