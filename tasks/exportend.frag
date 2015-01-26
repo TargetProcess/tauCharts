@@ -10,7 +10,7 @@
              'stackblur': '../bower_components/canvg/StackBlur',
              'fetch':'../bower_components/fetch/fetch',
              'promise':'../bower_components/es6-promise/promise',
-             'text': '../node_modules/requirejs-text/text'
+             'text!./print.style.css': '../node_modules/requirejs-text/text!print.style.css'
         }
     }
  })
