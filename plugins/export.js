@@ -128,7 +128,7 @@
                         }
 
                         var blob = new Blob([asArray.buffer], {type: "image/png"});
-                        saveAs(blob,this._fileName || 'export');
+                        saveAs(blob,(this._fileName || 'export') + '.png');
                     }.bind(this));
             },
             _toPrint: function (chart) {
@@ -289,8 +289,8 @@
                 });
                 popup.content([
                     '<ul class="graphical-report__export__list">',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">print</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">export to png</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
                     '</ul>'
                 ].join(''));
                 popup.attach(this._container);
