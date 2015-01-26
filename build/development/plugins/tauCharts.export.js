@@ -6278,7 +6278,7 @@ define("../bower_components/fetch/fetch", function(){});
 
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define('export',['tauCharts', 'canvg', 'FileSaver', 'promise', 'text!./print.style.css', 'fetch'], function (tauPlugins, canvg, saveAs, Promise, printCss) {
+        define('export',['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'], function (tauPlugins, canvg, saveAs, Promise, printCss) {
             window.Promise = window.Promise || Promise.Promise;
             return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
         });
@@ -6595,7 +6595,7 @@ define("../bower_components/fetch/fetch", function(){});
              'stackblur': '../bower_components/canvg/StackBlur',
              'fetch':'../bower_components/fetch/fetch',
              'promise':'../bower_components/es6-promise/promise',
-             'text!./print.style.css': '../node_modules/requirejs-text/text!print.style.css'
+             'print.style.css': '../node_modules/requirejs-text/text!print.style.css'
         }
     }
  })
