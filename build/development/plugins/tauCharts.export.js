@@ -6370,7 +6370,7 @@ define("../bower_components/fetch/fetch", function(){});
     function exportTo(settings) {
         return {
             _createDataUrl: function (chart) {
-                var cssPromises = this.cssPaths.map(function (css) {
+                var cssPromises = this._cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
                         return r.text();
                     });
@@ -6406,8 +6406,8 @@ define("../bower_components/fetch/fetch", function(){});
                         }
 
                         var blob = new Blob([asArray.buffer], {type: "image/png"});
-                        saveAs(blob);
-                    });
+                        saveAs(blob,(this._fileName || 'export') + '.png');
+                    }.bind(this));
             },
             _toPrint: function (chart) {
                 this._createDataUrl(chart)
@@ -6555,7 +6555,8 @@ define("../bower_components/fetch/fetch", function(){});
             },
             init: function (chart) {
                 settings = settings || {};
-                this.cssPaths = settings.cssPaths;
+                this._cssPaths = settings.cssPaths;
+                this._fileName = settings.fileName;
                 if (!this.cssPaths) {
                     this.cssPaths = [];
                     tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
@@ -6566,8 +6567,8 @@ define("../bower_components/fetch/fetch", function(){});
                 });
                 popup.content([
                     '<ul class="graphical-report__export__list">',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">print</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">export to png</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
                     '</ul>'
                 ].join(''));
                 popup.attach(this._container);

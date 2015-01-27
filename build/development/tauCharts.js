@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.13 - 2015-01-26
+/*! taucharts - v0.3.14 - 2015-01-27
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -4660,7 +4660,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
   var getSizesParams = function (params) {
     var countDomainValue = params.domain().length;
-    var countCategory = params.category.length;
+    var countCategory = params.categoryLength;
     var tickWidth = params.size / countDomainValue;
     var intervalWidth = tickWidth / (countCategory + 1);
     return {
@@ -4672,7 +4672,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
   var flipHub = {
 
-    NORM: function (node, xScale, yScale, width, height, defaultSizeParams, category) {
+    NORM: function (node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams) {
       var minimalHeight = 1;
       var yMin = Math.min.apply(Math, _toArray(yScale.domain()));
       var isYNumber = !isNaN(yMin);
@@ -4681,7 +4681,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
       var _ref = isXNumber ? defaultSizeParams : getSizesParams({
         domain: xScale.domain,
-        category: category,
+        categoryLength: colorIndexScale.count(),
         size: width
       });
       var tickWidth = _ref.tickWidth;
@@ -4713,14 +4713,14 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         return height - yScale(d[node.y.scaleDim]);
       };
 
-      var calculateTranslate = function (d, index) {
-        return utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
+      var calculateTranslate = function (d) {
+        return utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
       };
 
       return { calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
     },
 
-    FLIP: function (node, xScale, yScale, width, height, defaultSizeParams, category) {
+    FLIP: function (node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams) {
       var minimalHeight = 1;
       var xMin = Math.min.apply(Math, _toArray(xScale.domain()));
       var isXNumber = !isNaN(xMin);
@@ -4729,7 +4729,7 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
 
       var _ref2 = isYNumber ? defaultSizeParams : getSizesParams({
         domain: yScale.domain,
-        category: category,
+        categoryLength: colorIndexScale.count(),
         size: height
       });
       var tickWidth = _ref2.tickWidth;
@@ -4760,8 +4760,8 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
       var calculateHeight = function (d) {
         return intervalWidth;
       };
-      var calculateTranslate = function (d, index) {
-        return utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
+      var calculateTranslate = function (d) {
+        return utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
       };
 
       return { calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
@@ -4775,14 +4775,34 @@ define('elements/interval',["exports", "../utils/utils-draw", "../const"], funct
         yScale = options.yScale,
         colorScale = options.color;
 
-    var categories = node.groupBy(node.partition(), node.color.scaleDim);
     var method = flipHub[node.flip ? "FLIP" : "NORM"];
-    var facetNode = node.parentUnit.parentUnit || node.parentUnit;
-    var _method = method(node, xScale, yScale, options.width, options.height, {
+
+    var allCategories = node.groupBy(node.source(), node.color.scaleDim);
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
+
+    var colorIndexScale = function (d) {
+      var index = 0;
+      var targetKey = JSON.stringify(d.key);
+      _.find(allCategories, function (catItem, catIndex) {
+        var isFound = JSON.stringify(catItem.key) === targetKey;
+        if (isFound) {
+          index = catIndex;
+        }
+        return isFound;
+      });
+
+      return index;
+    };
+
+    colorIndexScale.count = function () {
+      return allCategories.length;
+    };
+
+    var _method = method(node, xScale, yScale, colorIndexScale, options.width, options.height, {
       tickWidth: 5,
       intervalWidth: 5,
       offsetCategory: 0
-    }, node.groupBy(facetNode.partition(), node.color.scaleDim));
+    });
 
     var calculateX = _method.calculateX;
     var calculateY = _method.calculateY;
