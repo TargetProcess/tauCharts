@@ -163,7 +163,7 @@
             _itemSizeTemplate: _.template([
                 '<div class="graphical-report__legend__row">',
                 '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                '<div class="graphical-report__legend__guide graphical-report__legend__guide--size" style="height: <%=diameter%>px;width: <%=diameter%>px"></div>',
+                '<div class="graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size" style="height: <%=diameter%>px;width: <%=diameter%>px"></div>',
                 '</div>',
                 '<div class="graphical-report__legend__cell"><%=value%></div>',
                 '</div>'
@@ -234,7 +234,8 @@
                     function (value) {
                         return this._itemSizeTemplate({
                             diameter: doEven(sizeScale(value) * 2),
-                            value: value
+                            value: value,
+                            className: configUnit.color ? 'color-definite' : ''
                         });
                     }, this).reverse();
 
