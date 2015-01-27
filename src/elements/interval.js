@@ -7,7 +7,7 @@ var isMeasure = (dim) => dim.dimType === 'measure';
 
 var getSizesParams = (params) => {
     var countDomainValue = params.domain().length;
-    var countCategory = params.category.length;
+    var countCategory = params.categoryLength;
     var tickWidth = params.size / countDomainValue;
     var intervalWidth = tickWidth / (countCategory + 1);
     return {
@@ -19,7 +19,7 @@ var getSizesParams = (params) => {
 
 var flipHub = {
 
-    NORM: (node, xScale, yScale, width, height, defaultSizeParams, category) => {
+    NORM: (node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams) => {
         let minimalHeight = 1;
         let yMin = Math.min(...yScale.domain());
         let isYNumber = !isNaN(yMin);
@@ -30,7 +30,7 @@ var flipHub = {
             defaultSizeParams :
             getSizesParams({
                 domain: xScale.domain,
-                category: category,
+                categoryLength: colorIndexScale.count(),
                 size: width
             });
 
@@ -54,12 +54,12 @@ var flipHub = {
             }) :
             ((d) => (height - yScale(d[node.y.scaleDim])));
 
-        let calculateTranslate = (d, index) => utilsDraw.translate(index * offsetCategory + offsetCategory / 2, 0);
+        let calculateTranslate = (d) => utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
 
         return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
 
-    FLIP: (node, xScale, yScale, width, height, defaultSizeParams, category) => {
+    FLIP: (node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams) => {
         let minimalHeight = 1;
         let xMin = Math.min(...xScale.domain());
         let isXNumber = !isNaN(xMin);
@@ -70,7 +70,7 @@ var flipHub = {
             defaultSizeParams :
             getSizesParams({
                 domain: yScale.domain,
-                category: category,
+                categoryLength: colorIndexScale.count(),
                 size: height
             });
 
@@ -95,7 +95,7 @@ var flipHub = {
             }) :
             ((d) => xScale(d[node.x.scaleDim]));
         let calculateHeight = (d) => intervalWidth;
-        let calculateTranslate = (d, index) => utilsDraw.translate(0, index * offsetCategory + offsetCategory / 2);
+        let calculateTranslate = (d) => utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
 
         return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     }
@@ -109,21 +109,39 @@ var interval = function (node) {
         yScale = options.yScale,
         colorScale = options.color;
 
-    var categories = node.groupBy(node.partition(), node.color.scaleDim);
     var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
-    var facetNode = node.parentUnit.parentUnit || node.parentUnit;
+
+    var allCategories = node.groupBy(node.source(), node.color.scaleDim);
+    var categories = node.groupBy(node.partition(), node.color.scaleDim);
+
+    var colorIndexScale = (d) => {
+        var index = 0;
+        var targetKey = JSON.stringify(d.key);
+        _.find(allCategories, (catItem, catIndex) => {
+            var isFound = (JSON.stringify(catItem.key) === targetKey);
+            if (isFound) {
+                index = catIndex;
+            }
+            return isFound;
+        });
+
+        return index;
+    };
+
+    colorIndexScale.count = () => allCategories.length;
+
     var {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate} = method(
         node,
         xScale,
         yScale,
+        colorIndexScale,
         options.width,
         options.height,
         {
             tickWidth: 5,
             intervalWidth: 5,
             offsetCategory: 0
-        },
-        node.groupBy(facetNode.partition(), node.color.scaleDim)
+        }
     );
 
     var updateBar = function () {
