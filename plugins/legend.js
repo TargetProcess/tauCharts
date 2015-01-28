@@ -163,7 +163,7 @@
             _itemSizeTemplate: _.template([
                 '<div class="graphical-report__legend__row">',
                 '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                '<div class="graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size" style="height: <%=diameter%>px;width: <%=diameter%>px"></div>',
+                '<svg style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle class="graphical-report__dot graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size" r="<%=radius%>"></circle></svg>',
                 '</div>',
                 '<div class="graphical-report__legend__cell"><%=value%></div>',
                 '</div>'
@@ -232,8 +232,10 @@
 
                 var items = _.map(values,
                     function (value) {
+                        var radius = sizeScale(value);
                         return this._itemSizeTemplate({
-                            diameter: doEven(sizeScale(value) * 2),
+                            diameter: radius*2,
+                            radius:radius,
                             value: value,
                             className: configUnit.color ? 'color-definite' : ''
                         });
