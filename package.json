@@ -25,7 +25,7 @@
     "url": "https://github.com/TargetProcess/tauCharts.git"
   },
   "devDependencies": {
-    "6to5": "2.13.5",
+    "6to5": "3.0.9",
     "almond": "0.3.0",
     "autoprefixer-core": "^5.0.0",
     "chai": "1.10.0",
@@ -36,7 +36,7 @@
     "grunt-contrib-concat": "^0.5.0",
     "grunt-contrib-copy": "0.7.0",
     "grunt-contrib-cssmin": "0.11.0",
-    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-jshint": "^0.11.0",
     "grunt-contrib-less": "^1.0.0",
     "grunt-contrib-rename": "0.0.3",
     "grunt-contrib-uglify": "^0.7.0",
@@ -47,16 +47,16 @@
     "grunt-shell": "",
     "karma": "~0.12.31",
     "karma-chrome-launcher": "~0.1.7",
+    "karma-cli": "0.0.4",
     "karma-coverage": "^0.2.7",
     "karma-coveralls": "^0.1.5",
-    "karma-firefox-launcher": "~0.1.4",
-    "karma-ie-launcher": "~0.1",
     "karma-mocha": "^0.1.10",
     "karma-phantomjs-launcher": "~0.1.4",
     "karma-requirejs": "0.2.2",
-    "karma-script-launcher": "~0.1.0",
-    "karma-story-reporter": "~0.3.1",
     "requirejs": "2.1.15",
     "requirejs-text": "^2.0.12"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/karma start config/karma.conf.js"
   }
 }
