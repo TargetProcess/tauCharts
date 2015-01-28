@@ -269,7 +269,7 @@ class Chart extends Plot {
         if (index !== -1) {
             Chart.winAware.splice(index, 1);
         }
-        super();
+        super.destroy();
     }
 }
 Chart.resizeOnWindowEvent = (function () {
