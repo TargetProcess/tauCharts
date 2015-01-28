@@ -14,7 +14,7 @@ module.exports = function (config) {
              'libs/js-schema.js',
              'libs/d3.js',
              */
-            {pattern:'src/addons/color-brewer.js', included: false},
+            {pattern: 'src/addons/color-brewer.js', included: false},
             //'build/tauCharts.js',
             {pattern: 'test/utils/*.js', included: false},
             {pattern: 'plugins/**', included: false},
@@ -28,9 +28,13 @@ module.exports = function (config) {
             {pattern: 'test/*test.js', included: false},
             'test/tests-main.js'
         ],
-        // test results reporter to use
-        reporters: ['progress'],
-
+        browsers: ["PhantomJS"],
+        preprocessors: {"tau_modules/**/*.js": "coverage"},
+        reporters: ["coverage", "dots", "coveralls"],
+        coverageReporter: {
+            type: "lcovonly",
+            dir: "coverage/"
+        },
         // web server port
         port: 9876,
 
@@ -39,10 +43,6 @@ module.exports = function (config) {
 
         // level of logging
         logLevel: config.LOG_INFO,
-
-
-        // Start these browsers
-        browsers: ['PhantomJS'],
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit

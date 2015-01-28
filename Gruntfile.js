@@ -76,6 +76,7 @@ module.exports = function (grunt) {
                 preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"}
             },
             travis: {
+                browsers: ["Firefox"],
                 preprocessors: {"tau_modules/**/*.js": "coverage"},
                 reporters: ["coverage", "dots", "coveralls"],
                 coverageReporter: {
