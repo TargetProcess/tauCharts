@@ -74,15 +74,6 @@ module.exports = function (grunt) {
             unit: {
                 reporters: ["dots", "coverage"],
                 preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"}
-            },
-            travis: {
-                browsers: ["Firefox"],
-                preprocessors: {"tau_modules/**/*.js": "coverage"},
-                reporters: ["coverage", "dots", "coveralls"],
-                coverageReporter: {
-                    type: "lcovonly",
-                    dir: "coverage/"
-                }
             }
         },
         uglify: {
@@ -298,6 +289,6 @@ module.exports = function (grunt) {
     var buildWithoutPublish = ['bowercopy', 'less', 'postcss', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin'];
     grunt.registerTask('build', buildWithoutPublish);
     grunt.registerTask('publish', buildWithoutPublish.concat(['copy:copybuild', 'clean', 'gh-pages']));
-    grunt.registerTask('travis', ['bowercopy', 'jshint', 'build', 'karma:travis']);
+    grunt.registerTask('travis', ['bowercopy', 'jshint', 'build']);
     grunt.registerTask('watching', ['default']);
 };
