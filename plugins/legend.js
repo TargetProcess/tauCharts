@@ -207,7 +207,7 @@
                 }));
             },
             _renderSizeLegend: function (configUnit, chart) {
-                if (!configUnit.size || chart.getConfig().dimensions[configUnit.size].type !== 'measure') {
+                if (!configUnit.size || chart.getConfig().spec.dimensions[configUnit.size].type !== 'measure') {
                     return;
                 }
 
