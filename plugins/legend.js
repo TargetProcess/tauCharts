@@ -48,7 +48,7 @@
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
                 return dfs(conf.spec.unit, function (node) {
-                    return node.color || node.size;
+                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
                 });
             },
             init: function (chart) {
@@ -163,7 +163,7 @@
             _itemSizeTemplate: _.template([
                 '<div class="graphical-report__legend__row">',
                 '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                '<div class="graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size" style="height: <%=diameter%>px;width: <%=diameter%>px"></div>',
+                '<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
                 '</div>',
                 '<div class="graphical-report__legend__cell"><%=value%></div>',
                 '</div>'
@@ -207,9 +207,10 @@
                 }));
             },
             _renderSizeLegend: function (configUnit, chart) {
-                if (!configUnit.size) {
+                if (!configUnit.size || chart.getConfig().dimensions[configUnit.size].type !== 'measure') {
                     return;
                 }
+
                 var sizeScale = this._unit.options.sizeScale;
                 var sizeDimension = this._unit.size.scaleDim;
                 configUnit.guide = configUnit.guide || {};
@@ -232,8 +233,10 @@
 
                 var items = _.map(values,
                     function (value) {
+                        var radius = sizeScale(value);
                         return this._itemSizeTemplate({
-                            diameter: doEven(sizeScale(value) * 2),
+                            diameter: doEven(radius*2+2),
+                            radius:radius,
                             value: value,
                             className: configUnit.color ? 'color-definite' : ''
                         });
