@@ -48,7 +48,7 @@
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
                 return dfs(conf.spec.unit, function (node) {
-                    return node.color || node.size;
+                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
                 });
             },
             init: function (chart) {
@@ -172,7 +172,6 @@
                 if (!configUnit.color) {
                     return;
                 }
-                //graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size
                 var colorScale = this._unit.options.color;
                 var colorDimension = this._unit.color.scaleDim;
                 configUnit.guide = configUnit.guide || {};
@@ -208,9 +207,10 @@
                 }));
             },
             _renderSizeLegend: function (configUnit, chart) {
-                if (!configUnit.size) {
+                if (!configUnit.size || chart.getConfig().dimensions[configUnit.size].type !== 'measure') {
                     return;
                 }
+
                 var sizeScale = this._unit.options.sizeScale;
                 var sizeDimension = this._unit.size.scaleDim;
                 configUnit.guide = configUnit.guide || {};
