@@ -30,6 +30,20 @@
 .graphical-report__legend__item.disabled .graphical-report__legend__guide {
   background: transparent;
 }
+.graphical-report__legend__guide-size {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
+  opacity: 0.8;
+}
+.graphical-report__legend__guide-size.color-definite {
+  stroke: #cacaca;
+  fill: #cacaca;
+}
 .graphical-report__legend__guide {
   width: 16px;
   height: 16px;
@@ -40,19 +54,6 @@
   position: absolute;
   top: 12px;
   left: 10px;
-}
-.graphical-report__legend__guide--size {
-  top: 50%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%);
-  background: #6fa1d9;
-  border-color: transparent;
-  opacity: 0.8;
-  border: none;
-}
-.graphical-report__legend__guide--size.color-definite {
-  background: #cacaca;
 }
 .graphical-report__legend__table {
   display: table;
