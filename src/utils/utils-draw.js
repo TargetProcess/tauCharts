@@ -146,7 +146,7 @@ var fixAxisTickOverflow = (nodeScale, x) => {
         var iMaxTexts = -1;
         var timeTexts = nodeScale.selectAll('.tick text')[0];
         timeTexts.forEach((textNode, i) => {
-            var innerHTML = textNode.innerHTML || '';
+            var innerHTML = textNode.textContent || '';
             var textLength = innerHTML.length;
             if (textLength > maxTextLn) {
                 maxTextLn = textLength;
