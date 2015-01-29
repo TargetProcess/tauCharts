@@ -163,7 +163,7 @@
             _itemSizeTemplate: _.template([
                 '<div class="graphical-report__legend__row">',
                 '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                '<svg style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle class="graphical-report__dot graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size" r="<%=radius%>"></circle></svg>',
+                '<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
                 '</div>',
                 '<div class="graphical-report__legend__cell"><%=value%></div>',
                 '</div>'
@@ -172,6 +172,7 @@
                 if (!configUnit.color) {
                     return;
                 }
+                //graphical-report__legend__guide <%=className%> graphical-report__legend__guide--size
                 var colorScale = this._unit.options.color;
                 var colorDimension = this._unit.color.scaleDim;
                 configUnit.guide = configUnit.guide || {};
@@ -234,7 +235,7 @@
                     function (value) {
                         var radius = sizeScale(value);
                         return this._itemSizeTemplate({
-                            diameter: radius*2,
+                            diameter: doEven(radius*2+2),
                             radius:radius,
                             value: value,
                             className: configUnit.color ? 'color-definite' : ''
