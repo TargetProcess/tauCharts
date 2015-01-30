@@ -390,8 +390,8 @@
                 settings = settings || {};
                 this._cssPaths = settings.cssPaths;
                 this._fileName = settings.fileName;
-                if (!this.cssPaths) {
-                    this.cssPaths = [];
+                if (!this._cssPaths) {
+                    this._cssPaths = [];
                     tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
                 }
                 this._container = chart.insertToHeader('<a class="graphical-report__export">Export</a>>');

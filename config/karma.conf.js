@@ -15,6 +15,8 @@ module.exports = function (config) {
              'libs/d3.js',
              */
             {pattern: 'src/addons/color-brewer.js', included: false},
+            {pattern: 'bower_components/**', included: false},
+            {pattern: 'node_modules/requirejs-text/**', included: false},
             //'build/tauCharts.js',
             {pattern: 'test/utils/*.js', included: false},
             {pattern: 'plugins/**', included: false},
