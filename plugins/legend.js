@@ -109,6 +109,11 @@
                 var colorScale = this._unit.options.color;
                 var value = target.getAttribute('data-value');
 
+                var keys = _.keys(this._currentFilters);
+                if (keys.length === (this._colorScaleSize - 1) && !this._currentFilters.hasOwnProperty(value)) {
+                    return;
+                }
+
                 if (this._currentFilters.hasOwnProperty(value)) {
                     var currentFilterID = this._currentFilters[value];
                     delete this._currentFilters[value];
@@ -209,6 +214,7 @@
                     items: data.items.join(''),
                     name: colorScaleName
                 }));
+                this._colorScaleSize = data.items.length;
             },
             _renderSizeLegend: function (configUnit, chart) {
                 if (!configUnit.size || chart.getConfig().spec.dimensions[configUnit.size].type !== 'measure') {
