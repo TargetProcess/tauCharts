@@ -230,11 +230,12 @@
                 var values;
                 if ((last - first)) {
                     var count = log10(last - first);
-                    var xF = (4 - count) < 0 ? 0 : Math.round((4 - count));
+                    var xF = Math.round((4 - count));
                     var base = Math.pow(10, xF);
                     var step = (last - first) / 5;
-                    values = _.unique([first, first + step, first + step * 2, first + step * 3, last].map(function (x) {
-                        return Math.round(x * base) / base;
+                    var steps = [first, first + step, first + step * 2, first + step * 3, last];
+                    values = _.unique(steps.map(function (x) {
+                        return (x === last || x === first) ? x : Math.round(x * base) / base;
                     }));
                 } else {
                     values = [first];
