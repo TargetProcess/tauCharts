@@ -232,7 +232,7 @@
                     values = _([first, first + step, first + step * 2, first + step * 3, last])
                         .chain()
                         .map(function (x) {
-                            return Math.round(x * base) / base;
+                            return (x === last || x === first) ? x : Math.round(x * base) / base;
                         })
                         .unique()
                         .value();

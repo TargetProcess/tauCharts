@@ -234,9 +234,13 @@
                     var base = Math.pow(10, xF);
                     var step = (last - first) / 5;
                     var steps = [first, first + step, first + step * 2, first + step * 3, last];
-                    values = _.unique(steps.map(function (x) {
-                        return (x === last || x === first) ? x : Math.round(x * base) / base;
-                    }));
+                    values = _(steps)
+                        .chain()
+                        .map(function (x) {
+                            return (x === last || x === first) ? x : Math.round(x * base) / base;
+                        })
+                        .unique()
+                        .value();
                 } else {
                     values = [first];
                 }
