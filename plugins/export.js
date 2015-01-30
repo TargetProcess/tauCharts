@@ -70,15 +70,22 @@
             imagePlaceHolder.parentNode.removeChild(imagePlaceHolder);
         }
     };
-    if ('onafterprint' in window) {
-        window.addEventListener('afterprint', removePrintStyles);
-    } else {
-        window.matchMedia('screen').addListener(function (exp) {
-            if (exp.matches) {
-                removePrintStyles();
-            }
-        });
+
+    var isPhantomJS = /PhantomJS/.test(navigator.userAgent);
+
+    if (!isPhantomJS) {
+        if ('onafterprint' in window) {
+            window.addEventListener('afterprint', removePrintStyles);
+        }
+        else {
+            window.matchMedia('screen').addListener(function (exp) {
+                if (exp.matches) {
+                    removePrintStyles();
+                }
+            });
+        }
     }
+
     var focusinDetected;
     var isSupportFocusin = function isSupportFocusin() {
         if (focusinDetected) {
@@ -459,5 +466,4 @@
     tauCharts.api.plugins.add('exportTo', exportTo);
 
     return exportTo;
-})
-;
+});
