@@ -32,6 +32,11 @@
     var isEmpty = function (x) {
         return (x === null) || (x === '') || (typeof x === 'undefined');
     };
+
+    function log10(x) {
+        return Math.log(x) / Math.LN10;
+    }
+
     var legend = function () {
         return {
             _delegateEvent: function (element, eventName, selector, callback) {
@@ -224,8 +229,14 @@
                 var last = chartData[chartDataLength - 1][sizeDimension];
                 var values;
                 if ((last - first)) {
-                    var step = Math.round((last - first) / 5);
-                    values = [first, first + step, first + step * 2, first + step * 3, last];
+                    var count = log10(last - first);
+                    var xF = Math.round((4 - count));
+                    var base = Math.pow(10, xF);
+                    var step = (last - first) / 5;
+                    var steps = [first, first + step, first + step * 2, first + step * 3, last];
+                    values = _.unique(steps.map(function (x) {
+                        return (x === last || x === first) ? x : Math.round(x * base) / base;
+                    }));
                 } else {
                     values = [first];
                 }
@@ -235,8 +246,8 @@
                     function (value) {
                         var radius = sizeScale(value);
                         return this._itemSizeTemplate({
-                            diameter: doEven(radius*2+2),
-                            radius:radius,
+                            diameter: doEven(radius * 2 + 2),
+                            radius: radius,
                             value: value,
                             className: configUnit.color ? 'color-definite' : ''
                         });

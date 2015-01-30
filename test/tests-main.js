@@ -21,7 +21,14 @@ requirejs.config({
     },
     map: {
         '*': {
-            'tauCharts': 'tau_modules/tau.newCharts'
+            'tauCharts': 'tau_modules/tau.newCharts',
+            'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
+            'rgbcolor': 'bower_components/canvg/rgbcolor',
+            'stackblur': 'bower_components/canvg/StackBlur',
+            'canvg':'bower_components/canvg/canvg',
+            'FileSaver':'bower_components/FileSaver.js/FileSaver',
+            'fetch':'bower_components/fetch/fetch',
+            'promise':'bower_components/es6-promise/promise'
         }
     },
     shim: {

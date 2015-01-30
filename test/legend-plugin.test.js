@@ -3,6 +3,7 @@ define(function (require) {
     var testUtils = require('testUtils');
     var legend = require('plugins/legend');
     var trendline = require('plugins/trendline');
+    var exportTo = require('plugins/export');
     var _ = require('underscore');
     var describeChart = testUtils.describeChart;
     var expectLegend = function (expect, chart) {
@@ -152,7 +153,7 @@ define(function (require) {
             x: 'x',
             y: 'y',
             color: 'color',
-            plugins: [legend(),trendline()]
+            plugins: [legend(),trendline(),exportTo()]
         },
         [{
             x: 2,

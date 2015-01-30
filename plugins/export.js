@@ -10,19 +10,31 @@
 })(function (tauCharts, canvg, saveAs, Promise, printCss) {
     var d3 = tauCharts.api.d3;
     var _ = tauCharts.api._;
-    var dfs = function (node) {
-        if (node.color) {
+    var dfs = function (node, predicate) {
+        if (predicate(node)) {
             return node;
         }
         var i, children = node.unit || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
-            found = dfs(child);
+            found = dfs(child, predicate);
             if (found) {
                 return found;
             }
         }
     };
+    var doEven = function (n) {
+        n = Math.round(n);
+        return n % 2 ? n + 1 : n;
+    };
+    var isEmpty = function (x) {
+        return (x === null) || (x === '') || (typeof x === 'undefined');
+    };
+
+    function log10(x) {
+        return Math.log(x) / Math.LN10;
+    }
+
     var keyCode = {
         "BACKSPACE": 8,
         "COMMA": 188,
@@ -61,8 +73,8 @@
     if ('onafterprint' in window) {
         window.addEventListener('afterprint', removePrintStyles);
     } else {
-        window.matchMedia('screen').addListener(function(exp){
-            if(exp.matches) {
+        window.matchMedia('screen').addListener(function (exp) {
+            if (exp.matches) {
                 removePrintStyles();
             }
         });
@@ -117,6 +129,12 @@
                         return canvas.toDataURL("image/png");
                     }.bind(this));
             },
+            _findUnit: function (chart) {
+                var conf = chart.getConfig();
+                return dfs(conf.spec.unit, function (node) {
+                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
+                });
+            },
             _toPng: function (chart) {
                 this._createDataUrl(chart)
                     .then(function (dataURL) {
@@ -128,7 +146,7 @@
                         }
 
                         var blob = new Blob([asArray.buffer], {type: "image/png"});
-                        saveAs(blob,(this._fileName || 'export') + '.png');
+                        saveAs(blob, (this._fileName || 'export') + '.png');
                     }.bind(this));
             },
             _toPrint: function (chart) {
@@ -145,19 +163,10 @@
                         };
                     });
             },
-            _renderAdditionalInfo: function (svg, chart) {
-                var conf = chart.getConfig();
-                var configUnit = dfs(conf.spec.unit);
-                if (!configUnit) {
-                    return;
-                }
+            _renderColorLegend: function (configUnit, svg, chart, width) {
                 configUnit.guide = configUnit.guide || {};
                 configUnit.guide.color = this._unit.guide.color;
                 var colorScaleName = configUnit.guide.color.label.text || this._unit.options.color.dimension;
-                svg = d3.select(svg);
-                var width = parseInt(svg.attr('width'), 10);
-                var height = svg.attr('height');
-                svg.attr('width', width + 160);
                 var data = this._getColorMap(chart);
                 var draw = function () {
                     this.attr('transform', function (d, index) {
@@ -170,7 +179,7 @@
                         });
                     this.append('text').attr('x', 12).attr('y', 5)
                         .text(function (d) {
-                            return d.label;
+                            return d.value;
                         }).style({
                             'font-size': '13px'
                         });
@@ -185,6 +194,108 @@
                 });
                 container.selectAll('g')
                     .data(data).enter().append('g').call(draw);
+
+                return {h: (data.length * 20 + 20), w: 0};
+            },
+            //'<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle><text style="stroke:none;opacity:1;fill:#000000;font-weight: 400;" x="<%=radius+20%>" y="<%=radius+5%>"><%=value%><text></svg>',
+            _renderSizeLegend: function (configUnit, svg, chart, width, offset) {
+                var sizeScale = this._unit.options.sizeScale;
+                var sizeDimension = this._unit.size.scaleDim;
+                configUnit.guide = configUnit.guide || {};
+                configUnit.guide.size = this._unit.guide.size;
+                var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
+                var chartData = _.sortBy(chart.getData(), function (el) {
+                    return sizeScale(el[sizeDimension]);
+                });
+                var chartDataLength = chartData.length;
+                var first = chartData[0][sizeDimension];
+                var last = chartData[chartDataLength - 1][sizeDimension];
+                var values;
+                if ((last - first)) {
+                    var count = log10(last - first);
+                    var xF = (4 - count) < 0 ? 0 : Math.round((4 - count));
+                    var base = Math.pow(10, xF);
+                    var step = (last - first) / 5;
+                    values = _.unique([first, first + step, first + step * 2, first + step * 3, last].map(function (x) {
+                        //return x.toFixed(xF);
+                        return Math.round(x * base) / base;
+                    }));
+                } else {
+                    values = [first];
+                }
+
+
+                var data = _.map(values,
+                    function (value) {
+                        var radius = sizeScale(value);
+                        return {
+                            diameter: doEven(radius * 2 + 2),
+                            radius: radius,
+                            value: value,
+                            className: configUnit.color ? 'color-definite' : ''
+                        };
+                    }, this).reverse();
+
+                var offsetInner = 0;
+                var draw = function () {
+                    this.attr('transform', function (d, index) {
+                        offsetInner+=d.diameter;
+                        var transform = 'translate(0,' + (offsetInner)+ ')';
+                        offsetInner+=10;
+                        return transform;
+                    });
+                    this.append('circle')
+                        .attr('r', function (d) {
+                            return d.radius;
+                        })
+                        .attr('class', function (d) {
+                            return d.className;
+                        });
+                    this.append('g').attr('transform', function(d){
+                        return 'translate('+ d.diameter +',' + 0 + ')';
+                    }).append('text')
+                        .attr('x', function(d){
+                        return 0;// d.diameter;
+                    })
+                        .attr('y', function(d){
+                        return 0;// d.radius-6.5;
+                    })
+                        .text(function (d) {
+                            return d.value;
+                        }).style({
+                            'font-size': '13px'
+                        });
+                };
+                var container = svg.append('g')
+                    .attr('class', 'legend')
+                    .attr('transform', 'translate(' + (width + 10) + ',' + (20 + offset.h + 10) + ')');
+                container.append('text').text(sizeScaleName.toUpperCase()).style({
+                    'text-transform': 'uppercase',
+                    'font-weight': '600',
+                    'font-size': '13px'
+                });
+                container.selectAll('g')
+                    .data(data).enter().append('g').call(draw);
+            },
+            _renderAdditionalInfo: function (svg, chart) {
+                var configUnit = this._findUnit(chart);
+                if (!configUnit) {
+                    return;
+                }
+                var offset = {h: 0, w: 0};
+                svg = d3.select(svg);
+                var width = parseInt(svg.attr('width'), 10);
+                var height = svg.attr('height');
+                svg.attr('width', width + 160);
+                if (configUnit.color) {
+                    var offsetColorLegend = this._renderColorLegend(configUnit, svg, chart, width);
+                    offset.h = offsetColorLegend.h;
+                    offset.w = offsetColorLegend.w;
+                }
+                /*if (configUnit.size && chart.getConfig().dimensions[configUnit.size].type === 'measure') {
+                    this._renderSizeLegend(configUnit, svg, chart, width, offset);
+                }*/
+               // document.body.appendChild(svg.node());
             },
             onUnitReady: function (chart, unit) {
                 if (unit.type.indexOf('ELEMENT') !== -1) {
@@ -279,8 +390,8 @@
                 settings = settings || {};
                 this._cssPaths = settings.cssPaths;
                 this._fileName = settings.fileName;
-                if (!this.cssPaths) {
-                    this.cssPaths = [];
+                if (!this._cssPaths) {
+                    this._cssPaths = [];
                     tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
                 }
                 this._container = chart.insertToHeader('<a class="graphical-report__export">Export</a>>');
