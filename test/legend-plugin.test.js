@@ -6,18 +6,23 @@ define(function (require) {
     var exportTo = require('plugins/export');
     var _ = require('underscore');
     var describeChart = testUtils.describeChart;
+    function getText(node) {
+        return node.parentNode.parentNode.textContent;
+    }
     var expectLegend = function (expect, chart) {
         var prefix = 'color20';
         var sidebar = chart._layout.rightSidebar;
+
         var legendBlock = sidebar.querySelector('.graphical-report__legend');
         expect(legendBlock).to.be.ok;
         expect(legendBlock.querySelector('.graphical-report__legend__title').textContent).to.equal('color');
         var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
-        expect(nodeList[0].parentNode.textContent).to.equal('No color');
+
+        expect(getText(nodeList[0])).to.equal('No color');
         expect(nodeList[0].classList.contains(prefix + '-1')).to.be.ok;
-        expect(nodeList[1].parentNode.textContent).to.equal('yellow');
+        expect(getText(nodeList[1])).to.equal('yellow');
         expect(nodeList[1].classList.contains(prefix + '-2')).to.be.ok;
-        expect(nodeList[2].parentNode.textContent).to.equal('green');
+        expect(getText(nodeList[2])).to.equal('green');
         expect(nodeList[2].classList.contains(prefix + '-3')).to.be.ok;
     };
     var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
@@ -94,8 +99,7 @@ define(function (require) {
         var prefix = '.color20';
         var selector = '.graphical-report__legend__guide' + prefix + '-1';
 
-        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
-
+        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
         svg = chart.getSVG();
         expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(1);
         expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
@@ -106,7 +110,7 @@ define(function (require) {
         expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(0);
         expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
 
-        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
+        item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
         expect(item1.classList.contains('disabled')).to.be.ok;
         expect(item1.querySelectorAll(prefix + '-1').length).to.be.equals(1);
 
@@ -261,7 +265,7 @@ define(function (require) {
                 var sidebar = context.chart._layout.rightSidebar;
                 var legendBlock = sidebar.querySelector('.graphical-report__legend');
                 var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
-                expect(nodeList[0].parentNode.textContent).to.equal('No color');
+                expect(getText(nodeList[0])).to.equal('No color');
             });
         },
         {
