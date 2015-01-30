@@ -146,7 +146,7 @@
                         }
 
                         var blob = new Blob([asArray.buffer], {type: "image/png"});
-                      //  saveAs(blob, (this._fileName || 'export') + '.png');
+                        saveAs(blob, (this._fileName || 'export') + '.png');
                     }.bind(this));
             },
             _toPrint: function (chart) {
@@ -292,10 +292,10 @@
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
-                if (configUnit.size && chart.getConfig().dimensions[configUnit.size].type === 'measure') {
+                /*if (configUnit.size && chart.getConfig().dimensions[configUnit.size].type === 'measure') {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
-                }
-                document.body.appendChild(svg.node());
+                }*/
+               // document.body.appendChild(svg.node());
             },
             onUnitReady: function (chart, unit) {
                 if (unit.type.indexOf('ELEMENT') !== -1) {
