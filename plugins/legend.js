@@ -166,7 +166,7 @@
                 '</div>'
             ].join('')),
             _itemSizeTemplate: _.template([
-                '<div class="graphical-report__legend__item">',
+                '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
                     '<div class="graphical-report__legend__guide__wrap">',
                         '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
                     '</div><%=value%>',
