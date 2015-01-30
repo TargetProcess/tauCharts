@@ -1,6 +1,6 @@
 {
   "name": "tauCharts",
-  "version": "0.3.15",
+  "version": "0.3.16",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "Simple charts library based on d3",
   "keywords": [
