@@ -1,6 +1,6 @@
 {
   "name": "tauCharts",
-  "version": "0.3.15",
+  "version": "0.3.16",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "Simple charts library based on d3",
   "keywords": [
@@ -28,7 +28,7 @@
     "js-schema": "0.7.0",
     "es5-shim": "latest",
     "canvg": "https://github.com/Mavrin/canvg.git",
-    "FileSaver.js": "https://github.com/eligrey/FileSaver.js.git",
+    "FileSaver.js": "https://github.com/Mavrin/FileSaver.js.git",
     "fetch": "~0.6.1",
     "es6-promise": "~2.0.1"
   }

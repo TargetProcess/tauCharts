@@ -109,6 +109,11 @@
                 var colorScale = this._unit.options.color;
                 var value = target.getAttribute('data-value');
 
+                var keys = _.keys(this._currentFilters);
+                if (keys.length === (this._colorScaleSize - 1) && !this._currentFilters.hasOwnProperty(value)) {
+                    return;
+                }
+
                 if (this._currentFilters.hasOwnProperty(value)) {
                     var currentFilterID = this._currentFilters[value];
                     delete this._currentFilters[value];
@@ -162,15 +167,14 @@
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
                 '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
-                '<div class="graphical-report__legend__guide <%=color%>" ></div><%=label%>',
+                '<div class="graphical-report__legend__guide__wrap"><div class="graphical-report__legend__guide <%=color%>" ></div></div><%=label%>',
                 '</div>'
             ].join('')),
             _itemSizeTemplate: _.template([
-                '<div class="graphical-report__legend__row">',
-                '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                '<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
-                '</div>',
-                '<div class="graphical-report__legend__cell"><%=value%></div>',
+                '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
+                    '<div class="graphical-report__legend__guide__wrap">',
+                        '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
+                    '</div><%=value%>',
                 '</div>'
             ].join('')),
             _renderColorLegend: function (configUnit, chart) {
@@ -210,6 +214,7 @@
                     items: data.items.join(''),
                     name: colorScaleName
                 }));
+                this._colorScaleSize = data.items.length;
             },
             _renderSizeLegend: function (configUnit, chart) {
                 if (!configUnit.size || chart.getConfig().spec.dimensions[configUnit.size].type !== 'measure') {
@@ -234,9 +239,13 @@
                     var base = Math.pow(10, xF);
                     var step = (last - first) / 5;
                     var steps = [first, first + step, first + step * 2, first + step * 3, last];
-                    values = _.unique(steps.map(function (x) {
-                        return (x === last || x === first) ? x : Math.round(x * base) / base;
-                    }));
+                    values = _(steps)
+                        .chain()
+                        .map(function (x) {
+                            return (x === last || x === first) ? x : Math.round(x * base) / base;
+                        })
+                        .unique()
+                        .value();
                 } else {
                     values = [first];
                 }
@@ -254,7 +263,7 @@
                     }, this).reverse();
 
                 this._container.insertAdjacentHTML('beforeend', this._template({
-                    items: '<div class="graphical-report__legend__table">' + items.join('') + '</div>',
+                    items: items.join(''),
                     name: sizeScaleName
                 }));
             },

@@ -11,13 +11,19 @@
   font-size: 13px;
 }
 .graphical-report__legend__item {
-  padding: 11px 30px 10px 30px;
+  padding: 11px 20px 10px 40px;
   position: relative;
   font-size: 13px;
   cursor: pointer;
 }
 .graphical-report__legend__item:hover {
   background-color: rgba(189, 195, 205, 0.2);
+}
+.graphical-report__legend__item--size {
+  cursor: default;
+}
+.graphical-report__legend__item--size:hover {
+  background: none;
 }
 .graphical-report__legend__item .color-default {
   background: #6fa1d9;
@@ -30,51 +36,32 @@
 .graphical-report__legend__item.disabled .graphical-report__legend__guide {
   background: transparent;
 }
-.graphical-report__legend__guide-size {
+.graphical-report__legend__guide {
   position: absolute;
-  top: 50%;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
   left: 50%;
+  top: 50%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
-  stroke: #6fa1d9;
-  fill: #6fa1d9;
-}
-.graphical-report__legend__guide-size.color-definite {
-  stroke: #cacaca;
-  fill: #cacaca;
-}
-.graphical-report__legend__guide {
-  width: 16px;
-  height: 16px;
-  box-sizing: border-box;
-  border-width: 1px;
-  border-style: solid;
+  border: 1px solid transparent;
   border-radius: 50%;
+}
+.graphical-report__legend__guide__wrap {
   position: absolute;
   top: 12px;
   left: 10px;
+  width: 16px;
+  height: 16px;
 }
-.graphical-report__legend__table {
-  display: table;
+.graphical-report__legend__guide__guide--size {
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
 }
-.graphical-report__legend__row {
-  display: table-row;
-}
-.graphical-report__legend__cell {
-  display: table-cell;
-  text-align: right;
-  padding: 10px 5px;
-  font-size: 13px;
-  height: 1em;
-  max-height: 1em;
-  vertical-align: middle;
-  position: relative;
-  min-width: 16px;
-}
-.graphical-report__legend__cell:first-child {
-  padding-left: 0;
-  text-align: center;
-  vertical-align: middle;
+.graphical-report__legend__guide.color-definite {
+  stroke: #cacaca;
+  fill: #cacaca;
 }
 .graphical-report__legend__item .color20-1 {
   background: #6fa1d9;
