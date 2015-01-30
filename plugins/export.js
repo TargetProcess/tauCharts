@@ -113,7 +113,8 @@
                     .all(cssPromises)
                     .then(function (res) {
                         return res.join(' ');
-                    }).then(function (res) {
+                    })
+                    .then(function (res) {
                         var style = createStyleElement(res);
                         var div = document.createElement('div');
                         var svg = chart.getSVG().cloneNode(true);
@@ -170,30 +171,42 @@
                 var data = this._getColorMap(chart);
                 var draw = function () {
                     this.attr('transform', function (d, index) {
-                        return 'translate(0,' + 20 * (index + 1) + ')';
+                        return 'translate(5,' + 20 * (index + 1) + ')';
                     });
                     this.append('circle')
                         .attr('r', 6)
                         .attr('class', function (d) {
                             return d.color;
                         });
-                    this.append('text').attr('x', 12).attr('y', 5)
+                    this.append('text')
+                        .attr('x', 12)
+                        .attr('y', 5)
                         .text(function (d) {
                             return d.value;
-                        }).style({
-                            'font-size': '13px'
-                        });
+                        })
+                        .style({'font-size': settings.fontSize + 'px'});
                 };
-                var container = svg.append('g')
+
+                var container = svg
+                    .append('g')
                     .attr('class', 'legend')
-                    .attr('transform', 'translate(' + (width + 10) + ',20)');
-                container.append('text').text(colorScaleName.toUpperCase()).style({
-                    'text-transform': 'uppercase',
-                    'font-weight': '600',
-                    'font-size': '13px'
-                });
-                container.selectAll('g')
-                    .data(data).enter().append('g').call(draw);
+                    .attr('transform', 'translate(' + (width + 10) + ',' + settings.paddingTop + ')');
+
+                container
+                    .append('text')
+                    .text(colorScaleName.toUpperCase())
+                    .style({
+                        'text-transform': 'uppercase',
+                        'font-weight': '600',
+                        'font-size': settings.fontSize + 'px'
+                    });
+
+                container
+                    .selectAll('g')
+                    .data(data)
+                    .enter()
+                    .append('g')
+                    .call(draw);
 
                 return {h: (data.length * 20 + 20), w: 0};
             },
@@ -216,17 +229,19 @@
                     var xF = (4 - count) < 0 ? 0 : Math.round((4 - count));
                     var base = Math.pow(10, xF);
                     var step = (last - first) / 5;
-                    values = _.unique([first, first + step, first + step * 2, first + step * 3, last].map(function (x) {
-                        //return x.toFixed(xF);
-                        return Math.round(x * base) / base;
-                    }));
+                    values = _([first, first + step, first + step * 2, first + step * 3, last])
+                        .chain()
+                        .map(function (x) {
+                            return Math.round(x * base) / base;
+                        })
+                        .unique()
+                        .value();
                 } else {
                     values = [first];
                 }
 
-
-                var data = _.map(values,
-                    function (value) {
+                var data = values
+                    .map(function (value) {
                         var radius = sizeScale(value);
                         return {
                             diameter: doEven(radius * 2 + 2),
@@ -234,48 +249,68 @@
                             value: value,
                             className: configUnit.color ? 'color-definite' : ''
                         };
-                    }, this).reverse();
+                    }.bind(this))
+                    .reverse();
+
+                var maxDiameter = Math.max.apply(null, _.pluck(data, 'diameter'));
+                var fontSize = settings.fontSize;
 
                 var offsetInner = 0;
                 var draw = function () {
-                    this.attr('transform', function (d, index) {
-                        offsetInner+=d.diameter;
-                        var transform = 'translate(0,' + (offsetInner)+ ')';
-                        offsetInner+=10;
+
+                    this.attr('transform', function (d) {
+                        offsetInner += maxDiameter;
+                        var transform = 'translate(5,' + (offsetInner)+ ')';
+                        offsetInner += 10;
                         return transform;
                     });
+
                     this.append('circle')
                         .attr('r', function (d) {
                             return d.radius;
                         })
                         .attr('class', function (d) {
                             return d.className;
-                        });
-                    this.append('g').attr('transform', function(d){
-                        return 'translate('+ d.diameter +',' + 0 + ')';
-                    }).append('text')
-                        .attr('x', function(d){
-                        return 0;// d.diameter;
-                    })
-                        .attr('y', function(d){
-                        return 0;// d.radius-6.5;
-                    })
+                        })
+                        .style({'opacity': 0.4});
+
+                    this.append('g')
+                        .attr('transform', function(d) {
+                            return 'translate(' + maxDiameter + ',' + (fontSize / 2) + ')';
+                        })
+                        .append('text')
+                        .attr('x', function(d) {
+                            return 0;// d.diameter;
+                        })
+                        .attr('y', function(d) {
+                            return 0;// d.radius-6.5;
+                        })
                         .text(function (d) {
                             return d.value;
-                        }).style({
-                            'font-size': '13px'
-                        });
+                        })
+                        .style({'font-size': fontSize + 'px'});
                 };
-                var container = svg.append('g')
+
+                var container = svg
+                    .append('g')
                     .attr('class', 'legend')
-                    .attr('transform', 'translate(' + (width + 10) + ',' + (20 + offset.h + 10) + ')');
-                container.append('text').text(sizeScaleName.toUpperCase()).style({
-                    'text-transform': 'uppercase',
-                    'font-weight': '600',
-                    'font-size': '13px'
-                });
-                container.selectAll('g')
-                    .data(data).enter().append('g').call(draw);
+                    .attr('transform', 'translate(' + (width + 10) + ',' + (settings.paddingTop + offset.h + 20) + ')');
+
+                container
+                    .append('text')
+                    .text(sizeScaleName.toUpperCase())
+                    .style({
+                        'text-transform': 'uppercase',
+                        'font-weight': '600',
+                        'font-size': fontSize + 'px'
+                    });
+
+                container
+                    .selectAll('g')
+                    .data(data)
+                    .enter()
+                    .append('g')
+                    .call(draw);
             },
             _renderAdditionalInfo: function (svg, chart) {
                 var configUnit = this._findUnit(chart);
@@ -292,10 +327,10 @@
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
-                /*if (configUnit.size && chart.getConfig().dimensions[configUnit.size].type === 'measure') {
+                if (configUnit.size && chart.getConfig().dimensions[configUnit.size].type === 'measure') {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
-                }*/
-               // document.body.appendChild(svg.node());
+                }
+                document.body.appendChild(svg.node());
             },
             onUnitReady: function (chart, unit) {
                 if (unit.type.indexOf('ELEMENT') !== -1) {
@@ -394,6 +429,12 @@
                     this._cssPaths = [];
                     tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
                 }
+
+                settings = _.defaults(settings, {
+                    fontSize: 13,
+                    paddingTop: 30
+                });
+
                 this._container = chart.insertToHeader('<a class="graphical-report__export">Export</a>>');
                 var popup = chart.addBalloon({
                     place: 'bottom-left'
