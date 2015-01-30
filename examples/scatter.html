@@ -120,23 +120,25 @@
     require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
          * @extends Plugin */
-        var defData = [{
-            type: 'us', count: 0, date: 2
-        },{
-            type: 'us', count: -0.012301230123, date: 2
-        },{
-            type: 'us', count: 123, date: 2
-        }, {
-            type: 'us', count: 10, date: 3
-        }, {
-            type: 'us', count: 15, date: 4
-        }, {
-            type: 'bug', count: 0.12, date: 5
-        }, {
-            type: 'bug', count: 0.16, date: 6
-        }, {
-            type: 'bug', count: 0.1313, date: 7
-        }];
+        var defData = [
+            {type: 'us', count: 0, date: 2},
+            {type: 'us', count: -0.012301230123, date: 2},
+            {type: 'us', count: 123, date: 2},
+            {type: 'us', count: 10, date: 3},
+            {type: 'us', count: 15, date: 4},
+
+            {type: 'bug', count: 0.12, date: 5},
+            {type: 'bug', count: 0.16, date: 6},
+            {type: 'bug', count: 0.1313, date: 7},
+
+            {type: 'request', count: 0.22, date: 5},
+            {type: 'request', count: 0.26, date: 6},
+            {type: 'request', count: 0.2313, date: 7},
+
+            {type: 'task', count: 1.12, date: 5},
+            {type: 'task', count: 1.16, date: 6},
+            {type: 'task', count: 1.1313, date: 7}
+        ];
         var chart = new tauCharts.Chart({
            /* guide: {
                 color: {

@@ -327,10 +327,10 @@
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
-                if (configUnit.size && chart.getConfig().dimensions[configUnit.size].type === 'measure') {
+                if (configUnit.size && chart.getConfig().spec.dimensions[configUnit.size].type === 'measure') {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
                 }
-                document.body.appendChild(svg.node());
+                // document.body.appendChild(svg.node());
             },
             onUnitReady: function (chart, unit) {
                 if (unit.type.indexOf('ELEMENT') !== -1) {
