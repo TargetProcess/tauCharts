@@ -162,15 +162,14 @@
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
                 '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
-                '<div class="graphical-report__legend__guide <%=color%>" ></div><%=label%>',
+                '<div class="graphical-report__legend__guide__wrap"><div class="graphical-report__legend__guide <%=color%>" ></div></div><%=label%>',
                 '</div>'
             ].join('')),
             _itemSizeTemplate: _.template([
-                '<div class="graphical-report__legend__row">',
-                '<div class="graphical-report__legend__cell" style="width: <%=diameter%>px">',
-                '<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
-                '</div>',
-                '<div class="graphical-report__legend__cell"><%=value%></div>',
+                '<div class="graphical-report__legend__item">',
+                    '<div class="graphical-report__legend__guide__wrap">',
+                        '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
+                    '</div><%=value%>',
                 '</div>'
             ].join('')),
             _renderColorLegend: function (configUnit, chart) {
@@ -258,7 +257,7 @@
                     }, this).reverse();
 
                 this._container.insertAdjacentHTML('beforeend', this._template({
-                    items: '<div class="graphical-report__legend__table">' + items.join('') + '</div>',
+                    items: items.join(''),
                     name: sizeScaleName
                 }));
             },
