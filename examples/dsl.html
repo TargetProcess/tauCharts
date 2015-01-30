@@ -718,7 +718,8 @@
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
         data = data.map(function(x) {
-            x.month = new Date(x.month.replace(/ /g, ''));
+            var toks = x.month.split(' - ');
+            x.month = new Date(toks[0], toks[1], 1);
             return x;
         });
 

@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.15 - 2015-01-29
+/*! taucharts - v0.3.15 - 2015-01-30
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1706,10 +1706,14 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
         return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
     };
 
+    var d3getComputedTextLength = _.memoize(function (d3Text) {
+        return d3Text.node().getComputedTextLength();
+    }, function (d3Text) {
+        return d3Text.node().textContent;
+    });
+
     var cutText = function (textString, widthLimit, getComputedTextLength) {
-        getComputedTextLength = getComputedTextLength || function (d3Text) {
-            return d3Text.node().getComputedTextLength();
-        };
+        getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
 
         textString.each(function () {
             var textD3 = d3.select(this);
@@ -1739,9 +1743,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
     };
 
     var wrapText = function (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) {
-        getComputedTextLength = getComputedTextLength || function (d3Text) {
-            return d3Text.node().getComputedTextLength();
-        };
+        getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
 
         var addLine = function (targetD3, text, lineHeight, x, y, dy, lineNumber) {
             var dyNew = lineNumber * lineHeight + dy;
@@ -1835,7 +1837,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
             var iMaxTexts = -1;
             var timeTexts = nodeScale.selectAll(".tick text")[0];
             timeTexts.forEach(function (textNode, i) {
-                var innerHTML = textNode.innerHTML || "";
+                var innerHTML = textNode.textContent || "";
                 var textLength = innerHTML.length;
                 if (textLength > maxTextLn) {
                     maxTextLn = textLength;

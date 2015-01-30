@@ -122,16 +122,20 @@
          * @extends Plugin */
         var defData = [{
             type: 'us', count: 0, date: 2
+        },{
+            type: 'us', count: -0.012301230123, date: 2
+        },{
+            type: 'us', count: 123, date: 2
         }, {
             type: 'us', count: 10, date: 3
         }, {
             type: 'us', count: 15, date: 4
         }, {
-            type: 'us', count: 12, date: 5
+            type: 'bug', count: 0.12, date: 5
         }, {
-            type: 'us', count: 16, date: 6
+            type: 'bug', count: 0.16, date: 6
         }, {
-            type: 'us', count: 13, date: 7
+            type: 'bug', count: 0.1313, date: 7
         }];
         var chart = new tauCharts.Chart({
            /* guide: {
@@ -157,7 +161,7 @@
             x: 'date',
             y: 'count',
             size:'count',
-           // color: 'type'
+            color: 'type'
         });
 
         chart.renderTo('#line');

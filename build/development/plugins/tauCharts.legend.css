@@ -38,7 +38,6 @@
           transform: translate(-50%, -50%);
   stroke: #6fa1d9;
   fill: #6fa1d9;
-  opacity: 0.8;
 }
 .graphical-report__legend__guide-size.color-definite {
   stroke: #cacaca;
