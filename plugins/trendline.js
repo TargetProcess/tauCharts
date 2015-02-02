@@ -406,6 +406,7 @@
             xSettings || {},
             {
                 type: 'linear',
+                hideError: false,
                 showPanel: true,
                 showTrend: true,
                 models: ['linear', 'exponential', 'logarithmic']
@@ -427,6 +428,10 @@
                         this._error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
                     }
                     this._container.classList.add(classToAdd);
+
+                    if (settings.hideError) {
+                        this._container.classList.add('hide-trendline-error');
+                    }
 
                     this.uiChangeEventsDispatcher = function (e) {
 
