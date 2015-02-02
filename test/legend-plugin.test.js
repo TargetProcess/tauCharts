@@ -272,5 +272,46 @@ define(function (require) {
             autoWidth: false
         }
     );
+    describeChart(
+        "legend for size should be present",
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            size:'size',
+            plugins: [legend()]
+        },
+        [{
+            x: 2,
+            y: 2,
+            color: undefined,
+            size:10
+
+        },{
+            x: 4,
+            y: 5,
+            color: 'color',
+            size:123
+
+        }],
+        function (context) {
+            it("should No color", function () {
+                var sidebar = context.chart._layout.rightSidebar;
+                var legendBlock = sidebar.querySelector('.graphical-report__legend');
+                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                expect(getText(nodeList[0])).to.equal('No color');
+                expect(getText(nodeList[1])).to.equal('color');
+                expect(getText(nodeList[2])).to.equal('123');
+                expect(getText(nodeList[3])).to.equal('77.8');
+                expect(getText(nodeList[4])).to.equal('55.2');
+                expect(getText(nodeList[5])).to.equal('32.6');
+                expect(getText(nodeList[6])).to.equal('10');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 
 });
