@@ -258,7 +258,7 @@
                             diameter: doEven(radius * 2 + 2),
                             radius: radius,
                             value: value,
-                            className: configUnit.color ? 'color-definite' : ''
+                            className: configUnit.color ? 'color-definite' : 'color-default-size'
                         });
                     }, this).reverse();
 
