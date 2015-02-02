@@ -61,14 +61,14 @@ define(function (require) {
             var createConfig = function () {
                 return {
                     type: 'bar',
-                    x:'x',
-                    y:'y',
+                    x: 'x',
+                    y: 'y',
                     data: [{x: 'el', y: 32}]
                 };
             };
 
             function checkSizes(chart, width, height) {
-                if(modernizer.flexbox) {
+                if (modernizer.flexbox) {
                     var svg = chart.getSVG();
                     expect(parseInt($(svg).attr('width'))).to.be.equal(width);
                     expect(parseInt($(svg).attr('height'))).to.be.equal(height);
@@ -95,23 +95,22 @@ define(function (require) {
             // emulate resize
             tauCharts.Chart.resizeOnWindowEvent();
             var d = $.Deferred();
-            setTimeout(function(){
+            setTimeout(function () {
                 checkSizes(chart1, 300, 800);
                 checkSizes(chart2, 450, 450);
                 checkSizes(chart3, 600, 800);
                 d.resolve();
             });
-            d.then(function(){
+            d.then(function () {
                 chart1.destroy();
                 chart2.destroy();
                 chart3.destroy();
                 tauCharts.Chart.resizeOnWindowEvent();
                 expect(tauCharts.Chart.winAware.length).to.be.equals(0);
-                setTimeout(function(){
+                setTimeout(function () {
                     done();
                 });
             });
-
 
 
         });
@@ -242,6 +241,23 @@ define(function (require) {
             });
             describe('insert string element', function () {
                 var res = plot.insertToRightSidebar('<div><div class="my-selector">innerHtml</div></div>');
+                expect('<div class="my-selector">innerHtml</div>').to.eql(res.innerHTML);
+            });
+
+        });
+        it('api test insertToHeader', function () {
+            var plot = new tauCharts.Plot(config);
+            plot.renderTo(div);
+            var $div = $('<div>test</div>>');
+            var divTest = $div.get(0);
+            var res = plot.insertToHeader(divTest);
+            describe('insert dom element', function () {
+                expect(divTest).to.eql(res);
+                expect($.contains(div.querySelector('.graphical-report__layout__header'), divTest)).to.be.ok;
+                $div.remove();
+            });
+            describe('insert string element', function () {
+                var res = plot.insertToHeader('<div><div class="my-selector">innerHtml</div></div>');
                 expect('<div class="my-selector">innerHtml</div>').to.eql(res.innerHTML);
             });
 

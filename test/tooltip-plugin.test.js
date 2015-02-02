@@ -2,6 +2,7 @@ define(function (require) {
     var $ = require('jquery');
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
+    var stubTimeout = testUtils.stubTimeout;
     var tauCharts = require('tauCharts');
     var tooltip = require('plugins/tooltip');
     var describeChart = testUtils.describeChart;
@@ -25,15 +26,6 @@ define(function (require) {
         return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
     };
 
-    function stubTimeout() {
-        var originTimeout = window.setTimeout;
-        window.setTimeout = function () {
-            var arg = Array.prototype.slice.call(arguments, 0, 1);
-            arguments[0].apply(null, arg);
-        };
-
-        return originTimeout;
-    }
 
     var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
 
@@ -257,10 +249,10 @@ define(function (require) {
                         .always(function () {
                             window.setTimeout = originTimeout;
                             done();
-                        })
+                        });
                 });
             }
-        )
+        );
     });
 
     describeChart("tooltip formatting",

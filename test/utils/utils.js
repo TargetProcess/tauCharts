@@ -155,6 +155,16 @@ define(function (require) {
         });
     }
 
+    function stubTimeout() {
+        var originTimeout = window.setTimeout;
+        window.setTimeout = function () {
+            var arg = Array.prototype.slice.call(arguments, 0, 1);
+            arguments[0].apply(null, arg);
+        };
+
+        return originTimeout;
+    }
+
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,
@@ -166,6 +176,7 @@ define(function (require) {
         position: position,
         getGroupBar: getGroupBar,
         Deferred: $.Deferred,
+        stubTimeout:stubTimeout,
         chartSettings: testChartSettings,
         simulateEvent: function (name, element) {
             var evt = document.createEvent("MouseEvents");

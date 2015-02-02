@@ -446,6 +446,7 @@
                 var popup = chart.addBalloon({
                     place: 'bottom-left'
                 });
+                this._popup = popup;
                 popup.content([
                     '<ul class="graphical-report__export__list">',
                     '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
@@ -459,6 +460,11 @@
                 chart.on('exportTo', function (chart, type) {
                     this._select(type, chart);
                 }.bind(this));
+            },
+            destroy: function () {
+                if(this._popup) {
+                    this._popup.destroy();
+                }
             }
         };
     }

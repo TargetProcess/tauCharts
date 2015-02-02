@@ -9,15 +9,15 @@ requirejs.config({
     baseUrl: '/base',
     paths: {
         'chai': 'node_modules/chai/chai',
-        'd3':'libs/d3',
-        'jquery':'libs/jquery',
-        'js-schema':'libs/js-schema',
-        'modernizer':'libs/modernizer',
-        'underscore':'libs/underscore',
-        'schemes':'test/utils/schemes',
-        'testUtils':'test/utils/utils',
-        'es5-shim':'libs/es5-shim',
-        'brewer':'src/addons/color-brewer'
+        'd3': 'libs/d3',
+        'jquery': 'libs/jquery',
+        'js-schema': 'libs/js-schema',
+        'modernizer': 'libs/modernizer',
+        'underscore': 'libs/underscore',
+        'schemes': 'test/utils/schemes',
+        'testUtils': 'test/utils/utils',
+        'es5-shim': 'libs/es5-shim',
+        'brewer': 'src/addons/color-brewer'
     },
     map: {
         '*': {
@@ -25,20 +25,26 @@ requirejs.config({
             'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
             'rgbcolor': 'bower_components/canvg/rgbcolor',
             'stackblur': 'bower_components/canvg/StackBlur',
-            'canvg':'bower_components/canvg/canvg',
-            'FileSaver':'bower_components/FileSaver.js/FileSaver',
-            'fetch':'bower_components/fetch/fetch',
-            'promise':'bower_components/es6-promise/promise'
+            'canvg': 'bower_components/canvg/canvg',
+            'FileSaver': 'bower_components/FileSaver.js/FileSaver',
+            'fetch': 'bower_components/fetch/fetch',
+            'promise': 'bower_components/es6-promise/promise'
         }
     },
     shim: {
-      'js-schema':{
-          deps:['libs/es5-shim'],
-          exports:'schema'
-      },
-      'modernizer':{
-          exports:'Modernizr'
-      }
+        'js-schema': {
+            deps: ['libs/es5-shim'],
+            exports: 'schema'
+        },
+        'bower_components/FileSaver.js/FileSaver': {
+            deps: ['test/utils/mock.window']
+        },
+        '*': {
+            deps: ['test/utils/mock.window']
+        },
+        'modernizer': {
+            exports: 'Modernizr'
+        }
     },
     // ask Require.js to load these files (all our tests)
     deps: tests,
