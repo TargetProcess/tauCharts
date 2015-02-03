@@ -26,7 +26,7 @@ requirejs.config({
             'rgbcolor': 'bower_components/canvg/rgbcolor',
             'stackblur': 'bower_components/canvg/StackBlur',
             'canvg': 'bower_components/canvg/canvg',
-            'FileSaver': 'bower_components/FileSaver.js/FileSaver',
+            'FileSaver': 'test/utils/saveAs',
             'fetch': 'bower_components/fetch/fetch',
             'promise': 'bower_components/es6-promise/promise'
         }
@@ -35,9 +35,6 @@ requirejs.config({
         'js-schema': {
             deps: ['libs/es5-shim'],
             exports: 'schema'
-        },
-        'bower_components/FileSaver.js/FileSaver': {
-            deps: ['test/utils/mock.window']
         },
         '*': {
             deps: ['test/utils/mock.window']

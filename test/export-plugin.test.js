@@ -5,6 +5,7 @@ define(function (require) {
     var legend = require('plugins/legend');
     var trendline = require('plugins/trendline');
     var mock = require('test/utils/mock.window');
+    var saveAs = require('test/utils/saveAs');
     var exportTo = require('plugins/export');
     var $ = require('jquery');
     var describeChart = testUtils.describeChart;
@@ -43,7 +44,7 @@ define(function (require) {
                 });
                 setTimeout(function () {
                     testUtils.simulateEvent('click', $('[data-value="print"]').get(0));
-                }, 300);
+                }, 0);
 
 
             });
@@ -52,7 +53,7 @@ define(function (require) {
             autoWidth: false
         }
     );
-    /*describeChart(
+    describeChart(
         "export plugin should work png",
         {
             type: 'scatterplot',
@@ -79,20 +80,18 @@ define(function (require) {
             it("export to png", function (done) {
                 var header = context.chart._layout.header;
                 testUtils.simulateEvent('click', header.querySelector('.graphical-report__export'));
-                mock.saveAsCallbacks.push(function () {
+                saveAs.callbacks.items.push(function () {
                     expect(true).to.be.ok;
                     testUtils.simulateEvent('click', document.body);
                     done();
                 });
-                setTimeout(function () {
-                    testUtils.simulateEvent('click', $('[data-value="png"]').get(0));
-                }, 300);
-
+                expect($('[data-value="png"]').length).to.be.ok;
+                context.chart.fire('exportTo','png');
             });
         },
         {
             autoWidth: false
         }
-    );*/
+    );
 
 });

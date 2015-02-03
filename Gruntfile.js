@@ -73,7 +73,10 @@ module.exports = function (grunt) {
             },
             unit: {
                 reporters: ["dots", "coverage"],
-                preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"}
+                preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"},
+                coverageReporter: {
+
+                }
             }
         },
         uglify: {

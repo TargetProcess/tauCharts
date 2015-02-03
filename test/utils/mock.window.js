@@ -1,10 +1,7 @@
 define(function () {
-    var saveAsCallbacks = [];
     var printCallbacks = [];
-    window.saveAs = function () {
-        saveAsCallbacks.forEach(function (callback) {
-            callback();
-        });
+    window.Blob = function() {
+
     };
     window.print = function() {
         printCallbacks.forEach(function(callback){
@@ -12,7 +9,6 @@ define(function () {
         });
     };
     return {
-        saveAsCallbacks: saveAsCallbacks,
         printCallbacks: printCallbacks
     };
 });
