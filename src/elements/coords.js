@@ -108,7 +108,47 @@ var coords = {
             utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
         }
 
-        return utilsDraw.fnDrawGrid.call(container, node, H, W);
+        var gridContainer = utilsDraw.fnDrawGrid.call(container, node, H, W);
+
+        var fnLayout = (xxx) => {
+
+            var r;
+
+            if ((xxx.type === 'COORDS.RECT') && xxx.$where) {
+
+                var dx = node.x.scaleDim ? node.domain(node.x.scaleDim).length : 1;
+                var dy = node.y.scaleDim ? node.domain(node.y.scaleDim).length : 1;
+
+                var incX = W / dx;
+                var incY = H / dy;
+
+                var xScale = node.x.scaleObj || (() => (incX / 2));
+                var yScale = node.y.scaleObj || (() => (incY / 2));
+
+                r = {
+                    container: gridContainer,
+                    left: xScale(xxx.$where[node.x.scaleDim]) - incX / 2,
+                    top : yScale(xxx.$where[node.y.scaleDim]) - incY / 2,
+                    width : incX,
+                    height: incY
+                };
+            }
+            else {
+                r = {
+                    container: gridContainer,
+                    left: 0,
+                    top: 0,
+                    width: W,
+                    height: H
+                };
+            }
+
+            return r;
+        };
+
+        fnLayout.node = () => gridContainer.node();
+
+        return fnLayout;
     }
 };
 export {coords};

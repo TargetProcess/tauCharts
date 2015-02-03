@@ -20,42 +20,10 @@ export class DSLReader {
                 return root;
             }
 
-            var options = root.options;
-            var padding = root.guide.padding;
-
-            var innerW = options.width - (padding.l + padding.r);
-            var innerH = options.height - (padding.t + padding.b);
-
-            var nRows = root.$matrix.sizeR();
-            var nCols = root.$matrix.sizeC();
-
-            var cellW = innerW / nCols;
-            var cellH = innerH / nRows;
-
-            var calcLayoutStrategy;
-            if (root.guide.split) {
-                calcLayoutStrategy = {
-                    calcHeight: ((cellHeight, rowIndex, elIndex, lenIndex) => cellHeight / lenIndex),
-                    calcTop: ((cellHeight, rowIndex, elIndex, lenIndex) => (rowIndex + 1) * (cellHeight / lenIndex) * elIndex)
-                };
-            }
-            else {
-                calcLayoutStrategy = {
-                    calcHeight: ((cellHeight, rowIndex, elIndex, lenIndex) => cellHeight),
-                    calcTop: ((cellHeight, rowIndex, elIndex, lenIndex) => rowIndex * cellH)
-                };
-            }
-
             root.childUnits = root.childUnits || [];
             root.$matrix.iterate((iRow, iCol, subNodes) => {
-                var len = subNodes.length;
-                subNodes.forEach((subNode, i) => {
-                    subNode.options = {
-                        width: cellW,
-                        left: iCol * cellW,
-                        height: calcLayoutStrategy.calcHeight(cellH, iRow, i, len),
-                        top: calcLayoutStrategy.calcTop(cellH, iRow, i, len)
-                    };
+                subNodes.forEach((subNode) => {
+                    subNode.options = {};
                     root.childUnits.push(subNode);
                     fnTraverseLayout(subNode);
                 });
@@ -67,24 +35,37 @@ export class DSLReader {
         return fnTraverseLayout(graph);
     }
 
-    renderGraph(styledGraph, target, xIterator) {
+    renderGraph(styledGraph, target, xIterator, optimalSize) {
+
         var iterator = xIterator || ((x) => x);
-        styledGraph.options.container = target;
-        var renderRecursively = (unit) => {
+
+        var renderRecursively = (unit, fnLayout) => {
             var unitMeta = this.domain.mix(unit);
-            var subSpace = this.UnitsRegistry.get(unit.type).draw(unitMeta);
+
+            unitMeta.options = _.extend(unitMeta.options || {}, fnLayout(unitMeta));
+
+            var newLayout = this.UnitsRegistry.get(unit.type).draw(unitMeta);
 
             var children = unit.childUnits || [];
             children.forEach((child) => {
-                child.options = _.extend({container: subSpace}, child.options);
                 child.parentUnit = unit;
-                renderRecursively(child);
+                renderRecursively(child, newLayout);
             });
 
             iterator(unitMeta);
         };
+
         styledGraph.parentUnit = null;
-        renderRecursively(styledGraph);
+        renderRecursively(
+            styledGraph,
+            (unit) => ({
+                container: target,
+                left: 0,
+                top: 0,
+                width: optimalSize.width,
+                height: optimalSize.height
+            }));
+
         return styledGraph.options.container;
     }
 }
