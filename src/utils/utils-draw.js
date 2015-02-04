@@ -192,7 +192,11 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
     }
 
     if (doApply) {
-        var tickGroupClone = nodeScale.select('.tick').node().cloneNode(true);
+        var tickGroupNode = nodeScale.select('.tick').node();
+        if (tickGroupNode == null) {
+            return;
+        }
+        var tickGroupClone = tickGroupNode.cloneNode(true);
         nodeScale
             .append(() => tickGroupClone)
             .attr('transform', translate(0, size - tickOffset));

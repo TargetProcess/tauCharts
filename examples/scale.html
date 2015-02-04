@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+
+    <!-- plugins -->
+
+
+    <!-- test data -->
+    <script src="data.js"></script>
+
+    <script src="countries.js"></script>
+    <script src="tpStories.js"></script>
+    <script src="dataTp.js"></script>
+
+    <!-- css -->
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/base.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link href="../css/tooltip.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
+    <style>
+
+        .axes.nest .axis.nest text {
+            font-size: 10px;
+        }
+
+        .cc {
+            display:inline-block;
+            margin:2px 2px 2px 2px;
+            float:left;
+            width: 800px;
+            height: 800px;
+            border: dotted 1px #000;
+            overflow: auto;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="xxx-datetime-container" class="cc"></div>
+
+<script src="../build/development/tauCharts.js"></script>
+<script src="../plugins/tooltip.js"></script>
+<script src="../build/development/plugins/tauCharts.export.js"></script>
+<script src="../plugins/highlighter.js"></script>
+<script src="../plugins/legend.js"></script>
+<script src="../plugins/trendline.js"></script>
+<script>
+
+    var d1 = new Date('2014-11-04T00:00:00+03:00').getTime();
+    var d2 = new Date('2014-11-07T00:00:00+03:00').getTime();
+    //var d3 = new Date('2014-11-06T00:00:00+03:00').getTime();
+
+    new tauCharts.Chart({
+
+        data: [
+            {"x1": 6, "y1": d1, "y2": null},
+            {"x1": 1, "y1": d1, "y2": null},
+            {"x1": 1, "y1": d1, "y2": null},
+            {"x1": 1, "y1": d1, "y2": "About Us page"},
+            {"x1": 2, "y1": d2, "y2": "Advanced REST API"},
+            {"x1": 2, "y1": d2, "y2": "Contacts page"},
+            {"x1": 1, "y1": d2, "y2": "Delete User"},
+            {"x1": 2, "y1": d2, "y2": "Home page"},
+            {"x1": 2, "y1": d2, "y2": "Integrate Twitter feed"},
+            {"x1": 2, "y1": d2, "y2": "Put RSS Feeds on Home page"},
+            {"x1": 2, "y1": d2, "y2": "Support page"}
+        ],
+
+        "dimensions": {
+            "x1": {
+                "type": "measure",
+                "scale": "linear"
+            },
+            "y1": {
+                "type": "order",
+                "scale": "period"
+            },
+            "y2": {
+                "type": "category",
+                "scale": "ordinal"
+            }
+        },
+
+        "type": "horizontalBar",
+        "color": null,
+        "size": null,
+        "x": [
+            "x1"
+        ],
+        "y": [
+            "y1",
+            "y2"
+        ],
+        "guide": [
+            {
+                "y": {
+                    "label": "Create Date By Day",
+                    "tickPeriod": "day"
+                }
+            },
+            {
+                "x": {
+                    "label": "Count"
+                },
+                "y": {
+                    "label": "User Story"
+                }
+            }
+        ],
+
+        settings: {
+            layoutEngine: 'NONE'
+        }
+
+    }).renderTo('#xxx-datetime-container');
+
+</script>
+</body>
+</html>

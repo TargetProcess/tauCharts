@@ -10,9 +10,7 @@ export class DSLReader {
         return buildRecursively(spec.unit);
     }
 
-    calcLayout(graph, size) {
-
-        graph.options = {top: 0, left: 0, width: size.width, height: size.height};
+    calcLayout(graph) {
 
         var fnTraverseLayout = (root) => {
 

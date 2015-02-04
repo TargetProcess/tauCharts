@@ -149,14 +149,16 @@ export class UnitDomainMixin {
             return _(data).filter((row) => _.every(predicates, ((p) => p(row))));
         };
 
-        var _domain = (dim, fnSort) => {
+        var _domain = (dim, fnSort, xdata) => {
 
             if (!meta[dim]) {
                 return [];
             }
 
+            var myData = xdata || data;
+
             var fnMapperId = getValueMapper(dim);
-            var uniqValues = _(data).chain().pluck(dim).uniq(fnMapperId).value();
+            var uniqValues = _(myData).chain().pluck(dim).uniq(fnMapperId).value();
 
             return fnSort(dim, fnMapperId, uniqValues);
         };
@@ -168,7 +170,7 @@ export class UnitDomainMixin {
             return domainSortedAsc.map(fnMapperId);
         };
 
-        var _scaleMeta = (scaleDim, xOptions) => {
+        var _scaleMeta = (scaleDim, xOptions, xArr) => {
 
             var opts = {};
             var options = xOptions || {};
@@ -195,7 +197,7 @@ export class UnitDomainMixin {
             var fKey = [dimx.type, dimx.scale].join(':');
             var fVal = (fValHub[fKey] || fValHub['*'])(opts);
 
-            var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
+            var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type), xArr).map(fMap);
             var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : originalValues;
             return {
                 extract: (x) => fVal(fMap(x)),
@@ -206,11 +208,15 @@ export class UnitDomainMixin {
 
         this.fnScaleMeta = _scaleMeta;
 
-        this.fnScaleTo = (scaleDim, interval, options) => {
+        this.fnScaleTo = function(scaleDim, interval, options) {
             var opts = options || {};
             var dimx = _.defaults({}, meta[scaleDim]);
 
-            var info = _scaleMeta(scaleDim, options);
+
+            var arr = this.partition();
+
+
+            var info = _scaleMeta(scaleDim, options, arr);
             var func = rangeMethods[dimx.scale](info.values, interval, opts);
 
             var wrap = (domainPropObject) => func(info.extract(domainPropObject));
