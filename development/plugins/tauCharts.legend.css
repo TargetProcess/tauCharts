@@ -1,6 +1,6 @@
 .graphical-report__legend {
   padding: 20px 0 20px 10px;
-  margin-right: 20px;
+  margin-right: 30px;
   width: 160px;
   box-sizing: border-box;
 }
@@ -62,6 +62,10 @@
 .graphical-report__legend__guide.color-definite {
   stroke: #cacaca;
   fill: #cacaca;
+}
+.graphical-report__legend__guide.color-default-size {
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
 }
 .graphical-report__legend__item .color20-1 {
   background: #6fa1d9;
