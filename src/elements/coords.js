@@ -116,8 +116,8 @@ var coords = {
 
             if ((xxx.type === 'COORDS.RECT') && xxx.$where) {
 
-                var dx = node.x.scaleDim ? node.domain(node.x.scaleDim).length : 1;
-                var dy = node.y.scaleDim ? node.domain(node.y.scaleDim).length : 1;
+                var dx = node.x.scaleDim ? node.scaleMeta(node.x.scaleDim, node.guide.x).values.length : 1;
+                var dy = node.y.scaleDim ? node.scaleMeta(node.y.scaleDim, node.guide.y).values.length : 1;
 
                 var incX = W / dx;
                 var incY = H / dy;
