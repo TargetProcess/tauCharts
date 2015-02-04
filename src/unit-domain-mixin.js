@@ -213,13 +213,65 @@ export class UnitDomainMixin {
             var dimx = _.defaults({}, meta[scaleDim]);
 
 
-            var arr = this.partition();
+            var ratioDim = opts.scaleRatio;
+            var scaleDatum = opts.scaleDatum;
 
+            var arr;
+            if (scaleDatum === 'partition') {
+                arr = this.partition();
+            }
+            else {
+                arr = this.source();
+            }
 
             var info = _scaleMeta(scaleDim, options, arr);
             var func = rangeMethods[dimx.scale](info.values, interval, opts);
 
+            var fnRel = () => (1 / info.values.length);
+
+            if (ratioDim) {
+                var rmap = info.values.reduce(
+                    (memo, x) => {
+                        memo[x] = {};
+                        return memo;
+                    },
+                    {});
+
+                var xmap = this.partition().reduce(
+                    (memo, x) => {
+                        var xs = x[scaleDim];
+                        var xr = x[ratioDim];
+                        var cc = memo[xs].hasOwnProperty(xr) ? memo[xs][xr] : 0;
+                        memo[xs][xr] = cc + 1;
+                        return memo;
+                    },
+                    rmap);
+
+                var total = 0;
+                var abs = _.keys(xmap).reduce(
+                    (memo, key) => {
+                        memo[key] = _.keys(xmap[key]).length;
+                        total += memo[key];
+                        return memo;
+                    },
+                    {}
+                );
+
+                var rel = _.keys(abs).reduce(
+                    (memo, key) => {
+                        memo[key] = memo[key] / total;
+                        return memo;
+                    },
+                    abs
+                );
+
+                fnRel = (v) => rel[v];
+            }
+
             var wrap = (domainPropObject) => func(info.extract(domainPropObject));
+
+            wrap.rel = fnRel;
+
             // have to copy properties since d3 produce Function with methods
             Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;

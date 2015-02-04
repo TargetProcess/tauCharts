@@ -79,8 +79,8 @@
                 "scale": "linear"
             },
             "y1": {
-                "type": "order",
-                "scale": "period"
+                "type": "category",
+                "scale": "ordinal"
             },
             "y2": {
                 "type": "category",
@@ -102,7 +102,7 @@
             {
                 "y": {
                     "label": "Create Date By Day",
-                    "tickPeriod": "day"
+                    "scaleRatio": "y2"
                 }
             },
             {
@@ -110,7 +110,8 @@
                     "label": "Count"
                 },
                 "y": {
-                    "label": "User Story"
+                    "label": "User Story",
+                    scaleDatum: 'partition'
                 }
             }
         ],
