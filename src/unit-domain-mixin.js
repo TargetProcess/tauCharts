@@ -272,6 +272,31 @@ export class UnitDomainMixin {
 
             wrap.rel = fnRel;
 
+            wrap.relCoord = (v) => {
+                var r = info.values.reduceRight(
+                    (memo, x) => {
+
+                        if (memo.isFound) {
+                            return memo;
+                        }
+
+                        if (x === v) {
+                            memo.isFound = true;
+                        }
+
+                        if (!memo.isFound) {
+                            memo.value += fnRel(x);
+                        }
+                        return memo;
+                    },
+                    {
+                        value: 0,
+                        isFound: false
+                    });
+
+                return r.value;
+            };
+
             // have to copy properties since d3 produce Function with methods
             Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;

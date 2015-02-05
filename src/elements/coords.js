@@ -125,12 +125,18 @@ var coords = {
                 var xScale = node.x.scaleObj || (() => (incX / 2));
                 var yScale = node.y.scaleObj || (() => (incY / 2));
 
+                var yVal = xxx.$where[node.y.scaleDim];
+                //var height = incY * node.y.scaleObj.rel(yVal);
+                var height = node.y.scaleObj ? (H * node.y.scaleObj.rel(yVal)) : H;
+                var top = node.y.scaleObj ? (H * (node.y.scaleObj.relCoord(yVal))) : 0;
+                //var top = yScale(yVal) - incY / 2;
+
                 r = {
                     container: gridContainer,
                     left: xScale(xxx.$where[node.x.scaleDim]) - incX / 2,
-                    top : yScale(xxx.$where[node.y.scaleDim]) - incY / 2,
+                    top : top,
                     width : incX,
-                    height: incY
+                    height: height
                 };
             }
             else {
