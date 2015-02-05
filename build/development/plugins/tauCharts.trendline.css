@@ -83,6 +83,7 @@
   font-size: 12px;
   margin-left: 5px;
 }
+.graphical-report__trendlinepanel.applicable-false.hide-trendline-error,
 .graphical-report__trendlinepanel.applicable-false .graphical-report__checkbox__input,
 .graphical-report__trendlinepanel.applicable-false .graphical-report__trendlinepanel__control,
 .graphical-report__trendlinepanel.applicable-false .graphical-report__checkbox__icon {
