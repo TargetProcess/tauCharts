@@ -270,6 +270,8 @@ export class UnitDomainMixin {
 
             var wrap = (domainPropObject) => func(info.extract(domainPropObject));
 
+            // sectorSize
+
             wrap.rel = fnRel;
 
             wrap.relCoord = (v) => {
@@ -281,6 +283,35 @@ export class UnitDomainMixin {
                         }
 
                         if (x === v) {
+                            memo.isFound = true;
+                        }
+
+                        if (!memo.isFound) {
+                            memo.value += fnRel(x);
+                        }
+                        return memo;
+                    },
+                    {
+                        value: 0,
+                        isFound: false
+                    });
+
+                return r.value;
+            };
+
+            wrap.relByIndex = (index) => {
+                return fnRel(info.values[index]);
+            };
+
+            wrap.relCoordByIndex = (index) => {
+                var r = info.values.reduceRight(
+                    (memo, x, ix) => {
+
+                        if (memo.isFound) {
+                            return memo;
+                        }
+
+                        if (ix === index) {
                             memo.isFound = true;
                         }
 

@@ -114,6 +114,23 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
 
 var decorateAxisTicks = (nodeScale, x, size) => {
 
+    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    if (!isHorizontal && x.scaleType === 'ordinal' || x.scaleType === 'period') {
+
+        var selection = nodeScale.selectAll('.tick')[0];
+        selection.forEach((node, i) => {
+            var offset = size * x.scaleObj.relByIndex(i) / 2;
+            var top = x.scaleObj ? (size * (x.scaleObj.relCoordByIndex(i)) + offset) : 0;
+            var tickNode = d3.select(node);
+            tickNode.attr('transform', `translate(0,${top})`);
+            var key = 'y';
+            var val = (-offset);
+            tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+        });
+    }
+
+    return;
+
     var selection = nodeScale.selectAll('.tick line');
 
     var sectorSize = size / selection[0].length;
