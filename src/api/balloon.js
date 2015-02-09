@@ -12,7 +12,6 @@ var classes = function (el) {
 };
 
 
-
 var indexOf = function (arr, obj) {
     return arr.indexOf(obj);
 };
@@ -63,7 +62,7 @@ function isWin(obj) {
 function position(element) {
     var winTop = win.pageYOffset || docEl.scrollTop;
     var winLeft = win.pageXOffset || docEl.scrollLeft;
-    var box = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
+    var box = {left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0};
 
     if (isWin(element)) {
         box.width = win.innerWidth || docEl.clientWidth;
@@ -149,7 +148,9 @@ function Tooltip(content, options) {
     this.hidden = 1;
     this.options = extend(objectCreate(Tooltip.defaults), options);
     this._createElement();
-    this.content(content);
+    if (content) {
+        this.content(content);
+    }
 }
 
 /**
