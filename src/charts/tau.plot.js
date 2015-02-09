@@ -106,7 +106,6 @@ export class Plot extends Emitter {
         var container = d3.select(target);
         var containerNode = container.node();
         this._target = target;
-        this._targetSizes = xSize;
         if (containerNode === null) {
             throw new Error('Target element not found');
         }
@@ -114,7 +113,7 @@ export class Plot extends Emitter {
         containerNode.appendChild(this._layout.layout);
         container = d3.select(this._layout.content);
         //todo don't compute width if width or height were passed
-        var size = xSize || {};
+        var size = _.clone(xSize) || {};
         this._layout.content.innerHTML = '';
         if (!size.width || !size.height) {
             size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
@@ -125,7 +124,6 @@ export class Plot extends Emitter {
             this._layout.content.innerHTML = this._emptyContainer;
             return;
         }
-        this._targetSizes = size;
         this._layout.content.innerHTML = '';
 
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
