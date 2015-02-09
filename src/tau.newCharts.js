@@ -72,9 +72,9 @@ var api = {
         fitSize: true,
 
         layoutEngine: 'EXTRACT',
-        getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+        getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
-        getScrollBarWidth: utilsDom.getScrollbarWidth,
+        getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),
 
         xAxisTickLabelLimit: 100,
         yAxisTickLabelLimit: 100,

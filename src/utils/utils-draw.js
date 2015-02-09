@@ -9,8 +9,9 @@ var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
 
-var d3getComputedTextLength = _.memoize((d3Text) => d3Text.node().getComputedTextLength(), 
-    (d3Text) => d3Text.node().textContent);
+var d3getComputedTextLength = _.memoize(
+    (d3Text) => d3Text.node().getComputedTextLength(),
+    (d3Text) => d3Text.node().textContent.length);
 
 var cutText = (textString, widthLimit, getComputedTextLength) => {
 
