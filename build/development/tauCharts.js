@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.18 - 2015-02-05
+/*! taucharts - v0.3.20 - 2015-02-10
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -700,7 +700,6 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
   };
 
 
-
   var indexOf = function (arr, obj) {
     return arr.indexOf(obj);
   };
@@ -838,7 +837,9 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
     this.hidden = 1;
     this.options = extend(objectCreate(Tooltip.defaults), options);
     this._createElement();
-    this.content(content);
+    if (content) {
+      this.content(content);
+    }
   }
 
   /**
@@ -1710,7 +1711,7 @@ define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry",
   var d3getComputedTextLength = _.memoize(function (d3Text) {
     return d3Text.node().getComputedTextLength();
   }, function (d3Text) {
-    return d3Text.node().textContent;
+    return d3Text.node().textContent.length;
   });
 
   var cutText = function (textString, widthLimit, getComputedTextLength) {
@@ -3853,7 +3854,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           var container = d3.select(target);
           var containerNode = container.node();
           this._target = target;
-          this._targetSizes = xSize;
           if (containerNode === null) {
             throw new Error("Target element not found");
           }
@@ -3861,7 +3861,7 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
           containerNode.appendChild(this._layout.layout);
           container = d3.select(this._layout.content);
           //todo don't compute width if width or height were passed
-          var size = xSize || {};
+          var size = _.clone(xSize) || {};
           this._layout.content.innerHTML = "";
           if (!size.width || !size.height) {
             size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
@@ -3872,7 +3872,6 @@ define('charts/tau.plot',["exports", "../dsl-reader", "../api/balloon", "../even
             this._layout.content.innerHTML = this._emptyContainer;
             return;
           }
-          this._targetSizes = size;
           this._layout.content.innerHTML = "";
 
           var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
@@ -5150,9 +5149,11 @@ define('tau.newCharts',["exports", "./utils/utils-dom", "./charts/tau.plot", "./
       fitSize: true,
 
       layoutEngine: "EXTRACT",
-      getAxisTickLabelSize: utilsDom.getAxisTickLabelSize,
+      getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, function (text) {
+        return (text || "").length;
+      }),
 
-      getScrollBarWidth: utilsDom.getScrollbarWidth,
+      getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),
 
       xAxisTickLabelLimit: 100,
       yAxisTickLabelLimit: 100,
