@@ -63,10 +63,10 @@
     var printStyles = createStyleElement(printCss, 'print');
     var imagePlaceHolder;
     var removePrintStyles = function () {
-        if (printStyles.parentNode) {
+        if (printStyles && printStyles.parentNode) {
             printStyles.parentNode.removeChild(printStyles);
         }
-        if (imagePlaceHolder.parentNode) {
+        if (imagePlaceHolder && imagePlaceHolder.parentNode) {
             imagePlaceHolder.parentNode.removeChild(imagePlaceHolder);
         }
     };
