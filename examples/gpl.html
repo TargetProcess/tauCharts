@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+
+    <!-- plugins -->
+
+
+    <!-- test data -->
+    <script src="data.js"></script>
+
+    <script src="countries.js"></script>
+    <script src="tpStories.js"></script>
+    <script src="dataTp.js"></script>
+
+    <!-- css -->
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/base.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link href="../css/tooltip.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
+    <style>
+
+        .axes.nest .axis.nest text {
+            font-size: 10px;
+        }
+        .bar {
+            fill: steelblue;
+        }
+        .cc {
+            display:inline-block;
+            margin:2px 2px 2px 2px;
+            float:left;
+            width: 800px;
+            height: 800px;
+            border: dotted 1px #000;
+            overflow: auto;
+        }
+
+        .cc-empty {
+            width: 260px;
+            height: 260px;
+            position: relative;
+            left: 33%;
+            top:33%;
+            background-image: url("http://siliconangle.com/files/2013/02/no-data.png");
+        }
+    </style>
+</head>
+<body>
+
+<div id="container" class="cc"></div>
+
+</div>
+
+<script src="../build/development/tauCharts.js"></script>
+<script>
+
+var spec = {
+
+    data: {
+        '/': [
+            {project: 'TP3', team: 'alpha', count: 10, date: new Date('2014-01-05')},
+            {project: 'tau', team: 'xbeta', count: 15, date: new Date('2014-10-05')}
+        ]
+    },
+
+    scales: {
+        'proj': { type: 'ordinal', data: '/', scaleDim: 'project', format: 'tickFormat', func: '=pluck(project)' },
+        'team': { type: 'ordinal', data: '/', scaleDim: 'team',    format: 'tickFormat', func: '=pluck(project)' },
+        'date': { type: 'period',  data: '/', scaleDim: 'date',    format: 'month',      func: 'generate_month'  },
+        'count':{ type: 'measure', data: '/', scaleDim: 'count',   format: '%s', min: 0, max: 1000  }
+    },
+
+    unit: {
+        type: 'COORDS.RECT',
+        x: 'proj',
+        y: 'team',
+        data: '/',
+        where: {},
+        expr: 'cross',
+        unit: [
+            {
+                type: 'COORDS.RECT',
+                x: 'date',
+                y: 'count',
+                expr: 'inherit',
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT'
+                    },
+                    {
+                        type: 'ELEMENT.LINE',
+                        func: ['linear_regression']
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+var spec = {
+
+    sources: {
+        '/': {
+            dims: {
+                project : { type: 'category' },
+                team    : { type: 'category' },
+                count   : { type: 'measure' },
+                date    : { type: 'measure' }
+            },
+            data: [
+                {project: 'TP3', team: 'alpha', count: 10, date: new Date('2014-01-05')},
+                {project: 'tau', team: 'xbeta', count: 15, date: new Date('2014-10-05')}
+            ]
+        }
+    },
+
+    scales: {
+        'proj'      : { type: 'ordinal', name: 'A', fitToFrame: true, source: '/', dim: 'project' },
+        'team'      : { type: 'ordinal', name: 'B', fitToFrame: true, source: '/', dim: 'team' },
+        'per_date'  : { type: 'period',  name: 'C', fitToFrame: true, source: '/', dim: 'date',    period: 'month' },
+        'date'      : { type: 'time',    name: 'D', fitToFrame: true, source: '/', dim: 'date' },
+        'count'     : { type: 'measure', name: 'E', fitToFrame: true, source: '/', dim: 'count',   min: 0, max: 1000, autoScale: true },
+        'color_team': { type: 'color',   name: 'F', fitToFrame: true, source: '/', dim: 'team',    brewer: 'default' },
+        'size_count': { type: 'size',    name: 'G', fitToFrame: true, source: '/', dim: 'count',   min: 1, max: 1000, mid: 20 }
+    },
+
+    // TRANS (56, 58*)
+    // The way to create new variables, aggregates and other types of summaries
+    trans: {
+        where: function() {
+            //
+        },
+        linear_regression: function(thread) {
+            //
+        }
+    },
+
+    frames: [
+        {
+            source: '/',
+            pipe: [],
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'proj',
+                y: 'team',
+                expr: ['cross', 'proj', 'team'],
+                frames: [
+                    {
+                        key: {project: 'tp2', team: 'alpha'},
+                        data: '/',
+                        pipe: [{where: {project: 'tp2', team: 'alpha'}}],
+                        unit: [
+                            {
+                                type: 'COORDS.RECT',
+                                x: 'date',
+                                y: 'count',
+                                frames: [
+                                    {
+                                        data: '/',
+                                        pipe: [{where: {project: 'tp2', team: 'alpha'}}],
+                                        unit: [
+                                            {
+                                                type: 'ELEMENT.INTERVAL',
+                                                color: 'color_type',
+                                                size: 'size_count',
+                                                expr: '=cross(color_type, range(size_count))',
+                                                frames: [
+                                                    {
+                                                        key: { type: 'bug' },
+                                                        data: '/',
+                                                        pipe: [
+                                                            {where: {project: 'tp2', team: 'alpha'}},
+                                                            {where: {type: 'bug'}}
+                                                        ]
+                                                    },
+                                                    {
+                                                        key: { type: 'story' },
+                                                        data: '/',
+                                                        pipe: [
+                                                            {where: {project: 'tp2', team: 'alpha'}},
+                                                            {where: {type: 'story'}}
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                type: 'ELEMENT.LINE',
+                                                color: 'color_type',
+                                                size: 'size_count',
+                                                expr: '=[color_type]*1',
+                                                frames: [
+                                                    {
+                                                        key: { type: 'bug' },
+                                                        data: '/',
+                                                        pipe: [
+                                                            {where: {project: 'tp2', team: 'alpha'}},
+                                                            {where: {type: 'bug'}},
+                                                            'linear_regression'
+                                                        ]
+                                                    },
+                                                    {
+                                                        key: { type: 'story' },
+                                                        data: '/',
+                                                        pipe: [
+                                                            {where: {project: 'tp2', team: 'alpha'}},
+                                                            {where: {type: 'story'}},
+                                                            'linear_regression'
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                type: 'ELEMENT.LINE',
+                                                expr: '=1',
+                                                frames: [
+                                                    {
+                                                        data: '/',
+                                                        pipe: [
+                                                            {where: {project: 'tp2', team: 'alpha'}},
+                                                            'linear_regression'
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                unit: [
+                                    {
+                                        type: 'ELEMENT.POINT',
+                                        color: 'color_team'
+                                    },
+                                    {
+                                        type: 'ELEMENT.LINE',
+                                        color: 'color_team',
+                                        trans: ['linear_regression']
+                                    },
+                                    {
+                                        type: 'ELEMENT.LINE',
+                                        trans: ['linear_regression']
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                unit: [
+                    {
+                        type: 'COORDS.RECT',
+                        x: 'date',
+                        y: 'count',
+                        func: '1',
+                        unit: [
+                            {
+                                type: 'ELEMENT.POINT',
+                                color: 'color_team'
+                            },
+                            {
+                                type: 'ELEMENT.LINE',
+                                color: 'color_team',
+                                trans: ['linear_regression']
+                            },
+                            {
+                                type: 'ELEMENT.LINE',
+                                trans: ['linear_regression']
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+
+    unit1: {
+        type: 'COORDS.RECT',
+        x: 'proj',
+        y: 'team',
+        func: '=cross(proj, team)',
+        unit: [
+            {
+                type: 'COORDS.RECT',
+                x: 'date',
+                y: 'count',
+                func: '=cross(1,1)',
+                unit: [
+                    {
+                        type: 'ELEMENT.POINT',
+                        color: 'color_team',
+                        func: '=cross(color_team,1)'
+                    },
+                    {
+                        type: 'ELEMENT.LINE',
+                        color: 'color_team',
+                        func: '=cross(color_team,1)',
+                        trans: ['linear_regression']
+                    },
+                    {
+                        type: 'ELEMENT.LINE',
+                        trans: ['linear_regression']
+                    }
+                ]
+            }
+        ]
+    }
+};
+</script>
+</body>
+</html>
