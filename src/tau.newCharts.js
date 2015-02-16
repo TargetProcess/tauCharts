@@ -1,4 +1,5 @@
 import {utilsDom} from './utils/utils-dom';
+import {GPL} from './charts/tau.gpl';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
 import {UnitDomainMixin} from './unit-domain-mixin';
@@ -115,7 +116,7 @@ api.UnitsRegistry
     .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
     .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
     .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL']);
-export {Plot, Chart, __api__, api};
+export {GPL, Plot, Chart, __api__, api};
 
 
 

@@ -1,3 +1,6 @@
+import {Cartesian} from './elements/coords.cartesian';
+import {Point} from './elements/element.point';
+
 var UnitsMap = {};
 
 var UnitsRegistry = {
@@ -11,6 +14,14 @@ var UnitsRegistry = {
     },
 
     get: (unitType) => {
+
+        if (unitType === 'RECT') {
+            return Cartesian;
+        }
+
+        if (unitType === 'POINT') {
+            return Point;
+        }
 
         if (!UnitsMap.hasOwnProperty(unitType)) {
             throw new Error('Unknown unit type: ' + unitType);

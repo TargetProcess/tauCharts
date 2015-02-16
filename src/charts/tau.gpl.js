@@ -1,18 +1,10 @@
-import {DSLReader} from '../dsl-reader';
 import {Emitter} from '../event';
-import {SpecEngineFactory} from '../spec-engine-factory';
-import {LayoutEngineFactory} from '../layout-engine-factory';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {CSS_PREFIX} from '../const';
-import {UnitDomainMixin} from '../unit-domain-mixin';
 import {UnitsRegistry} from '../units-registry';
-import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
-
-import {ScalesFactory} from '../unit-domain-mixin';
-
-
+import {ScalesFactory} from '../scales-factory';
+import {CSS_PREFIX} from '../const';
 
 var FramesAlgebra = {
 
@@ -80,10 +72,12 @@ export class GPL extends Emitter {
         };
         this._layout = getLayout();
 
-        this.initialize(config);
+        this._initialize(config);
     }
 
-    initialize(config) {
+    _initialize(config) {
+
+        this.config = config;
 
         this.unitHub = UnitsRegistry;
 
@@ -98,26 +92,75 @@ export class GPL extends Emitter {
             {});
 
         this.trans = config.trans;
+    }
+
+    render(target, xSize) {
+
+        var containerNode = d3.select(target).node();
+        if (containerNode === null) {
+            throw new Error('Target element not found');
+        }
+
+        containerNode.appendChild(this._layout.layout);
+        var container = d3.select(this._layout.content);
+
+        this._layout.content.innerHTML = '';
+        var size = _.clone(xSize) || {};
+        if (!size.width || !size.height) {
+            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+        }
 
         // expand units structure
-        this.root = expandUnitsStructure(config.unit);
+        this.root = this.expandUnitsStructure(this.config.unit);
+
+        console.log(JSON.stringify(this.root, null, 4));
+
+        // throw 1;
+
+        this.root.options = {
+            container: container.append("svg").attr("class", CSS_PREFIX + 'svg').attr("width", size.width).attr("height", size.height),
+            left     : 0,
+            top      : 0,
+            width    : size.width,
+            height   : size.height
+        };
+
+        this.drawUnitsStructure(this.root);
     }
 
     expandUnitsStructure(rootUnit) {
 
         var buildRecursively = (root, parentFramePipe) => {
 
-            // TODO: detached_cross - to avoid parent frame inheritance
-            var expr = this.parseExpression(root.expr);
+            var expr;
+            var tuples;
 
-            root.frames = expr.exec().map((tuple) => {
-                var pipe = parentFramePipe.concat([{where: tuple}]);
-                return {
-                    key: tuple,
+            if (root.expr) {
+                // TODO: detached_cross - to avoid parent frame inheritance
+                expr = this.parseExpression(root.expr);
+                tuples = expr.exec();
+            }
+            else {
+                expr = {source: '/'};
+                tuples = [null];
+            }
+
+            root.frames = tuples.map((tuple) => {
+                var pipe = parentFramePipe.concat([{type: 'where', args: tuple}]);
+                var item = {
                     source: expr.source,
-                    pipe: pipe,
-                    unit: root.unit.map((unit) => buildRecursively(utils.clone(unit), pipe))
+                    pipe: pipe
                 };
+
+                if (tuple) {
+                    item.key = tuple;
+                }
+
+                if (root.unit) {
+                    item.unit = root.unit.map((unit) => buildRecursively(utils.clone(unit), pipe));
+                }
+
+                return item;
             });
 
             return root;
@@ -128,22 +171,43 @@ export class GPL extends Emitter {
 
     drawUnitsStructure() {
 
-        var drawRecursively = (root) => {
+        var drawRecursively = (rootConf) => {
 
-            var UnitClass = this.unitHub.get(root.type);
+            var UnitClass = this.unitHub.get(rootConf.type);
 
-            var unitNode = new UnitClass();
+            rootConf.x = this.scales[rootConf.x];
+            rootConf.y = this.scales[rootConf.y];
 
-            root.frames.map((frame) => {
-                unitNode.drawFrame(frame);
-                drawRecursively(frame.unit);
+            var unitNode = new UnitClass(rootConf);
+
+            var frames = rootConf.frames.map((frame) => {
+                var source = this.sources[frame.source];
+                var transf = this.trans;
+                var fnPipe = (memo, cfg) => {
+                    return transf[cfg.type](memo, cfg.args);
+                };
+                frame.data = frame.pipe.reduce(fnPipe, source);
+                return frame;
             });
 
-            return root;
+            unitNode
+                .drawLayout()
+                .drawFrames(frames)
+                .map((unit) => drawRecursively(unit));
+
+            return rootConf;
         };
 
         return drawRecursively(this.root);
     }
+
+    // drawUnitsStructure({
+    //      container: gridContainer,
+    //      left: xScale(xxx.$where[node.x.scaleDim]) - incX / 2,
+    //      top : top,
+    //      width : incX,
+    //      height: height
+    // })
 
     parseExpression(sExpression) {
         var funcName = sExpression[0];

@@ -128,7 +128,11 @@ var scalesStrategies = {
         return {
             init: function(interval) {
                 return d3Domain.rangePoints(interval, 1);
-            }
+            },
+
+            scaleDim: props.dim,
+
+            scaleType: 'ordinal'
         };
     },
 
