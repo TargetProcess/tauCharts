@@ -6,10 +6,11 @@ export class Point {
         super();
 
         this.config = config;
-        this.xScale = config.x;
-        this.yScale = config.y;
-        this.color = config.color || (() => '');
-        this.size = config.size || (() => 5);
+
+        this.xScale = config.x.init([0,  config.options.width]);
+        this.yScale = config.y.init([config.options.height, 0]);
+        this.color  = config.color || (() => '');
+        this.size   = config.size || (() => 5);
     }
 
     drawLayout() {
@@ -26,11 +27,15 @@ export class Point {
         var sScale = this.size;
 
         var update = function () {
-            return this
-                .attr('r',     (d) => sScale(d[sScale.dim]))
-                .attr('cx',    (d) => xScale(d[xScale.dim]))
-                .attr('cy',    (d) => yScale(d[yScale.dim]))
-                .attr('class', (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${cScale(d[cScale.dim])}`);
+
+            var props = {
+                'r'     : (d) => sScale(d[sScale.dim]),
+                'cx'    : (d) => xScale(d[xScale.dim]),
+                'cy'    : (d) => yScale(d[yScale.dim]),
+                'class' : (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${cScale(d[cScale.dim])}`
+            };
+
+            return this.attr(props);
         };
 
         frames.map((frame) => {

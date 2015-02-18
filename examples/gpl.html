@@ -25,7 +25,7 @@
     <link href="../css/trendline.css" rel="stylesheet"/>
     <style>
         .cc {
-            background-color: rgba(125, 125, 125, 0.5);
+            /*background-color: rgba(125, 125, 125, 0.5);*/
         }
     </style>
 </head>
@@ -249,14 +249,16 @@
         sources: {
             '/': {
                 dims: {
+                    story   : {type: 'category'},
+                    bug     : {type: 'category'},
                     project : {type: 'category'},
                     team    : {type: 'category'},
                     count   : {type: 'measure'},
                     date    : {type: 'measure'}
                 },
                 data: [
-                    {project: 'TP3', team: 'alpha', count: 10, date: new Date('2014-01-05')},
-                    {project: 'tau', team: 'xbeta', count: 15, date: new Date('2014-10-05')}
+                    {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
+                    {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
                 ]
             }
         },
@@ -277,19 +279,23 @@
         },
 
         scales: {
-            'proj': {type: 'ordinal', name: 'A', fitToFrame: true, source: '/', dim: 'project'},
-            'team': {type: 'ordinal', name: 'B', fitToFrame: true, source: '/', dim: 'team'}
+            'story' : {type: 'ordinal', name: 'S', fitToFrame: true, source: '/', dim: 'story'},
+            'bug'   : {type: 'ordinal', name: 'B', fitToFrame: true, source: '/', dim: 'bug'},
+            'proj'  : {type: 'ordinal', name: 'P', fitToFrame: true, source: '/', dim: 'project'},
+            'team'  : {type: 'ordinal', name: 'T', fitToFrame: true, source: '/', dim: 'team'}
         },
 
         unit: {
             type: 'RECT',
             x: 'proj',
             y: 'team',
+            expr: ['cross', '/', false, 'project', 'team'],
             guide: {
                 padding: {l: 40, r: 0, t: 0, b: 40},
                 showGridLines: 'xy',
                 x: {
-                    padding: 0,
+                    textAnchor: 'middle',
+                    padding: 10,
                     hide: false,
                     scaleOrient: 'bottom',
                     rotate: 0,
@@ -298,25 +304,59 @@
                     tickFormatWordWrapLimit: 100
                 },
                 y: {
-                    padding: 0,
+                    //textAnchor: 'middle',
+                    padding: 10,
                     hide: false,
                     scaleOrient: 'left',
                     rotate: -90,
                     density: 0,
-                    label: {text: 'team', rotate: 90, padding: 0, textAnchor: 'middle'},
+                    label: {text: 'team', rotate: -90, padding: 20, textAnchor: 'middle'},
                     tickFormatWordWrapLimit: 100
                 }
             },
             unit: [
                 {
-                    type: 'POINT',
-                    x: 'proj',
-                    y: 'team',
+                    type: 'RECT',
+                    x: 'bug',
+                    y: 'story',
+                    expr: ['none', '/', true],
                     guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {padding: 0, hide: false},
-                        y: {padding: 0, hide: false}
-                    }
+                        padding: {l: 40, r: 0, t: 0, b: 40},
+                        showGridLines: 'xy',
+                        x: {
+                            textAnchor: 'middle',
+                            padding: 10,
+                            hide: false,
+                            scaleOrient: 'bottom',
+                            rotate: 0,
+                            density: 20,
+                            label: {text: 'bug', rotate: 0, padding: 20, textAnchor: 'middle'},
+                            tickFormatWordWrapLimit: 100
+                        },
+                        y: {
+                            //textAnchor: 'middle',
+                            padding: 10,
+                            hide: false,
+                            scaleOrient: 'left',
+                            rotate: -90,
+                            density: 0,
+                            label: {text: 'story', rotate: -90, padding: 20, textAnchor: 'middle'},
+                            tickFormatWordWrapLimit: 100
+                        }
+                    },
+                    unit: [
+                        {
+                            type: 'POINT',
+                            x: 'bug',
+                            y: 'story',
+                            expr: ['none', '/', true],
+                            guide: {
+                                padding: {l: 0, r: 0, t: 0, b: 0},
+                                x: {padding: 0, hide: false},
+                                y: {padding: 0, hide: false}
+                            }
+                        }
+                    ]
                 }
             ]
         }

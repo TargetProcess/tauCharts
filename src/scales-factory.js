@@ -127,8 +127,18 @@ var scalesStrategies = {
         var d3Domain = d3.scale.ordinal().domain(varSet);
         return {
             init: function(interval) {
-                return d3Domain.rangePoints(interval, 1);
+                var scale = d3Domain.rangePoints(interval, 1);
+                scale.dim = props.dim;
+                return scale;
             },
+
+            domain: function() {
+                return varSet;
+            },
+
+            dim: props.dim,
+
+            source: props.source,
 
             scaleDim: props.dim,
 

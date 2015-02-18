@@ -8,18 +8,17 @@ import {CSS_PREFIX} from '../const';
 
 var FramesAlgebra = {
 
-    'cross': function(scaleX, scaleY) {
+    'cross': function(dataFn, dimX, dimY) {
 
-        var dimX = scaleX.dim;
-        var dimY = scaleY.dim;
+        var convert = (v) => (v instanceof Date) ? v.getTime() : v;
 
-        var domainX = scaleX.domain();
-        var domainY = scaleY.domain();
+        var data = dataFn();
+
+        var domainX = _(data).chain().pluck(dimX).unique(convert).value();
+        var domainY = _(data).chain().pluck(dimY).unique(convert).value();
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
-
-        var convert = (v) => (v instanceof Date) ? v.getTime() : v;
 
         return _(domY).reduce(
             (memo, rowVal) => {
@@ -38,9 +37,12 @@ var FramesAlgebra = {
 
                     return r;
                 }));
-
             },
             []);
+    },
+
+    'none': function(datus, dimX, dimY) {
+        return [null];
     }
 };
 
@@ -52,24 +54,8 @@ export class GPL extends Emitter {
 
         super();
 
-        // config.units
-
-        // config.sources
-        // config.sources.*
-        // config.sources.*.dims
-        // config.sources.*.data
-
-        // config.scales
-
-        // config.trans
-
-        // config.unit
-
         this._svg = null;
-        this._filtersStore = {
-            filters: {},
-            tick: 0
-        };
+        this._filtersStore = {filters: {}, tick: 0};
         this._layout = getLayout();
 
         this._initialize(config);
@@ -79,7 +65,7 @@ export class GPL extends Emitter {
 
         this.config = config;
 
-        this.unitHub = UnitsRegistry;
+        this.unitSet = UnitsRegistry;
 
         this.sources = config.sources;
 
@@ -96,29 +82,27 @@ export class GPL extends Emitter {
 
     render(target, xSize) {
 
-        var containerNode = d3.select(target).node();
-        if (containerNode === null) {
+        var targetNode = d3.select(target).node();
+        if (targetNode === null) {
             throw new Error('Target element not found');
         }
 
-        containerNode.appendChild(this._layout.layout);
-        var container = d3.select(this._layout.content);
+        targetNode.appendChild(this._layout.layout);
 
-        this._layout.content.innerHTML = '';
+        var containerNode = this._layout.content;
+        var container = d3.select(this._layout.content);
+        containerNode.innerHTML = '';
+
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+            size = _.defaults(size, utilsDom.getContainerSize(containerNode.parentNode));
         }
 
         // expand units structure
         this.root = this.expandUnitsStructure(this.config.unit);
 
-        console.log(JSON.stringify(this.root, null, 4));
-
-        // throw 1;
-
         this.root.options = {
-            container: container.append("svg").attr("class", CSS_PREFIX + 'svg').attr("width", size.width).attr("height", size.height),
+            container: container.append("svg").attr(_.extend({'class': `${CSS_PREFIX}svg`}, size)),
             left     : 0,
             top      : 0,
             width    : size.width,
@@ -130,23 +114,13 @@ export class GPL extends Emitter {
 
     expandUnitsStructure(rootUnit) {
 
-        var buildRecursively = (root, parentFramePipe) => {
+        var buildRecursively = (root, parentPipe) => {
 
-            var expr;
-            var tuples;
+            // TODO: detached_cross - to avoid parent frame inheritance
+            var expr = this.parseExpression(root.expr, parentPipe);
 
-            if (root.expr) {
-                // TODO: detached_cross - to avoid parent frame inheritance
-                expr = this.parseExpression(root.expr);
-                tuples = expr.exec();
-            }
-            else {
-                expr = {source: '/'};
-                tuples = [null];
-            }
-
-            root.frames = tuples.map((tuple) => {
-                var pipe = parentFramePipe.concat([{type: 'where', args: tuple}]);
+            root.frames = expr.exec().map((tuple) => {
+                var pipe = parentPipe.concat([{type: 'where', args: tuple}]);
                 var item = {
                     source: expr.source,
                     pipe: pipe
@@ -173,7 +147,7 @@ export class GPL extends Emitter {
 
         var drawRecursively = (rootConf) => {
 
-            var UnitClass = this.unitHub.get(rootConf.type);
+            var UnitClass = this.unitSet.get(rootConf.type);
 
             rootConf.x = this.scales[rootConf.x];
             rootConf.y = this.scales[rootConf.y];
@@ -181,12 +155,11 @@ export class GPL extends Emitter {
             var unitNode = new UnitClass(rootConf);
 
             var frames = rootConf.frames.map((frame) => {
-                var source = this.sources[frame.source];
-                var transf = this.trans;
-                var fnPipe = (memo, cfg) => {
-                    return transf[cfg.type](memo, cfg.args);
-                };
-                frame.data = frame.pipe.reduce(fnPipe, source);
+                var data = this.sources[frame.source].data;
+                var trans = this.trans;
+                frame.data = frame.pipe.reduce(
+                    (data, cfg) => trans[cfg.type](data, cfg.args),
+                    (data));
                 return frame;
             });
 
@@ -201,23 +174,24 @@ export class GPL extends Emitter {
         return drawRecursively(this.root);
     }
 
-    // drawUnitsStructure({
-    //      container: gridContainer,
-    //      left: xScale(xxx.$where[node.x.scaleDim]) - incX / 2,
-    //      top : top,
-    //      width : incX,
-    //      height: height
-    // })
+    parseExpression(sExpression, parentPipe) {
 
-    parseExpression(sExpression) {
         var funcName = sExpression[0];
-        var funcArgs = sExpression.slice(1).map((scaleName) => this.scales[scaleName]);
+        var dataName = sExpression[1];
+        var inheritQ = sExpression[2];
+        var funcArgs = sExpression.slice(3);
+
+        var dataFn = inheritQ ?
+            (() => parentPipe.reduce(
+                (data, cfg) => this.trans[cfg.type](data, cfg.args),
+                (this.sources[dataName].data))) :
+            (() => this.sources[dataName].data);
 
         return {
-            source: funcArgs[0].source,
-            func: FramesAlgebra[funcName],
-            args: funcArgs,
-            exec: () => FramesAlgebra[funcName](...funcArgs)
+            source  : dataName,
+            func    : FramesAlgebra[funcName],
+            args    : funcArgs,
+            exec    : () => FramesAlgebra[funcName](...[dataFn].concat(funcArgs))
         };
     }
 }
