@@ -11,15 +11,12 @@ export class Cartesian {
         this.config = config;
     }
 
-    drawLayout() {
+    drawLayout(fnCreateScale) {
 
         var node = this.config;
 
         var options = node.options;
         var padding = node.guide.padding;
-
-        node.x.guide = node.guide.x;
-        node.y.guide = node.guide.y;
 
         var L = options.left + padding.l;
         var T = options.top + padding.t;
@@ -27,8 +24,17 @@ export class Cartesian {
         var W = options.width - (padding.l + padding.r);
         var H = options.height - (padding.t + padding.b);
 
-        this.x = node.x.scaleObj = node.x.init([0, W]);
-        this.y = node.y.scaleObj = node.y.init([H, 0]);
+        this.x = this.xScale = fnCreateScale('pos', node.x, [0, W]);
+        this.y = this.yScale = fnCreateScale('pos', node.y, [H, 0]);
+
+        node.x = this.xScale;
+        node.y = this.yScale;
+
+        node.x.scaleObj = this.xScale;
+        node.y.scaleObj = this.yScale;
+
+        node.x.guide = node.guide.x;
+        node.y.guide = node.guide.y;
 
         node.x.guide.size = W;
         node.y.guide.size = H;
@@ -58,8 +64,9 @@ export class Cartesian {
         return this;
     }
 
-    drawFrames(frames) {
+    drawFrames(frames, continuation) {
         var self = this;
+
         return frames.reduce(
             (memo, frame) => {
                 var mapper;
@@ -96,6 +103,8 @@ export class Cartesian {
                         return unit;
                     };
                 }
+
+                frame.unit.map((u) => continuation(mapper(u), frame));
 
                 return memo.concat(frame.unit.map(mapper));
             },

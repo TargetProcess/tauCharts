@@ -6,14 +6,17 @@ export class Point {
         super();
 
         this.config = config;
-
-        this.xScale = config.x.init([0,  config.options.width]);
-        this.yScale = config.y.init([config.options.height, 0]);
-        this.color  = config.color || (() => '');
-        this.size   = config.size || (() => 5);
     }
 
-    drawLayout() {
+    drawLayout(fnCreateScale) {
+
+        var config = this.config;
+
+        this.xScale = fnCreateScale('pos', config.x, [0,  config.options.width]);
+        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
+        this.color  = fnCreateScale('color', config.color, {});
+        this.size   = fnCreateScale('size', config.size, {});
+
         return this;
     }
 
@@ -40,7 +43,7 @@ export class Point {
 
         frames.map((frame) => {
             var elements;
-            elements = canvas.selectAll('.dot').data(frame.data);
+            elements = canvas.selectAll('.dot').data(frame.take());
             elements.call(update);
             elements.exit().remove();
             elements.enter().append('circle').call(update);

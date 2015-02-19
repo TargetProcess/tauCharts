@@ -53,24 +53,25 @@ var scalesStrategies = {
             throw new Error('This brewer is not supported');
         }
 
-        var wrap = func;
+        return func;
 
-        return {
-            init: function() {
-
-                wrap.legend = (v) => {
-
-                    // var value = varSet.extract(v);
-                    var value = v;
-                    var label = (props.tickLabel) ? ((v || {})[props.tickLabel]) : (value);
-                    var color = func(value);
-
-                    return {value, color, label};
-                };
-
-                return wrap;
-            }
-        };
+        //var wrap = func;
+        //return {
+        //    init: function() {
+        //
+        //        wrap.legend = (v) => {
+        //
+        //            // var value = varSet.extract(v);
+        //            var value = v;
+        //            var label = (props.tickLabel) ? ((v || {})[props.tickLabel]) : (value);
+        //            var color = func(value);
+        //
+        //            return {value, color, label};
+        //        };
+        //
+        //        return wrap;
+        //    }
+        //};
     },
 
     'size': (varSet, props) => {
@@ -116,34 +117,20 @@ var scalesStrategies = {
             return (minSize + (f(posX) * k));
         };
 
-        return {
-            init: function (interval) {
-                return func;
-            }
-        };
+        return func;
     },
 
-    'ordinal': (varSet, props) => {
+    'ordinal': (varSet, props, interval) => {
+
         var d3Domain = d3.scale.ordinal().domain(varSet);
-        return {
-            init: function(interval) {
-                var scale = d3Domain.rangePoints(interval, 1);
-                scale.dim = props.dim;
-                return scale;
-            },
 
-            domain: function() {
-                return varSet;
-            },
-
-            dim: props.dim,
-
-            source: props.source,
-
-            scaleDim: props.dim,
-
-            scaleType: 'ordinal'
-        };
+        var scale = d3Domain.rangePoints(interval, 1);
+        scale.dim = props.dim;
+        scale.domain = () => varSet;
+        scale.source = props.source;
+        scale.scaleDim = props.dim;
+        scale.scaleType = 'ordinal';
+        return scale;
     },
 
     'linear': (vars, props) => {
@@ -234,16 +221,16 @@ export class ScalesFactory {
         this.sources = sources;
     }
 
-    create(scaleConfig) {
+    create(scaleConfig, frame, interval) {
 
         var dim = scaleConfig.dim;
         var src = scaleConfig.source;
 
-        var meta = this.sources[src].dims[dim];
-        var data = this.sources[src].data;
+        var type = (this.sources[src].dims[dim] || {}).type;
+        var data = scaleConfig.fitToFrame ? frame.take() : this.sources[scaleConfig.source].data;
 
-        var vars = _(data).chain().pluck(dim).uniq(map_value(meta.type)).value();
+        var vars = _(data).chain().pluck(dim).uniq(map_value(type)).value();
 
-        return scalesStrategies[scaleConfig.type](vars, scaleConfig);
+        return scalesStrategies[scaleConfig.type](vars, scaleConfig, interval);
     }
 }

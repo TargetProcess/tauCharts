@@ -46,7 +46,20 @@ var FramesAlgebra = {
     }
 };
 
+var calcBaseFrame = (unit, baseFrame) => {
 
+    var tmpFrame = _.pick(baseFrame || {}, 'source', 'pipe');
+
+    var srcAlias = unit.expr[1];
+    var bInherit = unit.expr[2];
+    var ownFrame = {source: srcAlias, pipe: []};
+
+    if (bInherit && (ownFrame.source !== tmpFrame.source)) {
+        throw new Error(`base [${tmpFrame.source}] and own [${ownFrame.source}] sources should be equal to apply inheritance`);
+    }
+
+    return bInherit ? tmpFrame : ownFrame;
+};
 
 export class GPL extends Emitter {
 
@@ -69,13 +82,9 @@ export class GPL extends Emitter {
 
         this.sources = config.sources;
 
-        var scalesCreator = new ScalesFactory(config.sources);
-        this.scales = _.keys(config.scales).reduce(
-            (memo, key) => {
-                memo[key] = scalesCreator.create(config.scales[key]);
-                return memo;
-            },
-            {});
+        this.scalesCreator = new ScalesFactory(config.sources);
+
+        this.scales = config.scales;
 
         this.trans = config.trans;
     }
@@ -102,7 +111,7 @@ export class GPL extends Emitter {
         this.root = this.expandUnitsStructure(this.config.unit);
 
         this.root.options = {
-            container: container.append("svg").attr(_.extend({'class': `${CSS_PREFIX}svg`}, size)),
+            container: container.append('svg').attr(_.extend({'class': `${CSS_PREFIX}svg`}, size)),
             left     : 0,
             top      : 0,
             width    : size.width,
@@ -116,7 +125,6 @@ export class GPL extends Emitter {
 
         var buildRecursively = (root, parentPipe) => {
 
-            // TODO: detached_cross - to avoid parent frame inheritance
             var expr = this.parseExpression(root.expr, parentPipe);
 
             root.frames = expr.exec().map((tuple) => {
@@ -145,50 +153,57 @@ export class GPL extends Emitter {
 
     drawUnitsStructure() {
 
-        var drawRecursively = (rootConf) => {
+        var continueDrawRecursively = (rootConf, rootFrame) => {
+
+            var dataFrame = this.datify(calcBaseFrame(rootConf, rootFrame));
 
             var UnitClass = this.unitSet.get(rootConf.type);
 
-            rootConf.x = this.scales[rootConf.x];
-            rootConf.y = this.scales[rootConf.y];
-
             var unitNode = new UnitClass(rootConf);
 
-            var frames = rootConf.frames.map((frame) => {
-                var data = this.sources[frame.source].data;
-                var trans = this.trans;
-                frame.data = frame.pipe.reduce(
-                    (data, cfg) => trans[cfg.type](data, cfg.args),
-                    (data));
-                return frame;
-            });
-
             unitNode
-                .drawLayout()
-                .drawFrames(frames)
-                .map((unit) => drawRecursively(unit));
+                .drawLayout((type, alias, settings) => {
+
+                    // type is one of:
+                    // - pos
+                    // - size
+                    // - color
+                    // - shape
+                    var name = alias ? alias : `${type}:default`;
+
+                    return this.scalesCreator.create(this.scales[name], dataFrame, settings);
+                })
+                .drawFrames(rootConf.frames.map(this.datify.bind(this)), continueDrawRecursively);
 
             return rootConf;
         };
 
-        return drawRecursively(this.root);
+        return continueDrawRecursively(this.root);
+    }
+
+    datify(frame) {
+        var data = this.sources[frame.source].data;
+        var trans = this.trans;
+        frame.take = () => frame.pipe.reduce((data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args), data);
+        frame.data = frame.take();
+        return frame;
     }
 
     parseExpression(sExpression, parentPipe) {
 
         var funcName = sExpression[0];
-        var dataName = sExpression[1];
+        var srcAlias = sExpression[1];
         var inheritQ = sExpression[2];
         var funcArgs = sExpression.slice(3);
 
         var dataFn = inheritQ ?
             (() => parentPipe.reduce(
                 (data, cfg) => this.trans[cfg.type](data, cfg.args),
-                (this.sources[dataName].data))) :
-            (() => this.sources[dataName].data);
+                (this.sources[srcAlias].data))) :
+            (() => this.sources[srcAlias].data);
 
         return {
-            source  : dataName,
+            source  : srcAlias,
             func    : FramesAlgebra[funcName],
             args    : funcArgs,
             exec    : () => FramesAlgebra[funcName](...[dataFn].concat(funcArgs))

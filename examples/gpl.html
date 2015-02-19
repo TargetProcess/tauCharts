@@ -247,6 +247,10 @@
     var xSpec = {
 
         sources: {
+            '?': {
+                dims: {},
+                data: []
+            },
             '/': {
                 dims: {
                     story   : {type: 'category'},
@@ -279,10 +283,12 @@
         },
 
         scales: {
-            'story' : {type: 'ordinal', name: 'S', fitToFrame: true, source: '/', dim: 'story'},
-            'bug'   : {type: 'ordinal', name: 'B', fitToFrame: true, source: '/', dim: 'bug'},
-            'proj'  : {type: 'ordinal', name: 'P', fitToFrame: true, source: '/', dim: 'project'},
-            'team'  : {type: 'ordinal', name: 'T', fitToFrame: true, source: '/', dim: 'team'}
+            'size:default'  : {type: 'size',  name: 'DefSize',  fitToFrame: false, source: '?', mid: 5},
+            'color:default' : {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
+            'story' : {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
+            'bug'   : {type: 'ordinal', name: 'B', fitToFrame: false, source: '/', dim: 'bug'},
+            'proj'  : {type: 'ordinal', name: 'P', fitToFrame: false, source: '/', dim: 'project'},
+            'team'  : {type: 'ordinal', name: 'T', fitToFrame: false, source: '/', dim: 'team'}
         },
 
         unit: {
