@@ -10,13 +10,14 @@ export class Cartesian {
 
         this.config = config;
 
-        this.config.guide = this.config.guide || {};
-
-        this.config.guide.showGridLines = 'xy';
-        this.config.guide.padding = {l: 50, r: 0, t: 0, b: 50};
+        this.config.guide = _.defaults(
+            this.config.guide || {},
+            {
+                showGridLines: 'xy',
+                padding: {l: 50, r: 0, t: 0, b: 50}
+            });
 
         this.config.guide.x = this.config.guide.x || {};
-        this.config.guide.x.cssClass = 'x axis';
         this.config.guide.x = _.defaults(
             this.config.guide.x,
             {

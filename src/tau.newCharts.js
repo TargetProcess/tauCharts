@@ -10,6 +10,13 @@ import {LayoutEngineFactory} from './layout-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
 import {nodeMap} from './node-map';
 import {UnitsRegistry} from './units-registry';
+
+
+import {Cartesian}  from './elements/coords.cartesian';
+import {Point}      from './elements/element.point';
+import {Line}       from './elements/element.line';
+import {Pie}        from './elements/element.pie';
+
 var colorBrewers = {};
 var plugins = {};
 
@@ -115,7 +122,13 @@ api.UnitsRegistry
     .add('COORDS.RECT', nodeMap['COORDS.RECT'])
     .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
     .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
-    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL']);
+    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL'])
+
+    .reg('RECT', Cartesian)
+    .reg('POINT', Point)
+    .reg('LINE', Line)
+    .reg('PIE', Pie);
+
 export {GPL, Plot, Chart, __api__, api};
 
 

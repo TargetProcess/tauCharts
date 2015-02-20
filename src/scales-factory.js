@@ -229,6 +229,18 @@ var scalesStrategies = {
         scale.scaleType = 'time';
 
         return scale;
+    },
+
+    'value': (vars, props, interval) => {
+
+        var scale = (x) => x;
+        scale.dim = props.dim;
+        scale.domain = () => varSet;
+        scale.source = props.source;
+        scale.scaleDim = props.dim;
+        scale.scaleType = 'value';
+
+        return scale;
     }
 };
 

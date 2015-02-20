@@ -1,10 +1,11 @@
-import {Cartesian} from './elements/coords.cartesian';
-import {Point} from './elements/element.point';
-import {Line} from './elements/element.line';
-
 var UnitsMap = {};
 
 var UnitsRegistry = {
+
+    reg: function(unitType, xUnit) {
+        UnitsMap[unitType] = xUnit;
+        return this;
+    },
 
     add: function(unitType, xUnit) {
         var unit = {};
@@ -15,18 +16,6 @@ var UnitsRegistry = {
     },
 
     get: (unitType) => {
-
-        if (unitType === 'RECT') {
-            return Cartesian;
-        }
-
-        if (unitType === 'POINT') {
-            return Point;
-        }
-
-        if (unitType === 'LINE') {
-            return Line;
-        }
 
         if (!UnitsMap.hasOwnProperty(unitType)) {
             throw new Error('Unknown unit type: ' + unitType);

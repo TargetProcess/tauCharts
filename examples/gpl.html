@@ -646,7 +646,20 @@
                 },
                 data: [
                     {x: 1, y: 1},
-                    {x: 2, y: 1}
+                    {x: 2, y: 1},
+                    {x: 2, y: 2}
+                ]
+            },
+
+            'o': {
+                dims: {
+                    label : {type: 'category'},
+                    value : {type: 'measure'}
+                },
+                data: [
+                    {"label":"Category A", "value":20},
+                    {"label":"Category B", "value":50},
+                    {"label":"Category C", "value":30}
                 ]
             },
 
@@ -781,7 +794,11 @@
             'xdate'         : {type: 'linear', name: 'P', source: '@', dim: 'xdate'},
 
             'annotation1'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-2']},
-            'annotation2'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-5']}
+            'annotation2'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-5']},
+
+            'label'        : {type: 'value', source: 'o', dim: 'label'},
+            'piePortion'   : {type: 'value', source: 'o', dim: 'value'},
+            'label_color'  : {type: 'color', source: 'o', dim: 'label'}
         },
 
         unit: {
@@ -790,6 +807,33 @@
             y: 'yScale',
             expr: [false, '$', false],
             frames: [
+                {
+                    key: {x: 2, y: 2},
+                    source: '$',
+                    pipe: [],
+                    unit: [
+                        {
+                            type: 'RECT',
+                            x: 'xScale',
+                            y: 'yScale',
+                            expr: ['none', 'o', false],
+                            guide: {
+                                showGridLines: '',
+                                x: {hide:true},
+                                y: {hide:true}
+                            },
+                            unit: [
+                                {
+                                    type: 'PIE',
+                                    proportion: 'piePortion',
+                                    label: 'label',
+                                    color: 'label_color',
+                                    expr: ['none', 'o', true]
+                                }
+                            ]
+                        }
+                    ]
+                },
                 {
                     key: {x: 2, y: 1},
                     source: '$',
