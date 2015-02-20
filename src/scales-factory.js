@@ -53,6 +53,12 @@ var scalesStrategies = {
             throw new Error('This brewer is not supported');
         }
 
+        func.dim = props.dim;
+        func.domain = () => varSet;
+        func.source = props.source;
+        func.scaleDim = props.dim;
+        func.scaleType = 'color';
+
         return func;
 
         //var wrap = func;
@@ -117,6 +123,12 @@ var scalesStrategies = {
             return (minSize + (f(posX) * k));
         };
 
+        func.dim = props.dim;
+        func.domain = () => varSet;
+        func.source = props.source;
+        func.scaleDim = props.dim;
+        func.scaleType = 'size';
+
         return func;
     },
 
@@ -133,7 +145,7 @@ var scalesStrategies = {
         return scale;
     },
 
-    'linear': (vars, props) => {
+    'linear': (vars, props, interval) => {
 
         var domain = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);
 
@@ -147,14 +159,29 @@ var scalesStrategies = {
 
         var d3Domain = d3.scale.linear().domain(varSet);
 
-        return {
-            init: function(interval) {
-                return d3Domain.rangeRound(interval, 1);
-            }
+        var d3Scale = d3Domain.rangeRound(interval, 1);
+        var scale = (int) => {
+            var x = int;
+            if (x > max) {x = max}
+            if (x < min) {x = min}
+            return d3Scale(x);
         };
+
+        // have to copy properties since d3 produce Function with methods
+        Object.keys(d3Scale).forEach(function (p) {
+            return scale[p] = d3Scale[p];
+        });
+
+        scale.dim = props.dim;
+        scale.domain = () => varSet;
+        scale.source = props.source;
+        scale.scaleDim = props.dim;
+        scale.scaleType = 'linear';
+
+        return scale;
     },
 
-    'period': (vars, props) => {
+    'period': (vars, props, interval) => {
 
         // extract: ((x) => UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x)))
 
@@ -171,14 +198,17 @@ var scalesStrategies = {
 
         var d3Domain = d3.scale.ordinal().domain(varSet);
 
-        return {
-            init: function(interval) {
-                return d3Domain.rangePoints(interval, 1);
-            }
-        };
+        var scale = d3Domain.rangePoints(interval, 1);
+        scale.dim = props.dim;
+        scale.domain = () => varSet;
+        scale.source = props.source;
+        scale.scaleDim = props.dim;
+        scale.scaleType = 'period';
+
+        return scale;
     },
 
-    'time': (vars, props) => {
+    'time': (vars, props, interval) => {
 
         var domain = d3.extent(vars);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
@@ -191,11 +221,14 @@ var scalesStrategies = {
 
         var d3Domain = d3.time.scale().domain(varSet);
 
-        return {
-            init: function(interval) {
-                return d3Domain.range(interval);
-            }
-        };
+        var scale = d3Domain.range(interval);
+        scale.dim = props.dim;
+        scale.domain = () => varSet;
+        scale.source = props.source;
+        scale.scaleDim = props.dim;
+        scale.scaleType = 'time';
+
+        return scale;
     }
 };
 

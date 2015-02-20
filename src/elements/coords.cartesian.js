@@ -9,6 +9,63 @@ export class Cartesian {
         super();
 
         this.config = config;
+
+        this.config.guide = this.config.guide || {};
+
+        this.config.guide.showGridLines = 'xy';
+        this.config.guide.padding = {l: 50, r: 0, t: 0, b: 50};
+
+        this.config.guide.x = this.config.guide.x || {};
+        this.config.guide.x.cssClass = 'x axis';
+        this.config.guide.x = _.defaults(
+            this.config.guide.x,
+            {
+                cssClass: 'x axis',
+                textAnchor: 'middle',
+                padding: 10,
+                hide: false,
+                scaleOrient: 'bottom',
+                rotate: 0,
+                density: 20,
+                label: {},
+                tickFormatWordWrapLimit: 100
+            }
+        );
+
+        this.config.guide.x.label = _.defaults(
+            this.config.guide.x.label,
+            {
+                text: 'X',
+                rotate: 0,
+                padding: 40,
+                textAnchor: 'middle'
+            }
+        );
+
+        this.config.guide.y = this.config.guide.y || {};
+        this.config.guide.y = _.defaults(
+            this.config.guide.y,
+            {
+                cssClass: 'y axis',
+                textAnchor: 'start',
+                padding: 10,
+                hide: false,
+                scaleOrient: 'left',
+                rotate: 0,
+                density: 20,
+                label: {},
+                tickFormatWordWrapLimit: 100
+            });
+
+        this.config.guide.y.label = _.defaults(
+            this.config.guide.y.label,
+            {
+                text: 'Y',
+                rotate: -90,
+                padding: 20,
+                textAnchor: 'middle'
+            }
+        );
     }
 
     drawLayout(fnCreateScale) {

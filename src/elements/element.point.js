@@ -43,7 +43,7 @@ export class Point {
 
         frames.map((frame) => {
             var elements;
-            elements = canvas.selectAll('.dot').data(frame.take());
+            elements = canvas.selectAll('.dot' + parseInt(Math.random() * 1000)).data(frame.take());
             elements.call(update);
             elements.exit().remove();
             elements.enter().append('circle').call(update);

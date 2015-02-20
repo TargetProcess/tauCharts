@@ -8,10 +8,8 @@
 
     <!-- plugins -->
 
-
     <!-- test data -->
     <script src="data.js"></script>
-
     <script src="countries.js"></script>
     <script src="tpStories.js"></script>
     <script src="dataTp.js"></script>
@@ -23,9 +21,325 @@
     <link href="../css/tauCharts.css" rel="stylesheet"/>
     <link href="../css/tooltip.css" rel="stylesheet"/>
     <link href="../css/trendline.css" rel="stylesheet"/>
+
+    <script src="../build/development/tauCharts.js"></script>
+    <script>
+        var regressionsHub = (function () {
+
+            'use strict';
+
+            var gaussianElimination = function (a, o) {
+                var i = 0, j = 0, k = 0, maxrow = 0, tmp = 0, n = a.length - 1, x = new Array(o);
+                for (i = 0; i < n; i++) {
+                    maxrow = i;
+                    for (j = i + 1; j < n; j++) {
+                        if (Math.abs(a[i][j]) > Math.abs(a[i][maxrow]))
+                            maxrow = j;
+                    }
+                    for (k = i; k < n + 1; k++) {
+                        tmp = a[k][i];
+                        a[k][i] = a[k][maxrow];
+                        a[k][maxrow] = tmp;
+                    }
+                    for (j = i + 1; j < n; j++) {
+                        for (k = n; k >= i; k--) {
+                            a[k][j] -= a[k][i] * a[i][j] / a[i][i];
+                        }
+                    }
+                }
+                for (j = n - 1; j >= 0; j--) {
+                    tmp = 0;
+                    for (k = j + 1; k < n; k++)
+                        tmp += a[k][j] * x[k];
+                    x[j] = (a[n][j] - tmp) / a[j][j];
+                }
+                return (x);
+            };
+
+            // GREAT THANKS to Tom Alexander!
+            // https://github.com/Tom-Alexander/regression-js
+            var methods = {
+                linear: function (data) {
+                    var sum = [0, 0, 0, 0, 0], n = 0, results = [];
+
+                    for (; n < data.length; n++) {
+                        if (data[n][1]) {
+                            sum[0] += data[n][0];
+                            sum[1] += data[n][1];
+                            sum[2] += data[n][0] * data[n][0];
+                            sum[3] += data[n][0] * data[n][1];
+                            sum[4] += data[n][1] * data[n][1];
+                        }
+                    }
+
+                    var gradient = (n * sum[3] - sum[0] * sum[1]) / (n * sum[2] - sum[0] * sum[0]);
+
+                    gradient = isNaN(gradient) ? 0 : gradient;
+
+                    var intercept = (sum[1] / n) - (gradient * sum[0]) / n;
+                    //  var correlation = (n * sum[3] - sum[0] * sum[1]) / Math.sqrt((n * sum[2] - sum[0] * sum[0]) * (n * sum[4] - sum[1] * sum[1]));
+
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        var coordinate = [data[i][0], data[i][0] * gradient + intercept];
+                        results.push(coordinate);
+                    }
+
+                    var string = 'y = ' + Math.round(gradient * 100) / 100 + 'x + ' + Math.round(intercept * 100) / 100;
+
+                    return {equation: [gradient, intercept], points: results, string: string};
+                },
+
+                exponential: function (data) {
+                    var sum = [0, 0, 0, 0, 0, 0], n = 0, results = [];
+
+                    for (len = data.length; n < len; n++) {
+                        if (data[n][1]) {
+                            sum[0] += data[n][0];
+                            sum[1] += data[n][1];
+                            sum[2] += data[n][0] * data[n][0] * data[n][1];
+                            sum[3] += data[n][1] * Math.log(data[n][1]);
+                            sum[4] += data[n][0] * data[n][1] * Math.log(data[n][1]);
+                            sum[5] += data[n][0] * data[n][1];
+                        }
+                    }
+
+                    var denominator = (sum[1] * sum[2] - sum[5] * sum[5]);
+                    var A = Math.pow(Math.E, (sum[2] * sum[3] - sum[5] * sum[4]) / denominator);
+                    var B = (sum[1] * sum[4] - sum[5] * sum[3]) / denominator;
+
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        var coordinate = [data[i][0], A * Math.pow(Math.E, B * data[i][0])];
+                        results.push(coordinate);
+                    }
+
+                    var string = 'y = ' + Math.round(A * 100) / 100 + 'e^(' + Math.round(B * 100) / 100 + 'x)';
+
+                    return {equation: [A, B], points: results, string: string};
+                },
+
+                logarithmic: function (data) {
+                    var sum = [0, 0, 0, 0], n = 0, results = [];
+
+                    for (len = data.length; n < len; n++) {
+                        if (data[n][1]) {
+                            sum[0] += Math.log(data[n][0]);
+                            sum[1] += data[n][1] * Math.log(data[n][0]);
+                            sum[2] += data[n][1];
+                            sum[3] += Math.pow(Math.log(data[n][0]), 2);
+                        }
+                    }
+
+                    var B = (n * sum[1] - sum[2] * sum[0]) / (n * sum[3] - sum[0] * sum[0]);
+                    var A = (sum[2] - B * sum[0]) / n;
+
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        var coordinate = [data[i][0], A + B * Math.log(data[i][0])];
+                        results.push(coordinate);
+                    }
+
+                    var string = 'y = ' + Math.round(A * 100) / 100 + ' + ' + Math.round(B * 100) / 100 + ' ln(x)';
+
+                    return {equation: [A, B], points: results, string: string};
+                },
+
+                power: function (data) {
+                    var sum = [0, 0, 0, 0], n = 0, results = [];
+
+                    for (len = data.length; n < len; n++) {
+                        if (data[n][1]) {
+                            sum[0] += Math.log(data[n][0]);
+                            sum[1] += Math.log(data[n][1]) * Math.log(data[n][0]);
+                            sum[2] += Math.log(data[n][1]);
+                            sum[3] += Math.pow(Math.log(data[n][0]), 2);
+                        }
+                    }
+
+                    var B = (n * sum[1] - sum[2] * sum[0]) / (n * sum[3] - sum[0] * sum[0]);
+                    var A = Math.pow(Math.E, (sum[2] - B * sum[0]) / n);
+
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        var coordinate = [data[i][0], A * Math.pow(data[i][0], B)];
+                        results.push(coordinate);
+                    }
+
+                    var string = 'y = ' + Math.round(A * 100) / 100 + 'x^' + Math.round(B * 100) / 100;
+
+                    return {equation: [A, B], points: results, string: string};
+                },
+
+                polynomial: function (data, order) {
+                    if (typeof order == 'undefined') {
+                        order = 2;
+                    }
+                    var lhs = [], rhs = [], results = [], a = 0, b = 0, i = 0, k = order + 1;
+
+                    for (; i < k; i++) {
+                        for (var l = 0, len = data.length; l < len; l++) {
+                            if (data[l][1]) {
+                                a += Math.pow(data[l][0], i) * data[l][1];
+                            }
+                        }
+                        lhs.push(a), a = 0;
+                        var c = [];
+                        for (var j = 0; j < k; j++) {
+                            for (var l = 0, len = data.length; l < len; l++) {
+                                if (data[l][1]) {
+                                    b += Math.pow(data[l][0], i + j);
+                                }
+                            }
+                            c.push(b), b = 0;
+                        }
+                        rhs.push(c);
+                    }
+                    rhs.push(lhs);
+
+                    var equation = gaussianElimination(rhs, k);
+
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        var answer = 0;
+                        for (var w = 0; w < equation.length; w++) {
+                            answer += equation[w] * Math.pow(data[i][0], w);
+                        }
+                        results.push([data[i][0], answer]);
+                    }
+
+                    var string = 'y = ';
+
+                    for (var i = equation.length - 1; i >= 0; i--) {
+                        if (i > 1) string += Math.round(equation[i] * 100) / 100 + 'x^' + i + ' + ';
+                        else if (i == 1) string += Math.round(equation[i] * 100) / 100 + 'x' + ' + ';
+                        else string += Math.round(equation[i] * 100) / 100;
+                    }
+
+                    return {equation: equation, points: results, string: string};
+                },
+
+                lastvalue: function (data) {
+                    var results = [];
+                    var lastvalue = null;
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i][1]) {
+                            lastvalue = data[i][1];
+                            results.push([data[i][0], data[i][1]]);
+                        }
+                        else {
+                            results.push([data[i][0], lastvalue]);
+                        }
+                    }
+
+                    return {equation: [lastvalue], points: results, string: "" + lastvalue};
+                },
+
+                loess: function(data) {
+                    //adapted from the LoessInterpolator in org.apache.commons.math
+                    function loess_pairs(pairs, bandwidth) {
+                        var xval = pairs.map(function(pair){return pair[0]});
+                        var yval = pairs.map(function(pair){return pair[1]});
+                        var res = loess(xval, yval, bandwidth);
+                        return xval.map(function (x, i) {
+                            return [x, res[i]];
+                        });
+                    }
+
+                    function loess(xval, yval, bandwidth) {
+                        function tricube(x) {
+                            var tmp = 1 - x * x * x;
+                            return tmp * tmp * tmp;
+                        }
+
+                        var res = [];
+
+                        var left = 0;
+                        var right = Math.floor(bandwidth * xval.length) - 1;
+
+                        for (var i = 0; i < xval.length; i++) {
+
+                            var x = xval[i];
+
+                            if (i > 0) {
+                                if (right < xval.length - 1 &&
+                                        xval[right+1] - xval[i] < xval[i] - xval[left]) {
+                                    left++;
+                                    right++;
+                                }
+                            }
+
+                            var edge;
+                            if (xval[i] - xval[left] > xval[right] - xval[i])
+                                edge = left;
+                            else
+                                edge = right;
+
+                            var denom = Math.abs(1.0 / (xval[edge] - x));
+
+                            var sumWeights = 0;
+                            var sumX = 0, sumXSquared = 0, sumY = 0, sumXY = 0;
+
+                            var k = left;
+                            while(k <= right)
+                            {
+                                var xk = xval[k];
+                                var yk = yval[k];
+                                var dist;
+                                if (k < i) {
+                                    dist = (x - xk);
+                                } else {
+                                    dist = (xk - x);
+                                }
+                                var w = tricube(dist * denom);
+                                var xkw = xk * w;
+                                sumWeights += w;
+                                sumX += xkw;
+                                sumXSquared += xk * xkw;
+                                sumY += yk * w;
+                                sumXY += yk * xkw;
+                                k++;
+                            }
+
+                            var meanX = sumX / sumWeights;
+                            var meanY = sumY / sumWeights;
+                            var meanXY = sumXY / sumWeights;
+                            var meanXSquared = sumXSquared / sumWeights;
+
+                            var beta;
+                            if (meanXSquared == meanX * meanX)
+                                beta = 0;
+                            else
+                                beta = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
+
+                            var alpha = meanY - beta * meanX;
+
+                            res[i] = beta * x + alpha;
+                        }
+
+                        return res;
+                    }
+
+                    return {
+                        equation: 'loess',
+                        points: loess_pairs(data, 0.5),
+                        string: 'loess'
+                    };
+                }
+            };
+
+            return (function (method, data, order) {
+                if (typeof method == 'string') {
+                    return methods[method](data, order);
+                }
+            });
+        }());
+    </script>
     <style>
         .cc {
-            /*background-color: rgba(125, 125, 125, 0.5);*/
+            max-width: 1000px;
+            max-height: 600px;
+            min-width: 1000px;
+            min-height: 600px;
+            border: solid 1px black;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            margin-left: 5px;
         }
     </style>
 </head>
@@ -33,218 +347,13 @@
 
 <div id="container" class="cc"></div>
 
-</div>
+<div id="trendline" class="cc"></div>
 
-<script src="../build/development/tauCharts.js"></script>
+<div id="dashboard" class="cc"></div>
+
 <script>
 
-    var spec = {
-
-        sources: {
-            '/': {
-                dims: {
-                    project : {type: 'category'},
-                    team    : {type: 'category'},
-                    count   : {type: 'measure'},
-                    date    : {type: 'measure'}
-                },
-                data: [
-                    {project: 'TP3', team: 'alpha', count: 10, date: new Date('2014-01-05')},
-                    {project: 'tau', team: 'xbeta', count: 15, date: new Date('2014-10-05')}
-                ]
-            }
-        },
-
-        scales: {
-            'proj': {type: 'ordinal', name: 'A', fitToFrame: true, source: '/', dim: 'project'},
-            'team': {type: 'ordinal', name: 'B', fitToFrame: true, source: '/', dim: 'team'} //,
-//            'per_date': {type: 'period', name: 'C', fitToFrame: true, source: '/', dim: 'date', period: 'month'},
-//            'date': {type: 'time', name: 'D', fitToFrame: true, source: '/', dim: 'date'},
-//            'count': {
-//                type: 'measure',
-//                name: 'E',
-//                fitToFrame: true,
-//                source: '/',
-//                dim: 'count',
-//                min: 0,
-//                max: 1000,
-//                autoScale: true
-//            },
-//            'color_team': {type: 'color', name: 'F', fitToFrame: true, source: '/', dim: 'team', brewer: 'default'},
-//            'size_count': {
-//                type: 'size',
-//                name: 'G',
-//                fitToFrame: true,
-//                source: '/',
-//                dim: 'count',
-//                min: 1,
-//                max: 1000,
-//                mid: 20
-//            }
-        },
-
-        unit: {
-            type: 'COORDS.RECT',
-            x: 'proj',
-            y: 'team',
-            frames: [
-                {
-                    data: '/',
-                    pipe: [{where: {project: 'tp2', team: 'alpha'}}],
-                    unit: [
-                        {
-                            type: 'ELEMENT.POINT',
-                            color: 'color_type',
-                            size: 'size_count',
-                            expr: '=cross(color_type, range(size_count))',
-                            frames: [
-                                {
-                                    key: {type: 'bug'},
-                                    data: '/',
-                                    pipe: [
-                                        {where: {project: 'tp2', team: 'alpha'}},
-                                        {where: {type: 'bug'}}
-                                    ]
-                                },
-                                {
-                                    key: {type: 'story'},
-                                    data: '/',
-                                    pipe: [
-                                        {where: {project: 'tp2', team: 'alpha'}},
-                                        {where: {type: 'story'}}
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-
-                {
-                    key: {project: 'tp2', team: 'alpha'},
-                    data: '/',
-                    pipe: [{where: {project: 'tp2', team: 'alpha'}}],
-                    unit: [
-                        {
-                            type: 'COORDS.RECT',
-                            x: 'date',
-                            y: 'count',
-                            frames: [
-                                {
-                                    data: '/',
-                                    pipe: [{where: {project: 'tp2', team: 'alpha'}}],
-                                    unit: [
-                                        {
-                                            type: 'ELEMENT.INTERVAL',
-                                            color: 'color_type',
-                                            size: 'size_count',
-                                            expr: '=cross(color_type, range(size_count))',
-                                            frames: [
-                                                {
-                                                    key: {type: 'bug'},
-                                                    data: '/',
-                                                    pipe: [
-                                                        {where: {project: 'tp2', team: 'alpha'}},
-                                                        {where: {type: 'bug'}}
-                                                    ]
-                                                },
-                                                {
-                                                    key: {type: 'story'},
-                                                    data: '/',
-                                                    pipe: [
-                                                        {where: {project: 'tp2', team: 'alpha'}},
-                                                        {where: {type: 'story'}}
-                                                    ]
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            type: 'ELEMENT.LINE',
-                                            color: 'color_type',
-                                            size: 'size_count',
-                                            expr: '=[color_type]*1',
-                                            frames: [
-                                                {
-                                                    key: {type: 'bug'},
-                                                    data: '/',
-                                                    pipe: [
-                                                        {where: {project: 'tp2', team: 'alpha'}},
-                                                        {where: {type: 'bug'}},
-                                                        'linear_regression'
-                                                    ]
-                                                },
-                                                {
-                                                    key: {type: 'story'},
-                                                    data: '/',
-                                                    pipe: [
-                                                        {where: {project: 'tp2', team: 'alpha'}},
-                                                        {where: {type: 'story'}},
-                                                        'linear_regression'
-                                                    ]
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            type: 'ELEMENT.LINE',
-                                            expr: '=1',
-                                            frames: [
-                                                {
-                                                    data: '/',
-                                                    pipe: [
-                                                        {where: {project: 'tp2', team: 'alpha'}},
-                                                        'linear_regression'
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ],
-                            unit: [
-                                {
-                                    type: 'ELEMENT.POINT',
-                                    color: 'color_team'
-                                },
-                                {
-                                    type: 'ELEMENT.LINE',
-                                    color: 'color_team',
-                                    trans: ['linear_regression']
-                                },
-                                {
-                                    type: 'ELEMENT.LINE',
-                                    trans: ['linear_regression']
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            unit: [
-                {
-                    type: 'COORDS.RECT',
-                    x: 'date',
-                    y: 'count',
-                    func: '1',
-                    unit: [
-                        {
-                            type: 'ELEMENT.POINT',
-                            color: 'color_team'
-                        },
-                        {
-                            type: 'ELEMENT.LINE',
-                            color: 'color_team',
-                            trans: ['linear_regression']
-                        },
-                        {
-                            type: 'ELEMENT.LINE',
-                            trans: ['linear_regression']
-                        }
-                    ]
-                }
-            ]
-        }
-    };
-
-    var xSpec = {
+    var facetSpec = {
 
         sources: {
             '?': {
@@ -287,6 +396,7 @@
             'color:default' : {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
             'story' : {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
             'bug'   : {type: 'ordinal', name: 'B', fitToFrame: false, source: '/', dim: 'bug'},
+            'count' : {type: 'linear',  name: 'C', fitToFrame: false, source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
             'proj'  : {type: 'ordinal', name: 'P', fitToFrame: false, source: '/', dim: 'project'},
             'team'  : {type: 'ordinal', name: 'T', fitToFrame: false, source: '/', dim: 'team'}
         },
@@ -297,70 +407,25 @@
             y: 'team',
             expr: ['cross', '/', false, 'project', 'team'],
             guide: {
-                padding: {l: 40, r: 0, t: 0, b: 40},
-                showGridLines: 'xy',
-                x: {
-                    textAnchor: 'middle',
-                    padding: 10,
-                    hide: false,
-                    scaleOrient: 'bottom',
-                    rotate: 0,
-                    density: 20,
-                    label: {text: 'proj', rotate: 0, padding: 20, textAnchor: 'middle'},
-                    tickFormatWordWrapLimit: 100
-                },
-                y: {
-                    //textAnchor: 'middle',
-                    padding: 10,
-                    hide: false,
-                    scaleOrient: 'left',
-                    rotate: -90,
-                    density: 0,
-                    label: {text: 'team', rotate: -90, padding: 20, textAnchor: 'middle'},
-                    tickFormatWordWrapLimit: 100
-                }
+                x: {label: {text: 'project'}},
+                y: {label: {text: 'team'}}
             },
             unit: [
                 {
                     type: 'RECT',
-                    x: 'bug',
+                    x: 'count',
                     y: 'story',
                     expr: ['none', '/', true],
                     guide: {
-                        padding: {l: 40, r: 0, t: 0, b: 40},
-                        showGridLines: 'xy',
-                        x: {
-                            textAnchor: 'middle',
-                            padding: 10,
-                            hide: false,
-                            scaleOrient: 'bottom',
-                            rotate: 0,
-                            density: 20,
-                            label: {text: 'bug', rotate: 0, padding: 20, textAnchor: 'middle'},
-                            tickFormatWordWrapLimit: 100
-                        },
-                        y: {
-                            //textAnchor: 'middle',
-                            padding: 10,
-                            hide: false,
-                            scaleOrient: 'left',
-                            rotate: -90,
-                            density: 0,
-                            label: {text: 'story', rotate: -90, padding: 20, textAnchor: 'middle'},
-                            tickFormatWordWrapLimit: 100
-                        }
+                        x: {label: {text: 'count'}},
+                        y: {label: {text: 'story'}}
                     },
                     unit: [
                         {
                             type: 'POINT',
-                            x: 'bug',
+                            x: 'count',
                             y: 'story',
-                            expr: ['none', '/', true],
-                            guide: {
-                                padding: {l: 0, r: 0, t: 0, b: 0},
-                                x: {padding: 0, hide: false},
-                                y: {padding: 0, hide: false}
-                            }
+                            expr: ['none', '/', true]
                         }
                     ]
                 }
@@ -368,9 +433,477 @@
         }
     };
 
-    var gpl = new tauCharts.GPL(xSpec);
+    var gpl = new tauCharts.GPL(facetSpec);
 
-    gpl.render('#container', {width: 800, height: 600});
+    gpl.render('#container');
 </script>
+
+<script>
+    var facetSpec = {
+
+        sources: {
+            '?': {
+                dims: {},
+                data: []
+            },
+            '/': {
+                dims: {
+                    xdate   : {type: 'measure'},
+                    count   : {type: 'measure'}
+                },
+                data: [
+                    {xdate:  1, count: 31 },
+                    {xdate:  2, count: 27 },
+                    {xdate:  3, count: 22 },
+                    {xdate:  4, count: 13 },
+                    {xdate:  5, count:  9 },
+                    {xdate:  6, count:  5 },
+                    {xdate:  7, count:  1 },
+                    {xdate:  8, count: -3 },
+                    {xdate:  9, count: -5 },
+                    {xdate: 10, count: -7 },
+                    {xdate: 11, count: -9 },
+                    {xdate: 12, count: -11},
+                    {xdate: 13, count: -17},
+                    {xdate: 14, count: -27},
+                    {xdate: 15, count: -53}
+                ]
+            }
+        },
+
+        trans: {
+            where: function (data, tuple) {
+                var predicates = _.map(tuple, function(v, k) {
+                    return function(row) {
+                        return (row[k] === v);
+                    }
+                });
+                return _(data).filter(function(row) {
+                    return _.every(predicates, function(p) {
+                        return p(row);
+                    })
+                });
+            },
+
+            'regression': function(sVal, props) {
+
+                var x = props.x;
+                var y = props.y;
+
+                var src = sVal.map(function (item) {
+                    var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
+                    var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
+                    return [ix, iy];
+                });
+
+                var regression = regressionsHub(props.type, src);
+                return _(regression.points)
+                        .chain()
+                        .sortBy(function (p) {
+                            return p[0];
+                        })
+//                      .filter(function (p) {
+//                          return ((minY <= p[1]) && (p[1] <= maxY));
+//                      })
+                        .map(function(p) {
+                            var item = {};
+                            item[x] = p[0];
+                            item[y] = p[1];
+                            return item;
+                        })
+                        .value();
+            },
+
+            'x-limit': function(data, props) {
+
+                var x = props.x;
+                var y = props.y;
+
+                var low = {};
+                var top = {};
+
+                low[x] = props.limit;
+                low[y] = -Math.max();
+
+                top[x] = props.limit;
+                top[y] = +Math.max();
+
+                return [low, top];
+            },
+
+            'y-limit': function(data, props) {
+
+                var x = props.x;
+                var y = props.y;
+
+                var low = {};
+                var top = {};
+
+                low[y] = props.limit;
+                low[x] = -Math.max();
+
+                top[y] = props.limit;
+                top[x] = +Math.max();
+
+                return [low, top];
+            }
+        },
+
+        scales: {
+            'size:default'  : {type: 'size',  name: 'DefSize',  source: '?', mid: 5},
+            'color:default' : {type: 'color', name: 'DefColor', source: '?', brewer: null},
+            'count'         : {type: 'linear', name: 'C', source: '/', dim: 'count', autoScale: true},
+            'xdate'         : {type: 'linear', name: 'P', source: '/', dim: 'xdate'},
+
+            'annotation1'   : {type: 'color', name: 'limit', source: '/', dim: 'count', brewer: ['color20-2']},
+            'annotation2'   : {type: 'color', name: 'limit', source: '/', dim: 'count', brewer: ['color20-5']}
+        },
+
+        unit: {
+            type: 'RECT',
+            x: 'xdate',
+            y: 'count',
+            expr: ['none', '/', false],
+            guide: {
+                x: {label: {text: 'XDATE'}},
+                y: {label: {text: 'COUNT'}}
+            },
+            unit: [
+                {
+                    type: 'POINT',
+                    x: 'xdate',
+                    y: 'count',
+                    expr: ['none', '/', true]
+                },
+                {
+                    type: 'LINE',
+                    x: 'xdate',
+                    y: 'count',
+                    expr: ['none', '/', true],
+                    transf: [{
+                        type: 'regression',
+                        args: {type: 'loess', x: 'xdate', y: 'count'}
+                    }],
+                    guide: {
+                        interpolate: 'basis',
+                        cssClass: 'graphical-report__trendline'
+                    }
+                },
+                {
+                    type: 'LINE',
+                    x: 'xdate',
+                    y: 'count',
+                    color: 'annotation1',
+                    expr: ['none', '/', true],
+                    transf: [{
+                        type: 'x-limit',
+                        args: {
+                            x: 'xdate',
+                            y: 'count',
+                            limit: 10
+                        }
+                    }]
+                },
+                {
+                    type: 'LINE',
+                    x: 'xdate',
+                    y: 'count',
+                    color: 'annotation2',
+                    expr: ['none', '/', true],
+                    transf: [{
+                        type: 'y-limit',
+                        args: {
+                            x: 'xdate',
+                            y: 'count',
+                            limit: -25
+                        }
+                    }]
+                }
+            ]
+        }
+    };
+
+    var gpl = new tauCharts.GPL(facetSpec);
+
+    gpl.render('#trendline');
+</script>
+
+
+<script>
+
+    var dashSpec = {
+
+        sources: {
+            '?': {
+                dims: {},
+                data: []
+            },
+
+            '$': {
+                dims: {
+                    x : {type: 'category'},
+                    y : {type: 'category'}
+                },
+                data: [
+                    {x: 1, y: 1},
+                    {x: 2, y: 1}
+                ]
+            },
+
+            '/': {
+                dims: {
+                    story   : {type: 'category'},
+                    bug     : {type: 'category'},
+                    project : {type: 'category'},
+                    team    : {type: 'category'},
+                    count   : {type: 'measure'},
+                    date    : {type: 'measure'}
+                },
+                data: [
+                    {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
+                    {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
+                ]
+            },
+
+            '@': {
+                dims: {
+                    xdate   : {type: 'measure'},
+                    count   : {type: 'measure'}
+                },
+                data: [
+                    {xdate:  1, count: 31 },
+                    {xdate:  2, count: 27 },
+                    {xdate:  3, count: 22 },
+                    {xdate:  4, count: 13 },
+                    {xdate:  5, count:  9 },
+                    {xdate:  6, count:  5 },
+                    {xdate:  7, count:  1 },
+                    {xdate:  8, count: -3 },
+                    {xdate:  9, count: -5 },
+                    {xdate: 10, count: -7 },
+                    {xdate: 11, count: -9 },
+                    {xdate: 12, count: -11},
+                    {xdate: 13, count: -17},
+                    {xdate: 14, count: -27},
+                    {xdate: 15, count: -53}
+                ]
+            }
+        },
+
+        trans: {
+            where: function (data, tuple) {
+                var predicates = _.map(tuple, function(v, k) {
+                    return function(row) {
+                        return (row[k] === v);
+                    }
+                });
+                return _(data).filter(function(row) {
+                    return _.every(predicates, function(p) {
+                        return p(row);
+                    })
+                });
+            },
+
+            'regression': function(sVal, props) {
+
+                var x = props.x;
+                var y = props.y;
+
+                var src = sVal.map(function (item) {
+                    var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
+                    var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
+                    return [ix, iy];
+                });
+
+                var regression = regressionsHub(props.type, src);
+                return _(regression.points)
+                        .chain()
+                        .sortBy(function (p) {
+                            return p[0];
+                        })
+                        .map(function(p) {
+                            var item = {};
+                            item[x] = p[0];
+                            item[y] = p[1];
+                            return item;
+                        })
+                        .value();
+            },
+
+            'x-limit': function(data, props) {
+
+                var x = props.x;
+                var y = props.y;
+
+                var low = {};
+                var top = {};
+
+                low[x] = props.limit;
+                low[y] = -Math.max();
+
+                top[x] = props.limit;
+                top[y] = +Math.max();
+
+                return [low, top];
+            },
+
+            'y-limit': function(data, props) {
+
+                var x = props.x;
+                var y = props.y;
+
+                var low = {};
+                var top = {};
+
+                low[y] = props.limit;
+                low[x] = -Math.max();
+
+                top[y] = props.limit;
+                top[x] = +Math.max();
+
+                return [low, top];
+            }
+        },
+
+        scales: {
+            'size:default'  : {type: 'size',  name: 'DefSize',  fitToFrame: false, source: '?', mid: 5},
+            'color:default' : {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
+            'story' : {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
+            'bug'   : {type: 'ordinal', name: 'B', fitToFrame: false, source: '/', dim: 'bug'},
+            'count' : {type: 'linear',  name: 'C', fitToFrame: false, source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
+            'proj'  : {type: 'ordinal', name: 'P', fitToFrame: false, source: '/', dim: 'project'},
+            'team'  : {type: 'ordinal', name: 'T', fitToFrame: false, source: '/', dim: 'team'},
+
+            'xScale'        : {type: 'ordinal', source: '$', dim: 'x'},
+            'yScale'        : {type: 'ordinal', source: '$', dim: 'y'},
+
+            'counz'        : {type: 'linear', name: 'C', source: '@', dim: 'count', autoScale: true},
+            'xdate'         : {type: 'linear', name: 'P', source: '@', dim: 'xdate'},
+
+            'annotation1'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-2']},
+            'annotation2'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-5']}
+        },
+
+        unit: {
+            type: 'RECT',
+            x: 'xScale',
+            y: 'yScale',
+            expr: [false, '$', false],
+            frames: [
+                {
+                    key: {x: 2, y: 1},
+                    source: '$',
+                    pipe: [],
+                    unit: [
+                        {
+                            type: 'RECT',
+                            x: 'proj',
+                            y: 'team',
+                            expr: ['cross', '/', false, 'project', 'team'],
+                            guide: {
+                                x: {label: {text: 'project'}},
+                                y: {label: {text: 'team'}}
+                            },
+                            unit: [
+                                {
+                                    type: 'RECT',
+                                    x: 'count',
+                                    y: 'story',
+                                    expr: ['none', '/', true],
+                                    guide: {
+                                        x: {label: {text: 'count'}},
+                                        y: {label: {text: 'story'}}
+                                    },
+                                    unit: [
+                                        {
+                                            type: 'POINT',
+                                            x: 'count',
+                                            y: 'story',
+                                            expr: ['none', '/', true]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    key: {x: 1, y: 1},
+                    source: '$',
+                    pipe: [],
+                    unit: [
+                        {
+                            type: 'RECT',
+                            x: 'xdate',
+                            y: 'counz',
+                            expr: ['none', '@', false],
+                            guide: {
+                                x: {label: {text: 'XDATE'}},
+                                y: {label: {text: 'COUNT'}}
+                            },
+                            unit: [
+                                {
+                                    type: 'POINT',
+                                    x: 'xdate',
+                                    y: 'counz',
+                                    expr: ['none', '@', true]
+                                },
+                                {
+                                    type: 'LINE',
+                                    x: 'xdate',
+                                    y: 'counz',
+                                    expr: ['none', '@', true],
+                                    transf: [{
+                                        type: 'regression',
+                                        args: {type: 'loess', x: 'xdate', y: 'count'}
+                                    }],
+                                    guide: {
+                                        interpolate: 'basis',
+                                        cssClass: 'graphical-report__trendline'
+                                    }
+                                },
+                                {
+                                    type: 'LINE',
+                                    x: 'xdate',
+                                    y: 'counz',
+                                    color: 'annotation1',
+                                    expr: ['none', '@', true],
+                                    transf: [{
+                                        type: 'x-limit',
+                                        args: {
+                                            x: 'xdate',
+                                            y: 'count',
+                                            limit: 10
+                                        }
+                                    }]
+                                },
+                                {
+                                    type: 'LINE',
+                                    x: 'xdate',
+                                    y: 'counz',
+                                    color: 'annotation2',
+                                    expr: ['none', '@', true],
+                                    transf: [{
+                                        type: 'y-limit',
+                                        args: {
+                                            x: 'xdate',
+                                            y: 'count',
+                                            limit: -25
+                                        }
+                                    }]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    var gpl = new tauCharts.GPL(dashSpec);
+
+    gpl.render('#dashboard');
+</script>
+
 </body>
 </html>

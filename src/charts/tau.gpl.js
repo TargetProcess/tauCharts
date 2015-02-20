@@ -41,7 +41,7 @@ var FramesAlgebra = {
             []);
     },
 
-    'none': function(datus, dimX, dimY) {
+    'none': function(datus, dimX, dimY, pipe) {
         return [null];
     }
 };
@@ -104,7 +104,8 @@ export class GPL extends Emitter {
 
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(containerNode.parentNode));
+            // size = _.defaults(size, utilsDom.getContainerSize(containerNode.parentNode));
+            size = _.defaults(size, utilsDom.getContainerSize(targetNode));
         }
 
         // expand units structure
@@ -125,22 +126,34 @@ export class GPL extends Emitter {
 
         var buildRecursively = (root, parentPipe) => {
 
-            var expr = this.parseExpression(root.expr, parentPipe);
+            if (root.expr[0] !== false) {
+                var expr = this.parseExpression(root.expr, parentPipe);
 
-            root.frames = expr.exec().map((tuple) => {
-                var pipe = parentPipe.concat([{type: 'where', args: tuple}]);
-                var item = {
-                    source: expr.source,
-                    pipe: pipe
-                };
+                root.transf = root.transf || [];
 
-                if (tuple) {
-                    item.key = tuple;
-                }
+                root.frames = expr.exec().map((tuple) => {
+                    var pipe = parentPipe.concat([{type: 'where', args: tuple}]).concat(root.transf);
+                    var item = {
+                        source: expr.source,
+                        pipe: pipe
+                    };
 
-                if (root.unit) {
-                    item.unit = root.unit.map((unit) => buildRecursively(utils.clone(unit), pipe));
-                }
+                    if (tuple) {
+                        item.key = tuple;
+                    }
+
+                    item.unit = (root.unit) ? root.unit.map((unit) => utils.clone(unit)) : [];
+
+                    return item;
+                });
+            }
+
+            root.frames.map((item) => {
+                // key: tuple,
+                // source: expr.source,
+                // pipe: pipe
+
+                item.unit.map((unit) => buildRecursively(unit, item.pipe));
 
                 return item;
             });
