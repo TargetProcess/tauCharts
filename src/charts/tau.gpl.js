@@ -235,7 +235,7 @@ export class GPL extends Emitter {
             source  : srcAlias,
             func    : func,
             args    : funcArgs,
-            exec    : () => func(...[dataFn].concat(funcArgs))
+            exec    : () => func.apply(null, [dataFn].concat(funcArgs))
         };
     }
 }

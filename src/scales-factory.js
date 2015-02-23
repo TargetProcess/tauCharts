@@ -162,15 +162,13 @@ var scalesStrategies = {
         var d3Scale = d3Domain.rangeRound(interval, 1);
         var scale = (int) => {
             var x = int;
-            if (x > max) {x = max}
-            if (x < min) {x = min}
+            if (x > max) x = max;
+            if (x < min) x = min;
             return d3Scale(x);
         };
 
         // have to copy properties since d3 produce Function with methods
-        Object.keys(d3Scale).forEach(function (p) {
-            return scale[p] = d3Scale[p];
-        });
+        Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
         scale.dim = props.dim;
         scale.domain = () => varSet;
