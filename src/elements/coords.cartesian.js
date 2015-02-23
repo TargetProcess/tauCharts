@@ -67,6 +67,14 @@ export class Cartesian {
                 textAnchor: 'middle'
             }
         );
+
+        var unit = this.config;
+        if (unit.guide.autoLayout === 'extract-axes') {
+            var containerBox = unit.options.container.node().getBBox();
+            var guide = unit.guide = unit.guide || {};
+            guide.x.hide = ((unit.options.top + unit.options.height) < containerBox.height);
+            guide.y.hide = ((unit.options.left > 0));
+        }
     }
 
     drawLayout(fnCreateScale) {

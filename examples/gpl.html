@@ -392,13 +392,13 @@
         },
 
         scales: {
-            'size:default'  : {type: 'size',  name: 'DefSize',  fitToFrame: false, source: '?', mid: 5},
-            'color:default' : {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
-            'story' : {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
-            'bug'   : {type: 'ordinal', name: 'B', fitToFrame: false, source: '/', dim: 'bug'},
-            'count' : {type: 'linear',  name: 'C', fitToFrame: false, source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
-            'proj'  : {type: 'ordinal', name: 'P', fitToFrame: false, source: '/', dim: 'project'},
-            'team'  : {type: 'ordinal', name: 'T', fitToFrame: false, source: '/', dim: 'team'}
+            'size:default'  : {type: 'size',  source: '?', mid: 5},
+            'color:default' : {type: 'color', source: '?', brewer: null},
+            'story' : {type: 'ordinal', source: '/', dim: 'story'},
+            'bug'   : {type: 'ordinal', source: '/', dim: 'bug'},
+            'count' : {type: 'linear',  source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
+            'proj'  : {type: 'ordinal', source: '/', dim: 'project'},
+            'team'  : {type: 'ordinal', source: '/', dim: 'team'}
         },
 
         unit: {
@@ -412,8 +412,10 @@
                 params: ['project', 'team']
             },
             guide: {
-                x: {label: {text: 'project'}},
-                y: {label: {text: 'team'}}
+                padding: {l: 60, r: 0, t: 0, b: 60},
+                showGridLines: '',
+                x: {padding: 40, label: {text: 'project'}, cssClass:'x axis facet-axis'},
+                y: {padding: 40, label: {text: 'team'},    cssClass:'y axis facet-axis'}
             },
             unit: [
                 {
@@ -425,8 +427,10 @@
                         inherit: true
                     },
                     guide: {
-                        x: {label: {text: 'count'}},
-                        y: {label: {text: 'story'}}
+                        autoLayout: 'extract-axes',
+                        padding: {l: 10, r: 10, t: 10, b: 10},
+                        x: {padding: 10, label: {text: 'count'}},
+                        y: {padding: 10, label: {text: 'story'}}
                     },
                     unit: [
                         {
@@ -600,10 +604,7 @@
                         source: '/',
                         inherit: true
                     },
-                    transformation: [{
-                        type: 'regression',
-                        args: {type: 'loess', x: 'xdate', y: 'count'}
-                    }],
+                    transformation: [{type: 'regression', args: {type: 'loess', x: 'xdate', y: 'count'}}],
                     guide: {
                         interpolate: 'basis',
                         cssClass: 'graphical-report__trendline'
@@ -618,14 +619,7 @@
                         source: '/',
                         inherit: true
                     },
-                    transformation: [{
-                        type: 'x-limit',
-                        args: {
-                            x: 'xdate',
-                            y: 'count',
-                            limit: 10
-                        }
-                    }]
+                    transformation: [{type: 'x-limit', args: {x: 'xdate', y: 'count', limit: 10}}]
                 },
                 {
                     type: 'LINE',
@@ -636,14 +630,7 @@
                         source: '/',
                         inherit: true
                     },
-                    transformation: [{
-                        type: 'y-limit',
-                        args: {
-                            x: 'xdate',
-                            y: 'count',
-                            limit: -25
-                        }
-                    }]
+                    transformation: [{type: 'y-limit', args: {x: 'xdate', y: 'count', limit: -25}}]
                 }
             ]
         }
