@@ -405,7 +405,12 @@
             type: 'RECT',
             x: 'proj',
             y: 'team',
-            expr: ['cross', '/', false, 'project', 'team'],
+            expression: {
+                inherit: false,
+                source: '/',
+                operator: 'cross',
+                params: ['project', 'team']
+            },
             guide: {
                 x: {label: {text: 'project'}},
                 y: {label: {text: 'team'}}
@@ -415,7 +420,10 @@
                     type: 'RECT',
                     x: 'count',
                     y: 'story',
-                    expr: ['none', '/', true],
+                    expression: {
+                        source: '/',
+                        inherit: true
+                    },
                     guide: {
                         x: {label: {text: 'count'}},
                         y: {label: {text: 'story'}}
@@ -425,7 +433,10 @@
                             type: 'POINT',
                             x: 'count',
                             y: 'story',
-                            expr: ['none', '/', true]
+                            expression: {
+                                source: '/',
+                                inherit: true
+                            }
                         }
                     ]
                 }
@@ -485,12 +496,12 @@
                 });
             },
 
-            'regression': function(sVal, props) {
+            'regression': function(data, props) {
 
                 var x = props.x;
                 var y = props.y;
 
-                var src = sVal.map(function (item) {
+                var src = data.map(function (item) {
                     var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
                     var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
                     return [ix, iy];
@@ -552,18 +563,21 @@
         scales: {
             'size:default'  : {type: 'size',  name: 'DefSize',  source: '?', mid: 5},
             'color:default' : {type: 'color', name: 'DefColor', source: '?', brewer: null},
-            'count'         : {type: 'linear', name: 'C', source: '/', dim: 'count', autoScale: true},
-            'xdate'         : {type: 'linear', name: 'P', source: '/', dim: 'xdate'},
+            'count'         : {type: 'linear', source: '/', dim: 'count', autoScale: true},
+            'xdate'         : {type: 'linear', source: '/', dim: 'xdate'},
 
-            'annotation1'   : {type: 'color', name: 'limit', source: '/', dim: 'count', brewer: ['color20-2']},
-            'annotation2'   : {type: 'color', name: 'limit', source: '/', dim: 'count', brewer: ['color20-5']}
+            'annotation1'   : {type: 'color', source: '/', dim: 'count', brewer: ['color20-2']},
+            'annotation2'   : {type: 'color', source: '/', dim: 'count', brewer: ['color20-5']}
         },
 
         unit: {
             type: 'RECT',
             x: 'xdate',
             y: 'count',
-            expr: ['none', '/', false],
+            expression: {
+                source: '/',
+                inherit: false
+            },
             guide: {
                 x: {label: {text: 'XDATE'}},
                 y: {label: {text: 'COUNT'}}
@@ -573,14 +587,20 @@
                     type: 'POINT',
                     x: 'xdate',
                     y: 'count',
-                    expr: ['none', '/', true]
+                    expression: {
+                        source: '/',
+                        inherit: true
+                    }
                 },
                 {
                     type: 'LINE',
                     x: 'xdate',
                     y: 'count',
-                    expr: ['none', '/', true],
-                    transf: [{
+                    expression: {
+                        source: '/',
+                        inherit: true
+                    },
+                    transformation: [{
                         type: 'regression',
                         args: {type: 'loess', x: 'xdate', y: 'count'}
                     }],
@@ -594,8 +614,11 @@
                     x: 'xdate',
                     y: 'count',
                     color: 'annotation1',
-                    expr: ['none', '/', true],
-                    transf: [{
+                    expression: {
+                        source: '/',
+                        inherit: true
+                    },
+                    transformation: [{
                         type: 'x-limit',
                         args: {
                             x: 'xdate',
@@ -609,8 +632,11 @@
                     x: 'xdate',
                     y: 'count',
                     color: 'annotation2',
-                    expr: ['none', '/', true],
-                    transf: [{
+                    expression: {
+                        source: '/',
+                        inherit: true
+                    },
+                    transformation: [{
                         type: 'y-limit',
                         args: {
                             x: 'xdate',
@@ -805,7 +831,11 @@
             type: 'RECT',
             x: 'xScale',
             y: 'yScale',
-            expr: [false, '$', false],
+            expression: {
+                source: '$',
+                inherit: false,
+                operator: false
+            },
             frames: [
                 {
                     key: {x: 2, y: 2},
@@ -817,6 +847,10 @@
                             x: 'xScale',
                             y: 'yScale',
                             expr: ['none', 'o', false],
+                            expression: {
+                                source: 'o',
+                                inherit: false
+                            },
                             guide: {
                                 showGridLines: '',
                                 x: {hide:true},
@@ -828,7 +862,10 @@
                                     proportion: 'piePortion',
                                     label: 'label',
                                     color: 'label_color',
-                                    expr: ['none', 'o', true]
+                                    expression: {
+                                        source: 'o',
+                                        inherit: true
+                                    }
                                 }
                             ]
                         }
@@ -843,7 +880,12 @@
                             type: 'RECT',
                             x: 'proj',
                             y: 'team',
-                            expr: ['cross', '/', false, 'project', 'team'],
+                            expression: {
+                                operator: 'cross',
+                                source: '/',
+                                inherit: false,
+                                params: ['project', 'team']
+                            },
                             guide: {
                                 x: {label: {text: 'project'}},
                                 y: {label: {text: 'team'}}
@@ -853,7 +895,10 @@
                                     type: 'RECT',
                                     x: 'count',
                                     y: 'story',
-                                    expr: ['none', '/', true],
+                                    expression: {
+                                        source: '/',
+                                        inherit: true
+                                    },
                                     guide: {
                                         x: {label: {text: 'count'}},
                                         y: {label: {text: 'story'}}
@@ -863,7 +908,10 @@
                                             type: 'POINT',
                                             x: 'count',
                                             y: 'story',
-                                            expr: ['none', '/', true]
+                                            expression: {
+                                                source:'/',
+                                                inherit:true
+                                            }
                                         }
                                     ]
                                 }
@@ -880,7 +928,7 @@
                             type: 'RECT',
                             x: 'xdate',
                             y: 'counz',
-                            expr: ['none', '@', false],
+                            expression: {source:'@', inherit:false},
                             guide: {
                                 x: {label: {text: 'XDATE'}},
                                 y: {label: {text: 'COUNT'}}
@@ -890,14 +938,20 @@
                                     type: 'POINT',
                                     x: 'xdate',
                                     y: 'counz',
-                                    expr: ['none', '@', true]
+                                    expression: {
+                                        source: '@',
+                                        inherit: true
+                                    }
                                 },
                                 {
                                     type: 'LINE',
                                     x: 'xdate',
                                     y: 'counz',
-                                    expr: ['none', '@', true],
-                                    transf: [{
+                                    expression: {
+                                        source: '@',
+                                        inherit: true
+                                    },
+                                    transformation: [{
                                         type: 'regression',
                                         args: {type: 'loess', x: 'xdate', y: 'count'}
                                     }],
@@ -911,23 +965,28 @@
                                     x: 'xdate',
                                     y: 'counz',
                                     color: 'annotation1',
-                                    expr: ['none', '@', true],
-                                    transf: [{
-                                        type: 'x-limit',
-                                        args: {
-                                            x: 'xdate',
-                                            y: 'count',
-                                            limit: 10
+                                    expression: {
+                                        source: '@',
+                                        inherit: true,
+                                        operator: 'none'
+                                    },
+                                    transformation: [
+                                        {
+                                            type: 'x-limit',
+                                            args: {x: 'xdate', y: 'count', limit: 10}
                                         }
-                                    }]
+                                    ]
                                 },
                                 {
                                     type: 'LINE',
                                     x: 'xdate',
                                     y: 'counz',
                                     color: 'annotation2',
-                                    expr: ['none', '@', true],
-                                    transf: [{
+                                    expression: {
+                                        source: '@',
+                                        inherit: true
+                                    },
+                                    transformation: [{
                                         type: 'y-limit',
                                         args: {
                                             x: 'xdate',

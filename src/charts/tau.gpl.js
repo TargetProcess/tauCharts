@@ -46,12 +46,12 @@ var FramesAlgebra = {
     }
 };
 
-var calcBaseFrame = (unit, baseFrame) => {
+var calcBaseFrame = (unitExpression, baseFrame) => {
 
     var tmpFrame = _.pick(baseFrame || {}, 'source', 'pipe');
 
-    var srcAlias = unit.expr[1];
-    var bInherit = unit.expr[2];
+    var srcAlias = unitExpression.source;
+    var bInherit = unitExpression.inherit;
     var ownFrame = {source: srcAlias, pipe: []};
 
     if (bInherit && (ownFrame.source !== tmpFrame.source)) {
@@ -126,13 +126,23 @@ export class GPL extends Emitter {
 
         var buildRecursively = (root, parentPipe) => {
 
-            if (root.expr[0] !== false) {
-                var expr = this.parseExpression(root.expr, parentPipe);
+            if (root.expression.operator !== false) {
 
-                root.transf = root.transf || [];
+                var expr = this.parseExpression(root.expression, parentPipe);
+
+                root.transformation = root.transformation || [];
 
                 root.frames = expr.exec().map((tuple) => {
-                    var pipe = parentPipe.concat([{type: 'where', args: tuple}]).concat(root.transf);
+
+                    var pipe = parentPipe
+                        .concat([
+                            {
+                                type: 'where',
+                                args: tuple
+                            }
+                        ])
+                        .concat(root.transformation);
+
                     var item = {
                         source: expr.source,
                         pipe: pipe
@@ -168,7 +178,7 @@ export class GPL extends Emitter {
 
         var continueDrawRecursively = (rootConf, rootFrame) => {
 
-            var dataFrame = this.datify(calcBaseFrame(rootConf, rootFrame));
+            var dataFrame = this.datify(calcBaseFrame(rootConf.expression, rootFrame));
 
             var UnitClass = this.unitSet.get(rootConf.type);
 
@@ -202,24 +212,30 @@ export class GPL extends Emitter {
         return frame;
     }
 
-    parseExpression(sExpression, parentPipe) {
+    parseExpression(expr, parentPipe) {
 
-        var funcName = sExpression[0];
-        var srcAlias = sExpression[1];
-        var inheritQ = sExpression[2];
-        var funcArgs = sExpression.slice(3);
+        var funcName = expr.operator || 'none';
+        var srcAlias = expr.source;
+        var bInherit = expr.inherit;
+        var funcArgs = expr.params;
 
-        var dataFn = inheritQ ?
+        var dataFn = bInherit ?
             (() => parentPipe.reduce(
                 (data, cfg) => this.trans[cfg.type](data, cfg.args),
                 (this.sources[srcAlias].data))) :
             (() => this.sources[srcAlias].data);
 
+        var func = FramesAlgebra[funcName];
+
+        if (!func) {
+            throw new Error(`${funcName} operator is not supported`);
+        }
+
         return {
             source  : srcAlias,
-            func    : FramesAlgebra[funcName],
+            func    : func,
             args    : funcArgs,
-            exec    : () => FramesAlgebra[funcName](...[dataFn].concat(funcArgs))
+            exec    : () => func(...[dataFn].concat(funcArgs))
         };
     }
 }
