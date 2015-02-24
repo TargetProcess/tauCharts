@@ -1,6 +1,6 @@
 define(function (require) {
     var expect = require('chai').expect;
-    var tauChart = require('tau_modules/tau.newCharts');
+    var tauChart = require('tau_modules/tau.charts');
     describe("Unit domain period generator", function () {
 
         var offsetHrs = new Date().getTimezoneOffset() / 60;

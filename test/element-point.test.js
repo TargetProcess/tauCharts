@@ -3,7 +3,7 @@ define(function(require) {
     var schemes = require('schemes');
     var tauBrewer = require('brewer');
     var testUtils = require('testUtils');
-    var tauCharts = require('tau_modules/tau.newCharts');
+    var tauCharts = require('tau_modules/tau.charts');
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
     var attrib = testUtils.attrib;

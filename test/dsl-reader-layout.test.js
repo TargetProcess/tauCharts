@@ -2,7 +2,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var schemes = require('schemes');
-    var tauChart = require('tau_modules/tau.newCharts');
+    var tauChart = require('tau_modules/tau.charts');
     var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
     var UnitsRegistry = require('tau_modules/units-registry').UnitsRegistry;
 

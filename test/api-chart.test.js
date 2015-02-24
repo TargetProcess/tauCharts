@@ -6,7 +6,7 @@ define(function (require) {
     var schemes = require('schemes');
     var utils = require('testUtils');
     var $ = require('jquery');
-    var tauCharts = require('tau_modules/tau.newCharts');
+    var tauCharts = require('tau_modules/tau.charts');
     var div, spec;
     var config = {
 

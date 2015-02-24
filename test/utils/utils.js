@@ -1,5 +1,5 @@
 define(function (require) {
-    var tauCharts = require('tau_modules/tau.newCharts'),
+    var tauCharts = require('tau_modules/tau.charts'),
         $ = require('jquery'),
         d3 = require('d3');
 

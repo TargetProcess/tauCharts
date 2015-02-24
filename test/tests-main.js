@@ -21,7 +21,7 @@ requirejs.config({
     },
     map: {
         '*': {
-            'tauCharts': 'tau_modules/tau.newCharts',
+            'tauCharts': 'tau_modules/tau.charts',
             'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
             'rgbcolor': 'bower_components/canvg/rgbcolor',
             'stackblur': 'bower_components/canvg/StackBlur',
