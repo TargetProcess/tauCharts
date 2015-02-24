@@ -2,8 +2,8 @@ import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {utils} from '../utils/utils';
 import {FormatterRegistry} from '../formatter-registry';
-import * as _ from 'underscore';
-import * as d3 from 'd3';
+import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 
 
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';

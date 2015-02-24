@@ -95,29 +95,8 @@
 </head>
 <body>
 <div id="line"></div>
+<script src="http://localhost:9000/build.js"></script>
 <script>
-    requirejs.config({
-        // Karma serves files from '/base'
-        baseUrl: location.pathname.replace(/(.+)(examples\/\w+\.html)/, '$1'),
-        paths: {
-            'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
-            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min'
-        },
-        map: {
-            '*': {
-                'tauCharts': 'tau_modules/tau.newCharts',
-                'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
-                'rgbcolor': 'bower_components/canvg/rgbcolor',
-                'stackblur': 'bower_components/canvg/StackBlur',
-                'canvg':'bower_components/canvg/canvg',
-                'FileSaver':'bower_components/FileSaver.js/FileSaver',
-                'fetch':'bower_components/fetch/fetch',
-                'promise':'bower_components/es6-promise/promise'
-            }
-        }
-    });
-
-    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
          * @extends Plugin */
         var defData = [
@@ -283,7 +262,7 @@
 
         },1000);
         window.chart = chart;
-    })
+
 </script>
 
 </body>

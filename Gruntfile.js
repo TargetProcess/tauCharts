@@ -1,5 +1,6 @@
 /*global module:false*/
 var autoprefixer = require('autoprefixer-core');
+var webpack = require('webpack');
 module.exports = function (grunt) {
 
     // Project configuration.
@@ -74,9 +75,7 @@ module.exports = function (grunt) {
             unit: {
                 reporters: ["dots", "coverage"],
                 preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"},
-                coverageReporter: {
-
-                }
+                coverageReporter: {}
             }
         },
         uglify: {
@@ -266,6 +265,33 @@ module.exports = function (grunt) {
                 files: ['less/*.less'],
                 tasks: ['less']
             }
+        },
+        'webpack-dev-server': {
+            options: {
+                webpack: { // webpack options
+                    entry: "./src/tau.newCharts.js",
+                    output: {
+                      // libraryTarget: "amd",
+                        library:'tauCharts',
+                        path: "build/",
+                        filename: "build.js"
+                    },
+                    module: {
+                        loaders: [
+                            {test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"}
+                        ]
+                    }
+                },
+                publicPath: "/"
+            },
+            start: {
+                port:9000,
+                keepAlive: true,
+                webpack: {
+                    devtool: "sourcemap",
+                    debug: true
+                }
+            }
         }
     });
     // load local tasks
@@ -286,6 +312,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-rename');
     grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-webpack');
     // Default task.
     //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);

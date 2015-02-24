@@ -1,5 +1,5 @@
 /* jshint ignore:start */
-import * as d3 from 'd3';
+import {default as d3} from 'd3';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 

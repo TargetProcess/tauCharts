@@ -2,8 +2,8 @@ import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {utils} from './utils/utils';
 import {sizeScale} from './size';
 /* jshint ignore:start */
-import * as _ from 'underscore';
-import * as d3 from 'd3';
+import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 /* jshint ignore:end */
 
 var autoScaleMethods = {
