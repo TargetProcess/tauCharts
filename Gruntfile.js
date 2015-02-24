@@ -8,7 +8,32 @@ module.exports = function (grunt) {
         "*.js",
         "**/*.js",
         '!addons/*.js'
-    ];
+    ],
+    webpackConf = { // webpack options
+        entry: "./src/tau.charts.js",
+        output: {
+            // libraryTarget: "amd",
+            library:'tauCharts',
+            path: "build/development",
+            filename: "tauCharts.js"
+        },
+        externals: {
+            // require("jquery") is external and available
+            //  on the global var jQuery
+            "d3": "d3",
+            "_":'underscore'
+        },
+        module: {
+            loaders: [
+                {test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"}
+            ]
+        }/*,
+        plugins:[
+            new webpack.optimize.UglifyJsPlugin(),
+            new webpack.optimize.OccurenceOrderPlugin(),
+            new webpack.optimize.DedupePlugin()
+        ]*/
+    };
     grunt.initConfig({
         // Metadata.
         pkg: grunt.file.readJSON('package.json'),
@@ -257,23 +282,12 @@ module.exports = function (grunt) {
                 tasks: ['less']
             }
         },
+        webpack:{
+            build: webpackConf
+        },
         'webpack-dev-server': {
             options: {
-                webpack: { // webpack options
-                    entry: "./src/tau.c" +
-                    "harts.js",
-                    output: {
-                      // libraryTarget: "amd",
-                        library:'tauCharts',
-                        path: "build/",
-                        filename: "build.js"
-                    },
-                    module: {
-                        loaders: [
-                            {test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"}
-                        ]
-                    }
-                },
+                webpack:webpackConf,
                 publicPath: "/"
             },
             start: {
