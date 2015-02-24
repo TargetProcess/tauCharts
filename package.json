@@ -17,8 +17,8 @@
     }
   ],
   "dependencies": {
-    "d3": "~3.4.3",
-    "underscore": "~1.6.0"
+    "d3": "~3.5.5",
+    "underscore": "~1.8.2"
   },
   "repository": {
     "type": "git",
