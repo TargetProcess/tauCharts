@@ -49,7 +49,7 @@ module.exports = function (grunt) {
             var config = {
                 include: ['../node_modules/almond/almond'],
                 baseUrl: tmpDir + '/',
-                name: 'tau.newCharts',
+                name: 'tau.charts',
                 exclude:['d3','underscore'],
                 paths:{
                     'underscore':'../libs/underscore',
@@ -84,7 +84,7 @@ module.exports = function (grunt) {
                 },
                 map: {
                     '*': {
-                        'tauCharts': '../tau_modules/tau.newCharts',
+                        'tauCharts': '../tau_modules/tau.charts',
                         'canvg':'../bower_components/canvg/canvg',
                         'FileSaver':'../bower_components/FileSaver.js/FileSaver',
                         'rgbcolor': '../bower_components/canvg/rgbcolor',

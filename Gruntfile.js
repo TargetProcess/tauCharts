@@ -7,16 +7,7 @@ module.exports = function (grunt) {
     var src = [
         "*.js",
         "**/*.js",
-        "!charts/bar.js",
-        '!tau.plugins.js',
-        '!tau.svg.js',
-        '!charts/line.js',
-        '!charts/scatterplot.js',
-        '!addons/*.js',
-        '!tau.charts.js',
-        '!class.js',
-        '!tau.data.js',
-        '!tau.data.types.js'
+        '!addons/*.js'
     ];
     grunt.initConfig({
         // Metadata.
@@ -269,7 +260,8 @@ module.exports = function (grunt) {
         'webpack-dev-server': {
             options: {
                 webpack: { // webpack options
-                    entry: "./src/tau.newCharts.js",
+                    entry: "./src/tau.c" +
+                    "harts.js",
                     output: {
                       // libraryTarget: "amd",
                         library:'tauCharts',
