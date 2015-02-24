@@ -347,14 +347,14 @@ export class Cartesian {
         var options = node.options;
         var padding = node.guide.padding;
 
-        var L = options.left + padding.l;
-        var T = options.top + padding.t;
+        var innerLeft = options.left + padding.l;
+        var innerTop = options.top + padding.t;
 
-        var W = options.width - (padding.l + padding.r);
-        var H = options.height - (padding.t + padding.b);
+        var innerWidth = options.width - (padding.l + padding.r);
+        var innerHeight = options.height - (padding.t + padding.b);
 
-        this.x = this.xScale = fnCreateScale('pos', node.x, [0, W]);
-        this.y = this.yScale = fnCreateScale('pos', node.y, [H, 0]);
+        this.x = this.xScale = fnCreateScale('pos', node.x, [0, innerWidth]);
+        this.y = this.yScale = fnCreateScale('pos', node.y, [innerHeight, 0]);
 
         node.x = this.xScale;
         node.y = this.yScale;
@@ -365,37 +365,34 @@ export class Cartesian {
         node.x.guide = node.guide.x;
         node.y.guide = node.guide.y;
 
-        node.x.guide.size = W;
-        node.y.guide.size = H;
+        node.x.guide.size = innerWidth;
+        node.y.guide.size = innerHeight;
 
-        var X_AXIS_POS = [0, H + node.guide.x.padding];
-        var Y_AXIS_POS = [0 - node.guide.y.padding, 0];
-
-        var s = `${parseInt(T)}_${parseInt(L)}`;
+        var s = `${parseInt(innerTop)}_${parseInt(innerLeft)}`;
         var classes = `${CSS_PREFIX}cell cell cell_${s}`;
         var selector = `.cell_${s}`;
 
         options
             .container.selectAll(selector)
-            .data([{L,T,W,H}])
+            .data([{innerLeft,innerTop,innerWidth,innerHeight}])
             .enter()
             .append('g')
             .attr('class', classes)
             .transition()
             .duration(750)
-            .attr('transform', utilsDraw.translate(L, T));
+            .attr('transform', utilsDraw.translate(innerLeft, innerTop));
 
         if (!node.x.guide.hide) {
-            this._fnDrawDimAxis(options.container.selectAll(selector), node.x, X_AXIS_POS, W, s + 'x');
+            this._fnDrawDimAxis(options.container.selectAll(selector), node.x, [0, innerHeight + node.guide.x.padding], innerWidth, s + 'x');
         }
 
         if (!node.y.guide.hide) {
-            this._fnDrawDimAxis(options.container.selectAll(selector), node.y, Y_AXIS_POS, H, s + 'y');
+            this._fnDrawDimAxis(options.container.selectAll(selector), node.y, [0 - node.guide.y.padding, 0], innerHeight, s + 'y');
         }
 
-        this.grid = this._fnDrawGrid(options.container.selectAll(selector), node, H, W, s);
-        this.W = W;
-        this.H = H;
+        this.grid = this._fnDrawGrid(options.container.selectAll(selector), node, innerHeight, innerWidth, s);
+        this.W = innerWidth;
+        this.H = innerHeight;
 
         return this;
     }
@@ -404,7 +401,7 @@ export class Cartesian {
         var self = this;
 
         return frames.reduce(
-            (memo, frame) => {
+            (units, frame) => {
                 var mapper;
                 if (frame.key) {
                     var coordX = self.x(frame.key[self.x.dim]);
@@ -442,7 +439,7 @@ export class Cartesian {
 
                 frame.unit.map((u) => continuation(mapper(u), frame));
 
-                return memo.concat(frame.unit.map(mapper));
+                return units.concat(frame.unit.map(mapper));
             },
             []);
     }

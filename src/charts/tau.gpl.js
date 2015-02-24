@@ -126,96 +126,81 @@ export class GPL extends Emitter {
             height: size.height
         };
 
-        this.drawUnitsStructure(this.root);
+        this._drawUnitsStructure(this.root);
     }
 
-    expandUnitsStructure(rootUnit) {
+    expandUnitsStructure(root, parentPipe = []) {
 
-        var buildRecursively = (root, parentPipe) => {
+        if (root.expression.operator !== false) {
 
-            if (root.expression.operator !== false) {
+            var expr = this._parseExpression(root.expression, parentPipe);
 
-                var expr = this.parseExpression(root.expression, parentPipe);
+            root.transformation = root.transformation || [];
 
-                root.transformation = root.transformation || [];
+            root.frames = expr.exec().map((tuple) => {
 
-                root.frames = expr.exec().map((tuple) => {
+                var pipe = parentPipe
+                    .concat([
+                        {
+                            type: 'where',
+                            args: tuple
+                        }
+                    ])
+                    .concat(root.transformation);
 
-                    var pipe = parentPipe
-                        .concat([
-                            {
-                                type: 'where',
-                                args: tuple
-                            }
-                        ])
-                        .concat(root.transformation);
+                var item = {
+                    source: expr.source,
+                    pipe: pipe
+                };
 
-                    var item = {
-                        source: expr.source,
-                        pipe: pipe
-                    };
+                if (tuple) {
+                    item.key = tuple;
+                }
 
-                    if (tuple) {
-                        item.key = tuple;
-                    }
-
-                    item.unit = (root.unit) ? root.unit.map((unit) => utils.clone(unit)) : [];
-
-                    return item;
-                });
-            }
-
-            root.frames.map((item) => {
-                // key: tuple,
-                // source: expr.source,
-                // pipe: pipe
-
-                item.unit.map((unit) => buildRecursively(unit, item.pipe));
+                item.unit = (root.unit) ? root.unit.map((unit) => utils.clone(unit)) : [];
 
                 return item;
             });
+        }
 
-            return root;
-        };
+        root.frames.map((item) => {
+            // key: tuple,
+            // source: expr.source,
+            // pipe: pipe
 
-        return buildRecursively(rootUnit, []);
+            item.unit.map((unit) => this.expandUnitsStructure(unit, item.pipe));
+
+            return item;
+        });
+
+        return root;
     }
 
-    drawUnitsStructure() {
+    _drawUnitsStructure(rootConf, rootFrame = null) {
 
         var self = this;
 
-        var continueDrawRecursively = (rootConf, rootFrame) => {
+        var dataFrame = self._datify(calcBaseFrame(rootConf.expression, rootFrame));
 
-            var dataFrame = self.datify(calcBaseFrame(rootConf.expression, rootFrame));
+        var UnitClass = self.unitSet.get(rootConf.type);
 
-            var UnitClass = self.unitSet.get(rootConf.type);
+        var unitNode = new UnitClass(rootConf);
 
-            var unitNode = new UnitClass(rootConf);
+        unitNode
+            .drawLayout((type, alias, settings) => {
 
-            unitNode
-                .drawLayout((type, alias, settings) => {
+                var name = alias ? alias : `${type}:default`;
 
-                    // type is one of:
-                    // - pos
-                    // - size
-                    // - color
-                    // - shape
-                    var name = alias ? alias : `${type}:default`;
+                name = name.scaleDim || name;
 
-                    name = name.scaleDim || name;
+                return self.scalesCreator.create(self.scales[name], dataFrame, settings);
+            })
+            .drawFrames(rootConf.frames.map(self._datify.bind(self)), self._drawUnitsStructure.bind(self));
 
-                    return self.scalesCreator.create(self.scales[name], dataFrame, settings);
-                })
-                .drawFrames(rootConf.frames.map(self.datify.bind(self)), continueDrawRecursively);
-
-            return rootConf;
-        };
-
-        return continueDrawRecursively(self.root);
+        return rootConf;
     }
 
-    datify(frame) {
+    _datify(frame) {
         var data = this.sources[frame.source].data;
         var trans = this.trans;
         frame.take = () => frame.pipe.reduce((data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args), data);
@@ -223,18 +208,17 @@ export class GPL extends Emitter {
         return frame;
     }
 
-    parseExpression(expr, parentPipe) {
+    _parseExpression(expr, parentPipe) {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;
         var bInherit = expr.inherit;
         var funcArgs = expr.params;
 
+        var src = this.sources[srcAlias];
         var dataFn = bInherit ?
-            (() => parentPipe.reduce(
-                (data, cfg) => this.trans[cfg.type](data, cfg.args),
-                (this.sources[srcAlias].data))) :
-            (() => this.sources[srcAlias].data);
+            (() => parentPipe.reduce((data, cfg) => this.trans[cfg.type](data, cfg.args), src.data)) :
+            (() => src.data);
 
         var func = FramesAlgebra[funcName];
 
