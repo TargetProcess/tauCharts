@@ -111,15 +111,16 @@ export class GPL extends Emitter {
         // expand units structure
         this.root = this.expandUnitsStructure(this.config.unit);
 
-            container.selectAll('svg')
-                .data(['const'])
-                .enter()
-                .append('svg')
-                .attr(_.extend({'class': `${CSS_PREFIX}svg`}, size));
-
+        container.selectAll('svg')
+            .data(['const'])
+            .enter()
+            .append('svg')
+            .attr(_.extend({'class': `${CSS_PREFIX}svg`}, size))
+            .append('g')
+            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 
         this.root.options = {
-            container: d3.select(container.selectAll('svg').node()),
+            container: container.select('.frame-root'),
             left: 0,
             top: 0,
             width: size.width,

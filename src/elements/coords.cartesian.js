@@ -347,14 +347,30 @@ export class Cartesian {
         var options = node.options;
         var padding = node.guide.padding;
 
-        var innerLeft = options.left + padding.l;
-        var innerTop = options.top + padding.t;
-
         var innerWidth = options.width - (padding.l + padding.r);
         var innerHeight = options.height - (padding.t + padding.b);
 
         this.x = this.xScale = fnCreateScale('pos', node.x, [0, innerWidth]);
         this.y = this.yScale = fnCreateScale('pos', node.y, [innerHeight, 0]);
+
+        this.W = innerWidth;
+        this.H = innerHeight;
+
+        return this;
+    }
+
+    drawFrames(frames, continuation) {
+
+        var node = this.config;
+
+        var options = node.options;
+        var padding = node.guide.padding;
+
+        var innerLeft = options.left + padding.l;
+        var innerTop = options.top + padding.t;
+
+        var innerWidth = this.W;
+        var innerHeight = this.H;
 
         node.x = this.xScale;
         node.y = this.yScale;
@@ -368,80 +384,94 @@ export class Cartesian {
         node.x.guide.size = innerWidth;
         node.y.guide.size = innerHeight;
 
-        var s = `${parseInt(innerTop)}_${parseInt(innerLeft)}`;
-        var classes = `${CSS_PREFIX}cell cell cell_${s}`;
-        var selector = `.cell_${s}`;
-
-        options
-            .container.selectAll(selector)
-            .data([{innerLeft,innerTop,innerWidth,innerHeight}])
-            .enter()
-            .append('g')
-            .attr('class', classes)
+        options.container
+            .attr('transform', utilsDraw.translate(innerLeft, innerTop))
+            .attr('opacity', 0.5)
             .transition()
-            .duration(750)
-            .attr('transform', utilsDraw.translate(innerLeft, innerTop));
+            .duration(500)
+            .attr('opacity', 1);
 
         if (!node.x.guide.hide) {
-            this._fnDrawDimAxis(options.container.selectAll(selector), node.x, [0, innerHeight + node.guide.x.padding], innerWidth, s + 'x');
+            this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x');
         }
 
         if (!node.y.guide.hide) {
-            this._fnDrawDimAxis(options.container.selectAll(selector), node.y, [0 - node.guide.y.padding, 0], innerHeight, s + 'y');
+            this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, options.frameId + 'y');
         }
 
-        this.grid = this._fnDrawGrid(options.container.selectAll(selector), node, innerHeight, innerWidth, s);
-        this.W = innerWidth;
-        this.H = innerHeight;
+        this.grid = this._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId);
 
-        return this;
-    }
-
-    drawFrames(frames, continuation) {
         var self = this;
 
-        return frames.reduce(
-            (units, frame) => {
-                var mapper;
-                if (frame.key) {
-                    var coordX = self.x(frame.key[self.x.dim]);
-                    var coordY = self.y(frame.key[self.y.dim]);
+        var updateHandler = (cell) => {
+            var frames = cell.data();
+            frames.reduce(
+                (units, frame) => {
+                    var mapper;
+                    if (frame.key) {
 
-                    var xDomain = self.x.domain();
-                    var yDomain = self.y.domain();
+                        var coordX = self.x(frame.key[self.x.dim]);
+                        var coordY = self.y(frame.key[self.y.dim]);
 
-                    var xPart = self.W / xDomain.length;
-                    var yPart = self.H / yDomain.length;
+                        var xDomain = self.x.domain();
+                        var yDomain = self.y.domain();
 
-                    mapper = (unit) => {
-                        unit.options = {
-                            container   : self.grid,
-                            left        : coordX - xPart / 2,
-                            top         : coordY - yPart / 2,
-                            width       : xPart,
-                            height      : yPart
+                        var xPart = self.W / xDomain.length;
+                        var yPart = self.H / yDomain.length;
+
+                        var frameId = fnBase64(frame);
+
+                        mapper = (unit) => {
+                            unit.options = {
+                                frameId     : frameId,
+                                //container   : self.grid.select(`.frame-${frameId}`),
+                                container   : cell,
+                                left        : coordX - xPart / 2,
+                                top         : coordY - yPart / 2,
+                                width       : xPart,
+                                height      : yPart
+                            };
+                            return unit;
                         };
-                        return unit;
-                    };
-                }
-                else {
-                    mapper = (unit) => {
-                        unit.options = {
-                            container   : self.grid,
-                            left        : 0,
-                            top         : 0,
-                            width       : self.W,
-                            height      : self.H
+                    }
+                    else {
+                        mapper = (unit) => {
+                            unit.options = {
+                                container   : cell,
+                                left        : 0,
+                                top         : 0,
+                                width       : self.W,
+                                height      : self.H
+                            };
+                            return unit;
                         };
-                        return unit;
-                    };
-                }
+                    }
 
-                frame.unit.map((u) => continuation(mapper(u), frame));
+                    frame.unit.map((u) => continuation(mapper(u), frame));
 
-                return units.concat(frame.unit.map(mapper));
-            },
-            []);
+                    return units.concat(frame.unit.map(mapper));
+                },
+                []);
+        };
+
+        var fnBase64 = (frame) => btoa(JSON.stringify(frame.key) + JSON.stringify(frame.source) + JSON.stringify(frame.pipe));
+
+        var cells = this
+            .grid
+            .selectAll(`.parent-frame-${options.frameId}`)
+            .data(frames, fnBase64);
+
+        cells
+            .enter()
+            .append('g')
+            .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${fnBase64(d)}`))
+            .call(updateHandler);
+
+        cells
+            .exit()
+            .remove();
+
+        cells.call(updateHandler);
     }
 
     _fnDrawDimAxis(container, x, AXIS_POSITION, size, S) {
