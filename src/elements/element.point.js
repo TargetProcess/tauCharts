@@ -32,19 +32,19 @@ export class Point {
         var update = function () {
 
             var props = {
-                'r'     : (d) => sScale(d[sScale.dim]),
+                'r'     : 0,
                 'cx'    : (d) => xScale(d[xScale.dim]),
                 'cy'    : (d) => yScale(d[yScale.dim]),
                 'class' : (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${cScale(d[cScale.dim])}`
             };
 
-            return this.attr(props);
+            return this.attr(props).transition().duration(500).attr('r', (d) => sScale(d[sScale.dim]));
         };
 
         frames.map((frame) => {
             var elements;
-            elements = canvas.selectAll('.dot' + parseInt(Math.random() * 1000)).data(frame.take());
-            elements.call(update);
+            elements = canvas.selectAll('.dot').data(frame.take());
+//          elements.call(update);
             elements.exit().remove();
             elements.enter().append('circle').call(update);
         });

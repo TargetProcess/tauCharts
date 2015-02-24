@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
+    <!--<script src="../libs/underscore.js"></script>
+    <script src="../libs/jquery.js"></script>
+    <script src="../libs/d3.js"></script>-->
+    <!-- src -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.js"></script>
+    <!-- css -->
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.normalize.min.css"/>
+    <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
+    <link href="../css/export.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/tooltip.css"/>
+    <link href="../css/colorbrewer.css" rel="stylesheet"/>
+    <!--<link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext' rel='stylesheet'
+          type='text/css'>-->
+    <style>
+        .axes.nest .axis.nest text {
+            font-size: 10px;
+        }
+
+        body, #line {
+            height: 100%
+        }
+
+        .color-us {
+            stroke: blue;
+            fill:blue;
+        }
+
+        .color-bug {
+            stroke: red;
+            fill: red;
+        }
+
+        .tau-chart {
+            padding: 20px;
+            width: 100%;
+            height: 640px;
+        }
+
+        .applicable-false {
+            display: none;
+        }
+
+        input {
+            width: 500px;
+        }
+
+        /* .graphical-report__layout__sidebar-right {
+             width: 1000px;
+         }*/
+        .blue {
+            stroke: blue;
+            fill: blue;
+        }
+
+        .green {
+            stroke: green;
+            fill: green;
+        }
+
+        .red {
+            stroke: red;
+            fill: red;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        table td, table th {
+            padding: 10px;
+            border: 1px solid #000000;
+        }
+
+        tr {
+            cursor: pointer;
+        }
+
+        .highClass, tr:hover {
+            background: #377eb8;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+<div id="line"></div>
+<script>
+    requirejs.config({
+        // Karma serves files from '/base'
+        baseUrl: location.pathname.replace(/(.+)(examples\/\w+\.html)/, '$1'),
+        paths: {
+            'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
+            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min'
+        },
+        map: {
+            '*': {
+                'tauCharts': 'tau_modules/tau.newCharts',
+                'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
+                'rgbcolor': 'bower_components/canvg/rgbcolor',
+                'stackblur': 'bower_components/canvg/StackBlur',
+                'canvg':'bower_components/canvg/canvg',
+                'FileSaver':'bower_components/FileSaver.js/FileSaver',
+                'fetch':'bower_components/fetch/fetch',
+                'promise':'bower_components/es6-promise/promise'
+            }
+        }
+    });
+
+    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
+        /** @class Tooltip
+         * @extends Plugin */
+        var defData = [
+            {type: 'us', count: 0, date: 2},
+            {type: 'us', count: -0.012301230123, date: 2},
+            {type: 'us', count: 123, date: 2},
+            {type: 'us', count: 10, date: 3},
+            {type: 'us', count: 15, date: 4},
+
+            {type: 'bug', count: 0.12, date: 5},
+            {type: 'bug', count: 0.16, date: 6},
+            {type: 'bug', count: 0.1313, date: 7},
+
+            {type: 'request', count: 0.22, date: 5},
+            {type: 'request', count: 0.26, date: 6},
+            {type: 'request', count: 0.2313, date: 7},
+
+            {type: 'task', count: 1.12, date: 5},
+            {type: 'task', count: 1.16, date: 6},
+            {type: 'task', count: 1.1313, date: 7}
+        ];
+        var facetSpec = {
+
+            sources: {
+                '?': {
+                    dims: {},
+                    data: []
+                },
+                '/': {
+                    dims: {
+                        story   : {type: 'category'},
+                        bug     : {type: 'category'},
+                        project : {type: 'category'},
+                        team    : {type: 'category'},
+                        count   : {type: 'measure'},
+                        date    : {type: 'measure'}
+                    },
+                    data: [
+                        {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
+                        {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
+                    ]
+                }
+            },
+
+            trans: {
+                where: function (data, tuple) {
+                    var predicates = _.map(tuple, function(v, k) {
+                        return function(row) {
+                            return (row[k] === v);
+                        }
+                    });
+                    return _(data).filter(function(row) {
+                        return _.every(predicates, function(p) {
+                            return p(row);
+                        })
+                    });
+                }
+            },
+
+            scales: {
+                'size:default'  : {type: 'size',  source: '?', mid: 5},
+                'color:default' : {type: 'color', source: '?', brewer: null},
+                'story' : {type: 'ordinal', source: '/', dim: 'story'},
+                'bug'   : {type: 'ordinal', source: '/', dim: 'bug'},
+                'count' : {type: 'linear',  source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
+                'project'  : {type: 'ordinal', source: '/', dim: 'project'},
+                'team'  : {type: 'ordinal', source: '/', dim: 'team'}
+            },
+
+            unit: {
+                type: 'RECT',
+                x: 'project',
+                y: 'team',
+                expression: {
+                    inherit: false,
+                    source: '/',
+                    operator: 'cross',
+                    params: ['project', 'team']
+                },
+                guide: {
+                    padding: {l: 60, r: 0, t: 0, b: 60},
+                    showGridLines: '',
+                    x: {padding: 40, label: {text: 'project'}, cssClass:'x axis facet-axis'},
+                    y: {padding: 40, label: {text: 'team'},    cssClass:'y axis facet-axis'}
+                },
+                unit: [
+                    {
+                        type: 'RECT',
+                        x: 'count',
+                        y: 'story',
+                        expression: {
+                            source: '/',
+                            inherit: true
+                        },
+                        guide: {
+                            autoLayout: 'extract-axes',
+                            padding: {l: 10, r: 10, t: 10, b: 10},
+                            x: {padding: 10, label: {text: 'count'}},
+                            y: {padding: 10, label: {text: 'story'}}
+                        },
+                        unit: [
+                            {
+                                type: 'POINT',
+                                x: 'count',
+                                y: 'story',
+                                expression: {
+                                    source: '/',
+                                    inherit: true
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+        var chart = new tauCharts.GPL(facetSpec);
+
+        chart.render('#line');
+        var c = 0;
+        var intertval = setInterval(function(){
+         //   debugger
+            if (c > 7) {
+                clearInterval(intertval);
+            }
+            chart
+                    .config
+                    .sources['/']
+                    .data
+                    .push({
+                        project: 'tau',
+                        team: 'xbeta',
+                        story: 'B1',
+                        bug: 'ISSUE2',
+                        count: ++c,
+                        date: new Date('2014-10-05')
+                    });
+            chart
+                    .config
+                    .sources['/']
+                    .data
+                    .push({
+                        project: 'tau',
+                        team: 'xbeta',
+                        story: 'B1',
+                        bug: 'ISSUE2',
+                        count: c+2,
+                        date: new Date('2014-10-05')
+                    });
+            chart
+                    .config
+                    .sources['/']
+                    .data
+                    .push({
+                        project: 'tau',
+                        team: 'alpha',
+                        story: 'A1',
+                        bug: 'ISSUE2',
+                        count: c,
+                        date: new Date('2014-10-05')
+                    });
+
+            chart.render('#line');
+
+        },1000);
+        window.chart = chart;
+    })
+</script>
+
+</body>
+
+</html>

@@ -8,7 +8,7 @@ import {CSS_PREFIX} from '../const';
 
 var FramesAlgebra = {
 
-    'cross': function(dataFn, dimX, dimY) {
+    'cross': function (dataFn, dimX, dimY) {
 
         var convert = (v) => (v instanceof Date) ? v.getTime() : v;
 
@@ -41,7 +41,7 @@ var FramesAlgebra = {
             []);
     },
 
-    'none': function(datus, dimX, dimY, pipe) {
+    'none': function (datus, dimX, dimY, pipe) {
         return [null];
     }
 };
@@ -100,7 +100,7 @@ export class GPL extends Emitter {
 
         var containerNode = this._layout.content;
         var container = d3.select(this._layout.content);
-        containerNode.innerHTML = '';
+        //containerNode.innerHTML = '';
 
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
@@ -111,12 +111,19 @@ export class GPL extends Emitter {
         // expand units structure
         this.root = this.expandUnitsStructure(this.config.unit);
 
+            container.selectAll('svg')
+                .data(['const'])
+                .enter()
+                .append('svg')
+                .attr(_.extend({'class': `${CSS_PREFIX}svg`}, size));
+
+
         this.root.options = {
-            container: container.append('svg').attr(_.extend({'class': `${CSS_PREFIX}svg`}, size)),
-            left     : 0,
-            top      : 0,
-            width    : size.width,
-            height   : size.height
+            container: d3.select(container.selectAll('svg').node()),
+            left: 0,
+            top: 0,
+            width: size.width,
+            height: size.height
         };
 
         this.drawUnitsStructure(this.root);
@@ -176,11 +183,13 @@ export class GPL extends Emitter {
 
     drawUnitsStructure() {
 
+        var self = this;
+
         var continueDrawRecursively = (rootConf, rootFrame) => {
 
-            var dataFrame = this.datify(calcBaseFrame(rootConf.expression, rootFrame));
+            var dataFrame = self.datify(calcBaseFrame(rootConf.expression, rootFrame));
 
-            var UnitClass = this.unitSet.get(rootConf.type);
+            var UnitClass = self.unitSet.get(rootConf.type);
 
             var unitNode = new UnitClass(rootConf);
 
@@ -194,14 +203,16 @@ export class GPL extends Emitter {
                     // - shape
                     var name = alias ? alias : `${type}:default`;
 
-                    return this.scalesCreator.create(this.scales[name], dataFrame, settings);
+                    name = name.scaleDim || name;
+
+                    return self.scalesCreator.create(self.scales[name], dataFrame, settings);
                 })
-                .drawFrames(rootConf.frames.map(this.datify.bind(this)), continueDrawRecursively);
+                .drawFrames(rootConf.frames.map(self.datify.bind(self)), continueDrawRecursively);
 
             return rootConf;
         };
 
-        return continueDrawRecursively(this.root);
+        return continueDrawRecursively(self.root);
     }
 
     datify(frame) {
@@ -232,10 +243,10 @@ export class GPL extends Emitter {
         }
 
         return {
-            source  : srcAlias,
-            func    : func,
-            args    : funcArgs,
-            exec    : () => func.apply(null, [dataFn].concat(funcArgs))
+            source: srcAlias,
+            func: func,
+            args: funcArgs,
+            exec: () => func.apply(null, [dataFn].concat(funcArgs))
         };
     }
 }
