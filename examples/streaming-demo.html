@@ -183,7 +183,7 @@
                     x: {padding: 40, label: {text: 'project'}, cssClass:'x axis facet-axis'},
                     y: {padding: 40, label: {text: 'team'},    cssClass:'y axis facet-axis'}
                 },
-                unit: [
+                units: [
                     {
                         type: 'RECT',
                         x: 'count',
@@ -198,7 +198,7 @@
                             x: {padding: 10, label: {text: 'count'}},
                             y: {padding: 10, label: {text: 'story'}}
                         },
-                        unit: [
+                        units: [
                             {
                                 type: 'POINT',
                                 x: 'count',
@@ -217,7 +217,7 @@
 
         var size = {width: 800, height: 600};
 
-        chart.render('#line', size);
+        chart.renderTo('#line', size);
 
         var stop = false;
         var c = 0;
@@ -249,7 +249,7 @@
                         date: new Date('2014-10-05')
                     });
 
-            chart.render('#line', size);
+            chart.renderTo('#line', size);
 
         },1000);
 
@@ -277,7 +277,7 @@
                         date: new Date('2014-10-05')
                     });
 
-            chart.render('#line', size);
+            chart.renderTo('#line', size);
         };
 
         var f = 1;
@@ -298,7 +298,7 @@
                         date: new Date('2014-10-05')
                     });
 
-            chart.render('#line', size);
+            chart.renderTo('#line', size);
         };
 
 </script>
