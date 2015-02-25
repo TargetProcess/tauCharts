@@ -1,9 +1,9 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof define === 'function' && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === "object" && module.exports) {
+    } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
@@ -61,11 +61,11 @@
                     this.circle.remove();
                 }
                 this.circle = container
-                    .append("circle")
-                    .attr("cx", x)
-                    .attr("cy", y)
+                    .append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
                     .attr('class', color)
-                    .attr("r", 4);
+                    .attr('r', 4);
                 this.circle.node().addEventListener('mouseover', function () {
                     clearTimeout(this._timeoutHideId);
                 }.bind(this), false);
@@ -104,7 +104,6 @@
                 var labels = this._generateDefaultLabels(lastGuides);
                 _.extend(this.labels, labels);
 
-
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
                     clearTimeout(this._timeoutHideId);
@@ -129,7 +128,6 @@
             afterInit: function (elementTooltip) {
 
             },
-
 
             onUnitReady: function (chart, unitMeta) {
                 if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
@@ -232,7 +230,7 @@
                                 dimensionGuideMap[property] = [];
                             }
 
-                            dimensionGuideMap[property].push(guide)
+                            dimensionGuideMap[property].push(guide);
                         }
                     }
                 };
@@ -322,7 +320,14 @@
                         } else {
                             secondPoint = data[index + 1];
                         }
-                        var h = this._calculateLengthToLine(point.x, point.y, secondPoint.x, secondPoint.y, mosueCoord[0], mosueCoord[1]);
+                        var h = this._calculateLengthToLine(
+                            point.x,
+                            point.y,
+                            secondPoint.x,
+                            secondPoint.y,
+                            mosueCoord[0],
+                            mosueCoord[1]
+                        );
                         if (h < memo.h) {
                             memo.h = h;
                             memo.points = {
@@ -337,7 +342,12 @@
                         return this._calculateLength(a.x, a.y, mosueCoord[0], mosueCoord[1]);
                     }, this);
                     item = itemWithCoord.item;
-                    this._drawPoint(d3.select(data.element.parentNode), itemWithCoord.x, itemWithCoord.y, this._unitMeta[key].options.color.get(data.elementData.key));
+                    this._drawPoint(
+                        d3.select(data.element.parentNode),
+                        itemWithCoord.x,
+                        itemWithCoord.y,
+                        this._unitMeta[key].options.color.get(data.elementData.key)
+                    );
                 }
                 if (this._currentElement === item) {
                     return;

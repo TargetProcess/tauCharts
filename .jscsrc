@@ -1,8 +1,8 @@
 {
   "preset": "yandex",
   "esnext":true,
-  "excludeFiles":["src/api/balloon.js","plugins/**","src/addons/color-brewer.js",
-    "./Gruntfile.js"
+  "excludeFiles":[
+    "src/addons/color-brewer.js"
   ],
   "requireLineFeedAtFileEnd":null,
   "disallowMultipleVarDecl":null,

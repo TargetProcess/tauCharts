@@ -1,9 +1,9 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof define === 'function' && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === "object" && module.exports) {
+    } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
@@ -61,15 +61,30 @@
                     this._currentFilters = {};
                     this._storageValues = {};
                     this._container = chart.insertToRightSidebar(this._containerTemplate);
-                    this._delegateEvent(this._container, 'click', 'graphical-report__legend__item-color', function (e, currentTarget) {
-                        this._toggleLegendItem(currentTarget, chart);
-                    }.bind(this));
-                    this._delegateEvent(this._container, 'mouseover', 'graphical-report__legend__item-color', function (e, currentTarget) {
-                        this._highlightToggle(currentTarget, chart, true);
-                    }.bind(this));
-                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item-color', function (e, currentTarget) {
-                        this._highlightToggle(currentTarget, chart, false);
-                    }.bind(this));
+                    this._delegateEvent(
+                        this._container,
+                        'click',
+                        'graphical-report__legend__item-color',
+                        function (e, currentTarget) {
+                            this._toggleLegendItem(currentTarget, chart);
+                        }.bind(this)
+                    );
+                    this._delegateEvent(
+                        this._container,
+                        'mouseover',
+                        'graphical-report__legend__item-color',
+                        function (e, currentTarget) {
+                            this._highlightToggle(currentTarget, chart, true);
+                        }.bind(this)
+                    );
+                    this._delegateEvent(
+                        this._container,
+                        'mouseout',
+                        'graphical-report__legend__item-color',
+                        function (e, currentTarget) {
+                            this._highlightToggle(currentTarget, chart, false);
+                        }.bind(this)
+                    );
                 }
             },
             _highlightToggle: function (target, chart, toggle) {
@@ -162,7 +177,7 @@
                     },
                     {brewer: {}, values: []});
             },
-
+            // jscs:disable maximumLineLength
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
@@ -172,11 +187,12 @@
             ].join('')),
             _itemSizeTemplate: _.template([
                 '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
-                    '<div class="graphical-report__legend__guide__wrap">',
-                        '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
-                    '</div><%=value%>',
+                '<div class="graphical-report__legend__guide__wrap">',
+                '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
+                '</div><%=value%>',
                 '</div>'
             ].join('')),
+            // jscs:enable maximumLineLength
             _renderColorLegend: function (configUnit, chart) {
                 if (!configUnit.color) {
                     return;
@@ -186,7 +202,11 @@
                 configUnit.guide = configUnit.guide || {};
                 configUnit.guide.color = this._unit.guide.color;
                 var colorScaleName = configUnit.guide.color.label.text || colorScale.dimension;
-                var colorMap = this._getColorMap(chart.getData({excludeFilter: ['legend']}), colorScale, colorDimension);
+                var colorMap = this._getColorMap(
+                    chart.getData({excludeFilter: ['legend']}),
+                    colorScale,
+                    colorDimension
+                );
                 configUnit.guide.color.brewer = colorMap.brewer;
                 var data = _.reduce(
                     colorMap.values,
@@ -249,7 +269,6 @@
                 } else {
                     values = [first];
                 }
-
 
                 var items = _.map(values,
                     function (value) {

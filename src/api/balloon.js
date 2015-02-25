@@ -11,7 +11,6 @@ var classes = function (el) {
     };
 };
 
-
 var indexOf = function (arr, obj) {
     return arr.indexOf(obj);
 };
@@ -316,7 +315,7 @@ Tooltip.prototype._pickPlace = function (target) {
     var place = this.options.place.split('-');
     var spacing = this.spacing;
 
-    if (~indexOf(verticalPlaces, place[0])) {
+    if (indexOf(verticalPlaces, place[0]) !== -1) {
         if (target.top - this.height - spacing <= winPos.top) {
             place[0] = 'bottom';
         } else if (target.bottom + this.height + spacing >= winPos.bottom) {
@@ -571,7 +570,7 @@ Tooltip.prototype.destroy = function () {
  */
 Tooltip.prototype._aware = function () {
     var index = indexOf(Tooltip.winAware, this);
-    if (!~index) {
+    if (index === -1) {
         Tooltip.winAware.push(this);
     }
 };
@@ -583,7 +582,7 @@ Tooltip.prototype._aware = function () {
  */
 Tooltip.prototype._unaware = function () {
     var index = indexOf(Tooltip.winAware, this);
-    if (~index) {
+    if (index !== -1) {
         Tooltip.winAware.splice(index, 1);
     }
 };

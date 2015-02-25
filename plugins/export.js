@@ -1,9 +1,10 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
-        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'], function (tauPlugins, canvg, saveAs, Promise, printCss) {
-            window.Promise = window.Promise || Promise.Promise;
-            return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
-        });
+    if (typeof define === 'function' && define.amd) {
+        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
+            function (tauPlugins, canvg, saveAs, Promise, printCss) {
+                window.Promise = window.Promise || Promise.Promise;
+                return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
+            });
     } else {
         factory(this.tauCharts, this.canvg, this.saveAs);
     }
@@ -36,22 +37,22 @@
     }
 
     var keyCode = {
-        "BACKSPACE": 8,
-        "COMMA": 188,
-        "DELETE": 46,
-        "DOWN": 40,
-        "END": 35,
-        "ENTER": 13,
-        "ESCAPE": 27,
-        "HOME": 36,
-        "LEFT": 37,
-        "PAGE_DOWN": 34,
-        "PAGE_UP": 33,
-        "PERIOD": 190,
-        "RIGHT": 39,
-        "SPACE": 32,
-        "TAB": 9,
-        "UP": 38
+        BACKSPACE: 8,
+        COMMA: 188,
+        DELETE: 46,
+        DOWN: 40,
+        END: 35,
+        ENTER: 13,
+        ESCAPE: 27,
+        HOME: 36,
+        LEFT: 37,
+        PAGE_DOWN: 34,
+        PAGE_UP: 33,
+        PERIOD: 190,
+        RIGHT: 39,
+        SPACE: 32,
+        TAB: 9,
+        UP: 38
     };
     var createStyleElement = function (styles, mediaType) {
         mediaType = mediaType || 'all';
@@ -76,8 +77,7 @@
     if (!isPhantomJS) {
         if ('onafterprint' in window) {
             window.addEventListener('afterprint', removePrintStyles);
-        }
-        else {
+        } else {
             window.matchMedia('screen').addListener(function (exp) {
                 if (exp.matches) {
                     removePrintStyles();
@@ -98,7 +98,7 @@
         }
 
         var a = document.createElement('a');
-        a.href = "#";
+        a.href = '#';
         a.addEventListener('focusin', swap, false);
 
         document.body.appendChild(a);
@@ -126,15 +126,15 @@
                         var div = document.createElement('div');
                         var svg = chart.getSVG().cloneNode(true);
                         div.appendChild(svg);
-                        d3.select(svg).attr("version", 1.1)
-                            .attr("xmlns", "http://www.w3.org/2000/svg");
+                        d3.select(svg).attr('version', 1.1)
+                            .attr('xmlns', 'http://www.w3.org/2000/svg');
                         svg.insertBefore(style, svg.firstChild);
                         this._renderAdditionalInfo(svg, chart);
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
                         canvg(canvas, svg.parentNode.innerHTML);
-                        return canvas.toDataURL("image/png");
+                        return canvas.toDataURL('image/png');
                     }.bind(this));
             },
             _findUnit: function (chart) {
@@ -146,14 +146,14 @@
             _toPng: function (chart) {
                 this._createDataUrl(chart)
                     .then(function (dataURL) {
-                        var data = atob(dataURL.substring("data:image/png;base64,".length)),
+                        var data = atob(dataURL.substring('data:image/png;base64,'.length)),
                             asArray = new Uint8Array(data.length);
 
                         for (var i = 0, len = data.length; i < len; ++i) {
                             asArray[i] = data.charCodeAt(i);
                         }
 
-                        var blob = new Blob([asArray.buffer], {type: "image/png"});
+                        var blob = new Blob([asArray.buffer], {type: 'image/png'});
                         saveAs(blob, (this._fileName || 'export') + '.png');
                     }.bind(this));
             },
@@ -217,7 +217,6 @@
 
                 return {h: (data.length * 20 + 20), w: 0};
             },
-            //'<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle><text style="stroke:none;opacity:1;fill:#000000;font-weight: 400;" x="<%=radius+20%>" y="<%=radius+5%>"><%=value%><text></svg>',
             _renderSizeLegend: function (configUnit, svg, chart, width, offset) {
                 var sizeScale = this._unit.options.sizeScale;
                 var sizeDimension = this._unit.size.scaleDim;
@@ -267,7 +266,7 @@
 
                     this.attr('transform', function (d) {
                         offsetInner += maxDiameter;
-                        var transform = 'translate(5,' + (offsetInner)+ ')';
+                        var transform = 'translate(5,' + (offsetInner) + ')';
                         offsetInner += 10;
                         return transform;
                     });
@@ -279,17 +278,17 @@
                         .attr('class', function (d) {
                             return d.className;
                         })
-                        .style({'opacity': 0.4});
+                        .style({opacity: 0.4});
 
                     this.append('g')
-                        .attr('transform', function(d) {
+                        .attr('transform', function (d) {
                             return 'translate(' + maxDiameter + ',' + (fontSize / 2) + ')';
                         })
                         .append('text')
-                        .attr('x', function(d) {
+                        .attr('x', function (d) {
                             return 0;// d.diameter;
                         })
-                        .attr('y', function(d) {
+                        .attr('y', function (d) {
                             return 0;// d.radius-6.5;
                         })
                         .text(function (d) {
@@ -434,7 +433,10 @@
                 this._fileName = settings.fileName;
                 if (!this._cssPaths) {
                     this._cssPaths = [];
-                    tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
+                    tauCharts.api.globalSettings.log(
+                        'You should specified cssPath for correct work export plugin',
+                        'warn'
+                    );
                 }
 
                 settings = _.defaults(settings, {
@@ -447,12 +449,14 @@
                     place: 'bottom-left'
                 });
                 this._popup = popup;
+                // jscs:disable maximumLineLength
                 popup.content([
                     '<ul class="graphical-report__export__list">',
                     '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
                     '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
                     '</ul>'
                 ].join(''));
+                // jscs:enable maximumLineLength
                 popup.attach(this._container);
                 var popupElement = popup.getElement();
                 popupElement.setAttribute('tabindex', '-1');
@@ -462,7 +466,7 @@
                 }.bind(this));
             },
             destroy: function () {
-                if(this._popup) {
+                if (this._popup) {
                     this._popup.destroy();
                 }
             }

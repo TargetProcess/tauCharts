@@ -1,16 +1,16 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof define === 'function' && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === "object" && module.exports) {
+    } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
-
+    // jscs:disable
     var regressionsHub = (function () {
 
         'use strict';
@@ -217,11 +217,15 @@
                 return {equation: [lastvalue], points: results, string: "" + lastvalue};
             },
 
-            loess: function(data) {
+            loess: function (data) {
                 //adapted from the LoessInterpolator in org.apache.commons.math
                 function loess_pairs(pairs, bandwidth) {
-                    var xval = pairs.map(function(pair){return pair[0]});
-                    var yval = pairs.map(function(pair){return pair[1]});
+                    var xval = pairs.map(function (pair) {
+                        return pair[0]
+                    });
+                    var yval = pairs.map(function (pair) {
+                        return pair[1]
+                    });
                     var res = loess(xval, yval, bandwidth);
                     return xval.map(function (x, i) {
                         return [x, res[i]];
@@ -245,7 +249,7 @@
 
                         if (i > 0) {
                             if (right < xval.length - 1 &&
-                                xval[right+1] - xval[i] < xval[i] - xval[left]) {
+                                xval[right + 1] - xval[i] < xval[i] - xval[left]) {
                                 left++;
                                 right++;
                             }
@@ -263,8 +267,7 @@
                         var sumX = 0, sumXSquared = 0, sumY = 0, sumXY = 0;
 
                         var k = left;
-                        while(k <= right)
-                        {
+                        while (k <= right) {
                             var xk = xval[k];
                             var yk = yval[k];
                             var dist;
@@ -316,7 +319,7 @@
             }
         });
     }());
-
+    // jscs:enable
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
@@ -373,7 +376,9 @@
     };
     var isApplicable = function (dimensions) {
         return function (unitMeta) {
-            var hasElement = (unitMeta.type && unitMeta.type.indexOf('COORDS.') === 0 && coordHasElements(unitMeta.unit));
+            var hasElement = unitMeta.type &&
+                unitMeta.type.indexOf('COORDS.') === 0 &&
+                coordHasElements(unitMeta.unit);
             if (!hasElement) {
                 return false;
             }
@@ -398,7 +403,6 @@
             }
         }
     };
-
 
     function trendline(xSettings) {
 
@@ -425,7 +429,9 @@
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
                     var classToAdd = this._isApplicable ? 'applicable-true' : 'applicable-false';
                     if (!this._isApplicable) {
-                        this._error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
+// jscs:disable maximumLineLength
+                        this._error = 'Trend line can\'t be computed for categorical data. Each axis should be either a measure or a date.';
+// jscs:enable maximumLineLength
                     }
                     this._container.classList.add(classToAdd);
 
@@ -466,7 +472,6 @@
                 var y = unitMeta.y.scaleDim;
                 var c = unitMeta.color.scaleDim;
 
-                //var xAutoScaleVals = unitMeta.scaleMeta(x, unitMeta.guide.x).values;
                 var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
 
                 var minY = _.min(yAutoScaleVals);
@@ -511,7 +516,7 @@
                     return function () {
                         var g = d3.select(this);
                         g.classed({
-                            'active': isActive,
+                            active: isActive,
                             'graphical-report__line-width-1': !isActive,
                             'graphical-report__line-width-2': isActive
                         });
@@ -523,7 +528,7 @@
                     .on('mouseenter', handleMouse(true))
                     .on('mouseleave', handleMouse(false));
             },
-
+// jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
@@ -542,7 +547,7 @@
 
                 '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
             ].join('')),
-
+// jscs:enable maximumLineLength
             onRender: function (chart) {
 
                 if (this._container) {
