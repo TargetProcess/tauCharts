@@ -91,7 +91,7 @@ export class GPL extends Emitter {
         this.trans = config.trans;
     }
 
-    render(target, xSize) {
+    renderTo(target, xSize) {
 
         var targetNode = d3.select(target).node();
         if (targetNode === null) {

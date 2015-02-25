@@ -128,7 +128,7 @@
                         date    : {type: 'measure'}
                     },
                     data: [
-                        // {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
+                        {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
                         {project: 'tau1', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
                     ]
                 }
@@ -161,46 +161,29 @@
 
             unit:{
                 type: 'RECT',
-                x: 'project',
-                y: 'team',
+                x: 'count',
+                y: 'story',
                 expression: {
                     inherit: false,
                     source: '/',
-                    operator: 'cross',
-                    params: ['project', 'team']
+                   // operator: 'cross',
+                    //params: ['project', 'team']
                 },
                 guide: {
                     padding: {l: 60, r: 0, t: 0, b: 60},
-                    showGridLines: '',
-                    x: {padding: 40, label: {text: 'project'}, cssClass:'x axis facet-axis'},
-                    y: {padding: 40, label: {text: 'team'},    cssClass:'y axis facet-axis'}
+                   // showGridLines: '',
+                    x: {padding: 40, label: {text: 'project'}, cssClass:'x axis'},
+                    y: {padding: 40, label: {text: 'team'},    cssClass:'y axis'}
                 },
                 units: [
                     {
-                        type: 'RECT',
+                        type: 'INTERVAL',
                         x: 'count',
                         y: 'story',
                         expression: {
                             source: '/',
                             inherit: true
-                        },
-                        guide: {
-                            autoLayout: 'extract-axes',
-                            padding: {l: 10, r: 10, t: 10, b: 10},
-                            x: {padding: 10, label: {text: 'count'}},
-                            y: {padding: 10, label: {text: 'story'}}
-                        },
-                        units: [
-                            {
-                                type: 'POINT',
-                                x: 'count',
-                                y: 'story',
-                                expression: {
-                                    source: '/',
-                                    inherit: true
-                                }
-                            }
-                        ]
+                        }
                     }
                 ]
             }
@@ -209,8 +192,8 @@
 
         var size = {width: 800, height: 600};
 
-        chart.render('#line', size);
-        var c = 0;
+        chart.renderTo('#line', size);
+        /*var c = 0;
         var interval = setInterval(function() {
 
             if (c > 3) {
@@ -234,7 +217,7 @@
 
             chart.render('#line', size);
 
-        },1000);
+        },1000);*/
         window.chart = chart;
 
 </script>

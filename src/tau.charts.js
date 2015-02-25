@@ -15,6 +15,7 @@ import {Cartesian}  from './elements/coords.cartesian';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
+import {Interval}        from './elements/element.interval';
 
 var colorBrewers = {};
 var plugins = {};
@@ -125,6 +126,7 @@ api.UnitsRegistry
 
     .reg('RECT', Cartesian)
     .reg('POINT', Point)
+    .reg('INTERVAL', Interval)
     .reg('LINE', Line)
     .reg('PIE', Pie);
 
