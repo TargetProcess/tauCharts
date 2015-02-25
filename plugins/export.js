@@ -189,7 +189,7 @@
                         .attr('x', 12)
                         .attr('y', 5)
                         .text(function (d) {
-                            return d.value;
+                            return _.escape(isEmpty(d.label) ? ('No ' + colorScaleName) : d.label);
                         })
                         .style({'font-size': settings.fontSize + 'px'});
                 };
