@@ -4,8 +4,6 @@ import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-m
 export class Pie {
 
     constructor(config) {
-        super();
-
         this.config = config;
         this.config.guide = this.config.guide || {};
         this.config.guide = _.defaults(

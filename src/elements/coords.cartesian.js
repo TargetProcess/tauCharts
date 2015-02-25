@@ -463,9 +463,9 @@ export class Cartesian {
                             };
                         }
 
-                        frame.unit.map((u) => continuation(mapper(u), frame));
+                        frame.units.map((u) => continuation(mapper(u), frame));
 
-                        return units.concat(frame.unit.map(mapper));
+                        return units.concat(frame.units.map(mapper));
                     },
                     []);
             });

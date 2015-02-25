@@ -162,7 +162,7 @@ export class GPL extends Emitter {
                     item.key = tuple;
                 }
 
-                item.unit = (root.unit) ? root.unit.map((unit) => utils.clone(unit)) : [];
+                item.units = (root.units) ? root.units.map((unit) => utils.clone(unit)) : [];
 
                 return item;
             });
@@ -173,7 +173,7 @@ export class GPL extends Emitter {
             // source: expr.source,
             // pipe: pipe
 
-            item.unit.map((unit) => this.expandUnitsStructure(unit, item.pipe));
+            item.units.map((unit) => this.expandUnitsStructure(unit, item.pipe));
 
             return item;
         });
@@ -188,7 +188,6 @@ export class GPL extends Emitter {
         var dataFrame = self._datify(calcBaseFrame(rootConf.expression, rootFrame));
 
         var UnitClass = self.unitSet.get(rootConf.type);
-
         var unitNode = new UnitClass(rootConf);
 
         unitNode

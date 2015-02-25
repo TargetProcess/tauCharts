@@ -159,7 +159,7 @@
                 'team'  : {type: 'ordinal', source: '/', dim: 'team'}
             },
 
-            unit: {
+            unit:{
                 type: 'RECT',
                 x: 'project',
                 y: 'team',
@@ -175,7 +175,7 @@
                     x: {padding: 40, label: {text: 'project'}, cssClass:'x axis facet-axis'},
                     y: {padding: 40, label: {text: 'team'},    cssClass:'y axis facet-axis'}
                 },
-                unit: [
+                units: [
                     {
                         type: 'RECT',
                         x: 'count',
@@ -190,7 +190,7 @@
                             x: {padding: 10, label: {text: 'count'}},
                             y: {padding: 10, label: {text: 'story'}}
                         },
-                        unit: [
+                        units: [
                             {
                                 type: 'POINT',
                                 x: 'count',
