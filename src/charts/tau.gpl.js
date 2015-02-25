@@ -8,7 +8,7 @@ import {CSS_PREFIX} from '../const';
 
 var FramesAlgebra = {
 
-    'cross': function (dataFn, dimX, dimY) {
+    cross: function (dataFn, dimX, dimY) {
 
         var convert = (v) => (v instanceof Date) ? v.getTime() : v;
 
@@ -41,7 +41,7 @@ var FramesAlgebra = {
             []);
     },
 
-    'none': function (datus, dimX, dimY, pipe) {
+    none: function (datus, dimX, dimY, pipe) {
         return [null];
     }
 };
@@ -55,7 +55,9 @@ var calcBaseFrame = (unitExpression, baseFrame) => {
     var ownFrame = {source: srcAlias, pipe: []};
 
     if (bInherit && (ownFrame.source !== tmpFrame.source)) {
+// jscs:disable maximumLineLength
         throw new Error(`base [${tmpFrame.source}] and own [${ownFrame.source}] sources should be equal to apply inheritance`);
+// jscs:enable maximumLineLength
     }
 
     return bInherit ? tmpFrame : ownFrame;
@@ -100,7 +102,7 @@ export class GPL extends Emitter {
 
         var containerNode = this._layout.content;
         var container = d3.select(this._layout.content);
-        //containerNode.innerHTML = '';
+        // containerNode.innerHTML = '';
 
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
@@ -115,7 +117,9 @@ export class GPL extends Emitter {
             .data(['const'])
             .enter()
             .append('svg')
-            .attr(_.extend({'class': `${CSS_PREFIX}svg`}, size))
+// jscs:disable disallowSpacesInsideObjectBrackets
+            .attr(_.extend({class: `${CSS_PREFIX}svg`}, size))
+// jscs:enable disallowSpacesInsideObjectBrackets
             .append('g')
             .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 

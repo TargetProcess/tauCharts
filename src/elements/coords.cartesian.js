@@ -5,7 +5,6 @@ import {FormatterRegistry} from '../formatter-registry';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
-
 var translate = (left, top) => 'translate(' + left + ',' + top + ')';
 var rotate = (angle) => 'rotate(' + angle + ')';
 var getOrientation = (scaleOrient) => _.contains(['bottom', 'top'], scaleOrient.toLowerCase()) ? 'h' : 'v';
@@ -33,8 +32,7 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
             var len = getComputedTextLength(textD3.text(text));
             if (len < widthLimit) {
                 memo = text;
-            }
-            else {
+            } else {
                 var available = Math.floor(widthLimit / len * text.length);
                 memo = text.substr(0, available - 4) + '...';
                 stop = true;
@@ -121,7 +119,7 @@ var decorateAxisTicks = (nodeScale, x, size) => {
     var sectorSize = size / selection[0].length;
     var offsetSize = sectorSize / 2;
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
 
@@ -134,7 +132,7 @@ var decorateAxisTicks = (nodeScale, x, size) => {
 
 var fixAxisTickOverflow = (nodeScale, x) => {
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     if (isHorizontal && (x.scaleType === 'time')) {
         var timeTicks = nodeScale.selectAll('.tick')[0];
@@ -173,7 +171,7 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
 
     var selection = nodeScale.selectAll('.tick line');
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     if (isHorizontal) {
         return;
@@ -185,8 +183,7 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
     if (x.scaleType === 'time') {
         doApply = true;
         tickOffset = 0;
-    }
-    else if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
+    } else if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
         doApply = true;
         var sectorSize = size / selection[0].length;
         var offsetSize = sectorSize / 2;
@@ -203,7 +200,7 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
 
 var decorateAxisLabel = (nodeScale, x) => {
     var orient = getOrientation(x.guide.scaleOrient);
-    var koeff = ('h' === orient) ? 1 : -1;
+    var koeff = (orient === 'h') ? 1 : -1;
     var labelTextNode = nodeScale
         .append('text')
         .attr('transform', rotate(x.guide.label.rotate))
@@ -233,8 +230,7 @@ var decorateAxisLabel = (nodeScale, x) => {
     if (x.guide.label.dock === 'right') {
         let box = nodeScale.selectAll('path.domain').node().getBBox();
         labelTextNode.attr('x', (orient === 'h') ? (box.width) : 0);
-    }
-    else if (x.guide.label.dock === 'left') {
+    } else if (x.guide.label.dock === 'left') {
         let box = nodeScale.selectAll('path.domain').node().getBBox();
         labelTextNode.attr('x', (orient === 'h') ? 0 : (-box.height));
     }
@@ -242,7 +238,7 @@ var decorateAxisLabel = (nodeScale, x) => {
 
 var decorateTickLabel = (nodeScale, x) => {
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     var angle = x.guide.rotate;
 
@@ -257,14 +253,18 @@ var decorateTickLabel = (nodeScale, x) => {
     }
 
     if (x.guide.tickFormatWordWrap) {
-        ticks
-            .call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines, x.guide.$maxTickTextH, !isHorizontal);
+        ticks.call(
+            wrapText,
+            x.guide.tickFormatWordWrapLimit,
+            x.guide.tickFormatWordWrapLines,
+            x.guide.$maxTickTextH,
+            !isHorizontal
+        );
     } else {
         ticks
             .call(cutText, x.guide.tickFormatWordWrapLimit);
     }
 };
-
 
 export class Cartesian {
 
@@ -392,11 +392,24 @@ export class Cartesian {
         var hashY = node.y.getHash();
 
         if (!node.x.guide.hide) {
-            this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x', hashX);
+            this._fnDrawDimAxis(
+                options.container, node.x,
+                [0, innerHeight + node.guide.x.padding],
+                innerWidth,
+                options.frameId + 'x',
+                hashX
+            );
         }
 
         if (!node.y.guide.hide) {
-            this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, options.frameId + 'y', hashY);
+            this._fnDrawDimAxis(
+                options.container,
+                node.y,
+                [0 - node.guide.y.padding, 0],
+                innerHeight,
+                options.frameId + 'y',
+                hashY
+            );
         }
 
         this.grid = this._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY);
@@ -458,7 +471,12 @@ export class Cartesian {
             });
         };
 
-        var fnBase64 = (frame) => btoa(JSON.stringify(frame.pipe) + JSON.stringify(frame.key) + JSON.stringify(frame.source)).replace(/=/g, '_');
+        var fnBase64 = (frame) => btoa([
+                JSON.stringify(frame.pipe),
+                JSON.stringify(frame.key),
+                JSON.stringify(frame.source)
+            ].join('')
+        ).replace(/=/g, '_');
 
         var cells = this
             .grid

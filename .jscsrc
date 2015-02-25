@@ -1,9 +1,10 @@
 {
   "preset": "yandex",
   "esnext":true,
-  "excludeFiles":["src/api/balloon.js","src/elements/coords.cartesian.js", "src/charts/tau.gpl.js","plugins/**","src/addons/color-brewer.js",
+  "excludeFiles":["src/api/balloon.js","plugins/**","src/addons/color-brewer.js",
     "./Gruntfile.js"
   ],
   "requireLineFeedAtFileEnd":null,
-  "disallowMultipleVarDecl":null
+  "disallowMultipleVarDecl":null,
+  "disallowSpacesInsideParentheses":null
 }
