@@ -4,27 +4,27 @@ import {FormatterRegistry} from './formatter-registry';
 import {utilsDom} from './utils/utils-dom';
 
 function extendGuide(guide, targetUnit, dimension, properties) {
-    var guide_dim =  guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
     _.each(properties, (prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
-    _.extend(targetUnit.guide[dimension], _.omit.apply(_,[guide_dim].concat[properties]));
+    _.extend(targetUnit.guide[dimension], _.omit.apply(_, [guide_dim].concat[properties]));
 }
 
 var applyCustomProps = (targetUnit, customUnit) => {
     var guide = customUnit.guide || {};
     var config = {
-        'x': ['label'],
-        'y': ['label'],
-        'size': ['label'],
-        'color': ['label'],
-        'padding': []
+        x: ['label'],
+        y: ['label'],
+        size: ['label'],
+        color: ['label'],
+        padding: []
     };
 
     _.each(config, (properties, name)=> {
         extendGuide(guide, targetUnit, name, properties);
     });
-    _.extend(targetUnit.guide,  _.omit.apply(_, [guide].concat(_.keys(config))));
+    _.extend(targetUnit.guide, _.omit.apply(_, [guide].concat(_.keys(config))));
     return targetUnit;
 };
 
@@ -65,7 +65,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     }
 
     if (formatter === null) {
-        var size = fnCalcTickLabelSize("TauChart Library");
+        var size = fnCalcTickLabelSize('TauChart Library');
         size.width = axisLabelLimit * 0.625; // golden ratio
         return size;
     }
@@ -90,8 +90,7 @@ var getTickFormat = (dim, meta, defaultFormats) => {
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
 };
 
-
-var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
 
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);
@@ -138,7 +137,6 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         settings.getAxisTickLabelSize,
         settings.yAxisTickLabelLimit);
 
-
     var xAxisPadding = settings.xAxisPadding;
     var yAxisPadding = settings.yAxisPadding;
 
@@ -148,7 +146,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
     unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
 
-    unit.guide.x.rotate = isXVertical ? +90 : 0;
+    unit.guide.x.rotate = isXVertical ? 90 : 0;
     unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
 
     unit.guide.y.rotate = isYVertical ? -90 : 0;
@@ -160,10 +158,9 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
     unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
-
     var xTickBox = isXVertical ?
-        {w: maxXTickSize.height, h: maxXTickSize.width} :
-        {h: maxXTickSize.height, w: maxXTickSize.width};
+    {w: maxXTickSize.height, h: maxXTickSize.width} :
+    {h: maxXTickSize.height, w: maxXTickSize.width};
 
     if (maxXTickSize.width > settings.xAxisTickLabelLimit) {
 
@@ -177,17 +174,15 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         if (isXVertical) {
             xTickBox.h = settings.xAxisTickLabelLimit;
             xTickBox.w = textLinesHeight;
-        }
-        else {
+        } else {
             xTickBox.h = textLinesHeight;
             xTickBox.w = settings.xAxisTickLabelLimit;
         }
     }
 
-
     var yTickBox = isYVertical ?
-        {w: maxYTickSize.height, h: maxYTickSize.width} :
-        {h: maxYTickSize.height, w: maxYTickSize.width};
+    {w: maxYTickSize.height, h: maxYTickSize.width} :
+    {h: maxYTickSize.height, w: maxYTickSize.width};
 
     if (maxYTickSize.width > settings.yAxisTickLabelLimit) {
 
@@ -201,8 +196,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         if (isYVertical) {
             yTickBox.w = textLinesHeight;
             yTickBox.h = settings.yAxisTickLabelLimit;
-        }
-        else {
+        } else {
             yTickBox.w = settings.yAxisTickLabelLimit;
             yTickBox.h = textLinesHeight;
         }
@@ -221,7 +215,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.y.density = yTickBox.h + yDensityPadding * 2;
 
     if (!inlineLabels) {
-        unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
+        unit.guide.x.label.padding = xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
         unit.guide.y.label.padding = -xFontLabelHeight + ((unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0);
 
         let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
@@ -232,8 +226,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
 
         unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
         unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
-    }
-    else {
+    } else {
         var pd = (xAxisPadding - xFontLabelHeight) / 2;
         unit.guide.x.label.padding = 0 + xFontLabelHeight - distToXAxisLabel + pd;
         unit.guide.y.label.padding = 0 - distToYAxisLabel + pd;
@@ -245,11 +238,6 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         unit.guide.y.label.cssClass += ' inline';
         unit.guide.y.label.dock = 'right';
         unit.guide.y.label.textAnchor = 'end';
-
-        //unit.guide.x.label.dock = 'left';
-        //unit.guide.x.label.textAnchor = 'start';
-        //unit.guide.y.label.dock = 'left';
-        //unit.guide.y.label.textAnchor = 'start';
 
         unit.guide.padding.b = xAxisPadding + xFontH;
         unit.guide.padding.l = yAxisPadding + yFontW;
@@ -273,10 +261,9 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     return unit;
 };
 
-
 var SpecEngineTypeMap = {
 
-    'NONE': (srcSpec, meta, settings) => {
+    NONE: (srcSpec, meta, settings) => {
 
         var spec = utils.clone(srcSpec);
         fnTraverseSpec(
@@ -313,8 +300,13 @@ var SpecEngineTypeMap = {
                     return unit;
                 }
 
-                if (!xUnit && unit.x) (xUnit = unit);
-                if (!yUnit && unit.y) (yUnit = unit);
+                if (!xUnit && unit.x) {
+                    xUnit = unit;
+                }
+
+                if (!yUnit && unit.y) {
+                    yUnit = unit;
+                }
 
                 unit.guide = unit.guide || {};
 
@@ -335,14 +327,18 @@ var SpecEngineTypeMap = {
                 var x = unit.guide.x.label.text;
                 if (x) {
                     xLabels.push(x);
-                    unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ? unit.guide.x.tickFormatNullAlias : 'No ' + x;
+                    unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ?
+                        unit.guide.x.tickFormatNullAlias :
+                    'No ' + x;
                     unit.guide.x.label.text = '';
                 }
 
                 var y = unit.guide.y.label.text;
                 if (y) {
                     yLabels.push(y);
-                    unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ? unit.guide.y.tickFormatNullAlias : 'No ' + y;
+                    unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ?
+                        unit.guide.y.tickFormatNullAlias :
+                    'No ' + y;
                     unit.guide.y.label.text = '';
                 }
 
@@ -402,9 +398,10 @@ var SpecEngineTypeMap = {
                 var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
                 var yValues = yMeta.values;
 
-
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat ||
+                    getTickFormat(dimX, xMeta, settings.defaultFormats);
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat ||
+                    getTickFormat(dimY, yMeta, settings.defaultFormats);
 
                 var xIsEmptyAxis = (xValues.length === 0);
                 var yIsEmptyAxis = (yValues.length === 0);
@@ -421,11 +418,10 @@ var SpecEngineTypeMap = {
                     settings.getAxisTickLabelSize,
                     settings.yAxisTickLabelLimit);
 
-
                 var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
                 var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
 
-                var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== 'measure');
+                var isXVertical = !isFacetUnit && (Boolean(dimX.dimType) && dimX.dimType !== 'measure');
 
                 unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
                 unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
@@ -467,8 +463,10 @@ var SpecEngineTypeMap = {
                 var distToXAxisLabel = settings.distToXAxisLabel;
                 var distToYAxisLabel = settings.distToYAxisLabel;
 
-
-                var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
+                var xTickLabelW = Math.min(
+                    settings.xAxisTickLabelLimit,
+                    (isXVertical ? maxXTickSize.height : maxXTickSize.width)
+                );
                 unit.guide.x.density = xTickLabelW + xDensityPadding * 2;
 
                 var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
@@ -476,14 +474,15 @@ var SpecEngineTypeMap = {
                 var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
                 unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
 
-
                 unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
                 unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
-
-                var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
-                var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
-
+                var xLabelPadding = (unit.guide.x.label.text) ?
+                    (unit.guide.x.label.padding + xFontLabelHeight) :
+                    (xFontH);
+                var yLabelPadding = (unit.guide.y.label.text) ?
+                    (unit.guide.y.label.padding + yFontLabelHeight) :
+                    (yFontW);
 
                 unit.guide.padding.b = xAxisPadding + xLabelPadding;
                 unit.guide.padding.l = yAxisPadding + yLabelPadding;
@@ -574,8 +573,7 @@ var SpecEngineTypeMap = {
 
             if (!root.unit) {
                 r = {w: 0, h: 0};
-            }
-            else {
+            } else {
                 var s = traverseFromDeep(root.unit[0]);
                 var g = root.guide;
                 var xmd = g.x.$minimalDomain || 1;
@@ -685,7 +683,6 @@ SpecEngineTypeMap.COMPACT = (srcSpec, meta, settings) => {
         srcSpec
     );
 };
-
 
 var fnTraverseSpec = (orig, specUnitRef, transformRules) => {
     var xRef = utilsDraw.applyNodeDefaults(specUnitRef);

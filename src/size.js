@@ -25,7 +25,7 @@ var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
     xMin = (min < 0) ? min : 0;
     k = (len === 0) ? 1 : ((maxSize - minSize) / len);
 
-    return function(x) {
+    return function (x) {
         var numX = (x !== null) ? parseFloat(x) : 0;
 
         if (!_.isFinite(numX)) {
@@ -37,5 +37,5 @@ var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
         return (minSize + (f(posX) * k));
     };
 };
- var s = 23;
+var s = 23;
 export {sizeScale};

@@ -7,7 +7,7 @@ import {default as d3} from 'd3';
 
 var scalesStrategies = {
 
-    'color': (vars, props) => {
+    color: (vars, props) => {
 
         var varSet = vars;
 
@@ -20,8 +20,7 @@ var scalesStrategies = {
         var buildArrayGetClass = (domain, brewer) => {
             if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
                 return defaultColorClass;
-            }
-            else {
+            } else {
                 var fullDomain = domain.map((x) => String(x).toString());
                 return d3.scale.ordinal().range(brewer).domain(fullDomain);
             }
@@ -39,17 +38,13 @@ var scalesStrategies = {
         var func;
         if (!brewer) {
             func = wrapString(buildArrayGetClass(varSet, defaultRangeColor));
-        }
-        else if (_.isArray(brewer)) {
+        } else if (_.isArray(brewer)) {
             func = wrapString(buildArrayGetClass(varSet, brewer));
-        }
-        else if (_.isFunction(brewer)) {
+        } else if (_.isFunction(brewer)) {
             func = (d) => brewer(d, wrapString(buildArrayGetClass(varSet, defaultRangeColor)));
-        }
-        else if (_.isObject(brewer)) {
+        } else if (_.isObject(brewer)) {
             func = buildObjectGetClass(brewer, defaultColorClass);
-        }
-        else {
+        } else {
             throw new Error('This brewer is not supported');
         }
 
@@ -60,27 +55,9 @@ var scalesStrategies = {
         func.scaleType = 'color';
 
         return func;
-
-        //var wrap = func;
-        //return {
-        //    init: function() {
-        //
-        //        wrap.legend = (v) => {
-        //
-        //            // var value = varSet.extract(v);
-        //            var value = v;
-        //            var label = (props.tickLabel) ? ((v || {})[props.tickLabel]) : (value);
-        //            var color = func(value);
-        //
-        //            return {value, color, label};
-        //        };
-        //
-        //        return wrap;
-        //    }
-        //};
     },
 
-    'size': (varSet, props) => {
+    size: (varSet, props) => {
 
         var minSize = props.min;
         var maxSize = props.max;
@@ -132,7 +109,7 @@ var scalesStrategies = {
         return func;
     },
 
-    'ordinal': (varSet, props, interval) => {
+    ordinal: (varSet, props, interval) => {
 
         var d3Domain = d3.scale.ordinal().domain(varSet);
 
@@ -145,7 +122,7 @@ var scalesStrategies = {
         return scale;
     },
 
-    'linear': (vars, props, interval) => {
+    linear: (vars, props, interval) => {
 
         var domain = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);
 
@@ -162,8 +139,12 @@ var scalesStrategies = {
         var d3Scale = d3Domain.rangeRound(interval, 1);
         var scale = (int) => {
             var x = int;
-            if (x > max) x = max;
-            if (x < min) x = min;
+            if (x > max) {
+                x = max;
+            }
+            if (x < min) {
+                x = min;
+            }
             return d3Scale(x);
         };
 
@@ -179,7 +160,7 @@ var scalesStrategies = {
         return scale;
     },
 
-    'period': (vars, props, interval) => {
+    period: (vars, props, interval) => {
 
         // extract: ((x) => UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x)))
 
@@ -206,7 +187,7 @@ var scalesStrategies = {
         return scale;
     },
 
-    'time': (vars, props, interval) => {
+    time: (vars, props, interval) => {
 
         var domain = d3.extent(vars);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
@@ -229,11 +210,10 @@ var scalesStrategies = {
         return scale;
     },
 
-    'value': (vars, props, interval) => {
-
+    value: (vars, props, interval) => {
         var scale = (x) => x;
         scale.dim = props.dim;
-        scale.domain = () => varSet;
+        scale.domain = () => vars;
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'value';

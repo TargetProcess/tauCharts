@@ -26,15 +26,17 @@ var createElement = (type, config) => {
 };
 
 const status = {
-    SUCCESS: "SUCCESS",
-    WARNING: "WARNING",
-    FAIL: "FAIL"
+    SUCCESS: 'SUCCESS',
+    WARNING: 'WARNING',
+    FAIL: 'FAIL'
 };
 /* jshint ignore:start */
+
 var strategyNormalizeAxis = {
     [status.SUCCESS]: (axis) => axis,
     [status.FAIL]: (axis, data) => {
         throw new Error((data.messages || []).join('\n') ||
+        // jscs:disable
         'This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
     },
     [status.WARNING]: (axis, config, guide) => {

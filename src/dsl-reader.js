@@ -6,7 +6,9 @@ export class DSLReader {
     }
 
     buildGraph(spec) {
-        var buildRecursively = (unit) => this.UnitsRegistry.get(unit.type).walk(this.domain.mix(unit), buildRecursively);
+        var buildRecursively = (unit) => this.UnitsRegistry
+            .get(unit.type)
+            .walk(this.domain.mix(unit), buildRecursively);
         return buildRecursively(spec.unit);
     }
 
@@ -36,10 +38,13 @@ export class DSLReader {
             if (root.guide.split) {
                 calcLayoutStrategy = {
                     calcHeight: ((cellHeight, rowIndex, elIndex, lenIndex) => cellHeight / lenIndex),
-                    calcTop: ((cellHeight, rowIndex, elIndex, lenIndex) => (rowIndex + 1) * (cellHeight / lenIndex) * elIndex)
+                    calcTop: (
+                        (cellHeight, rowIndex, elIndex, lenIndex) => (rowIndex + 1) *
+                        (cellHeight / lenIndex) *
+                        elIndex
+                    )
                 };
-            }
-            else {
+            } else {
                 calcLayoutStrategy = {
                     calcHeight: ((cellHeight, rowIndex, elIndex, lenIndex) => cellHeight),
                     calcTop: ((cellHeight, rowIndex, elIndex, lenIndex) => rowIndex * cellH)

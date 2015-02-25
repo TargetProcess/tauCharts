@@ -14,7 +14,9 @@ var line = function (node) {
     var widthClass = getLineClassesByWidth(options.width);
     var countClass = getLineClassesByCount(categories.length);
     var updateLines = function () {
+// jscs:disable
         this.attr('class', (d) => `${CSS_PREFIX}line i-role-element i-role-datum line ${colorScale(d.key)} ${widthClass} ${countClass}`);
+// jscs:enable
         var paths = this.selectAll('path').data((d) => [d.values]);
         paths.call(updatePaths);
         paths.enter().append('path').call(updatePaths);
@@ -24,7 +26,9 @@ var line = function (node) {
         var update = function () {
             return this
                 .attr('r', 1.5)
+// jscs:disable
                 .attr('class', (d) => `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum ${colorScale(d[node.color.scaleDim])}`)
+// jscs:enable
                 .attr('cx', (d) => xScale(d[node.x.scaleDim]))
                 .attr('cy', (d) => yScale(d[node.y.scaleDim]));
         };
@@ -36,15 +40,14 @@ var line = function (node) {
     };
 
     var line = d3
-            .svg
-            .line()
-            .x((d) => xScale(d[node.x.scaleDim]))
-            .y((d) => yScale(d[node.y.scaleDim]));
+        .svg
+        .line()
+        .x((d) => xScale(d[node.x.scaleDim]))
+        .y((d) => yScale(d[node.y.scaleDim]));
 
     var updatePaths = function () {
         this.attr('d', line);
     };
-
 
     var points = categories.reduce(function (memo, item) {
         var values = item.values;

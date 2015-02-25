@@ -34,7 +34,7 @@ var CoordsParallel = {
         return root;
     },
 
-    draw: function(node) {
+    draw: function (node) {
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -52,11 +52,8 @@ var CoordsParallel = {
             .append('g')
             .attr('class', 'graphical-report__' + 'cell ' + 'cell')
             .attr('transform', utilsDraw.translate(L, T));
-
-
         var translate = (left, top) => 'translate(' + left + ',' + top + ')';
         var rotate = (angle) => 'rotate(' + angle + ')';
-
 
         var fnDrawDimAxis = function (xScaleObj, AXIS_POSITION) {
             var container = this;

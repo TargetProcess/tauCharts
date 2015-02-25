@@ -20,10 +20,10 @@ export class Line {
 
         var config = this.config;
 
-        this.xScale = fnCreateScale('pos', config.x, [0,  config.options.width]);
+        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color  = fnCreateScale('color', config.color, {});
-        this.size   = fnCreateScale('size', config.size, {});
+        this.color = fnCreateScale('color', config.color, {});
+        this.size = fnCreateScale('size', config.size, {});
 
         return this;
     }
@@ -42,7 +42,9 @@ export class Line {
         var countClass = getLineClassesByCount(frames.length);
 
         var updateLines = function () {
+            // jscs:disable
             this.attr('class', (d) => `${CSS_PREFIX}line i-role-element i-role-datum line ${colorScale(d.key)} ${widthClass} ${countClass} ${config.guide.cssClass}`);
+            // jscs:enable
             var paths = this.selectAll('path').data((d) => [d.take()]);
             paths.call(updatePaths);
             paths.enter().append('path').call(updatePaths);
@@ -53,7 +55,9 @@ export class Line {
             var update = function () {
                 return this
                     .attr('r', 1.5)
+                    // jscs:disable
                     .attr('class', (d) => `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum ${colorScale(d[colorScale.dim])}`)
+                    // jscs:enable
                     .attr('cx', (d) => xScale(d[xScale.dim]))
                     .attr('cy', (d) => yScale(d[yScale.dim]));
             };

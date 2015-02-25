@@ -1,4 +1,3 @@
-//plugins
 /** @class
  * @extends Plugin */
 class Plugins {
@@ -12,7 +11,11 @@ class Plugins {
         if (plugin.init) {
             plugin.init(this.chart);
         }
-        this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (() => {}));
+        var empty = () => {
+// jscs:disable disallowEmptyBlocks
+        };
+// jscs:enable disallowEmptyBlocks
+        this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (empty));
         Object.keys(plugin).forEach((name) => {
             if (name.indexOf('on') === 0) {
                 var event = name.substr(2);
@@ -36,6 +39,5 @@ var propagateDatumEvents = function (chart) {
         }, this);
     };
 };
-
 
 export {propagateDatumEvents, Plugins};

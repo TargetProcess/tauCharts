@@ -22,7 +22,7 @@ export class Plot extends Emitter {
         };
         this._layout = getLayout();
         this.setupConfig(config);
-        //plugins
+        // plugins
         this._plugins = new Plugins(this.config.plugins, this);
     }
 
@@ -94,7 +94,6 @@ export class Plot extends Emitter {
         return utilsDom.appendTo(el, this._layout.header);
     }
 
-
     addBalloon(conf) {
         return new Tooltip('', conf || {});
     }
@@ -112,7 +111,7 @@ export class Plot extends Emitter {
 
         containerNode.appendChild(this._layout.layout);
         container = d3.select(this._layout.content);
-        //todo don't compute width if width or height were passed
+        // todo don't compute width if width or height were passed
         var size = _.clone(xSize) || {};
         this._layout.content.innerHTML = '';
         if (!size.width || !size.height) {
@@ -129,8 +128,6 @@ export class Plot extends Emitter {
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
         var specItem = _.find(this.config.settings.specEngine, (item) => (size.width <= item.width));
-
-
         this.config.settings.size = size;
         var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
 
@@ -147,10 +144,10 @@ export class Plot extends Emitter {
         var svgXElement = reader.renderGraph(
             renderGraph,
             container
-                .append("svg")
-                .attr("class", CSS_PREFIX + 'svg')
-                .attr("width", optimalSize.width)
-                .attr("height", optimalSize.height),
+                .append('svg')
+                .attr('class', CSS_PREFIX + 'svg')
+                .attr('width', optimalSize.width)
+                .attr('height', optimalSize.height),
             (unitMeta) => chart.fire('unitready', unitMeta)
         );
         this._renderGraph = renderGraph;

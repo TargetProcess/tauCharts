@@ -386,10 +386,10 @@ export class Cartesian {
 
         options.container
             .attr('transform', utilsDraw.translate(innerLeft, innerTop));
-            //.attr('opacity', 0.5)
-            //.transition()
-            //.duration(500)
-            //.attr('opacity', 1);
+        //.attr('opacity', 0.5)
+        //.transition()
+        //.duration(500)
+        //.attr('opacity', 1);
 
         if (!node.x.guide.hide) {
             this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x');
@@ -407,7 +407,7 @@ export class Cartesian {
 
             var gridCells = cell[0];
 
-            gridCells.forEach(function(cellNode) {
+            gridCells.forEach(function (cellNode) {
                 var cell = d3.select(cellNode);
                 var frames = cell.data();
                 frames.reduce(
@@ -428,13 +428,13 @@ export class Cartesian {
 
                             mapper = (unit) => {
                                 unit.options = {
-                                    frameId     : frameId,
+                                    frameId: frameId,
                                     //container   : self.grid.select(`.frame-${frameId}`),
-                                    container   : cell,
-                                    left        : coordX - xPart / 2,
-                                    top         : coordY - yPart / 2,
-                                    width       : xPart,
-                                    height      : yPart
+                                    container: cell,
+                                    left: coordX - xPart / 2,
+                                    top: coordY - yPart / 2,
+                                    width: xPart,
+                                    height: yPart
                                 };
                                 return unit;
                             };
@@ -442,11 +442,11 @@ export class Cartesian {
                         else {
                             mapper = (unit) => {
                                 unit.options = {
-                                    container   : cell,
-                                    left        : 0,
-                                    top         : 0,
-                                    width       : self.W,
-                                    height      : self.H
+                                    container: cell,
+                                    left: 0,
+                                    top: 0,
+                                    width: self.W,
+                                    height: self.H
                                 };
                                 return unit;
                             };

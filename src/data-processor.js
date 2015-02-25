@@ -24,8 +24,7 @@ var DataProcessor = {
 
                     if (!memo.hasOwnProperty(key)) {
                         memo[key] = val;
-                    }
-                    else {
+                    } else {
                         var prevVal = memo[key];
                         if (prevVal !== val) {
                             error = {
@@ -42,8 +41,7 @@ var DataProcessor = {
                     return memo;
                 },
                 {});
-        }
-        catch (ex) {
+        } catch (ex) {
 
             if (ex.message !== 'RelationIsNotAFunction') {
                 throw ex;
@@ -112,12 +110,10 @@ var DataProcessor = {
             if (_.isDate(propertyValue)) {
                 pair.type = 'measure';
                 pair.scale = 'time';
-            }
-            else if (_.isObject(propertyValue)) {
+            } else if (_.isObject(propertyValue)) {
                 pair.type = 'order';
                 pair.scale = 'ordinal';
-            }
-            else if (_.isNumber(propertyValue)) {
+            } else if (_.isNumber(propertyValue)) {
                 pair.type = 'measure';
                 pair.scale = 'linear';
             }
@@ -138,8 +134,7 @@ var DataProcessor = {
 
                 if (val === null) {
                     memo[key].hasNull = true;
-                }
-                else {
+                } else {
                     var typeScalePair = detectType(val, utils.clone(defaultDetect));
                     var detectedType = typeScalePair.type;
                     var detectedScale = typeScalePair.scale;

@@ -21,8 +21,8 @@ export class Pie {
         var config = this.config;
 
         this.proportionScale = fnCreateScale('value', config.proportion);
-        this.labelScale      = fnCreateScale('value', config.label);
-        this.colorScale      = fnCreateScale('color', config.color, {});
+        this.labelScale = fnCreateScale('value', config.label);
+        this.colorScale = fnCreateScale('color', config.color, {});
 
         return this;
     }
@@ -44,12 +44,12 @@ export class Pie {
         var data = frames[0].take();
 
         var vis = options.container
-            .append("svg:svg")
+            .append('svg:svg')
             .data([data])
-            .attr("width", w)
-            .attr("height", h)
-            .append("svg:g")
-            .attr("transform", "translate(" + r + "," + r + ")");
+            .attr('width', w)
+            .attr('height', h)
+            .append('svg:g')
+            .attr('transform', 'translate(' + r + ',' + r + ')');
 
         var pie = d3.layout.pie().value((d) => d[proportion.dim]);
 
@@ -58,25 +58,25 @@ export class Pie {
 
         // select paths, use arc generator to draw
         var arcs = vis
-            .selectAll(".slice")
+            .selectAll('.slice')
             .data(pie)
-            .enter().append("g").attr("class", "slice");
+            .enter().append('g').attr('class', 'slice');
 
-        arcs.append("path")
-            .attr("class", (d) => {
+        arcs.append('path')
+            .attr('class', (d) => {
                 var dm = d.data || {};
                 return color(dm[color.dim]);
             })
-            .attr("d", (d) => arc(d));
+            .attr('d', (d) => arc(d));
 
         // add the text
-        arcs.append("text")
-            .attr("transform", (d) => {
+        arcs.append('text')
+            .attr('transform', (d) => {
                 d.innerRadius = 0;
                 d.outerRadius = r;
-                return "translate(" + arc.centroid(d) + ")";
+                return 'translate(' + arc.centroid(d) + ')';
             })
-            .attr("text-anchor", "middle")
+            .attr('text-anchor', 'middle')
             .text((d) => {
                 var dm = d.data || {};
                 return label(dm[label.dim]);

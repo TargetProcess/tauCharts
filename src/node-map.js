@@ -35,8 +35,9 @@ var setupElementNode = (node, dimensions) => {
     if (node.size) {
         var minimalSize = 1;
         var maxRelLimit = 0.035;
-        var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter((x) => x !== 0)) * 0.5;
-        var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter((x) => x !== 0)) * 0.5;
+        var isNotZero = (x) => x !== 0;
+        var minFontSize = _.min([node.guide.x.tickFontHeight, node.guide.y.tickFontHeight].filter(isNotZero)) * 0.5;
+        var minTickStep = _.min([node.guide.x.density, node.guide.y.density].filter(isNotZero)) * 0.5;
         var guideSize = node.guide.size || {};
         node.options.sizeScale = node.scaleSize(
             node.size.scaleDim,

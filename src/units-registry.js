@@ -2,12 +2,12 @@ var UnitsMap = {};
 
 var UnitsRegistry = {
 
-    reg: function(unitType, xUnit) {
+    reg: function (unitType, xUnit) {
         UnitsMap[unitType] = xUnit;
         return this;
     },
 
-    add: function(unitType, xUnit) {
+    add: function (unitType, xUnit) {
         var unit = {};
         unit.draw = (typeof xUnit === 'function') ? xUnit : xUnit.draw;
         unit.walk = xUnit.walk || ((x) => x);

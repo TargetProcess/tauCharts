@@ -12,10 +12,10 @@ export class Point {
 
         var config = this.config;
 
-        this.xScale = fnCreateScale('pos', config.x, [0,  config.options.width]);
+        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color  = fnCreateScale('color', config.color, {});
-        this.size   = fnCreateScale('size', config.size, {});
+        this.color = fnCreateScale('color', config.color, {});
+        this.size = fnCreateScale('size', config.size, {});
 
         return this;
     }
@@ -32,10 +32,10 @@ export class Point {
         var update = function () {
 
             var props = {
-                'r'     : 0,
-                'cx'    : (d) => xScale(d[xScale.dim]),
-                'cy'    : (d) => yScale(d[yScale.dim]),
-                'class' : (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${cScale(d[cScale.dim])}`
+                r: 0,
+                cx: (d) => xScale(d[xScale.dim]),
+                cy: (d) => yScale(d[yScale.dim]),
+                class: (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${cScale(d[cScale.dim])}`
             };
 
             return this.attr(props).transition().duration(500).attr('r', (d) => sScale(d[sScale.dim]));

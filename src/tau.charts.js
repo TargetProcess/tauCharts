@@ -11,7 +11,6 @@ import {FormatterRegistry} from './formatter-registry';
 import {nodeMap} from './node-map';
 import {UnitsRegistry} from './units-registry';
 
-
 import {Cartesian}  from './elements/coords.cartesian';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
@@ -59,7 +58,7 @@ var api = {
 
         log: (msg, type) => {
             type = type || 'INFO';
-            if(!Array.isArray(msg)) {
+            if (!Array.isArray(msg)) {
                 msg = [msg];
             }
             console[type.toLowerCase()].apply(console, msg);
@@ -102,13 +101,13 @@ var api = {
         xFontLabelHeight: 10,
         yFontLabelHeight: 10,
 
-        'xDensityPadding': 4,
-        'yDensityPadding': 4,
+        xDensityPadding: 4,
+        yDensityPadding: 4,
         'xDensityPadding:measure': 8,
         'yDensityPadding:measure': 8,
 
         defaultFormats: {
-            'measure': 'x-num-auto',
+            measure: 'x-num-auto',
             'measure:time': 'x-time-auto'
         }
     }
@@ -130,6 +129,3 @@ api.UnitsRegistry
     .reg('PIE', Pie);
 
 export {GPL, Plot, Chart, __api__, api};
-
-
-

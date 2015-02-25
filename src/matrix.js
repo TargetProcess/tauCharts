@@ -7,8 +7,7 @@ var TMatrix = (function () {
 
         if (_.isArray(args[0])) {
             cube = args[0];
-        }
-        else {
+        } else {
             cube = _.times(r, function () {
                 return _.times(c, function () {
                     return null;

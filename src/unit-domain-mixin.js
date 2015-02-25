@@ -7,11 +7,11 @@ import {default as d3} from 'd3';
 /* jshint ignore:end */
 
 var autoScaleMethods = {
-    'ordinal': (inputValues, props) => {
+    ordinal: (inputValues, props) => {
         return inputValues;
     },
 
-    'linear': (inputValues, props) => {
+    linear: (inputValues, props) => {
         var domainParam = (props.autoScale) ?
             utils.autoScale(inputValues) :
             d3.extent(inputValues);
@@ -25,7 +25,7 @@ var autoScaleMethods = {
         ];
     },
 
-    'period': (inputValues, props) => {
+    period: (inputValues, props) => {
         var domainParam = d3.extent(inputValues);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
@@ -38,7 +38,7 @@ var autoScaleMethods = {
         return UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
     },
 
-    'time': (inputValues, props) => {
+    time: (inputValues, props) => {
         var domainParam = d3.extent(inputValues);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domainParam[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domainParam[1] : new Date(props.max).getTime();
@@ -52,19 +52,19 @@ var autoScaleMethods = {
 
 var rangeMethods = {
 
-    'ordinal': (inputValues, interval) => {
+    ordinal (inputValues, interval) {
         return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
     },
 
-    'linear': (inputValues, interval) => {
+    linear (inputValues, interval)  {
         return d3.scale.linear().domain(inputValues).rangeRound(interval, 1);
     },
 
-    'period': (inputValues, interval) => {
+    period (inputValues, interval)  {
         return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
     },
 
-    'time': (inputValues, interval) => {
+    time(inputValues, interval) {
         return d3.time.scale().domain(inputValues).range(interval);
     }
 };
@@ -231,8 +231,7 @@ export class UnitDomainMixin {
             var buildArrayGetClass = (domain, brewer) => {
                 if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
                     return defaultColorClass;
-                }
-                else {
+                } else {
                     var fullDomain = domain.map((x) => String(x).toString());
                     return d3.scale.ordinal().range(brewer).domain(fullDomain);
                 }
@@ -250,17 +249,13 @@ export class UnitDomainMixin {
             var func;
             if (!brewer) {
                 func = wrapString(buildArrayGetClass(info.values, defaultRangeColor));
-            }
-            else if (_.isArray(brewer)) {
+            } else if (_.isArray(brewer)) {
                 func = wrapString(buildArrayGetClass(info.values, brewer));
-            }
-            else if (_.isFunction(brewer)) {
+            } else if (_.isFunction(brewer)) {
                 func = (d) => brewer(d, wrapString(buildArrayGetClass(info.values, defaultRangeColor)));
-            }
-            else if (_.isObject(brewer)) {
+            } else if (_.isObject(brewer)) {
                 func = buildObjectGetClass(brewer, defaultColorClass);
-            }
-            else {
+            } else {
                 throw new Error('This brewer is not supported');
             }
 

@@ -54,7 +54,8 @@ var flipHub = {
             }) :
             ((d) => (height - yScale(d[node.y.scaleDim])));
 
-        let calculateTranslate = (d) => utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
+        let calculateTranslate = (d) =>
+            utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
 
         return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
@@ -95,7 +96,8 @@ var flipHub = {
             }) :
             ((d) => xScale(d[node.x.scaleDim]));
         let calculateHeight = (d) => intervalWidth;
-        let calculateTranslate = (d) => utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
+        let calculateTranslate = (d) =>
+            utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
 
         return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     }
@@ -148,7 +150,9 @@ var interval = function (node) {
         return this
             .attr('height', calculateHeight)
             .attr('width', calculateWidth)
+// jscs:disable
             .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[node.color.scaleDim])}`))
+// jscs:enable
             .attr('x', calculateX)
             .attr('y', calculateY);
     };
@@ -162,7 +166,9 @@ var interval = function (node) {
         bars.exit().remove();
     };
 
+// jscs:disable disallowSpacesInsideParentheses
     var elements = options.container.selectAll(`.${BAR_GROUP}`).data(categories);
+// jscs:enable disallowSpacesInsideParentheses
     elements.call(updateBarContainer);
     elements.enter().append('g').call(updateBarContainer);
     elements.exit().remove();

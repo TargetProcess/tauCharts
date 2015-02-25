@@ -32,8 +32,7 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
             var len = getComputedTextLength(textD3.text(text));
             if (len < widthLimit) {
                 memo = text;
-            }
-            else {
+            } else {
                 var available = Math.floor(widthLimit / len * text.length);
                 memo = text.substr(0, available - 4) + '...';
                 stop = true;
@@ -120,7 +119,7 @@ var decorateAxisTicks = (nodeScale, x, size) => {
     var sectorSize = size / selection[0].length;
     var offsetSize = sectorSize / 2;
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
 
@@ -133,7 +132,7 @@ var decorateAxisTicks = (nodeScale, x, size) => {
 
 var fixAxisTickOverflow = (nodeScale, x) => {
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     if (isHorizontal && (x.scaleType === 'time')) {
         var timeTicks = nodeScale.selectAll('.tick')[0];
@@ -162,7 +161,7 @@ var fixAxisTickOverflow = (nodeScale, x) => {
             var rect = timeTexts[iMaxTexts].getBoundingClientRect();
             // 2px from each side
             if ((tickStep - rect.width) < 8) {
-                nodeScale.classed({ 'graphical-report__d3-time-overflown': true });
+                nodeScale.classed({'graphical-report__d3-time-overflown': true});
             }
         }
     }
@@ -172,7 +171,7 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
 
     var selection = nodeScale.selectAll('.tick line');
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     if (isHorizontal) {
         return;
@@ -184,8 +183,7 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
     if (x.scaleType === 'time') {
         doApply = true;
         tickOffset = 0;
-    }
-    else if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
+    } else if (x.scaleType === 'ordinal' || x.scaleType === 'period') {
         doApply = true;
         var sectorSize = size / selection[0].length;
         var offsetSize = sectorSize / 2;
@@ -202,7 +200,7 @@ var fixAxisBottomLine = (nodeScale, x, size) => {
 
 var decorateAxisLabel = (nodeScale, x) => {
     var orient = getOrientation(x.guide.scaleOrient);
-    var koeff = ('h' === orient) ? 1 : -1;
+    var koeff = (orient === 'h') ? 1 : -1;
     var labelTextNode = nodeScale
         .append('text')
         .attr('transform', rotate(x.guide.label.rotate))
@@ -232,8 +230,7 @@ var decorateAxisLabel = (nodeScale, x) => {
     if (x.guide.label.dock === 'right') {
         let box = nodeScale.selectAll('path.domain').node().getBBox();
         labelTextNode.attr('x', (orient === 'h') ? (box.width) : 0);
-    }
-    else if (x.guide.label.dock === 'left') {
+    } else if (x.guide.label.dock === 'left') {
         let box = nodeScale.selectAll('path.domain').node().getBBox();
         labelTextNode.attr('x', (orient === 'h') ? 0 : (-box.height));
     }
@@ -241,7 +238,7 @@ var decorateAxisLabel = (nodeScale, x) => {
 
 var decorateTickLabel = (nodeScale, x) => {
 
-    var isHorizontal = ('h' === getOrientation(x.guide.scaleOrient));
+    var isHorizontal = (getOrientation(x.guide.scaleOrient) === 'h');
 
     var angle = x.guide.rotate;
 
@@ -252,12 +249,20 @@ var decorateTickLabel = (nodeScale, x) => {
 
     if (angle === 90) {
         var dy = parseFloat(ticks.attr('dy')) / 2;
+// jscs:disable disallowSpacesInsideParentheses
         ticks.attr('x', 9).attr('y', 0).attr('dy', `${dy}em`);
+// jscs:enable disallowSpacesInsideParentheses
     }
 
     if (x.guide.tickFormatWordWrap) {
         ticks
-            .call(wrapText, x.guide.tickFormatWordWrapLimit, x.guide.tickFormatWordWrapLines, x.guide.$maxTickTextH, !isHorizontal);
+            .call(
+            wrapText,
+            x.guide.tickFormatWordWrapLimit,
+            x.guide.tickFormatWordWrapLines,
+            x.guide.$maxTickTextH,
+            !isHorizontal
+        );
     } else {
         ticks
             .call(cutText, x.guide.tickFormatWordWrapLimit);
@@ -368,7 +373,9 @@ var extendLabel = function (guide, dimension, extend) {
     guide[dimension] = _.defaults(guide[dimension] || {}, {
         label: ''
     });
-    guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : {text: guide[dimension].label};
+    guide[dimension].label = _.isObject(guide[dimension].label) ?
+        guide[dimension].label :
+        {text: guide[dimension].label};
     guide[dimension].label = _.defaults(
         guide[dimension].label,
         extend || {},
@@ -412,7 +419,7 @@ var applyNodeDefaults = (node) => {
         textAnchor: 'middle'
     });
 
-    node.guide.y = extendLabel(node.guide, 'y',{rotate: -90});
+    node.guide.y = extendLabel(node.guide, 'y', {rotate: -90});
     node.guide.y = extendAxis(node.guide, 'y', {
         cssClass: 'y axis',
         scaleOrient: 'left',
@@ -421,7 +428,6 @@ var applyNodeDefaults = (node) => {
 
     node.guide.size = extendLabel(node.guide, 'size');
     node.guide.color = extendLabel(node.guide, 'color');
-
 
     return node;
 };

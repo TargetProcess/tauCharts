@@ -2,7 +2,12 @@ var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRu
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
 
-    (rootRef[byProperty] || []).forEach((unit) => traverseJSON(unit, byProperty, fnSelectorPredicates, funcTransformRules));
+    (rootRef[byProperty] || []).forEach((unit) => traverseJSON(
+            unit,
+            byProperty,
+            fnSelectorPredicates,
+            funcTransformRules)
+    );
 
     return rootRef;
 };
@@ -39,7 +44,9 @@ var utils = {
 
         var i = -1;
         while (err > correction[++i][0]) {
+// jscs:disable disallowEmptyBlocks
         }
+// jscs:enable disallowEmptyBlocks
 
         step *= correction[i][1];
 
@@ -54,8 +61,7 @@ var utils = {
         if (low >= 0) {
             // include 0 by default
             extent[0] = 0;
-        }
-        else {
+        } else {
             var koeffLow = (deltaLow <= limit) ? step : 0;
             extent[0] = (extent[0] - koeffLow);
         }
@@ -63,8 +69,7 @@ var utils = {
         if (top <= 0) {
             // include 0 by default
             extent[1] = 0;
-        }
-        else {
+        } else {
             var koeffTop = (deltaTop <= limit) ? step : 0;
             extent[1] = extent[1] + koeffTop;
         }

@@ -1,7 +1,6 @@
 var NULL_HANDLER = {};
 var events = {};
 
-
 /**
  * Creates new type of event or returns existing one, if it was created before.
  * @param {string} eventName
@@ -128,8 +127,6 @@ class Emitter {
             }
         }
 
-
-
     }
 
     /**
@@ -147,6 +144,3 @@ class Emitter {
 // export names
 //
 export {Emitter};
-
-
-

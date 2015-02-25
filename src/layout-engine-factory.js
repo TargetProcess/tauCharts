@@ -2,7 +2,6 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {TMatrix} from './matrix';
 
-
 var specUnitSummary = (spec, boxOpt) => {
     var box = boxOpt ? boxOpt : {depth: -1, paddings: []};
     var p = spec.guide.padding;
@@ -18,9 +17,9 @@ var specUnitSummary = (spec, boxOpt) => {
 
 var LayoutEngineTypeMap = {
 
-    'NONE': ((rootNode) => rootNode),
+    NONE: ((rootNode) => rootNode),
 
-    'EXTRACT': (rootNode) => {
+    EXTRACT: (rootNode) => {
 
         var traverse = ((rootNodeMatrix, depth, rule) => {
 
