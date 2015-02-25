@@ -361,7 +361,7 @@ export class Cartesian {
 
     drawFrames(frames, continuation) {
 
-        var node = this.config;
+        var node = _.extend({}, this.config);
 
         var options = node.options;
         var padding = node.guide.padding;
@@ -385,11 +385,11 @@ export class Cartesian {
         node.y.guide.size = innerHeight;
 
         options.container
-            .attr('transform', utilsDraw.translate(innerLeft, innerTop))
-            .attr('opacity', 0.5)
-            .transition()
-            .duration(500)
-            .attr('opacity', 1);
+            .attr('transform', utilsDraw.translate(innerLeft, innerTop));
+            //.attr('opacity', 0.5)
+            //.transition()
+            //.duration(500)
+            //.attr('opacity', 1);
 
         if (!node.x.guide.hide) {
             this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x');
@@ -404,54 +404,60 @@ export class Cartesian {
         var self = this;
 
         var updateHandler = (cell) => {
-            var frames = cell.data();
-            frames.reduce(
-                (units, frame) => {
-                    var mapper;
-                    if (frame.key) {
 
-                        var coordX = self.x(frame.key[self.x.dim]);
-                        var coordY = self.y(frame.key[self.y.dim]);
+            var gridCells = cell[0];
 
-                        var xDomain = self.x.domain();
-                        var yDomain = self.y.domain();
+            gridCells.forEach(function(cellNode) {
+                var cell = d3.select(cellNode);
+                var frames = cell.data();
+                frames.reduce(
+                    (units, frame) => {
+                        var mapper;
+                        if (frame.key) {
 
-                        var xPart = self.W / xDomain.length;
-                        var yPart = self.H / yDomain.length;
+                            var coordX = self.x(frame.key[self.x.dim]);
+                            var coordY = self.y(frame.key[self.y.dim]);
 
-                        var frameId = fnBase64(frame);
+                            var xDomain = self.x.domain();
+                            var yDomain = self.y.domain();
 
-                        mapper = (unit) => {
-                            unit.options = {
-                                frameId     : frameId,
-                                //container   : self.grid.select(`.frame-${frameId}`),
-                                container   : cell,
-                                left        : coordX - xPart / 2,
-                                top         : coordY - yPart / 2,
-                                width       : xPart,
-                                height      : yPart
+                            var xPart = self.W / xDomain.length;
+                            var yPart = self.H / yDomain.length;
+
+                            var frameId = fnBase64(frame);
+
+                            mapper = (unit) => {
+                                unit.options = {
+                                    frameId     : frameId,
+                                    //container   : self.grid.select(`.frame-${frameId}`),
+                                    container   : cell,
+                                    left        : coordX - xPart / 2,
+                                    top         : coordY - yPart / 2,
+                                    width       : xPart,
+                                    height      : yPart
+                                };
+                                return unit;
                             };
-                            return unit;
-                        };
-                    }
-                    else {
-                        mapper = (unit) => {
-                            unit.options = {
-                                container   : cell,
-                                left        : 0,
-                                top         : 0,
-                                width       : self.W,
-                                height      : self.H
+                        }
+                        else {
+                            mapper = (unit) => {
+                                unit.options = {
+                                    container   : cell,
+                                    left        : 0,
+                                    top         : 0,
+                                    width       : self.W,
+                                    height      : self.H
+                                };
+                                return unit;
                             };
-                            return unit;
-                        };
-                    }
+                        }
 
-                    frame.unit.map((u) => continuation(mapper(u), frame));
+                        frame.unit.map((u) => continuation(mapper(u), frame));
 
-                    return units.concat(frame.unit.map(mapper));
-                },
-                []);
+                        return units.concat(frame.unit.map(mapper));
+                    },
+                    []);
+            });
         };
 
         var fnBase64 = (frame) => btoa(JSON.stringify(frame.key) + JSON.stringify(frame.source) + JSON.stringify(frame.pipe));

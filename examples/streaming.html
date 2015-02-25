@@ -209,11 +209,12 @@
 
         chart.render('#line');
         var c = 0;
-        var interval = setTimeout(function(){
-         //   debugger
-            if (c > 0) {
-                // clearInterval(interval);
+        var interval = setInterval(function() {
+
+            if (c > 3) {
+                clearInterval(interval);
             }
+
             chart
                     .config
                     .sources['/']
