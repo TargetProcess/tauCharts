@@ -410,51 +410,51 @@ export class Cartesian {
             gridCells.forEach((cellNode) => {
                 var cell = d3.select(cellNode);
                 var frames = cell.data();
-                frames.reduce((units, frame) => {
-                    var mapper;
-                    if (frame.key) {
+                frames.reduce(
+                    (units, frame) => {
+                        var mapper;
+                        if (frame.key) {
 
-                        var coordX = self.x(frame.key[self.x.dim]);
-                        var coordY = self.y(frame.key[self.y.dim]);
+                            var coordX = self.x(frame.key[self.x.dim]);
+                            var coordY = self.y(frame.key[self.y.dim]);
 
-                        var xDomain = self.x.domain();
-                        var yDomain = self.y.domain();
+                            var xDomain = self.x.domain();
+                            var yDomain = self.y.domain();
 
-                        var xPart = self.W / xDomain.length;
-                        var yPart = self.H / yDomain.length;
+                            var xPart = self.W / xDomain.length;
+                            var yPart = self.H / yDomain.length;
 
-                        var frameId = fnBase64(frame);
+                            var frameId = fnBase64(frame);
 
-                        mapper = (unit) => {
-                            unit.options = {
-                                frameId     : frameId,
-                                container   : cell,
-                                left        : coordX - xPart / 2,
-                                top         : coordY - yPart / 2,
-                                width       : xPart,
-                                height      : yPart
+                            mapper = (unit) => {
+                                unit.options = {
+                                    frameId: frameId,
+                                    container: cell,
+                                    left: coordX - xPart / 2,
+                                    top: coordY - yPart / 2,
+                                    width: xPart,
+                                    height: yPart
+                                };
+                                return unit;
                             };
-                            return unit;
-                        };
-                    }
-                    else {
-                        mapper = (unit) => {
-                            unit.options = {
-                                container   : cell,
-                                left        : 0,
-                                top         : 0,
-                                width       : self.W,
-                                height      : self.H
+                        } else {
+                            mapper = (unit) => {
+                                unit.options = {
+                                    container: cell,
+                                    left: 0,
+                                    top: 0,
+                                    width: self.W,
+                                    height: self.H
+                                };
+                                return unit;
                             };
-                            return unit;
-                        };
-                    }
+                        }
 
-                    frame.unit.map((u) => continuation(mapper(u), frame));
+                        frame.unit.map((u) => continuation(mapper(u), frame));
 
-                    return units.concat(frame.unit.map(mapper));
-                },
-                []);
+                        return units.concat(frame.unit.map(mapper));
+                    },
+                    []);
             });
         };
 
