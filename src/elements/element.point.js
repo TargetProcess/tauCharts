@@ -22,6 +22,8 @@ export class Point {
 
     drawFrames(frames) {
 
+        var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
+
         var canvas = this.config.options.container;
 
         var xScale = this.xScale;
@@ -29,24 +31,48 @@ export class Point {
         var cScale = this.color;
         var sScale = this.size;
 
-        var update = function () {
-
-            var props = {
-                r: 0,
-                cx: (d) => xScale(d[xScale.dim]),
-                cy: (d) => yScale(d[yScale.dim]),
-                class: (d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${cScale(d[cScale.dim])}`
+        var enter = (frameId) => {
+            return function () {
+                return this
+                    .attr({
+                        r: 0,
+                        cx: (d) => xScale(d[xScale.dim]),
+                        cy: (d) => yScale(d[yScale.dim]),
+                        class: (d) => `${prefix} ${cScale(d[cScale.dim])} frame-${frameId}`
+                    })
+                    .transition()
+                    .duration(500)
+                    .attr('r', (d) => sScale(d[sScale.dim]));
             };
+        };
 
-            return this.attr(props).transition().duration(500).attr('r', (d) => sScale(d[sScale.dim]));
+        var update = (frameId) => {
+            return function () {
+                return this
+                    .attr({
+                        r: (d) => sScale(d[sScale.dim]),
+                        cx: (d) => xScale(d[xScale.dim]),
+                        cy: (d) => yScale(d[yScale.dim]),
+                        class: (d) => `${prefix} ${cScale(d[cScale.dim])} frame-${frameId}`
+                    });
+            };
         };
 
         frames.map((frame) => {
+            var frameKey = frame.hash();
             var elements;
-            elements = canvas.selectAll('.dot').data(frame.take());
-//          elements.call(update);
-            elements.exit().remove();
-            elements.enter().append('circle').call(update);
+            elements = canvas
+                .selectAll(`.frame-${frameKey}`)
+                .data(frame.take());
+            elements
+                .exit()
+                .remove();
+            elements
+                .call(update(frameKey));
+            elements
+                .enter()
+                .append('circle')
+                .call(enter(frameKey));
         });
 
         return [];

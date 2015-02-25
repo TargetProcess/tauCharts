@@ -333,9 +333,9 @@ export class Cartesian {
 
         var unit = this.config;
         if (unit.guide.autoLayout === 'extract-axes') {
-            var containerBox = unit.options.container.node().getBBox();
+            var containerHeight = unit.options.containerHeight;
             var guide = unit.guide = unit.guide || {};
-            guide.x.hide = ((unit.options.top + unit.options.height) < containerBox.height);
+            guide.x.hide = ((unit.options.top + unit.options.height) < containerHeight);
             guide.y.hide = ((unit.options.left > 0));
         }
     }
@@ -437,12 +437,14 @@ export class Cartesian {
                             var xPart = self.W / xDomain.length;
                             var yPart = self.H / yDomain.length;
 
-                            var frameId = fnBase64(frame);
+                            var frameId = frame.hash();
 
                             mapper = (unit) => {
                                 unit.options = {
                                     frameId: frameId,
                                     container: cell,
+                                    containerWidth: self.W,
+                                    containerHeight: self.H,
                                     left: coordX - xPart / 2,
                                     top: coordY - yPart / 2,
                                     width: xPart,
@@ -454,6 +456,8 @@ export class Cartesian {
                             mapper = (unit) => {
                                 unit.options = {
                                     container: cell,
+                                    containerWidth: self.W,
+                                    containerHeight: self.H,
                                     left: 0,
                                     top: 0,
                                     width: self.W,
@@ -471,27 +475,19 @@ export class Cartesian {
             });
         };
 
-        var fnBase64 = (frame) => btoa([
-                JSON.stringify(frame.pipe),
-                JSON.stringify(frame.key),
-                JSON.stringify(frame.source)
-            ].join('')
-        ).replace(/=/g, '_');
-
         var cells = this
             .grid
             .selectAll(`.parent-frame-${options.frameId}`)
-            .data(frames, fnBase64);
-
-        cells
-            .call(updateHandler);
+            .data(frames, (f) => f.hash());
         cells
             .exit()
             .remove();
         cells
+            .call(updateHandler);
+        cells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${fnBase64(d)}`))
+            .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
             .call(updateHandler);
     }
 
@@ -543,69 +539,75 @@ export class Cartesian {
         grid.enter()
             .append('g')
             .attr('class', 'grid grid_' + frameId)
-            .attr('transform', translate(0, 0));
+            .attr('transform', translate(0, 0))
+            .call((selection) => {
 
-        grid = container.select('.grid_' + frameId);
-
-        var linesOptions = (node.guide.showGridLines || '').toLowerCase();
-        if (linesOptions.length > 0) {
-
-            var gridLines = grid.append('g').attr('class', 'grid-lines');
-
-            if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
-                var x = node.x;
-                var xGridAxis = d3.svg
-                    .axis()
-                    .scale(x.scaleObj)
-                    .orient(x.guide.scaleOrient)
-                    .tickSize(H);
-
-                let formatter = FormatterRegistry.get(x.guide.tickFormat);
-                if (formatter !== null) {
-                    xGridAxis.ticks(Math.round(W / x.guide.density));
-                    xGridAxis.tickFormat(formatter);
+                if (selection.empty()) {
+                    return;
                 }
 
-                var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
+                var grid = selection;
 
-                decorateAxisTicks(xGridLines, x, W);
+                var linesOptions = (node.guide.showGridLines || '').toLowerCase();
+                if (linesOptions.length > 0) {
 
-                var firstXGridLine = xGridLines.select('g.tick');
-                if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
-                    var zeroNode = firstXGridLine.node().cloneNode(true);
-                    gridLines.node().appendChild(zeroNode);
-                    d3.select(zeroNode)
-                        .attr('class', 'border')
-                        .attr('transform', translate(0, 0))
-                        .select('line')
-                        .attr('x1', 0)
-                        .attr('x2', 0);
+                    var gridLines = grid.append('g').attr('class', 'grid-lines');
+
+                    if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
+                        var x = node.x;
+                        var xGridAxis = d3.svg
+                            .axis()
+                            .scale(x.scaleObj)
+                            .orient(x.guide.scaleOrient)
+                            .tickSize(H);
+
+                        let formatter = FormatterRegistry.get(x.guide.tickFormat);
+                        if (formatter !== null) {
+                            xGridAxis.ticks(Math.round(W / x.guide.density));
+                            xGridAxis.tickFormat(formatter);
+                        }
+
+                        var xGridLines = gridLines.append('g').attr('class', 'grid-lines-x').call(xGridAxis);
+
+                        decorateAxisTicks(xGridLines, x, W);
+
+                        var firstXGridLine = xGridLines.select('g.tick');
+                        if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
+                            var zeroNode = firstXGridLine.node().cloneNode(true);
+                            gridLines.node().appendChild(zeroNode);
+                            d3.select(zeroNode)
+                                .attr('class', 'border')
+                                .attr('transform', translate(0, 0))
+                                .select('line')
+                                .attr('x1', 0)
+                                .attr('x2', 0);
+                        }
+                    }
+
+                    if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
+                        var y = node.y;
+                        var yGridAxis = d3.svg
+                            .axis()
+                            .scale(y.scaleObj)
+                            .orient(y.guide.scaleOrient)
+                            .tickSize(-W);
+
+                        let formatter = FormatterRegistry.get(y.guide.tickFormat);
+                        if (formatter !== null) {
+                            yGridAxis.ticks(Math.round(H / y.guide.density));
+                            yGridAxis.tickFormat(formatter);
+                        }
+
+                        var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
+
+                        decorateAxisTicks(yGridLines, y, H);
+                        fixAxisBottomLine(yGridLines, y, H);
+                    }
+
+                    // TODO: make own axes and grid instead of using d3's in such tricky way
+                    gridLines.selectAll('text').remove();
                 }
-            }
-
-            if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
-                var y = node.y;
-                var yGridAxis = d3.svg
-                    .axis()
-                    .scale(y.scaleObj)
-                    .orient(y.guide.scaleOrient)
-                    .tickSize(-W);
-
-                let formatter = FormatterRegistry.get(y.guide.tickFormat);
-                if (formatter !== null) {
-                    yGridAxis.ticks(Math.round(H / y.guide.density));
-                    yGridAxis.tickFormat(formatter);
-                }
-
-                var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
-
-                decorateAxisTicks(yGridLines, y, H);
-                fixAxisBottomLine(yGridLines, y, H);
-            }
-
-            // TODO: make own axes and grid instead of using d3's in such tricky way
-            gridLines.selectAll('text').remove();
-        }
+            });
 
         return grid;
     }

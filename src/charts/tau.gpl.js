@@ -125,6 +125,7 @@ export class GPL extends Emitter {
 
         this.root.options = {
             container: container.select('.frame-root'),
+            frameId: 'root',
             left: 0,
             top: 0,
             width: size.width,
@@ -207,6 +208,7 @@ export class GPL extends Emitter {
     _datify(frame) {
         var data = this.sources[frame.source].data;
         var trans = this.trans;
+        frame.hash = () => btoa([frame.pipe, frame.key, frame.source].map(JSON.stringify).join('')).replace(/=/g, '_');
         frame.take = () => frame.pipe.reduce((data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args), data);
         frame.data = frame.take();
         return frame;
