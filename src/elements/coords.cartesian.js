@@ -384,22 +384,22 @@ export class Cartesian {
         node.x.guide.size = innerWidth;
         node.y.guide.size = innerHeight;
 
-        options.container
+        options
+            .container
             .attr('transform', utilsDraw.translate(innerLeft, innerTop));
-        //.attr('opacity', 0.5)
-        //.transition()
-        //.duration(500)
-        //.attr('opacity', 1);
+
+        var hashX = node.x.getHash();
+        var hashY = node.y.getHash();
 
         if (!node.x.guide.hide) {
-            this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x');
+            this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x', hashX);
         }
 
         if (!node.y.guide.hide) {
-            this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, options.frameId + 'y');
+            this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, options.frameId + 'y', hashY);
         }
 
-        this.grid = this._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId);
+        this.grid = this._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY);
 
         var self = this;
 
@@ -407,60 +407,58 @@ export class Cartesian {
 
             var gridCells = cell[0];
 
-            gridCells.forEach(function (cellNode) {
+            gridCells.forEach((cellNode) => {
                 var cell = d3.select(cellNode);
                 var frames = cell.data();
-                frames.reduce(
-                    (units, frame) => {
-                        var mapper;
-                        if (frame.key) {
+                frames.reduce((units, frame) => {
+                    var mapper;
+                    if (frame.key) {
 
-                            var coordX = self.x(frame.key[self.x.dim]);
-                            var coordY = self.y(frame.key[self.y.dim]);
+                        var coordX = self.x(frame.key[self.x.dim]);
+                        var coordY = self.y(frame.key[self.y.dim]);
 
-                            var xDomain = self.x.domain();
-                            var yDomain = self.y.domain();
+                        var xDomain = self.x.domain();
+                        var yDomain = self.y.domain();
 
-                            var xPart = self.W / xDomain.length;
-                            var yPart = self.H / yDomain.length;
+                        var xPart = self.W / xDomain.length;
+                        var yPart = self.H / yDomain.length;
 
-                            var frameId = fnBase64(frame);
+                        var frameId = fnBase64(frame);
 
-                            mapper = (unit) => {
-                                unit.options = {
-                                    frameId: frameId,
-                                    //container   : self.grid.select(`.frame-${frameId}`),
-                                    container: cell,
-                                    left: coordX - xPart / 2,
-                                    top: coordY - yPart / 2,
-                                    width: xPart,
-                                    height: yPart
-                                };
-                                return unit;
+                        mapper = (unit) => {
+                            unit.options = {
+                                frameId     : frameId,
+                                container   : cell,
+                                left        : coordX - xPart / 2,
+                                top         : coordY - yPart / 2,
+                                width       : xPart,
+                                height      : yPart
                             };
-                        }
-                        else {
-                            mapper = (unit) => {
-                                unit.options = {
-                                    container: cell,
-                                    left: 0,
-                                    top: 0,
-                                    width: self.W,
-                                    height: self.H
-                                };
-                                return unit;
+                            return unit;
+                        };
+                    }
+                    else {
+                        mapper = (unit) => {
+                            unit.options = {
+                                container   : cell,
+                                left        : 0,
+                                top         : 0,
+                                width       : self.W,
+                                height      : self.H
                             };
-                        }
+                            return unit;
+                        };
+                    }
 
-                        frame.unit.map((u) => continuation(mapper(u), frame));
+                    frame.unit.map((u) => continuation(mapper(u), frame));
 
-                        return units.concat(frame.unit.map(mapper));
-                    },
-                    []);
+                    return units.concat(frame.unit.map(mapper));
+                },
+                []);
             });
         };
 
-        var fnBase64 = (frame) => btoa(JSON.stringify(frame.key) + JSON.stringify(frame.source) + JSON.stringify(frame.pipe));
+        var fnBase64 = (frame) => btoa(JSON.stringify(frame.pipe) + JSON.stringify(frame.key) + JSON.stringify(frame.source)).replace(/=/g, '_');
 
         var cells = this
             .grid
@@ -468,19 +466,18 @@ export class Cartesian {
             .data(frames, fnBase64);
 
         cells
+            .call(updateHandler);
+        cells
+            .exit()
+            .remove();
+        cells
             .enter()
             .append('g')
             .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${fnBase64(d)}`))
             .call(updateHandler);
-
-        cells
-            .exit()
-            .remove();
-
-        cells.call(updateHandler);
     }
 
-    _fnDrawDimAxis(container, x, AXIS_POSITION, size, S) {
+    _fnDrawDimAxis(container, x, AXIS_POSITION, size, frameId, S) {
 
         if (x.scaleDim) {
 
@@ -495,11 +492,14 @@ export class Cartesian {
                 axisScale.tickFormat(formatter);
             }
 
-            container.selectAll('.axis_' + S)
-                .data([S])
-                .enter()
+            var axis = container
+                .selectAll('.axis_' + frameId)
+                .data([S], (x) => x);
+            axis.exit()
+                .remove();
+            axis.enter()
                 .append('g')
-                .attr('class', x.guide.cssClass + ' axis_' + S)
+                .attr('class', x.guide.cssClass + ' axis_' + frameId)
                 .attr('transform', utilsDraw.translate(...AXIS_POSITION))
                 .call(function (selection) {
                     if (!selection.empty()) {
@@ -513,17 +513,21 @@ export class Cartesian {
         }
     }
 
-    _fnDrawGrid(container, node, H, W, S) {
+    _fnDrawGrid(container, node, H, W, frameId, S) {
 
-        container
-            .selectAll('.grid_' + S)
-            .data([S])
-            .enter()
+        var grid = container
+            .selectAll('.grid_' + frameId)
+            .data([S], (x) => x);
+
+        grid.exit()
+            .remove();
+
+        grid.enter()
             .append('g')
-            .attr('class', 'grid grid_' + S)
+            .attr('class', 'grid grid_' + frameId)
             .attr('transform', translate(0, 0));
 
-        var grid = container.select('.grid_' + S);
+        grid = container.select('.grid_' + frameId);
 
         var linesOptions = (node.guide.showGridLines || '').toLowerCase();
         if (linesOptions.length > 0) {

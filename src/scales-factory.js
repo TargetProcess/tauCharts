@@ -119,6 +119,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'ordinal';
+        scale.getHash = () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
         return scale;
     },
 
@@ -156,6 +157,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'linear';
+        scale.getHash = () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
 
         return scale;
     },

@@ -129,7 +129,7 @@
                     },
                     data: [
                         // {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
-                        {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
+                        {project: 'tau1', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
                     ]
                 }
             },
@@ -154,7 +154,7 @@
                 'color:default' : {type: 'color', source: '?', brewer: null},
                 'story' : {type: 'ordinal', source: '/', dim: 'story'},
                 'bug'   : {type: 'ordinal', source: '/', dim: 'bug'},
-                'count' : {type: 'linear',  source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
+                'count' : {type: 'linear',  source: '/', dim: 'count', autoScale: true},
                 'project'  : {type: 'ordinal', source: '/', dim: 'project'},
                 'team'  : {type: 'ordinal', source: '/', dim: 'team'}
             },
@@ -207,7 +207,9 @@
         };
         var chart = new tauCharts.GPL(facetSpec);
 
-        chart.render('#line');
+        var size = {width: 800, height: 600};
+
+        chart.render('#line', size);
         var c = 0;
         var interval = setInterval(function() {
 
@@ -215,20 +217,22 @@
                 clearInterval(interval);
             }
 
+            ++c;
+
             chart
                     .config
                     .sources['/']
                     .data
                     .push({
-                        project: 'tau',
+                        project: 'tau' + c,
                         team: 'xbeta',
-                        story: 'B1',
+                        story: 'B' + c,
                         bug: 'ISSUE2',
-                        count: ++c,
+                        count: c * 5,
                         date: new Date('2014-10-05')
                     });
 
-            chart.render('#line');
+            chart.render('#line', size);
 
         },1000);
         window.chart = chart;
