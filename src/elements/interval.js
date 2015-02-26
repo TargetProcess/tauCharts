@@ -151,7 +151,9 @@ var interval = function (node) {
             .attr('height', calculateHeight)
             .attr('width', calculateWidth)
 // jscs:disable
-            .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[node.color.scaleDim])}`))
+            .attr('class', (d) =>{
+               return  (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[node.color.scaleDim])}`)
+            })
 // jscs:enable
             .attr('x', calculateX)
             .attr('y', calculateY);

@@ -23,14 +23,39 @@ export class Interval {
 
     drawFrames(frames) {
         var canvas = this.config.options.container;
-
+        var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
-        var cScale = this.color;
+        var color = this.color;
         var sScale = this.size;
 
         return frames.map((frame) => {
-            frame.take();
+           // frame.take();
+            var node = {
+                options: {
+                    container: canvas,
+                    xScale,
+                    yScale,
+                    color,
+                    width:config.options.width,
+                    height:config.options.height
+                },
+                x: xScale,
+                y: yScale,
+                color: color,
+                groupBy() {
+                    return d3.nest()
+                        .key(function (d) {
+                            return d[color.scaleDim];
+                        })
+                        .entries(frame.take());
+                },
+                partition() {
+                },
+                source() {
+                }
+            };
+            interval(node);
             return frame;
         });
     }

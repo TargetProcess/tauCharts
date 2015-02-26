@@ -117,7 +117,14 @@
         }
     });
 
-    require(['tau_modules/tau.charts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
+    require([
+        'tau_modules/tau.charts',
+        'src/addons/color-brewer',
+        'plugins/legend',
+        'plugins/trendline',
+        'plugins/export',
+        'plugins/tooltip',
+        'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
          * @extends Plugin */
         var defData = [
@@ -159,7 +166,7 @@
             },*/
             plugins: [legend(), trendline(), exportTo({cssPaths:['../css/tauCharts.css']}), tooltip()],
             data: defData,
-            type: 'scatterplot',
+            type: 'bar',
             x: 'date',
             y: 'count',
             size:'count',

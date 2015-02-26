@@ -372,7 +372,8 @@
                 },
                 data: [
                     {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
-                    {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
+                    {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')},
+                    {project: 'tau', team: 'xbeta', story: 'A1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')},
                 ]
             }
         },
@@ -421,8 +422,8 @@
             units: [
                 {
                     type: 'RECT',
-                    x: 'count',
-                    y: 'story',
+                    x: 'story',
+                    y: 'count',
                     expression: {
                         source: '/',
                         inherit: true
@@ -435,9 +436,10 @@
                     },
                     units: [
                         {
-                            type: 'POINT',
-                            x: 'count',
-                            y: 'story',
+                            type: 'INTERVAL',
+                            x: 'story',
+                            y: 'count',
+                            color:'team',
                             expression: {
                                 source: '/',
                                 inherit: true
