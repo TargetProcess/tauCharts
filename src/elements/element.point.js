@@ -22,58 +22,71 @@ export class Point {
 
     drawFrames(frames) {
 
-        var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
+        var options = this.config.options;
 
-        var canvas = this.config.options.container;
+        var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
         var xScale = this.xScale;
         var yScale = this.yScale;
         var cScale = this.color;
         var sScale = this.size;
 
-        var enter = (frameId) => {
-            return function () {
-                return this
-                    .attr({
-                        r: 0,
-                        cx: (d) => xScale(d[xScale.dim]),
-                        cy: (d) => yScale(d[yScale.dim]),
-                        class: (d) => `${prefix} ${cScale(d[cScale.dim])} frame-${frameId}`
-                    })
-                    .transition()
-                    .duration(500)
-                    .attr('r', (d) => sScale(d[sScale.dim]));
-            };
+        var enter = function () {
+            return this
+                .attr({
+                    r: 0,
+                    cx: (d) => xScale(d[xScale.dim]),
+                    cy: (d) => yScale(d[yScale.dim]),
+                    class: (d) => `${prefix} ${cScale(d[cScale.dim])}`
+                })
+                .transition()
+                .duration(500)
+                .attr('r', (d) => sScale(d[sScale.dim]));
         };
 
-        var update = (frameId) => {
-            return function () {
-                return this
-                    .attr({
-                        r: (d) => sScale(d[sScale.dim]),
-                        cx: (d) => xScale(d[xScale.dim]),
-                        cy: (d) => yScale(d[yScale.dim]),
-                        class: (d) => `${prefix} ${cScale(d[cScale.dim])} frame-${frameId}`
-                    });
-            };
+        var update = function () {
+            return this
+                .attr({
+                    r: (d) => sScale(d[sScale.dim]),
+                    cx: (d) => xScale(d[xScale.dim]),
+                    cy: (d) => yScale(d[yScale.dim]),
+                    class: (d) => `${prefix} ${cScale(d[cScale.dim])}`
+                });
         };
 
-        frames.map((frame) => {
-            var frameKey = frame.hash();
-            var elements;
-            elements = canvas
-                .selectAll(`.frame-${frameKey}`)
-                .data(frame.take());
-            elements
-                .exit()
-                .remove();
-            elements
-                .call(update(frameKey));
-            elements
-                .enter()
-                .append('circle')
-                .call(enter(frameKey));
-        });
+        var updateGroups = function () {
+
+            this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
+                .call(function () {
+                    var points = this
+                        .selectAll('circle')
+                        .data((frame) => frame.data);
+                    points
+                        .exit()
+                        .remove();
+                    points
+                        .call(update);
+                    points
+                        .enter()
+                        .append('circle')
+                        .call(enter);
+                });
+        };
+
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+
+        var frameGroups = options.container
+            .selectAll('.frame-id-' + options.uid)
+            .data(frames.map(mapper), (f) => f.hash);
+        frameGroups
+            .exit()
+            .remove();
+        frameGroups
+            .call(updateGroups);
+        frameGroups
+            .enter()
+            .append('g')
+            .call(updateGroups);
 
         return [];
     }

@@ -426,6 +426,7 @@ export class Cartesian {
                 frames.reduce(
                     (units, frame) => {
                         var mapper;
+                        var frameId = frame.hash();
                         if (frame.key) {
 
                             var coordX = self.x(frame.key[self.x.dim]);
@@ -437,10 +438,9 @@ export class Cartesian {
                             var xPart = self.W / xDomain.length;
                             var yPart = self.H / yDomain.length;
 
-                            var frameId = frame.hash();
-
-                            mapper = (unit) => {
+                            mapper = (unit, i) => {
                                 unit.options = {
+                                    uid: frameId + i,
                                     frameId: frameId,
                                     container: cell,
                                     containerWidth: self.W,
@@ -453,8 +453,9 @@ export class Cartesian {
                                 return unit;
                             };
                         } else {
-                            mapper = (unit) => {
+                            mapper = (unit, i) => {
                                 unit.options = {
+                                    uid: frameId + i,
                                     container: cell,
                                     containerWidth: self.W,
                                     containerHeight: self.H,
@@ -467,7 +468,7 @@ export class Cartesian {
                             };
                         }
 
-                        frame.units.map((u) => continuation(mapper(u), frame));
+                        frame.units.map(mapper).map((unit) => continuation(unit, frame));
 
                         return units.concat(frame.units.map(mapper));
                     },

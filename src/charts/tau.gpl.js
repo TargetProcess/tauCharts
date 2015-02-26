@@ -117,9 +117,7 @@ export class GPL extends Emitter {
             .data(['const'])
             .enter()
             .append('svg')
-// jscs:disable disallowSpacesInsideObjectBrackets
-            .attr(_.extend({class: `${CSS_PREFIX}svg`}, size))
-// jscs:enable disallowSpacesInsideObjectBrackets
+            .attr(_.extend({class: (`${CSS_PREFIX}svg`)}, size))
             .append('g')
             .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 

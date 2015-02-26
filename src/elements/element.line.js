@@ -9,7 +9,8 @@ export class Line {
         this.config.guide = _.defaults(
             this.config.guide,
             {
-                cssClass: ''
+                cssClass: '',
+                anchors: false
             }
         );
     }
@@ -28,71 +29,109 @@ export class Line {
 
     drawFrames(frames) {
 
-        var config = this.config;
-
+        var guide = this.config.guide;
         var options = this.config.options;
 
         var xScale = this.xScale;
         var yScale = this.yScale;
         var colorScale = this.color;
+        var sizeScale = this.size;
 
-        var widthClass = getLineClassesByWidth(options.width);
-        var countClass = getLineClassesByCount(frames.length);
+        var widthCss = getLineClassesByWidth(options.width);
+        var countCss = getLineClassesByCount(frames.length);
 
+        var d3Line = d3.svg
+            .line()
+            .x((d) => xScale(d[xScale.dim]))
+            .y((d) => yScale(d[yScale.dim]));
+
+        if (guide.interpolate) {
+            d3Line.interpolate(guide.interpolate);
+        }
+
+        var linePref = `${CSS_PREFIX}line i-role-element i-role-datum line ${widthCss} ${countCss} ${guide.cssClass}`;
         var updateLines = function () {
-            // jscs:disable
-            this.attr('class', (d) => `${CSS_PREFIX}line i-role-element i-role-datum line ${colorScale(d.key)} ${widthClass} ${countClass} ${config.guide.cssClass}`);
-            // jscs:enable
-            var paths = this.selectAll('path').data((d) => [d.take()]);
-            paths.call(updatePaths);
-            paths.enter().append('path').call(updatePaths);
-            paths.exit().remove();
+            var paths = this
+                .selectAll('path')
+                .data((frame) => [frame.data]);
+            paths
+                .exit()
+                .remove();
+            paths
+                .attr('d', d3Line);
+            paths
+                .enter()
+                .append('path')
+                .attr('d', d3Line);
         };
 
-        var drawPoints = function (points) {
-            var update = function () {
-                return this
-                    .attr('r', 1.5)
-                    // jscs:disable
-                    .attr('class', (d) => `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum ${colorScale(d[colorScale.dim])}`)
-                    // jscs:enable
-                    .attr('cx', (d) => xScale(d[xScale.dim]))
-                    .attr('cy', (d) => yScale(d[yScale.dim]));
+        var pointPref = `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum`;
+        var updatePoints = function () {
+
+            var points = this
+                .selectAll('circle')
+                .data((frame) => frame.data);
+            points
+                .exit()
+                .remove();
+            points
+                .attr({
+                    r: (d) => sizeScale(d[sizeScale.dim]),
+                    cx: (d) => xScale(d[xScale.dim]),
+                    cy: (d) => yScale(d[yScale.dim]),
+                    class: (d) => (`${pointPref} ${colorScale(d[colorScale.dim])}`)
+                });
+            points
+                .enter()
+                .append('circle')
+                .attr({
+                    r: (d) => sizeScale(d[sizeScale.dim]),
+                    cx: (d) => xScale(d[xScale.dim]),
+                    cy: (d) => yScale(d[yScale.dim]),
+                    class: (d) => (`${pointPref} ${colorScale(d[colorScale.dim])}`)
+                });
+        };
+
+        var updateGroups = (x, drawPath, drawPoints) => {
+
+            return function () {
+
+                this.attr('class', (f) => `${linePref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
+                    .call(function () {
+
+                        if (drawPath) {
+                            updateLines.call(this);
+                        }
+
+                        if (drawPoints) {
+                            updatePoints.call(this);
+                        }
+                    });
             };
-
-            var elements = options.container.selectAll('.dot-line').data(points);
-            elements.call(update);
-            elements.exit().remove();
-            elements.enter().append('circle').call(update);
         };
 
-        var line = d3.svg.line().x((d) => xScale(d[xScale.dim])).y((d) => yScale(d[yScale.dim]));
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
 
-        if (this.config.guide.interpolate) {
-            line.interpolate(this.config.guide.interpolate);
-        }
+        var drawFrame = (tag, id, filter) => {
 
-        var updatePaths = function () {
-            this.attr('d', line);
+            var isDrawLine = tag === 'line';
+            var isDrawAnch = !isDrawLine || guide.anchors;
+
+            var frameGroups = options.container
+                .selectAll(`.frame-${id}`)
+                .data(frames.map(mapper).filter(filter), (f) => f.hash);
+            frameGroups
+                .exit()
+                .remove();
+            frameGroups
+                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnch));
+            frameGroups
+                .enter()
+                .append('g')
+                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnch));
         };
 
-        var points = frames.reduce(
-            function (points, item) {
-                var values = item.take();
-                if (values.length === 1) {
-                    points.push(values[0]);
-                }
-                return points;
-            },
-            []);
-
-        if (points.length > 0) {
-            drawPoints(points);
-        }
-
-        var lines = options.container.selectAll('.line' + parseInt(Math.random() * 1000)).data(frames);
-        lines.call(updateLines);
-        lines.enter().append('g').call(updateLines);
-        lines.exit().remove();
+        drawFrame('line', 'line-' + options.uid, (f) => f.data.length > 1);
+        drawFrame('anch', 'anch-' + options.uid, (f) => f.data.length < 2);
     }
 }

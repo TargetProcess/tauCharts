@@ -451,9 +451,9 @@
         }
     };
 
-    var gpl = new tauCharts.GPL(facetSpec);
+    var facetGpl = new tauCharts.GPL(facetSpec);
 
-    gpl.renderTo('#container');
+    facetGpl.renderTo('#container');
 </script>
 
 <script>
@@ -607,7 +607,7 @@
                         source: '/',
                         inherit: true
                     },
-                    transformation: [{type: 'regression', args: {type: 'loess', x: 'xdate', y: 'count'}}],
+                    transformation: [{type: 'regression', args: {type: 'linear', x: 'xdate', y: 'count'}}],
                     guide: {
                         interpolate: 'basis',
                         cssClass: 'graphical-report__trendline'
@@ -642,6 +642,24 @@
     var gpl = new tauCharts.GPL(facetSpec);
 
     gpl.renderTo('#trendline');
+
+    var iteration = 0;
+    var updateData = function() {
+
+        if (++iteration > 100) {
+            return;
+        }
+
+         facetSpec.sources['/'].data.push({
+            xdate: parseInt(Math.random() * 10),
+            count: parseInt(Math.random() * 10) + parseInt(Math.random() * 10) * (parseInt(Math.random() * 10) > 5 ? -1 : 1)
+        });
+
+        gpl.renderTo('#trendline');
+    };
+
+    setInterval(updateData, 2000);
+
 </script>
 
 
@@ -993,9 +1011,9 @@
         }
     };
 
-    var gpl = new tauCharts.GPL(dashSpec);
+    var dashGpl = new tauCharts.GPL(dashSpec);
 
-    gpl.renderTo('#dashboard');
+    dashGpl.renderTo('#dashboard');
 </script>
 
 </body>
