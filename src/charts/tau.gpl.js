@@ -40,7 +40,11 @@ var FramesAlgebra = {
             },
             []);
     },
-
+    groupBy(dataFn, dim) {
+        var data = dataFn();
+        var domainX = _(data).chain().pluck(dim).unique().value();
+        return domainX.map((x)=>({[dim]:x}));
+    },
     none: function (datus, dimX, dimY, pipe) {
         return [null];
     }
