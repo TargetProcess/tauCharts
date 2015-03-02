@@ -27,7 +27,7 @@
 
         .color-us {
             stroke: blue;
-            fill:blue;
+            fill: blue;
         }
 
         .color-bug {
@@ -90,135 +90,217 @@
 <div id="line"></div>
 <script src="http://localhost:9000/tauCharts.js"></script>
 <script>
-        /** @class Tooltip
-         * @extends Plugin */
-        var defData = [
-            {type: 'us', count: 0, date: 2},
-            {type: 'us', count: -0.012301230123, date: 2},
-            {type: 'us', count: 123, date: 2},
-            {type: 'us', count: 10, date: 3},
-            {type: 'us', count: 15, date: 4},
+    /** @class Tooltip
+     * @extends Plugin */
+    var defData = [
+        {type: 'us', count: 0, date: 2},
+        {type: 'us', count: -0.012301230123, date: 2},
+        {type: 'us', count: 123, date: 2},
+        {type: 'us', count: 10, date: 3},
+        {type: 'us', count: 15, date: 4},
 
-            {type: 'bug', count: 0.12, date: 5},
-            {type: 'bug', count: 0.16, date: 6},
-            {type: 'bug', count: 0.1313, date: 7},
+        {type: 'bug', count: 0.12, date: 5},
+        {type: 'bug', count: 0.16, date: 6},
+        {type: 'bug', count: 0.1313, date: 7},
 
-            {type: 'request', count: 0.22, date: 5},
-            {type: 'request', count: 0.26, date: 6},
-            {type: 'request', count: 0.2313, date: 7},
+        {type: 'request', count: 0.22, date: 5},
+        {type: 'request', count: 0.26, date: 6},
+        {type: 'request', count: 0.2313, date: 7},
 
-            {type: 'task', count: 1.12, date: 5},
-            {type: 'task', count: 1.16, date: 6},
-            {type: 'task', count: 1.1313, date: 7}
-        ];
-        var facetSpec = {
+        {type: 'task', count: 1.12, date: 5},
+        {type: 'task', count: 1.16, date: 6},
+        {type: 'task', count: 1.1313, date: 7}
+    ];
+    var facetSpec = {
 
-            sources: {
-                '?': {
-                    dims: {},
-                    data: []
+        sources: {
+            '?': {
+                dims: {},
+                data: []
+            },
+            '/': {
+                dims: {
+                    story: {type: 'category'},
+                    bug: {type: 'category'},
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    count: {type: 'measure'},
+                    date: {type: 'measure'}
                 },
-                '/': {
-                    dims: {
-                        story   : {type: 'category'},
-                        bug     : {type: 'category'},
-                        project : {type: 'category'},
-                        team    : {type: 'category'},
-                        count   : {type: 'measure'},
-                        date    : {type: 'measure'}
+                data: [
+                    {
+                        project: 'TP3',
+                        team: 'alpha',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 10,
+                        date: new Date('2014-01-05')
                     },
-                    data: [
-                        {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
-                        {project: 'tau1', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
-                    ]
-                }
-            },
+                    {
+                        project: 'TP3',
+                        team: 'xbeta',
+                        story: 'A1',
+                        bug: 'ISSUE2',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },{
+                        project: 'TP3',
+                        team: 'xbeta',
+                        story: 'A1',
+                        bug: 'ISSUE4',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'TP3',
+                        team: 'xbeta',
+                        story: 'A1',
+                        bug: 'ISSUE3',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'TP3',
+                        team: 'xbeta3',
+                        story: 'A1',
+                        bug: 'ISSUE3',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'TP3',
+                        team: 'xbeta',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'TP2',
+                        team: 'xbeta3',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'TP1',
+                        team: 'xbeta',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'tau1',
+                        team: 'xbeta',
+                        story: 'B1',
+                        bug: 'ISSUE2',
+                        count: 15,
+                        date: new Date('2014-10-05')
+                    }
+                ]
+            }
+        },
 
-            trans: {
-                where: function (data, tuple) {
-                    var predicates = _.map(tuple, function(v, k) {
-                        return function(row) {
-                            return (row[k] === v);
-                        }
-                    });
-                    return _(data).filter(function(row) {
-                        return _.every(predicates, function(p) {
-                            return p(row);
-                        })
-                    });
-                }
-            },
+        trans: {
+            where: function (data, tuple) {
+                var predicates = _.map(tuple, function (v, k) {
+                    return function (row) {
+                        return (row[k] === v);
+                    }
+                });
+                return _(data).filter(function (row) {
+                    return _.every(predicates, function (p) {
+                        return p(row);
+                    })
+                });
+            }
+        },
 
-            scales: {
-                'size:default'  : {type: 'size',  source: '?', mid: 5},
-                'color:default' : {type: 'color', source: '?', brewer: null},
-                'story' : {type: 'ordinal', source: '/', dim: 'story'},
-                'bug'   : {type: 'ordinal', source: '/', dim: 'bug'},
-                'count' : {type: 'linear',  source: '/', dim: 'count', autoScale: true},
-                'project'  : {type: 'ordinal', source: '/', dim: 'project'},
-                'team'  : {type: 'ordinal', source: '/', dim: 'team'}
+        scales: {
+            'size:default': {type: 'size', source: '?', mid: 5},
+            'color': {type: 'color', dim: 'bug', source: '/'},
+            'story': {type: 'ordinal', source: '/', dim: 'story'},
+            'bug': {type: 'ordinal', source: '/', dim: 'bug'},
+            'count': {type: 'linear', source: '/', dim: 'count', autoScale: true},
+            'project': {type: 'ordinal', source: '/', dim: 'project'},
+            'team': {type: 'ordinal', source: '/', dim: 'team'}
+        },
+        unit: {
+            type: 'RECT',
+            x: 'project',
+            y: 'team',
+            expression: {
+                inherit: false,
+                source: '/',
+                operator: 'cross',
+                params: ['project', 'team']
             },
-
-            unit:{
+            units: [{
                 type: 'RECT',
                 x: 'story',
                 y: 'count',
                 expression: {
-                    inherit: false,
-                    source: '/',
-                   // operator: 'cross',
-                    //params: ['project', 'team']
+                    inherit: true,
+                    source: '/'
+                    /*  operator: 'cross',
+                     params: ['project','team']*/
                 },
                 guide: {
                     padding: {l: 60, r: 0, t: 0, b: 60},
-                   // showGridLines: '',
-                    x: {padding: 40, label: {text: 'project'}, cssClass:'x axis'},
-                    y: {padding: 40, label: {text: 'team'},    cssClass:'y axis'}
+                    // showGridLines: '',
+                    x: {padding: 40, label: {text: 'project'}, cssClass: 'x axis'},
+                    y: {padding: 40, label: {text: 'team'}, cssClass: 'y axis'}
                 },
                 units: [
                     {
                         type: 'INTERVAL',
                         x: 'story',
                         y: 'count',
+                        color: 'color',
                         expression: {
                             source: '/',
+                            operator: 'groupBy',
+                            params: ['bug'],
                             inherit: true
                         }
                     }
                 ]
-            }
-        };
-        var chart = new tauCharts.GPL(facetSpec);
+            }]
+        }
+    };
+    var chart = new tauCharts.GPL(facetSpec);
 
-        var size = {width: 800, height: 600};
+    var size = {width: 800, height: 600};
 
-        chart.renderTo('#line', size);
-        /*var c = 0;
-        var interval = setInterval(function() {
+    chart.renderTo('#line', size);
+    /*var c = 0;
+     var interval = setInterval(function() {
 
-            if (c > 3) {
-                clearInterval(interval);
-            }
+     if (c > 3) {
+     clearInterval(interval);
+     }
 
-            ++c;
+     ++c;
 
-            chart
-                    .config
-                    .sources['/']
-                    .data
-                    .push({
-                        project: 'tau' + c,
-                        team: 'xbeta',
-                        story: 'B' + c,
-                        bug: 'ISSUE2',
-                        count: c * 5,
-                        date: new Date('2014-10-05')
-                    });
+     chart
+     .config
+     .sources['/']
+     .data
+     .push({
+     project: 'tau' + c,
+     team: 'xbeta',
+     story: 'B' + c,
+     bug: 'ISSUE2',
+     count: c * 5,
+     date: new Date('2014-10-05')
+     });
 
-            chart.render('#line', size);
+     chart.render('#line', size);
 
-        },1000);*/
-        window.chart = chart;
+     },1000);*/
+    window.chart = chart;
 
 </script>
 

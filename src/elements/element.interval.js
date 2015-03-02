@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
-import {interval} from './interval';
+import {flipHub} from './element.interval.fn';
+import {interval, drawInterval} from './interval';
 
 export class Interval {
 
@@ -26,37 +27,44 @@ export class Interval {
         var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
-        var color = this.color;
-        var sScale = this.size;
+        var colorScale = this.color;
+        var node = {
+            options: {
+                container: canvas,
+                xScale,
+                yScale,
+                color: colorScale,
+                width: config.options.width,
+                height: config.options.height
+            },
+            x: xScale,
+            y: yScale,
+            color: colorScale
+        };
+        var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
+        var colorIndexScale = (d) => {
+            return _.findIndex(domain, (value)=> {
+                return value === d.key[colorScale.scaleDim];
+            });
+        };
+        //  colorScale.scaleDim = node.color.scaleDim;
+        var domain = colorScale.domain();
+        colorIndexScale.count = () => domain.length;
 
-        return frames.map((frame) => {
-           // frame.take();
-            var node = {
-                options: {
-                    container: canvas,
-                    xScale,
-                    yScale,
-                    color,
-                    width:config.options.width,
-                    height:config.options.height
-                },
-                x: xScale,
-                y: yScale,
-                color: color,
-                groupBy() {
-                    return d3.nest()
-                        .key(function (d) {
-                            return d[color.scaleDim];
-                        })
-                        .entries(frame.take());
-                },
-                partition() {
-                },
-                source() {
-                }
-            };
-            interval(node);
-            return frame;
+        var params = method({
+            node,
+            xScale,
+            yScale,
+            colorScale,
+            colorIndexScale,
+            width: config.options.width,
+            height: config.options.height,
+            defaultSizeParams: {
+                tickWidth: 5,
+                intervalWidth: 5,
+                offsetCategory: 0
+            }
         });
+        drawInterval(params, canvas, frames.map((fr)=>({key: fr.key, values: fr.data})));
     }
 }

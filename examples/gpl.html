@@ -2,7 +2,7 @@
 <html>
 <meta charset="utf-8">
 <head>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 
@@ -231,11 +231,15 @@
                     return {equation: [lastvalue], points: results, string: "" + lastvalue};
                 },
 
-                loess: function(data) {
+                loess: function (data) {
                     //adapted from the LoessInterpolator in org.apache.commons.math
                     function loess_pairs(pairs, bandwidth) {
-                        var xval = pairs.map(function(pair){return pair[0]});
-                        var yval = pairs.map(function(pair){return pair[1]});
+                        var xval = pairs.map(function (pair) {
+                            return pair[0]
+                        });
+                        var yval = pairs.map(function (pair) {
+                            return pair[1]
+                        });
                         var res = loess(xval, yval, bandwidth);
                         return xval.map(function (x, i) {
                             return [x, res[i]];
@@ -259,7 +263,7 @@
 
                             if (i > 0) {
                                 if (right < xval.length - 1 &&
-                                        xval[right+1] - xval[i] < xval[i] - xval[left]) {
+                                        xval[right + 1] - xval[i] < xval[i] - xval[left]) {
                                     left++;
                                     right++;
                                 }
@@ -277,8 +281,7 @@
                             var sumX = 0, sumXSquared = 0, sumY = 0, sumXY = 0;
 
                             var k = left;
-                            while(k <= right)
-                            {
+                            while (k <= right) {
                                 var xk = xval[k];
                                 var yk = yval[k];
                                 var dist;
@@ -363,30 +366,51 @@
             },
             '/': {
                 dims: {
-                    story   : {type: 'category'},
-                    bug     : {type: 'category'},
-                    project : {type: 'category'},
-                    team    : {type: 'category'},
-                    count   : {type: 'measure'},
-                    date    : {type: 'measure'}
+                    story: {type: 'category'},
+                    bug: {type: 'category'},
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    count: {type: 'measure'},
+                    date: {type: 'measure'}
                 },
                 data: [
-                    {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
-                    {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')},
-                    {project: 'tau', team: 'xbeta', story: 'A1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')},
+                    {
+                        project: 'TP3',
+                        team: 'alpha',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
+                    {
+                        project: 'tau',
+                        team: 'xbeta',
+                        story: 'B1',
+                        bug: 'ISSUE2',
+                        count: 15,
+                        date: new Date('2014-10-05')
+                    },
+                    {
+                        project: 'tau',
+                        team: 'xbeta',
+                        story: 'A1',
+                        bug: 'ISSUE2',
+                        count: 15,
+                        date: new Date('2014-10-05')
+                    },
                 ]
             }
         },
 
         trans: {
             where: function (data, tuple) {
-                var predicates = _.map(tuple, function(v, k) {
-                    return function(row) {
+                var predicates = _.map(tuple, function (v, k) {
+                    return function (row) {
                         return (row[k] === v);
                     }
                 });
-                return _(data).filter(function(row) {
-                    return _.every(predicates, function(p) {
+                return _(data).filter(function (row) {
+                    return _.every(predicates, function (p) {
                         return p(row);
                     })
                 });
@@ -394,13 +418,14 @@
         },
 
         scales: {
-            'size:default'  : {type: 'size',  source: '?', mid: 5},
-            'color:default' : {type: 'color', source: '?', brewer: null},
-            'story' : {type: 'ordinal', source: '/', dim: 'story'},
-            'bug'   : {type: 'ordinal', source: '/', dim: 'bug'},
-            'count' : {type: 'linear',  source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
-            'proj'  : {type: 'ordinal', source: '/', dim: 'project'},
-            'team'  : {type: 'ordinal', source: '/', dim: 'team'}
+            'size:default': {type: 'size', source: '?', mid: 5},
+            'color:default': {type: 'color', source: '?', brewer: null},
+            'colorDim': {type: 'color', source: '/', dim: 'team'},
+            'story': {type: 'ordinal', source: '/', dim: 'story'},
+            'bug': {type: 'ordinal', source: '/', dim: 'bug'},
+            'count': {type: 'linear', source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
+            'proj': {type: 'ordinal', source: '/', dim: 'project'},
+            'team': {type: 'ordinal', source: '/', dim: 'team'}
         },
 
         unit: {
@@ -416,8 +441,8 @@
             guide: {
                 padding: {l: 60, r: 0, t: 0, b: 60},
                 showGridLines: '',
-                x: {padding: 40, label: {text: 'project'}, cssClass:'x axis facet-axis'},
-                y: {padding: 40, label: {text: 'team'},    cssClass:'y axis facet-axis'}
+                x: {padding: 40, label: {text: 'project'}, cssClass: 'x axis facet-axis'},
+                y: {padding: 40, label: {text: 'team'}, cssClass: 'y axis facet-axis'}
             },
             units: [
                 {
@@ -439,9 +464,11 @@
                             type: 'INTERVAL',
                             x: 'story',
                             y: 'count',
-                            color:'team',
+                            color: 'colorDim',
                             expression: {
                                 source: '/',
+                                operator:'groupBy',
+                                params:['team'],
                                 inherit: true
                             }
                         }
@@ -466,21 +493,21 @@
             },
             '/': {
                 dims: {
-                    xdate   : {type: 'measure'},
-                    count   : {type: 'measure'}
+                    xdate: {type: 'measure'},
+                    count: {type: 'measure'}
                 },
                 data: [
-                    {xdate:  1, count: 31 },
-                    {xdate:  2, count: 27 },
-                    {xdate:  3, count: 22 },
-                    {xdate:  4, count: 13 },
-                    {xdate:  5, count:  9 },
-                    {xdate:  6, count:  5 },
-                    {xdate:  7, count:  1 },
-                    {xdate:  8, count: -3 },
-                    {xdate:  9, count: -5 },
-                    {xdate: 10, count: -7 },
-                    {xdate: 11, count: -9 },
+                    {xdate: 1, count: 31},
+                    {xdate: 2, count: 27},
+                    {xdate: 3, count: 22},
+                    {xdate: 4, count: 13},
+                    {xdate: 5, count: 9},
+                    {xdate: 6, count: 5},
+                    {xdate: 7, count: 1},
+                    {xdate: 8, count: -3},
+                    {xdate: 9, count: -5},
+                    {xdate: 10, count: -7},
+                    {xdate: 11, count: -9},
                     {xdate: 12, count: -11},
                     {xdate: 13, count: -17},
                     {xdate: 14, count: -27},
@@ -491,19 +518,19 @@
 
         trans: {
             where: function (data, tuple) {
-                var predicates = _.map(tuple, function(v, k) {
-                    return function(row) {
+                var predicates = _.map(tuple, function (v, k) {
+                    return function (row) {
                         return (row[k] === v);
                     }
                 });
-                return _(data).filter(function(row) {
-                    return _.every(predicates, function(p) {
+                return _(data).filter(function (row) {
+                    return _.every(predicates, function (p) {
                         return p(row);
                     })
                 });
             },
 
-            'regression': function(data, props) {
+            'regression': function (data, props) {
 
                 var x = props.x;
                 var y = props.y;
@@ -523,7 +550,7 @@
 //                      .filter(function (p) {
 //                          return ((minY <= p[1]) && (p[1] <= maxY));
 //                      })
-                        .map(function(p) {
+                        .map(function (p) {
                             var item = {};
                             item[x] = p[0];
                             item[y] = p[1];
@@ -532,7 +559,7 @@
                         .value();
             },
 
-            'x-limit': function(data, props) {
+            'x-limit': function (data, props) {
 
                 var x = props.x;
                 var y = props.y;
@@ -549,7 +576,7 @@
                 return [low, top];
             },
 
-            'y-limit': function(data, props) {
+            'y-limit': function (data, props) {
 
                 var x = props.x;
                 var y = props.y;
@@ -568,13 +595,13 @@
         },
 
         scales: {
-            'size:default'  : {type: 'size',  name: 'DefSize',  source: '?', mid: 5},
-            'color:default' : {type: 'color', name: 'DefColor', source: '?', brewer: null},
-            'count'         : {type: 'linear', source: '/', dim: 'count', autoScale: true},
-            'xdate'         : {type: 'linear', source: '/', dim: 'xdate'},
+            'size:default': {type: 'size', name: 'DefSize', source: '?', mid: 5},
+            'color:default': {type: 'color', name: 'DefColor', source: '?', brewer: null},
+            'count': {type: 'linear', source: '/', dim: 'count', autoScale: true},
+            'xdate': {type: 'linear', source: '/', dim: 'xdate'},
 
-            'annotation1'   : {type: 'color', source: '/', dim: 'count', brewer: ['color20-2']},
-            'annotation2'   : {type: 'color', source: '/', dim: 'count', brewer: ['color20-5']}
+            'annotation1': {type: 'color', source: '/', dim: 'count', brewer: ['color20-2']},
+            'annotation2': {type: 'color', source: '/', dim: 'count', brewer: ['color20-5']}
         },
 
         unit: {
@@ -644,13 +671,13 @@
     gpl.renderTo('#trendline');
 
     var iteration = 0;
-    var updateData = function() {
+    var updateData = function () {
 
         if (++iteration > 100) {
             return;
         }
 
-         facetSpec.sources['/'].data.push({
+        facetSpec.sources['/'].data.push({
             xdate: parseInt(Math.random() * 10),
             count: parseInt(Math.random() * 10) + parseInt(Math.random() * 10) * (parseInt(Math.random() * 10) > 5 ? -1 : 1)
         });
@@ -675,8 +702,8 @@
 
             '$': {
                 dims: {
-                    x : {type: 'category'},
-                    y : {type: 'category'}
+                    x: {type: 'category'},
+                    y: {type: 'category'}
                 },
                 data: [
                     {x: 1, y: 1},
@@ -687,48 +714,55 @@
 
             'o': {
                 dims: {
-                    label : {type: 'category'},
-                    value : {type: 'measure'}
+                    label: {type: 'category'},
+                    value: {type: 'measure'}
                 },
                 data: [
-                    {"label":"Category A", "value":20},
-                    {"label":"Category B", "value":50},
-                    {"label":"Category C", "value":30}
+                    {"label": "Category A", "value": 20},
+                    {"label": "Category B", "value": 50},
+                    {"label": "Category C", "value": 30}
                 ]
             },
 
             '/': {
                 dims: {
-                    story   : {type: 'category'},
-                    bug     : {type: 'category'},
-                    project : {type: 'category'},
-                    team    : {type: 'category'},
-                    count   : {type: 'measure'},
-                    date    : {type: 'measure'}
+                    story: {type: 'category'},
+                    bug: {type: 'category'},
+                    project: {type: 'category'},
+                    team: {type: 'category'},
+                    count: {type: 'measure'},
+                    date: {type: 'measure'}
                 },
                 data: [
-                    {project: 'TP3', team: 'alpha', story: 'A1', bug: 'ISSUE1', count: 10, date: new Date('2014-01-05')},
+                    {
+                        project: 'TP3',
+                        team: 'alpha',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 10,
+                        date: new Date('2014-01-05')
+                    },
                     {project: 'tau', team: 'xbeta', story: 'B1', bug: 'ISSUE2', count: 15, date: new Date('2014-10-05')}
                 ]
             },
 
             '@': {
                 dims: {
-                    xdate   : {type: 'measure'},
-                    count   : {type: 'measure'}
+                    xdate: {type: 'measure'},
+                    count: {type: 'measure'}
                 },
                 data: [
-                    {xdate:  1, count: 31 },
-                    {xdate:  2, count: 27 },
-                    {xdate:  3, count: 22 },
-                    {xdate:  4, count: 13 },
-                    {xdate:  5, count:  9 },
-                    {xdate:  6, count:  5 },
-                    {xdate:  7, count:  1 },
-                    {xdate:  8, count: -3 },
-                    {xdate:  9, count: -5 },
-                    {xdate: 10, count: -7 },
-                    {xdate: 11, count: -9 },
+                    {xdate: 1, count: 31},
+                    {xdate: 2, count: 27},
+                    {xdate: 3, count: 22},
+                    {xdate: 4, count: 13},
+                    {xdate: 5, count: 9},
+                    {xdate: 6, count: 5},
+                    {xdate: 7, count: 1},
+                    {xdate: 8, count: -3},
+                    {xdate: 9, count: -5},
+                    {xdate: 10, count: -7},
+                    {xdate: 11, count: -9},
                     {xdate: 12, count: -11},
                     {xdate: 13, count: -17},
                     {xdate: 14, count: -27},
@@ -739,19 +773,19 @@
 
         trans: {
             where: function (data, tuple) {
-                var predicates = _.map(tuple, function(v, k) {
-                    return function(row) {
+                var predicates = _.map(tuple, function (v, k) {
+                    return function (row) {
                         return (row[k] === v);
                     }
                 });
-                return _(data).filter(function(row) {
-                    return _.every(predicates, function(p) {
+                return _(data).filter(function (row) {
+                    return _.every(predicates, function (p) {
                         return p(row);
                     })
                 });
             },
 
-            'regression': function(sVal, props) {
+            'regression': function (sVal, props) {
 
                 var x = props.x;
                 var y = props.y;
@@ -768,7 +802,7 @@
                         .sortBy(function (p) {
                             return p[0];
                         })
-                        .map(function(p) {
+                        .map(function (p) {
                             var item = {};
                             item[x] = p[0];
                             item[y] = p[1];
@@ -777,7 +811,7 @@
                         .value();
             },
 
-            'x-limit': function(data, props) {
+            'x-limit': function (data, props) {
 
                 var x = props.x;
                 var y = props.y;
@@ -794,7 +828,7 @@
                 return [low, top];
             },
 
-            'y-limit': function(data, props) {
+            'y-limit': function (data, props) {
 
                 var x = props.x;
                 var y = props.y;
@@ -813,26 +847,35 @@
         },
 
         scales: {
-            'size:default'  : {type: 'size',  name: 'DefSize',  fitToFrame: false, source: '?', mid: 5},
-            'color:default' : {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
-            'story' : {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
-            'bug'   : {type: 'ordinal', name: 'B', fitToFrame: false, source: '/', dim: 'bug'},
-            'count' : {type: 'linear',  name: 'C', fitToFrame: false, source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
-            'proj'  : {type: 'ordinal', name: 'P', fitToFrame: false, source: '/', dim: 'project'},
-            'team'  : {type: 'ordinal', name: 'T', fitToFrame: false, source: '/', dim: 'team'},
+            'size:default': {type: 'size', name: 'DefSize', fitToFrame: false, source: '?', mid: 5},
+            'color:default': {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
+            'story': {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
+            'bug': {type: 'ordinal', name: 'B', fitToFrame: false, source: '/', dim: 'bug'},
+            'count': {
+                type: 'linear',
+                name: 'C',
+                fitToFrame: false,
+                source: '/',
+                dim: 'count',
+                autoScale: true,
+                min: 0,
+                max: 20
+            },
+            'proj': {type: 'ordinal', name: 'P', fitToFrame: false, source: '/', dim: 'project'},
+            'team': {type: 'ordinal', name: 'T', fitToFrame: false, source: '/', dim: 'team'},
 
-            'xScale'        : {type: 'ordinal', source: '$', dim: 'x'},
-            'yScale'        : {type: 'ordinal', source: '$', dim: 'y'},
+            'xScale': {type: 'ordinal', source: '$', dim: 'x'},
+            'yScale': {type: 'ordinal', source: '$', dim: 'y'},
 
-            'counz'        : {type: 'linear', name: 'C', source: '@', dim: 'count', autoScale: true},
-            'xdate'         : {type: 'linear', name: 'P', source: '@', dim: 'xdate'},
+            'counz': {type: 'linear', name: 'C', source: '@', dim: 'count', autoScale: true},
+            'xdate': {type: 'linear', name: 'P', source: '@', dim: 'xdate'},
 
-            'annotation1'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-2']},
-            'annotation2'   : {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-5']},
+            'annotation1': {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-2']},
+            'annotation2': {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-5']},
 
-            'label'        : {type: 'value', source: 'o', dim: 'label'},
-            'piePortion'   : {type: 'value', source: 'o', dim: 'value'},
-            'label_color'  : {type: 'color', source: 'o', dim: 'label'}
+            'label': {type: 'value', source: 'o', dim: 'label'},
+            'piePortion': {type: 'value', source: 'o', dim: 'value'},
+            'label_color': {type: 'color', source: 'o', dim: 'label'}
         },
 
         unit: {
@@ -861,8 +904,8 @@
                             },
                             guide: {
                                 showGridLines: '',
-                                x: {hide:true},
-                                y: {hide:true}
+                                x: {hide: true},
+                                y: {hide: true}
                             },
                             units: [
                                 {
@@ -917,8 +960,8 @@
                                             x: 'count',
                                             y: 'story',
                                             expression: {
-                                                source:'/',
-                                                inherit:true
+                                                source: '/',
+                                                inherit: true
                                             }
                                         }
                                     ]
@@ -936,7 +979,7 @@
                             type: 'RECT',
                             x: 'xdate',
                             y: 'counz',
-                            expression: {source:'@', inherit:false},
+                            expression: {source: '@', inherit: false},
                             guide: {
                                 x: {label: {text: 'XDATE'}},
                                 y: {label: {text: 'COUNT'}}
