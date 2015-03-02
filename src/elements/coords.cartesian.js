@@ -416,64 +416,74 @@ export class Cartesian {
 
         var self = this;
 
-        var updateHandler = (cell) => {
+        var updateCellLayers = (cellId, cell, frame) => {
 
-            var gridCells = cell[0];
+            var mapper;
+            var frameId = frame.hash();
+            if (frame.key) {
 
-            gridCells.forEach((cellNode) => {
-                var cell = d3.select(cellNode);
-                var frames = cell.data();
-                frames.reduce(
-                    (units, frame) => {
-                        var mapper;
-                        var frameId = frame.hash();
-                        if (frame.key) {
+                var coordX = self.x(frame.key[self.x.dim]);
+                var coordY = self.y(frame.key[self.y.dim]);
 
-                            var coordX = self.x(frame.key[self.x.dim]);
-                            var coordY = self.y(frame.key[self.y.dim]);
+                var xDomain = self.x.domain();
+                var yDomain = self.y.domain();
 
-                            var xDomain = self.x.domain();
-                            var yDomain = self.y.domain();
+                var xPart = self.W / xDomain.length;
+                var yPart = self.H / yDomain.length;
 
-                            var xPart = self.W / xDomain.length;
-                            var yPart = self.H / yDomain.length;
+                mapper = (unit, i) => {
+                    unit.options = {
+                        uid: frameId + i,
+                        frameId: frameId,
+                        container: cell,
+                        containerWidth: self.W,
+                        containerHeight: self.H,
+                        left: coordX - xPart / 2,
+                        top: coordY - yPart / 2,
+                        width: xPart,
+                        height: yPart
+                    };
+                    return unit;
+                };
+            } else {
+                mapper = (unit, i) => {
+                    unit.options = {
+                        uid: frameId + i,
+                        frameId: frameId,
+                        container: cell,
+                        containerWidth: self.W,
+                        containerHeight: self.H,
+                        left: 0,
+                        top: 0,
+                        width: self.W,
+                        height: self.H
+                    };
+                    return unit;
+                };
+            }
 
-                            mapper = (unit, i) => {
-                                unit.options = {
-                                    uid: frameId + i,
-                                    frameId: frameId,
-                                    container: cell,
-                                    containerWidth: self.W,
-                                    containerHeight: self.H,
-                                    left: coordX - xPart / 2,
-                                    top: coordY - yPart / 2,
-                                    width: xPart,
-                                    height: yPart
-                                };
-                                return unit;
-                            };
-                        } else {
-                            mapper = (unit, i) => {
-                                unit.options = {
-                                    uid: frameId + i,
-                                    container: cell,
-                                    containerWidth: self.W,
-                                    containerHeight: self.H,
-                                    left: 0,
-                                    top: 0,
-                                    width: self.W,
-                                    height: self.H
-                                };
-                                return unit;
-                            };
-                        }
+            var continueDrawUnit = function (unit) {
+                unit.options.container = d3.select(this);
+                continuation(unit, frame);
+            };
 
-                        frame.units.map(mapper).map((unit) => continuation(unit, frame));
+            var layers = cell
+                .selectAll(`.layer_${cellId}`)
+                .data(frame.units.map(mapper), (unit) => (unit.options.uid + unit.type));
+            layers
+                .exit()
+                .remove();
+            layers
+                .each(continueDrawUnit);
+            layers
+                .enter()
+                .append('g')
+                .attr('class', `layer_${cellId}`)
+                .each(continueDrawUnit);
+        };
 
-                        return units.concat(frame.units.map(mapper));
-                    },
-                    []);
-            });
+        var cellFrameIterator = function (cellFrame) {
+            updateCellLayers(options.frameId, d3.select(this), cellFrame);
         };
 
         var cells = this
@@ -484,12 +494,12 @@ export class Cartesian {
             .exit()
             .remove();
         cells
-            .call(updateHandler);
+            .each(cellFrameIterator);
         cells
             .enter()
             .append('g')
             .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
-            .call(updateHandler);
+            .each(cellFrameIterator);
     }
 
     _fnDrawDimAxis(container, x, AXIS_POSITION, size, frameId, S) {
