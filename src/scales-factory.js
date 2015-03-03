@@ -185,7 +185,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'period';
-
+        scale.getHash = () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
         return scale;
     },
 

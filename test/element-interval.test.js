@@ -60,9 +60,17 @@ define(function (require) {
                     dims: {
                         x: {type: 'category'},
                         y: {type: 'measure'},
-                        color: {type: 'category'}
+                        createDate: {type: 'date'},
+                        color: {type: 'category'},
+                        count: {type: 'measure'}
                     },
-                    data: data
+                    data: data.map(function (item) {
+                        /*if (item.createDate) {
+                            item.createDate = item.createDate.getTime()
+                        }*/
+                        return item;
+
+                    })
                 }
             },
             unitsRegistry: unitsRegistry,
@@ -83,6 +91,8 @@ define(function (require) {
             scales: _.defaults(spec.scales || {}, {
                 'x': {type: 'ordinal', source: '/', dim: 'x'},
                 'y': {type: 'linear', source: '/', dim: 'y'},
+                'date': {type: 'period', period: 'day', source: '/', dim: 'createDate'},
+                'count': {type: 'linear', source: '/', dim: 'count'},
                 'catY': {type: 'ordinal', source: '/', dim: 'color'},
                 'size:default': {type: 'size', source: '?', mid: 5},
                 'color': {type: 'color', dim: 'color', source: '/'},
@@ -470,76 +480,56 @@ define(function (require) {
     };
     var dataWithDate = [
         {
-            "createDate": new Date(iso("2014-09-02T21:00:00")),
+            "createDate": new Date(iso("2014-09-02T00:00:00")),
             "count": 123
         },
         {
-            "createDate": new Date(iso("2014-09-29T21:00:00")),
+            "createDate": new Date(iso("2014-09-29T00:00:00")),
             "count": 34
         },
         {
-            "createDate": new Date(iso("2014-10-13T21:00:00")),
+            "createDate": new Date(iso("2014-10-13T00:00:00")),
             "count": 2
         }
     ];
+
+    describePlot(
+        "ELEMENT.INTERVAL WITH TWO ORDER AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'date',
+                y: 'count',
+                units: [
+                    {
+                        type: 'ELEMENT.INTERVAL'
+                    }
+                ]
+            }
+        },
+        dataWithDate,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    [
+                        {
+                            "x": "0",
+                            "y": "0"
+                        },
+                        {
+                            "x": "482.14285714285717",
+                            "y": "552"
+                        },
+                        {
+                            "x": "732.1428571428571",
+                            "y": "749"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
     /*
-     describePlot(
-     "ELEMENT.INTERVAL WITH TWO ORDER AXIS",
-     {
-     dimensions: {
-     "createDate": {
-     "type": "order",
-     "scale": "period"
-     },
-     "count": {
-     "type": "measure"
-     }
-     },
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'createDate',
-     y: 'count',
-     guide: {
-     "x": {
-     "label": "Create Date",
-     "autoScale": true,
-     "tickFormat": "%j",
-     "tickPeriod": "day"
-     }
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL'
-     }
-     ]
-     }
-     },
-     dataWithDate,
-     function () {
-     /!* it("should group contain interval element", function () {
-     expectCoordsElement(expect, [
-     // generate with help generateCoordIfChangeDesign
-
-     [
-     {
-     "x": "0",
-     "y": "43"
-     },
-     {
-     "x": "514.2857",
-     "y": "591"
-     },
-     {
-     "x": "780.9524",
-     "y": "788"
-     }
-     ]
-
-     ]);
-     });*!/
-     }
-     );
-
      describePlot(
      "ELEMENT.INTERVAL.FLIP WITH TWO ORDER AXIS",
      {
