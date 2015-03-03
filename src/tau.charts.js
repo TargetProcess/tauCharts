@@ -9,7 +9,7 @@ import {SpecEngineFactory} from './spec-engine-factory';
 import {LayoutEngineFactory} from './layout-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
 import {nodeMap} from './node-map';
-import {UnitsRegistry} from './units-registry';
+import {unitsRegistry} from './units-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
 import {Point}      from './elements/element.point';
@@ -28,7 +28,7 @@ var __api__ = {
     LayoutEngineFactory: LayoutEngineFactory
 };
 var api = {
-    UnitsRegistry: UnitsRegistry,
+    unitsRegistry: unitsRegistry,
     tickFormat: FormatterRegistry,
     d3: d3,
     _: _,
@@ -116,7 +116,7 @@ var api = {
 
 Plot.globalSettings = api.globalSettings;
 
-api.UnitsRegistry
+api.unitsRegistry
     .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
     .add('PARALLEL/ELEMENT.LINE', nodeMap['PARALLEL/ELEMENT.LINE'])
     .add('COORDS.RECT', nodeMap['COORDS.RECT'])

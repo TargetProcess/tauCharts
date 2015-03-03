@@ -235,7 +235,7 @@
             'team': {type: 'ordinal', source: '/', dim: 'team'}
         },
         unit: {
-            type: 'RECT',
+            type: 'COORDS.RECT',
             x: 'project',
             y: 'team',
             expression: {
@@ -245,7 +245,7 @@
                 params: ['project', 'team']
             },
             units: [{
-                type: 'RECT',
+                type: 'COORDS.RECT',
                 x: 'story',
                 y: 'count',
                 expression: {
@@ -262,7 +262,7 @@
                 },
                 units: [
                     {
-                        type: 'INTERVAL',
+                        type: 'ELEMENT.INTERVAL',
                         x: 'story',
                         y: 'count',
                         color: 'color',

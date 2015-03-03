@@ -1,6 +1,6 @@
 var UnitsMap = {};
 
-var UnitsRegistry = {
+var unitsRegistry = {
 
     reg: function (unitType, xUnit) {
         UnitsMap[unitType] = xUnit;
@@ -25,4 +25,4 @@ var UnitsRegistry = {
     }
 };
 
-export {UnitsRegistry};
+export {unitsRegistry};

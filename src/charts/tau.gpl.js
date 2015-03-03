@@ -1,7 +1,7 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {UnitsRegistry} from '../units-registry';
+import {unitsRegistry} from '../units-registry';
 import {getLayout} from '../utils/layuot-template';
 import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
@@ -41,7 +41,7 @@ export class GPL extends Emitter {
 
         this.config = config;
 
-        this.unitSet = UnitsRegistry;
+        this.unitSet = config.unitsRegistry || unitsRegistry;
 
         this.sources = config.sources;
 

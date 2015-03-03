@@ -8,7 +8,7 @@ import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
 import {UnitDomainMixin} from '../unit-domain-mixin';
-import {UnitsRegistry} from '../units-registry';
+import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
 
@@ -135,7 +135,7 @@ export class Plot extends Emitter {
 
         var optimalSize = this.config.settings.size;
 
-        var reader = new DSLReader(domainMixin, UnitsRegistry);
+        var reader = new DSLReader(domainMixin, unitsRegistry);
 
         var chart = this;
         var logicXGraph = reader.buildGraph(fullSpec);

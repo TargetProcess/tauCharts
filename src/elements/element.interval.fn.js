@@ -12,7 +12,7 @@ var getSizesParams = (params) => {
         offsetCategory: intervalWidth
     };
 };
-var isMeasure = (dim)=> dim.dimType === 'measure';
+var isMeasure = (dim)=> dim.scaleType === 'linear';
 var flipHub = {
     NORM: ({colorScale, node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams}) => {
         let minimalHeight = 1;

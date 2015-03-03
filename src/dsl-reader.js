@@ -1,12 +1,12 @@
 export class DSLReader {
 
-    constructor(domainMixin, UnitsRegistry) {
+    constructor(domainMixin, unitsRegistry) {
         this.domain = domainMixin;
-        this.UnitsRegistry = UnitsRegistry;
+        this.unitsRegistry = unitsRegistry;
     }
 
     buildGraph(spec) {
-        var buildRecursively = (unit) => this.UnitsRegistry
+        var buildRecursively = (unit) => this.unitsRegistry
             .get(unit.type)
             .walk(this.domain.mix(unit), buildRecursively);
         return buildRecursively(spec.unit);
@@ -77,7 +77,7 @@ export class DSLReader {
         styledGraph.options.container = target;
         var renderRecursively = (unit) => {
             var unitMeta = this.domain.mix(unit);
-            var subSpace = this.UnitsRegistry.get(unit.type).draw(unitMeta);
+            var subSpace = this.unitsRegistry.get(unit.type).draw(unitMeta);
 
             var children = unit.childUnits || [];
             children.forEach((child) => {

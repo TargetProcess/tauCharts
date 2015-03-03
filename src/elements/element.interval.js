@@ -12,7 +12,6 @@ export class Interval {
     drawLayout(fnCreateScale) {
 
         var config = this.config;
-
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
