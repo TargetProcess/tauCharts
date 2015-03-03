@@ -39,7 +39,7 @@ export class Interval {
             y: yScale,
             color: colorScale
         };
-        var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
+        var method = flipHub[this.config.flip ? 'FLIP' : 'NORM'];
         var colorIndexScale = (d) => {
             var findIndex = _.findIndex(domain, (value)=> {
                 return value === d.key[colorScale.scaleDim];

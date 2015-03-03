@@ -4,8 +4,28 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var assert = require('chai').assert;
-    var tauCharts = require('tau_modules/tau.charts').tauCharts;
+    var tauCharts = require('tau_modules/tau.charts');
+    var Cartesian = require('tau_modules/elements/coords.cartesian').Cartesian;
+    var Interval = require('tau_modules/elements/element.interval').Interval;
     var testUtils = require('testUtils');
+    var unitsMap = {};
+    var unitsRegistry = {
+        reg: function (unitType, xUnit) {
+            unitsMap[unitType] = xUnit;
+            return this;
+        },
+        get: function (unitType) {
+
+            if (!unitsMap.hasOwnProperty(unitType)) {
+                throw new Error('Unknown unit type: ' + unitType);
+            }
+
+            return unitsMap[unitType];
+        }
+    };
+    unitsRegistry.reg('COORDS.RECT', Cartesian)
+        .reg('ELEMENT.INTERVAL', Interval);
+
     var getGroupBar = testUtils.getGroupBar;
     var attrib = testUtils.attrib;
     var _ = require('underscore');
@@ -15,17 +35,19 @@ define(function (require) {
         {x: 'c', y: -2, color: 'yellow', size: 8},
         {x: 'c', y: 5, color: 'green', size: 8}
     ];
-    /*function generateCoordIfChangeDesign(){
-     var map = [].map;
-     var bars = getGroupBar();
-     var coords = bars.map(function (bar) {
-     var childCoords = map.call(bar.childNodes,function (el) {
-     return {x: attrib(el, 'x'), y: attrib(el, 'y')};
-     });
-     return childCoords;
-     });
-     return coords[0];
-     }*/
+
+    function generateCoordIfChangeDesign() {
+        var map = [].map;
+        var bars = getGroupBar();
+        var coords = bars.map(function (bar) {
+            var childCoords = map.call(bar.childNodes, function (el) {
+                return {x: attrib(el, 'x'), y: attrib(el, 'y')};
+            });
+            return childCoords;
+        });
+        return coords;
+    }
+
     var convertSpec = function (spec, data) {
         var unit = spec.unit;
         return {
@@ -43,6 +65,7 @@ define(function (require) {
                     data: data
                 }
             },
+            unitsRegistry: unitsRegistry,
             trans: {
                 where: function (data, tuple) {
                     var predicates = _.map(tuple, function (v, k) {
@@ -60,6 +83,7 @@ define(function (require) {
             scales: _.defaults(spec.scales || {}, {
                 'x': {type: 'ordinal', source: '/', dim: 'x'},
                 'y': {type: 'linear', source: '/', dim: 'y'},
+                'catY': {type: 'ordinal', source: '/', dim: 'color'},
                 'size:default': {type: 'size', source: '?', mid: 5},
                 'color': {type: 'color', dim: 'color', source: '/'},
                 'color:default': {type: 'color', source: '?', brewer: null}
@@ -75,8 +99,8 @@ define(function (require) {
                 y: unit.y,
                 units: [_.defaults(unit.units[0], {
                     type: 'ELEMENT.INTERVAL',
-                    x: 'x',
-                    y: 'y',
+                    x: unit.x || 'x',
+                    y: unit.y || 'y',
                     expression: {
                         inherit: true,
                         source: '/',
@@ -126,7 +150,7 @@ define(function (require) {
             _.each(bar.childNodes, function (el, ind) {
                 expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x));
                 expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y));
-                if(coords[index][ind].width) {
+                if (coords[index][ind].width) {
                     expect(convertToFixed(attrib(el, 'width'))).to.equal(convertToFixed(coords[index][ind].width));
                 }
             });
@@ -167,13 +191,13 @@ define(function (require) {
         function (context) {
             it("should render group bar element", function () {
                 var chart = context.chart;
-                assert.ok(schemes.bar(chart.config.spec), 'spec is right');
+                assert.equal(schemes.barGPL.errors(chart.config), false, 'spec is right');
                 expect(getGroupBar().length).to.equal(3);
             });
             it("should group contain interval element", function () {
                 //    debugger
                 expectCoordsElement(expect, [
-                    //generate with help generateCoordIfChangeDesign
+                    // generate with help generateCoordIfChangeDesign
                     [
                         {
                             "x": "0",
@@ -228,258 +252,237 @@ define(function (require) {
         function () {
             it("should group contain interval element", function () {
                 expectCoordsElement(expect, [
-                    //generate with help generateCoordIfChangeDesign
-
                     [
-                        [
-                            {
-                                "x": "318.5",
-                                "y": "625"
-                            },
-                            {
-                                "x": "265.5",
-                                "y": "375"
-                            },
-                            {
-                                "x": "-2.5",
-                                "y": "125"
-                            },
-                            {
-                                "x": "747.5",
-                                "y": "125"
-                            }
-                        ]
+                        {
+                            "x": "318.5",
+                            "y": "625"
+                        },
+                        {
+                            "x": "265.5",
+                            "y": "375"
+                        },
+                        {
+                            "x": "-2.5",
+                            "y": "125"
+                        },
+                        {
+                            "x": "747.5",
+                            "y": "125"
+                        }
                     ]
-
                 ]);
             });
         }
     );
+
+    describePlot(
+        "ELEMENT.INTERVAL WITH TWO CATEGORICAL AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'catY',
+                units: [
+                    {
+                        x: 'x',
+                        y: 'catY',
+                        expression: {
+                            inherit: true,
+                            source: '/',
+                            operator: 'none'
+                        }
+                    }
+                ]
+            }
+        },
+        testData,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    [
+                        {
+                            "x": "0",
+                            "y": "625"
+                        },
+                        {
+                            "x": "250",
+                            "y": "375"
+                        },
+                        {
+                            "x": "500",
+                            "y": "125"
+                        },
+                        {
+                            "x": "500",
+                            "y": "375"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
+
+    describePlot("ELEMENT.INTERVAL.FLIP WITH LINEAR AND CATEGORICAL AXIS", {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'y',
+                y: 'x',
+                units: [
+                    {
+                        x: 'y',
+                        flip: true,
+                        y: 'x',
+                        color: 'color'
+                    }
+                ]
+            }
+        },
+        testData,
+        function (context) {
+
+            it("should render group bar element", function () {
+                var chart = context.chart;
+                assert.equal(schemes.barGPL.errors(chart.config), false, 'spec is right');
+                expect(getGroupBar().length).to.equal(3);
+            });
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    [
+                        {
+                            "x": "214",
+                            "y": "500"
+                        }
+                    ],
+                    [
+                        {
+                            "x": "214",
+                            "y": "250"
+                        },
+                        {
+                            "x": "214",
+                            "y": "0"
+                        }
+                    ],
+                    [
+                        {
+                            "x": "0",
+                            "y": "0"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
+
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH Y LINEAR AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'y',
+                units: [
+                    {
+                        flip: true
+                    }
+                ]
+            }
+        },
+        testData,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    [
+                        {
+                            "x": "0",
+                            "y": "426.5"
+                        }
+                    ],
+                    [
+                        {
+                            "x": "0",
+                            "y": "479.5"
+                        },
+                        {
+                            "x": "0",
+                            "y": "-2.5"
+                        }
+                    ],
+                    [
+                        {
+                            "x": "0",
+                            "y": "747.5"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
+
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH TWO CATEGORICAL AXIS",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'x',
+                y: 'catY',
+                units: [
+                    {
+                        flip: true
+                    }
+                ]
+            }
+        },
+        testData,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    [
+                        {
+                            "x": "0",
+                            "y": "500"
+                        }
+                    ],
+                    [
+                        {
+                            "x": "0",
+                            "y": "250"
+                        },
+                        {
+                            "x": "0",
+                            "y": "250"
+                        }
+                    ],
+                    [
+                        {
+                            "x": "0",
+                            "y": "0"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
+    var offsetHrs = new Date().getTimezoneOffset() / 60;
+    var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
+    var iso = function (str) {
+        return (str + '+' + offsetISO);
+    };
+    var dataWithDate = [
+        {
+            "createDate": new Date(iso("2014-09-02T21:00:00")),
+            "count": 123
+        },
+        {
+            "createDate": new Date(iso("2014-09-29T21:00:00")),
+            "count": 34
+        },
+        {
+            "createDate": new Date(iso("2014-10-13T21:00:00")),
+            "count": 2
+        }
+    ];
     /*
-     describePlot(
-     "ELEMENT.INTERVAL WITH TWO CATEGORICAL AXIS",
-     {
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'x',
-     y: 'color',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     flip: false
-     }
-     ]
-     }
-     },
-     testData,
-     function () {
-     it("should group contain interval element", function () {
-     expectCoordsElement(expect, [
-     // generate with help generateCoordIfChangeDesign
-
-     [
-     {
-     "x": "0",
-     "y": "666.6666666666666"
-     },
-     {
-     "x": "266.66666666666663",
-     "y": "399.99999999999994"
-     },
-     {
-     "x": "533.3333333333334",
-     "y": "133.33333333333326"
-     },
-     {
-     "x": "533.3333333333334",
-     "y": "399.99999999999994"
-     }
-     ]
-
-     ]);
-     });
-     }
-     );
-
-     describePlot("ELEMENT.INTERVAL.FLIP WITH LINEAR AND CATEGORICAL AXIS", {
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'y',
-     y: 'x',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     x: 'y',
-     flip: true,
-     y: 'x',
-     color: 'color'
-     }
-     ]
-     }
-     },
-     testData,
-     function (context) {
-
-     it("should render group bar element", function () {
-     var chart = context.chart;
-     assert.ok(schemes.bar(chart.config.spec), 'spec is right');
-     expect(getGroupBar().length).to.equal(3);
-     });
-     it("should group contain interval element", function () {
-     expectCoordsElement(expect, [
-     // generate with help generateCoordIfChangeDesign
-     [
-     {
-     "x": "229",
-     "y": "533.3333333333333"
-     }
-     ],
-     [
-     {
-     "x": "229",
-     "y": "266.66666666666663"
-     },
-     {
-     "x": "229",
-     "y": "-8.526512829121202e-14"
-     }
-     ],
-     [
-     {
-     "x": "0",
-     "y": "-8.526512829121202e-14"
-     }
-     ]
-     ]);
-     });
-     }
-     );
-
-     describePlot(
-     "ELEMENT.INTERVAL.FLIP WITH TWO LINEAR AXIS",
-     {
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'x',
-     y: 'y',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     flip: true
-     }
-     ]
-     }
-     },
-     testData,
-     function () {
-     it("should group contain interval element", function () {
-     expectCoordsElement(expect, [
-     // generate with help generateCoordIfChangeDesign
-
-     [
-     {
-     "x": "0",
-     "y": "454.5"
-     },
-     {
-     "x": "0",
-     "y": "511.5"
-     },
-     {
-     "x": "0",
-     "y": "797.5"
-     },
-     {
-     "x": "0",
-     "y": "-2.5"
-     }
-     ]
-
-     ]);
-     });
-     }
-     );
-
-     describePlot(
-     "ELEMENT.INTERVAL.FLIP WITH TWO CATEGORICAL AXIS",
-     {
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'x',
-     y: 'color',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     flip: true
-     }
-     ]
-     }
-     },
-     testData,
-     function () {
-     it("should group contain interval element", function () {
-     expectCoordsElement(expect, [
-     // generate with help generateCoordIfChangeDesign
-
-     [
-     {
-     "x": "0",
-     "y": "533.3333333333333"
-     },
-     {
-     "x": "0",
-     "y": "266.66666666666663"
-     },
-     {
-     "x": "0",
-     "y": "-8.526512829121202e-14"
-     },
-     {
-     "x": "0",
-     "y": "266.66666666666663"
-     }
-     ]
-
-     ]);
-     });
-     }
-     );
-     var offsetHrs = new Date().getTimezoneOffset() / 60;
-     var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
-     var iso = function (str) {
-     return (str + '+' + offsetISO);
-     };
-     var dataWithDate = [
-     {
-     "createDate": new Date(iso("2014-09-02T21:00:00")),
-     "count": 123
-     },
-     {
-     "createDate": new Date(iso("2014-09-29T21:00:00")),
-     "count": 34
-     },
-     {
-     "createDate": new Date(iso("2014-10-13T21:00:00")),
-     "count": 2
-     }
-     ];
-
      describePlot(
      "ELEMENT.INTERVAL WITH TWO ORDER AXIS",
      {

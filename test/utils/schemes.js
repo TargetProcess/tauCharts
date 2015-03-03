@@ -28,7 +28,7 @@ define(['js-schema'], function (schema) {
         var intervalGPL = schema({
             color: [null, String],
             flip: [null, Boolean],
-            type: 'INTERVAL',
+            type: 'ELEMENT.INTERVAL',
             x: [String],
             y: [String]
         });
@@ -76,7 +76,7 @@ define(['js-schema'], function (schema) {
                 guide: undefined,
                 x: [null, String],
                 y: [null, String],
-                type: 'RECT',
+                type: 'COORDS.RECT',
                 units: Array.of(intervalGPL)
 
             })
