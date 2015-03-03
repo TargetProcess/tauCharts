@@ -1,3 +1,5 @@
+// jscs:disable disallowQuotedKeysInObjects
+// jscs:disable validateQuoteMarks
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
