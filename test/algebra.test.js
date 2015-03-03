@@ -1,6 +1,5 @@
 define(function (require) {
     var expect = require('chai').expect;
-    var assert = require('chai').assert;
     var algebra = require('tau_modules/algebra').FramesAlgebra;
 
     describe("operator:cross", function () {
