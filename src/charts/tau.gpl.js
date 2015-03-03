@@ -5,50 +5,7 @@ import {UnitsRegistry} from '../units-registry';
 import {getLayout} from '../utils/layuot-template';
 import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
-
-var FramesAlgebra = {
-
-    cross: function (dataFn, dimX, dimY) {
-
-        var convert = (v) => (v instanceof Date) ? v.getTime() : v;
-
-        var data = dataFn();
-
-        var domainX = _(data).chain().pluck(dimX).unique(convert).value();
-        var domainY = _(data).chain().pluck(dimY).unique(convert).value();
-
-        var domX = domainX.length === 0 ? [null] : domainX;
-        var domY = domainY.length === 0 ? [null] : domainY;
-
-        return _(domY).reduce(
-            (memo, rowVal) => {
-
-                return memo.concat(_(domX).map((colVal) => {
-
-                    var r = {};
-
-                    if (dimX) {
-                        r[dimX] = convert(colVal);
-                    }
-
-                    if (dimY) {
-                        r[dimY] = convert(rowVal);
-                    }
-
-                    return r;
-                }));
-            },
-            []);
-    },
-    groupBy(dataFn, dim) {
-        var data = dataFn();
-        var domainX = _(data).chain().pluck(dim).unique().value();
-        return domainX.map((x)=>({[dim]:x}));
-    },
-    none: function (datus, dimX, dimY, pipe) {
-        return [null];
-    }
-};
+import {FramesAlgebra} from '../algebra';
 
 var calcBaseFrame = (unitExpression, baseFrame) => {
 
@@ -115,7 +72,7 @@ export class GPL extends Emitter {
         }
 
         // expand units structure
-        this.root = this.expandUnitsStructure(this.config.unit);
+        this.root = this._expandUnitsStructure(this.config.unit);
 
         container.selectAll('svg')
             .data(['const'])
@@ -137,7 +94,7 @@ export class GPL extends Emitter {
         this._drawUnitsStructure(this.root);
     }
 
-    expandUnitsStructure(root, parentPipe = []) {
+    _expandUnitsStructure(root, parentPipe = []) {
 
         if (root.expression.operator !== false) {
 
@@ -171,15 +128,11 @@ export class GPL extends Emitter {
             });
         }
 
-        root.frames.map((item) => {
-            // key: tuple,
-            // source: expr.source,
-            // pipe: pipe
-
-            item.units.map((unit) => this.expandUnitsStructure(unit, item.pipe));
-
-            return item;
-        });
+        root.frames.forEach(
+            (f) => (f.units.forEach(
+                (unit) => this._expandUnitsStructure(unit, f.pipe)
+            ))
+        );
 
         return root;
     }
@@ -197,8 +150,6 @@ export class GPL extends Emitter {
             .drawLayout((type, alias, settings) => {
 
                 var name = alias ? alias : `${type}:default`;
-
-                name = name.scaleDim || name;
 
                 return self.scalesCreator.create(self.scales[name], dataFrame, settings);
             })
