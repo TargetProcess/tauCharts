@@ -1,6 +1,5 @@
 import {CSS_PREFIX} from '../const';
-import {flipHub} from './element.interval.fn';
-import {interval, drawInterval} from './interval';
+import {flipHub, drawInterval} from './element.interval.fn';
 
 export class Interval {
 
@@ -43,13 +42,14 @@ export class Interval {
         };
         var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
         var colorIndexScale = (d) => {
-            return _.findIndex(domain, (value)=> {
+            var findIndex = _.findIndex(domain, (value)=> {
                 return value === d.key[colorScale.scaleDim];
             });
+            return findIndex === -1 ? 0 : findIndex;
         };
         //  colorScale.scaleDim = node.color.scaleDim;
         var domain = colorScale.domain();
-        colorIndexScale.count = () => domain.length;
+        colorIndexScale.count = () => domain.length || 1;
 
         var params = method({
             node,

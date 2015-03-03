@@ -119,14 +119,12 @@ Plot.globalSettings = api.globalSettings;
 api.UnitsRegistry
     .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
     .add('PARALLEL/ELEMENT.LINE', nodeMap['PARALLEL/ELEMENT.LINE'])
-    .add('COORDS.RECT', nodeMap['COORDS.RECT'])
     .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
     .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
-    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL'])
 
-    .reg('RECT', Cartesian)
+    .reg('COORDS.RECT', Cartesian)
     .reg('POINT', Point)
-    .reg('INTERVAL', Interval)
+    .reg('ELEMENT.INTERVAL', Interval)
     .reg('LINE', Line)
     .reg('PIE', Pie);
 

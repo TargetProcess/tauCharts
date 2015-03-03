@@ -280,7 +280,7 @@ module.exports = function (grunt) {
                 port: 9000,
                 keepAlive: true,
                 webpack: {
-                    devtool: 'sourcemap',
+                    devtool: 'eval',
                     debug: true
                 }
             }

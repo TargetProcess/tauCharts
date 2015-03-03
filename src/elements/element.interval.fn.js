@@ -1,4 +1,6 @@
 import {utilsDraw} from '../utils/utils-draw';
+import {CSS_PREFIX} from '../const';
+const BAR_GROUP = 'i-role-bar-group';
 var getSizesParams = (params) => {
     var countDomainValue = params.domain().length;
     var countCategory = params.categoryLength;
@@ -96,4 +98,40 @@ var flipHub = {
     }
 };
 
-export {flipHub};
+function drawInterval({
+    calculateX,
+    calculateY,
+    colorScale,
+    calculateWidth,
+    calculateHeight,
+    calculateTranslate
+    },
+    container,
+    data) {
+    var updateBar = function () {
+        return this
+            .attr('height', calculateHeight)
+            .attr('width', calculateWidth)
+            .attr('class', (d) => {
+                return `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.scaleDim])}`;
+            })
+            .attr('x', calculateX)
+            .attr('y', calculateY);
+    };
+
+    var updateBarContainer = function () {
+        this.attr('class', BAR_GROUP)
+            .attr('transform', calculateTranslate);
+        var bars = this.selectAll('bar').data((d) => d.values);
+        bars.call(updateBar);
+        bars.enter().append('rect').call(updateBar);
+        bars.exit().remove();
+    };
+
+    var elements = container.selectAll(`.${BAR_GROUP}`).data(data);
+    elements.call(updateBarContainer);
+    elements.enter().append('g').call(updateBarContainer);
+    elements.exit().remove();
+}
+
+export {flipHub, drawInterval};

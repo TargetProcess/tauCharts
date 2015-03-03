@@ -5,22 +5,22 @@ define(['js-schema'], function (schema) {
         var point = schema({
             color: [null, String],
             size: [null, String],
-            type: "ELEMENT.POINT",
+            type: 'ELEMENT.POINT',
             x: [String],
             y: [String]
         });
 
         var line = schema({
             color: [null, String],
-            type: "ELEMENT.LINE",
+            type: 'ELEMENT.LINE',
             x: [String],
             y: [String]
         });
 
         var interval = schema({
             color: [null, String],
-            flip: [Boolean],
-            type: "ELEMENT.INTERVAL",
+            flip: [null, Boolean],
+            type: 'ELEMENT.INTERVAL',
             x: [String],
             y: [String]
         });
@@ -34,26 +34,35 @@ define(['js-schema'], function (schema) {
             '*': [null, dimension]
         };
 
+        var scale = schema({
+            type: String,
+            scale: String
+        });
+
+        var scales = {
+            '*': [null, scale]
+        };
+
         var scatterplot = schema({
             dimensions: dimensions,
             unit: schema({
                 guide: undefined,
                 x: [null, String],
                 y: [null, String],
-                type: "COORDS.RECT",
+                type: 'COORDS.RECT',
                 unit: Array.of(point)
 
             })
         });
 
         var bar = schema({
-            dimensions: dimensions,
+            scales: scales,
             unit: schema({
                 guide: undefined,
                 x: [null, String],
                 y: [null, String],
-                type: "COORDS.RECT",
-                unit: Array.of(interval)
+                type: 'COORDS.RECT',
+                units: Array.of(interval)
 
             })
         });
@@ -64,7 +73,7 @@ define(['js-schema'], function (schema) {
                 guide: undefined,
                 x: [null, String],
                 y: [null, String],
-                type: "COORDS.RECT",
+                type: 'COORDS.RECT',
                 unit: Array.of(line)
 
             })
@@ -84,4 +93,3 @@ define(['js-schema'], function (schema) {
 
     return schemes;
 });
-

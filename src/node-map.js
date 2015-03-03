@@ -1,7 +1,6 @@
 import {coords} from './elements/coords';
 import {line} from './elements/line';
 import {point} from './elements/point';
-import {interval} from './elements/interval';
 import {utilsDraw} from './utils/utils-draw';
 import {CoordsParallel} from './elements/coords-parallel';
 import {CoordsParallelLine} from './elements/coords-parallel-line';
@@ -70,11 +69,6 @@ var nodeMap = {
     'ELEMENT.LINE': (node) => {
         return line(setupElementNode(node, ['x', 'y', 'color']));
     },
-
-    'ELEMENT.INTERVAL': function (node) {
-        return interval(setupElementNode(node, ['x', 'y', 'color']));
-    },
-
     'COORDS.PARALLEL': CoordsParallel,
     'PARALLEL/ELEMENT.LINE': CoordsParallelLine
 };
