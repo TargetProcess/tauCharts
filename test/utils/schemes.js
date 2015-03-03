@@ -25,6 +25,14 @@ define(['js-schema'], function (schema) {
             y: [String]
         });
 
+        var intervalGPL = schema({
+            color: [null, String],
+            flip: [null, Boolean],
+            type: 'INTERVAL',
+            x: [String],
+            y: [String]
+        });
+
         var dimension = schema({
             type: String,
             scale: String
@@ -32,15 +40,6 @@ define(['js-schema'], function (schema) {
 
         var dimensions = {
             '*': [null, dimension]
-        };
-
-        var scale = schema({
-            type: String,
-            scale: String
-        });
-
-        var scales = {
-            '*': [null, scale]
         };
 
         var scatterplot = schema({
@@ -56,13 +55,29 @@ define(['js-schema'], function (schema) {
         });
 
         var bar = schema({
-            scales: scales,
+            dimensions: dimensions,
             unit: schema({
                 guide: undefined,
                 x: [null, String],
                 y: [null, String],
                 type: 'COORDS.RECT',
-                units: Array.of(interval)
+                unit: Array.of(interval)
+
+            })
+        });
+
+        var scale = schema({type: String, scale: String});
+        var scales = {
+            '*': [null, scale]
+        };
+        var barGPL = schema({
+            scales: scales,
+            unit: schema({
+                guide: undefined,
+                x: [null, String],
+                y: [null, String],
+                type: 'RECT',
+                units: Array.of(intervalGPL)
 
             })
         });
@@ -86,6 +101,7 @@ define(['js-schema'], function (schema) {
         schemes.point = point;
         schemes.interval = interval;
         schemes.bar = bar;
+        schemes.barGPL = barGPL;
         schemes.line = lineSpec;
         schemes.scatterplot = scatterplot;
         schemes.config = config;

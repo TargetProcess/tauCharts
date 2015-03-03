@@ -1,10 +1,8 @@
-// jscs:disable disallowQuotedKeysInObjects
-// jscs:disable validateQuoteMarks
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var assert = require('chai').assert;
-    var tauCharts = require('tau_modules/tau.charts');
+    var tauChart = require('tau_modules/tau.charts').tauChart;
     var testUtils = require('testUtils');
     var getGroupBar = testUtils.getGroupBar;
     var attrib = testUtils.attrib;
@@ -26,95 +24,8 @@ define(function (require) {
      });
      return coords[0];
      }*/
-    var convertSpec = function (spec, data) {
-        var unit = spec.unit;
-        return {
-            sources: {
-                '?': {
-                    dims: {},
-                    data: []
-                },
-                '/': {
-                    dims: {
-                        x: {type: 'category'},
-                        y: {type: 'measure'},
-                        color: {type: 'category'}
-                    },
-                    data: data
-                }
-            },
-            trans: {
-                where: function (data, tuple) {
-                    var predicates = _.map(tuple, function (v, k) {
-                        return function (row) {
-                            return (row[k] === v);
-                        }
-                    });
-                    return _(data).filter(function (row) {
-                        return _.every(predicates, function (p) {
-                            return p(row);
-                        })
-                    });
-                }
-            },
-            scales: {
-                'x': {type: 'ordinal', source: '/', dim: 'x'},
-                'y': {type: 'linear', source: '/', dim: 'y'},
-                'size:default': {type: 'size', source: '?', mid: 5},
-                'color': {type: 'color', dim: 'color', source: '/'},
-                'color:default': {type: 'color', source: '?', brewer: null}
-            },
-            unit: {
-                type: 'COORDS.RECT',
-                expression: {
-                    inherit: false,
-                    source: '/',
-                    operator: 'none'
-                },
-                x: unit.x,
-                y: unit.y,
-                units: [{
-                    type: 'ELEMENT.INTERVAL',
-                    x: unit.unit[0].x || unit.x,
-                    y: unit.unit[0].y || unit.y,
-                    color: 'color',
-                    expression: {
-                        inherit: true,
-                        source: '/',
-                        operator: 'groupBy',
-                        params: ['color']
-                    }
-                }]
-            }
-        }
-    };
-    var describePlot = /*testUtils.describePlot;*/
 
-    function d(name, spec, data, fn) {
-        describe(name, function () {
-            var context = {
-                element: null,
-                chart: null
-            };
-
-            beforeEach(function () {
-                context.element = document.createElement('div');
-                document.body.appendChild(context.element);
-
-                // tauCharts.Plot.globalSettings = testChartSettings;
-
-                context.chart = new tauCharts.GPL(convertSpec(spec, data));
-
-                context.chart.renderTo(context.element, {width: 800, height: 800});
-            });
-
-            fn(context);
-
-            afterEach(function () {
-                context.element.parentNode.removeChild(context.element);
-            });
-        });
-    }; // testUtils.describePlot;
+    var describePlot = testUtils.describePlot;
     var describeChart = testUtils.describeChart;
     var expectCoordsElement = function (expect, coords) {
         var bars = getGroupBar();
@@ -127,7 +38,7 @@ define(function (require) {
             _.each(bar.childNodes, function (el, ind) {
                 expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x));
                 expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y));
-                if (coords[index][ind].width) {
+                if(coords[index][ind].width) {
                     expect(convertToFixed(attrib(el, 'width'))).to.equal(convertToFixed(coords[index][ind].width));
                 }
             });
@@ -166,39 +77,43 @@ define(function (require) {
         function (context) {
             it("should render group bar element", function () {
                 var chart = context.chart;
-                assert.ok(!schemes.bar.errors(chart.config), 'spec is right');
+                assert.ok(schemes.bar(chart.config.spec), 'spec is right');
                 expect(getGroupBar().length).to.equal(3);
             });
             it("should group contain interval element", function () {
-            //    debugger
                 expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
                     [
                         {
                             "x": "0",
-                            "y": "429"
+                            "y": "457",
+                            "width":"66.66666666666667"
                         }
                     ],
                     [
                         {
-                            "x": "250",
-                            "y": "482"
+                            "x": "266.66666666666663",
+                            "y": "514",
+                            "width":"66.66666666666667"
                         },
                         {
-                            "x": "500",
-                            "y": "0"
+                            "x": "533.3333333333334",
+                            "y": "0",
+                            "width":"66.66666666666667"
                         }
                     ],
                     [
                         {
-                            "x": "500",
-                            "y": "536"
+                            "x": "533.3333333333334",
+                            "y": "571",
+                            "width":"66.66666666666667"
                         }
                     ]
                 ]);
             });
         }
     );
-   /* describePlot(
+    describePlot(
         "ELEMENT.INTERVAL WITH TWO LINEAR AXIS",
         {
             unit: {
@@ -220,7 +135,7 @@ define(function (require) {
         function () {
             it("should group contain interval element", function () {
                 expectCoordsElement(expect, [
-                    // generate with help generateCoordIfChangeDesign
+                    //generate with help generateCoordIfChangeDesign
 
                     [
                         {
@@ -268,7 +183,7 @@ define(function (require) {
         function () {
             it("should group contain interval element", function () {
                 expectCoordsElement(expect, [
-                    // generate with help generateCoordIfChangeDesign
+                    //generate with help generateCoordIfChangeDesign
 
                     [
                         {
@@ -324,7 +239,7 @@ define(function (require) {
             });
             it("should group contain interval element", function () {
                 expectCoordsElement(expect, [
-                    // generate with help generateCoordIfChangeDesign
+                    //generate with help generateCoordIfChangeDesign
                     [
                         {
                             "x": "229",
@@ -375,7 +290,7 @@ define(function (require) {
         function () {
             it("should group contain interval element", function () {
                 expectCoordsElement(expect, [
-                    // generate with help generateCoordIfChangeDesign
+                    //generate with help generateCoordIfChangeDesign
 
                     [
                         {
@@ -424,7 +339,7 @@ define(function (require) {
         function () {
             it("should group contain interval element", function () {
                 expectCoordsElement(expect, [
-                    // generate with help generateCoordIfChangeDesign
+                    //generate with help generateCoordIfChangeDesign
 
                     [
                         {
@@ -502,27 +417,29 @@ define(function (require) {
         },
         dataWithDate,
         function () {
-            /!* it("should group contain interval element", function () {
-             expectCoordsElement(expect, [
-             // generate with help generateCoordIfChangeDesign
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
 
-             [
-             {
-             "x": "0",
-             "y": "43"
-             },
-             {
-             "x": "514.2857",
-             "y": "591"
-             },
-             {
-             "x": "780.9524",
-             "y": "788"
-             }
-             ]
 
-             ]);
-             });*!/
+                    [
+                        {
+                            "x": "0",
+                            "y": "43"
+                        },
+                        {
+                            "x": "514.2857",
+                            "y": "591"
+                        },
+                        {
+                            "x": "780.9524",
+                            "y": "788"
+                        }
+                    ]
+
+
+                ]);
+            });
         }
     );
 
@@ -560,25 +477,25 @@ define(function (require) {
         },
         dataWithDate,
         function () {
-            /!* it("should group contain interval element", function () {
-             expectCoordsElement(expect, [
-             // generate with help generateCoordIfChangeDesign
-             [
-             {
-             "x": "0",
-             "y": "780.9524"
-             },
-             {
-             "x": "0",
-             "y": "266.6667"
-             },
-             {
-             "x": "0",
-             "y": "-0.000000001"
-             }
-             ]
-             ]);
-             });*!/
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    //generate with help generateCoordIfChangeDesign
+                    [
+                        {
+                            "x": "0",
+                            "y": "780.9524"
+                        },
+                        {
+                            "x": "0",
+                            "y": "266.6667"
+                        },
+                        {
+                            "x": "0",
+                            "y": "-0.000000001"
+                        }
+                    ]
+                ]);
+            });
         }
     );
 
@@ -615,26 +532,26 @@ define(function (require) {
             {time: testUtils.toLocalDate('2014-02-01'), count: 10}
         ],
         function () {
-            /!* it("should group contain interval element", function () {
+            it("should group contain interval element", function () {
 
-             var minimalHeight = 1;
+                var minimalHeight = 1;
 
-             var coords = [
-             [
-             800,
-             400,
-             minimalHeight
-             ]
-             ];
+                var coords = [
+                    [
+                        800,
+                        400,
+                        minimalHeight
+                    ]
+                ];
 
-             var bars = getGroupBar();
+                var bars = getGroupBar();
 
-             _.each(bars, function (bar, barIndex) {
-             _.each(bar.childNodes, function (el, elIndex) {
-             expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
-             });
-             });
-             });*!/
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
         });
 
     describePlot(
@@ -671,26 +588,26 @@ define(function (require) {
             {time: testUtils.toLocalDate('2014-02-01'), count: 10}
         ],
         function () {
-            /!* it("should group contain interval element", function () {
+            it("should group contain interval element", function () {
 
-             var minimalHeight = 1;
+                var minimalHeight = 1;
 
-             var coords = [
-             [
-             800,
-             400,
-             minimalHeight
-             ]
-             ];
+                var coords = [
+                    [
+                        800,
+                        400,
+                        minimalHeight
+                    ]
+                ];
 
-             var bars = getGroupBar();
+                var bars = getGroupBar();
 
-             _.each(bars, function (bar, barIndex) {
-             _.each(bar.childNodes, function (el, elIndex) {
-             expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
-             });
-             });
-             });*!/
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
         });
 
     describePlot(
@@ -730,43 +647,43 @@ define(function (require) {
             {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
         ],
         function () {
-            /!*it("should group contain interval element", function () {
+            it("should group contain interval element", function () {
 
-             var minimalHeight = 1;
+                var minimalHeight = 1;
 
-             var coords = [
-             [
-             400,
-             200,
-             minimalHeight,
-             0,
-             minimalHeight,
-             200,
-             400
-             ]
-             ];
+                var coords = [
+                    [
+                        400,
+                        200,
+                        minimalHeight,
+                        0,
+                        minimalHeight,
+                        200,
+                        400
+                    ]
+                ];
 
-             var ys = [
-             [
-             0,      // count = 1000
-             200,    // count = 500
-             399,    // count = 1 (minus minimal height)
-             400,    // count = 0
-             400,    // count = -1
-             400,    // count = -500
-             400     // count = -1000
-             ]
-             ];
+                var ys = [
+                    [
+                        0,      // count = 1000
+                        200,    // count = 500
+                        399,    // count = 1 (minus minimal height)
+                        400,    // count = 0
+                        400,    // count = -1
+                        400,    // count = -500
+                        400     // count = -1000
+                    ]
+                ];
 
-             var bars = getGroupBar();
+                var bars = getGroupBar();
 
-             _.each(bars, function (bar, barIndex) {
-             _.each(bar.childNodes, function (el, elIndex) {
-             expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
-             expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
-             });
-             });
-             });*!/
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
+                        expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
         });
 
     describePlot(
@@ -807,43 +724,43 @@ define(function (require) {
             {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
         ],
         function () {
-            /!* it("should group contain interval element", function () {
+            it("should group contain interval element", function () {
 
-             var minimalHeight = 1;
+                var minimalHeight = 1;
 
-             var coords = [
-             [
-             400,
-             200,
-             minimalHeight,
-             0,
-             minimalHeight,
-             200,
-             400
-             ]
-             ];
+                var coords = [
+                    [
+                        400,
+                        200,
+                        minimalHeight,
+                        0,
+                        minimalHeight,
+                        200,
+                        400
+                    ]
+                ];
 
-             var xs = [
-             [
-             400,    // count = 1000
-             400,    // count = 500
-             400,    // count = 1
-             400,    // count = 0
-             399,    // count = -1 (minus minimal height)
-             200,    // count = -500
-             0       // count = -1000
-             ]
-             ];
+                var xs = [
+                    [
+                        400,    // count = 1000
+                        400,    // count = 500
+                        400,    // count = 1
+                        400,    // count = 0
+                        399,    // count = -1 (minus minimal height)
+                        200,    // count = -500
+                        0       // count = -1000
+                    ]
+                ];
 
-             var bars = getGroupBar();
+                var bars = getGroupBar();
 
-             _.each(bars, function (bar, barIndex) {
-             _.each(bar.childNodes, function (el, elIndex) {
-             expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
-             expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
-             });
-             });
-             });*!/
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
+                        expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
         });
 
     describeChart("interval width for facet",
@@ -903,17 +820,17 @@ define(function (require) {
             y: "5"
         }],
         function (context) {
-            it('test position', function () {
-                var svg = context.chart.getSVG();
-                var offsets = _.map(svg.querySelectorAll('.i-role-bar-group'), function (item) {
-                    return item.getAttribute('transform');
+                it('test position',function(){
+                    var svg = context.chart.getSVG();
+                    var offsets = _.map(svg.querySelectorAll('.i-role-bar-group'), function (item) {
+                        return item.getAttribute('transform');
+                    });
+                    expect(offsets).to.eql(["translate(66.66666666666667,0)"]);
                 });
-                expect(offsets).to.eql(["translate(66.66666666666667,0)"]);
-            });
 
         },
         {
             autoWidth: false
         }
-    );*/
+    );
 });
