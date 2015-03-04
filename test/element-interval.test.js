@@ -48,6 +48,7 @@ define(function (require) {
         return coords;
     }
 
+    window.generateCoordIfChangeDesign = generateCoordIfChangeDesign;
     var convertSpec = function (spec, data) {
         var unit = spec.unit;
         return {
@@ -61,13 +62,14 @@ define(function (require) {
                         x: {type: 'category'},
                         y: {type: 'measure'},
                         createDate: {type: 'date'},
+                        time: {type: 'measure'},
                         color: {type: 'category'},
                         count: {type: 'measure'}
                     },
                     data: data.map(function (item) {
                         /*if (item.createDate) {
-                            item.createDate = item.createDate.getTime()
-                        }*/
+                         item.createDate = item.createDate.getTime()
+                         }*/
                         return item;
 
                     })
@@ -93,6 +95,7 @@ define(function (require) {
                 'y': {type: 'linear', source: '/', dim: 'y'},
                 'date': {type: 'period', period: 'day', source: '/', dim: 'createDate'},
                 'count': {type: 'linear', source: '/', dim: 'count'},
+                'time': {type: 'time', source: '/', dim: 'time'},
                 'catY': {type: 'ordinal', source: '/', dim: 'color'},
                 'size:default': {type: 'size', source: '?', mid: 5},
                 'color': {type: 'color', dim: 'color', source: '/'},
@@ -529,174 +532,111 @@ define(function (require) {
             });
         }
     );
+
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH TWO ORDER AXIS",
+        {
+
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'count',
+                y: 'date',
+                units: [
+                    {
+                        flip: true
+                    }
+                ]
+            }
+        },
+        dataWithDate,
+        function () {
+            it("should group contain interval element", function () {
+                expectCoordsElement(expect, [
+                    [
+                        {
+                            "x": "0",
+                            "y": "732.1428571428571"
+                        },
+                        {
+                            "x": "0",
+                            "y": "249.99999999999997"
+                        },
+                        {
+                            "x": "0",
+                            "y": "1.5987211554602254e-14"
+                        }
+                    ]
+                ]);
+            });
+        }
+    );
+    var testExpectCoordForTimeAdCount = [
+        [
+            750,
+            375,
+            1
+        ]
+    ];
+    var testDataCoordForTimeAdCount = [
+        {time: testUtils.toLocalDate('2014-02-03'), count: 0},
+        {time: testUtils.toLocalDate('2014-02-02'), count: 5},
+        {time: testUtils.toLocalDate('2014-02-01'), count: 10}
+    ]
+    describePlot(
+        "ELEMENT.INTERVAL WITH MEASURE (:time) as X / MEASURE (:number) AXIS as Y",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'count',
+                y: 'time',
+                units: [
+                    {
+                        flip: false
+                    }
+                ]
+            }
+        },
+        testDataCoordForTimeAdCount,
+        function () {
+            it("should group contain interval element", function () {
+                var bars = getGroupBar();
+
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'height')))
+                            .to.equal(testExpectCoordForTimeAdCount[barIndex][elIndex]);
+                    });
+                });
+            });
+        });
+
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH MEASURE (:number) AXIS as X / MEASURE (:time) as Y",
+        {
+            unit: {
+                type: 'COORDS.RECT',
+                x: 'time',
+                y: 'count',
+                units: [
+                    {
+                        flip: true
+                    }
+                ]
+            }
+        },
+        testDataCoordForTimeAdCount,
+        function () {
+            it("should group contain interval element", function () {
+                var bars = getGroupBar();
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'width')))
+                            .to.equal(testExpectCoordForTimeAdCount[barIndex][elIndex]);
+                    });
+                });
+            });
+        });
     /*
-     describePlot(
-     "ELEMENT.INTERVAL.FLIP WITH TWO ORDER AXIS",
-     {
-     dimensions: {
-     "createDate": {
-     "type": "order",
-     "scale": "period"
-     },
-     "count": {
-     "type": "measure"
-     }
-     },
-     unit: {
-     type: 'COORDS.RECT',
-     y: 'createDate',
-     x: 'count',
-     guide: {
-     "y": {
-     "label": "Create Date",
-     "autoScale": true,
-     "tickPeriod": "day",
-     "tickFormat": "%j"
-     }
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     flip: true
-     }
-     ]
-     }
-     },
-     dataWithDate,
-     function () {
-     /!* it("should group contain interval element", function () {
-     expectCoordsElement(expect, [
-     // generate with help generateCoordIfChangeDesign
-     [
-     {
-     "x": "0",
-     "y": "780.9524"
-     },
-     {
-     "x": "0",
-     "y": "266.6667"
-     },
-     {
-     "x": "0",
-     "y": "-0.000000001"
-     }
-     ]
-     ]);
-     });*!/
-     }
-     );
-
-     describePlot(
-     "ELEMENT.INTERVAL WITH MEASURE (:time) as X / MEASURE (:number) AXIS as Y",
-     {
-     dimensions: {
-     "time": {
-     "type": "measure",
-     "scale": "time"
-     },
-     "count": {
-     "type": "measure"
-     }
-     },
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'count',
-     y: 'time',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL'
-     }
-     ]
-     }
-     },
-     [
-     {time: testUtils.toLocalDate('2014-02-03'), count: 0},
-     {time: testUtils.toLocalDate('2014-02-02'), count: 5},
-     {time: testUtils.toLocalDate('2014-02-01'), count: 10}
-     ],
-     function () {
-     /!* it("should group contain interval element", function () {
-
-     var minimalHeight = 1;
-
-     var coords = [
-     [
-     800,
-     400,
-     minimalHeight
-     ]
-     ];
-
-     var bars = getGroupBar();
-
-     _.each(bars, function (bar, barIndex) {
-     _.each(bar.childNodes, function (el, elIndex) {
-     expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
-     });
-     });
-     });*!/
-     });
-
-     describePlot(
-     "ELEMENT.INTERVAL.FLIP WITH MEASURE (:number) AXIS as X / MEASURE (:time) as Y",
-     {
-     dimensions: {
-     "time": {
-     "type": "measure",
-     "scale": "time"
-     },
-     "count": {
-     "type": "measure"
-     }
-     },
-     unit: {
-     type: 'COORDS.RECT',
-     y: 'count',
-     x: 'time',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     flip: true
-     }
-     ]
-     }
-     },
-     [
-     {time: testUtils.toLocalDate('2014-02-03'), count: 0},
-     {time: testUtils.toLocalDate('2014-02-02'), count: 5},
-     {time: testUtils.toLocalDate('2014-02-01'), count: 10}
-     ],
-     function () {
-     /!* it("should group contain interval element", function () {
-
-     var minimalHeight = 1;
-
-     var coords = [
-     [
-     800,
-     400,
-     minimalHeight
-     ]
-     ];
-
-     var bars = getGroupBar();
-
-     _.each(bars, function (bar, barIndex) {
-     _.each(bar.childNodes, function (el, elIndex) {
-     expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
-     });
-     });
-     });*!/
-     });
-
      describePlot(
      "ELEMENT.INTERVAL WITH MEASURE (:time) AXIS as X / MEASURE (:number) as Y",
      {

@@ -4,7 +4,8 @@ import {utils} from './utils/utils';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
-
+var generateHashFunction = (varSet, interval)=>
+    () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
 var scalesStrategies = {
 
     color: (vars, props) => {
@@ -119,7 +120,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'ordinal';
-        scale.getHash = () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
+        scale.getHash = () => generateHashFunction(varSet, interval);
         return scale;
     },
 
@@ -157,7 +158,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'linear';
-        scale.getHash = () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
+        scale.getHash = () => generateHashFunction(varSet, interval);
 
         return scale;
     },
@@ -185,7 +186,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'period';
-        scale.getHash = () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
+        scale.getHash = () => generateHashFunction(varSet, interval);
         return scale;
     },
 
@@ -208,6 +209,7 @@ var scalesStrategies = {
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'time';
+        scale.getHash = () => generateHashFunction(varSet, interval);
 
         return scale;
     },

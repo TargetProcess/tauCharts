@@ -11,7 +11,7 @@ define(function (require) {
     var describeChart = testUtils.describeChart;
 
     describeChart(
-        "export plugin should work",
+        'export plugin should work',
         {
             type: 'scatterplot',
             x: 'x',
@@ -39,14 +39,13 @@ define(function (require) {
                 testUtils.simulateEvent('click', header.querySelector('.graphical-report__export'));
                 mock.printCallbacks.push(function () {
                     expect(true).to.be.ok;
+                    $('.graphical-report__print-block').remove();
                     testUtils.simulateEvent('click', document.body);
                      done();
                 });
                 setTimeout(function () {
                     testUtils.simulateEvent('click', $('[data-value="print"]').get(0));
                 }, 0);
-
-
             });
         },
         {
@@ -54,7 +53,7 @@ define(function (require) {
         }
     );
     describeChart(
-        "export plugin should work png",
+        'export plugin should work png',
         {
             type: 'scatterplot',
             x: 'x',
@@ -77,7 +76,7 @@ define(function (require) {
 
         }],
         function (context) {
-            it("export to png", function (done) {
+            it('export to png', function (done) {
                 var header = context.chart._layout.header;
                 testUtils.simulateEvent('click', header.querySelector('.graphical-report__export'));
                 saveAs.callbacks.items.push(function () {
@@ -86,7 +85,7 @@ define(function (require) {
                     done();
                 });
                 expect($('[data-value="png"]').length).to.be.ok;
-                context.chart.fire('exportTo','png');
+                context.chart.fire('exportTo', 'png');
             });
         },
         {
