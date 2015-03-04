@@ -1,6 +1,8 @@
 /*global module:false*/
 var autoprefixer = require('autoprefixer-core');
 var webpack = require('webpack');
+var webpackConfig = require('./config/webpack.test.config');
+webpackConfig.module.postLoaders = [];
 module.exports = function (grunt) {
     // Project configuration.
     var src = [
@@ -74,17 +76,14 @@ module.exports = function (grunt) {
             dev: {
                 reporters: ['dots'],
                 browsers: ['Chrome'],
-                singleRun: false
+                singleRun: false,
+                webpack: webpackConfig
             },
             unit: {
                 reporters: [
                     'dots',
-                   'coverage'
+                    'coverage'
                 ],
-                /*preprocessors: {
-                    'tau_modules/!**!/!*.js': 'coverage',
-                    'plugins/!*.js': 'coverage'
-                },*/
                 coverageReporter: {}
             }
         },
@@ -250,7 +249,6 @@ module.exports = function (grunt) {
                     'd3.js': 'd3/d3.js',
                     'underscore.js': 'underscore/underscore.js',
                     'jquery.js': 'jquery/dist/jquery.js',
-                    'modernizer.js': 'modernizer/modernizr.js',
                     'js-schema.js': 'js-schema/js-schema.debug.js',
                     'es5-shim.js': 'es5-shim/es5-shim.js'
                 }
