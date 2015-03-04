@@ -1,7 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var assert = require('chai').assert;
-    var DataProcessor = require('tau_modules/data-processor').DataProcessor;
+    var DataProcessor = require('src/data-processor').DataProcessor;
 
     describe("DataProcessor", function () {
 

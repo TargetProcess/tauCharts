@@ -3,10 +3,11 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
+    var _ = require('underscore');
     var assert = require('chai').assert;
-    var tauCharts = require('tau_modules/tau.charts');
-    var Cartesian = require('tau_modules/elements/coords.cartesian').Cartesian;
-    var Interval = require('tau_modules/elements/element.interval').Interval;
+    var tauCharts = require('src/tau.charts');
+    var Cartesian = require('src/elements/coords.cartesian').Cartesian;
+    var Interval = require('src/elements/element.interval').Interval;
     var testUtils = require('testUtils');
     var unitsMap = {};
     var unitsRegistry = {

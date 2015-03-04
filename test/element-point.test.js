@@ -1,9 +1,9 @@
 define(function(require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var tauBrewer = require('brewer');
     var testUtils = require('testUtils');
-    var tauCharts = require('tau_modules/tau.charts');
+    var tauCharts = require('src/tau.charts');
+    var tauBrewer = require('brewer');
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
     var attrib = testUtils.attrib;

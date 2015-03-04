@@ -1,8 +1,8 @@
 define(function (require) {
     var testUtils = require('testUtils');
     var expect = require('chai').expect;
-    var tauChart = require('tau_modules/tau.charts');
-    var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
+    var tauChart = require('src/tau.charts');
+    var UnitDomainMixin = require('src/unit-domain-mixin').UnitDomainMixin;
     var SpecEngineFactory = tauChart.__api__.SpecEngineFactory;
 
     describe("Spec engine factory", function () {

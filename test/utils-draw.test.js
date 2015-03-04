@@ -1,15 +1,15 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var modernizer = require('modernizer');
-    var utilsDraw = require('tau_modules/utils/utils-draw').utilsDraw;
+    var modernizer = require('bower_components/modernizer/modernizr');
+    var utilsDraw = require('src/utils/utils-draw').utilsDraw;
 
     describe("utils-draw", function () {
         var div;
         var textLenMeasurer = function(d3Text) {
             return d3Text.text().length * 8;
         };
-        beforeEach(function () {
+        beforeEach(()=>{
             div = document.createElement('div');
             div.innerHTML = [
                 '<div id="test-div" style="width: 800px; height: 600px">',

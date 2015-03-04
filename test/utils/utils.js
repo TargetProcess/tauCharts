@@ -1,6 +1,7 @@
 define(function (require) {
-    var tauCharts = require('tau_modules/tau.charts'),
+    var tauCharts = require('src/tau.charts'),
         $ = require('jquery'),
+        _ = require('underscore'),
         d3 = require('d3');
 
     var testChartSettings = {

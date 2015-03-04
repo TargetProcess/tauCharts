@@ -1,12 +1,13 @@
 define(function (require) {
     var assert = require('chai').assert;
-    var modernizer = require('modernizer');
-    var Balloon = require('tau_modules/api/balloon').Tooltip;
+
+    var modernizer = require('bower_components/modernizer/modernizr');
+    var Balloon = require('src/api/balloon').Tooltip;
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var utils = require('testUtils');
     var $ = require('jquery');
-    var tauCharts = require('tau_modules/tau.charts');
+    var tauCharts = require('src/tau.charts');
     var div, spec;
     var config = {
 

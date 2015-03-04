@@ -1,8 +1,8 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var modernizer = require('modernizer');
-    var tauChart = require('tau_modules/tau.charts');
+    var modernizer = require('bower_components/modernizer/modernizr');
+    var tauChart = require('src/tau.charts');
     describe("tauChart.Plot", function () {
 
         var spec;

@@ -1,7 +1,7 @@
 define(function(require){
     var assert = require('chai').assert;
     var expect = require('chai').expect;
-    var tauChart = require('tau_modules/tau.charts');
+    var tauChart = require('src/tau.charts');
     describe('Invalid chart definition', function(){
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6},

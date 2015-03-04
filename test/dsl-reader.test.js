@@ -2,9 +2,9 @@ define(function (require) {
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var schemes = require('schemes');
-    var tauChart = require('tau_modules/tau.charts');
-    var UnitDomainMixin = require('tau_modules/unit-domain-mixin').UnitDomainMixin;
-    var unitsRegistry = require('tau_modules/units-registry').unitsRegistry;
+    var tauChart = require('src/tau.charts');
+    var UnitDomainMixin = require('src/unit-domain-mixin').UnitDomainMixin;
+    var unitsRegistry = require('src/units-registry').unitsRegistry;
 
     function globalChartSettings() {
         return _.defaults({ fitSize: false }, testUtils.chartSettings);
