@@ -112,7 +112,6 @@ define(function (require) {
                 });
             });
 
-
         });
         afterEach(function () {
             div1.parentNode.removeChild(div1);
@@ -130,7 +129,9 @@ define(function (require) {
         });
 
         afterEach(function () {
-            div.parentNode.removeChild(div);
+            if (div && div.parentNode) {
+                div.parentNode.removeChild(div);
+            }
         });
 
         it('api test element events', function (done) {
@@ -337,7 +338,6 @@ define(function (require) {
             expect(function () {
                 tauCharts.api.plugins.add('myPlugins', myPlugins2);
             }).to.throw(Error);
-
 
         });
     });
