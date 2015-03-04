@@ -21,16 +21,16 @@ export class SpecConverter {
                 'color:default': {type: 'color', source: '?', brewer: null}
             },
             trans: {
-                where: function (data, tuple) {
+                where(data, tuple) {
                     var predicates = _.map(tuple, function (v, k) {
                         return function (row) {
                             return (row[k] === v);
-                        }
+                        };
                     });
                     return _(data).filter(function (row) {
                         return _.every(predicates, function (p) {
                             return p(row);
-                        })
+                        });
                     });
                 }
             }

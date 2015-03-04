@@ -637,228 +637,197 @@ define(function (require) {
                 });
             });
         });
-    /*
-     describePlot(
-     "ELEMENT.INTERVAL WITH MEASURE (:time) AXIS as X / MEASURE (:number) as Y",
-     {
-     dimensions: {
-     "time": {
-     "type": "measure",
-     "scale": "time"
-     },
-     "count": {
-     "type": "measure"
-     }
-     },
-     unit: {
-     type: 'COORDS.RECT',
-     y: 'count',
-     x: 'time',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL'
-     }
-     ]
-     }
-     },
-     [
-     {time: testUtils.toLocalDate('2014-02-01'), count: 1000},
-     {time: testUtils.toLocalDate('2014-02-02'), count: 500},
-     {time: testUtils.toLocalDate('2014-02-03'), count: 1},
-     {time: testUtils.toLocalDate('2014-02-04'), count: 0},
-     {time: testUtils.toLocalDate('2014-02-05'), count: -1},
-     {time: testUtils.toLocalDate('2014-02-06'), count: -500},
-     {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
-     ],
-     function () {
-     /!*it("should group contain interval element", function () {
 
-     var minimalHeight = 1;
+    describePlot(
+        "ELEMENT.INTERVAL WITH MEASURE (:time) AXIS as X / MEASURE (:number) as Y",
+        {
+            unit: {
+                y: 'count',
+                x: 'time',
+                units: [
+                    {
+                        type: 'ELEMENT.INTERVAL'
+                    }
+                ]
+            }
+        },
+        [
+            {time: testUtils.toLocalDate('2014-02-01'), count: 1000},
+            {time: testUtils.toLocalDate('2014-02-02'), count: 500},
+            {time: testUtils.toLocalDate('2014-02-03'), count: 1},
+            {time: testUtils.toLocalDate('2014-02-04'), count: 0},
+            {time: testUtils.toLocalDate('2014-02-05'), count: -1},
+            {time: testUtils.toLocalDate('2014-02-06'), count: -500},
+            {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
+        ],
+        function () {
+            it("should group contain interval element", function () {
 
-     var coords = [
-     [
-     400,
-     200,
-     minimalHeight,
-     0,
-     minimalHeight,
-     200,
-     400
-     ]
-     ];
+                var minimalHeight = 1;
 
-     var ys = [
-     [
-     0,      // count = 1000
-     200,    // count = 500
-     399,    // count = 1 (minus minimal height)
-     400,    // count = 0
-     400,    // count = -1
-     400,    // count = -500
-     400     // count = -1000
-     ]
-     ];
+                var coords = [
+                    [
+                        375,
+                        187,
+                        minimalHeight,
+                        0,
+                        minimalHeight,
+                        188,
+                        375
+                    ]
+                ];
 
-     var bars = getGroupBar();
+                var ys = [
+                    [
+                        0,      // count = 1000
+                        188,    // count = 500
+                        374,    // count = 1 (minus minimal height)
+                        375,    // count = 0
+                        375,    // count = -1
+                        375,    // count = -500
+                        375     // count = -1000
+                    ]
+                ];
 
-     _.each(bars, function (bar, barIndex) {
-     _.each(bar.childNodes, function (el, elIndex) {
-     expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
-     expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
-     });
-     });
-     });*!/
-     });
+                var bars = getGroupBar();
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
+                        expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
+        });
 
-     describePlot(
-     "ELEMENT.INTERVAL.FLIP WITH MEASURE (:time) AXIS as Y / MEASURE (:number) as X",
-     {
-     dimensions: {
-     "time": {
-     "type": "measure",
-     "scale": "time"
-     },
-     "count": {
-     "type": "measure"
-     }
-     },
-     unit: {
-     type: 'COORDS.RECT',
-     x: 'count',
-     y: 'time',
-     guide: {
-     x: {autoScale: false},
-     y: {autoScale: false}
-     },
-     unit: [
-     {
-     type: 'ELEMENT.INTERVAL',
-     flip: true
-     }
-     ]
-     }
-     },
-     [
-     {time: testUtils.toLocalDate('2014-02-01'), count: 1000},
-     {time: testUtils.toLocalDate('2014-02-02'), count: 500},
-     {time: testUtils.toLocalDate('2014-02-03'), count: 1},
-     {time: testUtils.toLocalDate('2014-02-04'), count: 0},
-     {time: testUtils.toLocalDate('2014-02-05'), count: -1},
-     {time: testUtils.toLocalDate('2014-02-06'), count: -500},
-     {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
-     ],
-     function () {
-     /!* it("should group contain interval element", function () {
+    describePlot(
+        "ELEMENT.INTERVAL.FLIP WITH MEASURE (:time) AXIS as Y / MEASURE (:number) as X",
+        {
+            unit: {
+                x: 'count',
+                y: 'time',
+                units: [
+                    {
+                        flip: true
+                    }
+                ]
+            }
+        },
+        [
+            {time: testUtils.toLocalDate('2014-02-01'), count: 1000},
+            {time: testUtils.toLocalDate('2014-02-02'), count: 500},
+            {time: testUtils.toLocalDate('2014-02-03'), count: 1},
+            {time: testUtils.toLocalDate('2014-02-04'), count: 0},
+            {time: testUtils.toLocalDate('2014-02-05'), count: -1},
+            {time: testUtils.toLocalDate('2014-02-06'), count: -500},
+            {time: testUtils.toLocalDate('2014-02-07'), count: -1000}
+        ],
+        function () {
+            it("should group contain interval element", function () {
 
-     var minimalHeight = 1;
+                var minimalHeight = 1;
 
-     var coords = [
-     [
-     400,
-     200,
-     minimalHeight,
-     0,
-     minimalHeight,
-     200,
-     400
-     ]
-     ];
+                var coords = [
+                    [
+                        375,
+                        188,
+                        minimalHeight,
+                        0,
+                        minimalHeight,
+                        187,
+                        375
+                    ]
+                ];
 
-     var xs = [
-     [
-     400,    // count = 1000
-     400,    // count = 500
-     400,    // count = 1
-     400,    // count = 0
-     399,    // count = -1 (minus minimal height)
-     200,    // count = -500
-     0       // count = -1000
-     ]
-     ];
+                var xs = [
+                    [
+                        375,    // count = 1000
+                        375,    // count = 500
+                        375,    // count = 1
+                        375,    // count = 0
+                        374,    // count = -1 (minus minimal height)
+                        188,    // count = -500
+                        0       // count = -1000
+                    ]
+                ];
 
-     var bars = getGroupBar();
+                var bars = getGroupBar();
+                _.each(bars, function (bar, barIndex) {
+                    _.each(bar.childNodes, function (el, elIndex) {
+                        expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
+                        expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
+                    });
+                });
+            });
+        });
 
-     _.each(bars, function (bar, barIndex) {
-     _.each(bar.childNodes, function (el, elIndex) {
-     expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
-     expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
-     });
-     });
-     });*!/
-     });
+    describeChart("interval width for facet",
+        {
+            type: 'bar',
+            x: ['type', 'y'],
+            y: 'x',
+            color: 'color'
+        },
+        [{
+            x: 2,
+            y: "2",
+            type: true,
+            color: 'yellow'
 
-     describeChart("interval width for facet",
-     {
-     type: 'bar',
-     x: ['type', 'y'],
-     y: 'x',
-     color: 'color'
-     },
-     [{
-     x: 2,
-     y: "2",
-     type: true,
-     color: 'yellow'
+        }, {
+            x: 2,
+            y: "4",
+            type: false,
+            color: 'yellow'
 
-     }, {
-     x: 2,
-     y: "4",
-     type: false,
-     color: 'yellow'
+        }, {
+            x: 3,
+            y: "4",
+            type: false,
+            color: 'green'
 
-     }, {
-     x: 3,
-     y: "4",
-     type: false,
-     color: 'green'
+        }],
+        function (context) {
+            it("all bar for facet chart should have equal width", function () {
+                var svg = context.chart.getSVG();
+                var width = _.map(svg.querySelectorAll('.i-role-element'), function (item) {
+                    return item.getAttribute('width');
+                });
+                expect(_.unique(width).length).to.equals(1);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 
-     }],
-     function (context) {
-     it("all bar for facet chart should have equal width", function () {
-     var svg = context.chart.getSVG();
-     var width = _.map(svg.querySelectorAll('.i-role-element'), function (item) {
-     return item.getAttribute('width');
-     });
-     expect(_.unique(width).length).to.equals(1);
-     });
-     },
-     {
-     autoWidth: false
-     }
-     );
+    describeChart("interval offset should right if color dim not defined",
+        {
+            type: 'bar',
+            x: 'y',
+            y: 'x'
+        },
+        [{
+            x: 2,
+            y: "2"
+        }, {
+            x: 2,
+            y: "4"
+        }, {
+            x: 3,
+            y: "5"
+        }],
+        function (context) {
+            it('test position', function () {
+                var svg = context.chart.getSVG();
+                var offsets = _.map(svg.querySelectorAll('.i-role-bar-group'), function (item) {
+                    return item.getAttribute('transform');
+                });
+                expect(offsets).to.eql(["translate(66.66666666666667,0)"]);
+            });
 
-     describeChart("interval offset should right if color dim not defined",
-     {
-     type: 'bar',
-     x: 'y',
-     y: 'x'
-     },
-     [{
-     x: 2,
-     y: "2"
-     }, {
-     x: 2,
-     y: "4"
-     }, {
-     x: 3,
-     y: "5"
-     }],
-     function (context) {
-     it('test position', function () {
-     var svg = context.chart.getSVG();
-     var offsets = _.map(svg.querySelectorAll('.i-role-bar-group'), function (item) {
-     return item.getAttribute('transform');
-     });
-     expect(offsets).to.eql(["translate(66.66666666666667,0)"]);
-     });
-
-     },
-     {
-     autoWidth: false
-     }
-     );*/
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
