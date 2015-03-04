@@ -68,7 +68,8 @@
     "requirejs": "2.1.15",
     "requirejs-text": "^2.0.12",
     "webpack": "^1.6.0",
-    "webpack-dev-server": "^1.7.0"
+    "webpack-dev-server": "^1.7.0",
+    "karma-sourcemap-loader": "^0.3.4"
   },
   "scripts": {
     "test": "./node_modules/.bin/karma start config/karma.conf.js",
