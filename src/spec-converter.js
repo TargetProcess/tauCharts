@@ -21,6 +21,7 @@ export class SpecConverter {
                 }
             },
             scales: {
+                // jscs:disable disallowQuotedKeysInObjects
                 'x_null': {type: 'ordinal', source: '?'},
                 'y_null': {type: 'ordinal', source: '?'},
                 'pos:default': {type: 'ordinal', source: '?'},
@@ -29,6 +30,7 @@ export class SpecConverter {
 
                 'color:default': {type: 'color', source: '?', brewer: null},
                 'color_null': {type: 'color', source: '?', brewer: null}
+                // jscs:enable disallowQuotedKeysInObjects
             },
             trans: {
                 where(data, tuple) {
