@@ -135,7 +135,9 @@ export class GPL extends Emitter {
             })
             .drawFrames(rootConf.frames.map(self._datify.bind(self)), self._drawUnitsStructure.bind(self));
 
-        self.onUnitDraw && self.onUnitDraw(unitNode);
+        if (self.onUnitDraw) {
+            self.onUnitDraw(unitNode);
+        }
 
         return rootConf;
     }

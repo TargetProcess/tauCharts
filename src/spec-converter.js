@@ -209,6 +209,7 @@ export class SpecConverter {
                 var g = srcUnit.guide;
                 var gx = g.x || {};
                 var gy = g.y || {};
+                // jshint ignore:start
                 // jscs:disable requireDotNotation
                 if (gx['tickPeriod'] || gy['tickPeriod']) {
                     expr = {
@@ -222,6 +223,7 @@ export class SpecConverter {
                     };
                 }
                 // jscs:enable requireDotNotation
+                // jshint ignore:end
             }
         }
 

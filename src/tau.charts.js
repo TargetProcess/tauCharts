@@ -53,7 +53,7 @@ var api = {
         },
         get: function (name) {
             return plugins[name] || ((x) => {
-                throw new Error(`${x} plugin is not defined`)
+                throw new Error(`${x} plugin is not defined`);
             });
         }
     },
