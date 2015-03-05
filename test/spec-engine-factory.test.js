@@ -243,7 +243,7 @@ define(function (require) {
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
 
-            expect(full.unit.guide.hasOwnProperty('showGridLines')).to.equal(false);
+            expect(full.unit.guide.showGridLines).to.equal('');
 
             expect(x.autoScale).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');

@@ -80,7 +80,9 @@ var utils = {
         ];
     },
 
-    traverseJSON: traverseJSON
+    traverseJSON: traverseJSON,
+
+    generateHash: (str) => btoa(encodeURIComponent(str)).replace(/=/g, '_')
 };
 
 export {utils};

@@ -349,11 +349,57 @@
 </head>
 <body>
 
+<div id="object-color-legend-container" class="cc"></div>
+
 <div id="container" class="cc"></div>
 
 <div id="trendline" class="cc"></div>
 
 <div id="dashboard" class="cc"></div>
+
+<script>
+    new tauCharts.Chart({
+
+        data: [
+            {"x1": "Tau Product Web Site - Scrum #1", "y1": 4},
+            {"x1": "Tau Product Web Site - Kanban", "y1": 2},
+            {"x1": "Tau Product Web Site - Scrum #1", "y1": 1},
+            {"x1": null, "y1": 1}
+        ],
+
+        "type": "scatterplot",
+        "color": "x1",
+        "x": ["x1"],
+        "y": ["y1"],
+        "guide": [
+            {
+                "x": {
+                    "label": "Project"
+                },
+                "y": {
+                    "label": "Count"
+                },
+                "color": {
+                    label: 'Project'
+                }
+            }
+        ],
+
+        "dimensions": {
+            "x1": {
+                "type": "category",
+                "scale": "ordinal"
+            },
+            "y1": {
+                "type": "measure",
+                "scale": "linear"
+            }
+        },
+
+        plugins: []
+
+    }).renderTo('#object-color-legend-container');
+</script>
 
 <script>
 

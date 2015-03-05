@@ -5,11 +5,15 @@ export class SpecConverter {
 
     constructor(spec) {
         this.spec = spec;
+        this.opts = spec.settings;
+
+        this.isExtract = (spec.settings.layoutEngine === 'EXTRACT');
+
         this.dist = {
             sources: {
                 '?': {
                     dims: {},
-                    data: []
+                    data: [{}]
                 },
                 '/': {
                     dims: {},
@@ -17,8 +21,14 @@ export class SpecConverter {
                 }
             },
             scales: {
+                'x_null': {type: 'ordinal', source: '?'},
+                'y_null': {type: 'ordinal', source: '?'},
+                'pos:default': {type: 'ordinal', source: '?'},
                 'size:default': {type: 'size', source: '?', mid: 5},
-                'color:default': {type: 'color', source: '?', brewer: null}
+                'size_null':  {type: 'size', source: '?', mid: 5},
+
+                'color:default': {type: 'color', source: '?', brewer: null},
+                'color_null': {type: 'color', source: '?', brewer: null}
             },
             trans: {
                 where(data, tuple) {
@@ -48,7 +58,19 @@ export class SpecConverter {
     }
 
     ruleAssignSourceData(srcSpec, gplSpec) {
-        gplSpec.sources['/'].data = srcSpec.data;
+
+        var reduceIterator = (row, key) => {
+
+            if (_.isObject(row[key]) && !_.isDate(row[key])) {
+                _.each(row[key], (v, k) => (row[key + '.' + k] = v));
+            }
+
+            return row;
+        };
+
+        gplSpec.sources['/'].data = srcSpec
+            .data
+            .map((r) => (Object.keys(r).reduce(reduceIterator, r)));
     }
 
     ruleAssignSourceDims(srcSpec, gplSpec) {
@@ -82,18 +104,11 @@ export class SpecConverter {
 
     ruleCreateScales(srcUnit, gplRoot) {
 
-        // TODO: remove when switch-off obsolete elements
-        gplRoot.type = this.ruleInferType(srcUnit.type);
-
         ['color', 'size', 'x', 'y'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], srcUnit.guide[p] || {});
             }
         });
-    }
-
-    ruleInferType(srcUnitType) {
-        return srcUnitType.replace('ELEMENT.', '').replace('COORDS.', '');
     }
 
     scalesPool(scaleType, dimName, guide) {
@@ -106,12 +121,23 @@ export class SpecConverter {
 
         var dims = this.spec.spec.dimensions;
 
+        var inferDim = () => {
+            var r = dimName;
+            if (guide.hasOwnProperty('tickLabel')) {
+                r = `${dimName}.${guide.tickLabel}`;
+            } else if (dims[dimName].value) {
+                r = `${dimName}.${dims[dimName].value}`;
+            }
+
+            return r;
+        };
+
         var item = {};
-        if (scaleType === 'color') {
+        if (scaleType === 'color' && dimName !== null) {
             item = {
                 type: 'color',
                 source: '/',
-                dim: dimName
+                dim: inferDim()
             };
 
             if (guide.hasOwnProperty('brewer')) {
@@ -119,19 +145,22 @@ export class SpecConverter {
             }
         }
 
-        if (scaleType === 'size') {
+        if (scaleType === 'size' && dimName !== null) {
             item = {
                 type: 'size',
                 source: '/',
-                dim: dimName
+                dim: inferDim(),
+                min: 2,
+                max: 10,
+                mid: 5
             };
         }
 
-        if (scaleType === 'x' || scaleType === 'y') {
+        if (dims.hasOwnProperty(dimName) && (scaleType === 'x' || scaleType === 'y')) {
             item = {
                 type: dims[dimName].scale,
                 source: '/',
-                dim: dimName
+                dim: inferDim()
             };
 
             if (guide.hasOwnProperty('min')) {
@@ -140,6 +169,16 @@ export class SpecConverter {
 
             if (guide.hasOwnProperty('max')) {
                 item.max = guide.max;
+            }
+
+            if (guide.hasOwnProperty('autoScale')) {
+                item.autoScale = guide.autoScale;
+            } else {
+                item.autoScale = true;
+            }
+
+            if (guide.hasOwnProperty('tickPeriod')) {
+                item.period = guide.tickPeriod;
             }
         }
 
@@ -164,11 +203,26 @@ export class SpecConverter {
         } else if (srcUnit.type === 'COORDS.RECT') {
 
             if (srcUnit.unit.length === 1 && srcUnit.unit[0].type === 'COORDS.RECT') {
-                var item = srcUnit.unit[0];
-                expr = {operator: 'cross', params: [item.x, item.y]};
+
+                var g = srcUnit.guide;
+                var gx = g.x || {};
+                var gy = g.y || {};
+                // jscs:disable requireDotNotation
+                if (gx['tickPeriod'] || gy['tickPeriod']) {
+                    expr = {
+                        operator: 'cross_period',
+                        params: [srcUnit.x, srcUnit.y, gx['tickPeriod'], gy['tickPeriod']]
+                    };
+                } else {
+                    expr = {
+                        operator: 'cross',
+                        params: [srcUnit.x, srcUnit.y]
+                    };
+                }
+                // jscs:enable requireDotNotation
             }
         }
 
-        return _.extend({inherit: true, source: '/'}, expr);
+        return _.extend({inherit: false, source: '/'}, expr);
     }
 }

@@ -328,15 +328,14 @@ define(function (require) {
                 return true;
             });
             expect(allElements.length).to.equal(2);
-            expect(allElements[0].type).to.equal('COORDS.RECT');
-            expect(allElements[1].type).to.equal('ELEMENT.POINT');
+            expect(allElements[0].config.type).to.equal('ELEMENT.POINT');
+            expect(allElements[1].config.type).to.equal('COORDS.RECT');
 
             var someElements = plot.select(function(unitNode) {
-                var parent = (unitNode.parentUnit || {});
-                return parent.type === 'COORDS.RECT';
+                 return unitNode.config.type === 'ELEMENT.POINT';
             });
             expect(someElements.length).to.equal(1);
-            expect(someElements[0].type).to.equal('ELEMENT.POINT');
+            expect(someElements[0].config.type).to.equal('ELEMENT.POINT');
         });
     });
 });

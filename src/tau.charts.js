@@ -52,7 +52,9 @@ var api = {
             }
         },
         get: function (name) {
-            return plugins[name];
+            return plugins[name] || ((x) => {
+                throw new Error(`${x} plugin is not defined`)
+            });
         }
     },
     globalSettings: {
@@ -119,10 +121,11 @@ Plot.globalSettings = api.globalSettings;
 api.unitsRegistry
     .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
     .add('PARALLEL/ELEMENT.LINE', nodeMap['PARALLEL/ELEMENT.LINE'])
-    .add('COORDS.RECT', nodeMap['COORDS.RECT'])
-    .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
-    .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
-    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL'])
+
+    .reg('COORDS.RECT', Cartesian)
+    .reg('ELEMENT.POINT', Point)
+    .reg('ELEMENT.LINE', Line)
+    .reg('ELEMENT.INTERVAL', Interval)
 
     .reg('RECT', Cartesian)
     .reg('POINT', Point)

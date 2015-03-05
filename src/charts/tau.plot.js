@@ -11,10 +11,13 @@ import {UnitDomainMixin} from '../unit-domain-mixin';
 import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
+import {SpecConverter} from '../spec-converter';
+import {GPL} from './tau.gpl';
 
 export class Plot extends Emitter {
     constructor(config) {
         super();
+        this._nodes = [];
         this._svg = null;
         this._filtersStore = {
             filters: {},
@@ -23,6 +26,9 @@ export class Plot extends Emitter {
         this._layout = getLayout();
         this.setupConfig(config);
         // plugins
+
+        // TODO: enable plugins by removing this line
+        this.config.plugins = [] ;
         this._plugins = new Plugins(this.config.plugins, this);
     }
 
@@ -99,7 +105,6 @@ export class Plot extends Emitter {
     }
 
     renderTo(target, xSize) {
-        this._renderGraph = null;
         this._svg = null;
         this._defaultSize  = _.clone(xSize);
         var container = d3.select(target);
@@ -123,7 +128,6 @@ export class Plot extends Emitter {
             this._layout.content.innerHTML = this._emptyContainer;
             return;
         }
-        this._layout.content.innerHTML = '';
 
         var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
 
@@ -135,22 +139,28 @@ export class Plot extends Emitter {
 
         var optimalSize = this.config.settings.size;
 
-        var reader = new DSLReader(domainMixin, unitsRegistry);
-
         var chart = this;
-        var logicXGraph = reader.buildGraph(fullSpec);
-        var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
-        var renderGraph = reader.calcLayout(layoutGraph, optimalSize);
-        var svgXElement = reader.renderGraph(
-            renderGraph,
-            container
-                .append('svg')
-                .attr('class', CSS_PREFIX + 'svg')
-                .attr('width', optimalSize.width)
-                .attr('height', optimalSize.height),
-            (unitMeta) => chart.fire('unitready', unitMeta)
-        );
-        this._renderGraph = renderGraph;
+
+        chart._nodes = [];
+
+        var gplXSpec = new SpecConverter(_.extend(
+            {},
+            this.config,
+            {
+                data: drawData,
+                spec: fullSpec
+            })
+        ).convert();
+
+        gplXSpec.onUnitDraw = (unitNode) => {
+            chart._nodes.push(unitNode);
+            chart.fire('unitready', unitNode);
+        };
+
+        new GPL(gplXSpec).renderTo(container.node(), optimalSize);
+
+        var svgXElement = container.select('svg');
+
         this._svg = svgXElement.node();
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this._layout.rightSidebar.style.maxHeight = optimalSize.height + 'px';
@@ -212,24 +222,6 @@ export class Plot extends Emitter {
     }
 
     select(queryFilter) {
-
-        var r = [];
-
-        if (!this._renderGraph) {
-            return r;
-        }
-
-        var fnTraverseLayout = (node, iterator) => {
-            iterator(node);
-            (node.childUnits || []).forEach((subNode) => fnTraverseLayout(subNode, iterator));
-        };
-
-        fnTraverseLayout(this._renderGraph, (node) => {
-            if (queryFilter(node)) {
-                r.push(node);
-            }
-        });
-
-        return r;
+        return this._nodes.filter(queryFilter);
     }
 }

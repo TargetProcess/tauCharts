@@ -42,7 +42,7 @@ export class Interval {
         var method = flipHub[this.config.flip ? 'FLIP' : 'NORM'];
         var colorIndexScale = (d) => {
             var findIndex = _.findIndex(domain, (value)=> {
-                return value === d.key[colorScale.scaleDim];
+                return value === (d.key || {})[colorScale.scaleDim];
             });
             return findIndex === -1 ? 0 : findIndex;
         };

@@ -16,9 +16,9 @@ var calcBaseFrame = (unitExpression, baseFrame) => {
     var ownFrame = {source: srcAlias, pipe: []};
 
     if (bInherit && (ownFrame.source !== tmpFrame.source)) {
-// jscs:disable maximumLineLength
+        // jscs:disable maximumLineLength
         throw new Error(`base [${tmpFrame.source}] and own [${ownFrame.source}] sources should be equal to apply inheritance`);
-// jscs:enable maximumLineLength
+        // jscs:enable maximumLineLength
     }
 
     return bInherit ? tmpFrame : ownFrame;
@@ -29,15 +29,6 @@ export class GPL extends Emitter {
     constructor(config) {
 
         super();
-
-        this._svg = null;
-        this._filtersStore = {filters: {}, tick: 0};
-        this._layout = getLayout();
-
-        this._initialize(config);
-    }
-
-    _initialize(config) {
 
         this.config = config;
 
@@ -50,31 +41,20 @@ export class GPL extends Emitter {
         this.scales = config.scales;
 
         this.trans = config.trans;
+
+        this.onUnitDraw = config.onUnitDraw;
     }
 
     renderTo(target, xSize) {
 
-        var targetNode = d3.select(target).node();
-        if (targetNode === null) {
-            throw new Error('Target element not found');
-        }
+        var d3Target = d3.select(target);
 
-        targetNode.appendChild(this._layout.layout);
+        var size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
 
-        var containerNode = this._layout.content;
-        var container = d3.select(this._layout.content);
-        // containerNode.innerHTML = '';
-
-        var size = _.clone(xSize) || {};
-        if (!size.width || !size.height) {
-            // size = _.defaults(size, utilsDom.getContainerSize(containerNode.parentNode));
-            size = _.defaults(size, utilsDom.getContainerSize(targetNode));
-        }
-
-        // expand units structure
         this.root = this._expandUnitsStructure(this.config.unit);
 
-        container.selectAll('svg')
+        d3Target
+            .selectAll('svg')
             .data(['const'])
             .enter()
             .append('svg')
@@ -83,7 +63,7 @@ export class GPL extends Emitter {
             .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 
         this.root.options = {
-            container: container.select('.frame-root'),
+            container: d3Target.select('.frame-root'),
             frameId: 'root',
             left: 0,
             top: 0,
@@ -155,13 +135,15 @@ export class GPL extends Emitter {
             })
             .drawFrames(rootConf.frames.map(self._datify.bind(self)), self._drawUnitsStructure.bind(self));
 
+        self.onUnitDraw && self.onUnitDraw(unitNode);
+
         return rootConf;
     }
 
     _datify(frame) {
         var data = this.sources[frame.source].data;
         var trans = this.trans;
-        frame.hash = () => btoa([frame.pipe, frame.key, frame.source].map(JSON.stringify).join('')).replace(/=/g, '_');
+        frame.hash = () => utils.generateHash([frame.pipe, frame.key, frame.source].map(JSON.stringify).join(''));
         frame.take = () => frame.pipe.reduce((data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args), data);
         frame.data = frame.take();
         return frame;

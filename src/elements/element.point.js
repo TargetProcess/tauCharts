@@ -6,6 +6,26 @@ export class Point {
         super();
 
         this.config = config;
+
+        this.config.guide = this.config.guide || {};
+
+        this.config.guide.x = this.config.guide.x || {};
+        this.config.guide.x = _.defaults(
+            this.config.guide.x,
+            {
+                tickFontHeight: 0,
+                density: 20
+            }
+        );
+
+        this.config.guide.y = this.config.guide.y || {};
+        this.config.guide.y = _.defaults(
+            this.config.guide.y,
+            {
+                tickFontHeight: 0,
+                density: 20
+            }
+        );
     }
 
     drawLayout(fnCreateScale) {
@@ -15,7 +35,30 @@ export class Point {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-        this.size = fnCreateScale('size', config.size, {});
+
+        var fitSize = (w, h, maxRelLimit, srcSize, minimalSize) => {
+            var minRefPoint = Math.min(w, h);
+            var minSize = minRefPoint * maxRelLimit;
+            return Math.max(minimalSize, Math.min(srcSize, minSize));
+        };
+
+        var width = config.options.width;
+        var height = config.options.height;
+        var g = config.guide;
+        var minimalSize = 1;
+        var maxRelLimit = 0.035;
+        var isNotZero = (x) => x !== 0;
+        var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
+        var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+
+        this.size = fnCreateScale(
+            'size',
+            config.size,
+            {
+                min: fitSize(width, height, maxRelLimit, 2, minimalSize),
+                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
+                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
+            });
 
         return this;
     }
@@ -34,7 +77,7 @@ export class Point {
         var enter = function () {
             return this
                 .attr({
-                    r: 0,
+                    r: (d) => sScale(d[sScale.dim]),
                     cx: (d) => xScale(d[xScale.dim]),
                     cy: (d) => yScale(d[yScale.dim]),
                     class: (d) => `${prefix} ${cScale(d[cScale.dim])}`

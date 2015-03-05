@@ -368,8 +368,8 @@ var SpecEngineTypeMap = {
                     return unit;
                 }
 
-                if (selectorPredicates.isLeafParent && !unit.guide.hasOwnProperty('showGridLines')) {
-                    unit.guide.showGridLines = 'xy';
+                if (!unit.guide.hasOwnProperty('showGridLines')) {
+                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
                 }
 
                 var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);

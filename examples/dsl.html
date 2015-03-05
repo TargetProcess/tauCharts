@@ -2,7 +2,7 @@
 <html>
 <meta charset="utf-8">
 <head>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 
@@ -119,8 +119,7 @@
 <div id="chart-priority-container-extract" class="cc">
 </div>
 
-<div id="parallel-container" class="cc">
-</div>
+<!--<div id="parallel-container" class="cc"></div>-->
 
 <div id="facet-of-facets-container" class="cc">
 </div>
@@ -143,12 +142,12 @@
 <div id="null-complex-object-container" class="cc">
 </div>
 
-<div id="no-data-container" class="cc">
-</div>
-<script src="../build/development/tauCharts.js"></script>
+<!--<div id="no-data-container" class="cc"></div>-->
+
+<script src="http://localhost:9000/tauCharts.js"></script>
+<!--<script src="../build/development/tauCharts.js"></script>-->
 <script src="../plugins/tooltip.js"></script>
 <script src="../build/development/plugins/tauCharts.export.js"></script>
-<script src="../plugins/highlighter.js"></script>
 <script src="../plugins/legend.js"></script>
 <script src="../plugins/trendline.js"></script>
 <script>
@@ -262,7 +261,6 @@
         ]
 
     }).renderTo('#xxx-datetime-container');
-
 
     var facet2x2 = {
         dimensions: {
@@ -516,7 +514,6 @@
                 ]
             }).renderTo('#datetime-container');
 
-
     var parallelChart = new tauCharts.Plot(
             {
                 specEngine: 'DEFAULT',
@@ -556,7 +553,7 @@
                         ]
                     }
                 }
-            }).renderTo('#parallel-container');
+            });//.renderTo('#parallel-container');
 
     var rawData = _.map(
             getUserStories(),
@@ -600,7 +597,6 @@
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-extract');
-
 
     new tauCharts.Plot(
             {
@@ -713,7 +709,7 @@
                 plugins: [
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
-            }).renderTo('#no-data-container');
+            });//.renderTo('#no-data-container');
 
     getCountOfEntitiesByTeamOnMonth().then(function (data) {
 
@@ -811,7 +807,6 @@
                 ]
             }
     ).renderTo('#null-complex-object-container');
-
 </script>
 </body>
 </html>

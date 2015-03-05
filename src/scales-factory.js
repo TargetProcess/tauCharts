@@ -5,7 +5,7 @@ import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 var generateHashFunction = (varSet, interval)=>
-    () => btoa(JSON.stringify(varSet) + JSON.stringify(interval)).replace(/=/g, '_');
+    () => utils.generateHash(JSON.stringify(varSet) + JSON.stringify(interval));
 var scalesStrategies = {
 
     color: (vars, props) => {
@@ -58,11 +58,11 @@ var scalesStrategies = {
         return func;
     },
 
-    size: (varSet, props) => {
+    size: (varSet, props, localProps) => {
 
-        var minSize = props.min;
-        var maxSize = props.max;
-        var midSize = props.mid;
+        var minSize = localProps.min || props.min;
+        var maxSize = localProps.max || props.max;
+        var midSize = localProps.mid || props.mid;
 
         var f = (x) => Math.sqrt(x);
 
@@ -180,7 +180,13 @@ var scalesStrategies = {
 
         var d3Domain = d3.scale.ordinal().domain(varSet);
 
-        var scale = d3Domain.rangePoints(interval, 1);
+        var d3Scale = d3Domain.rangePoints(interval, 1);
+
+        var scale = (x) => d3Scale(new Date(x));
+
+        // have to copy properties since d3 produce Function with methods
+        Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
+
         scale.dim = props.dim;
         scale.domain = () => varSet;
         scale.source = props.source;
