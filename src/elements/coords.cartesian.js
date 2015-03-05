@@ -77,9 +77,9 @@ export class Cartesian {
         );
 
         var unit = this.config;
-        if (unit.guide.autoLayout === 'extract-axes') {
+        var guide = unit.guide;
+        if (guide.autoLayout === 'extract-axes') {
             var containerHeight = unit.options.containerHeight;
-            var guide = unit.guide = unit.guide || {};
             guide.x.hide = ((unit.options.top + unit.options.height) < containerHeight);
             guide.y.hide = ((unit.options.left > 0));
         }

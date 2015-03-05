@@ -7,8 +7,6 @@ export class SpecConverter {
         this.spec = spec;
         this.opts = spec.settings;
 
-        this.isExtract = (spec.settings.layoutEngine === 'EXTRACT');
-
         this.dist = {
             sources: {
                 '?': {
@@ -55,6 +53,18 @@ export class SpecConverter {
         this.ruleAssignSourceData(srcSpec, gplSpec);
         this.ruleAssignSourceDims(srcSpec, gplSpec);
         this.ruleAssignStructure(srcSpec, gplSpec);
+
+        if ((this.spec.settings.layoutEngine === 'EXTRACT')) {
+            try {
+                this.ruleExtractAxes(gplSpec);
+            } catch (ex) {
+                if (ex.message === 'Not applicable') {
+                    console.log(`[TauCharts]: can't extract axes for the given chart specification`, gplSpec);
+                } else {
+                    throw ex;
+                }
+            }
+        }
 
         return gplSpec;
     }
@@ -228,5 +238,87 @@ export class SpecConverter {
         }
 
         return _.extend({inherit: false, source: '/'}, expr);
+    }
+
+    ruleExtractAxes(spec) {
+
+        var isCoordsRect = (unitRef) => {
+            return (unitRef.type === 'COORDS.RECT' || unitRef.type === 'RECT');
+        };
+
+        var isElement = (unitRef) => {
+            return (unitRef.type.indexOf('ELEMENT.') === 0);
+        };
+
+        var traverse = (root, enterFn, exitFn, level = 0) => {
+
+            var shouldContinue = enterFn(root, level);
+
+            if (shouldContinue) {
+                (root.units || []).map((rect) => traverse(rect, enterFn, exitFn, level + 1));
+            }
+
+            exitFn(root, level);
+        };
+
+        var ttl = {l:0, r:0, t:0, b:0};
+        var seq = [];
+        var enterIterator = (unitRef, level) => {
+
+            if ((level > 1) || !isCoordsRect(unitRef)) {
+                throw new Error('Not applicable');
+            }
+
+            var p = unitRef.guide.padding;
+
+            ttl.l += p.l;
+            ttl.r += p.r;
+            ttl.t += p.t;
+            ttl.b += p.b;
+
+            seq.push({
+                l: ttl.l,
+                r: ttl.r,
+                t: ttl.t,
+                b: ttl.b
+            });
+
+            var units = unitRef.units || [];
+            var rects = units
+                .map((x) => {
+
+                    if (!(isCoordsRect(x) || isElement(x))) {
+                        throw new Error('Not applicable');
+                    }
+
+                    return x;
+                })
+                .filter(isCoordsRect);
+
+            return (rects.length === 1);
+        };
+
+        var pad = (x) => (x ? 10 : 0);
+        var exitIterator = (unitRef) => {
+
+            var lvl = seq.pop();
+
+            unitRef.guide.padding = {
+                l: pad(unitRef.y),
+                r: pad(1),
+                t: pad(1),
+                b: pad(unitRef.x)
+            };
+
+            unitRef.guide.autoLayout = 'extract-axes';
+
+            unitRef.guide.x.padding += (ttl.b - lvl.b);
+            unitRef.guide.y.padding += (ttl.l - lvl.l);
+        };
+
+        traverse(spec.unit, enterIterator, exitIterator);
+
+        spec.unit.guide.padding = ttl;
+        spec.unit.guide.autoLayout = '';
     }
 }
