@@ -84,6 +84,24 @@ define(function (require) {
             var tuples2 = algebra.groupBy(dataFn, 'some-property');
             expect(tuples2).to.deep.equal([{"some-property":undefined}]);
         });
+    });
 
+    describe("operator:cross_period", function () {
+
+        it("should generate tuples for period", function () {
+
+            var dataFn = function () {
+                return [
+                    {x1: new Date('2015-01-01T00:00:00Z'), y1: 'a', z1: new Date('2014-01-01T00:00:00Z')},
+                    {x1: new Date('2015-01-03T00:00:00Z'), y1: 'a', z1: new Date('2016-01-01T00:00:00Z')}
+                ];
+            };
+
+            var tuples0 = algebra.cross_period(dataFn, 'x1', 'y1', 'day', null);
+            expect(tuples0.length).to.equal(3);
+
+            var tuples1 = algebra.cross_period(dataFn, 'x1', 'z1', 'day', 'year');
+            expect(tuples1.length).to.equal(9);
+        });
     });
 });
