@@ -13,7 +13,7 @@ Read the documentation here. There are some tutorials, basic and advanced topics
 
 http://api.taucharts.com/
 
-##Usage:
+##Usage
 
 See [prototype](https://github.com/TargetProcess/tauCharts/tree/master/examples) for some examples of usage
 
