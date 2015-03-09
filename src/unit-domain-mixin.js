@@ -149,14 +149,16 @@ export class UnitDomainMixin {
             return _(data).filter((row) => _.every(predicates, ((p) => p(row))));
         };
 
-        var _domain = (dim, fnSort) => {
+        var _domain = (dim, fnSort, xdata) => {
 
             if (!meta[dim]) {
                 return [];
             }
 
+            var myData = xdata || data;
+
             var fnMapperId = getValueMapper(dim);
-            var uniqValues = _(data).chain().pluck(dim).uniq(fnMapperId).value();
+            var uniqValues = _(myData).chain().pluck(dim).uniq(fnMapperId).value();
 
             return fnSort(dim, fnMapperId, uniqValues);
         };
@@ -168,7 +170,7 @@ export class UnitDomainMixin {
             return domainSortedAsc.map(fnMapperId);
         };
 
-        var _scaleMeta = (scaleDim, xOptions) => {
+        var _scaleMeta = (scaleDim, xOptions, xArr) => {
 
             var opts = {};
             var options = xOptions || {};
@@ -195,7 +197,7 @@ export class UnitDomainMixin {
             var fKey = [dimx.type, dimx.scale].join(':');
             var fVal = (fValHub[fKey] || fValHub['*'])(opts);
 
-            var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
+            var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type), xArr).map(fMap);
             var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : originalValues;
             return {
                 extract: (x) => fVal(fMap(x)),
@@ -206,14 +208,126 @@ export class UnitDomainMixin {
 
         this.fnScaleMeta = _scaleMeta;
 
-        this.fnScaleTo = (scaleDim, interval, options) => {
+        this.fnScaleTo = function(scaleDim, interval, options) {
             var opts = options || {};
             var dimx = _.defaults({}, meta[scaleDim]);
 
-            var info = _scaleMeta(scaleDim, options);
+
+            var ratioDim = opts.scaleRatio;
+            var scaleDatum = opts.scaleDatum;
+
+            var arr;
+            if (scaleDatum === 'partition') {
+                arr = this.partition();
+            }
+            else {
+                arr = this.source();
+            }
+
+            var info = _scaleMeta(scaleDim, options, arr);
             var func = rangeMethods[dimx.scale](info.values, interval, opts);
 
+            var fnRel = () => (1 / info.values.length);
+
+            if (ratioDim) {
+                var rmap = info.values.reduce(
+                    (memo, x) => {
+                        memo[x] = {};
+                        return memo;
+                    },
+                    {});
+
+                var xmap = this.partition().reduce(
+                    (memo, x) => {
+                        var xs = x[scaleDim];
+                        var xr = x[ratioDim];
+                        var cc = memo[xs].hasOwnProperty(xr) ? memo[xs][xr] : 0;
+                        memo[xs][xr] = cc + 1;
+                        return memo;
+                    },
+                    rmap);
+
+                var total = 0;
+                var abs = _.keys(xmap).reduce(
+                    (memo, key) => {
+                        memo[key] = _.keys(xmap[key]).length;
+                        total += memo[key];
+                        return memo;
+                    },
+                    {}
+                );
+
+                var rel = _.keys(abs).reduce(
+                    (memo, key) => {
+                        memo[key] = memo[key] / total;
+                        return memo;
+                    },
+                    abs
+                );
+
+                fnRel = (v) => rel[v];
+            }
+
             var wrap = (domainPropObject) => func(info.extract(domainPropObject));
+
+            // sectorSize
+
+            wrap.rel = fnRel;
+
+            wrap.relCoord = (v) => {
+                var r = info.values.reduceRight(
+                    (memo, x) => {
+
+                        if (memo.isFound) {
+                            return memo;
+                        }
+
+                        if (x === v) {
+                            memo.isFound = true;
+                        }
+
+                        if (!memo.isFound) {
+                            memo.value += fnRel(x);
+                        }
+                        return memo;
+                    },
+                    {
+                        value: 0,
+                        isFound: false
+                    });
+
+                return r.value;
+            };
+
+            wrap.relByIndex = (index) => {
+                return fnRel(info.values[index]);
+            };
+
+            wrap.relCoordByIndex = (index) => {
+                var r = info.values.reduceRight(
+                    (memo, x, ix) => {
+
+                        if (memo.isFound) {
+                            return memo;
+                        }
+
+                        if (ix === index) {
+                            memo.isFound = true;
+                        }
+
+                        if (!memo.isFound) {
+                            memo.value += fnRel(x);
+                        }
+                        return memo;
+                    },
+                    {
+                        value: 0,
+                        isFound: false
+                    });
+
+                return r.value;
+            };
+
             // have to copy properties since d3 produce Function with methods
             Object.keys(func).forEach((p) => (wrap[p] = func[p]));
             return wrap;

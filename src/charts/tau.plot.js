@@ -151,7 +151,8 @@ export class Plot extends Emitter {
                 .attr("class", CSS_PREFIX + 'svg')
                 .attr("width", optimalSize.width)
                 .attr("height", optimalSize.height),
-            (unitMeta) => chart.fire('unitready', unitMeta)
+            (unitMeta) => chart.fire('unitready', unitMeta),
+            optimalSize
         );
         this._renderGraph = renderGraph;
         this._svg = svgXElement.node();

@@ -108,7 +108,53 @@ var coords = {
             utilsDraw.fnDrawDimAxis.call(container, node.y, Y_AXIS_POS, H);
         }
 
-        return utilsDraw.fnDrawGrid.call(container, node, H, W);
+        var gridContainer = utilsDraw.fnDrawGrid.call(container, node, H, W);
+
+        var fnLayout = (xxx) => {
+
+            var r;
+
+            if ((xxx.type === 'COORDS.RECT') && xxx.$where) {
+
+                var dx = node.x.scaleDim ? node.scaleMeta(node.x.scaleDim, node.guide.x).values.length : 1;
+                var dy = node.y.scaleDim ? node.scaleMeta(node.y.scaleDim, node.guide.y).values.length : 1;
+
+                var incX = W / dx;
+                var incY = H / dy;
+
+                var xScale = node.x.scaleObj || (() => (incX / 2));
+                var yScale = node.y.scaleObj || (() => (incY / 2));
+
+                var yVal = xxx.$where[node.y.scaleDim];
+                //var height = incY * node.y.scaleObj.rel(yVal);
+                var height = node.y.scaleObj ? (H * node.y.scaleObj.rel(yVal)) : H;
+                var top = node.y.scaleObj ? (H * (node.y.scaleObj.relCoord(yVal))) : 0;
+                //var top = yScale(yVal) - incY / 2;
+
+                r = {
+                    container: gridContainer,
+                    left: xScale(xxx.$where[node.x.scaleDim]) - incX / 2,
+                    top : top,
+                    width : incX,
+                    height: height
+                };
+            }
+            else {
+                r = {
+                    container: gridContainer,
+                    left: 0,
+                    top: 0,
+                    width: W,
+                    height: H
+                };
+            }
+
+            return r;
+        };
+
+        fnLayout.node = () => gridContainer.node();
+
+        return fnLayout;
     }
 };
 export {coords};
