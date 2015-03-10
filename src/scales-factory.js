@@ -4,8 +4,7 @@ import {utils} from './utils/utils';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
-var generateHashFunction = (varSet, interval)=>
-    () => utils.generateHash(JSON.stringify(varSet) + JSON.stringify(interval));
+var generateHashFunction = (varSet, interval) => utils.generateHash([varSet, interval].map(JSON.stringify).join(''));
 var scalesStrategies = {
 
     color: (vars, props) => {

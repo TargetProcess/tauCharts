@@ -106,26 +106,27 @@ export class Plot extends Emitter {
 
     renderTo(target, xSize) {
         this._svg = null;
-        this._defaultSize  = _.clone(xSize);
-        var container = d3.select(target);
-        var containerNode = container.node();
         this._target = target;
-        if (containerNode === null) {
+        this._defaultSize = _.clone(xSize);
+
+        var targetNode = d3.select(target).node();
+        if (targetNode === null) {
             throw new Error('Target element not found');
         }
 
-        containerNode.appendChild(this._layout.layout);
-        container = d3.select(this._layout.content);
-        // todo don't compute width if width or height were passed
+        targetNode.appendChild(this._layout.layout);
+
+        var content = this._layout.content;
         var size = _.clone(xSize) || {};
-        this._layout.content.innerHTML = '';
         if (!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+            content.style.display = 'none';
+            size = _.defaults(size, utilsDom.getContainerSize(content.parentNode));
+            content.style.display = '';
         }
 
         var drawData = this.getData();
         if (drawData.length === 0) {
-            this._layout.content.innerHTML = this._emptyContainer;
+            content.innerHTML = this._emptyContainer;
             return;
         }
 
@@ -157,13 +158,13 @@ export class Plot extends Emitter {
             chart.fire('unitready', unitNode);
         };
 
-        new GPL(gplXSpec).renderTo(container.node(), optimalSize);
+        new GPL(gplXSpec).renderTo(content, optimalSize);
 
-        var svgXElement = container.select('svg');
+        var svgXElement = d3.select(content).select('svg');
 
         this._svg = svgXElement.node();
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
-        this._layout.rightSidebar.style.maxHeight = optimalSize.height + 'px';
+        this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
         this.fire('render', this._svg);
     }
 
