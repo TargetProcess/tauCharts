@@ -6,6 +6,8 @@ import {getLayout} from '../utils/layuot-template';
 import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
+import {Plugins, propagateDatumEvents} from '../plugins';
+import {Tooltip} from '../api/balloon';
 
 var calcBaseFrame = (unitExpression, baseFrame) => {
 
@@ -42,7 +44,21 @@ export class GPL extends Emitter {
 
         this.trans = config.trans;
 
-        this.onUnitDraw = config.onUnitDraw;
+        this.onUnitDraw = (...param)=> {
+            if (config.onUnitDraw) {
+                config.onUnitDraw(...param);
+            }
+            this.fire('unitdraw', ...param)
+        }
+        this._plugins = new Plugins(config.plugins, this);
+    }
+
+    addBalloon(conf) {
+        return new Tooltip('', conf || {});
+    }
+
+    getConfig() {
+        return this.config;
     }
 
     renderTo(target, xSize) {
@@ -72,6 +88,7 @@ export class GPL extends Emitter {
         };
 
         this._drawUnitsStructure(this.root);
+        d3Target.selectAll('.i-role-datum').call(propagateDatumEvents(this));
     }
 
     _expandUnitsStructure(root, parentPipe = []) {

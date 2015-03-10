@@ -1,4 +1,5 @@
 import {utilsDom} from './utils/utils-dom';
+import {utils} from './utils/utils';
 import {GPL} from './charts/tau.gpl';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
@@ -30,6 +31,7 @@ var __api__ = {
 var api = {
     unitsRegistry: unitsRegistry,
     tickFormat: FormatterRegistry,
+    isChartElement:utils.isChartElement,
     d3: d3,
     _: _,
     tickPeriod: UnitDomainPeriodGenerator,

@@ -26,7 +26,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -89,7 +89,7 @@
                 this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
 
-                var spec = chart.getConfig().spec;
+                var spec = chart.getConfig();
 
                 var dimensionGuides = this._findDimensionGuides(spec);
 
@@ -129,15 +129,17 @@
 
             },
 
-            onUnitReady: function (chart, unitMeta) {
-                if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
+            onUnitDraw: function (chart, unitMeta) {
+                if (tauCharts.api.isChartElement(unitMeta)) {
                     var key = this._generateKey(unitMeta.$where);
                     this._unitMeta[key] = unitMeta;
-                    var values = unitMeta.partition();
+                    var values = unitMeta.config.frames.reduce(function (data, item) {
+                        return data.concat(item.data)
+                    }, []);
                     this._dataWithCoords[key] = values.map(function (item) {
                         return {
-                            x: unitMeta.options.xScale(item[unitMeta.x.scaleDim]),
-                            y: unitMeta.options.yScale(item[unitMeta.y.scaleDim]),
+                            x: unitMeta.xScale(item[unitMeta.xScale.dim]),
+                            y: unitMeta.yScale(item[unitMeta.yScale.dim]),
                             item: item
                         };
                     }, this);

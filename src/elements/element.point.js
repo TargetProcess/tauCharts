@@ -3,8 +3,6 @@ import {CSS_PREFIX} from '../const';
 export class Point {
 
     constructor(config) {
-        super();
-
         this.config = config;
 
         this.config.guide = this.config.guide || {};

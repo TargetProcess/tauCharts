@@ -1,3 +1,7 @@
+import {Point}      from '../elements/element.point';
+import {Line}       from '../elements/element.line';
+import {Interval}        from '../elements/element.interval';
+
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -13,10 +17,16 @@ var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRu
 };
 
 var utils = {
-    clone: (obj) => JSON.parse(JSON.stringify(obj)),
-    isArray: (obj) => Array.isArray(obj),
-
-    autoScale: (domain) => {
+    clone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    },
+    isArray(obj) {
+        return Array.isArray(obj)
+    },
+    isChartElement(element) {
+        return element instanceof Interval || element instanceof Point || element instanceof Line;
+    },
+    autoScale(domain) {
 
         var m = 10;
 
@@ -80,7 +90,7 @@ var utils = {
         ];
     },
 
-    traverseJSON: traverseJSON,
+    traverseJSON,
 
     generateHash: (str) => btoa(encodeURIComponent(str)).replace(/=/g, '_')
 };

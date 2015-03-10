@@ -4,8 +4,6 @@ import {flipHub, drawInterval} from './element.interval.fn';
 export class Interval {
 
     constructor(config) {
-        super();
-
         this.config = config;
     }
 
