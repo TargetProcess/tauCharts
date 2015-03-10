@@ -22,12 +22,12 @@ export class SpecConverter {
                 // jscs:disable disallowQuotedKeysInObjects
                 'x_null': {type: 'ordinal', source: '?'},
                 'y_null': {type: 'ordinal', source: '?'},
+                'size_null':  {type: 'size', source: '?', mid: 5},
+                'color_null': {type: 'color', source: '?', brewer: null},
+
                 'pos:default': {type: 'ordinal', source: '?'},
                 'size:default': {type: 'size', source: '?', mid: 5},
-                'size_null':  {type: 'size', source: '?', mid: 5},
-
-                'color:default': {type: 'color', source: '?', brewer: null},
-                'color_null': {type: 'color', source: '?', brewer: null}
+                'color:default': {type: 'color', source: '?', brewer: null}
                 // jscs:enable disallowQuotedKeysInObjects
             },
             trans: {
@@ -116,11 +116,31 @@ export class SpecConverter {
 
     ruleCreateScales(srcUnit, gplRoot) {
 
+        var guide = srcUnit.guide || {};
         ['color', 'size', 'x', 'y'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
-                gplRoot[p] = this.scalesPool(p, srcUnit[p], srcUnit.guide[p] || {});
+                gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
             }
         });
+    }
+
+    ruleInferDim(dimName, guide) {
+
+        var r = dimName;
+
+        var dims = this.spec.spec.dimensions;
+
+        if (!dims.hasOwnProperty(r)) {
+            return r;
+        }
+
+        if (guide.hasOwnProperty('tickLabel')) {
+            r = `${dimName}.${guide.tickLabel}`;
+        } else if (dims[dimName].value) {
+            r = `${dimName}.${dims[dimName].value}`;
+        }
+
+        return r;
     }
 
     scalesPool(scaleType, dimName, guide) {
@@ -133,23 +153,12 @@ export class SpecConverter {
 
         var dims = this.spec.spec.dimensions;
 
-        var inferDim = () => {
-            var r = dimName;
-            if (guide.hasOwnProperty('tickLabel')) {
-                r = `${dimName}.${guide.tickLabel}`;
-            } else if (dims[dimName].value) {
-                r = `${dimName}.${dims[dimName].value}`;
-            }
-
-            return r;
-        };
-
         var item = {};
         if (scaleType === 'color' && dimName !== null) {
             item = {
                 type: 'color',
                 source: '/',
-                dim: inferDim()
+                dim: this.ruleInferDim(dimName, guide)
             };
 
             if (guide.hasOwnProperty('brewer')) {
@@ -161,7 +170,7 @@ export class SpecConverter {
             item = {
                 type: 'size',
                 source: '/',
-                dim: inferDim(),
+                dim: this.ruleInferDim(dimName, guide),
                 min: 2,
                 max: 10,
                 mid: 5
@@ -172,7 +181,7 @@ export class SpecConverter {
             item = {
                 type: dims[dimName].scale,
                 source: '/',
-                dim: inferDim()
+                dim: this.ruleInferDim(dimName, guide)
             };
 
             if (guide.hasOwnProperty('min')) {
@@ -206,6 +215,10 @@ export class SpecConverter {
             params: []
         };
 
+        var g = srcUnit.guide || {};
+        var gx = g.x || {};
+        var gy = g.y || {};
+
         if (srcUnit.type.indexOf('ELEMENT.') === 0) {
 
             if (srcUnit.color) {
@@ -216,20 +229,25 @@ export class SpecConverter {
 
             if (srcUnit.unit.length === 1 && srcUnit.unit[0].type === 'COORDS.RECT') {
 
-                var g = srcUnit.guide;
-                var gx = g.x || {};
-                var gy = g.y || {};
                 // jshint ignore:start
                 // jscs:disable requireDotNotation
                 if (gx['tickPeriod'] || gy['tickPeriod']) {
                     expr = {
                         operator: 'cross_period',
-                        params: [srcUnit.x, srcUnit.y, gx['tickPeriod'], gy['tickPeriod']]
+                        params: [
+                            this.ruleInferDim(srcUnit.x, gx),
+                            this.ruleInferDim(srcUnit.y, gy),
+                            gx['tickPeriod'],
+                            gy['tickPeriod']
+                        ]
                     };
                 } else {
                     expr = {
                         operator: 'cross',
-                        params: [srcUnit.x, srcUnit.y]
+                        params: [
+                            this.ruleInferDim(srcUnit.x, gx),
+                            this.ruleInferDim(srcUnit.y, gy)
+                        ]
                     };
                 }
                 // jscs:enable requireDotNotation
@@ -269,7 +287,9 @@ export class SpecConverter {
                 throw new Error('Not applicable');
             }
 
-            var p = unitRef.guide.padding;
+            var guide = unitRef.guide || {};
+
+            var p = guide.padding || {l:0, r:0, t:0, b:0};
 
             ttl.l += p.l;
             ttl.r += p.r;
@@ -303,17 +323,23 @@ export class SpecConverter {
 
             var lvl = seq.pop();
 
-            unitRef.guide.padding = {
+            var guide = unitRef.guide || {};
+            guide.x = guide.x || {};
+            guide.x.padding = guide.x.padding || 0;
+            guide.y = guide.y || {};
+            guide.y.padding = guide.y.padding || 0;
+
+            guide.padding = {
                 l: pad(unitRef.y),
                 r: pad(1),
                 t: pad(1),
                 b: pad(unitRef.x)
             };
 
-            unitRef.guide.autoLayout = 'extract-axes';
+            guide.autoLayout = 'extract-axes';
 
-            unitRef.guide.x.padding += (ttl.b - lvl.b);
-            unitRef.guide.y.padding += (ttl.l - lvl.l);
+            guide.x.padding += (ttl.b - lvl.b);
+            guide.y.padding += (ttl.l - lvl.l);
         };
 
         traverse(spec.unit, enterIterator, exitIterator);
