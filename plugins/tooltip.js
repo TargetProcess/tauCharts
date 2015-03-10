@@ -89,7 +89,7 @@
                 this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
 
-                var spec = chart.getConfig();
+                var spec = chart.getConfig().spec;
 
                 var dimensionGuides = this._findDimensionGuides(spec);
 
@@ -97,8 +97,7 @@
                     memo[key] = _.last(guides);
                     return memo;
                 }, {});
-
-                var formatters = this._generateDefaultFormatters(lastGuides, spec.dimensions);
+                var formatters = this._generateDefaultFormatters(lastGuides, spec.scales);
                 _.extend(this.formatters, formatters);
 
                 var labels = this._generateDefaultLabels(lastGuides);
@@ -131,7 +130,7 @@
 
             onUnitDraw: function (chart, unitMeta) {
                 if (tauCharts.api.isChartElement(unitMeta)) {
-                    var key = this._generateKey(unitMeta.$where);
+                    var key = this._generateKey(unitMeta.config.options.frameId);
                     this._unitMeta[key] = unitMeta;
                     var values = unitMeta.config.frames.reduce(function (data, item) {
                         return data.concat(item.data)
@@ -184,7 +183,14 @@
 
             _generateDefaultLabels: function (lastGuides) {
                 return _.reduce(lastGuides, function (memo, lastGuide, key) {
-                    memo[key] = lastGuide.label || key;
+                    if (lastGuide.label) {
+                        memo[key] = lastGuide.label;
+                        if (lastGuide.label.hasOwnProperty('text')) {
+                            memo[key] = lastGuide.label.text;
+                        }
+                    } else {
+                        memo[key] = key;
+                    }
                     return memo;
                 }, {});
             },
@@ -221,7 +227,6 @@
 
             _findDimensionGuides: function (spec) {
                 var dimensionGuideMap = {};
-
                 var collect = function (field, unit) {
                     var property = unit[field];
                     if (property) {
@@ -289,29 +294,36 @@
                     return this._dataFields;
                 }
 
-                var fields = [unit.size && unit.size.scaleDim, unit.color && unit.color.scaleDim];
+                var fields = [unit.size && unit.size.dim, unit.color && unit.color.dim];
                 var x = [];
                 var y = [];
                 while (unit = unit.parentUnit) {
-                    x.push(unit.x.scaleDim);
-                    y.push(unit.y.scaleDim);
+                    x.push(unit.xScale.dim);
+                    y.push(unit.yScale.dim);
                 }
 
                 return _.compact(fields.concat(y, x).reverse());
 
             },
             isLine: function (data) {
-                return data.elementData.hasOwnProperty('key') && Array.isArray(data.elementData.values);
+                // FIXME
+                return data.elementData.hasOwnProperty('data') && Array.isArray(data.elementData.data) &&
+                    data.elementData.data.length > 1;
             },
             _onElementMouseOver: function (chart, data, mosueCoord, placeCoord) {
                 clearTimeout(this._timeoutHideId);
-                var key = this._generateKey(data.cellData.$where);
+                var key = this._generateKey(data.cellData.hash && data.cellData.hash() ||
+                data.cellData.options.frameId);
                 var item = data.elementData;
                 var isLine = this.isLine(data);
+                // FIXME
+                if (!isLine && Array.isArray(item.data)) {
+                    item = item.data[0];
+                }
                 if (isLine) {
                     var dataWithCoord = this._dataWithCoords[key];
                     var filteredData = dataWithCoord.filter(function (value) {
-                        return _.contains(item.values, value.item);
+                        return _.contains(item.data, value.item);
                     });
                     var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
                         var secondPoint;
@@ -348,7 +360,7 @@
                         d3.select(data.element.parentNode),
                         itemWithCoord.x,
                         itemWithCoord.y,
-                        this._unitMeta[key].options.color.get(data.elementData.key)
+                        this._unitMeta[key].color(data.elementData.tags[this._unitMeta[key].color.dim])
                     );
                 }
                 if (this._currentElement === item) {

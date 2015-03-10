@@ -6,8 +6,6 @@ import {getLayout} from '../utils/layuot-template';
 import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
-import {Plugins, propagateDatumEvents} from '../plugins';
-import {Tooltip} from '../api/balloon';
 
 var calcBaseFrame = (unitExpression, baseFrame) => {
 
@@ -44,21 +42,7 @@ export class GPL extends Emitter {
 
         this.trans = config.trans;
 
-        this.onUnitDraw = (...param)=> {
-            if (config.onUnitDraw) {
-                config.onUnitDraw(...param);
-            }
-            this.fire('unitdraw', ...param);
-        };
-        this._plugins = new Plugins(config.plugins || [], this);
-    }
-
-    addBalloon(conf) {
-        return new Tooltip('', conf || {});
-    }
-
-    getConfig() {
-        return this.config;
+        this.onUnitDraw = config.onUnitDraw;
     }
 
     renderTo(target, xSize) {
@@ -95,7 +79,6 @@ export class GPL extends Emitter {
         };
 
         this._drawUnitsStructure(this.root);
-        d3Target.selectAll('.i-role-datum').call(propagateDatumEvents(this));
     }
 
     _expandUnitsStructure(root, parentPipe = []) {
@@ -141,7 +124,7 @@ export class GPL extends Emitter {
         return root;
     }
 
-    _drawUnitsStructure(rootConf, rootFrame = null) {
+    _drawUnitsStructure(rootConf, rootFrame = null, rootUnit = null) {
 
         var self = this;
 
@@ -149,7 +132,7 @@ export class GPL extends Emitter {
 
         var UnitClass = self.unitSet.get(rootConf.type);
         var unitNode = new UnitClass(rootConf);
-
+        unitNode.parentUnit = rootUnit;
         unitNode
             .drawLayout((type, alias, settings) => {
 
@@ -157,7 +140,11 @@ export class GPL extends Emitter {
 
                 return self.scalesCreator.create(self.scales[name], dataFrame, settings);
             })
-            .drawFrames(rootConf.frames.map(self._datify.bind(self)), self._drawUnitsStructure.bind(self));
+            .drawFrames(rootConf.frames.map(self._datify.bind(self)), (function (rootUnit) {
+                return function (rootConf, rootFrame) {
+                    self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
+                };
+            }(unitNode)));
 
         if (self.onUnitDraw) {
             self.onUnitDraw(unitNode);
