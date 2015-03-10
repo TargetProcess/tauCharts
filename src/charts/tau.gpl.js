@@ -50,7 +50,7 @@ export class GPL extends Emitter {
             }
             this.fire('unitdraw', ...param);
         };
-        this._plugins = new Plugins(config.plugins, this);
+        this._plugins = new Plugins(config.plugins || [], this);
     }
 
     addBalloon(conf) {
