@@ -80,7 +80,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
 };
 
-var getTickFormat = (dim, meta, defaultFormats) => {
+var getTickFormat = (dim, defaultFormats) => {
     var dimType = dim.dimType;
     var scaleType = dim.scaleType;
     var specifier = '*';
@@ -111,8 +111,8 @@ var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertic
     var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
     var yValues = yMeta.values;
 
-    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
-    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
+    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
 
     if (['day', 'week', 'month'].indexOf(unit.guide.x.tickFormat) >= 0) {
         unit.guide.x.tickFormat += '-short';
@@ -398,10 +398,8 @@ var SpecEngineTypeMap = {
                 var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
                 var yValues = yMeta.values;
 
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat ||
-                    getTickFormat(dimX, xMeta, settings.defaultFormats);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat ||
-                    getTickFormat(dimY, yMeta, settings.defaultFormats);
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
 
                 var xIsEmptyAxis = (xValues.length === 0);
                 var yIsEmptyAxis = (yValues.length === 0);

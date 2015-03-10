@@ -24,9 +24,16 @@ export class Plot extends Emitter {
             tick: 0
         };
         this._layout = getLayout();
-        this.setupConfig(config);
-        // plugins
 
+        this.v2 = ['sources', 'scales', 'unit'].filter((p) => config.hasOwnProperty(p)).length === 3;
+        if (this.v2) {
+            this.config = config;
+            this.config.data = config.sources['/'].data;
+        } else {
+            this.setupConfig(config);
+        }
+
+        // plugins
         // TODO: enable plugins by removing this line
         this.config.plugins = [] ;
         this._plugins = new Plugins(this.config.plugins, this);
@@ -69,9 +76,12 @@ export class Plot extends Emitter {
                 })
             });
         }
+
+        return this.config;
     }
 
     getConfig() {
+        // this.configGPL
         return this.config;
     }
 
@@ -122,6 +132,10 @@ export class Plot extends Emitter {
             content.style.display = 'none';
             size = _.defaults(size, utilsDom.getContainerSize(content.parentNode));
             content.style.display = '';
+            // TODO: fix this issue
+            if (!size.height) {
+                size.height = utilsDom.getContainerSize(this._layout.layout).height;
+            }
         }
 
         var drawData = this.getData();
@@ -130,35 +144,17 @@ export class Plot extends Emitter {
             return;
         }
 
-        var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
+        var r = this.convertToGPLSpec(size, drawData);
+        var optimalSize = r.size;
+        this.configGPL = r.spec;
 
-        var specItem = _.find(this.config.settings.specEngine, (item) => (size.width <= item.width));
-        this.config.settings.size = size;
-        var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
-
-        var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
-
-        var optimalSize = this.config.settings.size;
-
-        var chart = this;
-
-        chart._nodes = [];
-
-        var gplXSpec = new SpecConverter(_.extend(
-            {},
-            this.config,
-            {
-                data: drawData,
-                spec: fullSpec
-            })
-        ).convert();
-
-        gplXSpec.onUnitDraw = (unitNode) => {
-            chart._nodes.push(unitNode);
-            chart.fire('unitready', unitNode);
+        this._nodes = [];
+        this.configGPL.onUnitDraw = (unitNode) => {
+            this._nodes.push(unitNode);
+            this.fire('unitready', unitNode);
         };
 
-        new GPL(gplXSpec).renderTo(content, optimalSize);
+        new GPL(this.configGPL).renderTo(content, r.size);
 
         var svgXElement = d3.select(content).select('svg');
 
@@ -166,6 +162,35 @@ export class Plot extends Emitter {
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
         this.fire('render', this._svg);
+    }
+
+    convertToGPLSpec(size, drawData) {
+
+        var r = {
+            spec: {},
+            size: size
+        };
+
+        if (this.v2) {
+
+            r.spec = this.config;
+            r.size = size;
+
+        } else {
+
+            var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
+
+            var specItem = _.find(this.config.settings.specEngine, (item) => (size.width <= item.width));
+            this.config.settings.size = size;
+            var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
+
+            var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
+
+            r.spec = new SpecConverter(_.extend({}, this.config, {data: drawData, spec: fullSpec})).convert();
+            r.size = this.config.settings.size;
+        }
+
+        return r;
     }
 
     getData(param) {
