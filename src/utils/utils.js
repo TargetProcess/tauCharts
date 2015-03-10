@@ -21,7 +21,7 @@ var utils = {
         return JSON.parse(JSON.stringify(obj));
     },
     isArray(obj) {
-        return Array.isArray(obj)
+        return Array.isArray(obj);
     },
     isChartElement(element) {
         return element instanceof Interval || element instanceof Point || element instanceof Line;

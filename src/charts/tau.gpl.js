@@ -48,7 +48,7 @@ export class GPL extends Emitter {
             if (config.onUnitDraw) {
                 config.onUnitDraw(...param);
             }
-            this.fire('unitdraw', ...param)
+            this.fire('unitdraw', ...param);
         }
         this._plugins = new Plugins(config.plugins, this);
     }
