@@ -41,6 +41,12 @@ export class Cartesian {
             }
         );
 
+        if (_.isString(this.config.guide.x.label)) {
+            this.config.guide.x.label = {
+                text: this.config.guide.x.label
+            };
+        }
+
         this.config.guide.x.label = _.defaults(
             this.config.guide.x.label,
             {
@@ -65,6 +71,12 @@ export class Cartesian {
                 label: {},
                 tickFormatWordWrapLimit: 100
             });
+
+        if (_.isString(this.config.guide.y.label)) {
+            this.config.guide.y.label = {
+                text: this.config.guide.y.label
+            };
+        }
 
         this.config.guide.y.label = _.defaults(
             this.config.guide.y.label,

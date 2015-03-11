@@ -12,6 +12,8 @@ import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
+import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
+import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
 import {GPL} from './tau.gpl';
 
 export class Plot extends Emitter {
@@ -180,17 +182,25 @@ export class Plot extends Emitter {
 
         } else {
 
-            var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
-
-            var specItem = _.find(this.config.settings.specEngine, (item) => (size.width <= item.width));
-            this.config.settings.size = size;
-            var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
-
-            var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
-
-            r.spec = new SpecConverter(_.extend({}, this.config, {data: drawData, spec: fullSpec})).convert();
-            r.size = this.config.settings.size;
+            r.spec = new SpecConverter(_.extend(
+                {},
+                this.config,
+                {data: drawData})).convert();
+            r.size = size;
         }
+
+        r.spec.settings = this.config.settings || {};
+        r.spec.settings.size = size;
+
+        {
+            r.spec = new SpecTransformAutoLayout(r.spec).transform();
+        }
+
+        if ((this.config.settings.layoutEngine === 'EXTRACT')) {
+            r.spec = new SpecTransformExtractAxes(r.spec).transform();
+        }
+
+        r.size = r.spec.settings.size;
 
         return r;
     }

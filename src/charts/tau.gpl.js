@@ -40,7 +40,20 @@ export class GPL extends Emitter {
 
         this.scales = config.scales;
 
-        this.trans = config.trans;
+        this.trans = _.extend(config.trans, {
+            where(data, tuple) {
+                var predicates = _.map(tuple, function (v, k) {
+                    return function (row) {
+                        return (row[k] === v);
+                    };
+                });
+                return _(data).filter(function (row) {
+                    return _.every(predicates, function (p) {
+                        return p(row);
+                    });
+                });
+            }
+        });
 
         this.onUnitDraw = config.onUnitDraw;
     }

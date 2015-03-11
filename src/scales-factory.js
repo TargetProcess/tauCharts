@@ -197,7 +197,8 @@ var scalesStrategies = {
 
     time: (vars, props, interval) => {
 
-        var domain = d3.extent(vars);
+        var domain = d3.extent(vars).map((v) => new Date(v));
+
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domain[1] : new Date(props.max).getTime();
 
@@ -208,7 +209,13 @@ var scalesStrategies = {
 
         var d3Domain = d3.time.scale().domain(varSet);
 
-        var scale = d3Domain.range(interval);
+        var d3Scale = d3Domain.range(interval);
+
+        var scale = (x) => d3Scale(new Date(x));
+
+        // have to copy properties since d3 produce Function with methods
+        Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
+
         scale.dim = props.dim;
         scale.domain = () => varSet;
         scale.source = props.source;
