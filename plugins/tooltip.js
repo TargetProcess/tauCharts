@@ -89,7 +89,7 @@
                 this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
 
-                var spec = chart.getConfig().spec;
+                var spec = chart.getConfig(); // .spec;
 
                 var dimensionGuides = this._findDimensionGuides(spec);
 
@@ -310,7 +310,7 @@
                 return data.elementData.hasOwnProperty('data') && Array.isArray(data.elementData.data) &&
                     data.elementData.data.length > 1;
             },
-            _onElementMouseOver: function (chart, data, mosueCoord, placeCoord) {
+            _onElementMouseOver: function (chart, data, mouseCoord, placeCoord) {
                 clearTimeout(this._timeoutHideId);
                 var key = this._generateKey(data.cellData.hash && data.cellData.hash() ||
                 data.cellData.options.frameId);
@@ -339,8 +339,8 @@
                             point.y,
                             secondPoint.x,
                             secondPoint.y,
-                            mosueCoord[0],
-                            mosueCoord[1]
+                            mouseCoord[0],
+                            mouseCoord[1]
                         );
                         if (h < memo.h) {
                             memo.h = h;
@@ -353,7 +353,7 @@
                     }.bind(this), {h: Infinity, points: {}});
 
                     var itemWithCoord = _.min(nearLine.points, function (a) {
-                        return this._calculateLength(a.x, a.y, mosueCoord[0], mosueCoord[1]);
+                        return this._calculateLength(a.x, a.y, mouseCoord[0], mouseCoord[1]);
                     }, this);
                     item = itemWithCoord.item;
                     this._drawPoint(

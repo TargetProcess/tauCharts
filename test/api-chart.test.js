@@ -284,7 +284,7 @@ define(function (require) {
         });
         it('api test getConfig', function () {
             var plot = new tauCharts.Plot(config);
-            var configChart = plot.getConfig();
+            var configChart = plot.getConfig(true);
             expect(schemes.config.errors(configChart)).to.not.be.ok;
         });
         it('api test getSVG', function () {

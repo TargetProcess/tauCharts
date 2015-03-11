@@ -72,7 +72,8 @@
     "karma-sourcemap-loader": "^0.3.4"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start config/karma.conf.js",
+    "test": "npm run travis && karma start config/karma.conf.js",
+    "travis":"grunt travis",
     "release":"grunt publish && grunt gh-pages"
   }
 }

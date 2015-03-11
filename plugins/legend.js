@@ -14,7 +14,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -52,7 +52,7 @@
             },
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
-                return dfs(conf.spec.unit, function (node) {
+                return dfs(conf.unit, function (node) {
                     return node.color || node.size && conf.dimensions[node.size].type === 'measure';
                 });
             },
@@ -88,7 +88,7 @@
                 }
             },
             _highlightToggle: function (target, chart, toggle) {
-                var colorScale = this._unit.options.color;
+                var colorScale = this._unit.color;
                 var svg = chart.getSVG();
                 var d3Chart = d3.select(svg);
                 if (target.classList.contains('disabled')) {
@@ -110,7 +110,7 @@
                                 item[originValue.dimension] :
                                 _.chain(item.values).pluck(originValue.dimension).unique().first().value();
 
-                            return colorScale.legend(propObject).value === originValue.value;
+                            return propObject === originValue.value;
                         })
                         .classed({'graphical-report__highlighted': true});
 
@@ -121,7 +121,7 @@
                 }
             },
             _toggleLegendItem: function (target, chart) {
-                var colorScale = this._unit.options.color;
+                var colorScale = this._unit.color;
                 var value = target.getAttribute('data-value');
 
                 var keys = _.keys(this._currentFilters);
@@ -141,7 +141,7 @@
                         tag: 'legend',
                         predicate: function (item) {
                             var propObject = item[originValue.dimension];
-                            return colorScale.legend(propObject).value !== originValue.value;
+                            return propObject !== originValue.value;
                         }
                     };
                     target.classList.add('disabled');
@@ -153,8 +153,8 @@
                 return Boolean(this._findUnit(chart));
             },
 
-            onUnitReady: function (chart, unit) {
-                if (unit.type.indexOf('ELEMENT') !== -1) {
+            onUnitDraw: function (chart, unit) {
+                if (tauCharts.api.isChartElement(unit)) {
                     this._unit = unit;
                 }
             },
@@ -164,7 +164,8 @@
                 return _(data)
                     .chain()
                     .map(function (item) {
-                        return colorScale.legend(item[colorDimension]);
+                        var value = item[colorDimension];
+                        return {color: colorScale(value), value: value};
                     })
                     .uniq(function (legendItem) {
                         return legendItem.value;
@@ -197,10 +198,11 @@
                 if (!configUnit.color) {
                     return;
                 }
-                var colorScale = this._unit.options.color;
-                var colorDimension = this._unit.color.scaleDim;
+                var colorScale = this._unit.color;
+                var colorDimension = this._unit.color.dim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.color = this._unit.guide.color;
+                // FIXME
+                configUnit.guide.color = {label: {text: 'debugger'}}; // this._unit.guide.color;
                 var colorScaleName = configUnit.guide.color.label.text || colorScale.dimension;
                 var colorMap = this._getColorMap(
                     chart.getData({excludeFilter: ['legend']}),
