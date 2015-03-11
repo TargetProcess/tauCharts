@@ -76,10 +76,11 @@ export class Plot extends Emitter {
 
         return this.config;
     }
+
     // fixme after all migrate
     getConfig(isOld) {
         // this.configGPL
-        return isOld ? this.config : this.configGPL;
+        return isOld ? this.config : this.configGPL || this.config;
     }
 
     setupMetaInfo(dims, data) {
@@ -141,7 +142,7 @@ export class Plot extends Emitter {
             return;
         }
 
-        var r = this.convertToGPLSpec(size, drawData);
+        var r = this.convertToGPLSpec(size, this.config.data);
         var optimalSize = r.size;
         this.configGPL = r.spec;
 
@@ -150,7 +151,11 @@ export class Plot extends Emitter {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
         };
+        if (!this._originData) {
+            this._originData = _.clone(this.configGPL.sources);
+        }
 
+        this.configGPL.sources = this.getData({isNew: true});
         new GPL(this.configGPL).renderTo(content, r.size);
 
         var svgXElement = d3.select(content).select('svg');
@@ -190,26 +195,43 @@ export class Plot extends Emitter {
         return r;
     }
 
-    getData(param) {
-        param = param || {};
+    getData(param = {}) {
+        // fixme
+        if (param.isNew) {
+            param.excludeFilter = param.excludeFilter || [];
+            param.excludeFilter.push('default');
+        }
         var filters = _.chain(this._filtersStore.filters)
             .values()
             .flatten()
             .reject((filter)=>_.contains(param.excludeFilter, filter.tag))
             .pluck('predicate')
             .value();
-        return _.filter(
-            this.config.data,
+        var filterMap = (data) => _.filter(
+            data,
             _.reduce(
                 filters,
                 (newPredicate, filter) => (x) => newPredicate(x) && filter(x),
                 ()=>true
             )
         );
+        if (param.isNew) {
+            return _.reduce(this._originData, function (sources, source, key) {
+                sources[key] = {
+                    dims: source.dims,
+                    data: filterMap(source.data)
+                };
+                return sources;
+            }, {});
+        } else {
+            return filterMap(this.config.data);
+        }
     }
 
     setData(data) {
         this.config.data = data;
+        this._originData = null;
+        this.configGPL = null;
         this.refresh();
     }
 

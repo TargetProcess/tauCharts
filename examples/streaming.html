@@ -89,6 +89,8 @@
 <body>
 <div id="line"></div>
 <script src="http://localhost:9000/tauCharts.js"></script>
+<script src="../plugins/tooltip.js"></script>
+<script src="../plugins/legend.js"></script>
 <script>
     /** @class Tooltip
      * @extends Plugin */
@@ -112,6 +114,7 @@
         {type: 'task', count: 1.1313, date: 7}
     ];
     var facetSpec = {
+        plugins:[tauCharts.api.plugins.get('tooltip')(),tauCharts.api.plugins.get('legend')()],
 
         sources: {
             '?': {
@@ -134,6 +137,13 @@
                         story: 'A1',
                         bug: 'ISSUE1',
                         count: 10,
+                        date: new Date('2014-01-05')
+                    }, {
+                        project: 'TP3',
+                        team: 'alpha',
+                        story: 'A1',
+                        bug: 'ISSUE1',
+                        count: 14,
                         date: new Date('2014-01-05')
                     },
                     {
@@ -257,12 +267,12 @@
                 guide: {
                     padding: {l: 60, r: 0, t: 0, b: 60},
                     // showGridLines: '',
-                    x: {padding: 40, label: {text: 'project'}, cssClass: 'x axis'},
-                    y: {padding: 40, label: {text: 'team'}, cssClass: 'y axis'}
+                    x: {padding: 40, label: {text: 'story'}, cssClass: 'x axis'},
+                    y: {padding: 40, label: {text: 'count'}, cssClass: 'y axis'}
                 },
                 units: [
                     {
-                        type: 'ELEMENT.INTERVAL',
+                        type: 'ELEMENT.LINE',
                         x: 'story',
                         y: 'count',
                         color: 'color',
@@ -277,36 +287,12 @@
             }]
         }
     };
-    var chart = new tauCharts.GPL(facetSpec);
+    var chart = new tauCharts.Plot(facetSpec);
 
     var size = {width: 800, height: 600};
 
     chart.renderTo('#line', size);
-    /*var c = 0;
-     var interval = setInterval(function() {
 
-     if (c > 3) {
-     clearInterval(interval);
-     }
-
-     ++c;
-
-     chart
-     .config
-     .sources['/']
-     .data
-     .push({
-     project: 'tau' + c,
-     team: 'xbeta',
-     story: 'B' + c,
-     bug: 'ISSUE2',
-     count: c * 5,
-     date: new Date('2014-10-05')
-     });
-
-     chart.render('#line', size);
-
-     },1000);*/
     window.chart = chart;
 
 </script>

@@ -165,7 +165,7 @@
                     .chain()
                     .map(function (item) {
                         var value = item[colorDimension];
-                        return {color: colorScale(value), value: value};
+                        return {color: colorScale(value), value: value, label: value};
                     })
                     .uniq(function (legendItem) {
                         return legendItem.value;
@@ -209,14 +209,16 @@
                     colorScale,
                     colorDimension
                 );
-                configUnit.guide.color.brewer = colorMap.brewer;
+                // FIXME
+                chart.configGPL.scales.color.brewer = colorMap.brewer;
+              //  configUnit.guide.color.brewer = colorMap.brewer;
                 var data = _.reduce(
                     colorMap.values,
                     function (data, item) {
                         var originValue = {
                             dimension: colorDimension,
-                            value: item.value,
-                            color: item.color
+                            value: item.value/*,
+                             color: item.color*/
                         };
                         var value = JSON.stringify(originValue);
                         var label = _.escape(isEmpty(item.label) ? ('No ' + colorScaleName) : item.label);
