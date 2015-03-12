@@ -46,7 +46,7 @@ define(function (require) {
             var conv = new Converter(temp);
 
             var spec = conv.convert();
-            expect(JSON.stringify(spec)).to.deep.equal(JSON.stringify({
+            var x = {
 
                 "sources": {
                     "?": {
@@ -120,7 +120,11 @@ define(function (require) {
                         }
                     ]
                 }
-            }));
+            };
+
+            expect(JSON.stringify(spec.sources)).to.deep.equal(JSON.stringify(x.sources));
+            expect(JSON.stringify(spec.unit)).to.deep.equal(JSON.stringify(x.unit));
+            expect(JSON.stringify(spec.scales)).to.deep.equal(JSON.stringify(x.scales));
         });
 
         it('should convert periods and complex objects', function () {
@@ -251,7 +255,9 @@ define(function (require) {
                 }
             };
 
-            expect(JSON.stringify(spec)).to.deep.equal(JSON.stringify(x));
+            expect(JSON.stringify(spec.sources)).to.deep.equal(JSON.stringify(x.sources));
+            expect(JSON.stringify(spec.unit)).to.deep.equal(JSON.stringify(x.unit));
+            expect(JSON.stringify(spec.scales)).to.deep.equal(JSON.stringify(x.scales));
         });
 
         it('should extract axes', function () {

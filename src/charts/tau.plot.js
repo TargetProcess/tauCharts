@@ -27,12 +27,19 @@ export class Plot extends Emitter {
         };
         this._layout = getLayout();
 
-        this.v2 = ['sources', 'scales', 'unit'].filter((p) => config.hasOwnProperty(p)).length === 3;
-        if (this.v2) {
+        if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
             this.config = config;
-            this.config.data = config.sources['/'].data;
+            this.configGPL = config;
         } else {
-            this.setupConfig(config);
+            this.config = this.setupConfig(config);
+            this.configGPL = new SpecConverter(this.config).convert();
+        }
+
+        this.configGPL.settings = this.setupSettings(this.configGPL.settings);
+
+        this.transformers = [SpecTransformAutoLayout];
+        if (this.configGPL.settings.layoutEngine === 'EXTRACT') {
+            this.transformers.push(SpecTransformExtractAxes);
         }
 
         this._plugins = new Plugins(this.config.plugins, this);
@@ -52,17 +59,9 @@ export class Plot extends Emitter {
         });
         this._emptyContainer = config.emptyContainer || '';
         // TODO: remove this particular config cases
-        this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
-        this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
+        this.config.settings.specEngine   = config.specEngine || config.settings.specEngine;
+        this.config.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
         this.config.settings = this.setupSettings(this.config.settings);
-        if (!utils.isArray(this.config.settings.specEngine)) {
-            this.config.settings.specEngine = [
-                {
-                    width: Number.MAX_VALUE,
-                    name: this.config.settings.specEngine
-                }
-            ];
-        }
 
         this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
@@ -99,7 +98,13 @@ export class Plot extends Emitter {
                 utils.clone(globalSettings[k]);
         });
 
-        return _.defaults(configSettings || {}, localSettings);
+        var r = _.defaults(configSettings || {}, localSettings);
+
+        if (!utils.isArray(r.specEngine)) {
+            r.specEngine = [{width: Number.MAX_VALUE, name: r.specEngine}];
+        }
+
+        return r;
     }
 
     insertToRightSidebar(el) {
@@ -144,21 +149,30 @@ export class Plot extends Emitter {
             return;
         }
 
-        var r = this.convertToGPLSpec(size, this.config.data);
-        var optimalSize = r.size;
-        this.configGPL = r.spec;
+        this.configGPL.settings.size = size;
+
+        // TODO: refactor this
+        var gpl = utils.clone(this.configGPL);
+        gpl.sources = this.configGPL.sources;
+        gpl.settings = this.configGPL.settings;
+
+        gpl = this
+            .transformers
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform()), gpl);
+
+        var optimalSize = gpl.settings.size;
 
         this._nodes = [];
-        this.configGPL.onUnitDraw = (unitNode) => {
+        gpl.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
         };
         if (!this._originData) {
-            this._originData = _.clone(this.configGPL.sources);
+            this._originData = _.clone(gpl.sources);
         }
 
-        this.configGPL.sources = this.getData({isNew: true});
-        new GPL(this.configGPL).renderTo(content, r.size);
+        gpl.sources = this.getData({isNew: true});
+        new GPL(gpl).renderTo(content, optimalSize);
 
         var svgXElement = d3.select(content).select('svg');
 
@@ -166,43 +180,6 @@ export class Plot extends Emitter {
         svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
         this.fire('render', this._svg);
-    }
-
-    convertToGPLSpec(size, drawData) {
-
-        var r = {
-            spec: {},
-            size: size
-        };
-
-        if (this.v2) {
-
-            r.spec = this.config;
-            r.size = size;
-
-        } else {
-
-            r.spec = new SpecConverter(_.extend(
-                {},
-                this.config,
-                {data: drawData})).convert();
-            r.size = size;
-        }
-
-        r.spec.settings = this.config.settings || {};
-        r.spec.settings.size = size;
-
-        {
-            r.spec = new SpecTransformAutoLayout(r.spec).transform();
-        }
-
-        if ((this.config.settings.layoutEngine === 'EXTRACT')) {
-            r.spec = new SpecTransformExtractAxes(r.spec).transform();
-        }
-
-        r.size = r.spec.settings.size;
-
-        return r;
     }
 
     getData(param = {}) {
@@ -240,8 +217,8 @@ export class Plot extends Emitter {
 
     setData(data) {
         this.config.data = data;
+        this.configGPL.sources['/'].data = data;
         this._originData = null;
-        this.configGPL = null;
         this.refresh();
     }
 

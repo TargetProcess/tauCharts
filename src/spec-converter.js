@@ -5,7 +5,6 @@ export class SpecConverter {
 
     constructor(spec) {
         this.spec = spec;
-        this.opts = spec.settings;
 
         this.dist = {
             sources: {
@@ -43,7 +42,8 @@ export class SpecConverter {
                         });
                     });
                 }
-            }
+            },
+            settings: spec.settings
         };
     }
 
