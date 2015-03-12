@@ -245,14 +245,18 @@
                 this._colorScaleSize = data.items.length;
             },
             _renderSizeLegend: function (configUnit, chart) {
-                if (!configUnit.size || chart.getConfig().spec.dimensions[configUnit.size].type !== 'measure') {
+                var spec = chart.getConfig();
+                var sizeScaleCfg = spec.scales[configUnit.size];
+                if (!configUnit.size
+                    || !sizeScaleCfg.dim
+                    || spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type !== 'measure') {
                     return;
                 }
 
-                var sizeScale = this._unit.options.sizeScale;
+                var sizeScale = this._unit.size;
                 var sizeDimension = this._unit.size.scaleDim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.size = this._unit.guide.size;
+                configUnit.guide.size = this._unit.config.guide.size;
                 var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
                 var chartData = _.sortBy(chart.getData(), function (el) {
                     return sizeScale(el[sizeDimension]);
@@ -299,7 +303,7 @@
                     this._container.innerHTML = '';
                     var configUnit = this._findUnit(chart);
                     this._renderColorLegend(configUnit, chart);
-                    // this._renderSizeLegend(configUnit, chart);
+                    this._renderSizeLegend(configUnit, chart);
 
                 }
             }
