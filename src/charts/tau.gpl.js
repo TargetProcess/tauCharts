@@ -24,6 +24,8 @@ var calcBaseFrame = (unitExpression, baseFrame) => {
     return bInherit ? tmpFrame : ownFrame;
 };
 
+var cast = (v) => (_.isDate(v) ? v.getTime() : v);
+
 export class GPL extends Emitter {
 
     constructor(config) {
@@ -42,15 +44,11 @@ export class GPL extends Emitter {
 
         this.trans = _.extend(config.trans, {
             where(data, tuple) {
-                var predicates = _.map(tuple, function (v, k) {
-                    return function (row) {
-                        return (row[k] === v);
-                    };
+                var predicates = _.map(tuple, (v, k) => {
+                    return (row) => (cast(row[k]) === v);
                 });
-                return _(data).filter(function (row) {
-                    return _.every(predicates, function (p) {
-                        return p(row);
-                    });
+                return _(data).filter((row) => {
+                    return _.every(predicates, (p) => p(row));
                 });
             }
         });
