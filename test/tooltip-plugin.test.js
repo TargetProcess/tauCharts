@@ -1,3 +1,5 @@
+// jscs:disable disallowQuotedKeysInObjects
+// jscs:disable validateQuoteMarks
 define(function (require) {
     var $ = require('jquery');
     var expect = require('chai').expect;
@@ -12,20 +14,19 @@ define(function (require) {
     var iso = function (str) {
         return (str + '+' + offsetISO);
     };
-    return;
+    // return;
     var showTooltip = function (expect, chart, index) {
         var d = testUtils.Deferred();
-        var datum = chart.getSVG().querySelectorAll('.i-role-datum')[index||0];
+        var datum = chart.getSVG().querySelectorAll('.i-role-datum')[index || 0];
         testUtils.simulateEvent('mouseover', datum);
         return d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
     };
     var hideTooltip = function (expect, chart, index) {
         var d = testUtils.Deferred();
-        var datum = chart.getSVG().querySelectorAll('.i-role-datum')[index||0];
+        var datum = chart.getSVG().querySelectorAll('.i-role-datum')[index || 0];
         testUtils.simulateEvent('mouseout', datum);
         return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
     };
-
 
     var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
 
@@ -180,7 +181,7 @@ define(function (require) {
                         );
                         return d.resolve();
                     })
-                    .then(function(){
+                    .then(function () {
                         return hideTooltip(expect, context.chart);
                     })
                     .always(function () {
@@ -254,7 +255,7 @@ define(function (require) {
             }
         );
     });
-
+    return;
     describeChart("tooltip formatting",
         {
             "type": "scatterplot",
@@ -281,7 +282,7 @@ define(function (require) {
                     },
                     "y": {
                         "label": "Progress",
-                        "tickFormat":"percent"
+                        "tickFormat": "percent"
                     },
                     "color": {
                         "label": "Entity Type"
@@ -315,9 +316,9 @@ define(function (require) {
                     "scale": "linear"
                 }
             },
-            plugins: [tooltip({fields:['complex','date','simple','colorValue','sizeValue']})]
+            plugins: [tooltip({fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue']})]
         },
-            [
+        [
             {
                 "complex": {
                     "id": 1,
@@ -335,15 +336,16 @@ define(function (require) {
                 "colorValue": "Bug",
                 "sizeValue": 20
             }
-    ],
+        ],
         function (context) {
             it('should format labels', function (done) {
                 var originTimeout = stubTimeout();
 
-                var validateLabel = function($content, label, value){
-                    var $label = $content.find('.graphical-report__tooltip__list__elem:contains("'+label+'"):first').parent();
+                var validateLabel = function ($content, label, value) {
+                    var $label = $content
+                        .find('.graphical-report__tooltip__list__elem:contains("' + label + '"):first').parent();
 
-                    expect($label.length).to.be.eql(1, 'Label '+label+' present');
+                    expect($label.length).to.be.eql(1, 'Label ' + label + ' present');
                     expect($label.children()[1].innerText).to.be.eql(value, 'Label value is correct');
 
                 };
@@ -358,10 +360,10 @@ define(function (require) {
                         validateLabel($content, 'Effort', '20');
                         return hideTooltip(expect, context.chart, 0);
                     })
-                    .then(function(){
+                    .then(function () {
                         return showTooltip(expect, context.chart, 1);
                     })
-                    .then(function(content){
+                    .then(function (content) {
                         var $content = $(content);
                         validateLabel($content, 'Project', 'TP3');
                         validateLabel($content, 'Create Date By Day', '08-Jan-2015');
@@ -370,12 +372,10 @@ define(function (require) {
                         validateLabel($content, 'Progress', '10%');
                         return hideTooltip(expect, context.chart, 1);
                     })
-                    .always(function(){
+                    .always(function () {
                         window.setTimeout = originTimeout;
                         done();
                     });
             });
         });
-
-
 });
