@@ -69,6 +69,7 @@
                             this._toggleLegendItem(currentTarget, chart);
                         }.bind(this)
                     );
+
                     this._delegateEvent(
                         this._container,
                         'mouseover',
@@ -88,7 +89,7 @@
                 }
             },
             _highlightToggle: function (target, chart, toggle) {
-                var colorScale = this._unit.color;
+
                 var svg = chart.getSVG();
                 var d3Chart = d3.select(svg);
                 if (target.classList.contains('disabled')) {
@@ -121,7 +122,7 @@
                 }
             },
             _toggleLegendItem: function (target, chart) {
-                var colorScale = this._unit.color;
+
                 var value = target.getAttribute('data-value');
 
                 var keys = _.keys(this._currentFilters);
@@ -201,24 +202,27 @@
                 var colorScale = this._unit.color;
                 var colorDimension = this._unit.color.dim;
                 configUnit.guide = configUnit.guide || {};
-                // FIXME
-                configUnit.guide.color = {label: {text: 'debugger'}}; // this._unit.guide.color;
-                var colorScaleName = configUnit.guide.color.label.text || colorScale.dimension;
+                configUnit.guide.color = configUnit.guide.color || {};
+
+                var colorLabelText = (_.isObject(configUnit.guide.color.label)) ?
+                    configUnit.guide.color.label.text :
+                    configUnit.guide.color.label;
+
+                var colorScaleName = colorLabelText || colorScale.dim;
                 var colorMap = this._getColorMap(
                     chart.getData({excludeFilter: ['legend']}),
                     colorScale,
                     colorDimension
                 );
-                // FIXME
-                chart.configGPL.scales.color.brewer = colorMap.brewer;
-              //  configUnit.guide.color.brewer = colorMap.brewer;
+
+                chart.configGPL.scales[this._unit.config.color].brewer = colorMap.brewer;
+
                 var data = _.reduce(
                     colorMap.values,
                     function (data, item) {
                         var originValue = {
                             dimension: colorDimension,
-                            value: item.value/*,
-                             color: item.color*/
+                            value: item.value
                         };
                         var value = JSON.stringify(originValue);
                         var label = _.escape(isEmpty(item.label) ? ('No ' + colorScaleName) : item.label);
@@ -228,7 +232,7 @@
                             label: label,
                             value: _.escape(value)
                         }));
-                        data.storageValues[value] = originValue;
+                        data.storageValues[value] = _.extend({color: item.color}, originValue);
                         return data;
                     },
                     {items: [], storageValues: {}},
@@ -295,7 +299,7 @@
                     this._container.innerHTML = '';
                     var configUnit = this._findUnit(chart);
                     this._renderColorLegend(configUnit, chart);
-                    this._renderSizeLegend(configUnit, chart);
+                    // this._renderSizeLegend(configUnit, chart);
 
                 }
             }

@@ -241,7 +241,8 @@
             }
         },
         plugins: [
-            tauCharts.api.plugins.get('tooltip')({fields:['complex','date','simple','colorValue','sizeValue']})
+            tauCharts.api.plugins.get('tooltip')({fields:['complex','date','simple','colorValue','sizeValue']}),
+            tauCharts.api.plugins.get('legend')()
         ]
     }).renderTo('#dates-progress-facet');
 
@@ -289,7 +290,7 @@
 
         plugins: [
             tauCharts.api.plugins.get('tooltip')(),
-          //  tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('legend')(),
             tauCharts.api.plugins.get('exportTo')()
         ]
 
@@ -727,8 +728,8 @@
                 spec: scatter,
                 plugins: [
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']}),
-                 //   tauCharts.api.plugins.get('trendline')(),
-                 //   tauCharts.api.plugins.get('legend')()
+                    // tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('legend')()
                 ]
             }).renderTo('#scatter-auto-scale-container');
 
