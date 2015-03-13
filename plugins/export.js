@@ -139,8 +139,26 @@
             },
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
+                var spec = chart.getConfig();
+                var checkNotEmpty = function (dimName) {
+                    var sizeScaleCfg = spec.scales[dimName];
+                    return (
+                    sizeScaleCfg &&
+                    sizeScaleCfg.dim &&
+                    sizeScaleCfg.source &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    );
+                };
                 return dfs(conf.unit, function (node) {
-                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
+
+                    if (checkNotEmpty(node.color)) {
+                        return true;
+                    }
+
+                    if (checkNotEmpty(node.size)) {
+                        var sizeScaleCfg = spec.scales[node.size];
+                        return spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure';
+                    }
                 });
             },
             _toPng: function (chart) {
@@ -335,20 +353,30 @@
                     return;
                 }
                 var offset = {h: 0, w: 0};
+                var spec = chart.getConfig();
                 svg = d3.select(svg);
                 var width = parseInt(svg.attr('width'), 10);
                 var height = svg.attr('height');
                 svg.attr('width', width + 160);
-                if (configUnit.color) {
+                var checkNotEmpty = function (dimName) {
+                    var sizeScaleCfg = spec.scales[dimName];
+                    return (
+                    sizeScaleCfg &&
+                    sizeScaleCfg.dim &&
+                    sizeScaleCfg.source &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    );
+                };
+                if (checkNotEmpty(configUnit.color)) {
                     var offsetColorLegend = this._renderColorLegend(configUnit, svg, chart, width);
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
                 var spec = chart.getConfig();
                 var sizeScaleCfg = spec.scales[configUnit.size];
-                if (configUnit.size ||
+                if (configUnit.size &&
                     sizeScaleCfg.dim &&
-                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type !== 'measure') {
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure') {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
                 }
             },

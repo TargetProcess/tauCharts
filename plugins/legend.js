@@ -56,10 +56,10 @@
                 var checkNotEmpty = function (dimName) {
                     var sizeScaleCfg = spec.scales[dimName];
                     return (
-                        sizeScaleCfg &&
-                        sizeScaleCfg.dim &&
-                        sizeScaleCfg.source &&
-                        spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    sizeScaleCfg &&
+                    sizeScaleCfg.dim &&
+                    sizeScaleCfg.source &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
                     );
                 };
                 return dfs(conf.unit, function (node) {
@@ -128,7 +128,7 @@
                             var propObject = item.hasOwnProperty(originValue.dimension) ?
                                 item[originValue.dimension] :
                                 item.tags[originValue.dimension];
-                                // _.chain(item.values).pluck(originValue.dimension).unique().first().value();
+                            // _.chain(item.values).pluck(originValue.dimension).unique().first().value();
 
                             return propObject === originValue.value;
                         })
@@ -215,7 +215,17 @@
             ].join('')),
             // jscs:enable maximumLineLength
             _renderColorLegend: function (configUnit, chart) {
-                if (!configUnit.color) {
+                var spec = chart.getConfig();
+                var checkNotEmpty = function (dimName) {
+                    var sizeScaleCfg = spec.scales[dimName];
+                    return (
+                    sizeScaleCfg &&
+                    sizeScaleCfg.dim &&
+                    sizeScaleCfg.source &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    );
+                };
+                if (!checkNotEmpty(configUnit.color)) {
                     return;
                 }
                 var colorScale = this._unit.color;
