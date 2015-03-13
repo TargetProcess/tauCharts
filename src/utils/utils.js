@@ -97,7 +97,7 @@ var utils = {
     generateHash: (str) => {
         var r = btoa(encodeURIComponent(str)).replace(/=/g, '_');
         if (!hashMap.hasOwnProperty(r)) {
-            hashMap[r] = `H${++hashGen}`
+            hashMap[r] = (`H${++hashGen}`);
         }
         return hashMap[r];
     }

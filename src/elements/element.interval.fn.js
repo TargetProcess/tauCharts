@@ -123,7 +123,6 @@ function drawInterval({
         this.attr('class', BAR_GROUP)
             .attr('transform', calculateTranslate);
         var bars = this.selectAll('.bar').data((d) => {
-            console.log(d.values);
             return d.values;
         });
         bars.call(updateBar);
