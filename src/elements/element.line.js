@@ -115,7 +115,7 @@ export class Line {
         var drawFrame = (tag, id, filter) => {
 
             var isDrawLine = tag === 'line';
-            var isDrawAnch = !isDrawLine || guide.anchors;
+            var isDrawAnchor = !isDrawLine || guide.anchors;
 
             var frameGroups = options.container
                 .selectAll(`.frame-${id}`)
@@ -124,11 +124,11 @@ export class Line {
                 .exit()
                 .remove();
             frameGroups
-                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnch));
+                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
             frameGroups
                 .enter()
                 .append('g')
-                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnch));
+                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
         };
 
         drawFrame('line', 'line-' + options.uid, (f) => f.data.length > 1);

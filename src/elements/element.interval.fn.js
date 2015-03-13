@@ -122,12 +122,14 @@ function drawInterval({
     var updateBarContainer = function () {
         this.attr('class', BAR_GROUP)
             .attr('transform', calculateTranslate);
-        var bars = this.selectAll('bar').data((d) => d.values);
+        var bars = this.selectAll('.bar').data((d) => {
+            console.log(d.values);
+            return d.values;
+        });
         bars.call(updateBar);
         bars.enter().append('rect').call(updateBar);
         bars.exit().remove();
     };
-
     var elements = container.selectAll(`.${BAR_GROUP}`).data(data);
     elements.call(updateBarContainer);
     elements.enter().append('g').call(updateBarContainer);
