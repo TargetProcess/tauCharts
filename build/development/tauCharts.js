@@ -7349,5 +7349,5 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
  define('d3',function(){
     return d3;
   });
- return require('tau.newCharts');
+ return require('tau.charts');
 }));
