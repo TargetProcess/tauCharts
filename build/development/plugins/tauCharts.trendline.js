@@ -1,16 +1,16 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof define === 'function' && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === "object" && module.exports) {
+    } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
-
+    // jscs:disable
     var regressionsHub = (function () {
 
         'use strict';
@@ -217,11 +217,15 @@
                 return {equation: [lastvalue], points: results, string: "" + lastvalue};
             },
 
-            loess: function(data) {
+            loess: function (data) {
                 //adapted from the LoessInterpolator in org.apache.commons.math
                 function loess_pairs(pairs, bandwidth) {
-                    var xval = pairs.map(function(pair){return pair[0]});
-                    var yval = pairs.map(function(pair){return pair[1]});
+                    var xval = pairs.map(function (pair) {
+                        return pair[0]
+                    });
+                    var yval = pairs.map(function (pair) {
+                        return pair[1]
+                    });
                     var res = loess(xval, yval, bandwidth);
                     return xval.map(function (x, i) {
                         return [x, res[i]];
@@ -245,7 +249,7 @@
 
                         if (i > 0) {
                             if (right < xval.length - 1 &&
-                                xval[right+1] - xval[i] < xval[i] - xval[left]) {
+                                xval[right + 1] - xval[i] < xval[i] - xval[left]) {
                                 left++;
                                 right++;
                             }
@@ -263,8 +267,7 @@
                         var sumX = 0, sumXSquared = 0, sumY = 0, sumXY = 0;
 
                         var k = left;
-                        while(k <= right)
-                        {
+                        while (k <= right) {
                             var xk = xval[k];
                             var yk = yval[k];
                             var dist;
@@ -316,7 +319,7 @@
             }
         });
     }());
-
+    // jscs:enable
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
@@ -326,7 +329,7 @@
             'graphical-report__trendline',
 
             'graphical-report__line',
-            'i-role-element',
+            // 'i-role-element',
 
             'graphical-report__line-width-1',
             'graphical-report__line-opacity-1',
@@ -371,14 +374,22 @@
             return isElement(unit);
         });
     };
-    var isApplicable = function (dimensions) {
+    var isApplicable = function (spec) {
         return function (unitMeta) {
-            var hasElement = (unitMeta.type && unitMeta.type.indexOf('COORDS.') === 0 && coordHasElements(unitMeta.unit));
+
+            var hasElement = unitMeta.type &&
+                unitMeta.type.indexOf('COORDS.') === 0 &&
+                coordHasElements(unitMeta.units);
             if (!hasElement) {
                 return false;
             }
-            var x = dimensions[unitMeta.x].type;
-            var y = dimensions[unitMeta.y].type;
+
+            var dimXScaleCfg = spec.scales[unitMeta.x];
+            var dimYScaleCfg = spec.scales[unitMeta.y];
+
+            var x = spec.sources[dimXScaleCfg.source].dims[dimXScaleCfg.dim].type;
+            var y = spec.sources[dimYScaleCfg.source].dims[dimYScaleCfg.dim].type;
+
             return _.every([x, y], function (dimType) {
                 return dimType && (dimType !== 'category');
             });
@@ -389,7 +400,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -398,7 +409,6 @@
             }
         }
     };
-
 
     function trendline(xSettings) {
 
@@ -417,15 +427,19 @@
             init: function (chart) {
 
                 this._chart = chart;
-                var conf = chart.getConfig();
-                this._isApplicable = dfs(conf.spec.unit, isApplicable(conf.spec.dimensions));
+
+                var spec = chart.getConfig();
+
+                this._isApplicable = dfs(spec.unit, isApplicable(spec));
 
                 if (settings.showPanel) {
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
                     var classToAdd = this._isApplicable ? 'applicable-true' : 'applicable-false';
                     if (!this._isApplicable) {
-                        this._error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
+                        // jscs:disable maximumLineLength
+                        this._error = 'Trend line can\'t be computed for categorical data. Each axis should be either a measure or a date.';
+                        // jscs:enable maximumLineLength
                     }
                     this._container.classList.add(classToAdd);
 
@@ -454,31 +468,31 @@
                 }
             },
 
-            onUnitReady: function (chart, unitMeta) {
+            onUnitDraw: function (chart, unitInstance) {
+
+                var unitMeta = unitInstance.config;
+
+                unitMeta.options.container.select('.i-trendline').remove();
 
                 if (!settings.showTrend || !isElement(unitMeta) || !this._isApplicable) {
                     return;
                 }
 
-                var options = unitMeta.options;
+                var x = unitInstance.xScale.dim;
+                var y = unitInstance.yScale.dim;
+                var c = unitInstance.color.dim;
 
-                var x = unitMeta.x.scaleDim;
-                var y = unitMeta.y.scaleDim;
-                var c = unitMeta.color.scaleDim;
+                unitMeta.frames.forEach(function (segment, index) {
 
-                //var xAutoScaleVals = unitMeta.scaleMeta(x, unitMeta.guide.x).values;
-                var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
+                    var data = segment.take();
 
-                var minY = _.min(yAutoScaleVals);
-                var maxY = _.max(yAutoScaleVals);
+                    if (data.length === 0) {
+                        return;
+                    }
 
-                var categories = unitMeta.groupBy(unitMeta.partition(), c);
+                    var sKey = data[0][c];
 
-                categories.forEach(function (segment, index) {
-                    var sKey = segment.key;
-                    var sVal = segment.values;
-
-                    var src = sVal.map(function (item) {
+                    var src = data.map(function (item) {
                         var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
                         var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
                         return [ix, iy];
@@ -487,23 +501,18 @@
                     var regression = regressionsHub(settings.type, src);
                     var dots = _(regression.points)
                         .chain()
-                        .sortBy(function (p) {
-                            return p[0];
-                        })
-                        .filter(function (p) {
-                            return ((minY <= p[1]) && (p[1] <= maxY));
-                        })
+                        .sortBy(function (p) { return p[0]; })
                         .value();
 
                     if (dots.length > 1) {
                         drawTrendLine(
-                            'i-trendline-' + index,
+                            'i-trendline i-trendline-' + index,
                             dots,
-                            options.xScale,
-                            options.yScale,
-                            options.color(sKey),
-                            options.container,
-                            sVal);
+                            unitInstance.xScale,
+                            unitInstance.yScale,
+                            unitInstance.color(sKey),
+                            unitMeta.options.container,
+                            data);
                     }
                 });
 
@@ -511,19 +520,19 @@
                     return function () {
                         var g = d3.select(this);
                         g.classed({
-                            'active': isActive,
+                            active: isActive,
                             'graphical-report__line-width-1': !isActive,
                             'graphical-report__line-width-2': isActive
                         });
                     };
                 };
 
-                options.container
+                unitMeta.options.container
                     .selectAll('.graphical-report__trendline')
                     .on('mouseenter', handleMouse(true))
                     .on('mouseleave', handleMouse(false));
             },
-
+// jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
@@ -542,7 +551,7 @@
 
                 '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
             ].join('')),
-
+// jscs:enable maximumLineLength
             onRender: function (chart) {
 
                 if (this._container) {
