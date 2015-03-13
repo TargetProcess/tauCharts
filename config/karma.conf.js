@@ -26,7 +26,7 @@ module.exports = function (config) {
         webpackMiddleware: {
            noInfo: true
         },
-        webpack: webpackConfig,
+        webpack: webpackConfig.coverage,
         browserNoActivityTimeout: 100000,
         port: 9876,
 

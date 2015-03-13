@@ -2,7 +2,6 @@
 var autoprefixer = require('autoprefixer-core');
 var webpack = require('webpack');
 var webpackConfig = require('./config/webpack.test.config');
-webpackConfig.module.postLoaders = [];
 module.exports = function (grunt) {
     // Project configuration.
     var src = [
@@ -84,14 +83,18 @@ module.exports = function (grunt) {
                 reporters: ['dots'],
                 browsers: ['Chrome'],
                 singleRun: false,
-                webpack: webpackConfig
+                webpack: webpackConfig.default
             },
             unit: {
+                webpack: webpackConfig.coverage,
                 reporters: [
-                    'dots',
-                    'coverage'
+                    'coverage',
+                    'dots'
                 ],
-                coverageReporter: {}
+                coverageReporter: {
+                    type: 'html',
+                    dir: 'coverage/'
+                }
             }
         },
         uglify: {
