@@ -16,6 +16,9 @@ var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRu
     return rootRef;
 };
 
+var hashGen = 0;
+var hashMap = {};
+
 var utils = {
     clone(obj) {
         return JSON.parse(JSON.stringify(obj));
@@ -53,10 +56,9 @@ var utils = {
         ];
 
         var i = -1;
-        while (err > correction[++i][0]) {
-// jscs:disable disallowEmptyBlocks
-        }
-// jscs:enable disallowEmptyBlocks
+        // jscs:disable disallowEmptyBlocks
+        while (err > correction[++i][0]) {}
+        // jscs:enable disallowEmptyBlocks
 
         step *= correction[i][1];
 
@@ -92,7 +94,13 @@ var utils = {
 
     traverseJSON,
 
-    generateHash: (str) => btoa(encodeURIComponent(str)).replace(/=/g, '_')
+    generateHash: (str) => {
+        var r = btoa(encodeURIComponent(str)).replace(/=/g, '_');
+        if (!hashMap.hasOwnProperty(r)) {
+            hashMap[r] = `H${++hashGen}`
+        }
+        return hashMap[r];
+    }
 };
 
 export {utils};

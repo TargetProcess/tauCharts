@@ -52,8 +52,26 @@
             },
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
+                var spec = chart.getConfig();
+                var checkNotEmpty = function (dimName) {
+                    var sizeScaleCfg = spec.scales[dimName];
+                    return (
+                        sizeScaleCfg &&
+                        sizeScaleCfg.dim &&
+                        sizeScaleCfg.source &&
+                        spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    );
+                };
                 return dfs(conf.unit, function (node) {
-                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
+
+                    if (checkNotEmpty(node.color)) {
+                        return true;
+                    }
+
+                    if (checkNotEmpty(node.size)) {
+                        var sizeScaleCfg = spec.scales[node.size];
+                        return spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure';
+                    }
                 });
             },
             init: function (chart) {
@@ -109,7 +127,8 @@
                         .filter(function (item) {
                             var propObject = item.hasOwnProperty(originValue.dimension) ?
                                 item[originValue.dimension] :
-                                _.chain(item.values).pluck(originValue.dimension).unique().first().value();
+                                item.tags[originValue.dimension];
+                                // _.chain(item.values).pluck(originValue.dimension).unique().first().value();
 
                             return propObject === originValue.value;
                         })
