@@ -1,8 +1,6 @@
-import {DSLReader} from '../dsl-reader';
 import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
 import {SpecEngineFactory} from '../spec-engine-factory';
-import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';

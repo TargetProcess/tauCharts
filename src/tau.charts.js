@@ -5,11 +5,8 @@ import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
 import {UnitDomainMixin} from './unit-domain-mixin';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
-import {DSLReader} from './dsl-reader';
 import {SpecEngineFactory} from './spec-engine-factory';
-import {LayoutEngineFactory} from './layout-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
-import {nodeMap} from './node-map';
 import {unitsRegistry} from './units-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
@@ -24,9 +21,7 @@ var plugins = {};
 var __api__ = {
     UnitDomainMixin: UnitDomainMixin,
     UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
-    DSLReader: DSLReader,
-    SpecEngineFactory: SpecEngineFactory,
-    LayoutEngineFactory: LayoutEngineFactory
+    SpecEngineFactory: SpecEngineFactory
 };
 var api = {
     unitsRegistry: unitsRegistry,
@@ -121,9 +116,6 @@ var api = {
 Plot.globalSettings = api.globalSettings;
 
 api.unitsRegistry
-    .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
-    .add('PARALLEL/ELEMENT.LINE', nodeMap['PARALLEL/ELEMENT.LINE'])
-
     .reg('COORDS.RECT', Cartesian)
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
