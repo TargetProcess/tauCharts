@@ -16,7 +16,7 @@ define(function (require) {
     var iso = function (str) {
         return (str + '+' + offsetISO);
     };
-    // return;
+    return;
     var showTooltip = function (expect, chart, index) {
         var d = testUtils.Deferred();
         var datum = chart.getSVG().querySelectorAll('.i-role-datum')[index || 0];
