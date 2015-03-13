@@ -1,6 +1,5 @@
 define(function (require) {
 
-    return;
 
     var expect = require('chai').expect;
     var testUtils = require('testUtils');

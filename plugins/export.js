@@ -15,7 +15,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -139,7 +139,7 @@
             },
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
-                return dfs(conf.spec.unit, function (node) {
+                return dfs(conf.unit, function (node) {
                     return node.color || node.size && conf.dimensions[node.size].type === 'measure';
                 });
             },
@@ -172,10 +172,21 @@
                     });
             },
             _renderColorLegend: function (configUnit, svg, chart, width) {
+                var colorScale = this._unit.color;
+                var colorDimension = this._unit.color.dim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.color = this._unit.guide.color;
-                var colorScaleName = configUnit.guide.color.label.text || this._unit.options.color.dimension;
-                var data = this._getColorMap(chart);
+                configUnit.guide.color = configUnit.guide.color || {};
+
+                var colorLabelText = (_.isObject(configUnit.guide.color.label)) ?
+                    configUnit.guide.color.label.text :
+                    configUnit.guide.color.label;
+
+                var colorScaleName = colorLabelText || colorScale.dim;
+                var data = this._getColorMap(
+                    chart.getData({excludeFilter: ['legend']}),
+                    colorScale,
+                    colorDimension
+                ).values;
                 var draw = function () {
                     this.attr('transform', function (d, index) {
                         return 'translate(5,' + 20 * (index + 1) + ')';
@@ -218,10 +229,10 @@
                 return {h: (data.length * 20 + 20), w: 0};
             },
             _renderSizeLegend: function (configUnit, svg, chart, width, offset) {
-                var sizeScale = this._unit.options.sizeScale;
+                var sizeScale = this._unit.size;
                 var sizeDimension = this._unit.size.scaleDim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.size = this._unit.guide.size;
+                configUnit.guide.size = this._unit.config.guide.size;
                 var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
                 var chartData = _.sortBy(chart.getData(), function (el) {
                     return sizeScale(el[sizeDimension]);
@@ -333,34 +344,37 @@
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
-                if (configUnit.size && chart.getConfig().spec.dimensions[configUnit.size].type === 'measure') {
+                var spec = chart.getConfig();
+                var sizeScaleCfg = spec.scales[configUnit.size];
+                if (configUnit.size ||
+                    sizeScaleCfg.dim &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type !== 'measure') {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
                 }
-                // document.body.appendChild(svg.node());
             },
-            onUnitReady: function (chart, unit) {
-                if (unit.type.indexOf('ELEMENT') !== -1) {
+            onUnitDraw: function (chart, unit) {
+                if (tauCharts.api.isChartElement(unit)) {
                     this._unit = unit;
                 }
             },
-            _getColorMap: function (chart) {
-                var colorScale = this._unit.options.color;
-                var colorDimension = this._unit.color.scaleDim;
-                var data = chart.getData();
+            _getColorMap: function (data, colorScale, colorDimension) {
+
                 return _(data)
                     .chain()
                     .map(function (item) {
-                        return colorScale.legend(item[colorDimension]);
+                        var value = item[colorDimension];
+                        return {color: colorScale(value), value: value, label: value};
                     })
                     .uniq(function (legendItem) {
                         return legendItem.value;
                     })
                     .value()
                     .reduce(function (memo, item) {
-                        memo.push(item);
+                        memo.brewer[item.value] = item.color;
+                        memo.values.push(item);
                         return memo;
                     },
-                    []);
+                    {brewer: {}, values: []});
             },
             _select: function (value, chart) {
                 value = value || '';
