@@ -185,7 +185,8 @@ define(function (require) {
                             "week": {"type": "order"},
                             "team": {"type": "category"},
                             "proj": {"type": "category"},
-                            "count": {"type": "measure"}
+                            "count": {"type": "measure"},
+                            "proj.name": {"type": "category"}
                         },
                         "data": [{
                             "team": "alpha",

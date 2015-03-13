@@ -620,7 +620,7 @@
                     }
                 },
                 plugins: [
-                  //  tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('tooltip')({fields:['count']})
                 ]
             }).renderTo('#datetime-container');
@@ -693,7 +693,7 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                 //   tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-default');
@@ -704,7 +704,7 @@
                 data: rawData,
                 spec: facet2x2,
                 plugins: [
-                //    tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
                 ]
             }).renderTo('#chart-container-extract');
@@ -745,7 +745,7 @@
                 spec: scatter,
                 plugins: [
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']}),
-                    // tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('legend')()
                 ]
             }).renderTo('#scatter-auto-scale-container');
@@ -867,7 +867,7 @@
                     data: data,
                     spec: facet2x1,
                     plugins: [
-                      //  tauCharts.api.plugins.get('trendline')(),
+                        tauCharts.api.plugins.get('trendline')(),
                         tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
                     ]
                 }).renderTo('#bars-container');
@@ -876,7 +876,7 @@
     new tauCharts.Chart(
             {
                 plugins: [
-                   // tauCharts.api.plugins.get('trendline')(),
+                    tauCharts.api.plugins.get('trendline')(),
                     tauCharts.api.plugins.get('tooltip')({fields:['team', 'count', 'month']})
                 ],
                 "type": "scatterplot",

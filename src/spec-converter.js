@@ -50,14 +50,16 @@ export class SpecConverter {
     convert() {
         var srcSpec = this.spec;
         var gplSpec = this.dist;
-        this.ruleAssignSourceData(srcSpec, gplSpec);
         this.ruleAssignSourceDims(srcSpec, gplSpec);
         this.ruleAssignStructure(srcSpec, gplSpec);
+        this.ruleAssignSourceData(srcSpec, gplSpec);
 
         return gplSpec;
     }
 
     ruleAssignSourceData(srcSpec, gplSpec) {
+
+        var dims = gplSpec.sources['/'].dims;
 
         var reduceIterator = (row, key) => {
 
@@ -70,7 +72,21 @@ export class SpecConverter {
 
         gplSpec.sources['/'].data = srcSpec
             .data
-            .map((r) => (Object.keys(r).reduce(reduceIterator, r)));
+            .map((rowN) => {
+                var row = (Object.keys(rowN).reduce(reduceIterator, rowN));
+                    row = (Object.keys(dims).reduce(
+                        (r, k) => {
+
+                            if (!r.hasOwnProperty(k)) {
+                                r[k] = null;
+                            }
+
+                            return r;
+                        },
+                        row));
+
+                return row;
+            });
     }
 
     ruleAssignSourceDims(srcSpec, gplSpec) {
@@ -126,6 +142,11 @@ export class SpecConverter {
             r = `${dimName}.${guide.tickLabel}`;
         } else if (dims[dimName].value) {
             r = `${dimName}.${dims[dimName].value}`;
+        }
+
+        var myDims = this.dist.sources['/'].dims;
+        if (!myDims.hasOwnProperty(r)) {
+            myDims[r] = {type:myDims[dimName].type};
         }
 
         return r;

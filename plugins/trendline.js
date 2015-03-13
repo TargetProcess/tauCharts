@@ -329,7 +329,7 @@
             'graphical-report__trendline',
 
             'graphical-report__line',
-            'i-role-element',
+            // 'i-role-element',
 
             'graphical-report__line-width-1',
             'graphical-report__line-opacity-1',
@@ -374,16 +374,22 @@
             return isElement(unit);
         });
     };
-    var isApplicable = function (dimensions) {
+    var isApplicable = function (spec) {
         return function (unitMeta) {
+
             var hasElement = unitMeta.type &&
                 unitMeta.type.indexOf('COORDS.') === 0 &&
-                coordHasElements(unitMeta.unit);
+                coordHasElements(unitMeta.units);
             if (!hasElement) {
                 return false;
             }
-            var x = dimensions[unitMeta.x].type;
-            var y = dimensions[unitMeta.y].type;
+
+            var dimXScaleCfg = spec.scales[unitMeta.x];
+            var dimYScaleCfg = spec.scales[unitMeta.y];
+
+            var x = spec.sources[dimXScaleCfg.source].dims[dimXScaleCfg.dim].type;
+            var y = spec.sources[dimYScaleCfg.source].dims[dimYScaleCfg.dim].type;
+
             return _.every([x, y], function (dimType) {
                 return dimType && (dimType !== 'category');
             });
@@ -394,7 +400,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -421,17 +427,19 @@
             init: function (chart) {
 
                 this._chart = chart;
-                var conf = chart.getConfig();
-                this._isApplicable = dfs(conf.spec.unit, isApplicable(conf.spec.dimensions));
+
+                var spec = chart.getConfig();
+
+                this._isApplicable = dfs(spec.unit, isApplicable(spec));
 
                 if (settings.showPanel) {
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
                     var classToAdd = this._isApplicable ? 'applicable-true' : 'applicable-false';
                     if (!this._isApplicable) {
-// jscs:disable maximumLineLength
+                        // jscs:disable maximumLineLength
                         this._error = 'Trend line can\'t be computed for categorical data. Each axis should be either a measure or a date.';
-// jscs:enable maximumLineLength
+                        // jscs:enable maximumLineLength
                     }
                     this._container.classList.add(classToAdd);
 
@@ -460,30 +468,31 @@
                 }
             },
 
-            onUnitReady: function (chart, unitMeta) {
+            onUnitDraw: function (chart, unitInstance) {
+
+                var unitMeta = unitInstance.config;
+
+                unitMeta.options.container.select('.i-trendline').remove();
 
                 if (!settings.showTrend || !isElement(unitMeta) || !this._isApplicable) {
                     return;
                 }
 
-                var options = unitMeta.options;
+                var x = unitInstance.xScale.dim;
+                var y = unitInstance.yScale.dim;
+                var c = unitInstance.color.dim;
 
-                var x = unitMeta.x.scaleDim;
-                var y = unitMeta.y.scaleDim;
-                var c = unitMeta.color.scaleDim;
+                unitMeta.frames.forEach(function (segment, index) {
 
-                var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
+                    var data = segment.take();
 
-                var minY = _.min(yAutoScaleVals);
-                var maxY = _.max(yAutoScaleVals);
+                    if (data.length === 0) {
+                        return;
+                    }
 
-                var categories = unitMeta.groupBy(unitMeta.partition(), c);
+                    var sKey = data[0][c];
 
-                categories.forEach(function (segment, index) {
-                    var sKey = segment.key;
-                    var sVal = segment.values;
-
-                    var src = sVal.map(function (item) {
+                    var src = data.map(function (item) {
                         var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
                         var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
                         return [ix, iy];
@@ -492,23 +501,18 @@
                     var regression = regressionsHub(settings.type, src);
                     var dots = _(regression.points)
                         .chain()
-                        .sortBy(function (p) {
-                            return p[0];
-                        })
-                        .filter(function (p) {
-                            return ((minY <= p[1]) && (p[1] <= maxY));
-                        })
+                        .sortBy(function (p) { return p[0]; })
                         .value();
 
                     if (dots.length > 1) {
                         drawTrendLine(
-                            'i-trendline-' + index,
+                            'i-trendline i-trendline-' + index,
                             dots,
-                            options.xScale,
-                            options.yScale,
-                            options.color(sKey),
-                            options.container,
-                            sVal);
+                            unitInstance.xScale,
+                            unitInstance.yScale,
+                            unitInstance.color(sKey),
+                            unitMeta.options.container,
+                            data);
                     }
                 });
 
@@ -523,7 +527,7 @@
                     };
                 };
 
-                options.container
+                unitMeta.options.container
                     .selectAll('.graphical-report__trendline')
                     .on('mouseenter', handleMouse(true))
                     .on('mouseleave', handleMouse(false));
