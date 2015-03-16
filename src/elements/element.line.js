@@ -65,7 +65,7 @@ export class Line {
                 .attr('d', d3Line);
         };
 
-        var pointPref = `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot i-role-datum`;
+        var pointPref = `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot `;
         var updatePoints = function () {
 
             var points = this
@@ -110,7 +110,9 @@ export class Line {
             };
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+        var mapper = (f) => {
+            return {tags: f.key || {}, hash: f.hash(), data: f.take(), uid: options.uid};
+        };
 
         var drawFrame = (tag, id, filter) => {
 

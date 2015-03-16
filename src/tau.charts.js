@@ -13,7 +13,7 @@ import {Cartesian}  from './elements/coords.cartesian';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
-import {Interval}        from './elements/element.interval';
+import {Interval}   from './elements/element.interval';
 
 var colorBrewers = {};
 var plugins = {};
@@ -27,6 +27,7 @@ var api = {
     unitsRegistry: unitsRegistry,
     tickFormat: FormatterRegistry,
     isChartElement:utils.isChartElement,
+    isLineElement:utils.isLineElement,
     d3: d3,
     _: _,
     tickPeriod: UnitDomainPeriodGenerator,

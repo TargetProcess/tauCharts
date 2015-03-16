@@ -208,11 +208,12 @@
                                 return tauCharts.api.tickFormat.get(xFormat)(rawValue);
                             } else {
                                 return rawValue;
-                            }/*else if (lastGuide.tickLabel) {
-                                return rawValue[lastGuide.tickLabel];
-                            } else if (dimensions[key] && dimensions[key].value) {
-                                return rawValue[dimensions[key].value];
-                            }*/
+                            }
+                            /*else if (lastGuide.tickLabel) {
+                             return rawValue[lastGuide.tickLabel];
+                             } else if (dimensions[key] && dimensions[key].value) {
+                             return rawValue[dimensions[key].value];
+                             }*/
                         }
                     };
 
@@ -306,63 +307,60 @@
                 return _.compact(fields.concat(y, x).reverse());
 
             },
-            isLine: function (data) {
-                // FIXME
-                return data.elementData.hasOwnProperty('data') && Array.isArray(data.elementData.data) &&
-                    data.elementData.data.length > 1;
+            _handleLineElement: function (data, key, mouseCoord) {
+                var elementData = data.elementData;
+                var dataWithCoord = this._dataWithCoords[key];
+                var filteredData = dataWithCoord.filter(function (value) {
+                    return _.contains(elementData.data, value.item);
+                });
+                if (filteredData.length === 1) {
+                    return filteredData[0].item;
+                }
+                var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
+                    var secondPoint;
+                    if ((index + 1) === data.length) {
+                        var temp = point;
+                        point = data[index - 1];
+                        secondPoint = temp;
+                    } else {
+                        secondPoint = data[index + 1];
+                    }
+                    var h = this._calculateLengthToLine(
+                        point.x,
+                        point.y,
+                        secondPoint.x,
+                        secondPoint.y,
+                        mouseCoord[0],
+                        mouseCoord[1]
+                    );
+                    if (h < memo.h) {
+                        memo.h = h;
+                        memo.points = {
+                            point1: point,
+                            point2: secondPoint
+                        };
+                    }
+                    return memo;
+                }.bind(this), {h: Infinity, points: {}});
+
+                var itemWithCoord = _.min(nearLine.points, function (a) {
+                    return this._calculateLength(a.x, a.y, mouseCoord[0], mouseCoord[1]);
+                }, this);
+                this._drawPoint(
+                    d3.select(data.element.parentNode),
+                    itemWithCoord.x,
+                    itemWithCoord.y,
+                    this._unitMeta[key].color(data.elementData.tags[this._unitMeta[key].color.dim])
+                );
+                return itemWithCoord.item;
             },
             _onElementMouseOver: function (chart, data, mouseCoord, placeCoord) {
                 clearTimeout(this._timeoutHideId);
                 var key = this._generateKey(data.cellData.hash && data.cellData.hash() ||
                 data.cellData.options.frameId);
                 var item = data.elementData;
-                var isLine = this.isLine(data);
-                // FIXME
-                if (!isLine && Array.isArray(item.data)) {
-                    item = item.data[0];
-                }
-                if (isLine) {
-                    var dataWithCoord = this._dataWithCoords[key];
-                    var filteredData = dataWithCoord.filter(function (value) {
-                        return _.contains(item.data, value.item);
-                    });
-                    var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
-                        var secondPoint;
-                        if ((index + 1) === data.length) {
-                            var temp = point;
-                            point = data[index - 1];
-                            secondPoint = temp;
-                        } else {
-                            secondPoint = data[index + 1];
-                        }
-                        var h = this._calculateLengthToLine(
-                            point.x,
-                            point.y,
-                            secondPoint.x,
-                            secondPoint.y,
-                            mouseCoord[0],
-                            mouseCoord[1]
-                        );
-                        if (h < memo.h) {
-                            memo.h = h;
-                            memo.points = {
-                                point1: point,
-                                point2: secondPoint
-                            };
-                        }
-                        return memo;
-                    }.bind(this), {h: Infinity, points: {}});
-
-                    var itemWithCoord = _.min(nearLine.points, function (a) {
-                        return this._calculateLength(a.x, a.y, mouseCoord[0], mouseCoord[1]);
-                    }, this);
-                    item = itemWithCoord.item;
-                    this._drawPoint(
-                        d3.select(data.element.parentNode),
-                        itemWithCoord.x,
-                        itemWithCoord.y,
-                        this._unitMeta[key].color(data.elementData.tags[this._unitMeta[key].color.dim])
-                    );
+                if (tauCharts.api.isLineElement(data.unit)) {
+                    item = this._handleLineElement(data, key, mouseCoord)
                 }
                 if (this._currentElement === item) {
                     return;

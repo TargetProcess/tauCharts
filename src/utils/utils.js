@@ -29,6 +29,9 @@ var utils = {
     isChartElement(element) {
         return element instanceof Interval || element instanceof Point || element instanceof Line;
     },
+    isLineElement(element) {
+        return element instanceof Line;
+    },
     autoScale(domain) {
 
         var m = 10;
@@ -57,7 +60,8 @@ var utils = {
 
         var i = -1;
         // jscs:disable disallowEmptyBlocks
-        while (err > correction[++i][0]) {}
+        while (err > correction[++i][0]) {
+        }
         // jscs:enable disallowEmptyBlocks
 
         step *= correction[i][1];

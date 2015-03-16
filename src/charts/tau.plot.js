@@ -175,7 +175,6 @@ export class Plot extends Emitter {
         var svgXElement = d3.select(content).select('svg');
 
         this._svg = svgXElement.node();
-        svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
         this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
         this.fire('render', this._svg);
     }
