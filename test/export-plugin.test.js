@@ -1,6 +1,4 @@
 define(function (require) {
-
-
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var stubTimeout = testUtils.stubTimeout;
@@ -36,7 +34,7 @@ define(function (require) {
 
         }],
         function (context) {
-            it("print", function (done) {
+            it('print', function (done) {
                 var header = context.chart._layout.header;
                 testUtils.simulateEvent('click', header.querySelector('.graphical-report__export'));
                 mock.printCallbacks.push(function () {

@@ -206,13 +206,13 @@
                                 // very special case for dates
                                 var xFormat = (format === 'x-time-auto') ? 'day' : format;
                                 return tauCharts.api.tickFormat.get(xFormat)(rawValue);
-                            } else if (lastGuide.tickLabel) {
-                                return rawValue[lastGuide.tickLabel];
-                            } else if (dimensions[key].value) {
-                                return rawValue[dimensions[key].value];
                             } else {
                                 return rawValue;
-                            }
+                            }/*else if (lastGuide.tickLabel) {
+                                return rawValue[lastGuide.tickLabel];
+                            } else if (dimensions[key] && dimensions[key].value) {
+                                return rawValue[dimensions[key].value];
+                            }*/
                         }
                     };
 
@@ -227,17 +227,18 @@
 
             _findDimensionGuides: function (spec) {
                 var dimensionGuideMap = {};
+                var scales = spec.scales;
                 var collect = function (field, unit) {
                     var property = unit[field];
                     if (property) {
                         var guide = (unit.guide || {})[field];
-
                         if (guide) {
-                            if (!dimensionGuideMap[property]) {
-                                dimensionGuideMap[property] = [];
+                            var dim = scales[property].dim;
+                            if (!dimensionGuideMap[dim]) {
+                                dimensionGuideMap[dim] = [];
                             }
 
-                            dimensionGuideMap[property].push(guide);
+                            dimensionGuideMap[dim].push(guide);
                         }
                     }
                 };

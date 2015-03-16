@@ -34,7 +34,7 @@
 
         .color-us {
             stroke: blue;
-            fill:blue;
+            fill: blue;
         }
 
         .color-bug {
@@ -101,24 +101,24 @@
         baseUrl: location.pathname.replace(/(.+)(examples\/\w+\.html)/, '$1'),
         paths: {
             'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
-            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min'
+            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min'
         },
         map: {
             '*': {
-                'tauCharts': 'tau_modules/tau.charts',
+                'tauCharts': 'http://localhost:9000/tauCharts.js',
                 'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
                 'rgbcolor': 'bower_components/canvg/rgbcolor',
                 'stackblur': 'bower_components/canvg/StackBlur',
-                'canvg':'bower_components/canvg/canvg',
-                'FileSaver':'bower_components/FileSaver.js/FileSaver',
-                'fetch':'bower_components/fetch/fetch',
-                'promise':'bower_components/es6-promise/promise'
+                'canvg': 'bower_components/canvg/canvg',
+                'FileSaver': 'bower_components/FileSaver.js/FileSaver',
+                'fetch': 'bower_components/fetch/fetch',
+                'promise': 'bower_components/es6-promise/promise'
             }
         }
     });
 
     require([
-        'tau_modules/tau.charts',
+        'tauCharts',
         'src/addons/color-brewer',
         'plugins/legend',
         'plugins/trendline',
@@ -146,31 +146,91 @@
             {type: 'task', count: 1.16, date: 6},
             {type: 'task', count: 1.1313, date: 7}
         ];
+        var offsetHrs = new Date().getTimezoneOffset() / 60;
+        var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
+        var iso = function (str) {
+            return (str + '+' + offsetISO);
+        };
+
         var chart = new tauCharts.Chart({
-           /* guide: {
-                color: {
-                    brewer: {
-                        us: 'color-us',
-                        bug: 'color-bug'
+            "type": "scatterplot",
+            "color": "colorValue",
+            "size": "sizeValue",
+            "x": [
+                "complex"
+            ],
+            "y": [
+                "date",
+                "simple"
+            ],
+            "guide": [
+                {
+                    "y": {
+                        "label": "Create Date By Day",
+                        "tickPeriod": "day"
                     }
                 },
-                y: {
-                    label: {
-                        text: 'Count of completed entities',
-                        padding: 50
+                {
+                    "x": {
+                        "label": "Project",
+                        "tickLabel": "name"
+                    },
+                    "y": {
+                        "label": "Progress",
+                        "tickFormat": "percent"
+                    },
+                    "color": {
+                        "label": "Entity Type"
+                    },
+                    "size": {
+                        "label": "Effort"
                     }
-                },
-                x: {
-                    label: 'Month'
+
                 }
-            },*/
-            plugins: [legend(), trendline(), exportTo({cssPaths:['../css/tauCharts.css']}), tooltip()],
-            data: defData,
-            type: 'bar',
-            x: 'date',
-            y: 'count',
-            size:'count',
-            color: 'type'
+            ],
+            "dimensions": {
+                "complex": {
+                    "type": "category",
+                    "scale": "ordinal",
+                    "value": "id"
+                },
+                "date": {
+                    "type": "order",
+                    "scale": "period"
+                },
+                "simple": {
+                    "type": "measure",
+                    "scale": "linear"
+                },
+                "colorValue": {
+                    "type": "category",
+                    "scale": "ordinal"
+                },
+                "sizeValue": {
+                    "type": "measure",
+                    "scale": "linear"
+                }
+            },
+            plugins: [tooltip({fields: ['complex.name', 'date', 'simple', 'colorValue', 'sizeValue']})],
+            data: [
+                {
+                    "complex": {
+                        "id": 1,
+                        "name": "TP3"
+                    },
+                    "date": new Date(iso("2015-01-08T00:00:00")),
+                    "simple": 0.1,
+                    "colorValue": "UserStory",
+                    "sizeValue": 10
+                },
+                {
+                    "complex": null,
+                    "date": new Date(iso("2015-01-09T00:00:00")),
+                    "simple": 0.9,
+                    "colorValue": "Bug",
+                    "sizeValue": 20
+                }
+            ]
         });
 
         chart.renderTo('#line');

@@ -151,6 +151,7 @@ define(function (require) {
             fn(context);
 
             afterEach(function () {
+                context.chart.destroy();
                 context.element.parentNode.removeChild(context.element);
             });
         });
