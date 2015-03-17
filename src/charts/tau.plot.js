@@ -170,6 +170,9 @@ export class Plot extends Emitter {
         }
 
         gpl.sources = this.getData({isNew: true});
+
+        this.fire('specready', gpl);
+
         new GPL(gpl).renderTo(content, optimalSize);
 
         var svgXElement = d3.select(content).select('svg');
@@ -252,5 +255,15 @@ export class Plot extends Emitter {
 
     select(queryFilter) {
         return this._nodes.filter(queryFilter);
+    }
+
+    traverseSpec(spec, iterator) {
+
+        var traverse = (node, iterator, parentNode) => {
+            iterator(node, parentNode);
+            (node.units || []).map((x) => traverse(x, iterator, node));
+        };
+
+        traverse(spec.unit, iterator, null);
     }
 }
