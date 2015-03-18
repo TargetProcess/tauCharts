@@ -157,7 +157,7 @@
                 fields = _.unique(fields);
                 return fields.map(function (field) {
                     var rawValue = data[field];
-                    var formattedValue = this._getFormatter(field)(rawValue);
+                    var formattedValue = _.isObject(this._getFormatter(field)(rawValue)) ? rawValue.name : rawValue;
                     var label = this._getLabel(field);
 
                     return this.renderItem(label, formattedValue, field, rawValue);
@@ -233,8 +233,8 @@
                     var property = unit[field];
                     if (property) {
                         var guide = (unit.guide || {})[field];
-                        if (guide) {
-                            var dim = scales[property].dim;
+                        var dim = scales[property].dim;
+                        if (dim && guide) {
                             if (!dimensionGuideMap[dim]) {
                                 dimensionGuideMap[dim] = [];
                             }
