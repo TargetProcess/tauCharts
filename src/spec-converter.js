@@ -231,7 +231,12 @@ export class SpecConverter {
         if (srcUnit.type.indexOf('ELEMENT.') === 0) {
 
             if (srcUnit.color) {
-                expr = {operator: 'groupBy', params: [srcUnit.color]};
+                expr = {
+                    operator: 'groupBy',
+                    params: [
+                        this.ruleInferDim(srcUnit.color, g.color || {})
+                    ]
+                };
             }
 
         } else if (srcUnit.type === 'COORDS.RECT') {
