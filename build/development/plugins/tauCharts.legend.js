@@ -1,9 +1,9 @@
 (function (factory) {
-    if (typeof define === 'function' && define.amd) {
+    if (typeof define === "function" && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === 'object' && module.exports) {
+    } else if (typeof module === "object" && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
@@ -14,7 +14,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.units || [], child, found;
+        var i, children = node.unit || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -52,26 +52,8 @@
             },
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
-                var spec = chart.getConfig();
-                var checkNotEmpty = function (dimName) {
-                    var sizeScaleCfg = spec.scales[dimName];
-                    return (
-                    sizeScaleCfg &&
-                    sizeScaleCfg.dim &&
-                    sizeScaleCfg.source &&
-                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
-                    );
-                };
-                return dfs(conf.unit, function (node) {
-
-                    if (checkNotEmpty(node.color)) {
-                        return true;
-                    }
-
-                    if (checkNotEmpty(node.size)) {
-                        var sizeScaleCfg = spec.scales[node.size];
-                        return spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure';
-                    }
+                return dfs(conf.spec.unit, function (node) {
+                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
                 });
             },
             init: function (chart) {
@@ -79,35 +61,19 @@
                     this._currentFilters = {};
                     this._storageValues = {};
                     this._container = chart.insertToRightSidebar(this._containerTemplate);
-                    this._delegateEvent(
-                        this._container,
-                        'click',
-                        'graphical-report__legend__item-color',
-                        function (e, currentTarget) {
-                            this._toggleLegendItem(currentTarget, chart);
-                        }.bind(this)
-                    );
-
-                    this._delegateEvent(
-                        this._container,
-                        'mouseover',
-                        'graphical-report__legend__item-color',
-                        function (e, currentTarget) {
-                            this._highlightToggle(currentTarget, chart, true);
-                        }.bind(this)
-                    );
-                    this._delegateEvent(
-                        this._container,
-                        'mouseout',
-                        'graphical-report__legend__item-color',
-                        function (e, currentTarget) {
-                            this._highlightToggle(currentTarget, chart, false);
-                        }.bind(this)
-                    );
+                    this._delegateEvent(this._container, 'click', 'graphical-report__legend__item-color', function (e, currentTarget) {
+                        this._toggleLegendItem(currentTarget, chart);
+                    }.bind(this));
+                    this._delegateEvent(this._container, 'mouseover', 'graphical-report__legend__item-color', function (e, currentTarget) {
+                        this._highlightToggle(currentTarget, chart, true);
+                    }.bind(this));
+                    this._delegateEvent(this._container, 'mouseout', 'graphical-report__legend__item-color', function (e, currentTarget) {
+                        this._highlightToggle(currentTarget, chart, false);
+                    }.bind(this));
                 }
             },
             _highlightToggle: function (target, chart, toggle) {
-
+                var colorScale = this._unit.options.color;
                 var svg = chart.getSVG();
                 var d3Chart = d3.select(svg);
                 if (target.classList.contains('disabled')) {
@@ -127,10 +93,9 @@
                         .filter(function (item) {
                             var propObject = item.hasOwnProperty(originValue.dimension) ?
                                 item[originValue.dimension] :
-                                item.tags[originValue.dimension];
-                            // _.chain(item.values).pluck(originValue.dimension).unique().first().value();
+                                _.chain(item.values).pluck(originValue.dimension).unique().first().value();
 
-                            return propObject === originValue.value;
+                            return colorScale.legend(propObject).value === originValue.value;
                         })
                         .classed({'graphical-report__highlighted': true});
 
@@ -141,7 +106,7 @@
                 }
             },
             _toggleLegendItem: function (target, chart) {
-
+                var colorScale = this._unit.options.color;
                 var value = target.getAttribute('data-value');
 
                 var keys = _.keys(this._currentFilters);
@@ -161,7 +126,7 @@
                         tag: 'legend',
                         predicate: function (item) {
                             var propObject = item[originValue.dimension];
-                            return propObject !== originValue.value;
+                            return colorScale.legend(propObject).value !== originValue.value;
                         }
                     };
                     target.classList.add('disabled');
@@ -173,8 +138,8 @@
                 return Boolean(this._findUnit(chart));
             },
 
-            onUnitDraw: function (chart, unit) {
-                if (tauCharts.api.isChartElement(unit)) {
+            onUnitReady: function (chart, unit) {
+                if (unit.type.indexOf('ELEMENT') !== -1) {
                     this._unit = unit;
                 }
             },
@@ -184,8 +149,7 @@
                 return _(data)
                     .chain()
                     .map(function (item) {
-                        var value = item[colorDimension];
-                        return {color: colorScale(value), value: value, label: value};
+                        return colorScale.legend(item[colorDimension]);
                     })
                     .uniq(function (legendItem) {
                         return legendItem.value;
@@ -198,7 +162,7 @@
                     },
                     {brewer: {}, values: []});
             },
-            // jscs:disable maximumLineLength
+
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
@@ -208,50 +172,29 @@
             ].join('')),
             _itemSizeTemplate: _.template([
                 '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
-                '<div class="graphical-report__legend__guide__wrap">',
-                '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
-                '</div><%=value%>',
+                    '<div class="graphical-report__legend__guide__wrap">',
+                        '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
+                    '</div><%=value%>',
                 '</div>'
             ].join('')),
-            // jscs:enable maximumLineLength
             _renderColorLegend: function (configUnit, chart) {
-                var spec = chart.getConfig();
-                var checkNotEmpty = function (dimName) {
-                    var sizeScaleCfg = spec.scales[dimName];
-                    return (
-                    sizeScaleCfg &&
-                    sizeScaleCfg.dim &&
-                    sizeScaleCfg.source &&
-                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
-                    );
-                };
-                if (!checkNotEmpty(configUnit.color)) {
+                if (!configUnit.color) {
                     return;
                 }
-                var colorScale = this._unit.color;
-                var colorDimension = this._unit.color.dim;
+                var colorScale = this._unit.options.color;
+                var colorDimension = this._unit.color.scaleDim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.color = configUnit.guide.color || {};
-
-                var colorLabelText = (_.isObject(configUnit.guide.color.label)) ?
-                    configUnit.guide.color.label.text :
-                    configUnit.guide.color.label;
-
-                var colorScaleName = colorLabelText || colorScale.dim;
-                var colorMap = this._getColorMap(
-                    chart.getData({excludeFilter: ['legend']}),
-                    colorScale,
-                    colorDimension
-                );
-
-                chart.configGPL.scales[this._unit.config.color].brewer = colorMap.brewer;
-
+                configUnit.guide.color = this._unit.guide.color;
+                var colorScaleName = configUnit.guide.color.label.text || colorScale.dimension;
+                var colorMap = this._getColorMap(chart.getData({excludeFilter: ['legend']}), colorScale, colorDimension);
+                configUnit.guide.color.brewer = colorMap.brewer;
                 var data = _.reduce(
                     colorMap.values,
                     function (data, item) {
                         var originValue = {
                             dimension: colorDimension,
-                            value: item.value
+                            value: item.value,
+                            color: item.color
                         };
                         var value = JSON.stringify(originValue);
                         var label = _.escape(isEmpty(item.label) ? ('No ' + colorScaleName) : item.label);
@@ -261,7 +204,7 @@
                             label: label,
                             value: _.escape(value)
                         }));
-                        data.storageValues[value] = _.extend({color: item.color}, originValue);
+                        data.storageValues[value] = originValue;
                         return data;
                     },
                     {items: [], storageValues: {}},
@@ -274,18 +217,14 @@
                 this._colorScaleSize = data.items.length;
             },
             _renderSizeLegend: function (configUnit, chart) {
-                var spec = chart.getConfig();
-                var sizeScaleCfg = spec.scales[configUnit.size];
-                if (!configUnit.size
-                    || !sizeScaleCfg.dim
-                    || spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type !== 'measure') {
+                if (!configUnit.size || chart.getConfig().spec.dimensions[configUnit.size].type !== 'measure') {
                     return;
                 }
 
-                var sizeScale = this._unit.size;
+                var sizeScale = this._unit.options.sizeScale;
                 var sizeDimension = this._unit.size.scaleDim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.size = this._unit.config.guide.size;
+                configUnit.guide.size = this._unit.guide.size;
                 var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
                 var chartData = _.sortBy(chart.getData(), function (el) {
                     return sizeScale(el[sizeDimension]);
@@ -310,6 +249,7 @@
                 } else {
                     values = [first];
                 }
+
 
                 var items = _.map(values,
                     function (value) {
