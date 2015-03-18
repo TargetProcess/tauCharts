@@ -101,11 +101,11 @@
         baseUrl: location.pathname.replace(/(.+)(examples\/\w+\.html)/, '$1'),
         paths: {
             'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
-            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min'
+            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min'
         },
         map: {
             '*': {
-                'tauCharts': 'http://localhost:9000/tauCharts.js',
+                'tauCharts': 'tau_modules/tau.newCharts',
                 'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
                 'rgbcolor': 'bower_components/canvg/rgbcolor',
                 'stackblur': 'bower_components/canvg/StackBlur',
@@ -117,14 +117,7 @@
         }
     });
 
-    require([
-        'tauCharts',
-        'src/addons/color-brewer',
-        'plugins/legend',
-        'plugins/trendline',
-        'plugins/export',
-        'plugins/tooltip',
-        'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
+    require(['tau_modules/tau.newCharts', 'src/addons/color-brewer', 'plugins/legend', 'plugins/trendline', 'plugins/export', 'plugins/tooltip', 'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
          * @extends Plugin */
         var defData = [
@@ -147,7 +140,13 @@
             {type: 'task', count: 1.1313, date: 7}
         ];
         var chart = new tauCharts.Chart({
-            guide: {
+           /* guide: {
+                color: {
+                    brewer: {
+                        us: 'color-us',
+                        bug: 'color-bug'
+                    }
+                },
                 y: {
                     label: {
                         text: 'Count of completed entities',
@@ -157,10 +156,10 @@
                 x: {
                     label: 'Month'
                 }
-            },
-            plugins: [legend(),/*trendline()*/, exportTo({cssPaths:['../css/tauCharts.css']}), tooltip()],
+            },*/
+            plugins: [legend(), trendline(), exportTo({cssPaths:['../css/tauCharts.css']}), tooltip()],
             data: defData,
-            type: 'line',
+            type: 'scatterplot',
             x: 'date',
             y: 'count',
             size:'count',
