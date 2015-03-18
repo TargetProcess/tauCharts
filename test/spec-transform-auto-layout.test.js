@@ -1,11 +1,10 @@
 define(function (require) {
     var testUtils = require('testUtils');
     var expect = require('chai').expect;
-    var tauChart = require('src/tau.charts');
-    var UnitDomainMixin = require('src/unit-domain-mixin').UnitDomainMixin;
-    var SpecEngineFactory = tauChart.__api__.SpecEngineFactory;
+    var SpecAutoLayout = require('src/spec-transform-auto-layout').SpecTransformAutoLayout;
+    var SpecConverter = require('src/spec-converter').SpecConverter;
 
-    describe("Spec engine factory", function () {
+    describe('Spec engine factory', function () {
 
         var data = [
             { team: 'A',    count: '1',  date: new Date('2014-01-01T00:00:00+00:00') },
@@ -43,27 +42,54 @@ define(function (require) {
             }
         };
 
-        var makeSpec = function(x, y) {
+        var makeSpec = function (x, y, specEngineName) {
 
             var specClone = JSON.parse(JSON.stringify(spec));
 
             specClone.unit.x = x;
             specClone.unit.y = y;
 
-            return specClone;
+            var specGPL = new SpecConverter({spec: specClone, data: data}).convert();
+
+            specGPL.settings = specGPL.settings || testUtils.chartSettings;
+            specGPL.settings.fitSize = false;
+            specGPL.settings.size = {width: 100, height: 100};
+            specGPL.settings.specEngine = [
+                {
+                    width: 100000,
+                    name: specEngineName
+                }
+            ];
+
+            return specGPL;
         };
 
-        var measurer = _.defaults({ fitSize: false }, testUtils.chartSettings);
+        var convSpec = function (spec, specEngineName) {
 
-        it("should support [DEFAULT] spec engine", function () {
+            var specClone = JSON.parse(JSON.stringify(spec));
 
-            var spec = makeSpec('team', 'count');
+            var specGPL = new SpecConverter({spec: specClone, data: data}).convert();
 
-            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+            specGPL.settings = specGPL.settings || testUtils.chartSettings;
+            specGPL.settings.fitSize = false;
+            specGPL.settings.size = {width: 100, height: 100};
+            specGPL.settings.specEngine = [
+                {
+                    width: 100000,
+                    name: specEngineName
+                }
+            ];
 
-            var testSpecEngine = SpecEngineFactory.get("DEFAULT", measurer);
+            return specGPL;
+        };
 
-            var full = testSpecEngine(spec, meta);
+        it('should support [DEFAULT] spec engine', function () {
+
+            var spec = makeSpec('team', 'count', 'DEFAULT');
+
+            var testSpecEngine = new SpecAutoLayout(spec);
+
+            var full = testSpecEngine.transform();
 
             expect(full.unit.guide.padding.l).to.equal(0);
             expect(full.unit.guide.padding.b).to.equal(0);
@@ -98,15 +124,13 @@ define(function (require) {
             expect(y.tickFormatWordWrapLimit).to.equal(100);
         });
 
-        it("should support [AUTO] spec engine (category / measure)", function () {
+        it('should support [AUTO] spec engine (category / measure)', function () {
 
-            var spec = makeSpec('team', 'count');
+            var spec = makeSpec('team', 'count', 'AUTO');
 
-            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+            var testSpecEngine = new SpecAutoLayout(spec);
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
-
-            var full = testSpecEngine(spec, meta);
+            var full = testSpecEngine.transform();
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -148,15 +172,13 @@ define(function (require) {
             expect(full.unit.guide.padding.t).to.equal(0);
         });
 
-        it("should support [AUTO] spec engine (measure / time)", function () {
+        it('should support [AUTO] spec engine (measure / time)', function () {
 
-            var spec = makeSpec('count', 'date');
+            var spec = makeSpec('count', 'date', 'AUTO');
 
-            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+            var testSpecEngine = new SpecAutoLayout(spec);
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
-
-            var full = testSpecEngine(spec, meta);
+            var full = testSpecEngine.transform();
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -198,7 +220,7 @@ define(function (require) {
             expect(full.unit.guide.padding.t).to.equal(0);
         });
 
-        it("should support [AUTO] spec engine (facet)", function () {
+        it('should support [AUTO] spec engine (facet)', function () {
 
             var spec = {
                 "dimensions": {
@@ -234,11 +256,9 @@ define(function (require) {
                 }
             };
 
-            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
-
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
-
-            var full = testSpecEngine(spec, meta);
+            var testSpecEngine = new SpecAutoLayout(convSpec(spec, 'AUTO'));
+            var full = testSpecEngine.transform();
+            var measurer = full.settings;
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -252,6 +272,7 @@ define(function (require) {
             expect(x.rotate).to.equal(0);
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
+
             expect(x.tickFormatNullAlias).to.equal('No team');
             expect(x.label.text).to.equal('team > date');
             expect(x.tickFontHeight).to.equal(10);
@@ -265,8 +286,10 @@ define(function (require) {
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal(null);
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
-            expect(y.label.text).to.equal('');
-            expect(y.tickFontHeight).to.equal(0);
+            // expect(y.label.text).to.equal('');
+            expect(y.label.text).to.equal('count');
+            // expect(y.tickFontHeight).to.equal(0);
+            expect(y.tickFontHeight).to.equal(10);
             expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
 
             // 20 padding to X axis line
@@ -277,12 +300,12 @@ define(function (require) {
             expect(full.unit.guide.padding.b).to.equal(54);
 
             // y is null axis
-            expect(full.unit.guide.padding.l).to.equal(0);
+            // expect(full.unit.guide.padding.l).to.equal(0);
+            expect(full.unit.guide.padding.l).to.equal(44);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 
-
-            var part = full.unit.unit[0];
+            var part = full.unit.units[0];
             var px = part.guide.x;
             var py = part.guide.y;
 
@@ -292,23 +315,22 @@ define(function (require) {
             expect(px.tickFormatNullAlias).to.equal('No date');
             expect(px.tickFontHeight).to.equal(10);
             expect(px.label.text).to.equal('');
-//          expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
             expect(px.density).to.be.above(measurer.getAxisTickLabelSize('October 2014').width + measurer['xDensityPadding:measure'] * 2);
 
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');
             expect(py.tickFontHeight).to.equal(10);
-            expect(py.label.text).to.equal('count');
+            // expect(py.label.text).to.equal('count');
+            expect(py.label.text).to.equal('');
             expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width + measurer['yDensityPadding:measure'] * 2);
 
-
-            var elem = part.unit[0];
+            var elem = part.units[0];
 
             expect(elem.guide.x.tickFontHeight).to.equal(10);
             expect(elem.guide.y.tickFontHeight).to.equal(10);
         });
 
-        it("should save user-defined guide within [AUTO] spec engine", function () {
+        it('should save user-defined guide within [AUTO] spec engine', function () {
 
             var spec = {
                 "dimensions": {
@@ -351,19 +373,18 @@ define(function (require) {
                 }
             };
 
-            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
+            var testSpecEngine = new SpecAutoLayout(convSpec(spec, 'AUTO'));
+            var full = testSpecEngine.transform();
+            var measurer = full.settings;
 
-            var testSpecEngine = SpecEngineFactory.get("AUTO", measurer);
-
-            var full = testSpecEngine(spec, meta);
-            var part = full.unit.unit[0];
+            var part = full.unit.units[0];
 
             expect(full.unit.guide.x.tickFormatNullAlias).to.equal('(NIL)');
             expect(full.unit.guide.showGridLines).to.equal('x');
             expect(part.guide.showGridLines).to.equal('');
         });
 
-        it("should support [COMPACT] spec engine (facet)", function () {
+        it('should support [COMPACT] spec engine (facet)', function () {
 
             var spec = {
                 "dimensions": {
@@ -399,11 +420,9 @@ define(function (require) {
                 }
             };
 
-            var meta = (new UnitDomainMixin(spec.dimensions, data)).mix({});
-
-            var testSpecEngine = SpecEngineFactory.get("COMPACT", measurer);
-
-            var full = testSpecEngine(spec, meta);
+            var testSpecEngine = new SpecAutoLayout(convSpec(spec, 'COMPACT'));
+            var full = testSpecEngine.transform();
+            var measurer = full.settings;
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -432,21 +451,24 @@ define(function (require) {
             expect(y.textAnchor).to.equal('middle');
             expect(y.tickFormat).to.equal(null);
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
-            expect(y.label.text).to.equal('');
+            // expect(y.label.text).to.equal('');
+            expect(y.label.text).to.equal('count');
             expect(y.label.cssClass).to.equal('label');
             expect(y.label.dock).to.equal(null);
-            expect(y.tickFontHeight).to.equal(0);
+            // expect(y.tickFontHeight).to.equal(0);
+            expect(y.tickFontHeight).to.equal(10);
             expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
 
             expect(full.unit.guide.padding.b).to.equal(40);
 
             // y is null axis
-            expect(full.unit.guide.padding.l).to.equal(0);
+            // expect(full.unit.guide.padding.l).to.equal(0);
+            expect(full.unit.guide.padding.l).to.equal(19);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 
 
-            var part = full.unit.unit[0];
+            var part = full.unit.units[0];
             var px = part.guide.x;
             var py = part.guide.y;
 
@@ -459,20 +481,19 @@ define(function (require) {
             expect(px.label.dock).to.equal('right');
             expect(px.label.padding).to.equal(-2.5);
             expect(px.label.cssClass).to.equal('label inline');
-//          expect(px.density).to.equal(measurer.getAxisTickLabelSize('Q4 2014').width + measurer['xDensityPadding:measure'] * 2);
             expect(px.density).to.be.above(measurer.getAxisTickLabelSize('October 2014').width + measurer['xDensityPadding:measure'] * 2);
 
             expect(py.tickFormat).to.equal('x-num-auto');
             expect(py.tickFormatNullAlias).to.equal('No count');
             expect(py.tickFontHeight).to.equal(10);
-            expect(py.label.text).to.equal('count');
+            // expect(py.label.text).to.equal('count');
+            expect(py.label.text).to.equal('');
             expect(py.label.dock).to.equal('right');
             expect(py.label.padding).to.equal(-17.5);
             expect(py.label.cssClass).to.equal('label inline');
             expect(py.density).to.equal(measurer.getAxisTickLabelSize('25').width + measurer['yDensityPadding:measure'] * 2);
 
-
-            var elem = part.unit[0];
+            var elem = part.units[0];
 
             expect(elem.guide.x.tickFontHeight).to.equal(10);
             expect(elem.guide.y.tickFontHeight).to.equal(10);

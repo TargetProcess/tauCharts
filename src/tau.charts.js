@@ -3,9 +3,7 @@ import {utils} from './utils/utils';
 import {GPL} from './charts/tau.gpl';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
-import {UnitDomainMixin} from './unit-domain-mixin';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
-import {SpecEngineFactory} from './spec-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
 import {unitsRegistry} from './units-registry';
 
@@ -19,9 +17,7 @@ var colorBrewers = {};
 var plugins = {};
 
 var __api__ = {
-    UnitDomainMixin: UnitDomainMixin,
-    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
-    SpecEngineFactory: SpecEngineFactory
+    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
 };
 var api = {
     unitsRegistry: unitsRegistry,

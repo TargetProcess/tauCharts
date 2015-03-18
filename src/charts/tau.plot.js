@@ -1,11 +1,9 @@
 import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
-import {SpecEngineFactory} from '../spec-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
-import {UnitDomainMixin} from '../unit-domain-mixin';
 import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
