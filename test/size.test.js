@@ -125,5 +125,11 @@ define(function (require) {
             expect(scale(-Infinity)).to.equal(55);
             expect(scale(Infinity)).to.equal(55);
         });
+
+        it("should return max size for infinite value", function () {
+            var scale = sizeScale([1, 2, 3], 10, 110, 55);
+            expect(scale(-Infinity)).to.equal(110);
+            expect(scale(Infinity)).to.equal(110);
+        });
     });
 });

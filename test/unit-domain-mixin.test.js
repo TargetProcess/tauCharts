@@ -5,7 +5,7 @@ define(function (require) {
 
     var expect = require('chai').expect;
     var assert = require('chai').assert;
-    var UnitDomainMixin = require('src/unit-domain-mixin').UnitDomainMixin;
+    // var UnitDomainMixin = require('src/unit-domain-mixin').UnitDomainMixin;
     describe("Unit domain decorator", function () {
 
         var decorator;
