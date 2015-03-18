@@ -42,16 +42,18 @@ export class GPL extends Emitter {
 
         this.scales = config.scales;
 
-        this.trans = _.extend(config.trans, {
-            where(data, tuple) {
-                var predicates = _.map(tuple, (v, k) => {
-                    return (row) => (cast(row[k]) === v);
-                });
-                return _(data).filter((row) => {
-                    return _.every(predicates, (p) => p(row));
-                });
-            }
-        });
+        this.transformations = _.extend(
+            config.transformations,
+            {
+                where(data, tuple) {
+                    var predicates = _.map(tuple, (v, k) => {
+                        return (row) => (cast(row[k]) === v);
+                    });
+                    return _(data).filter((row) => {
+                        return _.every(predicates, (p) => p(row));
+                    });
+                }
+            });
 
         this.onUnitDraw = config.onUnitDraw;
     }
@@ -166,7 +168,7 @@ export class GPL extends Emitter {
 
     _datify(frame) {
         var data = this.sources[frame.source].data;
-        var trans = this.trans;
+        var trans = this.transformations;
         frame.hash = () => utils.generateHash([frame.pipe, frame.key, frame.source].map(JSON.stringify).join(''));
         frame.take = () => frame.pipe.reduce((data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args), data);
         frame.data = frame.take();
@@ -182,7 +184,7 @@ export class GPL extends Emitter {
 
         var src = this.sources[srcAlias];
         var dataFn = bInherit ?
-            (() => parentPipe.reduce((data, cfg) => this.trans[cfg.type](data, cfg.args), src.data)) :
+            (() => parentPipe.reduce((data, cfg) => this.transformations[cfg.type](data, cfg.args), src.data)) :
             (() => src.data);
 
         var func = FramesAlgebra[funcName];

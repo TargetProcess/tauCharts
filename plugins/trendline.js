@@ -381,8 +381,8 @@
                     return;
                 }
 
-                specRef.trans = specRef.trans || {};
-                specRef.trans.regression = function (data, props) {
+                specRef.transformations = specRef.transformations || {};
+                specRef.transformations.regression = function (data, props) {
 
                     var x = props.x;
                     var y = props.y;
@@ -443,8 +443,8 @@
                             }
                         });
                         trend.guide = trend.guide || {};
-                        trend.guide.interpolate = 'basis';
-                        trend.guide.cssClass = 'graphical-report__trendline graphical-report__line-width-1';
+                        trend.guide.cssClass      = 'graphical-report__trendline';
+                        trend.guide.widthCssClass = 'graphical-report__line-width-1';
 
                         parentUnit.units.push(trend);
                     });
@@ -504,7 +504,7 @@
                                 .classed({
                                     active: isActive,
                                     'graphical-report__line-width-1': !isActive,
-                                    'graphical-report__line-width-2': isActive
+                                    'graphical-report__line-width-3': isActive
                                 });
                         };
                     };

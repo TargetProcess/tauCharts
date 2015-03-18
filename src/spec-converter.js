@@ -29,7 +29,7 @@ export class SpecConverter {
                 'color:default': {type: 'color', source: '?', brewer: null}
                 // jscs:enable disallowQuotedKeysInObjects
             },
-            trans: {
+            transformations: {
                 where(data, tuple) {
                     var predicates = _.map(tuple, function (v, k) {
                         return function (row) {

@@ -77,7 +77,7 @@ define(function (require) {
                 }
             },
             unitsRegistry: unitsRegistry,
-            trans: {
+            transformations: {
                 where: function (data, tuple) {
                     var predicates = _.map(tuple, function (v, k) {
                         return function (row) {

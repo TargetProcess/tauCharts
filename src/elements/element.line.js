@@ -10,6 +10,7 @@ export class Line {
             this.config.guide,
             {
                 cssClass: '',
+                widthCssClass: '',
                 anchors: false
             }
         );
@@ -37,7 +38,7 @@ export class Line {
         var colorScale = this.color;
         var sizeScale = this.size;
 
-        var widthCss = getLineClassesByWidth(options.width);
+        var widthCss = guide.widthCssClass || getLineClassesByWidth(options.width);
         var countCss = getLineClassesByCount(frames.length);
 
         var d3Line = d3.svg
