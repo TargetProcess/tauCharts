@@ -1,16 +1,16 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof define === 'function' && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === "object" && module.exports) {
+    } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
-
+    // jscs:disable
     var regressionsHub = (function () {
 
         'use strict';
@@ -217,11 +217,15 @@
                 return {equation: [lastvalue], points: results, string: "" + lastvalue};
             },
 
-            loess: function(data) {
+            loess: function (data) {
                 //adapted from the LoessInterpolator in org.apache.commons.math
                 function loess_pairs(pairs, bandwidth) {
-                    var xval = pairs.map(function(pair){return pair[0]});
-                    var yval = pairs.map(function(pair){return pair[1]});
+                    var xval = pairs.map(function (pair) {
+                        return pair[0]
+                    });
+                    var yval = pairs.map(function (pair) {
+                        return pair[1]
+                    });
                     var res = loess(xval, yval, bandwidth);
                     return xval.map(function (x, i) {
                         return [x, res[i]];
@@ -245,7 +249,7 @@
 
                         if (i > 0) {
                             if (right < xval.length - 1 &&
-                                xval[right+1] - xval[i] < xval[i] - xval[left]) {
+                                xval[right + 1] - xval[i] < xval[i] - xval[left]) {
                                 left++;
                                 right++;
                             }
@@ -263,8 +267,7 @@
                         var sumX = 0, sumXSquared = 0, sumY = 0, sumXY = 0;
 
                         var k = left;
-                        while(k <= right)
-                        {
+                        while (k <= right) {
                             var xk = xval[k];
                             var yk = yval[k];
                             var dist;
@@ -316,89 +319,9 @@
             }
         });
     }());
-
+    // jscs:enable
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
-
-    var drawTrendLine = function (trendLineId, dots, xScale, yScale, trendColor, container, originData) {
-
-        var trendCssClass = [
-            'graphical-report__trendline',
-
-            'graphical-report__line',
-            'i-role-element',
-
-            'graphical-report__line-width-1',
-            'graphical-report__line-opacity-1',
-
-            trendLineId,
-            trendColor].join(' ');
-
-        var line = d3.svg.line()
-            .interpolate('basis')
-            .x(function (d) {
-                return xScale(d[0]);
-            })
-            .y(function (d) {
-                return yScale(d[1]);
-            });
-
-        var updatePaths = function () {
-            this.attr('d', line);
-        };
-
-        var updateLines = function () {
-            this.attr('class', trendCssClass);
-
-            var paths = this.selectAll('path').data(function (d) {
-                return [d.dots];
-            });
-            paths.call(updatePaths);
-            paths.enter().append('path').call(updatePaths);
-            paths.exit().remove();
-        };
-
-        var lines = container.selectAll('.' + trendLineId).data([{dots: dots, values: originData}]);
-        lines.call(updateLines);
-        lines.enter().append('g').call(updateLines);
-        lines.exit().remove();
-    };
-    var isElement = function (unitMeta) {
-        return (unitMeta.type && unitMeta.type.indexOf('ELEMENT.') === 0);
-    };
-    var coordHasElements = function (units) {
-        return _.any(units, function (unit) {
-            return isElement(unit);
-        });
-    };
-    var isApplicable = function (dimensions) {
-        return function (unitMeta) {
-            var hasElement = (unitMeta.type && unitMeta.type.indexOf('COORDS.') === 0 && coordHasElements(unitMeta.unit));
-            if (!hasElement) {
-                return false;
-            }
-            var x = dimensions[unitMeta.x].type;
-            var y = dimensions[unitMeta.y].type;
-            return _.every([x, y], function (dimType) {
-                return dimType && (dimType !== 'category');
-            });
-        };
-    };
-
-    var dfs = function (node, predicate) {
-        if (predicate(node)) {
-            return node;
-        }
-        var i, children = node.unit || [], child, found;
-        for (i = 0; i < children.length; i += 1) {
-            child = children[i];
-            found = dfs(child, predicate);
-            if (found) {
-                return found;
-            }
-        }
-    };
-
 
     function trendline(xSettings) {
 
@@ -417,20 +340,17 @@
             init: function (chart) {
 
                 this._chart = chart;
-                var conf = chart.getConfig();
-                this._isApplicable = dfs(conf.spec.unit, isApplicable(conf.spec.dimensions));
+
+                this._isApplicable = true;
 
                 if (settings.showPanel) {
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
-                    var classToAdd = this._isApplicable ? 'applicable-true' : 'applicable-false';
-                    if (!this._isApplicable) {
-                        this._error = "Trend line can't be computed for categorical data. Each axis should be either a measure or a date.";
-                    }
-                    this._container.classList.add(classToAdd);
 
                     if (settings.hideError) {
-                        this._container.classList.add('hide-trendline-error');
+                        this._container
+                            .classList
+                            .add('hide-trendline-error');
                     }
 
                     this.uiChangeEventsDispatcher = function (e) {
@@ -450,80 +370,89 @@
 
                     }.bind(this);
 
-                    this._container.addEventListener('change', this.uiChangeEventsDispatcher, false);
+                    this._container
+                        .addEventListener('change', this.uiChangeEventsDispatcher, false);
                 }
             },
 
-            onUnitReady: function (chart, unitMeta) {
+            onSpecReady: function (chart, specRef) {
 
-                if (!settings.showTrend || !isElement(unitMeta) || !this._isApplicable) {
+                if (!settings.showTrend) {
                     return;
                 }
 
-                var options = unitMeta.options;
+                specRef.transformations = specRef.transformations || {};
+                specRef.transformations.regression = function (data, props) {
 
-                var x = unitMeta.x.scaleDim;
-                var y = unitMeta.y.scaleDim;
-                var c = unitMeta.color.scaleDim;
+                    var x = props.x;
+                    var y = props.y;
 
-                //var xAutoScaleVals = unitMeta.scaleMeta(x, unitMeta.guide.x).values;
-                var yAutoScaleVals = unitMeta.scaleMeta(y, unitMeta.guide.y).values;
-
-                var minY = _.min(yAutoScaleVals);
-                var maxY = _.max(yAutoScaleVals);
-
-                var categories = unitMeta.groupBy(unitMeta.partition(), c);
-
-                categories.forEach(function (segment, index) {
-                    var sKey = segment.key;
-                    var sVal = segment.values;
-
-                    var src = sVal.map(function (item) {
+                    var src = data.map(function (item) {
                         var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
                         var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
                         return [ix, iy];
                     });
 
-                    var regression = regressionsHub(settings.type, src);
-                    var dots = _(regression.points)
+                    var regression = regressionsHub(props.type, src);
+                    return _(regression.points)
                         .chain()
                         .sortBy(function (p) {
                             return p[0];
                         })
-                        .filter(function (p) {
-                            return ((minY <= p[1]) && (p[1] <= maxY));
+                        .map(function (p) {
+                            var item = {};
+                            item[x] = p[0];
+                            item[y] = p[1];
+                            return item;
                         })
                         .value();
-
-                    if (dots.length > 1) {
-                        drawTrendLine(
-                            'i-trendline-' + index,
-                            dots,
-                            options.xScale,
-                            options.yScale,
-                            options.color(sKey),
-                            options.container,
-                            sVal);
-                    }
-                });
-
-                var handleMouse = function (isActive) {
-                    return function () {
-                        var g = d3.select(this);
-                        g.classed({
-                            'active': isActive,
-                            'graphical-report__line-width-1': !isActive,
-                            'graphical-report__line-width-2': isActive
-                        });
-                    };
                 };
 
-                options.container
-                    .selectAll('.graphical-report__trendline')
-                    .on('mouseenter', handleMouse(true))
-                    .on('mouseleave', handleMouse(false));
+                var isApplicable = false;
+                chart.traverseSpec(
+                    specRef,
+                    function (unit, parentUnit) {
+
+                        if (parentUnit && parentUnit.type !== 'COORDS.RECT') {
+                            return;
+                        }
+
+                        if (unit.type.indexOf('ELEMENT.') === -1) {
+                            return;
+                        }
+
+                        var xScale = specRef.scales[unit.x];
+                        var yScale = specRef.scales[unit.y];
+
+                        if (xScale.type === 'ordinal' || yScale.type === 'ordinal') {
+                            return;
+                        }
+
+                        isApplicable = true;
+
+                        var trend = JSON.parse(JSON.stringify(unit));
+
+                        trend.type = 'ELEMENT.LINE';
+                        trend.transformation = trend.transformation || [];
+                        trend.transformation.push({
+                            type: 'regression',
+                            args: {
+                                type: settings.type, // 'linear',
+                                x: xScale.dim,
+                                y: yScale.dim
+                            }
+                        });
+                        trend.guide = trend.guide || {};
+                        trend.guide.cssClass      = 'graphical-report__trendline';
+                        trend.guide.widthCssClass = 'graphical-report__line-width-1';
+
+                        parentUnit.units.push(trend);
+                    });
+
+                this._isApplicable = isApplicable;
             },
 
+// jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
@@ -542,6 +471,7 @@
 
                 '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
             ].join('')),
+// jscs:enable maximumLineLength
 
             onRender: function (chart) {
 
@@ -555,6 +485,34 @@
                             return '<option ' + selected + ' value="' + x + '">' + x + '</option>';
                         })
                     });
+
+                    if (this._isApplicable != true) {
+                        this._error = [
+                            'Trend line can\'t be computed for categorical data.',
+                            'Each axis should be either a measure or a date.'
+                        ].join(' ');
+                    }
+
+                    this._container
+                        .classList
+                        .add(this._isApplicable ? 'applicable-true' : 'applicable-false');
+
+                    var handleMouse = function (isActive) {
+                        return function () {
+                            d3
+                                .select(this)
+                                .classed({
+                                    active: isActive,
+                                    'graphical-report__line-width-1': !isActive,
+                                    'graphical-report__line-width-3': isActive
+                                });
+                        };
+                    };
+
+                    var canv = d3.select(chart.getSVG());
+                    canv.selectAll('.graphical-report__trendline')
+                        .on('mouseenter', handleMouse(true))
+                        .on('mouseleave', handleMouse(false));
                 }
             }
         };
