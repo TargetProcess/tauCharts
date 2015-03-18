@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "0.3.20",
+  "version": "0.3.22",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "Simple charts library based on d3",
   "author": {
@@ -57,6 +57,7 @@
     "requirejs-text": "^2.0.12"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start config/karma.conf.js"
+    "test": "./node_modules/.bin/karma start config/karma.conf.js",
+    "release":"grunt publish && grunt gh-pages"
   }
 }
