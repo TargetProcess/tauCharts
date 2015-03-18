@@ -244,16 +244,6 @@ var map_value = (dimType) => {
         ((v) => v);
 };
 
-var where = (data, meta, whereFilter) => {
-
-    var predicates = _(whereFilter).map((v, k) => {
-        var xMap = map_value(meta[k].type);
-        return (row) => xMap(row[k]) === v;
-    });
-
-    return _(data).filter((row) => _.every(predicates, ((p) => p(row))));
-};
-
 export class ScalesFactory {
 
     constructor(sources) {

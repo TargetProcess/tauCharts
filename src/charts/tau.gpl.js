@@ -43,7 +43,7 @@ export class GPL extends Emitter {
         this.scales = config.scales;
 
         this.transformations = _.extend(
-            config.transformations,
+            config.transformations || {},
             {
                 where(data, tuple) {
                     var predicates = _.map(tuple, (v, k) => {

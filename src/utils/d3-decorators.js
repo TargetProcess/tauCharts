@@ -248,5 +248,7 @@ export {
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_bottom_line,
     d3_decorator_fix_horizontal_axis_ticks_overflow,
-    d3_decorator_prettify_categorical_axis_ticks
+    d3_decorator_prettify_categorical_axis_ticks,
+    wrapText,
+    cutText
 };

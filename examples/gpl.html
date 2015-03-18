@@ -448,21 +448,6 @@
             }
         },
 
-        transformations: {
-            where: function (data, tuple) {
-                var predicates = _.map(tuple, function (v, k) {
-                    return function (row) {
-                        return (row[k] === v);
-                    }
-                });
-                return _(data).filter(function (row) {
-                    return _.every(predicates, function (p) {
-                        return p(row);
-                    })
-                });
-            }
-        },
-
         scales: {
             'size:default': {type: 'size', source: '?', mid: 5},
             'color:default': {type: 'color', source: '?', brewer: null},
@@ -563,18 +548,6 @@
         },
 
         transformations: {
-            where: function (data, tuple) {
-                var predicates = _.map(tuple, function (v, k) {
-                    return function (row) {
-                        return (row[k] === v);
-                    }
-                });
-                return _(data).filter(function (row) {
-                    return _.every(predicates, function (p) {
-                        return p(row);
-                    })
-                });
-            },
 
             'regression': function (data, props) {
 
@@ -818,18 +791,6 @@
         },
 
         transformations: {
-            where: function (data, tuple) {
-                var predicates = _.map(tuple, function (v, k) {
-                    return function (row) {
-                        return (row[k] === v);
-                    }
-                });
-                return _(data).filter(function (row) {
-                    return _.every(predicates, function (p) {
-                        return p(row);
-                    })
-                });
-            },
 
             'regression': function (sVal, props) {
 

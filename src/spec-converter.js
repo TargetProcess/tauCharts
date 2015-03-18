@@ -29,20 +29,6 @@ export class SpecConverter {
                 'color:default': {type: 'color', source: '?', brewer: null}
                 // jscs:enable disallowQuotedKeysInObjects
             },
-            transformations: {
-                where(data, tuple) {
-                    var predicates = _.map(tuple, function (v, k) {
-                        return function (row) {
-                            return (row[k] === v);
-                        };
-                    });
-                    return _(data).filter(function (row) {
-                        return _.every(predicates, function (p) {
-                            return p(row);
-                        });
-                    });
-                }
-            },
             settings: spec.settings
         };
     }
