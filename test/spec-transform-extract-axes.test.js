@@ -41,7 +41,7 @@ define(function (require) {
             var spec = conv.transform();
 
             expect(spec.unit.guide.autoLayout).to.deep.equal('');
-            expect(spec.unit.guide.padding).to.deep.equal({"l": 110, "r": 0, "t": 0, "b": 55});
+            expect(spec.unit.guide.padding).to.deep.equal({"l": 110, "r": 10, "t": 10, "b": 55});
             expect(spec.unit.guide.x.padding).to.deep.equal(25);
             expect(spec.unit.guide.y.padding).to.deep.equal(60);
 

@@ -44,7 +44,7 @@ export class SpecTransformExtractAxes {
             exitFn(root, level);
         };
 
-        var ttl = {l:0, r:0, t:0, b:0};
+        var ttl = {l:0, r:10, t:10, b:0};
         var seq = [];
         var enterIterator = (unitRef, level) => {
 
