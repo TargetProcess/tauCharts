@@ -89,7 +89,6 @@ define(function (require) {
         });
 
         it("should allow to add custom generators", function () {
-
             PeriodGenerator.add(
                 '2h',
                 {
@@ -112,7 +111,7 @@ define(function (require) {
             expect(r[2].toJSON()).to.equal(new Date(iso('2014-11-01T02:00:00')).toJSON());
             expect(r[3].toJSON()).to.equal(new Date(iso('2014-11-01T04:00:00')).toJSON());
 
-            expect(PeriodGenerator.get('2h')).to.be.ok();
+            expect(PeriodGenerator.get('2h')).to.be.ok;
         });
     });
 });

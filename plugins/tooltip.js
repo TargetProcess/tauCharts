@@ -157,7 +157,8 @@
                 fields = _.unique(fields);
                 return fields.map(function (field) {
                     var rawValue = data[field];
-                    var formattedValue = _.isObject(this._getFormatter(field)(rawValue)) ? rawValue.name : rawValue;
+                    var value = this._getFormatter(field)(rawValue);
+                    var formattedValue = _.isObject(value) ? value.name : value;
                     var label = this._getLabel(field);
 
                     return this.renderItem(label, formattedValue, field, rawValue);
