@@ -38,6 +38,8 @@ export class Plot extends Emitter {
             this.transformers.push(SpecTransformExtractAxes);
         }
 
+        this._originData = _.clone(this.configGPL.sources);
+
         this._plugins = new Plugins(this.config.plugins, this);
     }
 
@@ -65,9 +67,11 @@ export class Plot extends Emitter {
         if (this.config.settings.excludeNull) {
             this.addFilter({
                 tag: 'default',
-                predicate: DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
-                    log([item, 'point was excluded, because it has undefined values.'], 'WARN');
-                })
+                src: '/',
+                predicate: DataProcessor.excludeNullValues(
+                    this.config.spec.dimensions,
+                    (item) => log([item, 'point was excluded, because it has undefined values.'], 'WARN')
+                )
             });
         }
 
@@ -139,18 +143,16 @@ export class Plot extends Emitter {
             }
         }
 
-        var drawData = this.getData();
-        if (drawData.length === 0) {
+        this.configGPL.settings.size = size;
+
+        var gpl = utils.clone(this.configGPL);
+        gpl.sources = this.getData({isNew: true});
+        gpl.settings = this.configGPL.settings;
+
+        if (this.isEmptySources(gpl.sources)) {
             content.innerHTML = this._emptyContainer;
             return;
         }
-
-        this.configGPL.settings.size = size;
-
-        // TODO: refactor this
-        var gpl = utils.clone(this.configGPL);
-        gpl.sources = this.configGPL.sources;
-        gpl.settings = this.configGPL.settings;
 
         gpl = this
             .transformers
@@ -163,11 +165,6 @@ export class Plot extends Emitter {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
         };
-        if (!this._originData) {
-            this._originData = _.clone(gpl.sources);
-        }
-
-        gpl.sources = this.getData({isNew: true});
 
         this.fire('specready', gpl);
 
@@ -181,42 +178,53 @@ export class Plot extends Emitter {
     }
 
     getData(param = {}) {
-        // fixme
+
+        var applyFilterMap = (data, filtersSelector) => {
+
+            var filters = _(this._filtersStore.filters)
+                .chain()
+                .values()
+                .flatten()
+                .reject((f) => (_.contains(param.excludeFilter, f.tag) || !filtersSelector(f)))
+                .pluck('predicate')
+                .value();
+
+            return data.filter((row) => filters.reduce((prev, f) => (prev && f(row)), true));
+        };
+
         if (param.isNew) {
-            param.excludeFilter = param.excludeFilter || [];
-            param.excludeFilter.push('default');
-        }
-        var filters = _.chain(this._filtersStore.filters)
-            .values()
-            .flatten()
-            .reject((filter)=>_.contains(param.excludeFilter, filter.tag))
-            .pluck('predicate')
-            .value();
-        var filterMap = (data) => _.filter(
-            data,
-            _.reduce(
-                filters,
-                (newPredicate, filter) => (x) => newPredicate(x) && filter(x),
-                ()=>true
-            )
-        );
-        if (param.isNew) {
-            return _.reduce(this._originData, function (sources, source, key) {
-                sources[key] = {
-                    dims: source.dims,
-                    data: filterMap(source.data)
-                };
-                return sources;
-            }, {});
+            var filteredSources = {};
+            filteredSources['?'] = this._originData['?'];
+            return Object
+                .keys(this._originData)
+                .filter((k) => k !== '?')
+                .reduce((memo, key) => {
+                    var item = this._originData[key];
+                    memo[key] = {
+                        dims: item.dims,
+                        data: applyFilterMap(item.data, (f) => f.src === key)
+                    };
+                    return memo;
+                },
+                filteredSources);
         } else {
-            return filterMap(this.config.data);
+            return applyFilterMap(this.config.data, (f) => true);
         }
+    }
+
+    isEmptySources(sources) {
+
+        return !Object
+            .keys(sources)
+            .filter((k) => k !== '?')
+            .filter((k) => sources[k].data.length > 0)
+            .length;
     }
 
     setData(data) {
         this.config.data = data;
         this.configGPL.sources['/'].data = data;
-        this._originData = null;
+        this._originData = _.clone(this.configGPL.sources);
         this.refresh();
     }
 
@@ -225,6 +233,7 @@ export class Plot extends Emitter {
     }
 
     addFilter(filter) {
+        filter.src = filter.src || '/';
         var tag = filter.tag;
         var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
         var id = this._filtersStore.tick++;

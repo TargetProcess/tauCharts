@@ -396,6 +396,9 @@
                     var regression = regressionsHub(props.type, src);
                     return _(regression.points)
                         .chain()
+                        .filter(function (p) {
+                            return ((p[0] !== null) && (p[1] !== null));
+                        })
                         .sortBy(function (p) {
                             return p[0];
                         })
