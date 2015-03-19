@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.20 - 2015-03-18
+/*! taucharts - v0.3.22 - 2015-03-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -765,7 +765,7 @@ define('elements/element.line',["exports", "../const", "../utils/css-class-map"]
             this.config = config;
             this.config.guide = this.config.guide || {};
             this.config.guide = _.defaults(this.config.guide, {
-                cssClass: "",
+                cssClass: "i-role-datum",
                 widthCssClass: "",
                 anchors: false
             });
@@ -809,7 +809,7 @@ define('elements/element.line',["exports", "../const", "../utils/css-class-map"]
                         d3Line.interpolate(guide.interpolate);
                     }
 
-                    var linePref = "" + CSS_PREFIX + "line i-role-element i-role-datum line " + widthCss + " " + countCss + " " + guide.cssClass;
+                    var linePref = "" + CSS_PREFIX + "line i-role-element line " + widthCss + " " + countCss + " " + guide.cssClass;
                     var updateLines = function updateLines() {
                         var paths = this.selectAll("path").data(function (frame) {
                             return [frame.data];
@@ -905,193 +905,23 @@ define('elements/element.line',["exports", "../const", "../utils/css-class-map"]
         return Line;
     })();
 });
-define('formatter-registry',["exports", "d3"], function (exports, _d3) {
+define('utils/utils-draw',["exports"], function (exports) {
     
-
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
-    /* jshint ignore:start */
-
-    var d3 = _interopRequire(_d3);
-
-    /* jshint ignore:end */
-    var FORMATS_MAP = {
-
-        "x-num-auto": function xNumAuto(x) {
-            var v = parseFloat(x.toFixed(2));
-            return Math.abs(v) < 1 ? v.toString() : d3.format("s")(v);
-        },
-
-        percent: function percent(x) {
-            var v = parseFloat((x * 100).toFixed(2));
-            return v.toString() + "%";
-        },
-
-        day: d3.time.format("%d-%b-%Y"),
-
-        "day-short": d3.time.format("%d-%b"),
-
-        week: d3.time.format("%d-%b-%Y"),
-
-        "week-short": d3.time.format("%d-%b"),
-
-        month: function (x) {
-            var d = new Date(x);
-            var m = d.getMonth();
-            var formatSpec = m === 0 ? "%B, %Y" : "%B";
-            return d3.time.format(formatSpec)(x);
-        },
-
-        "month-short": function (x) {
-            var d = new Date(x);
-            var m = d.getMonth();
-            var formatSpec = m === 0 ? "%b '%y" : "%b";
-            return d3.time.format(formatSpec)(x);
-        },
-
-        "month-year": d3.time.format("%B, %Y"),
-
-        quarter: function (x) {
-            var d = new Date(x);
-            var m = d.getMonth();
-            var q = (m - m % 3) / 3;
-            return "Q" + (q + 1) + " " + d.getFullYear();
-        },
-
-        year: d3.time.format("%Y"),
-
-        "x-time-auto": null
-    };
-
-    var FormatterRegistry = {
-
-        get: function (formatAlias, nullOrUndefinedAlias) {
-
-            var nullAlias = nullOrUndefinedAlias || "";
-
-            var identity = function (x) {
-                return (x === null || typeof x === "undefined" ? nullAlias : x).toString();
-            };
-
-            var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
-            var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
-
-            if (hasFormat) {
-                formatter = FORMATS_MAP[formatAlias];
-            }
-
-            if (!hasFormat && formatAlias) {
-                formatter = function (v) {
-                    var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
-                    return f(v);
-                };
-            }
-
-            if (!hasFormat && !formatAlias) {
-                formatter = identity;
-            }
-
-            return formatter;
-        },
-
-        add: function (formatAlias, formatter) {
-            FORMATS_MAP[formatAlias] = formatter;
-        }
-    };
-
-    exports.FormatterRegistry = FormatterRegistry;
-});
-define('utils/utils-draw',["exports", "../utils/utils", "../formatter-registry", "underscore", "d3"], function (exports, _utilsUtils, _formatterRegistry, _underscore, _d3) {
-    
-
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    var utils = _utilsUtils.utils;
-    var FormatterRegistry = _formatterRegistry.FormatterRegistry;
-
-    /* jshint ignore:start */
-
-    var _ = _interopRequire(_underscore);
-
-    var d3 = _interopRequire(_d3);
-
-    /* jshint ignore:end */
-
-    var translate = function (left, top) {
-        return "translate(" + left + "," + top + ")";
-    };
-    var rotate = function (angle) {
-        return "rotate(" + angle + ")";
-    };
-    var getOrientation = function (scaleOrient) {
-        return _.contains(["bottom", "top"], scaleOrient.toLowerCase()) ? "h" : "v";
-    };
-
-    var extendLabel = function extendLabel(guide, dimension, extend) {
-        guide[dimension] = _.defaults(guide[dimension] || {}, {
-            label: ""
-        });
-        guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : { text: guide[dimension].label };
-        guide[dimension].label = _.defaults(guide[dimension].label, extend || {}, {
-            padding: 32,
-            rotate: 0,
-            textAnchor: "middle",
-            cssClass: "label",
-            dock: null
-        });
-
-        return guide[dimension];
-    };
-    var extendAxis = function extendAxis(guide, dimension, extend) {
-        guide[dimension] = _.defaults(guide[dimension], extend || {}, {
-            padding: 0,
-            density: 30,
-            rotate: 0,
-            tickPeriod: null,
-            tickFormat: null,
-            autoScale: true
-        });
-        guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
-        return guide[dimension];
-    };
-
-    var applyNodeDefaults = function (node) {
-        node.options = node.options || {};
-        node.guide = node.guide || {};
-        node.guide.padding = _.defaults(node.guide.padding || {}, { l: 0, b: 0, r: 0, t: 0 });
-
-        node.guide.x = extendLabel(node.guide, "x");
-        node.guide.x = extendAxis(node.guide, "x", {
-            cssClass: "x axis",
-            scaleOrient: "bottom",
-            textAnchor: "middle"
-        });
-
-        node.guide.y = extendLabel(node.guide, "y", { rotate: -90 });
-        node.guide.y = extendAxis(node.guide, "y", {
-            cssClass: "y axis",
-            scaleOrient: "left",
-            textAnchor: "end"
-        });
-
-        node.guide.size = extendLabel(node.guide, "size");
-        node.guide.color = extendLabel(node.guide, "color");
-
-        return node;
-    };
-
     /* jshint ignore:start */
     var utilsDraw = {
-        translate: translate,
-        rotate: rotate,
-        getOrientation: getOrientation,
-        applyNodeDefaults: applyNodeDefaults
+        translate: function (left, top) {
+            return "translate(" + left + "," + top + ")";
+        },
+        rotate: function (angle) {
+            return "rotate(" + angle + ")";
+        },
+        getOrientation: function (scaleOrient) {
+            return ["bottom", "top"].indexOf(scaleOrient.toLowerCase()) >= 0 ? "h" : "v";
+        }
     };
     /* jshint ignore:end */
 
@@ -3132,645 +2962,6 @@ define('api/balloon',["exports", "../const"], function (exports, _const) {
 
     exports.Tooltip = Tooltip;
 });
-define('spec-engine-factory',["exports", "./utils/utils", "./utils/utils-draw", "./formatter-registry", "./utils/utils-dom"], function (exports, _utilsUtils, _utilsUtilsDraw, _formatterRegistry, _utilsUtilsDom) {
-    
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    var utils = _utilsUtils.utils;
-    var utilsDraw = _utilsUtilsDraw.utilsDraw;
-    var FormatterRegistry = _formatterRegistry.FormatterRegistry;
-    var utilsDom = _utilsUtilsDom.utilsDom;
-
-    function extendGuide(guide, targetUnit, dimension, properties) {
-        var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
-        _.each(properties, function (prop) {
-            _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
-        });
-        _.extend(targetUnit.guide[dimension], _.omit.apply(_, [guide_dim].concat[properties]));
-    }
-
-    var applyCustomProps = function (targetUnit, customUnit) {
-        var guide = customUnit.guide || {};
-        var config = {
-            x: ["label"],
-            y: ["label"],
-            size: ["label"],
-            color: ["label"],
-            padding: []
-        };
-
-        _.each(config, function (properties, name) {
-            extendGuide(guide, targetUnit, name, properties);
-        });
-        _.extend(targetUnit.guide, _.omit.apply(_, [guide].concat(_.keys(config))));
-        return targetUnit;
-    };
-
-    var inheritProps = function (childUnit, root) {
-
-        childUnit.guide = childUnit.guide || {};
-        childUnit.guide.padding = childUnit.guide.padding || { l: 0, t: 0, r: 0, b: 0 };
-
-        // leaf elements should inherit coordinates properties
-        if (!childUnit.hasOwnProperty("unit")) {
-            childUnit = _.defaults(childUnit, root);
-            childUnit.guide = _.defaults(childUnit.guide, utils.clone(root.guide));
-            childUnit.guide.x = _.defaults(childUnit.guide.x, utils.clone(root.guide.x));
-            childUnit.guide.y = _.defaults(childUnit.guide.y, utils.clone(root.guide.y));
-        }
-
-        return childUnit;
-    };
-
-    var createSelectorPredicates = function (root) {
-
-        var children = root.unit || [];
-
-        var isLeaf = !root.hasOwnProperty("unit");
-        var isLeafParent = !children.some(function (c) {
-            return c.hasOwnProperty("unit");
-        });
-
-        return {
-            type: root.type,
-            isLeaf: isLeaf,
-            isLeafParent: !isLeaf && isLeafParent
-        };
-    };
-
-    var getMaxTickLabelSize = function getMaxTickLabelSize(domainValues, formatter, fnCalcTickLabelSize, axisLabelLimit) {
-
-        if (domainValues.length === 0) {
-            return { width: 0, height: 0 };
-        }
-
-        if (formatter === null) {
-            var size = fnCalcTickLabelSize("TauChart Library");
-            size.width = axisLabelLimit * 0.625; // golden ratio
-            return size;
-        }
-
-        var maxXTickText = _.max(domainValues, function (x) {
-            return formatter(x).toString().length;
-        });
-
-        // d3 sometimes produce fractional ticks on wide space
-        // so we intentionally add fractional suffix
-        // to foresee scale density issues
-        var suffix = _.isNumber(maxXTickText) ? ".00" : "";
-
-        return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
-    };
-
-    var getTickFormat = function (dim, defaultFormats) {
-        var dimType = dim.dimType;
-        var scaleType = dim.scaleType;
-        var specifier = "*";
-
-        var key = [dimType, scaleType, specifier].join(":");
-        var tag = [dimType, scaleType].join(":");
-        return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
-    };
-
-    var calcUnitGuide = function calcUnitGuide(unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
-
-        var dimX = meta.dimension(unit.x);
-        var dimY = meta.dimension(unit.y);
-
-        var isXContinues = dimX.dimType === "measure";
-        var isYContinues = dimY.dimType === "measure";
-
-        var xDensityPadding = settings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? settings["xDensityPadding:" + dimX.dimType] : settings.xDensityPadding;
-
-        var yDensityPadding = settings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? settings["yDensityPadding:" + dimY.dimType] : settings.yDensityPadding;
-
-        var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
-        var xValues = xMeta.values;
-        var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
-        var yValues = yMeta.values;
-
-        unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
-        unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
-
-        if (["day", "week", "month"].indexOf(unit.guide.x.tickFormat) >= 0) {
-            unit.guide.x.tickFormat += "-short";
-        }
-
-        if (["day", "week", "month"].indexOf(unit.guide.y.tickFormat) >= 0) {
-            unit.guide.y.tickFormat += "-short";
-        }
-
-        var xIsEmptyAxis = xValues.length === 0;
-        var yIsEmptyAxis = yValues.length === 0;
-
-        var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
-
-        var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
-
-        var xAxisPadding = settings.xAxisPadding;
-        var yAxisPadding = settings.yAxisPadding;
-
-        var isXVertical = allowXVertical ? !isXContinues : false;
-        var isYVertical = allowYVertical ? !isYContinues : false;
-
-        unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
-        unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
-
-        unit.guide.x.rotate = isXVertical ? 90 : 0;
-        unit.guide.x.textAnchor = isXVertical ? "start" : unit.guide.x.textAnchor;
-
-        unit.guide.y.rotate = isYVertical ? -90 : 0;
-        unit.guide.y.textAnchor = isYVertical ? "middle" : unit.guide.y.textAnchor;
-
-        var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
-        var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
-
-        unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
-        unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
-
-        var xTickBox = isXVertical ? { w: maxXTickSize.height, h: maxXTickSize.width } : { h: maxXTickSize.height, w: maxXTickSize.width };
-
-        if (maxXTickSize.width > settings.xAxisTickLabelLimit) {
-
-            unit.guide.x.tickFormatWordWrap = true;
-            unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
-
-            var guessLinesCount = Math.ceil(maxXTickSize.width / settings.xAxisTickLabelLimit);
-            var koeffLinesCount = Math.min(guessLinesCount, settings.xTickWordWrapLinesLimit);
-            var textLinesHeight = koeffLinesCount * maxXTickSize.height;
-
-            if (isXVertical) {
-                xTickBox.h = settings.xAxisTickLabelLimit;
-                xTickBox.w = textLinesHeight;
-            } else {
-                xTickBox.h = textLinesHeight;
-                xTickBox.w = settings.xAxisTickLabelLimit;
-            }
-        }
-
-        var yTickBox = isYVertical ? { w: maxYTickSize.height, h: maxYTickSize.width } : { h: maxYTickSize.height, w: maxYTickSize.width };
-
-        if (maxYTickSize.width > settings.yAxisTickLabelLimit) {
-
-            unit.guide.y.tickFormatWordWrap = true;
-            unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
-
-            var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
-            var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
-            var textLinesHeight = koeffLinesCount * maxYTickSize.height;
-
-            if (isYVertical) {
-                yTickBox.w = textLinesHeight;
-                yTickBox.h = settings.yAxisTickLabelLimit;
-            } else {
-                yTickBox.w = settings.yAxisTickLabelLimit;
-                yTickBox.h = textLinesHeight;
-            }
-        }
-
-        var xFontH = xTickWidth + xTickBox.h;
-        var yFontW = yTickWidth + yTickBox.w;
-
-        var xFontLabelHeight = settings.xFontLabelHeight;
-        var yFontLabelHeight = settings.yFontLabelHeight;
-
-        var distToXAxisLabel = settings.distToXAxisLabel;
-        var distToYAxisLabel = settings.distToYAxisLabel;
-
-        unit.guide.x.density = xTickBox.w + xDensityPadding * 2;
-        unit.guide.y.density = yTickBox.h + yDensityPadding * 2;
-
-        if (!inlineLabels) {
-            unit.guide.x.label.padding = xFontLabelHeight + (unit.guide.x.label.text ? xFontH + distToXAxisLabel : 0);
-            unit.guide.y.label.padding = -xFontLabelHeight + (unit.guide.y.label.text ? yFontW + distToYAxisLabel : 0);
-
-            var xLabelPadding = unit.guide.x.label.text ? unit.guide.x.label.padding + xFontLabelHeight : xFontH;
-            var yLabelPadding = unit.guide.y.label.text ? unit.guide.y.label.padding + yFontLabelHeight : yFontW;
-
-            unit.guide.padding.b = xAxisPadding + xLabelPadding - xTickWidth;
-            unit.guide.padding.l = yAxisPadding + yLabelPadding;
-
-            unit.guide.padding.b = unit.guide.x.hide ? 0 : unit.guide.padding.b;
-            unit.guide.padding.l = unit.guide.y.hide ? 0 : unit.guide.padding.l;
-        } else {
-            var pd = (xAxisPadding - xFontLabelHeight) / 2;
-            unit.guide.x.label.padding = 0 + xFontLabelHeight - distToXAxisLabel + pd;
-            unit.guide.y.label.padding = 0 - distToYAxisLabel + pd;
-
-            unit.guide.x.label.cssClass += " inline";
-            unit.guide.x.label.dock = "right";
-            unit.guide.x.label.textAnchor = "end";
-
-            unit.guide.y.label.cssClass += " inline";
-            unit.guide.y.label.dock = "right";
-            unit.guide.y.label.textAnchor = "end";
-
-            unit.guide.padding.b = xAxisPadding + xFontH;
-            unit.guide.padding.l = yAxisPadding + yFontW;
-
-            unit.guide.padding.b = unit.guide.x.hide ? 0 : unit.guide.padding.b;
-            unit.guide.padding.l = unit.guide.y.hide ? 0 : unit.guide.padding.l;
-        }
-
-        unit.guide.x.tickFontHeight = maxXTickSize.height;
-        unit.guide.y.tickFontHeight = maxYTickSize.height;
-
-        unit.guide.x.$minimalDomain = xValues.length;
-        unit.guide.y.$minimalDomain = yValues.length;
-
-        unit.guide.x.$maxTickTextW = maxXTickSize.width;
-        unit.guide.x.$maxTickTextH = maxXTickSize.height;
-
-        unit.guide.y.$maxTickTextW = maxYTickSize.width;
-        unit.guide.y.$maxTickTextH = maxYTickSize.height;
-
-        return unit;
-    };
-
-    var SpecEngineTypeMap = {
-
-        NONE: function (srcSpec, meta, settings) {
-
-            var spec = utils.clone(srcSpec);
-            fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
-                unit.guide.x.tickFontHeight = settings.getAxisTickLabelSize("X").height;
-                unit.guide.y.tickFontHeight = settings.getAxisTickLabelSize("Y").height;
-
-                unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
-                unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
-
-                return unit;
-            });
-            return spec;
-        },
-
-        "BUILD-LABELS": function (srcSpec, meta, settings) {
-
-            var spec = utils.clone(srcSpec);
-
-            var xLabels = [];
-            var yLabels = [];
-            var xUnit = null;
-            var yUnit = null;
-
-            utils.traverseJSON(spec.unit, "unit", createSelectorPredicates, function (selectors, unit) {
-
-                if (selectors.isLeaf) {
-                    return unit;
-                }
-
-                if (!xUnit && unit.x) {
-                    xUnit = unit;
-                }
-
-                if (!yUnit && unit.y) {
-                    yUnit = unit;
-                }
-
-                unit.guide = unit.guide || {};
-
-                unit.guide.x = unit.guide.x || { label: "" };
-                unit.guide.y = unit.guide.y || { label: "" };
-
-                unit.guide.x.label = _.isObject(unit.guide.x.label) ? unit.guide.x.label : { text: unit.guide.x.label };
-                unit.guide.y.label = _.isObject(unit.guide.y.label) ? unit.guide.y.label : { text: unit.guide.y.label };
-
-                if (unit.x) {
-                    unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
-                }
-
-                if (unit.y) {
-                    unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
-                }
-
-                var x = unit.guide.x.label.text;
-                if (x) {
-                    xLabels.push(x);
-                    unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty("tickFormatNullAlias") ? unit.guide.x.tickFormatNullAlias : "No " + x;
-                    unit.guide.x.label.text = "";
-                }
-
-                var y = unit.guide.y.label.text;
-                if (y) {
-                    yLabels.push(y);
-                    unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty("tickFormatNullAlias") ? unit.guide.y.tickFormatNullAlias : "No " + y;
-                    unit.guide.y.label.text = "";
-                }
-
-                return unit;
-            });
-
-            if (xUnit) {
-                xUnit.guide.x.label.text = xLabels.join(" > ");
-            }
-
-            if (yUnit) {
-                yUnit.guide.y.label.text = yLabels.join(" > ");
-            }
-
-            return spec;
-        },
-
-        "BUILD-GUIDE": function (srcSpec, meta, settings) {
-
-            var spec = utils.clone(srcSpec);
-            fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
-
-                if (selectorPredicates.isLeaf) {
-                    return unit;
-                }
-
-                if (!unit.guide.hasOwnProperty("showGridLines")) {
-                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? "xy" : "";
-                }
-
-                var isFacetUnit = !selectorPredicates.isLeaf && !selectorPredicates.isLeafParent;
-                if (isFacetUnit) {
-                    // unit is a facet!
-                    unit.guide.x.cssClass += " facet-axis";
-                    unit.guide.y.cssClass += " facet-axis";
-                }
-
-                var dimX = meta.dimension(unit.x);
-                var dimY = meta.dimension(unit.y);
-
-                var isXContinues = dimX.dimType === "measure";
-                var isYContinues = dimY.dimType === "measure";
-
-                var xDensityPadding = settings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? settings["xDensityPadding:" + dimX.dimType] : settings.xDensityPadding;
-
-                var yDensityPadding = settings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? settings["yDensityPadding:" + dimY.dimType] : settings.yDensityPadding;
-
-                var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
-                var xValues = xMeta.values;
-                var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
-                var yValues = yMeta.values;
-
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
-
-                var xIsEmptyAxis = xValues.length === 0;
-                var yIsEmptyAxis = yValues.length === 0;
-
-                var maxXTickSize = getMaxTickLabelSize(xValues, FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
-
-                var maxYTickSize = getMaxTickLabelSize(yValues, FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.yAxisTickLabelLimit);
-
-                var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
-                var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
-
-                var isXVertical = !isFacetUnit && (Boolean(dimX.dimType) && dimX.dimType !== "measure");
-
-                unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
-                unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
-
-                unit.guide.x.rotate = isXVertical ? 90 : 0;
-                unit.guide.x.textAnchor = isXVertical ? "start" : unit.guide.x.textAnchor;
-
-                var xTickWidth = xIsEmptyAxis ? 0 : settings.xTickWidth;
-                var yTickWidth = yIsEmptyAxis ? 0 : settings.yTickWidth;
-
-                unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
-                unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
-
-                var maxXTickH = isXVertical ? maxXTickSize.width : maxXTickSize.height;
-
-                if (!isXContinues && maxXTickH > settings.xAxisTickLabelLimit) {
-                    maxXTickH = settings.xAxisTickLabelLimit;
-                }
-
-                if (!isXVertical && maxXTickSize.width > settings.xAxisTickLabelLimit) {
-                    unit.guide.x.tickFormatWordWrap = true;
-                    unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
-                    maxXTickH = settings.xTickWordWrapLinesLimit * maxXTickSize.height;
-                }
-
-                var maxYTickW = maxYTickSize.width;
-                if (!isYContinues && maxYTickW > settings.yAxisTickLabelLimit) {
-                    maxYTickW = settings.yAxisTickLabelLimit;
-                    unit.guide.y.tickFormatWordWrap = true;
-                    unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
-                }
-
-                var xFontH = xTickWidth + maxXTickH;
-                var yFontW = yTickWidth + maxYTickW;
-
-                var xFontLabelHeight = settings.xFontLabelHeight;
-                var yFontLabelHeight = settings.yFontLabelHeight;
-
-                var distToXAxisLabel = settings.distToXAxisLabel;
-                var distToYAxisLabel = settings.distToYAxisLabel;
-
-                var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, isXVertical ? maxXTickSize.height : maxXTickSize.width);
-                unit.guide.x.density = xTickLabelW + xDensityPadding * 2;
-
-                var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
-                var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
-                var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
-                unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
-
-                unit.guide.x.label.padding = unit.guide.x.label.text ? xFontH + distToXAxisLabel : 0;
-                unit.guide.y.label.padding = unit.guide.y.label.text ? yFontW + distToYAxisLabel : 0;
-
-                var xLabelPadding = unit.guide.x.label.text ? unit.guide.x.label.padding + xFontLabelHeight : xFontH;
-                var yLabelPadding = unit.guide.y.label.text ? unit.guide.y.label.padding + yFontLabelHeight : yFontW;
-
-                unit.guide.padding.b = xAxisPadding + xLabelPadding;
-                unit.guide.padding.l = yAxisPadding + yLabelPadding;
-
-                unit.guide.padding.b = unit.guide.x.hide ? 0 : unit.guide.padding.b;
-                unit.guide.padding.l = unit.guide.y.hide ? 0 : unit.guide.padding.l;
-
-                unit.guide.x.tickFontHeight = maxXTickSize.height;
-                unit.guide.y.tickFontHeight = maxYTickSize.height;
-
-                unit.guide.x.$minimalDomain = xValues.length;
-                unit.guide.y.$minimalDomain = yValues.length;
-
-                unit.guide.x.$maxTickTextW = maxXTickSize.width;
-                unit.guide.x.$maxTickTextH = maxXTickSize.height;
-
-                unit.guide.y.$maxTickTextW = maxYTickSize.width;
-                unit.guide.y.$maxTickTextH = maxYTickSize.height;
-
-                return unit;
-            });
-            return spec;
-        },
-
-        "BUILD-COMPACT": function (srcSpec, meta, settings) {
-
-            var spec = utils.clone(srcSpec);
-            fnTraverseSpec(utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
-
-                if (selectorPredicates.isLeaf) {
-                    return unit;
-                }
-
-                if (selectorPredicates.isLeafParent) {
-
-                    unit.guide.showGridLines = unit.guide.hasOwnProperty("showGridLines") ? unit.guide.showGridLines : "xy";
-
-                    return calcUnitGuide(unit, meta, _.defaults({
-                        xTickWordWrapLinesLimit: 1,
-                        yTickWordWrapLinesLimit: 1
-                    }, settings), true, false, true);
-                }
-
-                // facet level
-                unit.guide.x.cssClass += " facet-axis compact";
-                unit.guide.y.cssClass += " facet-axis compact";
-
-                return calcUnitGuide(unit, meta, _.defaults({
-                    xAxisPadding: 0,
-                    yAxisPadding: 0,
-                    distToXAxisLabel: 0,
-                    distToYAxisLabel: 0,
-                    xTickWordWrapLinesLimit: 1,
-                    yTickWordWrapLinesLimit: 1
-                }, settings), false, true, false);
-            });
-
-            return spec;
-        },
-
-        "OPTIMAL-SIZE": function (srcSpec, meta, settings) {
-
-            var spec = utils.clone(srcSpec);
-
-            var traverseFromDeep = function (root) {
-                var r;
-
-                if (!root.unit) {
-                    r = { w: 0, h: 0 };
-                } else {
-                    var s = traverseFromDeep(root.unit[0]);
-                    var g = root.guide;
-                    var xmd = g.x.$minimalDomain || 1;
-                    var ymd = g.y.$minimalDomain || 1;
-                    var maxW = Math.max(xmd * g.x.density, xmd * s.w);
-                    var maxH = Math.max(ymd * g.y.density, ymd * s.h);
-
-                    r = {
-                        w: maxW + g.padding.l + g.padding.r,
-                        h: maxH + g.padding.t + g.padding.b
-                    };
-                }
-
-                return r;
-            };
-
-            var traverseToDeep = function (meta, root, size, localSettings) {
-
-                var mdx = root.guide.x.$minimalDomain || 1;
-                var mdy = root.guide.y.$minimalDomain || 1;
-
-                var perTickX = size.width / mdx;
-                var perTickY = size.height / mdy;
-
-                var dimX = meta.dimension(root.x);
-                var dimY = meta.dimension(root.y);
-                var xDensityPadding = localSettings.hasOwnProperty("xDensityPadding:" + dimX.dimType) ? localSettings["xDensityPadding:" + dimX.dimType] : localSettings.xDensityPadding;
-
-                var yDensityPadding = localSettings.hasOwnProperty("yDensityPadding:" + dimY.dimType) ? localSettings["yDensityPadding:" + dimY.dimType] : localSettings.yDensityPadding;
-
-                if (root.guide.x.hide !== true && root.guide.x.rotate !== 0 && perTickX > root.guide.x.$maxTickTextW + xDensityPadding * 2) {
-
-                    root.guide.x.rotate = 0;
-                    root.guide.x.textAnchor = "middle";
-                    root.guide.x.tickFormatWordWrapLimit = perTickX;
-                    var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
-
-                    var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-
-                    root.guide.padding.b += root.guide.padding.b > 0 ? xDelta : 0;
-
-                    if (root.guide.x.label.padding > s + localSettings.xAxisPadding) {
-                        root.guide.x.label.padding += xDelta;
-                    }
-                }
-
-                if (root.guide.y.hide !== true && root.guide.y.rotate !== 0 && root.guide.y.tickFormatWordWrapLines === 1 && perTickY > root.guide.y.$maxTickTextW + yDensityPadding * 2) {
-
-                    root.guide.y.tickFormatWordWrapLimit = perTickY - yDensityPadding * 2;
-                }
-
-                var newSize = {
-                    width: perTickX,
-                    height: perTickY
-                };
-
-                if (root.unit) {
-                    traverseToDeep(meta, root.unit[0], newSize, localSettings);
-                }
-            };
-
-            var optimalSize = traverseFromDeep(spec.unit);
-            var recommendedWidth = optimalSize.w;
-            var recommendedHeight = optimalSize.h;
-
-            var size = settings.size;
-            var scrollSize = settings.getScrollBarWidth();
-
-            var deltaW = size.width - recommendedWidth;
-            var deltaH = size.height - recommendedHeight;
-
-            var screenW = deltaW >= 0 ? size.width : recommendedWidth;
-            var scrollW = deltaH >= 0 ? 0 : scrollSize;
-
-            var screenH = deltaH >= 0 ? size.height : recommendedHeight;
-            var scrollH = deltaW >= 0 ? 0 : scrollSize;
-
-            settings.size.height = screenH - scrollH;
-            settings.size.width = screenW - scrollW;
-
-            // optimize full spec depending on size
-            traverseToDeep(meta, spec.unit, settings.size, settings);
-
-            return spec;
-        }
-    };
-
-    SpecEngineTypeMap.AUTO = function (srcSpec, meta, settings) {
-        return ["BUILD-LABELS", "BUILD-GUIDE"].reduce(function (spec, engineName) {
-            return SpecEngineTypeMap[engineName](spec, meta, settings);
-        }, srcSpec);
-    };
-
-    SpecEngineTypeMap.COMPACT = function (srcSpec, meta, settings) {
-        return ["BUILD-LABELS", "BUILD-COMPACT"].reduce(function (spec, engineName) {
-            return SpecEngineTypeMap[engineName](spec, meta, settings);
-        }, srcSpec);
-    };
-
-    var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
-        var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
-        xRef = transformRules(createSelectorPredicates(xRef), xRef);
-        xRef = applyCustomProps(xRef, orig);
-        var prop = _.omit(xRef, "unit");
-        (xRef.unit || []).forEach(function (unit) {
-            return fnTraverseSpec(utils.clone(unit), inheritProps(unit, prop), transformRules);
-        });
-        return xRef;
-    };
-
-    var SpecEngineFactory = {
-        get: function (typeName, settings) {
-            var engine = SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE;
-            return function (srcSpec, meta) {
-                var fullSpec = engine(srcSpec, meta, settings);
-                if (settings.fitSize) {
-                    fullSpec = SpecEngineTypeMap["OPTIMAL-SIZE"](fullSpec, meta, settings);
-                }
-                return fullSpec;
-            };
-        }
-    };
-
-    exports.SpecEngineFactory = SpecEngineFactory;
-});
 define('plugins',["exports", "d3"], function (exports, _d3) {
     
 
@@ -3856,429 +3047,6 @@ define('plugins',["exports", "d3"], function (exports, _d3) {
     })();
 
     exports.Plugins = Plugins;
-});
-define('size',["exports"], function (exports) {
-    
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    var f = function (x) {
-        return Math.sqrt(x);
-    };
-
-    var sizeScale = function sizeScale(srcValues, minSize, maxSize, normalSize) {
-
-        var values = _.filter(srcValues, _.isFinite);
-
-        if (values.length === 0) {
-            return function (x) {
-                return normalSize;
-            };
-        }
-
-        var k = 1;
-        var xMin = 0;
-
-        var min = Math.min.apply(null, values);
-        var max = Math.max.apply(null, values);
-
-        var len = f(Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]));
-
-        xMin = min < 0 ? min : 0;
-        k = len === 0 ? 1 : (maxSize - minSize) / len;
-
-        return function (x) {
-            var numX = x !== null ? parseFloat(x) : 0;
-
-            if (!_.isFinite(numX)) {
-                return maxSize;
-            }
-
-            var posX = numX - xMin; // translate to positive x domain
-
-            return minSize + f(posX) * k;
-        };
-    };
-    var s = 23;
-    exports.sizeScale = sizeScale;
-});
-define('unit-domain-mixin',["exports", "./unit-domain-period-generator", "./utils/utils", "./size", "underscore", "d3"], function (exports, _unitDomainPeriodGenerator, _utilsUtils, _size, _underscore, _d3) {
-    
-
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
-    var utils = _utilsUtils.utils;
-    var sizeScale = _size.sizeScale;
-
-    /* jshint ignore:start */
-
-    var _ = _interopRequire(_underscore);
-
-    var d3 = _interopRequire(_d3);
-
-    /* jshint ignore:end */
-
-    var autoScaleMethods = {
-        ordinal: function (inputValues, props) {
-            return inputValues;
-        },
-
-        linear: function (inputValues, props) {
-            var domainParam = props.autoScale ? utils.autoScale(inputValues) : d3.extent(inputValues);
-
-            var min = _.isNumber(props.min) ? props.min : domainParam[0];
-            var max = _.isNumber(props.max) ? props.max : domainParam[1];
-
-            return [Math.min(min, domainParam[0]), Math.max(max, domainParam[1])];
-        },
-
-        period: function (inputValues, props) {
-            var domainParam = d3.extent(inputValues);
-            var min = _.isNull(props.min) || _.isUndefined(props.min) ? domainParam[0] : new Date(props.min).getTime();
-            var max = _.isNull(props.max) || _.isUndefined(props.max) ? domainParam[1] : new Date(props.max).getTime();
-
-            var range = [new Date(Math.min(min, domainParam[0])), new Date(Math.max(max, domainParam[1]))];
-
-            return UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
-        },
-
-        time: function (inputValues, props) {
-            var domainParam = d3.extent(inputValues);
-            var min = _.isNull(props.min) || _.isUndefined(props.min) ? domainParam[0] : new Date(props.min).getTime();
-            var max = _.isNull(props.max) || _.isUndefined(props.max) ? domainParam[1] : new Date(props.max).getTime();
-
-            return [new Date(Math.min(min, domainParam[0])), new Date(Math.max(max, domainParam[1]))];
-        }
-    };
-
-    var rangeMethods = {
-
-        ordinal: function ordinal(inputValues, interval) {
-            return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
-        },
-
-        linear: function linear(inputValues, interval) {
-            return d3.scale.linear().domain(inputValues).rangeRound(interval, 1);
-        },
-
-        period: function period(inputValues, interval) {
-            return d3.scale.ordinal().domain(inputValues).rangePoints(interval, 1);
-        },
-
-        time: function time(inputValues, interval) {
-            return d3.time.scale().domain(inputValues).range(interval);
-        }
-    };
-
-    var UnitDomainMixin = exports.UnitDomainMixin = (function () {
-        function UnitDomainMixin(meta, data) {
-            _classCallCheck(this, UnitDomainMixin);
-
-            var getPropMapper = function (prop) {
-                return function (propObj) {
-                    var xObject = propObj || {};
-                    return xObject.hasOwnProperty(prop) ? xObject[prop] : null;
-                };
-            };
-
-            var getValueMapper = function (dim) {
-                var d = meta[dim] || {};
-                var f = d.value ? getPropMapper(d.value) : function (x) {
-                    return x;
-                };
-
-                var isTime = _.contains(["period", "time"], d.scale);
-
-                return isTime ? _.compose(function (v) {
-                    return new Date(v).getTime();
-                }, f) : f;
-            };
-
-            var getOrder = function (dim) {
-                var d = meta[dim] || {};
-                return d.order || null;
-            };
-
-            var getDomainSortStrategy = function (type) {
-
-                var map = {
-
-                    category: function (dim, fnMapperId, domain) {
-                        return domain;
-                    },
-
-                    order: function (dim, fnMapperId, domain) {
-                        var metaOrder = getOrder(dim);
-                        return metaOrder ? _.union(metaOrder, domain) : // arguments order is important
-                        _.sortBy(domain, fnMapperId);
-                    },
-
-                    measure: function (dim, fnMapperId, domain) {
-                        return _.sortBy(domain, fnMapperId);
-                    },
-
-                    "as-is": function (dim, fnMapperId, domain) {
-                        return domain;
-                    }
-                };
-
-                return map[type] || map["as-is"];
-            };
-
-            var getScaleSortStrategy = function (type) {
-
-                var map = {
-
-                    category: getDomainSortStrategy("category"),
-
-                    order: getDomainSortStrategy("order"),
-
-                    measure: getDomainSortStrategy("measure"),
-
-                    "as-is": getDomainSortStrategy("as-is")
-                };
-
-                return map[type] || map["as-is"];
-            };
-
-            this.fnDimension = function (dimensionName, subUnit) {
-                var unit = (subUnit || {}).dimensions || {};
-                var xRoot = meta[dimensionName] || {};
-                var xNode = unit[dimensionName] || {};
-                return {
-                    scaleDim: dimensionName,
-                    scaleType: xNode.scale || xRoot.scale,
-                    dimType: xNode.type || xRoot.type
-                };
-            };
-
-            this.fnSource = function (whereFilter) {
-                var predicates = _.map(whereFilter, function (v, k) {
-                    return function (row) {
-                        return getValueMapper(k)(row[k]) === v;
-                    };
-                });
-                return _(data).filter(function (row) {
-                    return _.every(predicates, function (p) {
-                        return p(row);
-                    });
-                });
-            };
-
-            var _domain = function (dim, fnSort) {
-
-                if (!meta[dim]) {
-                    return [];
-                }
-
-                var fnMapperId = getValueMapper(dim);
-                var uniqValues = _(data).chain().pluck(dim).uniq(fnMapperId).value();
-
-                return fnSort(dim, fnMapperId, uniqValues);
-            };
-
-            this.fnDomain = function (dim) {
-                var fnMapperId = getValueMapper(dim);
-                var type = (meta[dim] || {}).type;
-                var domainSortedAsc = _domain(dim, getDomainSortStrategy(type));
-                return domainSortedAsc.map(fnMapperId);
-            };
-
-            var _scaleMeta = function (scaleDim, xOptions) {
-
-                var opts = {};
-                var options = xOptions || {};
-
-                opts.map = options.hasOwnProperty("map") ? options.map : options.tickLabel;
-                opts.min = options.hasOwnProperty("min") ? options.min : options.tickMin;
-                opts.max = options.hasOwnProperty("max") ? options.max : options.tickMax;
-                opts.period = options.hasOwnProperty("period") ? options.period : options.tickPeriod;
-                opts.autoScale = options.autoScale;
-
-                var dimx = _.defaults({}, meta[scaleDim]);
-
-                var fValHub = {
-                    "order:period": function (xOptions) {
-                        return function (x) {
-                            return UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x));
-                        };
-                    },
-
-                    "*": function (opts) {
-                        return function (x) {
-                            return x;
-                        };
-                    }
-                };
-
-                var fMap = opts.map ? getPropMapper(opts.map) : getValueMapper(scaleDim);
-                var fKey = [dimx.type, dimx.scale].join(":");
-                var fVal = (fValHub[fKey] || fValHub["*"])(opts);
-
-                var originalValues = _domain(scaleDim, getScaleSortStrategy(dimx.type)).map(fMap);
-                var autoScaledVals = dimx.scale ? autoScaleMethods[dimx.scale](originalValues, opts) : originalValues;
-                return {
-                    extract: function (x) {
-                        return fVal(fMap(x));
-                    },
-                    values: autoScaledVals,
-                    source: originalValues
-                };
-            };
-
-            this.fnScaleMeta = _scaleMeta;
-
-            this.fnScaleTo = function (scaleDim, interval, options) {
-                var opts = options || {};
-                var dimx = _.defaults({}, meta[scaleDim]);
-
-                var info = _scaleMeta(scaleDim, options);
-                var func = rangeMethods[dimx.scale](info.values, interval, opts);
-
-                var wrap = function (domainPropObject) {
-                    return func(info.extract(domainPropObject));
-                };
-                // have to copy properties since d3 produce Function with methods
-                Object.keys(func).forEach(function (p) {
-                    return wrap[p] = func[p];
-                });
-                return wrap;
-            };
-
-            this.fnScaleColor = function (scaleDim, brewer, options) {
-                var opts = options || {};
-
-                var info = _scaleMeta(scaleDim, opts);
-
-                var defaultColorClass = _.constant("color-default");
-
-                var defaultRangeColor = _.times(20, function (i) {
-                    return "color20-" + (1 + i);
-                });
-
-                var buildArrayGetClass = function (domain, brewer) {
-                    if (domain.length === 0 || domain.length === 1 && domain[0] === null) {
-                        return defaultColorClass;
-                    } else {
-                        var fullDomain = domain.map(function (x) {
-                            return String(x).toString();
-                        });
-                        return d3.scale.ordinal().range(brewer).domain(fullDomain);
-                    }
-                };
-
-                var buildObjectGetClass = function (brewer, defaultGetClass) {
-                    var domain = _.keys(brewer);
-                    var range = _.values(brewer);
-                    var calculateClass = d3.scale.ordinal().range(range).domain(domain);
-                    return function (d) {
-                        return brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
-                    };
-                };
-
-                var wrapString = function (f) {
-                    return function (d) {
-                        return f(String(d).toString());
-                    };
-                };
-
-                var func;
-                if (!brewer) {
-                    func = wrapString(buildArrayGetClass(info.values, defaultRangeColor));
-                } else if (_.isArray(brewer)) {
-                    func = wrapString(buildArrayGetClass(info.values, brewer));
-                } else if (_.isFunction(brewer)) {
-                    func = function (d) {
-                        return brewer(d, wrapString(buildArrayGetClass(info.values, defaultRangeColor)));
-                    };
-                } else if (_.isObject(brewer)) {
-                    func = buildObjectGetClass(brewer, defaultColorClass);
-                } else {
-                    throw new Error("This brewer is not supported");
-                }
-
-                var wrap = function (domainPropObject) {
-                    return func(info.extract(domainPropObject));
-                };
-
-                wrap.get = wrap;
-                wrap.dimension = scaleDim;
-
-                wrap.legend = function (domainPropObject) {
-
-                    var value = info.extract(domainPropObject);
-                    var label = opts.tickLabel ? (domainPropObject || {})[opts.tickLabel] : value;
-                    var color = func(value);
-
-                    return { value: value, color: color, label: label };
-                };
-
-                return wrap;
-            };
-
-            this.fnScaleSize = function (scaleDim, range, options) {
-
-                var opts = options || {};
-
-                var minSize = range[0];
-                var maxSize = range[1];
-                var normalSize = range[range.length - 1];
-
-                var info = _scaleMeta(scaleDim, opts);
-
-                var func = sizeScale(info.source, minSize, maxSize, normalSize);
-
-                var wrap = function (domainPropObject) {
-                    return func(info.extract(domainPropObject));
-                };
-
-                return wrap;
-            };
-        }
-
-        _createClass(UnitDomainMixin, {
-            mix: {
-                value: function mix(unit) {
-                    unit.dimension = this.fnDimension;
-                    unit.source = this.fnSource;
-                    unit.domain = this.fnDomain;
-                    unit.scaleMeta = this.fnScaleMeta;
-
-                    unit.scaleTo = this.fnScaleTo;
-                    unit.scaleDist = this.fnScaleTo;
-                    unit.scaleColor = this.fnScaleColor;
-                    unit.scaleSize = this.fnScaleSize;
-
-                    unit.partition = function () {
-                        return unit.data || unit.source(unit.$where);
-                    };
-                    unit.groupBy = function (srcValues, splitByProperty) {
-                        var varMeta = unit.scaleMeta(splitByProperty);
-                        return _.chain(srcValues).groupBy(function (item) {
-                            return varMeta.extract(item[splitByProperty]);
-                        }).map(function (values) {
-                            return {
-                                key: values[0][splitByProperty],
-                                values: values
-                            };
-                        }).value();
-                    };
-                    return unit;
-                }
-            }
-        });
-
-        return UnitDomainMixin;
-    })();
 });
 define('data-processor',["exports", "./utils/utils"], function (exports, _utilsUtils) {
     
@@ -4862,6 +3630,105 @@ define('spec-transform-extract-axes',["exports", "underscore", "./utils/utils"],
         return SpecTransformExtractAxes;
     })();
 });
+define('formatter-registry',["exports", "d3"], function (exports, _d3) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    /* jshint ignore:start */
+
+    var d3 = _interopRequire(_d3);
+
+    /* jshint ignore:end */
+    var FORMATS_MAP = {
+
+        "x-num-auto": function xNumAuto(x) {
+            var v = parseFloat(x.toFixed(2));
+            return Math.abs(v) < 1 ? v.toString() : d3.format("s")(v);
+        },
+
+        percent: function percent(x) {
+            var v = parseFloat((x * 100).toFixed(2));
+            return v.toString() + "%";
+        },
+
+        day: d3.time.format("%d-%b-%Y"),
+
+        "day-short": d3.time.format("%d-%b"),
+
+        week: d3.time.format("%d-%b-%Y"),
+
+        "week-short": d3.time.format("%d-%b"),
+
+        month: function (x) {
+            var d = new Date(x);
+            var m = d.getMonth();
+            var formatSpec = m === 0 ? "%B, %Y" : "%B";
+            return d3.time.format(formatSpec)(x);
+        },
+
+        "month-short": function (x) {
+            var d = new Date(x);
+            var m = d.getMonth();
+            var formatSpec = m === 0 ? "%b '%y" : "%b";
+            return d3.time.format(formatSpec)(x);
+        },
+
+        "month-year": d3.time.format("%B, %Y"),
+
+        quarter: function (x) {
+            var d = new Date(x);
+            var m = d.getMonth();
+            var q = (m - m % 3) / 3;
+            return "Q" + (q + 1) + " " + d.getFullYear();
+        },
+
+        year: d3.time.format("%Y"),
+
+        "x-time-auto": null
+    };
+
+    var FormatterRegistry = {
+
+        get: function (formatAlias, nullOrUndefinedAlias) {
+
+            var nullAlias = nullOrUndefinedAlias || "";
+
+            var identity = function (x) {
+                return (x === null || typeof x === "undefined" ? nullAlias : x).toString();
+            };
+
+            var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
+            var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
+
+            if (hasFormat) {
+                formatter = FORMATS_MAP[formatAlias];
+            }
+
+            if (!hasFormat && formatAlias) {
+                formatter = function (v) {
+                    var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
+                    return f(v);
+                };
+            }
+
+            if (!hasFormat && !formatAlias) {
+                formatter = identity;
+            }
+
+            return formatter;
+        },
+
+        add: function (formatAlias, formatter) {
+            FORMATS_MAP[formatAlias] = formatter;
+        }
+    };
+
+    exports.FormatterRegistry = FormatterRegistry;
+});
 define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "./utils/utils-draw", "./formatter-registry", "./utils/utils-dom", "./scales-factory"], function (exports, _underscore, _utilsUtils, _utilsUtilsDraw, _formatterRegistry, _utilsUtilsDom, _scalesFactory) {
     
 
@@ -4906,6 +3773,59 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
         });
         _.extend(targetUnit.guide, _.omit.apply(_, [guide].concat(_.keys(config))));
         return targetUnit;
+    };
+
+    var extendLabel = function extendLabel(guide, dimension, extend) {
+        guide[dimension] = _.defaults(guide[dimension] || {}, {
+            label: ""
+        });
+        guide[dimension].label = _.isObject(guide[dimension].label) ? guide[dimension].label : { text: guide[dimension].label };
+        guide[dimension].label = _.defaults(guide[dimension].label, extend || {}, {
+            padding: 32,
+            rotate: 0,
+            textAnchor: "middle",
+            cssClass: "label",
+            dock: null
+        });
+
+        return guide[dimension];
+    };
+    var extendAxis = function extendAxis(guide, dimension, extend) {
+        guide[dimension] = _.defaults(guide[dimension], extend || {}, {
+            padding: 0,
+            density: 30,
+            rotate: 0,
+            tickPeriod: null,
+            tickFormat: null,
+            autoScale: true
+        });
+        guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
+        return guide[dimension];
+    };
+
+    var applyNodeDefaults = function (node) {
+        node.options = node.options || {};
+        node.guide = node.guide || {};
+        node.guide.padding = _.defaults(node.guide.padding || {}, { l: 0, b: 0, r: 0, t: 0 });
+
+        node.guide.x = extendLabel(node.guide, "x");
+        node.guide.x = extendAxis(node.guide, "x", {
+            cssClass: "x axis",
+            scaleOrient: "bottom",
+            textAnchor: "middle"
+        });
+
+        node.guide.y = extendLabel(node.guide, "y", { rotate: -90 });
+        node.guide.y = extendAxis(node.guide, "y", {
+            cssClass: "y axis",
+            scaleOrient: "left",
+            textAnchor: "end"
+        });
+
+        node.guide.size = extendLabel(node.guide, "size");
+        node.guide.color = extendLabel(node.guide, "color");
+
+        return node;
     };
 
     var inheritProps = function (childUnit, root) {
@@ -5178,11 +4098,11 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
                 unit.guide.y.label = _.isObject(unit.guide.y.label) ? unit.guide.y.label : { text: unit.guide.y.label };
 
                 if (unit.x) {
-                    unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
+                    unit.guide.x.label.text = unit.guide.x.label.text || meta.dimension(unit.x).dimName;
                 }
 
                 if (unit.y) {
-                    unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
+                    unit.guide.y.label.text = unit.guide.y.label.text || meta.dimension(unit.y).dimName;
                 }
 
                 var x = unit.guide.x.label.text;
@@ -5486,7 +4406,7 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
     };
 
     var fnTraverseSpec = function (orig, specUnitRef, transformRules) {
-        var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
+        var xRef = applyNodeDefaults(specUnitRef);
         xRef = transformRules(createSelectorPredicates(xRef), xRef);
         xRef = applyCustomProps(xRef, orig);
         var prop = _.omit(xRef, "units");
@@ -5506,6 +4426,7 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
                     var scaleCfg = srcSpec.scales[scaleId];
                     var dim = srcSpec.sources[scaleCfg.source].dims[scaleCfg.dim] || {};
                     return {
+                        dimName: scaleCfg.dim,
                         dimType: dim.type,
                         scaleType: scaleCfg.type
                     };
@@ -5564,7 +4485,7 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
         return SpecTransformAutoLayout;
     })();
 });
-define('charts/tau.plot',["exports", "../api/balloon", "../event", "../spec-engine-factory", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../unit-domain-mixin", "../units-registry", "../data-processor", "../utils/layuot-template", "../spec-converter", "../spec-transform-extract-axes", "../spec-transform-auto-layout", "./tau.gpl"], function (exports, _apiBalloon, _event, _specEngineFactory, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitDomainMixin, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate, _specConverter, _specTransformExtractAxes, _specTransformAutoLayout, _tauGpl) {
+define('charts/tau.plot',["exports", "../api/balloon", "../event", "../plugins", "../utils/utils", "../utils/utils-dom", "../const", "../units-registry", "../data-processor", "../utils/layuot-template", "../spec-converter", "../spec-transform-extract-axes", "../spec-transform-auto-layout", "./tau.gpl"], function (exports, _apiBalloon, _event, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate, _specConverter, _specTransformExtractAxes, _specTransformAutoLayout, _tauGpl) {
     
 
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -5580,13 +4501,11 @@ define('charts/tau.plot',["exports", "../api/balloon", "../event", "../spec-engi
     });
     var Tooltip = _apiBalloon.Tooltip;
     var Emitter = _event.Emitter;
-    var SpecEngineFactory = _specEngineFactory.SpecEngineFactory;
     var Plugins = _plugins.Plugins;
     var propagateDatumEvents = _plugins.propagateDatumEvents;
     var utils = _utilsUtils.utils;
     var utilsDom = _utilsUtilsDom.utilsDom;
     var CSS_PREFIX = _const.CSS_PREFIX;
-    var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
     var unitsRegistry = _unitsRegistry.unitsRegistry;
     var DataProcessor = _dataProcessor.DataProcessor;
     var getLayout = _utilsLayuotTemplate.getLayout;
@@ -6900,7 +5819,7 @@ define('elements/element.pie',["exports", "../const", "../utils/css-class-map"],
         return Pie;
     })();
 });
-define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-mixin", "./unit-domain-period-generator", "./spec-engine-factory", "./formatter-registry", "./units-registry", "./elements/coords.cartesian", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainMixin, _unitDomainPeriodGenerator, _specEngineFactory, _formatterRegistry, _unitsRegistry, _elementsCoordsCartesian, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval) {
+define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./elements/coords.cartesian", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _elementsCoordsCartesian, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval) {
     
 
     Object.defineProperty(exports, "__esModule", {
@@ -6911,9 +5830,7 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var GPL = _chartsTauGpl.GPL;
     var Plot = _chartsTauPlot.Plot;
     var Chart = _chartsTauChart.Chart;
-    var UnitDomainMixin = _unitDomainMixin.UnitDomainMixin;
     var UnitDomainPeriodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator;
-    var SpecEngineFactory = _specEngineFactory.SpecEngineFactory;
     var FormatterRegistry = _formatterRegistry.FormatterRegistry;
     var unitsRegistry = _unitsRegistry.unitsRegistry;
     var Cartesian = _elementsCoordsCartesian.Cartesian;
@@ -6926,9 +5843,7 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var plugins = {};
 
     var __api__ = {
-        UnitDomainMixin: UnitDomainMixin,
-        UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
-        SpecEngineFactory: SpecEngineFactory
+        UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
     };
     var api = {
         unitsRegistry: unitsRegistry,

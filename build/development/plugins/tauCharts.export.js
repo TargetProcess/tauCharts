@@ -4417,6 +4417,7 @@ define('../bower_components/FileSaver.js/FileSaver',[], function() {
 /*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
 
 /*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
     return window.saveAs
             // IE 10+ (native saveAs)
         || (typeof navigator !== "undefined" &&
@@ -6330,10 +6331,10 @@ define("../bower_components/fetch/fetch", function(){});
     var printStyles = createStyleElement(printCss, 'print');
     var imagePlaceHolder;
     var removePrintStyles = function () {
-        if (printStyles.parentNode) {
+        if (printStyles && printStyles.parentNode) {
             printStyles.parentNode.removeChild(printStyles);
         }
-        if (imagePlaceHolder.parentNode) {
+        if (imagePlaceHolder && imagePlaceHolder.parentNode) {
             imagePlaceHolder.parentNode.removeChild(imagePlaceHolder);
         }
     };
@@ -6484,7 +6485,7 @@ define("../bower_components/fetch/fetch", function(){});
                         .attr('x', 12)
                         .attr('y', 5)
                         .text(function (d) {
-                            return d.value;
+                            return _.escape(isEmpty(d.label) ? ('No ' + colorScaleName) : d.label);
                         })
                         .style({'font-size': settings.fontSize + 'px'});
                 };

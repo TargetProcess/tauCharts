@@ -130,7 +130,7 @@
 
             onUnitDraw: function (chart, unitMeta) {
                 if (tauCharts.api.isChartElement(unitMeta)) {
-                    var key = this._generateKey(unitMeta.config.options.frameId);
+                    var key = this._generateKey(unitMeta.config.options.uid);
                     this._unitMeta[key] = unitMeta;
                     var values = unitMeta.config.frames.reduce(function (data, item) {
                         return data.concat(item.data)
@@ -157,7 +157,8 @@
                 fields = _.unique(fields);
                 return fields.map(function (field) {
                     var rawValue = data[field];
-                    var formattedValue = this._getFormatter(field)(rawValue);
+                    var value = this._getFormatter(field)(rawValue);
+                    var formattedValue = _.isObject(value) ? value.name : value;
                     var label = this._getLabel(field);
 
                     return this.renderItem(label, formattedValue, field, rawValue);
@@ -233,8 +234,8 @@
                     var property = unit[field];
                     if (property) {
                         var guide = (unit.guide || {})[field];
-                        if (guide) {
-                            var dim = scales[property].dim;
+                        var dim = scales[property].dim;
+                        if (dim && guide) {
                             if (!dimensionGuideMap[dim]) {
                                 dimensionGuideMap[dim] = [];
                             }
@@ -356,8 +357,7 @@
             },
             _onElementMouseOver: function (chart, data, mouseCoord, placeCoord) {
                 clearTimeout(this._timeoutHideId);
-                var key = this._generateKey(data.cellData.hash && data.cellData.hash() ||
-                data.cellData.options.frameId);
+                var key = this._generateKey(data.unit && data.unit.config.options.uid);
                 var item = data.elementData;
                 if (tauCharts.api.isLineElement(data.unit)) {
                     item = this._handleLineElement(data, key, mouseCoord)
