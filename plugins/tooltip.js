@@ -130,7 +130,7 @@
 
             onUnitDraw: function (chart, unitMeta) {
                 if (tauCharts.api.isChartElement(unitMeta)) {
-                    var key = this._generateKey(unitMeta.config.options.frameId);
+                    var key = this._generateKey(unitMeta.config.options.uid);
                     this._unitMeta[key] = unitMeta;
                     var values = unitMeta.config.frames.reduce(function (data, item) {
                         return data.concat(item.data)
@@ -357,8 +357,7 @@
             },
             _onElementMouseOver: function (chart, data, mouseCoord, placeCoord) {
                 clearTimeout(this._timeoutHideId);
-                var key = this._generateKey(data.cellData.hash && data.cellData.hash() ||
-                data.cellData.options.frameId);
+                var key = this._generateKey(data.unit && data.unit.config.options.uid);
                 var item = data.elementData;
                 if (tauCharts.api.isLineElement(data.unit)) {
                     item = this._handleLineElement(data, key, mouseCoord)

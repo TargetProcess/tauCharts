@@ -9,7 +9,7 @@ export class Line {
         this.config.guide = _.defaults(
             this.config.guide,
             {
-                cssClass: '',
+                cssClass: 'i-role-datum',
                 widthCssClass: '',
                 anchors: false
             }
@@ -50,7 +50,7 @@ export class Line {
             d3Line.interpolate(guide.interpolate);
         }
 
-        var linePref = `${CSS_PREFIX}line i-role-element i-role-datum line ${widthCss} ${countCss} ${guide.cssClass}`;
+        var linePref = `${CSS_PREFIX}line i-role-element line ${widthCss} ${countCss} ${guide.cssClass}`;
         var updateLines = function () {
             var paths = this
                 .selectAll('path')
