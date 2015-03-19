@@ -394,7 +394,7 @@
                     });
 
                     var regression = regressionsHub(props.type, src);
-                    return _(regression.points)
+                    var points = _(regression.points)
                         .chain()
                         .filter(function (p) {
                             return ((p[0] !== null) && (p[1] !== null));
@@ -409,6 +409,8 @@
                             return item;
                         })
                         .value();
+
+                    return points.length > 1 ? points : [];
                 };
 
                 var isApplicable = false;
