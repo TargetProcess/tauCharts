@@ -54,7 +54,7 @@ export class Line {
         var updateLines = function () {
             var paths = this
                 .selectAll('path')
-                .data((frame) => [frame.data]);
+                .data(({data: frame}) => [frame.data]);
             paths
                 .exit()
                 .remove();
@@ -71,7 +71,7 @@ export class Line {
 
             var points = this
                 .selectAll('circle')
-                .data((frame) => frame.data);
+                .data(({data: frame}) => frame.data);
             points
                 .exit()
                 .remove();
@@ -97,7 +97,8 @@ export class Line {
 
             return function () {
 
-                this.attr('class', (f) => `${linePref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
+                this.attr('class', ({data: f}) =>
+                    `${linePref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
                     .call(function () {
 
                         if (drawPath) {
@@ -112,7 +113,7 @@ export class Line {
         };
 
         var mapper = (f) => {
-            return {tags: f.key || {}, hash: f.hash(), data: f.take(), uid: options.uid};
+            return {data: {tags: f.key || {}, hash: f.hash(), data: f.take()}, uid: options.uid};
         };
 
         var drawFrame = (tag, id, filter) => {
@@ -122,7 +123,7 @@ export class Line {
 
             var frameGroups = options.container
                 .selectAll(`.frame-${id}`)
-                .data(frames.map(mapper).filter(filter), (f) => f.hash);
+                .data(frames.map(mapper).filter(filter), ({data: f}) => f.hash);
             frameGroups
                 .exit()
                 .remove();
@@ -134,7 +135,7 @@ export class Line {
                 .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
         };
 
-        drawFrame('line', 'line-' + options.uid, (f) => f.data.length > 1);
-        drawFrame('anch', 'anch-' + options.uid, (f) => f.data.length < 2);
+        drawFrame('line', 'line-' + options.uid, ({data: f}) => f.data.length > 1);
+        drawFrame('anch', 'anch-' + options.uid, ({data: f}) => f.data.length < 2);
     }
 }

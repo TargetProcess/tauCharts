@@ -75,23 +75,23 @@ export class Point {
         var enter = function () {
             return this
                 .attr({
-                    r: (d) => sScale(d[sScale.dim]),
-                    cx: (d) => xScale(d[xScale.dim]),
-                    cy: (d) => yScale(d[yScale.dim]),
-                    class: (d) => `${prefix} ${cScale(d[cScale.dim])}`
+                    r: ({data:d}) => sScale(d[sScale.dim]),
+                    cx: ({data:d}) => xScale(d[xScale.dim]),
+                    cy: ({data:d}) => yScale(d[yScale.dim]),
+                    class: ({data:d}) => `${prefix} ${cScale(d[cScale.dim])}`
                 })
                 .transition()
                 .duration(500)
-                .attr('r', (d) => sScale(d[sScale.dim]));
+                .attr('r', ({data:d}) => sScale(d[sScale.dim]));
         };
 
         var update = function () {
             return this
                 .attr({
-                    r: (d) => sScale(d[sScale.dim]),
-                    cx: (d) => xScale(d[xScale.dim]),
-                    cy: (d) => yScale(d[yScale.dim]),
-                    class: (d) => `${prefix} ${cScale(d[cScale.dim])}`
+                    r: ({data:d}) => sScale(d[sScale.dim]),
+                    cx: ({data:d}) => xScale(d[xScale.dim]),
+                    cy: ({data:d}) => yScale(d[yScale.dim]),
+                    class: ({data:d}) => `${prefix} ${cScale(d[cScale.dim])}`
                 });
         };
 
@@ -101,7 +101,7 @@ export class Point {
                 .call(function () {
                     var points = this
                         .selectAll('circle')
-                        .data((frame) => frame.data);
+                        .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
                     points
                         .exit()
                         .remove();

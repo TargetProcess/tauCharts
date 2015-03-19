@@ -29,28 +29,28 @@ var flipHub = {
                 size: width
             });
 
-        let calculateX = (d) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
+        let calculateX = ({data:d}) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
         let calculateY = isYNumber ?
-            ((d) => {
+            (({data:d}) => {
                 var valY = d[node.y.scaleDim];
                 var dotY = yScale(Math.max(startValue, valY));
                 var h = Math.abs(yScale(valY) - yScale(startValue));
                 var isTooSmall = (h < minimalHeight);
                 return (isTooSmall && (valY > 0)) ? (dotY - minimalHeight) : dotY;
             }) :
-            ((d) => yScale(d[node.y.scaleDim]));
+            (({data:d}) => yScale(d[node.y.scaleDim]));
 
-        let calculateWidth = (d) => intervalWidth;
+        let calculateWidth = ({data:d}) => intervalWidth;
         let calculateHeight = isYNumber ?
-            ((d) => {
+            (({data:d}) => {
                 var valY = d[node.y.scaleDim];
                 var h = Math.abs(yScale(valY) - yScale(startValue));
                 return (valY === 0) ? h : Math.max(minimalHeight, h);
             }) :
-            ((d) => (height - yScale(d[node.y.scaleDim])));
+            (({data:d}) => (height - yScale(d[node.y.scaleDim])));
 
-        let calculateTranslate = (d) =>
-            utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
+        let calculateTranslate = ({data:d}) =>
+            utilsDraw.translate(colorIndexScale({data:d}) * offsetCategory + offsetCategory / 2, 0);
 
         return {colorScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
@@ -71,7 +71,7 @@ var flipHub = {
             });
 
         let calculateX = isXNumber ?
-            ((d) => {
+            (({data:d}) => {
                 var valX = d[node.x.scaleDim];
                 var h = Math.abs(xScale(valX) - xScale(startValue));
                 var dotX = xScale(Math.min(startValue, valX));
@@ -82,17 +82,17 @@ var flipHub = {
                 return (isTooSmall) ? (dotX + offset) : (dotX);
             }) :
             0;
-        let calculateY = (d) => yScale(d[node.y.scaleDim]) - (tickWidth / 2);
+        let calculateY = ({data:d}) => yScale(d[node.y.scaleDim]) - (tickWidth / 2);
         let calculateWidth = isXNumber ?
-            ((d) => {
+            (({data:d}) => {
                 var valX = d[node.x.scaleDim];
                 var h = Math.abs(xScale(valX) - xScale(startValue));
                 return (valX === 0) ? h : Math.max(minimalHeight, h);
             }) :
-            ((d) => xScale(d[node.x.scaleDim]));
-        let calculateHeight = (d) => intervalWidth;
-        let calculateTranslate = (d) =>
-            utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
+            (({data:d}) => xScale(d[node.x.scaleDim]));
+        let calculateHeight = ({data:d}) => intervalWidth;
+        let calculateTranslate = ({data:d}) =>
+            utilsDraw.translate(0, colorIndexScale({data:d}) * offsetCategory + offsetCategory / 2);
 
         return {colorScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     }
@@ -112,7 +112,7 @@ function drawInterval({
         return this
             .attr('height', calculateHeight)
             .attr('width', calculateWidth)
-            .attr('class', (d) => {
+            .attr('class', ({data:d}) => {
                 return `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.scaleDim])}`;
             })
             .attr('x', calculateX)
@@ -123,7 +123,10 @@ function drawInterval({
         this.attr('class', BAR_GROUP)
             .attr('transform', calculateTranslate);
         var bars = this.selectAll('.bar').data((d) => {
-            return d.values;
+            return d.values.map(item => ({
+                data: item,
+                uid: d.uid
+            }));
         });
         bars.call(updateBar);
         bars.enter().append('rect').call(updateBar);

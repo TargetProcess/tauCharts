@@ -62,6 +62,6 @@ export class Interval {
                 offsetCategory: 0
             }
         });
-        drawInterval(params, canvas, frames.map((fr)=>({key: fr.key, values: fr.data})));
+        drawInterval(params, canvas, frames.map((fr)=>({key: fr.key, values: fr.data, uid: this.config.options.uid})));
     }
 }

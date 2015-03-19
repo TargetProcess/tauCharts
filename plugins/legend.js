@@ -125,9 +125,9 @@
                     d3Chart
                         .selectAll('.i-role-element.' + color)
                         .filter(function (item) {
-                            var propObject = item.hasOwnProperty(originValue.dimension) ?
-                                item[originValue.dimension] :
-                                item.tags[originValue.dimension];
+                            var propObject = item.data.hasOwnProperty(originValue.dimension) ?
+                                item.data[originValue.dimension] :
+                                item.data.tags[originValue.dimension];
                             // _.chain(item.values).pluck(originValue.dimension).unique().first().value();
 
                             return propObject === originValue.value;

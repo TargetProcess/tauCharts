@@ -1,6 +1,7 @@
 /* jshint ignore:start */
 import {default as d3} from 'd3';
 /* jshint ignore:end */
+import {utils} from './utils/utils';
 var elementEvents = ['click', 'mouseover', 'mouseout', 'mousemove'];
 
 class Plugins {
@@ -32,6 +33,7 @@ class Plugins {
             }
         });
     }
+
     _getUnitByHash(id) {
         return this._unitMap[id];
     }
@@ -42,11 +44,13 @@ class Plugins {
             elementEvents.forEach(function (name) {
                 this.on(name, function (d) {
                     var cellData = d3.select(this.parentNode.parentNode).datum();
+                    var unit = self._getUnitByHash(d.uid);
+                    var data = d.data;
                     chart.fire('element' + name, {
-                        elementData: d,
+                        elementData: data,
                         element: this,
                         cellData: cellData,
-                        unit: self._getUnitByHash(d.uid)
+                        unit: unit
                     });
                 });
             }, this);
