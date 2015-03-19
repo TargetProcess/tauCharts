@@ -1,6 +1,6 @@
 var PERIODS_MAP = {
 
-    'day': {
+    day: {
         cast: function (date) {
             return new Date(date.setHours(0, 0, 0, 0));
         },
@@ -9,7 +9,7 @@ var PERIODS_MAP = {
         }
     },
 
-    'week': {
+    week: {
         cast: function (date) {
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(date.getDate() - date.getDay()));
@@ -20,7 +20,7 @@ var PERIODS_MAP = {
         }
     },
 
-    'month': {
+    month: {
         cast: function (date) {
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(1));
@@ -31,7 +31,7 @@ var PERIODS_MAP = {
         }
     },
 
-    'quarter': {
+    quarter: {
         cast: function (date) {
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(1));
@@ -44,8 +44,8 @@ var PERIODS_MAP = {
         }
     },
 
-    'year': {
-        cast: function (date) {
+    year: {
+        cast(date) {
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(1));
             date = new Date(date.setMonth(0));
@@ -59,7 +59,7 @@ var PERIODS_MAP = {
 
 var UnitDomainPeriodGenerator = {
 
-    add: function(periodAlias, obj) {
+    add: function (periodAlias, obj) {
         PERIODS_MAP[periodAlias.toLowerCase()] = obj;
         return this;
     },

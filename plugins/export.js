@@ -1,9 +1,10 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
-        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'], function (tauPlugins, canvg, saveAs, Promise, printCss) {
-            window.Promise = window.Promise || Promise.Promise;
-            return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
-        });
+    if (typeof define === 'function' && define.amd) {
+        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
+            function (tauPlugins, canvg, saveAs, Promise, printCss) {
+                window.Promise = window.Promise || Promise.Promise;
+                return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
+            });
     } else {
         factory(this.tauCharts, this.canvg, this.saveAs);
     }
@@ -14,7 +15,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -36,22 +37,22 @@
     }
 
     var keyCode = {
-        "BACKSPACE": 8,
-        "COMMA": 188,
-        "DELETE": 46,
-        "DOWN": 40,
-        "END": 35,
-        "ENTER": 13,
-        "ESCAPE": 27,
-        "HOME": 36,
-        "LEFT": 37,
-        "PAGE_DOWN": 34,
-        "PAGE_UP": 33,
-        "PERIOD": 190,
-        "RIGHT": 39,
-        "SPACE": 32,
-        "TAB": 9,
-        "UP": 38
+        BACKSPACE: 8,
+        COMMA: 188,
+        DELETE: 46,
+        DOWN: 40,
+        END: 35,
+        ENTER: 13,
+        ESCAPE: 27,
+        HOME: 36,
+        LEFT: 37,
+        PAGE_DOWN: 34,
+        PAGE_UP: 33,
+        PERIOD: 190,
+        RIGHT: 39,
+        SPACE: 32,
+        TAB: 9,
+        UP: 38
     };
     var createStyleElement = function (styles, mediaType) {
         mediaType = mediaType || 'all';
@@ -76,8 +77,7 @@
     if (!isPhantomJS) {
         if ('onafterprint' in window) {
             window.addEventListener('afterprint', removePrintStyles);
-        }
-        else {
+        } else {
             window.matchMedia('screen').addListener(function (exp) {
                 if (exp.matches) {
                     removePrintStyles();
@@ -98,7 +98,7 @@
         }
 
         var a = document.createElement('a');
-        a.href = "#";
+        a.href = '#';
         a.addEventListener('focusin', swap, false);
 
         document.body.appendChild(a);
@@ -126,34 +126,52 @@
                         var div = document.createElement('div');
                         var svg = chart.getSVG().cloneNode(true);
                         div.appendChild(svg);
-                        d3.select(svg).attr("version", 1.1)
-                            .attr("xmlns", "http://www.w3.org/2000/svg");
+                        d3.select(svg).attr('version', 1.1)
+                            .attr('xmlns', 'http://www.w3.org/2000/svg');
                         svg.insertBefore(style, svg.firstChild);
                         this._renderAdditionalInfo(svg, chart);
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
                         canvg(canvas, svg.parentNode.innerHTML);
-                        return canvas.toDataURL("image/png");
+                        return canvas.toDataURL('image/png');
                     }.bind(this));
             },
             _findUnit: function (chart) {
                 var conf = chart.getConfig();
-                return dfs(conf.spec.unit, function (node) {
-                    return node.color || node.size && conf.dimensions[node.size].type === 'measure';
+                var spec = chart.getConfig();
+                var checkNotEmpty = function (dimName) {
+                    var sizeScaleCfg = spec.scales[dimName];
+                    return (
+                    sizeScaleCfg &&
+                    sizeScaleCfg.dim &&
+                    sizeScaleCfg.source &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    );
+                };
+                return dfs(conf.unit, function (node) {
+
+                    if (checkNotEmpty(node.color)) {
+                        return true;
+                    }
+
+                    if (checkNotEmpty(node.size)) {
+                        var sizeScaleCfg = spec.scales[node.size];
+                        return spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure';
+                    }
                 });
             },
             _toPng: function (chart) {
                 this._createDataUrl(chart)
                     .then(function (dataURL) {
-                        var data = atob(dataURL.substring("data:image/png;base64,".length)),
+                        var data = atob(dataURL.substring('data:image/png;base64,'.length)),
                             asArray = new Uint8Array(data.length);
 
                         for (var i = 0, len = data.length; i < len; ++i) {
                             asArray[i] = data.charCodeAt(i);
                         }
 
-                        var blob = new Blob([asArray.buffer], {type: "image/png"});
+                        var blob = new Blob([asArray.buffer], {type: 'image/png'});
                         saveAs(blob, (this._fileName || 'export') + '.png');
                     }.bind(this));
             },
@@ -172,10 +190,21 @@
                     });
             },
             _renderColorLegend: function (configUnit, svg, chart, width) {
+                var colorScale = this._unit.color;
+                var colorDimension = this._unit.color.dim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.color = this._unit.guide.color;
-                var colorScaleName = configUnit.guide.color.label.text || this._unit.options.color.dimension;
-                var data = this._getColorMap(chart);
+                configUnit.guide.color = configUnit.guide.color || {};
+
+                var colorLabelText = (_.isObject(configUnit.guide.color.label)) ?
+                    configUnit.guide.color.label.text :
+                    configUnit.guide.color.label;
+
+                var colorScaleName = colorLabelText || colorScale.dim;
+                var data = this._getColorMap(
+                    chart.getData({excludeFilter: ['legend']}),
+                    colorScale,
+                    colorDimension
+                ).values;
                 var draw = function () {
                     this.attr('transform', function (d, index) {
                         return 'translate(5,' + 20 * (index + 1) + ')';
@@ -217,12 +246,11 @@
 
                 return {h: (data.length * 20 + 20), w: 0};
             },
-            //'<svg class="graphical-report__legend__guide-size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle><text style="stroke:none;opacity:1;fill:#000000;font-weight: 400;" x="<%=radius+20%>" y="<%=radius+5%>"><%=value%><text></svg>',
             _renderSizeLegend: function (configUnit, svg, chart, width, offset) {
-                var sizeScale = this._unit.options.sizeScale;
+                var sizeScale = this._unit.size;
                 var sizeDimension = this._unit.size.scaleDim;
                 configUnit.guide = configUnit.guide || {};
-                configUnit.guide.size = this._unit.guide.size;
+                configUnit.guide.size = this._unit.config.guide.size;
                 var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
                 var chartData = _.sortBy(chart.getData(), function (el) {
                     return sizeScale(el[sizeDimension]);
@@ -267,7 +295,7 @@
 
                     this.attr('transform', function (d) {
                         offsetInner += maxDiameter;
-                        var transform = 'translate(5,' + (offsetInner)+ ')';
+                        var transform = 'translate(5,' + (offsetInner) + ')';
                         offsetInner += 10;
                         return transform;
                     });
@@ -279,17 +307,17 @@
                         .attr('class', function (d) {
                             return d.className;
                         })
-                        .style({'opacity': 0.4});
+                        .style({opacity: 0.4});
 
                     this.append('g')
-                        .attr('transform', function(d) {
+                        .attr('transform', function (d) {
                             return 'translate(' + maxDiameter + ',' + (fontSize / 2) + ')';
                         })
                         .append('text')
-                        .attr('x', function(d) {
+                        .attr('x', function (d) {
                             return 0;// d.diameter;
                         })
-                        .attr('y', function(d) {
+                        .attr('y', function (d) {
                             return 0;// d.radius-6.5;
                         })
                         .text(function (d) {
@@ -325,43 +353,56 @@
                     return;
                 }
                 var offset = {h: 0, w: 0};
+                var spec = chart.getConfig();
                 svg = d3.select(svg);
                 var width = parseInt(svg.attr('width'), 10);
                 var height = svg.attr('height');
                 svg.attr('width', width + 160);
-                if (configUnit.color) {
+                var checkNotEmpty = function (dimName) {
+                    var sizeScaleCfg = spec.scales[dimName];
+                    return (
+                    sizeScaleCfg &&
+                    sizeScaleCfg.dim &&
+                    sizeScaleCfg.source &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
+                    );
+                };
+                if (checkNotEmpty(configUnit.color)) {
                     var offsetColorLegend = this._renderColorLegend(configUnit, svg, chart, width);
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
-                if (configUnit.size && chart.getConfig().spec.dimensions[configUnit.size].type === 'measure') {
+                var spec = chart.getConfig();
+                var sizeScaleCfg = spec.scales[configUnit.size];
+                if (configUnit.size &&
+                    sizeScaleCfg.dim &&
+                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure') {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
                 }
-                // document.body.appendChild(svg.node());
             },
-            onUnitReady: function (chart, unit) {
-                if (unit.type.indexOf('ELEMENT') !== -1) {
+            onUnitDraw: function (chart, unit) {
+                if (tauCharts.api.isChartElement(unit)) {
                     this._unit = unit;
                 }
             },
-            _getColorMap: function (chart) {
-                var colorScale = this._unit.options.color;
-                var colorDimension = this._unit.color.scaleDim;
-                var data = chart.getData();
+            _getColorMap: function (data, colorScale, colorDimension) {
+
                 return _(data)
                     .chain()
                     .map(function (item) {
-                        return colorScale.legend(item[colorDimension]);
+                        var value = item[colorDimension];
+                        return {color: colorScale(value), value: value, label: value};
                     })
                     .uniq(function (legendItem) {
                         return legendItem.value;
                     })
                     .value()
                     .reduce(function (memo, item) {
-                        memo.push(item);
+                        memo.brewer[item.value] = item.color;
+                        memo.values.push(item);
                         return memo;
                     },
-                    []);
+                    {brewer: {}, values: []});
             },
             _select: function (value, chart) {
                 value = value || '';
@@ -434,7 +475,10 @@
                 this._fileName = settings.fileName;
                 if (!this._cssPaths) {
                     this._cssPaths = [];
-                    tauCharts.api.globalSettings.log('You should specified cssPath for correct work export plugin', 'warn');
+                    tauCharts.api.globalSettings.log(
+                        'You should specified cssPath for correct work export plugin',
+                        'warn'
+                    );
                 }
 
                 settings = _.defaults(settings, {
@@ -447,12 +491,14 @@
                     place: 'bottom-left'
                 });
                 this._popup = popup;
+                // jscs:disable maximumLineLength
                 popup.content([
                     '<ul class="graphical-report__export__list">',
                     '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
                     '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
                     '</ul>'
                 ].join(''));
+                // jscs:enable maximumLineLength
                 popup.attach(this._container);
                 var popupElement = popup.getElement();
                 popupElement.setAttribute('tabindex', '-1');
@@ -462,7 +508,7 @@
                 }.bind(this));
             },
             destroy: function () {
-                if(this._popup) {
+                if (this._popup) {
                     this._popup.destroy();
                 }
             }

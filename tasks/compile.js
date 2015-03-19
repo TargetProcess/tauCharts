@@ -1,5 +1,5 @@
 var requirejs = require('requirejs');
-var to5 = require('6to5');
+var to5 =  require("babel");
 var LOG_LEVEL_TRACE = 0, LOG_LEVEL_WARN = 2;
 requirejs.define('node/print', [], function () {
     return function print(msg) {
@@ -49,7 +49,7 @@ module.exports = function (grunt) {
             var config = {
                 include: ['../node_modules/almond/almond'],
                 baseUrl: tmpDir + '/',
-                name: 'tau.newCharts',
+                name: 'tau.charts',
                 exclude:['d3','underscore'],
                 paths:{
                     'underscore':'../libs/underscore',
@@ -84,7 +84,7 @@ module.exports = function (grunt) {
                 },
                 map: {
                     '*': {
-                        'tauCharts': '../tau_modules/tau.newCharts',
+                        'tauCharts': '../tau_modules/tau.charts',
                         'canvg':'../bower_components/canvg/canvg',
                         'FileSaver':'../bower_components/FileSaver.js/FileSaver',
                         'rgbcolor': '../bower_components/canvg/rgbcolor',

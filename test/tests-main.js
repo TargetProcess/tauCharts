@@ -4,6 +4,9 @@ for (var file in window.__karma__.files) {
         tests.push(file);
     }
 }
+var testsContext = require.context('.', true, /test\.js$/);
+testsContext.keys().forEach(testsContext);
+/*
 requirejs.config({
     // Karma serves files from '/base'
     baseUrl: '/base',
@@ -21,7 +24,7 @@ requirejs.config({
     },
     map: {
         '*': {
-            'tauCharts': 'tau_modules/tau.newCharts',
+            'tauCharts': 'src/tau.charts',
             'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
             'rgbcolor': 'bower_components/canvg/rgbcolor',
             'stackblur': 'bower_components/canvg/StackBlur',
@@ -48,4 +51,4 @@ requirejs.config({
 
     // start test run, once Require.js is done
     callback: window.__karma__.start
-});
+});*/

@@ -1,7 +1,7 @@
 define(function(require){
     var assert = require('chai').assert;
     var schemes = require('schemes');
-    var tauChart = require('tau_modules/tau.newCharts');
+    var tauChart = require('src/tau.charts');
     describe('Bar chart', function () {
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6},

@@ -1,5 +1,5 @@
 define(function (require) {
-    var Emitter = require('tau_modules/event').Emitter;
+    var Emitter = require('src/event').Emitter;
     var assert = require('chai').assert;
     describe('event emitter', function () {
         var emitter = new Emitter();

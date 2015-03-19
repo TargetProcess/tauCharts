@@ -1,43 +1,33 @@
 module.exports = function (config) {
+    var webpackConfig = require('./webpack.test.config');
     config.set({
 
         // base path, that will be used to resolve files and exclude
         basePath: '..',
 
         // frameworks to use
-        frameworks: ['mocha', 'requirejs'],
+        frameworks: ['mocha'],
 
         // list of files / patterns to load in the browser
         files: [
-            /*'test/utils/utils.js',
-             'libs/underscore.js',
-             'libs/js-schema.js',
-             'libs/d3.js',
-             */
-            {pattern: 'src/addons/color-brewer.js', included: false},
-            {pattern: 'bower_components/**', included: false},
-            {pattern: 'node_modules/requirejs-text/**', included: false},
-            //'build/tauCharts.js',
-            {pattern: 'test/utils/*.js', included: false},
-            {pattern: 'plugins/**', included: false},
             {pattern: 'css/tooltip.css', included: true},
             {pattern: 'css/tauCharts.css', included: true},
             {pattern: 'test/utils/test.css', included: true},
             {pattern: 'css/base.css', included: true},
-            {pattern: 'libs/**', included: false},
-            {pattern: 'node_modules/chai/*.js', included: false},
-            {pattern: 'tau_modules/**', included: false},
-            {pattern: 'test/*test.js', included: false},
             'test/tests-main.js'
         ],
-        browsers: ["PhantomJS"],
-        preprocessors: {"tau_modules/**/*.js": "coverage"},
-        reporters: ["coverage", "dots", "coveralls"],
+        browsers: ['PhantomJS'],
+        preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
+        reporters: ['coverage', 'dots', 'coveralls'],
         coverageReporter: {
-            type: "lcovonly",
-            dir: "coverage/"
+            type: 'lcovonly',
+            dir: 'coverage/'
         },
-        // web server port
+        webpackMiddleware: {
+           noInfo: true
+        },
+        webpack: webpackConfig.coverage,
+        browserNoActivityTimeout: 100000,
         port: 9876,
 
         // enable / disable colors in the output (reporters and logs)

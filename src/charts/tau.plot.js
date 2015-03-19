@@ -1,28 +1,43 @@
-import {DSLReader} from '../dsl-reader';
 import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
-import {SpecEngineFactory} from '../spec-engine-factory';
-import {LayoutEngineFactory} from '../layout-engine-factory';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
-import {UnitDomainMixin} from '../unit-domain-mixin';
-import {UnitsRegistry} from '../units-registry';
+import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
+import {SpecConverter} from '../spec-converter';
+import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
+import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
+import {GPL} from './tau.gpl';
 
 export class Plot extends Emitter {
     constructor(config) {
         super();
+        this._nodes = [];
         this._svg = null;
         this._filtersStore = {
             filters: {},
             tick: 0
         };
         this._layout = getLayout();
-        this.setupConfig(config);
-        //plugins
+
+        if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
+            this.config = config;
+            this.configGPL = config;
+        } else {
+            this.config = this.setupConfig(config);
+            this.configGPL = new SpecConverter(this.config).convert();
+        }
+
+        this.configGPL.settings = this.setupSettings(this.configGPL.settings);
+
+        this.transformers = [SpecTransformAutoLayout];
+        if (this.configGPL.settings.layoutEngine === 'EXTRACT') {
+            this.transformers.push(SpecTransformExtractAxes);
+        }
+
         this._plugins = new Plugins(this.config.plugins, this);
     }
 
@@ -40,17 +55,9 @@ export class Plot extends Emitter {
         });
         this._emptyContainer = config.emptyContainer || '';
         // TODO: remove this particular config cases
-        this.config.settings.specEngine = this.config.specEngine || this.config.settings.specEngine;
-        this.config.settings.layoutEngine = this.config.layoutEngine || this.config.settings.layoutEngine;
+        this.config.settings.specEngine   = config.specEngine || config.settings.specEngine;
+        this.config.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
         this.config.settings = this.setupSettings(this.config.settings);
-        if (!utils.isArray(this.config.settings.specEngine)) {
-            this.config.settings.specEngine = [
-                {
-                    width: Number.MAX_VALUE,
-                    name: this.config.settings.specEngine
-                }
-            ];
-        }
 
         this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
@@ -63,10 +70,14 @@ export class Plot extends Emitter {
                 })
             });
         }
+
+        return this.config;
     }
 
-    getConfig() {
-        return this.config;
+    // fixme after all migrate
+    getConfig(isOld) {
+        // this.configGPL
+        return isOld ? this.config : this.configGPL || this.config;
     }
 
     setupMetaInfo(dims, data) {
@@ -83,7 +94,13 @@ export class Plot extends Emitter {
                 utils.clone(globalSettings[k]);
         });
 
-        return _.defaults(configSettings || {}, localSettings);
+        var r = _.defaults(configSettings || {}, localSettings);
+
+        if (!utils.isArray(r.specEngine)) {
+            r.specEngine = [{width: Number.MAX_VALUE, name: r.specEngine}];
+        }
+
+        return r;
     }
 
     insertToRightSidebar(el) {
@@ -94,92 +111,112 @@ export class Plot extends Emitter {
         return utilsDom.appendTo(el, this._layout.header);
     }
 
-
     addBalloon(conf) {
         return new Tooltip('', conf || {});
     }
 
     renderTo(target, xSize) {
-        this._renderGraph = null;
         this._svg = null;
-        this._defaultSize  = _.clone(xSize);
-        var container = d3.select(target);
-        var containerNode = container.node();
         this._target = target;
-        if (containerNode === null) {
+        this._defaultSize = _.clone(xSize);
+
+        var targetNode = d3.select(target).node();
+        if (targetNode === null) {
             throw new Error('Target element not found');
         }
 
-        containerNode.appendChild(this._layout.layout);
-        container = d3.select(this._layout.content);
-        //todo don't compute width if width or height were passed
+        targetNode.appendChild(this._layout.layout);
+
+        var content = this._layout.content;
         var size = _.clone(xSize) || {};
-        this._layout.content.innerHTML = '';
         if (!size.width || !size.height) {
-            size = _.defaults(size, utilsDom.getContainerSize(this._layout.content.parentNode));
+            content.style.display = 'none';
+            size = _.defaults(size, utilsDom.getContainerSize(content.parentNode));
+            content.style.display = '';
+            // TODO: fix this issue
+            if (!size.height) {
+                size.height = utilsDom.getContainerSize(this._layout.layout).height;
+            }
         }
 
         var drawData = this.getData();
         if (drawData.length === 0) {
-            this._layout.content.innerHTML = this._emptyContainer;
+            content.innerHTML = this._emptyContainer;
             return;
         }
-        this._layout.content.innerHTML = '';
 
-        var domainMixin = new UnitDomainMixin(this.config.spec.dimensions, drawData);
+        this.configGPL.settings.size = size;
 
-        var specItem = _.find(this.config.settings.specEngine, (item) => (size.width <= item.width));
+        // TODO: refactor this
+        var gpl = utils.clone(this.configGPL);
+        gpl.sources = this.configGPL.sources;
+        gpl.settings = this.configGPL.settings;
 
+        gpl = this
+            .transformers
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform()), gpl);
 
-        this.config.settings.size = size;
-        var specEngine = SpecEngineFactory.get(specItem.name, this.config.settings);
+        var optimalSize = gpl.settings.size;
 
-        var fullSpec = specEngine(this.config.spec, domainMixin.mix({}));
+        this._nodes = [];
+        gpl.onUnitDraw = (unitNode) => {
+            this._nodes.push(unitNode);
+            this.fire('unitdraw', unitNode);
+        };
+        if (!this._originData) {
+            this._originData = _.clone(gpl.sources);
+        }
 
-        var optimalSize = this.config.settings.size;
+        gpl.sources = this.getData({isNew: true});
 
-        var reader = new DSLReader(domainMixin, UnitsRegistry);
+        this.fire('specready', gpl);
 
-        var chart = this;
-        var logicXGraph = reader.buildGraph(fullSpec);
-        var layoutGraph = LayoutEngineFactory.get(this.config.settings.layoutEngine)(logicXGraph);
-        var renderGraph = reader.calcLayout(layoutGraph, optimalSize);
-        var svgXElement = reader.renderGraph(
-            renderGraph,
-            container
-                .append("svg")
-                .attr("class", CSS_PREFIX + 'svg')
-                .attr("width", optimalSize.width)
-                .attr("height", optimalSize.height),
-            (unitMeta) => chart.fire('unitready', unitMeta)
-        );
-        this._renderGraph = renderGraph;
+        new GPL(gpl).renderTo(content, optimalSize);
+
+        var svgXElement = d3.select(content).select('svg');
+
         this._svg = svgXElement.node();
-        svgXElement.selectAll('.i-role-datum').call(propagateDatumEvents(this));
-        this._layout.rightSidebar.style.maxHeight = optimalSize.height + 'px';
+        this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
         this.fire('render', this._svg);
     }
 
-    getData(param) {
-        param = param || {};
+    getData(param = {}) {
+        // fixme
+        if (param.isNew) {
+            param.excludeFilter = param.excludeFilter || [];
+            param.excludeFilter.push('default');
+        }
         var filters = _.chain(this._filtersStore.filters)
             .values()
             .flatten()
             .reject((filter)=>_.contains(param.excludeFilter, filter.tag))
             .pluck('predicate')
             .value();
-        return _.filter(
-            this.config.data,
+        var filterMap = (data) => _.filter(
+            data,
             _.reduce(
                 filters,
                 (newPredicate, filter) => (x) => newPredicate(x) && filter(x),
                 ()=>true
             )
         );
+        if (param.isNew) {
+            return _.reduce(this._originData, function (sources, source, key) {
+                sources[key] = {
+                    dims: source.dims,
+                    data: filterMap(source.data)
+                };
+                return sources;
+            }, {});
+        } else {
+            return filterMap(this.config.data);
+        }
     }
 
     setData(data) {
         this.config.data = data;
+        this.configGPL.sources['/'].data = data;
+        this._originData = null;
         this.refresh();
     }
 
@@ -215,24 +252,16 @@ export class Plot extends Emitter {
     }
 
     select(queryFilter) {
+        return this._nodes.filter(queryFilter);
+    }
 
-        var r = [];
+    traverseSpec(spec, iterator) {
 
-        if (!this._renderGraph) {
-            return r;
-        }
-
-        var fnTraverseLayout = (node, iterator) => {
-            iterator(node);
-            (node.childUnits || []).forEach((subNode) => fnTraverseLayout(subNode, iterator));
+        var traverse = (node, iterator, parentNode) => {
+            iterator(node, parentNode);
+            (node.units || []).map((x) => traverse(x, iterator, node));
         };
 
-        fnTraverseLayout(this._renderGraph, (node) => {
-            if (queryFilter(node)) {
-                r.push(node);
-            }
-        });
-
-        return r;
+        traverse(spec.unit, iterator, null);
     }
 }

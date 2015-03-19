@@ -1,7 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var assert = require('chai').assert;
-    var sizeScale = require('tau_modules/size').sizeScale;
+    var sizeScale = require('src/size').sizeScale;
 
     var check = function(sizeScale, samples) {
         samples.forEach(function(s) {
@@ -124,6 +124,12 @@ define(function (require) {
             expect(scale(null)).to.equal(55); // non-exists
             expect(scale(-Infinity)).to.equal(55);
             expect(scale(Infinity)).to.equal(55);
+        });
+
+        it("should return max size for infinite value", function () {
+            var scale = sizeScale([1, 2, 3], 10, 110, 55);
+            expect(scale(-Infinity)).to.equal(110);
+            expect(scale(Infinity)).to.equal(110);
         });
     });
 });

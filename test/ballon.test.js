@@ -2,7 +2,7 @@ define(function(require) {
     var assert = require('chai').assert;
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
-    var Balloon = require('tau_modules/api/balloon').Tooltip;
+    var Balloon = require('src/api/balloon').Tooltip;
     var $ = require('jquery');
     describe('balloon api', function() {
         var classTooltip = 'tooltip';

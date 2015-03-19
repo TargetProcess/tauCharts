@@ -16,9 +16,9 @@ var utilsDom = {
         return node;
     },
     getScrollbarWidth: function () {
-        var div = document.createElement("div");
-        div.style.overflow = "scroll";
-        div.style.visibility = "hidden";
+        var div = document.createElement('div');
+        div.style.overflow = 'scroll';
+        div.style.visibility = 'hidden';
         div.style.position = 'absolute';
         div.style.width = '100px';
         div.style.height = '100px';
@@ -69,9 +69,6 @@ var utilsDom = {
             '<g class="x axis">',
             '<g class="tick"><text><%= xTick %></text></g>',
             '</g>',
-            //'<g class="y axis">',
-            //'<g class="tick"><text><%= xTick %></text></g>',
-            //'</g>',
             '</g>',
             '</svg>'
         ].join('');

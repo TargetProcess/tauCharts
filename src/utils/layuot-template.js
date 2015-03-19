@@ -30,6 +30,4 @@ var getLayout = function () {
     /* jshint ignore:end */
 };
 
-
 export {getLayout};
-

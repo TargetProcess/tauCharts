@@ -1,31 +1,42 @@
 /*global module:false*/
 var autoprefixer = require('autoprefixer-core');
+var webpack = require('webpack');
+var webpackConfig = require('./config/webpack.test.config');
 module.exports = function (grunt) {
-
     // Project configuration.
     var src = [
-        "*.js",
-        "**/*.js",
-        "!charts/bar.js",
-        '!tau.plugins.js',
-        '!tau.svg.js',
-        '!charts/line.js',
-        '!charts/scatterplot.js',
-        '!addons/*.js',
-        '!tau.charts.js',
-        '!class.js',
-        '!tau.data.js',
-        '!tau.data.types.js'
-    ];
+        '*.js',
+        '**/*.js',
+        '!addons/*.js'
+    ], webpackConf = {
+        entry: './src/tau.charts.js',
+        output: {
+            library: 'tauCharts',
+            libraryTarget: 'umd',
+            path: 'build/development',
+            filename: 'tauCharts.js'
+        },
+        externals: {
+            d3: 'd3',
+            _: 'underscore'
+        },
+        module: {
+            loaders: [{
+                test: /\.js$/,
+                exclude: /node_modules/,
+                loader: 'babel-loader'
+            }]
+        }
+    };
     grunt.initConfig({
-        // Metadata.
         pkg: grunt.file.readJSON('package.json'),
-        banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-        '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-        '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-        '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-        ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
-        // Task configuration.
+        banner: [
+            '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ',
+            '<%= grunt.template.today("yyyy-mm-dd") %>\n',
+            '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>',
+            '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;',
+            ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n'
+        ].join(''),
         concat: {
             options: {
                 banner: '<%= banner %>',
@@ -36,7 +47,11 @@ module.exports = function (grunt) {
                 dest: 'build/development/tauCharts.js'
             },
             prodJS: {
-                src: ['build/development/tauCharts.js', 'build/development/tauCharts.color-brewer.js', 'build/development/plugins/*.js'],
+                src: [
+                    'build/development/tauCharts.js',
+                    'build/development/tauCharts.color-brewer.js',
+                    'build/development/plugins/*.js'
+                ],
                 dest: 'build/production/tauCharts.min.js'
             },
             prodCSS: {
@@ -53,36 +68,37 @@ module.exports = function (grunt) {
         },
         compile: {
             build: {
-                cwd: "src/",
+                cwd: 'src/',
                 src: src,
-                dest: "build/development/tauCharts.js"
+                dest: 'build/development/tauCharts.js'
             },
             dev: {
-                cwd: "src/",
+                cwd: 'src/',
                 src: src
             }
         },
         karma: {
-            options: {
-                configFile: 'config/karma.conf.js'
-            },
+            options: {configFile: 'config/karma.conf.js'},
             dev: {
-                reporters: ["dots"],
-                browsers: ["Chrome"],
-                singleRun: false
+                reporters: ['dots'],
+                browsers: ['Chrome'],
+                singleRun: false,
+                webpack: webpackConfig.default
             },
             unit: {
-                reporters: ["dots", "coverage"],
-                preprocessors: {"tau_modules/**/*.js": "coverage", "plugins/*.js": "coverage"},
+                webpack: webpackConfig.coverage,
+                reporters: [
+                    'coverage',
+                    'dots'
+                ],
                 coverageReporter: {
-
+                    type: 'html',
+                    dir: 'coverage/'
                 }
             }
         },
         uglify: {
-            options: {
-                banner: '<%= banner %>'
-            },
+            options: {banner: '<%= banner %>'},
             dist: {
                 src: '<%= concat.prodJS.dest %>',
                 dest: 'build/production/tauCharts.min.js'
@@ -103,11 +119,7 @@ module.exports = function (grunt) {
             }
         },
         postcss: {
-            options: {
-                processors: [
-                    autoprefixer({browsers: ['last 2 version']}).postcss
-                ]
-            },
+            options: {processors: [autoprefixer({browsers: ['last 2 version']}).postcss]},
             dist: {src: 'css/*.css'}
         },
         copy: {
@@ -205,72 +217,92 @@ module.exports = function (grunt) {
                     'git add build/tauCharts.js',
                     'git add build/tauCharts.min.js'
                 ].join('&&'),
-                options: {
-                    stdout: true
-                }
+                options: {stdout: true}
             }
         },
         jshint: {
             all: {
                 src: [
-                    "src/**/*.js", "Gruntfile.js"
+                    'src/**/*.js',
+                    'Gruntfile.js'
                 ],
                 options: {
-                    "loopfunc": true,
-                    "esnext": true
+                    loopfunc: true,
+                    esnext: true
                 }
             }
         },
         less: {
             development: {
-                options: {
-                    paths: ["less"]
-                },
+                options: {paths: ['less']},
                 files: {
-                    "css/tooltip.css": "less/tooltip.less",
-                    "css/export.css": "less/export.less",
-                    "css/colorbrewer.css": "less/colorbrewer.less",
-                    "css/base.css": "less/base.less",
-                    "css/tauCharts.css": "less/tauCharts.less",
-                    "css/layout.css": "less/layout.less",
-                    "css/legend.css": "less/legend.less",
-                    "css/trendline.css": "less/trendline.less"
+                    'css/tooltip.css': 'less/tooltip.less',
+                    'css/export.css': 'less/export.less',
+                    'css/colorbrewer.css': 'less/colorbrewer.less',
+                    'css/base.css': 'less/base.less',
+                    'css/tauCharts.css': 'less/tauCharts.less',
+                    'css/layout.css': 'less/layout.less',
+                    'css/legend.css': 'less/legend.less',
+                    'css/trendline.css': 'less/trendline.less'
                 }
             }
         },
-        clean: ['build/production/', 'build/development/'],
+        clean: [
+            'build/production/',
+            'build/development/'
+        ],
         bowercopy: {
-            options: {
-                // clean: true
-            },
+            options: {},
             libs: {
-                options: {
-                    destPrefix: "libs"
-                },
+                options: {destPrefix: 'libs'},
                 files: {
-                    "d3.js": "d3/d3.js",
-                    "underscore.js": "underscore/underscore.js",
-                    "jquery.js": "jquery/dist/jquery.js",
-                    "modernizer.js": "modernizer/modernizr.js",
-                    "js-schema.js": "js-schema/js-schema.debug.js",
-                    "es5-shim.js": "es5-shim/es5-shim.js"
+                    'd3.js': 'd3/d3.js',
+                    'underscore.js': 'underscore/underscore.js',
+                    'jquery.js': 'jquery/dist/jquery.js',
+                    'js-schema.js': 'js-schema/js-schema.debug.js',
+                    'es5-shim.js': 'es5-shim/es5-shim.js'
                 }
             }
         },
         watch: {
             js: {
                 files: ['<%= jshint.all.src %>'],
-                tasks: ['jshint', 'compile:dev', 'less']
+                tasks: [
+                    'jshint',
+                    'compile:dev',
+                    'less'
+                ]
             },
             less: {
                 files: ['less/*.less'],
                 tasks: ['less']
             }
+        },
+        webpack: {build: webpackConf},
+        'webpack-dev-server': {
+            options: {
+                webpack: webpackConf,
+                publicPath: '/'
+            },
+            start: {
+                port: 9000,
+                keepAlive: true,
+                webpack: {
+                    devtool: 'eval',
+                    debug: true
+                }
+            }
+        },
+        jscs: {
+            src: [
+                'plugins/*.js',
+                'src/**'
+            ],
+            options: {config: '.jscsrc'}
         }
     });
     // load local tasks
-    grunt.loadTasks("tasks");
-
+    grunt.loadTasks('tasks');
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -286,12 +318,39 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-rename');
     grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-webpack');
+    grunt.loadNpmTasks('grunt-jscs');
     // Default task.
-    //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-    grunt.registerTask('default', ['bowercopy', 'less', 'compile:dev', 'jshint', 'watch:js']);
-    var buildWithoutPublish = ['bowercopy', 'less', 'postcss', 'copy:build', 'compile:build', 'concat:dist', 'concat:prodJS', 'concat:prodCSS', 'uglify', 'cssmin'];
+    // grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
+    grunt.registerTask('default', [
+        'bowercopy',
+        'less',
+        'compile:dev',
+        'jshint',
+        'watch:js'
+    ]);
+    var buildWithoutPublish = [
+        'bowercopy',
+        'less',
+        'postcss',
+        'copy:build',
+        'compile:build',
+        'concat:dist',
+        'concat:prodJS',
+        'concat:prodCSS',
+        'uglify',
+        'cssmin'
+    ];
     grunt.registerTask('build', buildWithoutPublish);
-    grunt.registerTask('publish', buildWithoutPublish.concat(['copy:copybuild', 'clean']));
-    grunt.registerTask('travis', ['bowercopy', 'jshint', 'build']);
+    grunt.registerTask('publish', buildWithoutPublish.concat([
+        'copy:copybuild',
+        'clean'
+    ]));
+    grunt.registerTask('travis', [
+        'bowercopy',
+        'jshint',
+        'jscs',
+        'build'
+    ]);
     grunt.registerTask('watching', ['default']);
 };

@@ -1,8 +1,8 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var modernizer = require('modernizer');
-    var tauChart = require('tau_modules/tau.newCharts');
+    var modernizer = require('bower_components/modernizer/modernizr');
+    var tauChart = require('src/tau.charts');
     describe("tauChart.Plot", function () {
 
         var spec;
@@ -144,28 +144,29 @@ define(function (require) {
             plot.renderTo('#test-div');
 
             var svg = d3.select(div).selectAll('svg');
-            var width = parseInt(svg.attr('width'),10);
-            var height = parseInt(svg.attr('height'),10);
+            var width = parseInt(svg.attr('width'), 10);
+            var height = parseInt(svg.attr('height'), 10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if(modernizer.flexbox) {
+            if (modernizer.flexbox) {
                 expect(width).to.equal(expectedWidth);
                 expect(height).to.equal(expectedHeight);
             }
-            //todo rework resize test
-            plot.resize({width:500,height:500});
+
+            plot.resize({width: 500, height: 500});
             svg = d3.select(div).selectAll('svg');
-            width =  parseInt(svg.attr('width'),10);
-            height = parseInt(svg.attr('height'),10);
-            if(modernizer.flexbox) {
+            width = parseInt(svg.attr('width'), 10);
+            height = parseInt(svg.attr('height'), 10);
+            if (modernizer.flexbox) {
                 expect(width).to.equal(500);
                 expect(height).to.equal(500);
             }
+
             plot.resize();
             svg = d3.select(div).selectAll('svg');
-            width =  parseInt(svg.attr('width'),10);
-            height = parseInt(svg.attr('height'),10);
-            if(modernizer.flexbox) {
+            width = parseInt(svg.attr('width'), 10);
+            height = parseInt(svg.attr('height'), 10);
+            if (modernizer.flexbox) {
                 expect(width).to.equal(expectedWidth);
                 expect(height).to.equal(expectedHeight);
             }
@@ -328,15 +329,14 @@ define(function (require) {
                 return true;
             });
             expect(allElements.length).to.equal(2);
-            expect(allElements[0].type).to.equal('COORDS.RECT');
-            expect(allElements[1].type).to.equal('ELEMENT.POINT');
+            expect(allElements[0].config.type).to.equal('ELEMENT.POINT');
+            expect(allElements[1].config.type).to.equal('COORDS.RECT');
 
             var someElements = plot.select(function(unitNode) {
-                var parent = (unitNode.parentUnit || {});
-                return parent.type === 'COORDS.RECT';
+                 return unitNode.config.type === 'ELEMENT.POINT';
             });
             expect(someElements.length).to.equal(1);
-            expect(someElements[0].type).to.equal('ELEMENT.POINT');
+            expect(someElements[0].config.type).to.equal('ELEMENT.POINT');
         });
     });
 });

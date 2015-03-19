@@ -6,8 +6,8 @@ define(function (require) {
     var assert = require('chai').assert;
     var getLine = testUtils.getLine;
     var attrib = testUtils.attrib;
-    var tauChart = require('tau_modules/tau.newCharts');
-    var cssClassMap = require('tau_modules/utils/css-class-map');
+    var tauChart = require('src/tau.charts');
+    var cssClassMap = require('src/utils/css-class-map');
     describe("ELEMENT.LINE", function () {
 
         var testData = [

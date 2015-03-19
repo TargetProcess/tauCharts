@@ -1,9 +1,9 @@
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof define === 'function' && define.amd) {
         define(['tauCharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
-    } else if (typeof module === "object" && module.exports) {
+    } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('tauCharts');
         module.exports = factory(tauPlugins);
     } else {
@@ -26,7 +26,7 @@
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.unit || [], child, found;
+        var i, children = node.units || [], child, found;
         for (i = 0; i < children.length; i += 1) {
             child = children[i];
             found = dfs(child, predicate);
@@ -61,11 +61,11 @@
                     this.circle.remove();
                 }
                 this.circle = container
-                    .append("circle")
-                    .attr("cx", x)
-                    .attr("cy", y)
+                    .append('circle')
+                    .attr('cx', x)
+                    .attr('cy', y)
                     .attr('class', color)
-                    .attr("r", 4);
+                    .attr('r', 4);
                 this.circle.node().addEventListener('mouseover', function () {
                     clearTimeout(this._timeoutHideId);
                 }.bind(this), false);
@@ -89,7 +89,7 @@
                 this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
                 this._elementTooltip = this._tooltip.getElement();
 
-                var spec = chart.getConfig().spec;
+                var spec = chart.getConfig(); // .spec;
 
                 var dimensionGuides = this._findDimensionGuides(spec);
 
@@ -97,13 +97,11 @@
                     memo[key] = _.last(guides);
                     return memo;
                 }, {});
-
-                var formatters = this._generateDefaultFormatters(lastGuides, spec.dimensions);
+                var formatters = this._generateDefaultFormatters(lastGuides, spec.scales);
                 _.extend(this.formatters, formatters);
 
                 var labels = this._generateDefaultLabels(lastGuides);
                 _.extend(this.labels, labels);
-
 
                 var elementTooltip = this._elementTooltip;
                 elementTooltip.addEventListener('mouseover', function () {
@@ -130,16 +128,17 @@
 
             },
 
-
-            onUnitReady: function (chart, unitMeta) {
-                if (unitMeta.type && unitMeta.type.indexOf('ELEMENT') === 0) {
-                    var key = this._generateKey(unitMeta.$where);
+            onUnitDraw: function (chart, unitMeta) {
+                if (tauCharts.api.isChartElement(unitMeta)) {
+                    var key = this._generateKey(unitMeta.config.options.frameId);
                     this._unitMeta[key] = unitMeta;
-                    var values = unitMeta.partition();
+                    var values = unitMeta.config.frames.reduce(function (data, item) {
+                        return data.concat(item.data)
+                    }, []);
                     this._dataWithCoords[key] = values.map(function (item) {
                         return {
-                            x: unitMeta.options.xScale(item[unitMeta.x.scaleDim]),
-                            y: unitMeta.options.yScale(item[unitMeta.y.scaleDim]),
+                            x: unitMeta.xScale(item[unitMeta.xScale.dim]),
+                            y: unitMeta.yScale(item[unitMeta.yScale.dim]),
                             item: item
                         };
                     }, this);
@@ -158,7 +157,8 @@
                 fields = _.unique(fields);
                 return fields.map(function (field) {
                     var rawValue = data[field];
-                    var formattedValue = this._getFormatter(field)(rawValue);
+                    var value = this._getFormatter(field)(rawValue);
+                    var formattedValue = _.isObject(value) ? value.name : value;
                     var label = this._getLabel(field);
 
                     return this.renderItem(label, formattedValue, field, rawValue);
@@ -184,7 +184,14 @@
 
             _generateDefaultLabels: function (lastGuides) {
                 return _.reduce(lastGuides, function (memo, lastGuide, key) {
-                    memo[key] = lastGuide.label || key;
+                    if (lastGuide.label) {
+                        memo[key] = lastGuide.label;
+                        if (lastGuide.label.hasOwnProperty('text')) {
+                            memo[key] = lastGuide.label.text;
+                        }
+                    } else {
+                        memo[key] = key;
+                    }
                     return memo;
                 }, {});
             },
@@ -200,13 +207,14 @@
                                 // very special case for dates
                                 var xFormat = (format === 'x-time-auto') ? 'day' : format;
                                 return tauCharts.api.tickFormat.get(xFormat)(rawValue);
-                            } else if (lastGuide.tickLabel) {
-                                return rawValue[lastGuide.tickLabel];
-                            } else if (dimensions[key].value) {
-                                return rawValue[dimensions[key].value];
                             } else {
                                 return rawValue;
                             }
+                            /*else if (lastGuide.tickLabel) {
+                             return rawValue[lastGuide.tickLabel];
+                             } else if (dimensions[key] && dimensions[key].value) {
+                             return rawValue[dimensions[key].value];
+                             }*/
                         }
                     };
 
@@ -221,18 +229,18 @@
 
             _findDimensionGuides: function (spec) {
                 var dimensionGuideMap = {};
-
+                var scales = spec.scales;
                 var collect = function (field, unit) {
                     var property = unit[field];
                     if (property) {
                         var guide = (unit.guide || {})[field];
-
-                        if (guide) {
-                            if (!dimensionGuideMap[property]) {
-                                dimensionGuideMap[property] = [];
+                        var dim = scales[property].dim;
+                        if (dim && guide) {
+                            if (!dimensionGuideMap[dim]) {
+                                dimensionGuideMap[dim] = [];
                             }
 
-                            dimensionGuideMap[property].push(guide)
+                            dimensionGuideMap[dim].push(guide);
                         }
                     }
                 };
@@ -289,55 +297,71 @@
                     return this._dataFields;
                 }
 
-                var fields = [unit.size && unit.size.scaleDim, unit.color && unit.color.scaleDim];
+                var fields = [unit.size && unit.size.dim, unit.color && unit.color.dim];
                 var x = [];
                 var y = [];
                 while (unit = unit.parentUnit) {
-                    x.push(unit.x.scaleDim);
-                    y.push(unit.y.scaleDim);
+                    x.push(unit.xScale.dim);
+                    y.push(unit.yScale.dim);
                 }
 
                 return _.compact(fields.concat(y, x).reverse());
 
             },
-            isLine: function (data) {
-                return data.elementData.hasOwnProperty('key') && Array.isArray(data.elementData.values);
-            },
-            _onElementMouseOver: function (chart, data, mosueCoord, placeCoord) {
-                clearTimeout(this._timeoutHideId);
-                var key = this._generateKey(data.cellData.$where);
-                var item = data.elementData;
-                var isLine = this.isLine(data);
-                if (isLine) {
-                    var dataWithCoord = this._dataWithCoords[key];
-                    var filteredData = dataWithCoord.filter(function (value) {
-                        return _.contains(item.values, value.item);
-                    });
-                    var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
-                        var secondPoint;
-                        if ((index + 1) === data.length) {
-                            var temp = point;
-                            point = data[index - 1];
-                            secondPoint = temp;
-                        } else {
-                            secondPoint = data[index + 1];
-                        }
-                        var h = this._calculateLengthToLine(point.x, point.y, secondPoint.x, secondPoint.y, mosueCoord[0], mosueCoord[1]);
-                        if (h < memo.h) {
-                            memo.h = h;
-                            memo.points = {
-                                point1: point,
-                                point2: secondPoint
-                            };
-                        }
-                        return memo;
-                    }.bind(this), {h: Infinity, points: {}});
+            _handleLineElement: function (data, key, mouseCoord) {
+                var elementData = data.elementData;
+                var dataWithCoord = this._dataWithCoords[key];
+                var filteredData = dataWithCoord.filter(function (value) {
+                    return _.contains(elementData.data, value.item);
+                });
+                if (filteredData.length === 1) {
+                    return filteredData[0].item;
+                }
+                var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
+                    var secondPoint;
+                    if ((index + 1) === data.length) {
+                        var temp = point;
+                        point = data[index - 1];
+                        secondPoint = temp;
+                    } else {
+                        secondPoint = data[index + 1];
+                    }
+                    var h = this._calculateLengthToLine(
+                        point.x,
+                        point.y,
+                        secondPoint.x,
+                        secondPoint.y,
+                        mouseCoord[0],
+                        mouseCoord[1]
+                    );
+                    if (h < memo.h) {
+                        memo.h = h;
+                        memo.points = {
+                            point1: point,
+                            point2: secondPoint
+                        };
+                    }
+                    return memo;
+                }.bind(this), {h: Infinity, points: {}});
 
-                    var itemWithCoord = _.min(nearLine.points, function (a) {
-                        return this._calculateLength(a.x, a.y, mosueCoord[0], mosueCoord[1]);
-                    }, this);
-                    item = itemWithCoord.item;
-                    this._drawPoint(d3.select(data.element.parentNode), itemWithCoord.x, itemWithCoord.y, this._unitMeta[key].options.color.get(data.elementData.key));
+                var itemWithCoord = _.min(nearLine.points, function (a) {
+                    return this._calculateLength(a.x, a.y, mouseCoord[0], mouseCoord[1]);
+                }, this);
+                this._drawPoint(
+                    d3.select(data.element.parentNode),
+                    itemWithCoord.x,
+                    itemWithCoord.y,
+                    this._unitMeta[key].color(data.elementData.tags[this._unitMeta[key].color.dim])
+                );
+                return itemWithCoord.item;
+            },
+            _onElementMouseOver: function (chart, data, mouseCoord, placeCoord) {
+                clearTimeout(this._timeoutHideId);
+                var key = this._generateKey(data.cellData.hash && data.cellData.hash() ||
+                data.cellData.options.frameId);
+                var item = data.elementData;
+                if (tauCharts.api.isLineElement(data.unit)) {
+                    item = this._handleLineElement(data, key, mouseCoord)
                 }
                 if (this._currentElement === item) {
                     return;

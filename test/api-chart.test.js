@@ -1,12 +1,13 @@
 define(function (require) {
     var assert = require('chai').assert;
-    var modernizer = require('modernizer');
-    var Balloon = require('tau_modules/api/balloon').Tooltip;
+
+    var modernizer = require('bower_components/modernizer/modernizr');
+    var Balloon = require('src/api/balloon').Tooltip;
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var utils = require('testUtils');
     var $ = require('jquery');
-    var tauCharts = require('tau_modules/tau.newCharts');
+    var tauCharts = require('src/tau.charts');
     var div, spec;
     var config = {
 
@@ -112,7 +113,6 @@ define(function (require) {
                 });
             });
 
-
         });
         afterEach(function () {
             div1.parentNode.removeChild(div1);
@@ -130,7 +130,9 @@ define(function (require) {
         });
 
         afterEach(function () {
-            div.parentNode.removeChild(div);
+            if (div && div.parentNode) {
+                div.parentNode.removeChild(div);
+            }
         });
 
         it('api test element events', function (done) {
@@ -158,6 +160,7 @@ define(function (require) {
 
         });
         it('api plugins', function () {
+
             var initPlugin = null;
             var autoSubscribePlugin = null;
             var autoSubscribePlugin2 = null;
@@ -278,7 +281,7 @@ define(function (require) {
         });
         it('api test getConfig', function () {
             var plot = new tauCharts.Plot(config);
-            var configChart = plot.getConfig();
+            var configChart = plot.getConfig(true);
             expect(schemes.config.errors(configChart)).to.not.be.ok;
         });
         it('api test getSVG', function () {
@@ -337,7 +340,6 @@ define(function (require) {
             expect(function () {
                 tauCharts.api.plugins.add('myPlugins', myPlugins2);
             }).to.throw(Error);
-
 
         });
     });

@@ -1,7 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var assert = require('chai').assert;
-    var utils = require('tau_modules/utils/utils').utils;
+    var utils = require('src/utils/utils').utils;
 
     var check = function(samples) {
         samples.forEach(function(s) {

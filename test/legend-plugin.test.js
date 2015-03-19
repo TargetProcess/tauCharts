@@ -1,4 +1,7 @@
 define(function (require) {
+
+    // return;
+
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var legend = require('plugins/legend');
@@ -131,8 +134,8 @@ define(function (require) {
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
 
         svg = chart.getSVG();
-        var  isHighlight = function(elements) {
-           return _.every(elements, function(element) {
+        var  isHighlight = function (elements) {
+           return _.every(elements, function (element) {
                return testUtils.hasClass(element, 'graphical-report__highlighted');
            });
         };
@@ -157,7 +160,7 @@ define(function (require) {
             x: 'x',
             y: 'y',
             color: 'color',
-            plugins: [legend(),trendline(),exportTo()]
+            plugins: [legend()/*,trendline(),exportTo()*/]
         },
         [{
             x: 2,
@@ -177,7 +180,7 @@ define(function (require) {
         }],
         function(context) {
             it("shouldn't render spec", function () {
-                AssertToggleOnHover(context,expect);
+                AssertToggleOnHover(context, expect);
             });
         },
         {
@@ -191,7 +194,7 @@ define(function (require) {
             x: 'x',
             y: 'y',
             color: 'color',
-            plugins: [legend(),trendline()]
+            plugins: [legend()/*,trendline()*/]
         },
         [{
             x: 2,

@@ -1,1 +1,2 @@
 build/* binary
+*.js    eol=lf

@@ -1,15 +1,15 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var modernizer = require('modernizer');
-    var utilsDraw = require('tau_modules/utils/utils-draw').utilsDraw;
+    var modernizer = require('bower_components/modernizer/modernizr');
+    var d3Decorator = require('src/utils/d3-decorators');
 
-    describe("utils-draw", function () {
+    describe('d3-decorators', function () {
         var div;
-        var textLenMeasurer = function(d3Text) {
+        var textLenMeasurer = function (d3Text) {
             return d3Text.text().length * 8;
         };
-        beforeEach(function () {
+        beforeEach(()=> {
             div = document.createElement('div');
             div.innerHTML = [
                 '<div id="test-div" style="width: 800px; height: 600px">',
@@ -28,21 +28,21 @@ define(function (require) {
             div.parentNode.removeChild(div);
         });
 
-        it("should cut continuous text", function () {
+        it('should cut continuous text', function () {
             var d3Text = d3.select(div).selectAll('text.long');
-            utilsDraw.cutText(d3Text, 100, textLenMeasurer);
+            d3Decorator.cutText(d3Text, 100, textLenMeasurer);
             expect(d3Text.text()).to.equal('01234567...');
         });
 
-        it("should cut intermittent text", function () {
+        it('should cut intermittent text', function () {
             var d3Text = d3.select(div).selectAll('text.word');
-            utilsDraw.cutText(d3Text, 100, textLenMeasurer);
+            d3Decorator.cutText(d3Text, 100, textLenMeasurer);
             expect(d3Text.text()).to.equal('012345 6...');
         });
 
-        it("should wrap text", function () {
+        it('should wrap text', function () {
             var d3Text = d3.select(div).selectAll('text.wrap');
-            utilsDraw.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
+            d3Decorator.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
             expect(div.innerHTML).to.equal([
                 '<div id="test-div" style="width: 800px; height: 600px">',
                 '<svg>',
@@ -59,9 +59,9 @@ define(function (require) {
             ].join(''));
         });
 
-        it("should wrap continuous text", function () {
+        it('should wrap continuous text', function () {
             var d3Text = d3.select(div).selectAll('text.long');
-            utilsDraw.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
+            d3Decorator.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
             expect(div.innerHTML).to.equal([
                 '<div id="test-div" style="width: 800px; height: 600px">',
                 '<svg>',
@@ -76,9 +76,9 @@ define(function (require) {
             ].join(''));
         });
 
-        it("should wrap several continuous text tokens", function () {
+        it('should wrap several continuous text tokens', function () {
             var d3Text = d3.select(div).selectAll('text.longwrap');
-            utilsDraw.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
+            d3Decorator.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
             expect(div.innerHTML).to.equal([
                 '<div id="test-div" style="width: 800px; height: 600px">',
                 '<svg>',

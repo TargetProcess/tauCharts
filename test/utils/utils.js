@@ -1,6 +1,7 @@
 define(function (require) {
-    var tauCharts = require('tau_modules/tau.newCharts'),
+    var tauCharts = require('src/tau.charts'),
         $ = require('jquery'),
+        _ = require('underscore'),
         d3 = require('d3');
 
     var testChartSettings = {
@@ -150,6 +151,7 @@ define(function (require) {
             fn(context);
 
             afterEach(function () {
+                context.chart.destroy();
                 context.element.parentNode.removeChild(context.element);
             });
         });

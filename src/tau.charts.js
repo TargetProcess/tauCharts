@@ -1,27 +1,29 @@
 import {utilsDom} from './utils/utils-dom';
+import {utils} from './utils/utils';
+import {GPL} from './charts/tau.gpl';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
-import {UnitDomainMixin} from './unit-domain-mixin';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
-import {DSLReader} from './dsl-reader';
-import {SpecEngineFactory} from './spec-engine-factory';
-import {LayoutEngineFactory} from './layout-engine-factory';
 import {FormatterRegistry} from './formatter-registry';
-import {nodeMap} from './node-map';
-import {UnitsRegistry} from './units-registry';
+import {unitsRegistry} from './units-registry';
+
+import {Cartesian}  from './elements/coords.cartesian';
+import {Point}      from './elements/element.point';
+import {Line}       from './elements/element.line';
+import {Pie}        from './elements/element.pie';
+import {Interval}   from './elements/element.interval';
+
 var colorBrewers = {};
 var plugins = {};
 
 var __api__ = {
-    UnitDomainMixin: UnitDomainMixin,
-    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator,
-    DSLReader: DSLReader,
-    SpecEngineFactory: SpecEngineFactory,
-    LayoutEngineFactory: LayoutEngineFactory
+    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
 };
 var api = {
-    UnitsRegistry: UnitsRegistry,
+    unitsRegistry: unitsRegistry,
     tickFormat: FormatterRegistry,
+    isChartElement:utils.isChartElement,
+    isLineElement:utils.isLineElement,
     d3: d3,
     _: _,
     tickPeriod: UnitDomainPeriodGenerator,
@@ -44,14 +46,16 @@ var api = {
             }
         },
         get: function (name) {
-            return plugins[name];
+            return plugins[name] || ((x) => {
+                throw new Error(`${x} plugin is not defined`);
+            });
         }
     },
     globalSettings: {
 
         log: (msg, type) => {
             type = type || 'INFO';
-            if(!Array.isArray(msg)) {
+            if (!Array.isArray(msg)) {
                 msg = [msg];
             }
             console[type.toLowerCase()].apply(console, msg);
@@ -94,13 +98,13 @@ var api = {
         xFontLabelHeight: 10,
         yFontLabelHeight: 10,
 
-        'xDensityPadding': 4,
-        'yDensityPadding': 4,
+        xDensityPadding: 4,
+        yDensityPadding: 4,
         'xDensityPadding:measure': 8,
         'yDensityPadding:measure': 8,
 
         defaultFormats: {
-            'measure': 'x-num-auto',
+            measure: 'x-num-auto',
             'measure:time': 'x-time-auto'
         }
     }
@@ -108,14 +112,16 @@ var api = {
 
 Plot.globalSettings = api.globalSettings;
 
-api.UnitsRegistry
-    .add('COORDS.PARALLEL', nodeMap['COORDS.PARALLEL'])
-    .add('PARALLEL/ELEMENT.LINE', nodeMap['PARALLEL/ELEMENT.LINE'])
-    .add('COORDS.RECT', nodeMap['COORDS.RECT'])
-    .add('ELEMENT.POINT', nodeMap['ELEMENT.POINT'])
-    .add('ELEMENT.LINE', nodeMap['ELEMENT.LINE'])
-    .add('ELEMENT.INTERVAL', nodeMap['ELEMENT.INTERVAL']);
-export {Plot, Chart, __api__, api};
+api.unitsRegistry
+    .reg('COORDS.RECT', Cartesian)
+    .reg('ELEMENT.POINT', Point)
+    .reg('ELEMENT.LINE', Line)
+    .reg('ELEMENT.INTERVAL', Interval)
 
+    .reg('RECT', Cartesian)
+    .reg('POINT', Point)
+    .reg('INTERVAL', Interval)
+    .reg('LINE', Line)
+    .reg('PIE', Pie);
 
-
+export {GPL, Plot, Chart, __api__, api};

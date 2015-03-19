@@ -19,11 +19,10 @@
     "!license.txt"
   ],
   "dependencies": {
-    "d3": "~3.4.3",
-    "underscore": "~1.6.0"
+    "d3": "~3.5.5",
+    "underscore": "~1.8.2"
   },
   "devDependencies": {
-    "jquery": "2.1.1",
     "modernizer": "2.8.2",
     "js-schema": "0.7.0",
     "es5-shim": "latest",
@@ -31,5 +30,9 @@
     "FileSaver.js": "https://github.com/Mavrin/FileSaver.js.git",
     "fetch": "~0.6.1",
     "es6-promise": "~2.0.1"
+  },
+  "resolutions": {
+    "d3": "~3.5.5",
+    "underscore": "~1.8.2"
   }
 }

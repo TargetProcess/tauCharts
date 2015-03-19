@@ -1,31 +1,96 @@
+import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
 import {utilsDom} from './utils/utils-dom';
+import {ScalesFactory} from './scales-factory';
 
 function extendGuide(guide, targetUnit, dimension, properties) {
-    var guide_dim =  guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
     _.each(properties, (prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
-    _.extend(targetUnit.guide[dimension], _.omit.apply(_,[guide_dim].concat[properties]));
+    _.extend(targetUnit.guide[dimension], _.omit.apply(_, [guide_dim].concat[properties]));
 }
 
 var applyCustomProps = (targetUnit, customUnit) => {
     var guide = customUnit.guide || {};
     var config = {
-        'x': ['label'],
-        'y': ['label'],
-        'size': ['label'],
-        'color': ['label'],
-        'padding': []
+        x: ['label'],
+        y: ['label'],
+        size: ['label'],
+        color: ['label'],
+        padding: []
     };
 
     _.each(config, (properties, name)=> {
         extendGuide(guide, targetUnit, name, properties);
     });
-    _.extend(targetUnit.guide,  _.omit.apply(_, [guide].concat(_.keys(config))));
+    _.extend(targetUnit.guide, _.omit.apply(_, [guide].concat(_.keys(config))));
     return targetUnit;
+};
+
+var extendLabel = function (guide, dimension, extend) {
+    guide[dimension] = _.defaults(guide[dimension] || {}, {
+        label: ''
+    });
+    guide[dimension].label = _.isObject(guide[dimension].label) ?
+        guide[dimension].label :
+    {text: guide[dimension].label};
+    guide[dimension].label = _.defaults(
+        guide[dimension].label,
+        extend || {},
+        {
+            padding: 32,
+            rotate: 0,
+            textAnchor: 'middle',
+            cssClass: 'label',
+            dock: null
+        }
+    );
+
+    return guide[dimension];
+};
+var extendAxis = function (guide, dimension, extend) {
+    guide[dimension] = _.defaults(
+        guide[dimension],
+        extend || {},
+        {
+            padding: 0,
+            density: 30,
+            rotate: 0,
+            tickPeriod: null,
+            tickFormat: null,
+            autoScale: true
+        }
+    );
+    guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
+    return guide[dimension];
+};
+
+var applyNodeDefaults = (node) => {
+    node.options = node.options || {};
+    node.guide = node.guide || {};
+    node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
+
+    node.guide.x = extendLabel(node.guide, 'x');
+    node.guide.x = extendAxis(node.guide, 'x', {
+        cssClass: 'x axis',
+        scaleOrient: 'bottom',
+        textAnchor: 'middle'
+    });
+
+    node.guide.y = extendLabel(node.guide, 'y', {rotate: -90});
+    node.guide.y = extendAxis(node.guide, 'y', {
+        cssClass: 'y axis',
+        scaleOrient: 'left',
+        textAnchor: 'end'
+    });
+
+    node.guide.size = extendLabel(node.guide, 'size');
+    node.guide.color = extendLabel(node.guide, 'color');
+
+    return node;
 };
 
 var inheritProps = (childUnit, root) => {
@@ -34,7 +99,7 @@ var inheritProps = (childUnit, root) => {
     childUnit.guide.padding = childUnit.guide.padding || {l: 0, t: 0, r: 0, b: 0};
 
     // leaf elements should inherit coordinates properties
-    if (!childUnit.hasOwnProperty('unit')) {
+    if (!childUnit.hasOwnProperty('units')) {
         childUnit = _.defaults(childUnit, root);
         childUnit.guide = _.defaults(childUnit.guide, utils.clone(root.guide));
         childUnit.guide.x = _.defaults(childUnit.guide.x, utils.clone(root.guide.x));
@@ -46,10 +111,10 @@ var inheritProps = (childUnit, root) => {
 
 var createSelectorPredicates = (root) => {
 
-    var children = root.unit || [];
+    var children = root.units || [];
 
-    var isLeaf = !root.hasOwnProperty('unit');
-    var isLeafParent = !children.some((c) => c.hasOwnProperty('unit'));
+    var isLeaf = !root.hasOwnProperty('units');
+    var isLeafParent = !children.some((c) => c.hasOwnProperty('units'));
 
     return {
         type: root.type,
@@ -65,7 +130,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     }
 
     if (formatter === null) {
-        var size = fnCalcTickLabelSize("TauChart Library");
+        var size = fnCalcTickLabelSize('TauChart Library');
         size.width = axisLabelLimit * 0.625; // golden ratio
         return size;
     }
@@ -80,7 +145,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
 };
 
-var getTickFormat = (dim, meta, defaultFormats) => {
+var getTickFormat = (dim, defaultFormats) => {
     var dimType = dim.dimType;
     var scaleType = dim.scaleType;
     var specifier = '*';
@@ -90,8 +155,7 @@ var getTickFormat = (dim, meta, defaultFormats) => {
     return defaultFormats[key] || defaultFormats[tag] || defaultFormats[dimType] || null;
 };
 
-
-var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
 
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);
@@ -112,8 +176,8 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
     var yValues = yMeta.values;
 
-    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
-    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+    unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
+    unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
 
     if (['day', 'week', 'month'].indexOf(unit.guide.x.tickFormat) >= 0) {
         unit.guide.x.tickFormat += '-short';
@@ -138,7 +202,6 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         settings.getAxisTickLabelSize,
         settings.yAxisTickLabelLimit);
 
-
     var xAxisPadding = settings.xAxisPadding;
     var yAxisPadding = settings.yAxisPadding;
 
@@ -148,7 +211,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
     unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
 
-    unit.guide.x.rotate = isXVertical ? +90 : 0;
+    unit.guide.x.rotate = isXVertical ? 90 : 0;
     unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
 
     unit.guide.y.rotate = isYVertical ? -90 : 0;
@@ -160,10 +223,9 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.x.tickFormatWordWrapLimit = settings.xAxisTickLabelLimit;
     unit.guide.y.tickFormatWordWrapLimit = settings.yAxisTickLabelLimit;
 
-
     var xTickBox = isXVertical ?
-        {w: maxXTickSize.height, h: maxXTickSize.width} :
-        {h: maxXTickSize.height, w: maxXTickSize.width};
+    {w: maxXTickSize.height, h: maxXTickSize.width} :
+    {h: maxXTickSize.height, w: maxXTickSize.width};
 
     if (maxXTickSize.width > settings.xAxisTickLabelLimit) {
 
@@ -177,17 +239,15 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         if (isXVertical) {
             xTickBox.h = settings.xAxisTickLabelLimit;
             xTickBox.w = textLinesHeight;
-        }
-        else {
+        } else {
             xTickBox.h = textLinesHeight;
             xTickBox.w = settings.xAxisTickLabelLimit;
         }
     }
 
-
     var yTickBox = isYVertical ?
-        {w: maxYTickSize.height, h: maxYTickSize.width} :
-        {h: maxYTickSize.height, w: maxYTickSize.width};
+    {w: maxYTickSize.height, h: maxYTickSize.width} :
+    {h: maxYTickSize.height, w: maxYTickSize.width};
 
     if (maxYTickSize.width > settings.yAxisTickLabelLimit) {
 
@@ -201,8 +261,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         if (isYVertical) {
             yTickBox.w = textLinesHeight;
             yTickBox.h = settings.yAxisTickLabelLimit;
-        }
-        else {
+        } else {
             yTickBox.w = settings.yAxisTickLabelLimit;
             yTickBox.h = textLinesHeight;
         }
@@ -221,7 +280,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     unit.guide.y.density = yTickBox.h + yDensityPadding * 2;
 
     if (!inlineLabels) {
-        unit.guide.x.label.padding = +xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
+        unit.guide.x.label.padding = xFontLabelHeight + ((unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0);
         unit.guide.y.label.padding = -xFontLabelHeight + ((unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0);
 
         let xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
@@ -232,8 +291,7 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
 
         unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
         unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
-    }
-    else {
+    } else {
         var pd = (xAxisPadding - xFontLabelHeight) / 2;
         unit.guide.x.label.padding = 0 + xFontLabelHeight - distToXAxisLabel + pd;
         unit.guide.y.label.padding = 0 - distToYAxisLabel + pd;
@@ -245,11 +303,6 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
         unit.guide.y.label.cssClass += ' inline';
         unit.guide.y.label.dock = 'right';
         unit.guide.y.label.textAnchor = 'end';
-
-        //unit.guide.x.label.dock = 'left';
-        //unit.guide.x.label.textAnchor = 'start';
-        //unit.guide.y.label.dock = 'left';
-        //unit.guide.y.label.textAnchor = 'start';
 
         unit.guide.padding.b = xAxisPadding + xFontH;
         unit.guide.padding.l = yAxisPadding + yFontW;
@@ -273,10 +326,9 @@ var calcUnitGuide = function(unit, meta, settings, allowXVertical, allowYVertica
     return unit;
 };
 
-
 var SpecEngineTypeMap = {
 
-    'NONE': (srcSpec, meta, settings) => {
+    NONE: (srcSpec, meta, settings) => {
 
         var spec = utils.clone(srcSpec);
         fnTraverseSpec(
@@ -305,7 +357,7 @@ var SpecEngineTypeMap = {
 
         utils.traverseJSON(
             spec.unit,
-            'unit',
+            'units',
             createSelectorPredicates,
             (selectors, unit) => {
 
@@ -313,8 +365,13 @@ var SpecEngineTypeMap = {
                     return unit;
                 }
 
-                if (!xUnit && unit.x) (xUnit = unit);
-                if (!yUnit && unit.y) (yUnit = unit);
+                if (!xUnit && unit.x) {
+                    xUnit = unit;
+                }
+
+                if (!yUnit && unit.y) {
+                    yUnit = unit;
+                }
 
                 unit.guide = unit.guide || {};
 
@@ -325,24 +382,28 @@ var SpecEngineTypeMap = {
                 unit.guide.y.label = _.isObject(unit.guide.y.label) ? unit.guide.y.label : {text: unit.guide.y.label};
 
                 if (unit.x) {
-                    unit.guide.x.label.text = unit.guide.x.label.text || unit.x;
+                    unit.guide.x.label.text = unit.guide.x.label.text || meta.dimension(unit.x).dimName;
                 }
 
                 if (unit.y) {
-                    unit.guide.y.label.text = unit.guide.y.label.text || unit.y;
+                    unit.guide.y.label.text = unit.guide.y.label.text || meta.dimension(unit.y).dimName;
                 }
 
                 var x = unit.guide.x.label.text;
                 if (x) {
                     xLabels.push(x);
-                    unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ? unit.guide.x.tickFormatNullAlias : 'No ' + x;
+                    unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ?
+                        unit.guide.x.tickFormatNullAlias :
+                    'No ' + x;
                     unit.guide.x.label.text = '';
                 }
 
                 var y = unit.guide.y.label.text;
                 if (y) {
                     yLabels.push(y);
-                    unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ? unit.guide.y.tickFormatNullAlias : 'No ' + y;
+                    unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ?
+                        unit.guide.y.tickFormatNullAlias :
+                    'No ' + y;
                     unit.guide.y.label.text = '';
                 }
 
@@ -372,8 +433,8 @@ var SpecEngineTypeMap = {
                     return unit;
                 }
 
-                if (selectorPredicates.isLeafParent && !unit.guide.hasOwnProperty('showGridLines')) {
-                    unit.guide.showGridLines = 'xy';
+                if (!unit.guide.hasOwnProperty('showGridLines')) {
+                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
                 }
 
                 var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
@@ -402,9 +463,8 @@ var SpecEngineTypeMap = {
                 var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
                 var yValues = yMeta.values;
 
-
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, xMeta, settings.defaultFormats);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, yMeta, settings.defaultFormats);
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
 
                 var xIsEmptyAxis = (xValues.length === 0);
                 var yIsEmptyAxis = (yValues.length === 0);
@@ -421,11 +481,10 @@ var SpecEngineTypeMap = {
                     settings.getAxisTickLabelSize,
                     settings.yAxisTickLabelLimit);
 
-
                 var xAxisPadding = selectorPredicates.isLeafParent ? settings.xAxisPadding : 0;
                 var yAxisPadding = selectorPredicates.isLeafParent ? settings.yAxisPadding : 0;
 
-                var isXVertical = !isFacetUnit && (!!dimX.dimType && dimX.dimType !== 'measure');
+                var isXVertical = !isFacetUnit && (Boolean(dimX.dimType) && dimX.dimType !== 'measure');
 
                 unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
                 unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
@@ -467,8 +526,10 @@ var SpecEngineTypeMap = {
                 var distToXAxisLabel = settings.distToXAxisLabel;
                 var distToYAxisLabel = settings.distToYAxisLabel;
 
-
-                var xTickLabelW = Math.min(settings.xAxisTickLabelLimit, (isXVertical ? maxXTickSize.height : maxXTickSize.width));
+                var xTickLabelW = Math.min(
+                    settings.xAxisTickLabelLimit,
+                    (isXVertical ? maxXTickSize.height : maxXTickSize.width)
+                );
                 unit.guide.x.density = xTickLabelW + xDensityPadding * 2;
 
                 var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
@@ -476,14 +537,15 @@ var SpecEngineTypeMap = {
                 var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
                 unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
 
-
                 unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
                 unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
 
-
-                var xLabelPadding = (unit.guide.x.label.text) ? (unit.guide.x.label.padding + xFontLabelHeight) : (xFontH);
-                var yLabelPadding = (unit.guide.y.label.text) ? (unit.guide.y.label.padding + yFontLabelHeight) : (yFontW);
-
+                var xLabelPadding = (unit.guide.x.label.text) ?
+                    (unit.guide.x.label.padding + xFontLabelHeight) :
+                    (xFontH);
+                var yLabelPadding = (unit.guide.y.label.text) ?
+                    (unit.guide.y.label.padding + yFontLabelHeight) :
+                    (yFontW);
 
                 unit.guide.padding.b = xAxisPadding + xLabelPadding;
                 unit.guide.padding.l = yAxisPadding + yLabelPadding;
@@ -572,11 +634,10 @@ var SpecEngineTypeMap = {
         var traverseFromDeep = (root) => {
             var r;
 
-            if (!root.unit) {
+            if (!root.units) {
                 r = {w: 0, h: 0};
-            }
-            else {
-                var s = traverseFromDeep(root.unit[0]);
+            } else {
+                var s = traverseFromDeep(root.units[0]);
                 var g = root.guide;
                 var xmd = g.x.$minimalDomain || 1;
                 var ymd = g.y.$minimalDomain || 1;
@@ -641,8 +702,8 @@ var SpecEngineTypeMap = {
                 height: perTickY
             };
 
-            if (root.unit) {
-                traverseToDeep(meta, root.unit[0], newSize, localSettings);
+            if (root.units) {
+                traverseToDeep(meta, root.units[0], newSize, localSettings);
             }
         };
 
@@ -686,27 +747,77 @@ SpecEngineTypeMap.COMPACT = (srcSpec, meta, settings) => {
     );
 };
 
-
 var fnTraverseSpec = (orig, specUnitRef, transformRules) => {
-    var xRef = utilsDraw.applyNodeDefaults(specUnitRef);
+    var xRef = applyNodeDefaults(specUnitRef);
     xRef = transformRules(createSelectorPredicates(xRef), xRef);
     xRef = applyCustomProps(xRef, orig);
-    var prop = _.omit(xRef, 'unit');
-    (xRef.unit || []).forEach((unit) => fnTraverseSpec(utils.clone(unit), inheritProps(unit, prop), transformRules));
+    var prop = _.omit(xRef, 'units');
+    (xRef.units || []).forEach((unit) => fnTraverseSpec(utils.clone(unit), inheritProps(unit, prop), transformRules));
     return xRef;
 };
 
 var SpecEngineFactory = {
-    get: (typeName, settings) => {
+    get: (typeName, settings, srcSpec, fnCreateScale) => {
+
         var engine = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
-        return (srcSpec, meta) => {
-            var fullSpec = engine(srcSpec, meta, settings);
-            if (settings.fitSize) {
-                fullSpec = SpecEngineTypeMap['OPTIMAL-SIZE'](fullSpec, meta, settings);
+        var meta = {
+
+            dimension: (scaleId) => {
+                var scaleCfg = srcSpec.scales[scaleId];
+                var dim = srcSpec.sources[scaleCfg.source].dims[scaleCfg.dim] || {};
+                return {
+                    dimName: scaleCfg.dim,
+                    dimType: dim.type,
+                    scaleType: scaleCfg.type
+                };
+            },
+
+            scaleMeta: (scaleId) => {
+                var scale = fnCreateScale('pos', scaleId);
+                return {
+                    values: scale.domain()
+                };
             }
-            return fullSpec;
         };
+
+        var unitSpec = {unit: utils.clone(srcSpec.unit)};
+        var fullSpec = engine(unitSpec, meta, settings);
+        if (settings.fitSize) {
+            fullSpec = SpecEngineTypeMap['OPTIMAL-SIZE'](fullSpec, meta, settings);
+        }
+        srcSpec.unit = fullSpec.unit;
+        return srcSpec;
     }
 };
 
-export {SpecEngineFactory};
+export class SpecTransformAutoLayout {
+
+    constructor(spec) {
+        this.spec = spec;
+        this.scalesCreator = new ScalesFactory(spec.sources);
+    }
+
+    transform() {
+
+        var spec = this.spec;
+        var size = spec.settings.size;
+
+        var rule = _.find(spec.settings.specEngine, (rule) => (size.width <= rule.width));
+
+        var auto = SpecEngineFactory.get(
+            rule.name,
+            spec.settings,
+            spec,
+            (type, alias) => {
+
+                var name = alias ? alias : `${type}:default`;
+
+                return this
+                    .scalesCreator
+                    .create(spec.scales[name], null, [0, 100]);
+            }
+        );
+
+        return auto;
+    }
+}

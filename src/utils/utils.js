@@ -1,17 +1,38 @@
+import {Point}      from '../elements/element.point';
+import {Line}       from '../elements/element.line';
+import {Interval}        from '../elements/element.interval';
+
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
 
-    (rootRef[byProperty] || []).forEach((unit) => traverseJSON(unit, byProperty, fnSelectorPredicates, funcTransformRules));
+    (rootRef[byProperty] || []).forEach((unit) => traverseJSON(
+            unit,
+            byProperty,
+            fnSelectorPredicates,
+            funcTransformRules)
+    );
 
     return rootRef;
 };
 
-var utils = {
-    clone: (obj) => JSON.parse(JSON.stringify(obj)),
-    isArray: (obj) => Array.isArray(obj),
+var hashGen = 0;
+var hashMap = {};
 
-    autoScale: (domain) => {
+var utils = {
+    clone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    },
+    isArray(obj) {
+        return Array.isArray(obj);
+    },
+    isChartElement(element) {
+        return element instanceof Interval || element instanceof Point || element instanceof Line;
+    },
+    isLineElement(element) {
+        return element instanceof Line;
+    },
+    autoScale(domain) {
 
         var m = 10;
 
@@ -38,8 +59,10 @@ var utils = {
         ];
 
         var i = -1;
+        // jscs:disable disallowEmptyBlocks
         while (err > correction[++i][0]) {
         }
+        // jscs:enable disallowEmptyBlocks
 
         step *= correction[i][1];
 
@@ -54,8 +77,7 @@ var utils = {
         if (low >= 0) {
             // include 0 by default
             extent[0] = 0;
-        }
-        else {
+        } else {
             var koeffLow = (deltaLow <= limit) ? step : 0;
             extent[0] = (extent[0] - koeffLow);
         }
@@ -63,8 +85,7 @@ var utils = {
         if (top <= 0) {
             // include 0 by default
             extent[1] = 0;
-        }
-        else {
+        } else {
             var koeffTop = (deltaTop <= limit) ? step : 0;
             extent[1] = extent[1] + koeffTop;
         }
@@ -75,7 +96,15 @@ var utils = {
         ];
     },
 
-    traverseJSON: traverseJSON
+    traverseJSON,
+
+    generateHash: (str) => {
+        var r = btoa(encodeURIComponent(str)).replace(/=/g, '_');
+        if (!hashMap.hasOwnProperty(r)) {
+            hashMap[r] = (`H${++hashGen}`);
+        }
+        return hashMap[r];
+    }
 };
 
 export {utils};

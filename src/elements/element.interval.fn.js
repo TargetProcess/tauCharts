@@ -1,10 +1,6 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
-
 const BAR_GROUP = 'i-role-bar-group';
-
-var isMeasure = (dim) => dim.dimType === 'measure';
-
 var getSizesParams = (params) => {
     var countDomainValue = params.domain().length;
     var countCategory = params.categoryLength;
@@ -16,10 +12,9 @@ var getSizesParams = (params) => {
         offsetCategory: intervalWidth
     };
 };
-
+var isMeasure = (dim) => (dim.scaleType === 'linear' || dim.scaleType === 'time');
 var flipHub = {
-
-    NORM: (node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams) => {
+    NORM: ({colorScale, node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams}) => {
         let minimalHeight = 1;
         let yMin = Math.min(...yScale.domain());
         let isYNumber = !isNaN(yMin);
@@ -54,12 +49,13 @@ var flipHub = {
             }) :
             ((d) => (height - yScale(d[node.y.scaleDim])));
 
-        let calculateTranslate = (d) => utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
+        let calculateTranslate = (d) =>
+            utilsDraw.translate(colorIndexScale(d) * offsetCategory + offsetCategory / 2, 0);
 
-        return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
+        return {colorScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
 
-    FLIP: (node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams) => {
+    FLIP: ({colorScale, node, xScale, yScale, colorIndexScale, width, height, defaultSizeParams}) => {
         let minimalHeight = 1;
         let xMin = Math.min(...xScale.domain());
         let isXNumber = !isNaN(xMin);
@@ -95,60 +91,30 @@ var flipHub = {
             }) :
             ((d) => xScale(d[node.x.scaleDim]));
         let calculateHeight = (d) => intervalWidth;
-        let calculateTranslate = (d) => utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
+        let calculateTranslate = (d) =>
+            utilsDraw.translate(0, colorIndexScale(d) * offsetCategory + offsetCategory / 2);
 
-        return {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
+        return {colorScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     }
 };
 
-var interval = function (node) {
-
-    var options = node.options;
-
-    var xScale = options.xScale,
-        yScale = options.yScale,
-        colorScale = options.color;
-
-    var method = flipHub[node.flip ? 'FLIP' : 'NORM'];
-
-    var allCategories = node.groupBy(node.source(), node.color.scaleDim);
-    var categories = node.groupBy(node.partition(), node.color.scaleDim);
-
-    var colorIndexScale = (d) => {
-        var index = 0;
-        var targetKey = JSON.stringify(d.key);
-        _.find(allCategories, (catItem, catIndex) => {
-            var isFound = (JSON.stringify(catItem.key) === targetKey);
-            if (isFound) {
-                index = catIndex;
-            }
-            return isFound;
-        });
-
-        return index;
-    };
-
-    colorIndexScale.count = () => allCategories.length;
-
-    var {calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate} = method(
-        node,
-        xScale,
-        yScale,
-        colorIndexScale,
-        options.width,
-        options.height,
-        {
-            tickWidth: 5,
-            intervalWidth: 5,
-            offsetCategory: 0
-        }
-    );
-
+function drawInterval({
+    calculateX,
+    calculateY,
+    colorScale,
+    calculateWidth,
+    calculateHeight,
+    calculateTranslate
+    },
+    container,
+    data) {
     var updateBar = function () {
         return this
             .attr('height', calculateHeight)
             .attr('width', calculateWidth)
-            .attr('class', (d) => (`i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[node.color.scaleDim])}`))
+            .attr('class', (d) => {
+                return `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.scaleDim])}`;
+            })
             .attr('x', calculateX)
             .attr('y', calculateY);
     };
@@ -156,16 +122,17 @@ var interval = function (node) {
     var updateBarContainer = function () {
         this.attr('class', BAR_GROUP)
             .attr('transform', calculateTranslate);
-        var bars = this.selectAll('bar').data((d) => d.values);
+        var bars = this.selectAll('.bar').data((d) => {
+            return d.values;
+        });
         bars.call(updateBar);
         bars.enter().append('rect').call(updateBar);
         bars.exit().remove();
     };
-
-    var elements = options.container.selectAll(`.${BAR_GROUP}`).data(categories);
+    var elements = container.selectAll(`.${BAR_GROUP}`).data(data);
     elements.call(updateBarContainer);
     elements.enter().append('g').call(updateBarContainer);
     elements.exit().remove();
-};
+}
 
-export {interval};
+export {flipHub, drawInterval};

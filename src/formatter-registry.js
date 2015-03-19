@@ -1,11 +1,11 @@
 /* jshint ignore:start */
-import * as d3 from 'd3';
+import {default as d3} from 'd3';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 
-    "x-num-auto": function (x) {
+    'x-num-auto': function (x) {
         var v = parseFloat(x.toFixed(2));
-        return (Math.abs(v) < 1) ? v.toString() : d3.format("s")(v);
+        return (Math.abs(v) < 1) ? v.toString() : d3.format('s')(v);
     },
 
     percent: function (x) {
@@ -13,15 +13,15 @@ var FORMATS_MAP = {
         return v.toString() + '%';
     },
 
-    'day': d3.time.format('%d-%b-%Y'),
+    day: d3.time.format('%d-%b-%Y'),
 
     'day-short': d3.time.format('%d-%b'),
 
-    'week': d3.time.format('%d-%b-%Y'),
+    week: d3.time.format('%d-%b-%Y'),
 
     'week-short': d3.time.format('%d-%b'),
 
-    'month': (x) => {
+    month: (x) => {
         var d = new Date(x);
         var m = d.getMonth();
         var formatSpec = (m === 0) ? '%B, %Y' : '%B';
@@ -37,14 +37,14 @@ var FORMATS_MAP = {
 
     'month-year': d3.time.format('%B, %Y'),
 
-    'quarter': (x) => {
+    quarter: (x) => {
         var d = new Date(x);
         var m = d.getMonth();
         var q = (m - (m % 3)) / 3;
         return 'Q' + (q + 1) + ' ' + d.getFullYear();
     },
 
-    'year': d3.time.format('%Y'),
+    year: d3.time.format('%Y'),
 
     'x-time-auto': null
 };
