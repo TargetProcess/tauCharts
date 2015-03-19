@@ -73,8 +73,9 @@
     "webpack-dev-server": "^1.7.0"
   },
   "scripts": {
-    "test": "npm run travis && karma start config/karma.conf.js",
+    "test": "npm run bower && npm run travis && karma start config/karma.conf.js",
     "travis": "grunt travis",
+    "bower": "bower install",
     "release": "grunt publish && grunt gh-pages"
   }
 }
