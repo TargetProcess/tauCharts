@@ -1,5 +1,5 @@
 var requirejs = require('requirejs');
-var to5 =  require("babel");
+var to5 = require("babel");
 var LOG_LEVEL_TRACE = 0, LOG_LEVEL_WARN = 2;
 requirejs.define('node/print', [], function () {
     return function print(msg) {
@@ -22,7 +22,7 @@ module.exports = function (grunt) {
         grunt.file.mkdir(tmpDir + '/' + 'utils');
         grunt.file.mkdir(tmpDir + '/' + 'elements');
         var opts = {modules: "amd"};
-        if(!outputFile) {
+        if (!outputFile) {
             opts.sourceMap = "inline";
         }
         this.filesSrc.forEach(function (filename) {
@@ -36,7 +36,7 @@ module.exports = function (grunt) {
             }
 
         }, this);
-        if(outputFile) {
+        if (outputFile) {
             // The following catches errors in the user-defined `done` function and outputs them.
             var tryCatch = function (fn, done, output) {
                 try {
@@ -50,10 +50,10 @@ module.exports = function (grunt) {
                 include: ['../node_modules/almond/almond'],
                 baseUrl: tmpDir + '/',
                 name: 'tau.charts',
-                exclude:['d3','underscore'],
-                paths:{
-                    'underscore':'../libs/underscore',
-                    'd3':'../libs/d3'
+                exclude: ['d3', 'underscore'],
+                paths: {
+                    underscore: '../node_modules/underscore/underscore',
+                    d3: '../node_modules/d3/d3'
                 },
                 optimize: 'none',
                 done: function (done, response) {
@@ -77,20 +77,20 @@ module.exports = function (grunt) {
                 include: ['../node_modules/almond/almond'],
                 baseUrl: 'plugins' + '/',
                 name: 'export',
-                exclude:['tauCharts','d3','underscore'],
-                paths:{
-                    'underscore':'../libs/underscore',
-                    'd3':'../libs/d3'
+                exclude: ['tauCharts', 'd3', 'underscore'],
+                paths: {
+                    underscore: '../node_modules/underscore/underscore',
+                    d3: '../node_modules/d3/d3'
                 },
                 map: {
                     '*': {
                         'tauCharts': '../tau_modules/tau.charts',
-                        'canvg':'../bower_components/canvg/canvg',
-                        'FileSaver':'../bower_components/FileSaver.js/FileSaver',
+                        'canvg': '../bower_components/canvg/canvg',
+                        'FileSaver': '../bower_components/FileSaver.js/FileSaver',
                         'rgbcolor': '../bower_components/canvg/rgbcolor',
                         'stackblur': '../bower_components/canvg/StackBlur',
-                        'fetch':'../bower_components/fetch/fetch',
-                        'promise':'../bower_components/es6-promise/promise',
+                        'fetch': '../bower_components/fetch/fetch',
+                        'promise': '../bower_components/es6-promise/promise',
                         'print.style.css': '../node_modules/requirejs-text/text!print.style.css'
                     }
                 },

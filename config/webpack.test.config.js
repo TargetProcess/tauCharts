@@ -16,18 +16,17 @@ var generateConf = function (postLoader) {
                 'node_modules'
             ],
             alias: {
-                'schemes': 'test/utils/schemes.js',
-                'testUtils': 'test/utils/utils.js',
-                'es5-shim': 'libs/es5-shim.js',
-                'brewer': 'src/addons/color-brewer.js',
-                'tauCharts': 'src/tau.charts.js',
+                schemes: 'test/utils/schemes.js',
+                testUtils: 'test/utils/utils.js',
+                brewer: 'src/addons/color-brewer.js',
+                tauCharts: 'src/tau.charts.js',
                 'print.style.css': 'plugins/print.style.css',
-                'rgbcolor': 'bower_components/canvg/rgbcolor.js',
-                'stackblur': 'bower_components/canvg/StackBlur.js',
-                'canvg': 'bower_components/canvg/canvg.js',
-                'FileSaver': 'test/utils/saveAs.js',
-                'fetch': 'bower_components/fetch/fetch.js',
-                'promise': 'bower_components/es6-promise/promise.js'
+                rgbcolor: 'bower_components/canvg/rgbcolor.js',
+                stackblur: 'bower_components/canvg/StackBlur.js',
+                canvg: 'bower_components/canvg/canvg.js',
+                FileSaver: 'test/utils/saveAs.js',
+                fetch: 'bower_components/fetch/fetch.js',
+                promise: 'bower_components/es6-promise/promise.js'
             },
             extensions: ['', '.js', '.json']
         },
@@ -65,8 +64,7 @@ var generateConf = function (postLoader) {
         progress: true
     }
 };
-//console.log(generateConf(coverage));
-//console.log(generateConf([]));
+
 module.exports = {
     coverage: generateConf(coverage),
     default: generateConf([])

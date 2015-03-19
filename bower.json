@@ -24,8 +24,6 @@
   },
   "devDependencies": {
     "modernizer": "2.8.2",
-    "js-schema": "0.7.0",
-    "es5-shim": "latest",
     "canvg": "https://github.com/Mavrin/canvg.git",
     "FileSaver.js": "https://github.com/Mavrin/FileSaver.js.git",
     "fetch": "~0.6.1",

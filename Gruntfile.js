@@ -251,19 +251,6 @@ module.exports = function (grunt) {
             'build/production/',
             'build/development/'
         ],
-        bowercopy: {
-            options: {},
-            libs: {
-                options: {destPrefix: 'libs'},
-                files: {
-                    'd3.js': 'd3/d3.js',
-                    'underscore.js': 'underscore/underscore.js',
-                    'jquery.js': 'jquery/dist/jquery.js',
-                    'js-schema.js': 'js-schema/js-schema.debug.js',
-                    'es5-shim.js': 'es5-shim/es5-shim.js'
-                }
-            }
-        },
         watch: {
             js: {
                 files: ['<%= jshint.all.src %>'],
@@ -311,7 +298,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-less');
-    grunt.loadNpmTasks('grunt-bowercopy');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-gh-pages');
@@ -323,14 +309,12 @@ module.exports = function (grunt) {
     // Default task.
     // grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
     grunt.registerTask('default', [
-        'bowercopy',
         'less',
         'compile:dev',
         'jshint',
         'watch:js'
     ]);
     var buildWithoutPublish = [
-        'bowercopy',
         'less',
         'postcss',
         'copy:build',
@@ -347,7 +331,6 @@ module.exports = function (grunt) {
         'clean'
     ]));
     grunt.registerTask('travis', [
-        'bowercopy',
         'jshint',
         'jscs',
         'build'
