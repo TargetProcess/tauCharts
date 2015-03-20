@@ -341,11 +341,22 @@
 
                 this._chart = chart;
 
-                this._isApplicable = true;
+                this._isApplicable = this.checkIfApplicable(chart);
 
                 if (settings.showPanel) {
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
+
+                    var classToAdd = 'applicable-true';
+                    if (!this._isApplicable) {
+                        classToAdd = 'applicable-false';
+                        this._error = [
+                            'Trend line can\'t be computed for categorical data.',
+                            'Each axis should be either a measure or a date.'
+                        ].join(' ');
+                    }
+
+                    this._container.classList.add(classToAdd);
 
                     if (settings.hideError) {
                         this._container
@@ -375,7 +386,46 @@
                 }
             },
 
+            checkIfApplicable: function (chart) {
+
+                var self = this;
+                var specRef = chart.getConfig();
+                var isApplicable = false;
+
+                chart.traverseSpec(
+                    specRef,
+                    function (unit, parentUnit) {
+                        if (self.predicateIsApplicable(specRef, unit, parentUnit)) {
+                            isApplicable = true;
+                        }
+                    });
+
+                return isApplicable;
+            },
+
+            predicateIsApplicable: function (specRef, unit, parentUnit) {
+
+                if (parentUnit && parentUnit.type !== 'COORDS.RECT') {
+                    return false;
+                }
+
+                if (unit.type.indexOf('ELEMENT.') === -1) {
+                    return false;
+                }
+
+                var xScale = specRef.scales[unit.x];
+                var yScale = specRef.scales[unit.y];
+
+                if (xScale.type === 'ordinal' || yScale.type === 'ordinal') {
+                    return false;
+                }
+
+                return true;
+            },
+
             onSpecReady: function (chart, specRef) {
+
+                var self = this;
 
                 if (!settings.showTrend) {
                     return;
@@ -413,27 +463,16 @@
                     return points.length > 1 ? points : [];
                 };
 
-                var isApplicable = false;
                 chart.traverseSpec(
                     specRef,
                     function (unit, parentUnit) {
 
-                        if (parentUnit && parentUnit.type !== 'COORDS.RECT') {
-                            return;
-                        }
-
-                        if (unit.type.indexOf('ELEMENT.') === -1) {
+                        if (!self.predicateIsApplicable(specRef, unit, parentUnit)) {
                             return;
                         }
 
                         var xScale = specRef.scales[unit.x];
                         var yScale = specRef.scales[unit.y];
-
-                        if (xScale.type === 'ordinal' || yScale.type === 'ordinal') {
-                            return;
-                        }
-
-                        isApplicable = true;
 
                         var trend = JSON.parse(JSON.stringify(unit));
 
@@ -442,7 +481,7 @@
                         trend.transformation.push({
                             type: 'regression',
                             args: {
-                                type: settings.type, // 'linear',
+                                type: settings.type,
                                 x: xScale.dim,
                                 y: yScale.dim
                             }
@@ -453,11 +492,9 @@
 
                         parentUnit.units.push(trend);
                     });
-
-                this._isApplicable = isApplicable;
             },
 
-// jscs:disable maximumLineLength
+            // jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
             template: _.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
@@ -476,7 +513,7 @@
 
                 '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
             ].join('')),
-// jscs:enable maximumLineLength
+            // jscs:enable maximumLineLength
 
             onRender: function (chart) {
 
@@ -490,17 +527,6 @@
                             return '<option ' + selected + ' value="' + x + '">' + x + '</option>';
                         })
                     });
-
-                    if (this._isApplicable != true) {
-                        this._error = [
-                            'Trend line can\'t be computed for categorical data.',
-                            'Each axis should be either a measure or a date.'
-                        ].join(' ');
-                    }
-
-                    this._container
-                        .classList
-                        .add(this._isApplicable ? 'applicable-true' : 'applicable-false');
 
                     var handleMouse = function (isActive) {
                         return function () {

@@ -3321,8 +3321,36 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
                     this.ruleAssignSourceDims(srcSpec, gplSpec);
                     this.ruleAssignStructure(srcSpec, gplSpec);
                     this.ruleAssignSourceData(srcSpec, gplSpec);
+                    this.ruleApplyDefaults(gplSpec);
 
                     return gplSpec;
+                }
+            },
+            ruleApplyDefaults: {
+                value: function ruleApplyDefaults(spec) {
+                    var traverse = function (node, iterator, parentNode) {
+                        iterator(node, parentNode);
+                        (node.units || []).map(function (x) {
+                            return traverse(x, iterator, node);
+                        });
+                    };
+
+                    var iterator = function (childUnit, root) {
+
+                        // leaf elements should inherit coordinates properties
+                        if (root && !childUnit.hasOwnProperty("units")) {
+                            childUnit = _.defaults(childUnit, _.pick(root, "x", "y"));
+
+                            var parentGuide = utils.clone(root.guide || {});
+                            childUnit.guide = childUnit.guide || {};
+                            childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
+                            childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
+                        }
+
+                        return childUnit;
+                    };
+
+                    traverse(spec.unit, iterator, null);
                 }
             },
             ruleAssignSourceData: {
@@ -5588,8 +5616,9 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
 
                     options.container.attr("transform", utilsDraw.translate(innerLeft, innerTop));
 
-                    var hashX = node.x.getHash();
-                    var hashY = node.y.getHash();
+                    // take into account reposition during resize by orthogonal axis
+                    var hashX = node.x.getHash() + innerHeight;
+                    var hashY = node.y.getHash() + innerWidth;
 
                     if (!node.x.guide.hide) {
                         this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, "" + options.frameId + "x", hashX);

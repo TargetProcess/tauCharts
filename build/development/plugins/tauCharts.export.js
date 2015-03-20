@@ -5988,7 +5988,7 @@ define('../node_modules/requirejs-text/text',['module'], function (module) {
 });
 
 
-define('../node_modules/requirejs-text/text!print.style.css',[],function () { return 'body > * {\n    visibility: hidden;\n}\nbody {\n    overflow: hidden;\n}\nbody * {\n    visibility: hidden !important;\n}\n\n.graphical-report__print-block {\n    position: absolute;\n    top: 0;\n    left: 0;\n    visibility: visible !important;\n    display: block !important;\n    width: 100%;\n    /*height: 100%;*/\n}\n';});
+define('../node_modules/requirejs-text/text!print.style.css',[],function () { return 'body > * {\r\n    visibility: hidden;\r\n}\r\nbody {\r\n    overflow: hidden;\r\n}\r\nbody * {\r\n    visibility: hidden !important;\r\n}\r\n\r\n.graphical-report__print-block {\r\n    position: absolute;\r\n    top: 0;\r\n    left: 0;\r\n    visibility: visible !important;\r\n    display: block !important;\r\n    width: 100%;\r\n    /*height: 100%;*/\r\n}\r\n';});
 
 (function() {
   
