@@ -227,8 +227,7 @@ module.exports = function (grunt) {
                     'Gruntfile.js'
                 ],
                 options: {
-                    loopfunc: true,
-                    esnext: true
+                    jshintrc:true
                 }
             }
         },
