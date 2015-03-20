@@ -71,26 +71,22 @@ export class Line {
 
             var points = this
                 .selectAll('circle')
-                .data(({data: frame}) => frame.data);
+                .data(frame => frame.data.data.map(item => ({data: item, uid: options.uid})));
+            var attr = {
+                r: ({data:d}) => sizeScale(d[sizeScale.dim]),
+                cx: ({data:d}) => xScale(d[xScale.dim]),
+                cy: ({data:d}) => yScale(d[yScale.dim]),
+                class: ({data:d}) => (`${pointPref} ${colorScale(d[colorScale.dim])}`)
+            };
             points
                 .exit()
                 .remove();
             points
-                .attr({
-                    r: (d) => sizeScale(d[sizeScale.dim]),
-                    cx: (d) => xScale(d[xScale.dim]),
-                    cy: (d) => yScale(d[yScale.dim]),
-                    class: (d) => (`${pointPref} ${colorScale(d[colorScale.dim])}`)
-                });
+                .attr(attr);
             points
                 .enter()
                 .append('circle')
-                .attr({
-                    r: (d) => sizeScale(d[sizeScale.dim]),
-                    cx: (d) => xScale(d[xScale.dim]),
-                    cy: (d) => yScale(d[yScale.dim]),
-                    class: (d) => (`${pointPref} ${colorScale(d[colorScale.dim])}`)
-                });
+                .attr(attr);
         };
 
         var updateGroups = (x, drawPath, drawPoints) => {
