@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.22 - 2015-03-19
+/*! taucharts - v0.3.22 - 2015-03-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -834,39 +834,32 @@ define('elements/element.line',["exports", "../const", "../utils/css-class-map"]
                     var pointPref = "" + CSS_PREFIX + "dot-line dot-line i-role-element " + CSS_PREFIX + "dot ";
                     var updatePoints = function updatePoints() {
 
-                        var points = this.selectAll("circle").data(function (_ref) {
-                            var frame = _ref.data;
-                            return frame.data;
+                        var points = this.selectAll("circle").data(function (frame) {
+                            return frame.data.data.map(function (item) {
+                                return { data: item, uid: options.uid };
+                            });
                         });
+                        var attr = {
+                            r: function (_ref) {
+                                var d = _ref.data;
+                                return sizeScale(d[sizeScale.dim]);
+                            },
+                            cx: function (_ref) {
+                                var d = _ref.data;
+                                return xScale(d[xScale.dim]);
+                            },
+                            cy: function (_ref) {
+                                var d = _ref.data;
+                                return yScale(d[yScale.dim]);
+                            },
+                            "class": function (_ref) {
+                                var d = _ref.data;
+                                return "" + pointPref + " " + colorScale(d[colorScale.dim]);
+                            }
+                        };
                         points.exit().remove();
-                        points.attr({
-                            r: function (d) {
-                                return sizeScale(d[sizeScale.dim]);
-                            },
-                            cx: function (d) {
-                                return xScale(d[xScale.dim]);
-                            },
-                            cy: function (d) {
-                                return yScale(d[yScale.dim]);
-                            },
-                            "class": function (d) {
-                                return "" + pointPref + " " + colorScale(d[colorScale.dim]);
-                            }
-                        });
-                        points.enter().append("circle").attr({
-                            r: function (d) {
-                                return sizeScale(d[sizeScale.dim]);
-                            },
-                            cx: function (d) {
-                                return xScale(d[xScale.dim]);
-                            },
-                            cy: function (d) {
-                                return yScale(d[yScale.dim]);
-                            },
-                            "class": function (d) {
-                                return "" + pointPref + " " + colorScale(d[colorScale.dim]);
-                            }
-                        });
+                        points.attr(attr);
+                        points.enter().append("circle").attr(attr);
                     };
 
                     var updateGroups = function (x, drawPath, drawPoints) {
