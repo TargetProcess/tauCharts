@@ -114,6 +114,12 @@ define(function (require) {
                                         "source": "/",
                                         "operator": "none",
                                         "params": []
+                                    },
+                                    "x": "x_date",
+                                    "y": "y_count",
+                                    "guide": {
+                                        "x": {},
+                                        "y": {}
                                     }
                                 }
                             ]
@@ -248,6 +254,12 @@ define(function (require) {
                                         "source": "/",
                                         "operator": "none",
                                         "params": []
+                                    },
+                                    "x": "x_date",
+                                    "y": "y_count",
+                                    "guide": {
+                                        "x": {},
+                                        "y": {}
                                     }
                                 }
                             ]

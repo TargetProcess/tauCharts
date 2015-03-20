@@ -39,8 +39,33 @@ export class SpecConverter {
         this.ruleAssignSourceDims(srcSpec, gplSpec);
         this.ruleAssignStructure(srcSpec, gplSpec);
         this.ruleAssignSourceData(srcSpec, gplSpec);
+        this.ruleApplyDefaults(gplSpec);
 
         return gplSpec;
+    }
+
+    ruleApplyDefaults(spec) {
+        var traverse = (node, iterator, parentNode) => {
+            iterator(node, parentNode);
+            (node.units || []).map((x) => traverse(x, iterator, node));
+        };
+
+        var iterator = (childUnit, root) => {
+
+            // leaf elements should inherit coordinates properties
+            if (root && !childUnit.hasOwnProperty('units')) {
+                childUnit = _.defaults(childUnit, _.pick(root, 'x', 'y'));
+
+                var parentGuide = utils.clone(root.guide || {});
+                childUnit.guide = childUnit.guide || {};
+                childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
+                childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
+            }
+
+            return childUnit;
+        };
+
+        traverse(spec.unit, iterator, null);
     }
 
     ruleAssignSourceData(srcSpec, gplSpec) {
