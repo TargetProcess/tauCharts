@@ -236,11 +236,12 @@
                         var guide = (unit.guide || {})[field];
                         var dim = scales[property].dim;
                         if (dim && guide) {
-                            if (!dimensionGuideMap[dim]) {
-                                dimensionGuideMap[dim] = [];
+                            var name = guide.tickLabel ? dim.replace(new RegExp('\\.' + guide.tickLabel), '') : dim;
+                            if (!dimensionGuideMap[name]) {
+                                dimensionGuideMap[name] = [];
                             }
 
-                            dimensionGuideMap[dim].push(guide);
+                            dimensionGuideMap[name].push(guide);
                         }
                     }
                 };

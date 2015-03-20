@@ -319,7 +319,7 @@ describeChart("tooltip formatting",
                 "scale": "linear"
             }
         },
-        plugins: [tooltip({fields: ['complex.name', 'date', 'simple', 'colorValue', 'sizeValue']})]
+        plugins: [tooltip({fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue']})]
     },
     [
         {
