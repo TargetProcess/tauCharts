@@ -157,8 +157,7 @@
                 fields = _.unique(fields);
                 return fields.map(function (field) {
                     var rawValue = data[field];
-                    var value = this._getFormatter(field)(rawValue);
-                    var formattedValue = _.isObject(value) ? value.name : value;
+                    var formattedValue = this._getFormatter(field)(rawValue);
                     var label = this._getLabel(field);
 
                     return this.renderItem(label, formattedValue, field, rawValue);
@@ -207,14 +206,11 @@
                                 // very special case for dates
                                 var xFormat = (format === 'x-time-auto') ? 'day' : format;
                                 return tauCharts.api.tickFormat.get(xFormat)(rawValue);
+                            } else if (lastGuide.tickLabel) {
+                                return rawValue[lastGuide.tickLabel];
                             } else {
                                 return rawValue;
                             }
-                            /*else if (lastGuide.tickLabel) {
-                             return rawValue[lastGuide.tickLabel];
-                             } else if (dimensions[key] && dimensions[key].value) {
-                             return rawValue[dimensions[key].value];
-                             }*/
                         }
                     };
 
