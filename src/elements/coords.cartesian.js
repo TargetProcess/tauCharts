@@ -145,8 +145,9 @@ export class Cartesian {
             .container
             .attr('transform', utilsDraw.translate(innerLeft, innerTop));
 
-        var hashX = node.x.getHash();
-        var hashY = node.y.getHash();
+        // take into account reposition during resize by orthogonal axis
+        var hashX = node.x.getHash() + innerHeight;
+        var hashY = node.y.getHash() + innerWidth;
 
         if (!node.x.guide.hide) {
             this._fnDrawDimAxis(
