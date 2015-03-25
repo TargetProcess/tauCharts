@@ -21,9 +21,9 @@
   overflow: auto;
 }
 .graphical-report__layout__header {
-  -ms-flex: 0 1 auto;
-  -webkit-flex: 0 1 auto;
-          flex: 0 1 auto;
+  -ms-flex: 0 0.1 auto;
+  -webkit-flex: 0 0.1 auto;
+          flex: 0 0.1 auto;
 }
 .graphical-report__layout__container {
   display: -webkit-flexbox;
