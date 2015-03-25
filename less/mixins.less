@@ -22,3 +22,12 @@
     -webkit-box-flex: @flex-grow @flex-shrink @flex-basis;
     flex: @flex-grow @flex-shrink @flex-basis;
 }
+
+.clearfix(){
+    &:after{
+        content: '';
+        height: 0;
+        display: block;
+        clear: both;
+    }
+}
