@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.22 - 2015-03-25
+/*! taucharts - v0.3.22 - 2015-04-01
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1023,8 +1023,8 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             };
 
             var calculateTranslate = function (_ref3) {
-                var d = _ref3.data;
-                return utilsDraw.translate(colorIndexScale({ data: d }) * offsetCategory + offsetCategory / 2, 0);
+                var d = _ref3.key;
+                return utilsDraw.translate(colorIndexScale({ key: d }) * offsetCategory + offsetCategory / 2, 0);
             };
 
             return { colorScale: colorScale, calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
@@ -1087,8 +1087,8 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
                 return intervalWidth;
             };
             var calculateTranslate = function (_ref3) {
-                var d = _ref3.data;
-                return utilsDraw.translate(0, colorIndexScale({ data: d }) * offsetCategory + offsetCategory / 2);
+                var d = _ref3.key;
+                return utilsDraw.translate(0, colorIndexScale({ key: d }) * offsetCategory + offsetCategory / 2);
             };
 
             return { colorScale: colorScale, calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
@@ -1192,8 +1192,9 @@ define('elements/element.interval',["exports", "../const", "./element.interval.f
                     };
                     var method = flipHub[this.config.flip ? "FLIP" : "NORM"];
                     var colorIndexScale = function (d) {
+                        var expectedValue = (d.key || {})[colorScale.scaleDim];
                         var findIndex = _.findIndex(domain, function (value) {
-                            return value === (d.key || {})[colorScale.scaleDim];
+                            return value === expectedValue;
                         });
                         return findIndex === -1 ? 0 : findIndex;
                     };
