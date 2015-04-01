@@ -1,6 +1,7 @@
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 const BAR_GROUP = 'i-role-bar-group';
+const BAR_GAP = 1;
 var getSizesParams = (params) => {
     var countDomainValue = params.domain().length;
     var countCategory = params.categoryLength;
@@ -29,7 +30,7 @@ var flipHub = {
                 size: width
             });
 
-        let calculateX = ({data:d}) => xScale(d[node.x.scaleDim]) - (tickWidth / 2);
+        let calculateX = ({data:d}) => xScale(d[node.x.scaleDim]) - (tickWidth / 2) + BAR_GAP;
         let calculateY = isYNumber ?
             (({data:d}) => {
                 var valY = d[node.y.scaleDim];
@@ -40,7 +41,7 @@ var flipHub = {
             }) :
             (({data:d}) => yScale(d[node.y.scaleDim]));
 
-        let calculateWidth = ({data:d}) => intervalWidth;
+        let calculateWidth = ({data:d}) => (intervalWidth - 2 * BAR_GAP);
         let calculateHeight = isYNumber ?
             (({data:d}) => {
                 var valY = d[node.y.scaleDim];
@@ -82,7 +83,7 @@ var flipHub = {
                 return (isTooSmall) ? (dotX + offset) : (dotX);
             }) :
             0;
-        let calculateY = ({data:d}) => yScale(d[node.y.scaleDim]) - (tickWidth / 2);
+        let calculateY = ({data:d}) => yScale(d[node.y.scaleDim]) - (tickWidth / 2) + BAR_GAP;
         let calculateWidth = isXNumber ?
             (({data:d}) => {
                 var valX = d[node.x.scaleDim];
@@ -90,7 +91,7 @@ var flipHub = {
                 return (valX === 0) ? h : Math.max(minimalHeight, h);
             }) :
             (({data:d}) => xScale(d[node.x.scaleDim]));
-        let calculateHeight = ({data:d}) => intervalWidth;
+        let calculateHeight = ({data:d}) => (intervalWidth - 2 * BAR_GAP);
         let calculateTranslate = ({key:d}) =>
             utilsDraw.translate(0, colorIndexScale({key:d}) * offsetCategory + offsetCategory / 2);
 

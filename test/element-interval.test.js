@@ -9,6 +9,8 @@ define(function (require) {
     var Cartesian = require('src/elements/coords.cartesian').Cartesian;
     var Interval = require('src/elements/element.interval').Interval;
     var testUtils = require('testUtils');
+    var BAR_GAP = 1;
+    var BAR_GAP2 = BAR_GAP * 2 * (-1);
     var unitsMap = {};
     var unitsRegistry = {
         reg: function (unitType, xUnit) {
@@ -165,7 +167,9 @@ define(function (require) {
                 expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x));
                 expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y));
                 if (coords[index][ind].width) {
-                    expect(convertToFixed(attrib(el, 'width'))).to.equal(convertToFixed(coords[index][ind].width));
+                    expect(convertToFixed(attrib(el, 'width')))
+                        .to
+                        .equal(convertToFixed(coords[index][ind].width));
                 }
             });
         });
@@ -214,34 +218,35 @@ define(function (require) {
                     // generate with help generateCoordIfChangeDesign
                     [
                         {
-                            "x": "0",
-                            "y": "429",
-                            "width": "62.5000"
+                            "x": 0 + BAR_GAP,
+                            "y": 429,
+                            "width": 62.5000 + BAR_GAP2
                         }
                     ],
                     [
                         {
-                            "x": "250",
-                            "y": "482",
-                            "width": "62.5000"
+                            "x": 250 + BAR_GAP,
+                            "y": 482,
+                            "width": 62.5000 + BAR_GAP2
                         },
                         {
-                            "x": "500",
-                            "y": "0",
-                            "width": "62.5000"
+                            "x": 500 + BAR_GAP,
+                            "y": 0,
+                            "width": 62.5000 + BAR_GAP2
                         }
                     ],
                     [
                         {
-                            "x": "500",
-                            "y": "536",
-                            "width": "62.5000"
+                            "x": 500 + BAR_GAP,
+                            "y": 536,
+                            "width": 62.5000 + BAR_GAP2
                         }
                     ]
                 ]);
             });
         }
     );
+
     describePlot(
         "ELEMENT.INTERVAL WITH X LINEAR  AXIS",
         {
@@ -268,20 +273,20 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "318.5",
-                            "y": "625"
+                            "x": 318.5 + BAR_GAP,
+                            "y": 625
                         },
                         {
-                            "x": "265.5",
-                            "y": "375"
+                            "x": 265.5 + BAR_GAP,
+                            "y": 375
                         },
                         {
-                            "x": "-2.5",
-                            "y": "125"
+                            "x": -2.5 + BAR_GAP,
+                            "y": 125
                         },
                         {
-                            "x": "747.5",
-                            "y": "125"
+                            "x": 747.5 + BAR_GAP,
+                            "y": 125
                         }
                     ]
                 ]);
@@ -315,20 +320,20 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "0",
-                            "y": "625"
+                            "x": 0 + BAR_GAP,
+                            "y": 625
                         },
                         {
-                            "x": "250",
-                            "y": "375"
+                            "x": 250 + BAR_GAP,
+                            "y": 375
                         },
                         {
-                            "x": "500",
-                            "y": "125"
+                            "x": 500 + BAR_GAP,
+                            "y": 125
                         },
                         {
-                            "x": "500",
-                            "y": "375"
+                            "x": 500 + BAR_GAP,
+                            "y": 375
                         }
                     ]
                 ]);
@@ -363,24 +368,24 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "214",
-                            "y": "500"
+                            "x": 214,
+                            "y": 500 + BAR_GAP
                         }
                     ],
                     [
                         {
-                            "x": "214",
-                            "y": "250"
+                            "x": 214,
+                            "y": 250 + BAR_GAP
                         },
                         {
-                            "x": "214",
-                            "y": "0"
+                            "x": 214,
+                            "y": 0 + BAR_GAP
                         }
                     ],
                     [
                         {
-                            "x": "0",
-                            "y": "0"
+                            "x": 0,
+                            "y": 0 + BAR_GAP
                         }
                     ]
                 ]);
@@ -408,24 +413,24 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "0",
-                            "y": "426.5"
+                            "x": 0,
+                            "y": 426.5 + BAR_GAP
                         }
                     ],
                     [
                         {
-                            "x": "0",
-                            "y": "479.5"
+                            "x": 0,
+                            "y": 479.5 + BAR_GAP
                         },
                         {
-                            "x": "0",
-                            "y": "-2.5"
+                            "x": 0,
+                            "y": -2.5 + BAR_GAP
                         }
                     ],
                     [
                         {
-                            "x": "0",
-                            "y": "747.5"
+                            "x": 0,
+                            "y": 747.5 + BAR_GAP
                         }
                     ]
                 ]);
@@ -453,30 +458,31 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "0",
-                            "y": "500"
+                            "x": 0,
+                            "y": 500 + BAR_GAP
                         }
                     ],
                     [
                         {
-                            "x": "0",
-                            "y": "250"
+                            "x": 0,
+                            "y": 250 + BAR_GAP
                         },
                         {
-                            "x": "0",
-                            "y": "250"
+                            "x": 0,
+                            "y": 250 + BAR_GAP
                         }
                     ],
                     [
                         {
-                            "x": "0",
-                            "y": "0"
+                            "x": 0,
+                            "y": 0 + BAR_GAP
                         }
                     ]
                 ]);
             });
         }
     );
+
     var offsetHrs = new Date().getTimezoneOffset() / 60;
     var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
     var iso = function (str) {
@@ -517,16 +523,16 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "0",
-                            "y": "0"
+                            "x": 0 + BAR_GAP,
+                            "y": 0
                         },
                         {
-                            "x": "482.14285714285717",
-                            "y": "552"
+                            "x": 482.14285714285717 + BAR_GAP,
+                            "y": 552
                         },
                         {
-                            "x": "732.1428571428571",
-                            "y": "749"
+                            "x": 732.1428571428571 + BAR_GAP,
+                            "y": 749
                         }
                     ]
                 ]);
@@ -555,16 +561,16 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": "0",
-                            "y": "732.1428571428571"
+                            "x": 0,
+                            "y": 732.1428571428571 + BAR_GAP
                         },
                         {
-                            "x": "0",
-                            "y": "249.99999999999997"
+                            "x": 0,
+                            "y": 249.99999999999997 + BAR_GAP
                         },
                         {
-                            "x": "0",
-                            "y": "1.5987211554602254e-14"
+                            "x": 0,
+                            "y": 1.5987211554602254e-14 + BAR_GAP
                         }
                     ]
                 ]);
@@ -582,7 +588,8 @@ define(function (require) {
         {time: testUtils.toLocalDate('2014-02-03'), count: 0},
         {time: testUtils.toLocalDate('2014-02-02'), count: 5},
         {time: testUtils.toLocalDate('2014-02-01'), count: 10}
-    ]
+    ];
+
     describePlot(
         "ELEMENT.INTERVAL WITH MEASURE (:time) as X / MEASURE (:number) AXIS as Y",
         {
