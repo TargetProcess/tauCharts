@@ -21,10 +21,10 @@ class Plugins {
         if (plugin.init) {
             plugin.init(this.chart);
         }
-// jscs:disable disallowEmptyBlocks
+        // jscs:disable disallowEmptyBlocks
         var empty = () => {
         };
-// jscs:enable disallowEmptyBlocks
+        // jscs:enable disallowEmptyBlocks
         this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (empty));
         Object.keys(plugin).forEach((name) => {
             if (name.indexOf('on') === 0) {

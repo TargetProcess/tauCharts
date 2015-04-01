@@ -85,18 +85,16 @@ export class SpecConverter {
             .data
             .map((rowN) => {
                 var row = (Object.keys(rowN).reduce(reduceIterator, rowN));
-                    row = (Object.keys(dims).reduce(
-                        (r, k) => {
+                return (Object.keys(dims).reduce(
+                    (r, k) => {
 
-                            if (!r.hasOwnProperty(k)) {
-                                r[k] = null;
-                            }
+                        if (!r.hasOwnProperty(k)) {
+                            r[k] = null;
+                        }
 
-                            return r;
-                        },
-                        row));
-
-                return row;
+                        return r;
+                    },
+                    row));
             });
     }
 
