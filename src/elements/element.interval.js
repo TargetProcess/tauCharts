@@ -39,9 +39,8 @@ export class Interval {
         };
         var method = flipHub[this.config.flip ? 'FLIP' : 'NORM'];
         var colorIndexScale = (d) => {
-            var findIndex = _.findIndex(domain, (value)=> {
-                return value === (d.key || {})[colorScale.scaleDim];
-            });
+            var expectedValue = (d.key || {})[colorScale.scaleDim];
+            var findIndex = _.findIndex(domain, (value) => (value === expectedValue));
             return findIndex === -1 ? 0 : findIndex;
         };
         //  colorScale.scaleDim = node.color.scaleDim;

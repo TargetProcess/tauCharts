@@ -49,8 +49,8 @@ var flipHub = {
             }) :
             (({data:d}) => (height - yScale(d[node.y.scaleDim])));
 
-        let calculateTranslate = ({data:d}) =>
-            utilsDraw.translate(colorIndexScale({data:d}) * offsetCategory + offsetCategory / 2, 0);
+        let calculateTranslate = ({key:d}) =>
+            utilsDraw.translate(colorIndexScale({key:d}) * offsetCategory + offsetCategory / 2, 0);
 
         return {colorScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     },
@@ -91,8 +91,8 @@ var flipHub = {
             }) :
             (({data:d}) => xScale(d[node.x.scaleDim]));
         let calculateHeight = ({data:d}) => intervalWidth;
-        let calculateTranslate = ({data:d}) =>
-            utilsDraw.translate(0, colorIndexScale({data:d}) * offsetCategory + offsetCategory / 2);
+        let calculateTranslate = ({key:d}) =>
+            utilsDraw.translate(0, colorIndexScale({key:d}) * offsetCategory + offsetCategory / 2);
 
         return {colorScale, calculateX, calculateY, calculateWidth, calculateHeight, calculateTranslate};
     }
