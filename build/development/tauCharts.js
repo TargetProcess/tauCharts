@@ -991,9 +991,11 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             var intervalWidth = _ref2.intervalWidth;
             var offsetCategory = _ref2.offsetCategory;
 
+            var gapSize = intervalWidth > 2 * BAR_GAP ? BAR_GAP : 0;
+
             var calculateX = function (_ref3) {
                 var d = _ref3.data;
-                return xScale(d[node.x.scaleDim]) - tickWidth / 2 + BAR_GAP;
+                return xScale(d[node.x.scaleDim]) - tickWidth / 2 + gapSize;
             };
             var calculateY = isYNumber ? function (_ref3) {
                 var d = _ref3.data;
@@ -1010,7 +1012,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
 
             var calculateWidth = function (_ref3) {
                 var d = _ref3.data;
-                return intervalWidth - 2 * BAR_GAP;
+                return intervalWidth - 2 * gapSize;
             };
             var calculateHeight = isYNumber ? function (_ref3) {
                 var d = _ref3.data;
@@ -1057,6 +1059,8 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             var intervalWidth = _ref2.intervalWidth;
             var offsetCategory = _ref2.offsetCategory;
 
+            var gapSize = intervalWidth > 2 * BAR_GAP ? BAR_GAP : 0;
+
             var calculateX = isXNumber ? function (_ref3) {
                 var d = _ref3.data;
 
@@ -1071,7 +1075,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             } : 0;
             var calculateY = function (_ref3) {
                 var d = _ref3.data;
-                return yScale(d[node.y.scaleDim]) - tickWidth / 2 + BAR_GAP;
+                return yScale(d[node.y.scaleDim]) - tickWidth / 2 + gapSize;
             };
             var calculateWidth = isXNumber ? function (_ref3) {
                 var d = _ref3.data;
@@ -1085,7 +1089,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             };
             var calculateHeight = function (_ref3) {
                 var d = _ref3.data;
-                return intervalWidth - 2 * BAR_GAP;
+                return intervalWidth - 2 * gapSize;
             };
             var calculateTranslate = function (_ref3) {
                 var d = _ref3.key;
