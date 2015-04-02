@@ -582,11 +582,11 @@ var SpecEngineTypeMap = {
                     return unit;
                 }
 
-                if (selectorPredicates.isLeafParent) {
+                if (!unit.guide.hasOwnProperty('showGridLines')) {
+                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
+                }
 
-                    unit.guide.showGridLines = unit.guide.hasOwnProperty('showGridLines') ?
-                        unit.guide.showGridLines :
-                        'xy';
+                if (selectorPredicates.isLeafParent) {
 
                     return calcUnitGuide(
                         unit,
