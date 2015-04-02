@@ -259,45 +259,45 @@ export class Cartesian {
 
     _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {
 
-            var axisScale = d3.svg
-                .axis()
-                .scale(scale.scaleObj)
-                .orient(scale.guide.scaleOrient);
+        var axisScale = d3.svg
+            .axis()
+            .scale(scale.scaleObj)
+            .orient(scale.guide.scaleOrient);
 
-            var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
-            if (formatter !== null) {
-                axisScale.ticks(Math.round(size / scale.guide.density));
-                axisScale.tickFormat(formatter);
-            }
+        var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
+        if (formatter !== null) {
+            axisScale.ticks(Math.round(size / scale.guide.density));
+            axisScale.tickFormat(formatter);
+        }
 
-            var axis = container
-                .selectAll('.axis_' + frameId)
-                .data([uniqueHash], (x) => x);
-            axis.exit()
-                .remove();
-            axis.enter()
-                .append('g')
-                .attr('class', scale.guide.cssClass + ' axis_' + frameId)
-                .attr('transform', utilsDraw.translate(...position))
-                .call(function (refAxisNode) {
-                    if (!refAxisNode.empty()) {
+        var axis = container
+            .selectAll('.axis_' + frameId)
+            .data([uniqueHash], (x) => x);
+        axis.exit()
+            .remove();
+        axis.enter()
+            .append('g')
+            .attr('class', scale.guide.cssClass + ' axis_' + frameId)
+            .attr('transform', utilsDraw.translate(...position))
+            .call(function (refAxisNode) {
+                if (!refAxisNode.empty()) {
 
-                        axisScale.call(this, refAxisNode);
+                    axisScale.call(this, refAxisNode);
 
-                        var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-                        var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                        if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(refAxisNode, size, isHorizontal);
-                        }
-
-                        d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
-                        d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
-
-                        if (isHorizontal && (scale.scaleType === 'time')) {
-                            d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
-                        }
+                    var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+                    var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
+                    if (prettifyTick) {
+                        d3_decorator_prettify_categorical_axis_ticks(refAxisNode, size, isHorizontal);
                     }
-                });
+
+                    d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
+                    d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+
+                    if (isHorizontal && (scale.scaleType === 'time')) {
+                        d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
+                    }
+                }
+            });
     }
 
     _fnDrawGrid(container, node, height, width, frameId, uniqueHash) {
