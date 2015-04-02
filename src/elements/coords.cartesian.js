@@ -259,8 +259,6 @@ export class Cartesian {
 
     _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {
 
-        if (scale.scaleDim) {
-
             var axisScale = d3.svg
                 .axis()
                 .scale(scale.scaleObj)
@@ -300,7 +298,6 @@ export class Cartesian {
                         }
                     }
                 });
-        }
     }
 
     _fnDrawGrid(container, node, height, width, frameId, uniqueHash) {
@@ -327,7 +324,7 @@ export class Cartesian {
 
                     var gridLines = grid.append('g').attr('class', 'grid-lines');
 
-                    if ((linesOptions.indexOf('x') > -1) && node.x.scaleDim) {
+                    if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
                         var xGridAxis = d3.svg
                             .axis()
@@ -365,7 +362,7 @@ export class Cartesian {
                         }
                     }
 
-                    if ((linesOptions.indexOf('y') > -1) && node.y.scaleDim) {
+                    if ((linesOptions.indexOf('y') > -1)) {
                         let yScale = node.y;
                         var yGridAxis = d3.svg
                             .axis()
