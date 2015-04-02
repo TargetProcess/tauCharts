@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.22 - 2015-04-01
+/*! taucharts - v0.3.22 - 2015-04-02
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -949,6 +949,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
     var CSS_PREFIX = _const.CSS_PREFIX;
 
     var BAR_GROUP = "i-role-bar-group";
+    var BAR_GAP = 1;
     var getSizesParams = function (params) {
         var countDomainValue = params.domain().length;
         var countCategory = params.categoryLength;
@@ -992,7 +993,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
 
             var calculateX = function (_ref3) {
                 var d = _ref3.data;
-                return xScale(d[node.x.scaleDim]) - tickWidth / 2;
+                return xScale(d[node.x.scaleDim]) - tickWidth / 2 + BAR_GAP;
             };
             var calculateY = isYNumber ? function (_ref3) {
                 var d = _ref3.data;
@@ -1009,7 +1010,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
 
             var calculateWidth = function (_ref3) {
                 var d = _ref3.data;
-                return intervalWidth;
+                return intervalWidth - 2 * BAR_GAP;
             };
             var calculateHeight = isYNumber ? function (_ref3) {
                 var d = _ref3.data;
@@ -1070,7 +1071,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             } : 0;
             var calculateY = function (_ref3) {
                 var d = _ref3.data;
-                return yScale(d[node.y.scaleDim]) - tickWidth / 2;
+                return yScale(d[node.y.scaleDim]) - tickWidth / 2 + BAR_GAP;
             };
             var calculateWidth = isXNumber ? function (_ref3) {
                 var d = _ref3.data;
@@ -1084,7 +1085,7 @@ define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../con
             };
             var calculateHeight = function (_ref3) {
                 var d = _ref3.data;
-                return intervalWidth;
+                return intervalWidth - 2 * BAR_GAP;
             };
             var calculateTranslate = function (_ref3) {
                 var d = _ref3.key;
@@ -3372,7 +3373,7 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
 
                     gplSpec.sources["/"].data = srcSpec.data.map(function (rowN) {
                         var row = Object.keys(rowN).reduce(reduceIterator, rowN);
-                        row = Object.keys(dims).reduce(function (r, k) {
+                        return Object.keys(dims).reduce(function (r, k) {
 
                             if (!r.hasOwnProperty(k)) {
                                 r[k] = null;
@@ -3380,8 +3381,6 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
 
                             return r;
                         }, row);
-
-                        return row;
                     });
                 }
             },

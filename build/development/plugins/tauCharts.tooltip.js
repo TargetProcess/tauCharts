@@ -133,7 +133,7 @@
                     var key = this._generateKey(unitMeta.config.options.uid);
                     this._unitMeta[key] = unitMeta;
                     var values = unitMeta.config.frames.reduce(function (data, item) {
-                        return data.concat(item.data)
+                        return data.concat(item.data);
                     }, []);
                     this._dataWithCoords[key] = values.map(function (item) {
                         return {
@@ -357,7 +357,7 @@
                 var key = this._generateKey(data.unit && data.unit.config.options.uid);
                 var item = data.elementData;
                 if (tauCharts.api.isLineElement(data.unit)) {
-                    item = this._handleLineElement(data, key, mouseCoord)
+                    item = this._handleLineElement(data, key, mouseCoord);
                 }
                 if (this._currentElement === item) {
                     return;
