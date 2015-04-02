@@ -2001,6 +2001,10 @@ define('scales-factory',["exports", "./unit-domain-period-generator", "./utils/u
 
                     var vars = _(data).chain().pluck(dim).uniq(map_value(type)).value();
 
+                    if (scaleConfig.order) {
+                        vars = _.union(scaleConfig.order, vars);
+                    }
+
                     return scalesStrategies[scaleConfig.type](vars, scaleConfig, interval);
                 }
             }
@@ -3196,12 +3200,13 @@ define('data-processor',["exports", "./utils/utils"], function (exports, _utilsU
 
             var r = {};
             Object.keys(dimensions).forEach(function (k) {
-                var v = dimensions[k];
-                var t = (v.type || defaultType).toLowerCase();
-                r[k] = {};
-                r[k].type = t;
-                r[k].scale = v.scale || scaleMap[t];
-                r[k].value = v.value;
+                var item = dimensions[k];
+                var type = (item.type || defaultType).toLowerCase();
+                r[k] = _.extend({}, item, {
+                    type: type,
+                    scale: item.scale || scaleMap[type],
+                    value: item.value
+                });
             });
 
             return r;
@@ -3492,6 +3497,10 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
                             source: "/",
                             dim: this.ruleInferDim(dimName, guide)
                         };
+
+                        if (dims[dimName].hasOwnProperty("order")) {
+                            item.order = dims[dimName].order;
+                        }
 
                         if (guide.hasOwnProperty("min")) {
                             item.min = guide.min;
@@ -4348,9 +4357,11 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
                     return unit;
                 }
 
-                if (selectorPredicates.isLeafParent) {
+                if (!unit.guide.hasOwnProperty("showGridLines")) {
+                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? "xy" : "";
+                }
 
-                    unit.guide.showGridLines = unit.guide.hasOwnProperty("showGridLines") ? unit.guide.showGridLines : "xy";
+                if (selectorPredicates.isLeafParent) {
 
                     return calcUnitGuide(unit, meta, _.defaults({
                         xTickWordWrapLinesLimit: 1,
