@@ -5719,40 +5719,37 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
             _fnDrawDimAxis: {
                 value: function _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {
 
-                    if (scale.scaleDim) {
+                    var axisScale = d3.svg.axis().scale(scale.scaleObj).orient(scale.guide.scaleOrient);
 
-                        var axisScale = d3.svg.axis().scale(scale.scaleObj).orient(scale.guide.scaleOrient);
-
-                        var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
-                        if (formatter !== null) {
-                            axisScale.ticks(Math.round(size / scale.guide.density));
-                            axisScale.tickFormat(formatter);
-                        }
-
-                        var axis = container.selectAll(".axis_" + frameId).data([uniqueHash], function (x) {
-                            return x;
-                        });
-                        axis.exit().remove();
-                        axis.enter().append("g").attr("class", scale.guide.cssClass + " axis_" + frameId).attr("transform", utilsDraw.translate.apply(utilsDraw, _toConsumableArray(position))).call(function (refAxisNode) {
-                            if (!refAxisNode.empty()) {
-
-                                axisScale.call(this, refAxisNode);
-
-                                var isHorizontal = utilsDraw.getOrientation(scale.guide.scaleOrient) === "h";
-                                var prettifyTick = scale.scaleType === "ordinal" || scale.scaleType === "period";
-                                if (prettifyTick) {
-                                    d3_decorator_prettify_categorical_axis_ticks(refAxisNode, size, isHorizontal);
-                                }
-
-                                d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
-                                d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
-
-                                if (isHorizontal && scale.scaleType === "time") {
-                                    d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
-                                }
-                            }
-                        });
+                    var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
+                    if (formatter !== null) {
+                        axisScale.ticks(Math.round(size / scale.guide.density));
+                        axisScale.tickFormat(formatter);
                     }
+
+                    var axis = container.selectAll(".axis_" + frameId).data([uniqueHash], function (x) {
+                        return x;
+                    });
+                    axis.exit().remove();
+                    axis.enter().append("g").attr("class", scale.guide.cssClass + " axis_" + frameId).attr("transform", utilsDraw.translate.apply(utilsDraw, _toConsumableArray(position))).call(function (refAxisNode) {
+                        if (!refAxisNode.empty()) {
+
+                            axisScale.call(this, refAxisNode);
+
+                            var isHorizontal = utilsDraw.getOrientation(scale.guide.scaleOrient) === "h";
+                            var prettifyTick = scale.scaleType === "ordinal" || scale.scaleType === "period";
+                            if (prettifyTick) {
+                                d3_decorator_prettify_categorical_axis_ticks(refAxisNode, size, isHorizontal);
+                            }
+
+                            d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
+                            d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+
+                            if (isHorizontal && scale.scaleType === "time") {
+                                d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
+                            }
+                        }
+                    });
                 }
             },
             _fnDrawGrid: {
@@ -5775,7 +5772,7 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
 
                             var gridLines = grid.append("g").attr("class", "grid-lines");
 
-                            if (linesOptions.indexOf("x") > -1 && node.x.scaleDim) {
+                            if (linesOptions.indexOf("x") > -1) {
                                 var xScale = node.x;
                                 var xGridAxis = d3.svg.axis().scale(xScale.scaleObj).orient(xScale.guide.scaleOrient).tickSize(height);
 
@@ -5801,7 +5798,7 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
                                 }
                             }
 
-                            if (linesOptions.indexOf("y") > -1 && node.y.scaleDim) {
+                            if (linesOptions.indexOf("y") > -1) {
                                 var yScale = node.y;
                                 var yGridAxis = d3.svg.axis().scale(yScale.scaleObj).orient(yScale.guide.scaleOrient).tickSize(-width);
 
