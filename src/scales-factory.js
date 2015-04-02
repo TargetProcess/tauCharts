@@ -273,6 +273,10 @@ export class ScalesFactory {
 
         var vars = _(data).chain().pluck(dim).uniq(map_value(type)).value();
 
+        if (scaleConfig.order) {
+            vars = _.union(scaleConfig.order, vars);
+        }
+
         return scalesStrategies[scaleConfig.type](vars, scaleConfig, interval);
     }
 }

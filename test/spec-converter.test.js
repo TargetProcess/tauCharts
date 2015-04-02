@@ -9,6 +9,12 @@ define(function (require) {
             var temp = {
                 data: [
                     {
+                        team: 'beta',
+                        proj: 'TP2',
+                        date: new Date('2015-01-01'),
+                        count: 30
+                    },
+                    {
                         team: 'alpha',
                         proj: 'TP2',
                         date: new Date('2015-01-01'),
@@ -19,7 +25,7 @@ define(function (require) {
                 spec: {
                     dimensions: {
                         date: {type: 'measure', scale: 'time'},
-                        team: {type: 'category', scale: 'ordinal'},
+                        team: {type: 'category', scale: 'ordinal', order: ['alpha', 'beta']},
                         proj: {type: 'category', scale: 'ordinal'},
                         count: {type: 'measure', scale: 'linear'}
                     },
@@ -62,6 +68,12 @@ define(function (require) {
                         },
                         "data": [
                             {
+                                team: 'beta',
+                                proj: 'TP2',
+                                date: '2015-01-01T00:00:00.000Z',
+                                count: 30
+                            },
+                            {
                                 "team": "alpha",
                                 "proj": "TP2",
                                 "date": "2015-01-01T00:00:00.000Z",
@@ -80,7 +92,7 @@ define(function (require) {
                     "size:default"  : {"type": "size", "source": "?", "mid": 5},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
 
-                    "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", "autoScale": true},
+                    "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", order: ['alpha', 'beta'], "autoScale": true},
                     "x_date"        : {"type": "time", "source": "/", "dim": "date", "autoScale": true},
                     "y_count"       : {"type": "linear", "source": "/", "dim": "count", "autoScale": true}
                 },

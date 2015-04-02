@@ -202,6 +202,10 @@ export class SpecConverter {
                 dim: this.ruleInferDim(dimName, guide)
             };
 
+            if (dims[dimName].hasOwnProperty('order')) {
+                item.order = dims[dimName].order;
+            }
+
             if (guide.hasOwnProperty('min')) {
                 item.min = guide.min;
             }

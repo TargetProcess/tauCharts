@@ -85,12 +85,16 @@ var DataProcessor = {
 
         var r = {};
         Object.keys(dimensions).forEach((k) => {
-            var v = dimensions[k];
-            var t = (v.type || defaultType).toLowerCase();
-            r[k] = {};
-            r[k].type = t;
-            r[k].scale = v.scale || scaleMap[t];
-            r[k].value = v.value;
+            var item = dimensions[k];
+            var type = (item.type || defaultType).toLowerCase();
+            r[k] = _.extend(
+                {},
+                item,
+                {
+                    type: type,
+                    scale: item.scale || scaleMap[type],
+                    value: item.value
+                });
         });
 
         return r;
