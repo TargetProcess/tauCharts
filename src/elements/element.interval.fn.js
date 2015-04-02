@@ -30,7 +30,9 @@ var flipHub = {
                 size: width
             });
 
-        let calculateX = ({data:d}) => xScale(d[node.x.scaleDim]) - (tickWidth / 2) + BAR_GAP;
+        let gapSize = (intervalWidth > (2 * BAR_GAP)) ? BAR_GAP : 0;
+
+        let calculateX = ({data:d}) => xScale(d[node.x.scaleDim]) - (tickWidth / 2) + gapSize;
         let calculateY = isYNumber ?
             (({data:d}) => {
                 var valY = d[node.y.scaleDim];
@@ -41,7 +43,7 @@ var flipHub = {
             }) :
             (({data:d}) => yScale(d[node.y.scaleDim]));
 
-        let calculateWidth = ({data:d}) => (intervalWidth - 2 * BAR_GAP);
+        let calculateWidth = ({data:d}) => (intervalWidth - 2 * gapSize);
         let calculateHeight = isYNumber ?
             (({data:d}) => {
                 var valY = d[node.y.scaleDim];
@@ -71,6 +73,8 @@ var flipHub = {
                 size: height
             });
 
+        let gapSize = (intervalWidth > (2 * BAR_GAP)) ? BAR_GAP : 0;
+
         let calculateX = isXNumber ?
             (({data:d}) => {
                 var valX = d[node.x.scaleDim];
@@ -83,7 +87,7 @@ var flipHub = {
                 return (isTooSmall) ? (dotX + offset) : (dotX);
             }) :
             0;
-        let calculateY = ({data:d}) => yScale(d[node.y.scaleDim]) - (tickWidth / 2) + BAR_GAP;
+        let calculateY = ({data:d}) => yScale(d[node.y.scaleDim]) - (tickWidth / 2) + gapSize;
         let calculateWidth = isXNumber ?
             (({data:d}) => {
                 var valX = d[node.x.scaleDim];
@@ -91,7 +95,7 @@ var flipHub = {
                 return (valX === 0) ? h : Math.max(minimalHeight, h);
             }) :
             (({data:d}) => xScale(d[node.x.scaleDim]));
-        let calculateHeight = ({data:d}) => (intervalWidth - 2 * BAR_GAP);
+        let calculateHeight = ({data:d}) => (intervalWidth - 2 * gapSize);
         let calculateTranslate = ({key:d}) =>
             utilsDraw.translate(0, colorIndexScale({key:d}) * offsetCategory + offsetCategory / 2);
 
