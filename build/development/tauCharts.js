@@ -5577,7 +5577,8 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
             var guide = unit.guide;
             if (guide.autoLayout === "extract-axes") {
                 var containerHeight = unit.options.containerHeight;
-                guide.x.hide = unit.options.top + unit.options.height < containerHeight;
+                var diff = containerHeight - (unit.options.top + unit.options.height);
+                guide.x.hide = Math.floor(diff) > 0;
                 guide.y.hide = unit.options.left > 0;
             }
         }
