@@ -1,4 +1,4 @@
-/*! taucharts - v0.3.22 - 2015-04-02
+/*! taucharts - v0.3.22 - 2015-04-03
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
