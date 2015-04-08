@@ -109,17 +109,52 @@ var scalesStrategies = {
         return func;
     },
 
-    ordinal: (varSet, props, interval) => {
+    ordinal: (varSet, props, interval, data) => {
 
         var d3Domain = d3.scale.ordinal().domain(varSet);
 
-        var scale = d3Domain.rangePoints(interval, 1);
+        var d3Scale = d3Domain.rangePoints(interval, 1);
+
+        var size = Math.max(...interval);
+        var part = (key) => {
+            if (!props.fitToFrame) {
+
+                return 1 / varSet.length;
+
+            } else {
+
+                var count = data.reduce((memo, row) => (memo + ((row[props.dim] == key) ? 1 : 0)), 0);
+                return (count / data.length);
+
+            }
+        };
+
+        var scale = (x) => {
+
+            var r;
+
+            if (!props.fitToFrame) {
+                r = d3Scale(x);
+            } else {
+                r = varSet
+                    .slice(varSet.indexOf(x) + 1)
+                    .reduce((acc, v) => (acc + (size * part(v))), size * part(x) * 0.5);
+            }
+
+            return r;
+        };
+
+        // have to copy properties since d3 produce Function with methods
+        Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
+
         scale.dim = props.dim;
         scale.domain = () => varSet;
         scale.source = props.source;
         scale.scaleDim = props.dim;
         scale.scaleType = 'ordinal';
         scale.getHash = () => generateHashFunction(varSet, interval);
+        scale.stepSize = (key) => (size * part(key));
+
         return scale;
     },
 
@@ -183,6 +218,8 @@ var scalesStrategies = {
 
         var d3Scale = d3Domain.rangePoints(interval, 1);
 
+        var size = Math.max(...interval);
+
         var scale = (x) => d3Scale(new Date(x));
 
         // have to copy properties since d3 produce Function with methods
@@ -194,6 +231,7 @@ var scalesStrategies = {
         scale.scaleDim = props.dim;
         scale.scaleType = 'period';
         scale.getHash = () => generateHashFunction(varSet, interval);
+        scale.stepSize = (key) => (size / varSet.length);
         return scale;
     },
 
@@ -269,7 +307,7 @@ export class ScalesFactory {
         var src = scaleConfig.source;
 
         var type = (this.sources[src].dims[dim] || {}).type;
-        var data = scaleConfig.fitToFrame ? frame.take() : this.sources[scaleConfig.source].data;
+        var data = (scaleConfig.fitToFrame && frame) ? frame.take() : this.sources[scaleConfig.source].data;
 
         var vars = _(data).chain().pluck(dim).uniq(map_value(type)).value();
 
@@ -277,6 +315,6 @@ export class ScalesFactory {
             vars = _.union(scaleConfig.order, vars);
         }
 
-        return scalesStrategies[scaleConfig.type](vars, scaleConfig, interval);
+        return scalesStrategies[scaleConfig.type](vars, scaleConfig, interval, data);
     }
 }

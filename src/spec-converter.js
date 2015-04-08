@@ -223,6 +223,10 @@ export class SpecConverter {
             if (guide.hasOwnProperty('tickPeriod')) {
                 item.period = guide.tickPeriod;
             }
+
+            if (item.type === 'ordinal') {
+                item.fitToFrame = true;
+            }
         }
 
         this.dist.scales[k] = item;
@@ -282,6 +286,6 @@ export class SpecConverter {
             }
         }
 
-        return _.extend({inherit: false, source: '/'}, expr);
+        return _.extend({inherit: true, source: '/'}, expr);
     }
 }
