@@ -103,6 +103,30 @@ function transformConfig(type, config) {
     x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
+    var prod = x.length * y.length;
+    if (prod === 2) {
+        if (x.filter((n) => config.dimensions[n].scale === 'ordinal').length === 2) {
+
+            guide[0].x = guide[0].x || {};
+            guide[0].x.fitToFrame = true;
+            guide[0].x.inheritParentFrame = false;
+
+            guide[1].x = guide[1].x || {};
+            guide[1].x.fitToFrame = true;
+            guide[1].x.inheritParentFrame = true;
+        }
+
+        if (y.filter((n) => config.dimensions[n].scale === 'ordinal').length === 2) {
+            guide[0].y = guide[0].y || {};
+            guide[0].y.fitToFrame = true;
+            guide[0].y.inheritParentFrame = false;
+
+            guide[1].y = guide[1].y || {};
+            guide[1].y.fitToFrame = true;
+            guide[1].y.inheritParentFrame = true;
+        }
+    }
+
     var spec = {
         type: 'COORDS.RECT',
         unit: []

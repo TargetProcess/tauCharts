@@ -60,6 +60,8 @@ export class SpecConverter {
                 childUnit.guide = childUnit.guide || {};
                 childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
                 childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
+
+                childUnit.expression.inherit = root.expression.inherit;
             }
 
             return childUnit;
@@ -224,9 +226,7 @@ export class SpecConverter {
                 item.period = guide.tickPeriod;
             }
 
-            if (item.type === 'ordinal') {
-                item.fitToFrame = true;
-            }
+            item.fitToFrame = guide.fitToFrame;
         }
 
         this.dist.scales[k] = item;
@@ -286,6 +286,9 @@ export class SpecConverter {
             }
         }
 
-        return _.extend({inherit: true, source: '/'}, expr);
+        // TODO: fix single responsibility issue
+        var inheritFrame = gx.inheritParentFrame || gy.inheritParentFrame || false;
+
+        return _.extend({inherit: inheritFrame, source: '/'}, expr);
     }
 }
