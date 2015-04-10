@@ -286,9 +286,6 @@ export class SpecConverter {
             }
         }
 
-        // TODO: fix single responsibility issue
-        var inheritFrame = gx.inheritParentFrame || gy.inheritParentFrame || false;
-
-        return _.extend({inherit: inheritFrame, source: '/'}, expr);
+        return _.extend({inherit: true, source: '/'}, expr);
     }
 }

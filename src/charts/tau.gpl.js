@@ -104,13 +104,9 @@ export class GPL extends Emitter {
 
             root.frames = expr.exec().map((tuple) => {
 
-                var pipe = parentPipe
-                    .concat([
-                        {
-                            type: 'where',
-                            args: tuple
-                        }
-                    ])
+                var flow = (expr.inherit ? parentPipe : []);
+                var pipe = (flow)
+                    .concat([{type: 'where', args: tuple}])
                     .concat(root.transformation);
 
                 var item = {
@@ -179,7 +175,7 @@ export class GPL extends Emitter {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;
-        var bInherit = expr.inherit;
+        var bInherit = (expr.inherit !== false); // true by default
         var funcArgs = expr.params;
 
         var src = this.sources[srcAlias];
@@ -195,6 +191,7 @@ export class GPL extends Emitter {
 
         return {
             source: srcAlias,
+            inherit: bInherit,
             func: func,
             args: funcArgs,
             exec: () => func.apply(null, [dataFn].concat(funcArgs))
