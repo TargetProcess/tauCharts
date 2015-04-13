@@ -56,6 +56,7 @@ export class GPL extends Emitter {
             });
 
         this.onUnitDraw = config.onUnitDraw;
+        this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
     }
 
     renderTo(target, xSize) {
@@ -65,6 +66,8 @@ export class GPL extends Emitter {
         var size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
 
         this.root = this._expandUnitsStructure(this.config.unit);
+
+        this.onUnitsStructureExpanded(this.config);
 
         var xSvg = d3Target.selectAll('svg').data([1]);
 

@@ -167,6 +167,10 @@ export class Plot extends Emitter {
             this.fire('unitdraw', unitNode);
         };
 
+        gpl.onUnitsStructureExpanded = (unitsStructure) => {
+            this.fire('units-structure-expanded', unitsStructure);
+        };
+
         this._liveSpec = gpl;
 
         this.fire('specready', gpl);
