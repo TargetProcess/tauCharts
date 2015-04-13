@@ -82,7 +82,64 @@ function validateAxis(dimensions, axis, axisName) {
         return result;
     }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [], axis: axisName});
 }
-function transformConfig(type, config) {
+
+function applyScaleRatio(guides, dimPropName, paramsList, chartInstanceRef) {
+
+    guides.forEach((g = {}, i = 0) => {
+
+        g[dimPropName] = g[dimPropName] || {};
+        g[dimPropName].fitToFrame = true;
+        if (i === 0) {
+
+            g[dimPropName].ratio = (key, size, varSet, data) => {
+
+                var chartSpec = chartInstanceRef.getLiveSpec();
+
+                var level2Guide = chartSpec.unit.units[0].guide || {};
+                level2Guide.padding = level2Guide.padding || {l: 0, r: 0, t: 0, b: 0};
+
+                var pad = 0;
+                if (dimPropName === 'x') {
+                    pad = level2Guide.padding.l + level2Guide.padding.r;
+                } else if (dimPropName === 'y') {
+                    pad = level2Guide.padding.t + level2Guide.padding.b;
+                }
+
+                var xHash = (keys) => {
+                    return _(data)
+                        .chain()
+                        .map((row) => (keys.reduce((r, k) => (r.concat(row[k])), [])))
+                        .uniq((t) => JSON.stringify(t))
+                        .reduce((memo, t) => {
+                            var k = t[0];
+                            memo[k] = memo[k] || 0;
+                            memo[k] += 1;
+                            return memo;
+                        }, {})
+                        .value();
+                };
+
+                var xTotal = (keys) => {
+                    return _.values(xHash(keys)).reduce((sum, v) => (sum + v), 0);
+                };
+
+                var xPart = (keys, k) => {
+                    return xHash(keys)[k];
+                };
+
+                var facetSize = varSet.length;
+                var totalItems = xTotal(paramsList);
+
+                var tickPxSize = (size - (facetSize * pad)) / totalItems;
+                var countOfTicksInTheFacet = xPart(paramsList, key);
+
+                return (countOfTicksInTheFacet * tickPxSize + pad) / size;
+            };
+        }
+    });
+}
+
+function transformConfig(type, config, chartInstanceRef) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
 
@@ -105,20 +162,13 @@ function transformConfig(type, config) {
 
     var prod = x.length * y.length;
     if (prod === 2) {
-        if (x.filter((n) => config.dimensions[n].scale === 'ordinal').length === 2) {
-            guide[0].x = guide[0].x || {};
-            guide[0].x.fitToFrame = true;
 
-            guide[1].x = guide[1].x || {};
-            guide[1].x.fitToFrame = true;
+        if (x.filter((n) => config.dimensions[n].scale === 'ordinal').length === prod) {
+            applyScaleRatio(guide, 'x', utils.clone(x), chartInstanceRef);
         }
 
-        if (y.filter((n) => config.dimensions[n].scale === 'ordinal').length === 2) {
-            guide[0].y = guide[0].y || {};
-            guide[0].y.fitToFrame = true;
-
-            guide[1].y = guide[1].y || {};
-            guide[1].y.fitToFrame = true;
+        if (y.filter((n) => config.dimensions[n].scale === 'ordinal').length === prod) {
+            applyScaleRatio(guide, 'y', utils.clone(y), chartInstanceRef);
         }
     }
 
@@ -173,10 +223,10 @@ function transformConfig(type, config) {
 }
 
 var typesChart = {
-    'scatterplot': (config)=> {
-        return transformConfig('ELEMENT.POINT', config);
+    'scatterplot': (config, chartInstance) => {
+        return transformConfig('ELEMENT.POINT', config, chartInstance);
     },
-    'line': (config) => {
+    'line': (config, chartInstance) => {
 
         var data = config.data;
 
@@ -257,15 +307,15 @@ var typesChart = {
             config.data = _(data).sortBy(propSortBy);
         }
 
-        return transformConfig('ELEMENT.LINE', config);
+        return transformConfig('ELEMENT.LINE', config, chartInstance);
     },
-    'bar': (config) => {
+    'bar': (config, chartInstance) => {
         config.flip = false;
-        return transformConfig('ELEMENT.INTERVAL', config);
+        return transformConfig('ELEMENT.INTERVAL', config, chartInstance);
     },
-    'horizontalBar': (config) => {
+    'horizontalBar': (config, chartInstance) => {
         config.flip = true;
-        return transformConfig('ELEMENT.INTERVAL', config);
+        return transformConfig('ELEMENT.INTERVAL', config, chartInstance);
     }
 };
 class Chart extends Plot {
@@ -279,7 +329,7 @@ class Chart extends Plot {
         var chartFactory = typesChart[config.type];
 
         if (_.isFunction(chartFactory)) {
-            super(chartFactory(config));
+            super(chartFactory(config, this));
         }
         else {
             throw new Error(`Chart type ${config.type} is not supported. Use one of ${_.keys(typesChart).join(', ')}.`);

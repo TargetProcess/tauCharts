@@ -113,7 +113,7 @@ define(function (require) {
                             "x": "x_date",
                             "y": "y_count",
                             "expression": {
-                                "inherit": false,
+                                "inherit": true,
                                 "source": "/",
                                 "operator": "none",
                                 "params": []
@@ -122,7 +122,7 @@ define(function (require) {
                                 {
                                     "type": "ELEMENT.LINE",
                                     "expression": {
-                                        "inherit": false,
+                                        "inherit": true,
                                         "source": "/",
                                         "operator": "none",
                                         "params": []
@@ -253,7 +253,7 @@ define(function (require) {
                             "x": "x_date",
                             "y": "y_count",
                             "expression": {
-                                "inherit": false,
+                                "inherit": true,
                                 "source": "/",
                                 "operator": "none",
                                 "params": []
@@ -262,7 +262,7 @@ define(function (require) {
                                 {
                                     "type": "ELEMENT.LINE",
                                     "expression": {
-                                        "inherit": false,
+                                        "inherit": true,
                                         "source": "/",
                                         "operator": "none",
                                         "params": []

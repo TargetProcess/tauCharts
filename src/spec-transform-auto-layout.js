@@ -7,6 +7,7 @@ import {ScalesFactory} from './scales-factory';
 
 function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    guide_dim = guide_dim || {};
     _.each(properties, (prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });

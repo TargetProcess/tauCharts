@@ -116,16 +116,16 @@ var scalesStrategies = {
         var d3Scale = d3Domain.rangePoints(interval, 1);
 
         var size = Math.max(...interval);
-        var part = (key) => {
-            if (!props.fitToFrame) {
 
-                return 1 / varSet.length;
-
+        var fnRatio = (key) => {
+            var ratioType = typeof(props.ratio);
+            if (ratioType === 'function') {
+                return props.ratio(key, size, varSet, data);
+            } else if (ratioType === 'object') {
+                return props.ratio[key];
             } else {
-
-                var count = data.reduce((memo, row) => (memo + ((row[props.dim] == key) ? 1 : 0)), 0);
-                return (count / data.length);
-
+                // uniform distribution
+                return 1 / varSet.length;
             }
         };
 
@@ -133,12 +133,12 @@ var scalesStrategies = {
 
             var r;
 
-            if (!props.fitToFrame) {
+            if (!props.ratio) {
                 r = d3Scale(x);
             } else {
-                r = varSet
-                    .slice(varSet.indexOf(x) + 1)
-                    .reduce((acc, v) => (acc + (size * part(v))), size * part(x) * 0.5);
+                r = varSet.slice(varSet.indexOf(x) + 1).reduce(
+                    (acc, v) => (acc + (size * fnRatio(v))),
+                    (size * fnRatio(x) * 0.5));
             }
 
             return r;
@@ -153,7 +153,7 @@ var scalesStrategies = {
         scale.scaleDim = props.dim;
         scale.scaleType = 'ordinal';
         scale.getHash = () => generateHashFunction(varSet, interval);
-        scale.stepSize = (key) => (size * part(key));
+        scale.stepSize = (x) => (fnRatio(x) * size);
 
         return scale;
     },

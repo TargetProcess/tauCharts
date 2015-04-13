@@ -16,6 +16,7 @@ export class Plot extends Emitter {
     constructor(config) {
         super();
         this._nodes = [];
+        this._liveSpec = null;
         this._svg = null;
         this._filtersStore = {
             filters: {},
@@ -166,6 +167,8 @@ export class Plot extends Emitter {
             this.fire('unitdraw', unitNode);
         };
 
+        this._liveSpec = gpl;
+
         this.fire('specready', gpl);
 
         new GPL(gpl).renderTo(content, optimalSize);
@@ -175,6 +178,10 @@ export class Plot extends Emitter {
         this._svg = svgXElement.node();
         this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
         this.fire('render', this._svg);
+    }
+
+    getLiveSpec() {
+        return this._liveSpec;
     }
 
     getData(param = {}) {

@@ -227,6 +227,8 @@ export class SpecConverter {
             }
 
             item.fitToFrame = guide.fitToFrame;
+
+            item.ratio = guide.ratio;
         }
 
         this.dist.scales[k] = item;
