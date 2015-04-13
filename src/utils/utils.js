@@ -71,7 +71,7 @@ var deepClone = (function () {
         }
     }
 
-// Deep Copy
+    // Deep Copy
     var deepCopiers = [];
 
     function DeepCopier(config) {
