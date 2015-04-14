@@ -59,17 +59,28 @@ export class GPL extends Emitter {
         this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
     }
 
+    setSize(size) {
+        this.size = size;
+        return this;
+    }
+
+    getSize() {
+        return this.size;
+    }
+
     renderTo(target, xSize) {
 
         var d3Target = d3.select(target);
 
-        var size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
+        this.setSize(xSize || _.defaults(utilsDom.getContainerSize(d3Target.node())));
 
         this.root = this._expandUnitsStructure(this.config.unit);
 
         this.onUnitsStructureExpanded(this.config);
 
         var xSvg = d3Target.selectAll('svg').data([1]);
+
+        var size = this.getSize();
 
         var attr = {
             class: (`${CSS_PREFIX}svg`),
@@ -94,10 +105,17 @@ export class GPL extends Emitter {
             height: size.height
         };
 
-        this._drawUnitsStructure(this.root);
+        this._drawUnitsStructure(
+            this.root,
+            this._datify({
+                source: this.root.expression.source,
+                pipe: []
+            }));
     }
 
     _expandUnitsStructure(root, parentPipe = []) {
+
+        var self = this;
 
         if (root.expression.operator !== false) {
 
@@ -123,7 +141,7 @@ export class GPL extends Emitter {
 
                 item.units = (root.units) ? root.units.map((unit) => utils.clone(unit)) : [];
 
-                return item;
+                return self._datify(item);
             });
         }
 
@@ -136,23 +154,21 @@ export class GPL extends Emitter {
         return root;
     }
 
-    _drawUnitsStructure(rootConf, rootFrame = null, rootUnit = null) {
+    _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
 
         var self = this;
 
-        var dataFrame = self._datify(calcBaseFrame(rootConf.expression, rootFrame));
-
-        var UnitClass = self.unitSet.get(rootConf.type);
-        var unitNode = new UnitClass(rootConf);
+        var UnitClass = self.unitSet.get(unitConfig.type);
+        var unitNode = new UnitClass(unitConfig);
         unitNode.parentUnit = rootUnit;
         unitNode
             .drawLayout((type, alias, settings) => {
 
                 var name = alias ? alias : `${type}:default`;
 
-                return self.scalesCreator.create(self.scales[name], dataFrame, settings);
+                return self.scalesCreator.create(self.scales[name], rootFrame, settings);
             })
-            .drawFrames(rootConf.frames.map(self._datify.bind(self)), (function (rootUnit) {
+            .drawFrames(unitConfig.frames, (function (rootUnit) {
                 return function (rootConf, rootFrame) {
                     self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
                 };
@@ -162,7 +178,7 @@ export class GPL extends Emitter {
             self.onUnitDraw(unitNode);
         }
 
-        return rootConf;
+        return unitConfig;
     }
 
     _datify(frame) {
