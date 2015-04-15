@@ -73,9 +73,10 @@ var api = {
             }
         ],
 
-        fitSize: true,
-
+        fitModel: 'normal',
+        optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
+
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
         getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),

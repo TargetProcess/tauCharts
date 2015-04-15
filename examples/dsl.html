@@ -162,8 +162,10 @@
 <script src="../build/development/plugins/tauCharts.export.js"></script>
 <script src="../plugins/legend.js"></script>
 <script src="../plugins/trendline.js"></script>
+<script src="../plugins/settings.js"></script>
 <script>
     var chart1 = new tauCharts.Chart({
+        // "type": "scatterplot",
         "type": "bar",
         "color": null,
         "size": null,
@@ -204,14 +206,29 @@
             }
         },
         data: [
-            {"x1": "TP2", "x2": "A0", "y1": 4987},
 
-            {"x1": "TP3", "x2": "B0", "y1": 2231},
-            {"x1": "TP3", "x2": "B1", "y1": 3231},
+            {"p":"A", "x1": "TP3", "x2": "B0", "y1": 2231},
+            {"p":"A", "x1": "TP3", "x2": "B1", "y1": 3231},
+            {"p":"A", "x1": "TP3", "x2": "B2", "y1": 3231},
+            {"p":"A", "x1": "TP3", "x2": "B3", "y1": 3231},
+            {"p":"A", "x1": "TP3", "x2": "B4", "y1": 3231},
+            {"p":"A", "x1": "TP3", "x2": "B5", "y1": 3231},
 
-            {"x1": "VDR", "x2": "C0", "y1": 720},
-            {"x1": "VDR", "x2": "C1", "y1": 1720},
-            {"x1": "VDR", "x2": "C2", "y1": 2720}
+            {"p":"B", "x1": "VDR", "x2": "C1", "y1": 720},
+            {"p":"B", "x1": "VDR", "x2": "C2", "y1": 1720},
+            {"p":"B", "x1": "VDR", "x2": "C3", "y1": 2720},
+            {"p":"B", "x1": "VDR", "x2": "C4", "y1": 1720},
+            {"p":"B", "x1": "VDR", "x2": "C5", "y1": 3720},
+            {"p":"B", "x1": "VDR", "x2": "C6", "y1": 5720},
+            {"p":"B", "x1": "VDR", "x2": "C7", "y1": 5720},
+            {"p":"B", "x1": "VDR", "x2": "C8", "y1": 5720},
+
+            {"p":"A", "x1": "TP2", "x2": "C9", "y1": 4987},
+            {"p":"A", "x1": "TP2", "x2": "C10", "y1": 4987}
+        ],
+
+        plugins: [
+            tauCharts.api.plugins.get('settings')()
         ]
     });
     chart1.renderTo('#xxx');
@@ -268,8 +285,6 @@
         ]
     });
     chart2.renderTo('#yyy');
-</script>
-<script>
 
     var chart = new tauCharts.Chart({
         "type": "horizontalBar",
@@ -803,7 +818,7 @@
             type: 'COORDS.RECT',
             guide: {
                 padding: { l:46, b:32, r:0, t:2 },
-                y: {label: 'Projects'}
+                y: {label: 'Projects', fitToFrame: false}
             },
             x: null,
             y: 'project',
@@ -812,7 +827,7 @@
                     type: 'COORDS.RECT',
                     guide: {
                         padding: { l:120, b:4, r:8, t:4 },
-                        y: {label: { text: 'Teams', padding: 100 }}
+                        y: {label: { text: 'Teams', padding: 100 }, fitToFrame: true}
                     },
                     x: null,
                     y: 'team',

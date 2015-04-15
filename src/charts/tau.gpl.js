@@ -34,6 +34,8 @@ export class GPL extends Emitter {
 
         this.config = config;
 
+        this.config.settings = this.config.settings || {};
+
         this.unitSet = config.unitsRegistry || unitsRegistry;
 
         this.sources = config.sources;
@@ -59,20 +61,11 @@ export class GPL extends Emitter {
         this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
     }
 
-    setSize(size) {
-        this.size = size;
-        return this;
-    }
-
-    getSize() {
-        return this.size;
-    }
-
     renderTo(target, xSize) {
 
         var d3Target = d3.select(target);
 
-        this.setSize(xSize || _.defaults(utilsDom.getContainerSize(d3Target.node())));
+        this.config.settings.size = (xSize || _.defaults(utilsDom.getContainerSize(d3Target.node())));
 
         this.root = this._expandUnitsStructure(this.config.unit);
 
@@ -80,7 +73,7 @@ export class GPL extends Emitter {
 
         var xSvg = d3Target.selectAll('svg').data([1]);
 
-        var size = this.getSize();
+        var size = this.config.settings.size;
 
         var attr = {
             class: (`${CSS_PREFIX}svg`),
@@ -139,7 +132,14 @@ export class GPL extends Emitter {
                     item.key = tuple;
                 }
 
-                item.units = (root.units) ? root.units.map((unit) => utils.clone(unit)) : [];
+                item.units = (root.units) ?
+                    root.units.map((unit) => {
+                        var clone = utils.clone(unit);
+                        // pass guide by reference
+                        clone.guide = unit.guide;
+                        return clone;
+                    }) :
+                    [];
 
                 return self._datify(item);
             });

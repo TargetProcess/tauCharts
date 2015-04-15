@@ -8,10 +8,13 @@ import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
-import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
+
+import {SpecTransformCalcSize} from '../spec-transform-calc-size';
+import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
+import {SpecTransformOptimizeGuide} from '../spec-transform-optimize-guide';
+
 import {GPL} from './tau.gpl';
-import {ScalesFactory} from '../scales-factory';
 
 export class Plot extends Emitter {
     constructor(config) {
@@ -36,9 +39,6 @@ export class Plot extends Emitter {
         this.configGPL.settings = this.setupSettings(this.configGPL.settings);
 
         this.transformers = [SpecTransformAutoLayout];
-        if (this.configGPL.settings.layoutEngine === 'EXTRACT') {
-            this.transformers.push(SpecTransformExtractAxes);
-        }
 
         this._originData = _.clone(this.configGPL.sources);
 
@@ -160,235 +160,35 @@ export class Plot extends Emitter {
             .transformers
             .reduce((memo, TransformClass) => (new TransformClass(memo).transform()), gpl);
 
-        var optimalSize = gpl.settings.size;
-
         this._nodes = [];
         gpl.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
         };
 
-        var plot = this;
+        gpl.onUnitsStructureExpanded = (specRef) => {
 
-        gpl.onUnitsStructureExpanded = function (unitsStructure) {
+            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
 
-            plot.fire('units-structure-expanded', unitsStructure);
-
-            var fitModel = gpl.settings.fitModel;
-            // none
-            // normal
-            // entire-view
-            // fit-width
-            // fit-height
-
-            if (!fitModel) {
-                return;
-            }
-
-            var chart = this;
-
-            var scales = unitsStructure.scales;
-
-            var scalesCreator = new ScalesFactory(unitsStructure.sources);
-
-            var groupFramesBy = (frames, dim) => {
-                return frames
-                    .reduce((memo, f) => {
-                        var fKey = f.key || {};
-                        var fVal = fKey[dim];
-                        memo[fVal] = memo[fVal] || [];
-                        memo[fVal].push(f);
-                        return memo;
-                    }, {});
-            };
-
-            var calcScaleSize = (xScale, maxTickText) => {
-
-                var r = 0;
-
-                if (['ordinal', 'period'].indexOf(xScale.scaleType) >= 0) {
-                    var domain = xScale.domain();
-                    r = maxTickText * domain.length;
-                } else {
-                    r = maxTickText * 4;
-                }
-
-                return r;
-            };
-
-            var calcWidth = (prop, root, frame = null) => {
-
-                var xCfg = (prop === 'x') ? scales[root.x] : scales[root.y];
-                var yCfg = (prop === 'x') ? scales[root.y] : scales[root.x];
-                var guide = root.guide;
-                var xSize = (prop === 'x') ?
-                    Math.max(guide.x.density, guide.x.$maxTickTextW) :
-                    guide.y.density;
-
-                var resScaleSize = (prop === 'x') ?
-                    (guide.padding.l + guide.padding.r) :
-                    (guide.padding.b + guide.padding.t);
-
-                if (root.units[0].type !== 'COORDS.RECT') {
-
-                    var xScale = scalesCreator.create(xCfg, frame, [0, 100]);
-                    return resScaleSize + calcScaleSize(xScale, xSize);
-
-                } else {
-
-                    var rows = groupFramesBy(root.frames, yCfg.dim);
-                    var rowsSizes = Object
-                        .keys(rows)
-                        .map((kRow) => {
-                            return rows[kRow]
-                                .map((f) => calcWidth(prop, f.units[0], f))
-                                .reduce((sum, size) => (sum + size), 0);
-                        });
-
-                    // pick up max row size
-                    var maxRowSize = Math.max(...rowsSizes);
-                    return resScaleSize + maxRowSize;
-                }
-            };
-
-            var srcSize = chart.getSize();
-
-            var newW = srcSize.width;
-            var newH = srcSize.height;
-            if (fitModel === 'entire-view') {
-                newW = srcSize.width;
-                newH = srcSize.height;
-
-            } else if (fitModel === 'none') {
-                newW = calcWidth('x', unitsStructure.unit);
-                newH = calcWidth('y', unitsStructure.unit);
-
-            } else if (fitModel === 'normal') {
-                newW = Math.max(srcSize.width, calcWidth('x', unitsStructure.unit));
-                newH = Math.max(srcSize.height, calcWidth('y', unitsStructure.unit));
-
-            } else if (fitModel === 'fit-width') {
-                newW = srcSize.width;
-                newH = calcWidth('y', unitsStructure.unit);
-
-            } else if (fitModel === 'fit-height') {
-                newW = calcWidth('x', unitsStructure.unit);
-                newH = srcSize.height;
-            }
-
-            var prettifySize = (srcSize, newSize) => {
-
-                var scrollSize = gpl.settings.getScrollBarWidth();
-
-                var recommendedWidth = newSize.width;
-                var recommendedHeight = newSize.height;
-
-                var deltaW = (srcSize.width - recommendedWidth);
-                var deltaH = (srcSize.height - recommendedHeight);
-
-                var scrollW = (deltaH >= 0) ? 0 : scrollSize;
-                var scrollH = (deltaW >= 0) ? 0 : scrollSize;
-
-                return {
-                    height: recommendedHeight - scrollH,
-                    width: recommendedWidth - scrollW
-                };
-            };
-
-            var newSize = prettifySize(
-                srcSize,
-                {
-                    width: newW,
-                    height: newH
-                }
-            );
-
-            // try optimize spec guides
-            var tryOptimizeSpec = (meta, root, size, localSettings) => {
-
-                var mdx = root.guide.x.$minimalDomain || 1;
-                var mdy = root.guide.y.$minimalDomain || 1;
-
-                var perTickX = size.width / mdx;
-                var perTickY = size.height / mdy;
-
-                var dimXType = meta(root.x);
-                var dimYType = meta(root.y);
-
-                var xDensityPadding = localSettings.hasOwnProperty('xDensityPadding:' + dimXType) ?
-                    localSettings['xDensityPadding:' + dimXType] :
-                    localSettings.xDensityPadding;
-
-                var yDensityPadding = localSettings.hasOwnProperty('yDensityPadding:' + dimYType) ?
-                    localSettings['yDensityPadding:' + dimYType] :
-                    localSettings.yDensityPadding;
-
-                if (root.guide.x.hide !== true &&
-                    root.guide.x.rotate !== 0 &&
-                    (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
-
-                    root.guide.x.rotate = 0;
-                    root.guide.x.textAnchor = 'middle';
-                    root.guide.x.tickFormatWordWrapLimit = perTickX;
-                    var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
-
-                    var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-
-                    root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
-
-                    if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
-                        root.guide.x.label.padding += xDelta;
-                    }
-                }
-
-                if (root.guide.y.hide !== true &&
-                    root.guide.y.rotate !== 0 &&
-                    (root.guide.y.tickFormatWordWrapLines === 1) &&
-                    (perTickY > (root.guide.y.$maxTickTextW + yDensityPadding * 2))) {
-
-                    root.guide.y.tickFormatWordWrapLimit = (perTickY - yDensityPadding * 2);
-                }
-
-                var newSize = {
-                    width: perTickX,
-                    height: perTickY
-                };
-
-                root.frames.forEach((f) => {
-                    f.units.forEach((u) => {
-                        tryOptimizeSpec(meta, u, newSize, localSettings);
-                    });
-                });
-            };
-
-            tryOptimizeSpec(
-                (scaleName) => {
-                    var dim = unitsStructure.scales[scaleName].dim;
-                    var src = unitsStructure.scales[scaleName].source;
-
-                    var dims = unitsStructure.sources[src].dims;
-
-                    return (dims[dim] || {}).type;
-                },
-                unitsStructure.unit,
-                newSize,
-                gpl.settings);
-
-            // TODO: re-calculate size and check if optimization affected size
-
-            chart.setSize(newSize);
+            [
+                (SpecTransformCalcSize),
+                (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
+                (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
+            ]
+                .filter((n) => n != false)
+                .forEach((TClass) => (new TClass(specRef)).transform());
         };
 
         this._liveSpec = gpl;
 
         this.fire('specready', gpl);
 
-        new GPL(gpl).renderTo(content, optimalSize);
+        new GPL(gpl).renderTo(content, gpl.settings.size);
 
         var svgXElement = d3.select(content).select('svg');
 
         this._svg = svgXElement.node();
-        this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
+        this._layout.rightSidebar.style.maxHeight = (`${gpl.settings.size.height}px`);
         this.fire('render', this._svg);
     }
 

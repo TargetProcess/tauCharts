@@ -375,7 +375,7 @@ define(function (require) {
 
             var expected = false;
 
-            plot.on('units-structure-expanded', function (x) {
+            plot.on('unitsstructureexpanded', function (x) {
                 expected = true;
             });
 

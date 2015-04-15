@@ -12,7 +12,9 @@ define(function (require) {
             };
         },
 
-        fitSize: true,
+        fitModel: null, // 'entire-view',
+        optimizeGuideBySize: false,
+        layoutEngine: '', // 'EXTRACT'
 
         getScrollBarWidth: function () {
             return 10;
