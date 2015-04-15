@@ -168,8 +168,6 @@ export class Plot extends Emitter {
 
         gpl.onUnitsStructureExpanded = (specRef) => {
 
-            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
-
             [
                 (SpecTransformCalcSize),
                 (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
@@ -177,6 +175,8 @@ export class Plot extends Emitter {
             ]
                 .filter((n) => n)
                 .forEach((TClass) => (new TClass(specRef)).transform());
+
+            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
         };
 
         this._liveSpec = gpl;

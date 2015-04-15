@@ -91,9 +91,11 @@ function applyScaleRatio(guides, dimPropName, paramsList, chartInstanceRef) {
         g[dimPropName].fitToFrame = true;
         if (i === 0) {
 
-            g[dimPropName].ratio = (key, size, varSet, data) => {
+            g[dimPropName].ratio = (key, size, varSet) => {
 
                 var chartSpec = chartInstanceRef.getLiveSpec();
+
+                var data = chartSpec.sources['/'].data;
 
                 var level2Guide = chartSpec.unit.units[0].guide || {};
                 level2Guide.padding = level2Guide.padding || {l: 0, r: 0, t: 0, b: 0};

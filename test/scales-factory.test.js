@@ -1,6 +1,20 @@
 define(function (require) {
     var expect = require('chai').expect;
+    var ScalesRegistry = require('src/scales-registry').scalesRegistry;
     var ScalesFactory = require('src/scales-factory').ScalesFactory;
+
+    describe('scales-registry', function () {
+
+        it('should support reg / get methods', function () {
+
+            var newScale = function () {};
+
+            ScalesRegistry.reg('new-scale', newScale);
+            var actualScale = ScalesRegistry.get('new-scale');
+
+            expect(actualScale).to.equal(newScale);
+        });
+    });
 
     describe('scales-factory', function () {
 
@@ -60,7 +74,7 @@ define(function (require) {
                 {
                     name: 'x1',
                     type: 'ordinal',
-                    ratio: function (key, size, varSet, data) {
+                    ratio: function (key, size, varSet) {
 
                         var pad = 20;
 
