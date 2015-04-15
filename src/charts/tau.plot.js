@@ -175,7 +175,7 @@ export class Plot extends Emitter {
                 (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
                 (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
             ]
-                .filter((n) => n != false)
+                .filter((n) => n)
                 .forEach((TClass) => (new TClass(specRef)).transform());
         };
 
