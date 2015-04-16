@@ -162,15 +162,24 @@ function transformConfig(type, config, chartInstanceRef) {
     x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
-    var prod = x.length * y.length;
-    if (prod === 2) {
+    var xyProd = x.length * y.length;
+    if (xyProd === 2) {
 
-        if (x.filter((n) => config.dimensions[n].scale === 'ordinal').length === prod) {
-            applyScaleRatio(guide, 'x', utils.clone(x), chartInstanceRef);
+        var dimNameMapper = (dimName, d, i) => {
+            var postfix = '';
+            var tickLabel = (guide[i][dimName] || {}).tickLabel;
+            if (tickLabel) {
+                postfix = '.' + tickLabel;
+            }
+            return d + postfix;
+        };
+
+        if (x.filter((n) => config.dimensions[n].scale === 'ordinal').length === xyProd) {
+            applyScaleRatio(guide, 'x', x.map(dimNameMapper.bind(null, 'x')), chartInstanceRef);
         }
 
-        if (y.filter((n) => config.dimensions[n].scale === 'ordinal').length === prod) {
-            applyScaleRatio(guide, 'y', utils.clone(y), chartInstanceRef);
+        if (y.filter((n) => config.dimensions[n].scale === 'ordinal').length === xyProd) {
+            applyScaleRatio(guide, 'y', y.map(dimNameMapper.bind(null, 'y')), chartInstanceRef);
         }
     }
 
