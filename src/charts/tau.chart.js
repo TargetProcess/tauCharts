@@ -167,7 +167,8 @@ function transformConfig(type, config, chartInstanceRef) {
 
         var dimNameMapper = (dimName, d, i) => {
             var postfix = '';
-            var tickLabel = (guide[i][dimName] || {}).tickLabel;
+            var levelGuide = guide[i] || {};
+            var tickLabel = (levelGuide[dimName] || {}).tickLabel;
             if (tickLabel) {
                 postfix = '.' + tickLabel;
             }
