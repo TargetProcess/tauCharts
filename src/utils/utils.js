@@ -376,6 +376,55 @@ var utils = {
             hashMap[r] = (`H${++hashGen}`);
         }
         return hashMap[r];
+    },
+
+    generateRatioFunction: (dimPropName, paramsList, chartInstanceRef) => {
+        //
+        return (key, size, varSet) => {
+
+            var facetSize = varSet.length;
+
+            var chartSpec = chartInstanceRef.getLiveSpec();
+
+            var data = chartSpec.sources['/'].data;
+
+            var level2Guide = chartSpec.unit.units[0].guide || {};
+            level2Guide.padding = level2Guide.padding || {l: 0, r: 0, t: 0, b: 0};
+
+            var pad = 0;
+            if (dimPropName === 'x') {
+                pad = level2Guide.padding.l + level2Guide.padding.r;
+            } else if (dimPropName === 'y') {
+                pad = level2Guide.padding.t + level2Guide.padding.b;
+            }
+
+            var xHash = (keys) => {
+                return _(data)
+                    .chain()
+                    .map((row) => (keys.reduce((r, k) => (r.concat(row[k])), [])))
+                    .uniq((t) => JSON.stringify(t))
+                    .reduce((memo, t) => {
+                        var k = t[0];
+                        memo[k] = memo[k] || 0;
+                        memo[k] += 1;
+                        return memo;
+                    }, {})
+                    .value();
+            };
+
+            var xTotal = (keys) => {
+                return _.values(xHash(keys)).reduce((sum, v) => (sum + v), 0);
+            };
+
+            var xPart = ((keys, k) => (xHash(keys)[k]));
+
+            var totalItems = xTotal(paramsList);
+
+            var tickPxSize = (size - (facetSize * pad)) / totalItems;
+            var countOfTicksInTheFacet = xPart(paramsList, key);
+
+            return (countOfTicksInTheFacet * tickPxSize + pad) / size;
+        };
     }
 };
 

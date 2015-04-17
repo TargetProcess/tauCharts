@@ -86,57 +86,11 @@ function validateAxis(dimensions, axis, axisName) {
 function applyScaleRatio(guides, dimPropName, paramsList, chartInstanceRef) {
 
     guides.forEach((g = {}, i = 0) => {
-
         g[dimPropName] = g[dimPropName] || {};
         g[dimPropName].fitToFrame = true;
+
         if (i === 0) {
-
-            g[dimPropName].ratio = (key, size, varSet) => {
-
-                var chartSpec = chartInstanceRef.getLiveSpec();
-
-                var data = chartSpec.sources['/'].data;
-
-                var level2Guide = chartSpec.unit.units[0].guide || {};
-                level2Guide.padding = level2Guide.padding || {l: 0, r: 0, t: 0, b: 0};
-
-                var pad = 0;
-                if (dimPropName === 'x') {
-                    pad = level2Guide.padding.l + level2Guide.padding.r;
-                } else if (dimPropName === 'y') {
-                    pad = level2Guide.padding.t + level2Guide.padding.b;
-                }
-
-                var xHash = (keys) => {
-                    return _(data)
-                        .chain()
-                        .map((row) => (keys.reduce((r, k) => (r.concat(row[k])), [])))
-                        .uniq((t) => JSON.stringify(t))
-                        .reduce((memo, t) => {
-                            var k = t[0];
-                            memo[k] = memo[k] || 0;
-                            memo[k] += 1;
-                            return memo;
-                        }, {})
-                        .value();
-                };
-
-                var xTotal = (keys) => {
-                    return _.values(xHash(keys)).reduce((sum, v) => (sum + v), 0);
-                };
-
-                var xPart = (keys, k) => {
-                    return xHash(keys)[k];
-                };
-
-                var facetSize = varSet.length;
-                var totalItems = xTotal(paramsList);
-
-                var tickPxSize = (size - (facetSize * pad)) / totalItems;
-                var countOfTicksInTheFacet = xPart(paramsList, key);
-
-                return (countOfTicksInTheFacet * tickPxSize + pad) / size;
-            };
+            g[dimPropName].ratio = utils.generateRatioFunction(dimPropName, paramsList, chartInstanceRef);
         }
     });
 }
