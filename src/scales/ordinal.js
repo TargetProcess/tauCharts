@@ -36,7 +36,7 @@ export class OrdinalScale extends BaseScale {
             if (!props.ratio) {
                 r = d3Scale(x);
             } else {
-                r = varSet.slice(varSet.indexOf(x) + 1).reduce(
+                r = size - varSet.slice(varSet.indexOf(x) + 1).reduce(
                     (acc, v) => (acc + (size * fnRatio(v))),
                     (size * fnRatio(x) * 0.5));
             }

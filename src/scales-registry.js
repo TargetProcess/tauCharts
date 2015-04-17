@@ -9,10 +9,6 @@ var scalesRegistry = {
 
     get: function (scaleType) {
         return ScalesMap[scaleType];
-    },
-
-    create: (spec, frame, scaleId, scaleSettings) => {
-        throw new Error('Not implemented');
     }
 };
 

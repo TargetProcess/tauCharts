@@ -120,6 +120,84 @@ define(function (require) {
             div3.parentNode.removeChild(div3);
         });
     });
+
+    describe('Chart fit model', function () {
+
+        var div1;
+
+        var createDiv = function () {
+            var div = document.createElement('div');
+            div.style.width = 600 + 'px';
+            div.style.height = 800 + 'px';
+            document.body.appendChild(div);
+            return div;
+        };
+
+        var createConfig = function (fitModel) {
+            return {
+                type: 'bar',
+                x: ['x', 'y'],
+                y: 'z',
+                data: [
+                    {x: 'TP2', y: 'Lambda', z: 1},
+                    {x: 'TP3', y: 'Alaska', z: 2},
+
+                    {x: 'TP2', y: 'Alaska', z: 5},
+                    {x: 'TP3', y: 'Lambda', z: 3}
+                ],
+                settings: {
+                    fitModel: fitModel
+                }
+            };
+        };
+
+        function checkSizes(chart, width, height) {
+            if (modernizer.flexbox) {
+                var svg = chart.getSVG();
+                expect(parseInt($(svg).attr('width'))).to.be.equal(width);
+                expect(parseInt($(svg).attr('height'))).to.be.equal(height);
+            }
+        }
+
+        beforeEach(function () {
+            div1 = createDiv();
+        });
+
+        it('should support [entire-view] model', function () {
+            var chart1 = new tauCharts.Chart(createConfig('entire-view'));
+            chart1.renderTo(div1);
+            checkSizes(chart1, 600, 800);
+        });
+
+        it('should support [normal] model', function () {
+            var chart1 = new tauCharts.Chart(createConfig('normal'));
+            chart1.renderTo(div1);
+            checkSizes(chart1, 600, 800);
+        });
+
+        it('should support [fit-width] model', function () {
+            var chart1 = new tauCharts.Chart(createConfig('fit-width'));
+            chart1.renderTo(div1);
+            checkSizes(chart1, 600, 240);
+        });
+
+        it('should support [fit-height] model', function () {
+            var chart1 = new tauCharts.Chart(createConfig('fit-height'));
+            chart1.renderTo(div1);
+            checkSizes(chart1, 379, 800);
+        });
+
+        it('should support [minimal] model', function () {
+            var chart1 = new tauCharts.Chart(createConfig('minimal'));
+            chart1.renderTo(div1);
+            checkSizes(chart1, 379, 240);
+        });
+
+        afterEach(function () {
+            div1.parentNode.removeChild(div1);
+        });
+    });
+
     describe('API CHART', function () {
         beforeEach(function () {
             div = document.createElement('div');
@@ -340,7 +418,9 @@ define(function (require) {
             expect(function () {
                 tauCharts.api.plugins.add('myPlugins', myPlugins2);
             }).to.throw(Error);
-
+            expect(function () {
+                tauCharts.api.plugins.get('UnknownPlugin')();
+            }).to.throw(Error);
         });
     });
 });

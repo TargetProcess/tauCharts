@@ -36,6 +36,8 @@ export class Plot extends Emitter {
             this.configGPL = new SpecConverter(this.config).convert();
         }
 
+        this.config.plugins = this.config.plugins || [];
+
         this.configGPL.settings = this.setupSettings(this.configGPL.settings);
 
         this.transformers = [SpecTransformAutoLayout];
@@ -47,7 +49,7 @@ export class Plot extends Emitter {
 
     setupConfig(config) {
 
-        if (!config.spec && !config.spec.unit) {
+        if (!config.spec || !config.spec.unit) {
             throw new Error('Provide spec for plot');
         }
 

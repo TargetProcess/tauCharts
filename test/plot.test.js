@@ -374,14 +374,90 @@ define(function (require) {
             var plot = new tauChart.Plot(spec);
 
             var expected = false;
+            var liveSpec;
+            var expectedPath = [];
 
             plot.on('unitsstructureexpanded', function (x) {
                 expected = true;
+                liveSpec = plot.getLiveSpec();
+                plot.traverseSpec(liveSpec, (node, parentNode) => {
+                    expectedPath.push(node.type);
+                });
             });
 
             plot.renderTo(testDiv);
 
             expect(expected).to.equal(true);
+            expect(expectedPath).to.deep.equal(['COORDS.RECT', 'COORDS.RECT', 'ELEMENT.POINT']);
+        });
+
+        it('should throw exception on invalid spec', function () {
+
+            var spec = {
+                // no spec property
+                data: [{a:1, b: 2}]
+            };
+
+            var plot;
+            expect(function () {
+                plot = new tauChart.Plot(spec);
+            }).to.throw('Provide spec for plot');
+        });
+
+        it('should throw if operator is not supported', function () {
+            var testDiv = document.getElementById('test-div');
+            expect(function () {
+                new tauChart.Plot({
+                    sources: {
+                        '?': {
+                            dims: {},
+                            data: []
+                        },
+                        '/': {
+                            dims: {
+                                a: {type: 'category'},
+                                b: {type: 'category'}
+                            },
+                            data: [
+                                {
+                                    a: 'a',
+                                    b: 'b'
+                                }
+                            ]
+                        }
+                    },
+
+                    scales: {
+                        a: {type: 'ordinal', source: '/', dim: 'a'},
+                        b: {type: 'ordinal', source: '/', dim: 'b'}
+                    },
+
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'a',
+                        y: 'b',
+                        expression: {
+                            inherit: false,
+                            source: '/',
+                            operator: '',
+                            params: []
+                        },
+                        units: [
+                            {
+                                type: 'ELEMENT.INTERVAL',
+                                x: 'a',
+                                y: 'b',
+                                expression: {
+                                    source: '/',
+                                    operator: 'blahblah',
+                                    params: ['a'],
+                                    inherit: true
+                                }
+                            }
+                        ]
+                    }
+                }).renderTo(testDiv);
+            }).to.throw('blahblah operator is not supported');
         });
     });
 });

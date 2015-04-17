@@ -7,23 +7,6 @@ import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
 
-var calcBaseFrame = (unitExpression, baseFrame) => {
-
-    var tmpFrame = _.pick(baseFrame || {}, 'source', 'pipe');
-
-    var srcAlias = unitExpression.source;
-    var bInherit = unitExpression.inherit;
-    var ownFrame = {source: srcAlias, pipe: []};
-
-    if (bInherit && (ownFrame.source !== tmpFrame.source)) {
-        // jscs:disable maximumLineLength
-        throw new Error(`base [${tmpFrame.source}] and own [${ownFrame.source}] sources should be equal to apply inheritance`);
-        // jscs:enable maximumLineLength
-    }
-
-    return bInherit ? tmpFrame : ownFrame;
-};
-
 var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {

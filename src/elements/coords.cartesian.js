@@ -94,7 +94,7 @@ export class Cartesian {
             var containerHeight = unit.options.containerHeight;
             var diff = (containerHeight - (unit.options.top + unit.options.height));
             guide.x.hide = (Math.floor(diff) > 0);
-            guide.y.hide = ((unit.options.left > 0));
+            guide.y.hide = (Math.floor(unit.options.left) > 0);
         }
     }
 

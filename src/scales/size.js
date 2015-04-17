@@ -6,7 +6,7 @@ import {default as d3} from 'd3';
 
 export class SizeScale extends BaseScale {
 
-    create(localProps) {
+    create(localProps = {}) {
 
         var props = this.scaleConfig;
         var varSet = this.vars;
@@ -18,39 +18,40 @@ export class SizeScale extends BaseScale {
         var f = (x) => Math.sqrt(x);
 
         var values = _.filter(varSet, _.isFinite);
+        var func;
         if (values.length === 0) {
-            return (x) => midSize;
+            func = (x) => midSize;
+        } else {
+            var k = 1;
+            var xMin = 0;
+
+            var min = Math.min.apply(null, values);
+            var max = Math.max.apply(null, values);
+
+            var len = f(Math.max.apply(
+                null,
+                [
+                    Math.abs(min),
+                    Math.abs(max),
+                    max - min
+                ]));
+
+            xMin = (min < 0) ? min : 0;
+            k = (len === 0) ? 1 : ((maxSize - minSize) / len);
+
+            func = (x) => {
+
+                var numX = (x !== null) ? parseFloat(x) : 0;
+
+                if (!_.isFinite(numX)) {
+                    return maxSize;
+                }
+
+                var posX = (numX - xMin); // translate to positive x domain
+
+                return (minSize + (f(posX) * k));
+            };
         }
-
-        var k = 1;
-        var xMin = 0;
-
-        var min = Math.min.apply(null, values);
-        var max = Math.max.apply(null, values);
-
-        var len = f(Math.max.apply(
-            null,
-            [
-                Math.abs(min),
-                Math.abs(max),
-                max - min
-            ]));
-
-        xMin = (min < 0) ? min : 0;
-        k = (len === 0) ? 1 : ((maxSize - minSize) / len);
-
-        var func = (x) => {
-
-            var numX = (x !== null) ? parseFloat(x) : 0;
-
-            if (!_.isFinite(numX)) {
-                return maxSize;
-            }
-
-            var posX = (numX - xMin); // translate to positive x domain
-
-            return (minSize + (f(posX) * k));
-        };
 
         func.scaleType = 'size';
 
