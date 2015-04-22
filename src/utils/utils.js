@@ -384,7 +384,7 @@ var utils = {
 
             var facetSize = varSet.length;
 
-            var chartSpec = chartInstanceRef.getLiveSpec();
+            var chartSpec = chartInstanceRef.getSpec();
 
             var data = chartSpec.sources['/'].data;
 

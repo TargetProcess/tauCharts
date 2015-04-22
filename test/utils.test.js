@@ -66,7 +66,7 @@ define(function (require) {
 
         var createLiveSpec = function (padding) {
             return {
-                getLiveSpec: function () {
+                getSpec: function () {
                     return {
                         sources: {
                             '/': {

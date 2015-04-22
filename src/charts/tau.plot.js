@@ -198,10 +198,6 @@ export class Plot extends Emitter {
         this.fire('render', this._svg);
     }
 
-    getLiveSpec() {
-        return this._liveSpec;
-    }
-
     getData(param = {}) {
 
         var applyFilterMap = (data, filtersSelector) => {
@@ -297,5 +293,10 @@ export class Plot extends Emitter {
         };
 
         traverse(spec.unit, iterator, null);
+    }
+
+    // use from plugins to get the most actual chart config
+    getSpec() {
+        return this._liveSpec;
     }
 }

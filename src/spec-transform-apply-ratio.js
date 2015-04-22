@@ -13,9 +13,7 @@ export class SpecTransformApplyRatio {
         try {
             this.ruleApplyRatio(refSpec, chartInstance);
         } catch (ex) {
-            if (ex.message === 'Not applicable') {
-                // ignore
-            } else {
+            if (ex.message !== 'Not applicable') {
                 throw ex;
             }
         }

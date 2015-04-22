@@ -379,7 +379,7 @@ define(function (require) {
 
             plot.on('unitsstructureexpanded', function (x) {
                 expected = true;
-                liveSpec = plot.getLiveSpec();
+                liveSpec = plot.getSpec();
                 plot.traverseSpec(liveSpec, (node, parentNode) => {
                     expectedPath.push(node.type);
                 });
