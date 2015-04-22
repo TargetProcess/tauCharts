@@ -48,7 +48,7 @@ export class GPL extends Emitter {
 
         var d3Target = d3.select(target);
 
-        this.config.settings.size = (xSize || _.defaults(utilsDom.getContainerSize(d3Target.node())));
+        this.config.settings.size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
 
         this.root = this._expandUnitsStructure(this.config.unit);
 
