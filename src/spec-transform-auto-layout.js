@@ -7,6 +7,7 @@ import {ScalesFactory} from './scales-factory';
 
 function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
+    guide_dim = guide_dim || {};
     _.each(properties, (prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
@@ -625,111 +626,6 @@ var SpecEngineTypeMap = {
             });
 
         return spec;
-    },
-
-    'OPTIMAL-SIZE': (srcSpec, meta, settings) => {
-
-        var spec = utils.clone(srcSpec);
-
-        var traverseFromDeep = (root) => {
-            var r;
-
-            if (!root.units) {
-                r = {w: 0, h: 0};
-            } else {
-                var s = traverseFromDeep(root.units[0]);
-                var g = root.guide;
-                var xmd = g.x.$minimalDomain || 1;
-                var ymd = g.y.$minimalDomain || 1;
-                var maxW = Math.max((xmd * g.x.density), (xmd * s.w));
-                var maxH = Math.max((ymd * g.y.density), (ymd * s.h));
-
-                r = {
-                    w: maxW + g.padding.l + g.padding.r,
-                    h: maxH + g.padding.t + g.padding.b
-                };
-            }
-
-            return r;
-        };
-
-        var traverseToDeep = (meta, root, size, localSettings) => {
-
-            var mdx = root.guide.x.$minimalDomain || 1;
-            var mdy = root.guide.y.$minimalDomain || 1;
-
-            var perTickX = size.width / mdx;
-            var perTickY = size.height / mdy;
-
-            var dimX = meta.dimension(root.x);
-            var dimY = meta.dimension(root.y);
-            var xDensityPadding = localSettings.hasOwnProperty('xDensityPadding:' + dimX.dimType) ?
-                localSettings['xDensityPadding:' + dimX.dimType] :
-                localSettings.xDensityPadding;
-
-            var yDensityPadding = localSettings.hasOwnProperty('yDensityPadding:' + dimY.dimType) ?
-                localSettings['yDensityPadding:' + dimY.dimType] :
-                localSettings.yDensityPadding;
-
-            if (root.guide.x.hide !== true &&
-                root.guide.x.rotate !== 0 &&
-                (perTickX > (root.guide.x.$maxTickTextW + xDensityPadding * 2))) {
-
-                root.guide.x.rotate = 0;
-                root.guide.x.textAnchor = 'middle';
-                root.guide.x.tickFormatWordWrapLimit = perTickX;
-                var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
-
-                var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-
-                root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
-
-                if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
-                    root.guide.x.label.padding += xDelta;
-                }
-            }
-
-            if (root.guide.y.hide !== true &&
-                root.guide.y.rotate !== 0 &&
-                (root.guide.y.tickFormatWordWrapLines === 1) &&
-                (perTickY > (root.guide.y.$maxTickTextW + yDensityPadding * 2))) {
-
-                root.guide.y.tickFormatWordWrapLimit = (perTickY - yDensityPadding * 2);
-            }
-
-            var newSize = {
-                width: perTickX,
-                height: perTickY
-            };
-
-            if (root.units) {
-                traverseToDeep(meta, root.units[0], newSize, localSettings);
-            }
-        };
-
-        var optimalSize = traverseFromDeep(spec.unit);
-        var recommendedWidth = optimalSize.w;
-        var recommendedHeight = optimalSize.h;
-
-        var size = settings.size;
-        var scrollSize = settings.getScrollBarWidth();
-
-        var deltaW = (size.width - recommendedWidth);
-        var deltaH = (size.height - recommendedHeight);
-
-        var screenW = (deltaW >= 0) ? size.width : recommendedWidth;
-        var scrollW = (deltaH >= 0) ? 0 : scrollSize;
-
-        var screenH = (deltaH >= 0) ? size.height : recommendedHeight;
-        var scrollH = (deltaW >= 0) ? 0 : scrollSize;
-
-        settings.size.height = screenH - scrollH;
-        settings.size.width = screenW - scrollW;
-
-        // optimize full spec depending on size
-        traverseToDeep(meta, spec.unit, settings.size, settings);
-
-        return spec;
     }
 };
 
@@ -782,9 +678,6 @@ var SpecEngineFactory = {
 
         var unitSpec = {unit: utils.clone(srcSpec.unit)};
         var fullSpec = engine(unitSpec, meta, settings);
-        if (settings.fitSize) {
-            fullSpec = SpecEngineTypeMap['OPTIMAL-SIZE'](fullSpec, meta, settings);
-        }
         srcSpec.unit = fullSpec.unit;
         return srcSpec;
     }

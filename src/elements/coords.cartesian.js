@@ -94,7 +94,7 @@ export class Cartesian {
             var containerHeight = unit.options.containerHeight;
             var diff = (containerHeight - (unit.options.top + unit.options.height));
             guide.x.hide = (Math.floor(diff) > 0);
-            guide.y.hide = ((unit.options.left > 0));
+            guide.y.hide = (Math.floor(unit.options.left) > 0);
         }
     }
 
@@ -178,14 +178,14 @@ export class Cartesian {
             var frameId = frame.hash();
             if (frame.key) {
 
-                var coordX = node.x(frame.key[node.x.dim]);
-                var coordY = node.y(frame.key[node.y.dim]);
+                var xKey = frame.key[node.x.dim];
+                var yKey = frame.key[node.y.dim];
 
-                var xDomain = node.x.domain();
-                var yDomain = node.y.domain();
+                var coordX = node.x(xKey);
+                var coordY = node.y(yKey);
 
-                var xPart = innerWidth / xDomain.length;
-                var yPart = innerHeight / yDomain.length;
+                var xPart = node.x.stepSize(xKey);
+                var yPart = node.y.stepSize(yKey);
 
                 mapper = (unit, i) => {
                     unit.options = {
@@ -288,7 +288,7 @@ export class Cartesian {
                     var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                     var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
                     if (prettifyTick) {
-                        d3_decorator_prettify_categorical_axis_ticks(refAxisNode, size, isHorizontal);
+                        d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
                     }
 
                     d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
@@ -347,7 +347,7 @@ export class Cartesian {
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(xGridLines, width, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(xGridLines, xScale, isHorizontal);
                         }
 
                         var firstXGridLine = xGridLines.select('g.tick');
@@ -385,7 +385,7 @@ export class Cartesian {
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(yGridLines, height, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(yGridLines, yScale, isHorizontal);
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];

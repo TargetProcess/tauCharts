@@ -105,20 +105,29 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
     });
 };
 
-var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, size, isHorizontal) => {
+var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal) => {
 
-    var selection = nodeAxis.selectAll('.tick line');
-    if (selection.empty()) {
+    if (nodeAxis.selectAll('.tick line').empty()) {
         return;
     }
 
-    var sectorSize = size / selection[0].length;
-    var offsetSize = sectorSize / 2;
+    nodeAxis
+        .selectAll('.tick')[0]
+        .forEach((node) => {
 
-    var key = (isHorizontal) ? 'x' : 'y';
-    var val = (isHorizontal) ? offsetSize : (-offsetSize);
+            var tickNode = d3.select(node);
+            var tickData = tickNode.data()[0];
 
-    selection.attr(key + '1', val).attr(key + '2', val);
+            var coord = logicalScale(tickData);
+            var tx = (isHorizontal) ? coord : 0;
+            var ty = (isHorizontal) ? 0 : coord;
+            tickNode.attr('transform', `translate(${tx},${ty})`);
+
+            var offset = logicalScale.stepSize(tickData) * 0.5;
+            var key = (isHorizontal) ? 'x' : 'y';
+            var val = (isHorizontal) ? offset : (-offset);
+            tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+        });
 };
 
 var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {

@@ -8,14 +8,20 @@ import {unitsRegistry} from '../units-registry';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
-import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
+
+import {SpecTransformCalcSize} from '../spec-transform-calc-size';
+import {SpecTransformApplyRatio} from '../spec-transform-apply-ratio';
+import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
+import {SpecTransformOptimizeGuide} from '../spec-transform-optimize-guide';
+
 import {GPL} from './tau.gpl';
 
 export class Plot extends Emitter {
     constructor(config) {
         super();
         this._nodes = [];
+        this._liveSpec = null;
         this._svg = null;
         this._filtersStore = {
             filters: {},
@@ -31,12 +37,14 @@ export class Plot extends Emitter {
             this.configGPL = new SpecConverter(this.config).convert();
         }
 
-        this.configGPL.settings = this.setupSettings(this.configGPL.settings);
+        this.config.plugins = this.config.plugins || [];
 
-        this.transformers = [SpecTransformAutoLayout];
-        if (this.configGPL.settings.layoutEngine === 'EXTRACT') {
-            this.transformers.push(SpecTransformExtractAxes);
-        }
+        this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
+
+        this.transformers = [
+            this.configGPL.settings.autoRatio && SpecTransformApplyRatio,
+            SpecTransformAutoLayout
+        ].filter((x) => x);
 
         this._originData = _.clone(this.configGPL.sources);
 
@@ -45,7 +53,7 @@ export class Plot extends Emitter {
 
     setupConfig(config) {
 
-        if (!config.spec && !config.spec.unit) {
+        if (!config.spec || !config.spec.unit) {
             throw new Error('Provide spec for plot');
         }
 
@@ -59,9 +67,9 @@ export class Plot extends Emitter {
         // TODO: remove this particular config cases
         this.config.settings.specEngine   = config.specEngine || config.settings.specEngine;
         this.config.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
-        this.config.settings = this.setupSettings(this.config.settings);
+        this.config.settings = Plot.setupSettings(this.config.settings);
 
-        this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+        this.config.spec.dimensions = Plot.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
         var log = this.config.settings.log;
         if (this.config.settings.excludeNull) {
@@ -84,12 +92,12 @@ export class Plot extends Emitter {
         return isOld ? this.config : this.configGPL || this.config;
     }
 
-    setupMetaInfo(dims, data) {
+    static setupMetaInfo(dims, data) {
         var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
         return DataProcessor.autoAssignScales(meta);
     }
 
-    setupSettings(configSettings) {
+    static setupSettings(configSettings) {
         var globalSettings = Plot.globalSettings;
         var localSettings = {};
         Object.keys(globalSettings).forEach((k) => {
@@ -156,9 +164,7 @@ export class Plot extends Emitter {
 
         gpl = this
             .transformers
-            .reduce((memo, TransformClass) => (new TransformClass(memo).transform()), gpl);
-
-        var optimalSize = gpl.settings.size;
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
 
         this._nodes = [];
         gpl.onUnitDraw = (unitNode) => {
@@ -166,14 +172,29 @@ export class Plot extends Emitter {
             this.fire('unitdraw', unitNode);
         };
 
+        gpl.onUnitsStructureExpanded = (specRef) => {
+
+            [
+                (SpecTransformCalcSize),
+                (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
+                (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
+            ]
+                .filter((n) => n)
+                .forEach((TClass) => (new TClass(specRef)).transform());
+
+            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
+        };
+
+        this._liveSpec = gpl;
+
         this.fire('specready', gpl);
 
-        new GPL(gpl).renderTo(content, optimalSize);
+        new GPL(gpl).renderTo(content, gpl.settings.size);
 
         var svgXElement = d3.select(content).select('svg');
 
         this._svg = svgXElement.node();
-        this._layout.rightSidebar.style.maxHeight = (`${optimalSize.height}px`);
+        this._layout.rightSidebar.style.maxHeight = (`${gpl.settings.size.height}px`);
         this.fire('render', this._svg);
     }
 
@@ -272,5 +293,10 @@ export class Plot extends Emitter {
         };
 
         traverse(spec.unit, iterator, null);
+    }
+
+    // use from plugins to get the most actual chart config
+    getSpec() {
+        return this._liveSpec;
     }
 }

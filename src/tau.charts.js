@@ -6,12 +6,21 @@ import {Chart} from './charts/tau.chart';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {FormatterRegistry} from './formatter-registry';
 import {unitsRegistry} from './units-registry';
+import {scalesRegistry} from './scales-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
+
+import {ColorScale}     from './scales/color';
+import {SizeScale}      from './scales/size';
+import {OrdinalScale}   from './scales/ordinal';
+import {PeriodScale}    from './scales/period';
+import {TimeScale}      from './scales/time';
+import {LinearScale}    from './scales/linear';
+import {ValueScale}     from './scales/value';
 
 var colorBrewers = {};
 var plugins = {};
@@ -21,6 +30,7 @@ var __api__ = {
 };
 var api = {
     unitsRegistry: unitsRegistry,
+    scalesRegistry: scalesRegistry,
     tickFormat: FormatterRegistry,
     isChartElement:utils.isChartElement,
     isLineElement:utils.isLineElement,
@@ -73,9 +83,11 @@ var api = {
             }
         ],
 
-        fitSize: true,
-
+        fitModel: 'normal',
+        optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
+        autoRatio: true,
+
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
         getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),
@@ -123,5 +135,14 @@ api.unitsRegistry
     .reg('INTERVAL', Interval)
     .reg('LINE', Line)
     .reg('PIE', Pie);
+
+api.scalesRegistry
+    .reg('color', ColorScale)
+    .reg('size', SizeScale)
+    .reg('ordinal', OrdinalScale)
+    .reg('period', PeriodScale)
+    .reg('time', TimeScale)
+    .reg('linear', LinearScale)
+    .reg('value', ValueScale);
 
 export {GPL, Plot, Chart, __api__, api};

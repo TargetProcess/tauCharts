@@ -60,6 +60,8 @@ export class SpecConverter {
                 childUnit.guide = childUnit.guide || {};
                 childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
                 childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
+
+                childUnit.expression.inherit = root.expression.inherit;
             }
 
             return childUnit;
@@ -223,6 +225,10 @@ export class SpecConverter {
             if (guide.hasOwnProperty('tickPeriod')) {
                 item.period = guide.tickPeriod;
             }
+
+            item.fitToFrame = guide.fitToFrame;
+
+            item.ratio = guide.ratio;
         }
 
         this.dist.scales[k] = item;
@@ -282,6 +288,6 @@ export class SpecConverter {
             }
         }
 
-        return _.extend({inherit: false, source: '/'}, expr);
+        return _.extend({inherit: true, source: '/'}, expr);
     }
 }
