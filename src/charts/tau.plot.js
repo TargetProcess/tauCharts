@@ -11,6 +11,7 @@ import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
 
 import {SpecTransformCalcSize} from '../spec-transform-calc-size';
+import {SpecTransformApplyRatio} from '../spec-transform-apply-ratio';
 import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {SpecTransformOptimizeGuide} from '../spec-transform-optimize-guide';
 
@@ -38,9 +39,12 @@ export class Plot extends Emitter {
 
         this.config.plugins = this.config.plugins || [];
 
-        this.configGPL.settings = this.setupSettings(this.configGPL.settings);
+        this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
-        this.transformers = [SpecTransformAutoLayout];
+        this.transformers = [
+            this.configGPL.settings.autoRatio && SpecTransformApplyRatio,
+            SpecTransformAutoLayout
+        ].filter((x) => x);
 
         this._originData = _.clone(this.configGPL.sources);
 
@@ -63,9 +67,9 @@ export class Plot extends Emitter {
         // TODO: remove this particular config cases
         this.config.settings.specEngine   = config.specEngine || config.settings.specEngine;
         this.config.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
-        this.config.settings = this.setupSettings(this.config.settings);
+        this.config.settings = Plot.setupSettings(this.config.settings);
 
-        this.config.spec.dimensions = this.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+        this.config.spec.dimensions = Plot.setupMetaInfo(this.config.spec.dimensions, this.config.data);
 
         var log = this.config.settings.log;
         if (this.config.settings.excludeNull) {
@@ -88,12 +92,12 @@ export class Plot extends Emitter {
         return isOld ? this.config : this.configGPL || this.config;
     }
 
-    setupMetaInfo(dims, data) {
+    static setupMetaInfo(dims, data) {
         var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
         return DataProcessor.autoAssignScales(meta);
     }
 
-    setupSettings(configSettings) {
+    static setupSettings(configSettings) {
         var globalSettings = Plot.globalSettings;
         var localSettings = {};
         Object.keys(globalSettings).forEach((k) => {
@@ -160,7 +164,7 @@ export class Plot extends Emitter {
 
         gpl = this
             .transformers
-            .reduce((memo, TransformClass) => (new TransformClass(memo).transform()), gpl);
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
 
         this._nodes = [];
         gpl.onUnitDraw = (unitNode) => {

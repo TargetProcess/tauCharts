@@ -4,10 +4,10 @@ import {DataProcessor} from '../data-processor';
 
 var convertAxis = (data) => (!data) ? null : data;
 
-var normalizeSettings = (axis) => {
+var normalizeSettings = (axis, defaultValue = null) => {
     return (!utils.isArray(axis)) ?
         [axis] :
-        (axis.length === 0) ? [null] : axis;
+        (axis.length === 0) ? [defaultValue] : axis;
 };
 
 var createElement = (type, config) => {
@@ -83,30 +83,17 @@ function validateAxis(dimensions, axis, axisName) {
     }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [], axis: axisName});
 }
 
-function applyScaleRatio(guides, dimPropName, paramsList, chartInstanceRef) {
+function normalizeConfig(config) {
 
-    guides.forEach((g = {}, i = 0) => {
-        g[dimPropName] = g[dimPropName] || {};
-        g[dimPropName].fitToFrame = true;
-
-        if (i === 0) {
-            g[dimPropName].ratio = utils.generateRatioFunction(dimPropName, paramsList, chartInstanceRef);
-        }
-    });
-}
-
-function transformConfig(type, config, chartInstanceRef) {
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
 
     var maxDeep = Math.max(x.length, y.length);
 
-    var guide = normalizeSettings(config.guide);
+    var guide = normalizeSettings(config.guide, {});
 
     // feel the gaps if needed
-    while (guide.length < maxDeep) {
-        guide.push({});
-    }
+    _.times((maxDeep - guide.length), () => guide.push({}));
 
     // cut items
     guide = guide.slice(0, maxDeep);
@@ -116,38 +103,37 @@ function transformConfig(type, config, chartInstanceRef) {
     x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
-    var xyProd = x.length * y.length;
-    if (xyProd === 2) {
+    return _.extend(
+        {},
+        config,
+        {
+            x: x,
+            y: y,
+            guide: guide
+        });
+}
 
-        var dimNameMapper = (dimName, d, i) => {
-            var postfix = '';
-            var levelGuide = guide[i] || {};
-            var tickLabel = (levelGuide[dimName] || {}).tickLabel;
-            if (tickLabel) {
-                postfix = '.' + tickLabel;
-            }
-            return d + postfix;
-        };
+function transformConfig(type, config) {
 
-        if (x.filter((n) => config.dimensions[n].scale === 'ordinal').length === xyProd) {
-            applyScaleRatio(guide, 'x', x.map(dimNameMapper.bind(null, 'x')), chartInstanceRef);
-        }
-
-        if (y.filter((n) => config.dimensions[n].scale === 'ordinal').length === xyProd) {
-            applyScaleRatio(guide, 'y', y.map(dimNameMapper.bind(null, 'y')), chartInstanceRef);
-        }
-    }
+    var x = config.x;
+    var y = config.y;
+    var guide = config.guide;
+    var maxDepth = Math.max(x.length, y.length);
 
     var spec = {
         type: 'COORDS.RECT',
         unit: []
     };
 
-    for (var i = maxDeep; i > 0; i--) {
-        var currentX = x.pop();
-        var currentY = y.pop();
-        var currentGuide = guide.pop() || {};
-        if (i === maxDeep) {
+    var xs = [].concat(x);
+    var ys = [].concat(y);
+    var gs = [].concat(guide);
+
+    for (var i = maxDepth; i > 0; i--) {
+        var currentX = xs.pop();
+        var currentY = ys.pop();
+        var currentGuide = gs.pop() || {};
+        if (i === maxDepth) {
             spec.x = currentX;
             spec.y = currentY;
             spec.unit.push(createElement(type, {
@@ -189,10 +175,10 @@ function transformConfig(type, config, chartInstanceRef) {
 }
 
 var typesChart = {
-    'scatterplot': (config, chartInstance) => {
-        return transformConfig('ELEMENT.POINT', config, chartInstance);
+    'scatterplot': (config) => {
+        return transformConfig('ELEMENT.POINT', config);
     },
-    'line': (config, chartInstance) => {
+    'line': (config) => {
 
         var data = config.data;
 
@@ -273,34 +259,41 @@ var typesChart = {
             config.data = _(data).sortBy(propSortBy);
         }
 
-        return transformConfig('ELEMENT.LINE', config, chartInstance);
+        return transformConfig('ELEMENT.LINE', config);
     },
-    'bar': (config, chartInstance) => {
+    'bar': (config) => {
         config.flip = false;
-        return transformConfig('ELEMENT.INTERVAL', config, chartInstance);
+        return transformConfig('ELEMENT.INTERVAL', config);
     },
-    'horizontalBar': (config, chartInstance) => {
+    'horizontalBar': (config) => {
         config.flip = true;
-        return transformConfig('ELEMENT.INTERVAL', config, chartInstance);
+        return transformConfig('ELEMENT.INTERVAL', config);
     }
 };
+
 class Chart extends Plot {
+
     constructor(config) {
-        config = _.defaults(config, {autoResize: true});
-        if(config.autoResize) {
-            Chart.winAware.push(this);
-        }
-        config.settings = this.setupSettings(config.settings);
-        config.dimensions = this.setupMetaInfo(config.dimensions, config.data);
+
         var chartFactory = typesChart[config.type];
 
-        if (_.isFunction(chartFactory)) {
-            super(chartFactory(config, this));
-        }
-        else {
+        if (!_.isFunction(chartFactory)) {
             throw new Error(`Chart type ${config.type} is not supported. Use one of ${_.keys(typesChart).join(', ')}.`);
         }
+
+        config = _.defaults(config, {autoResize: true});
+        config.settings = Plot.setupSettings(config.settings);
+        config.dimensions = Plot.setupMetaInfo(config.dimensions, config.data);
+
+        var normConfig = normalizeConfig(config);
+
+        super(chartFactory(normConfig));
+
+        if (config.autoResize) {
+            Chart.winAware.push(this);
+        }
     }
+
     destroy() {
         var index = Chart.winAware.indexOf(this);
         if (index !== -1) {
@@ -309,6 +302,7 @@ class Chart extends Plot {
         super.destroy();
     }
 }
+
 Chart.resizeOnWindowEvent = (function () {
 
     var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {

@@ -86,6 +86,7 @@ var api = {
         fitModel: 'normal',
         optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
+        autoRatio: true,
 
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
