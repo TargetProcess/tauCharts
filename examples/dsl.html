@@ -100,6 +100,8 @@
 </head>
 <body>
 
+<div id="geo" class="cc"></div>
+
 <div id="ooo" class="cc"></div>
 
 <div id="xxx" class="cc"></div>
@@ -166,6 +168,70 @@
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
 <script>
+    /**/
+    new tauCharts.Plot(
+            {
+                sources: {
+                    '?': {
+                        dims: {},
+                        data: [{}]
+                    },
+                    '/': {
+                        dims: {},
+                        data: [
+                            {latitude: 42.36, longitude: -71, count: 5, city: 'Boston'},
+                            {latitude: 34.03, longitude: -118.15, count: 25, city: 'LA'}
+                        ]
+                    }
+                },
+
+                scales: {
+                    lat: {type: 'linear', dim: 'latitude', source: '/'},
+                    lon: {type: 'linear', dim: 'longitude', source: '/'},
+                    size: {type: 'size', dim: 'count', source: '/', mid: 5, min: 1, max: 10},
+                    color: {type: 'color', dim: 'city', source: '/'},
+                    'default:color': {
+                        type: 'color',
+                        source: '?',
+                        brewer: function(code) {
+
+                            if (code > 30) {
+                                return 'rgba(0, 0, 0, 0.6)';
+                            }
+
+                            if (code > 25) {
+                                return 'rgba(0, 0, 0, 0.5)';
+                            }
+
+                            if (code > 10) {
+                                return 'rgba(0, 0, 0, 0.2)';
+                            }
+
+                            if (code > 0) {
+                                return 'rgba(0, 0, 0, 0)';
+                            }
+                        }
+                    }
+                },
+
+                unit: {
+                    type: 'COORDS.MAP',
+                    lat: 'lat',
+                    lon: 'lon',
+                    size: 'size',
+                    color: 'color',
+                    fill: 'default:color',
+                    expression: {
+                        operator: 'none',
+                        source: '/'
+                    }
+                }
+
+            }).renderTo('#geo');
+
+
+    throw 1;
+    /**/
 
     var chart0 = new tauCharts.Chart({
         "type": "horizontalBar",

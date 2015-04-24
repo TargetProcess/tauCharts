@@ -162,9 +162,13 @@ export class Plot extends Emitter {
             return;
         }
 
-        gpl = this
-            .transformers
-            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
+        var AAA = false;
+
+        if (AAA) {
+            gpl = this
+                .transformers
+                .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
+        }
 
         this._nodes = [];
         gpl.onUnitDraw = (unitNode) => {
@@ -174,13 +178,15 @@ export class Plot extends Emitter {
 
         gpl.onUnitsStructureExpanded = (specRef) => {
 
-            [
-                (SpecTransformCalcSize),
-                (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
-                (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
-            ]
-                .filter((n) => n)
-                .forEach((TClass) => (new TClass(specRef)).transform());
+            if (AAA) {
+                [
+                    (SpecTransformCalcSize),
+                    (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
+                    (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
+                ]
+                    .filter((n) => n)
+                    .forEach((TClass) => (new TClass(specRef)).transform());
+            }
 
             this.fire(['units', 'structure', 'expanded'].join(''), specRef);
         };

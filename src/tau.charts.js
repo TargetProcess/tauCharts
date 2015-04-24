@@ -9,6 +9,7 @@ import {unitsRegistry} from './units-registry';
 import {scalesRegistry} from './scales-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
+import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
@@ -125,7 +126,10 @@ var api = {
 Plot.globalSettings = api.globalSettings;
 
 api.unitsRegistry
+
     .reg('COORDS.RECT', Cartesian)
+    .reg('COORDS.MAP', GeoMap)
+
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
     .reg('ELEMENT.INTERVAL', Interval)
