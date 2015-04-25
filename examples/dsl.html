@@ -190,10 +190,13 @@
                     lon: {type: 'linear', dim: 'longitude', source: '/'},
                     size: {type: 'size', dim: 'count', source: '/', mid: 5, min: 1, max: 10},
                     color: {type: 'color', dim: 'city', source: '/'},
-                    'default:color': {
-                        type: 'color',
+                    'value:default': {type: 'value', source: '?'},
+                    'fill:default': {
+                        type: 'fill',
                         source: '?',
                         brewer: function(code) {
+
+                            return '#C0C0C0';
 
                             if (code > 30) {
                                 return 'rgba(0, 0, 0, 0.6)';
@@ -220,7 +223,10 @@
                     lon: 'lon',
                     size: 'size',
                     color: 'color',
-                    fill: 'default:color',
+
+                    // code: 'value:default',
+                    // fill: 'default:color',
+
                     expression: {
                         operator: 'none',
                         source: '/'

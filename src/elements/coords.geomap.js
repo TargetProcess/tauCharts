@@ -5,23 +5,6 @@ import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 
-var unemployment = [
-    {id: 1001, rate:.097},
-    {id: 1003, rate:.091},
-    {id: 1005, rate:.134},
-    {id: 1007, rate:.121},
-    {id: 1009, rate:.099},
-    {id: 1011, rate:.164},
-    {id: 1013, rate:.167},
-    {id: 1015, rate:.108},
-    {id: 1017, rate:.186},
-    {id: 1019, rate:.118},
-    {id: 1021, rate:.099},
-    {id: 1023, rate:.127},
-    {id: 1025, rate:.17},
-    {id: 1027, rate:.159}
-];
-
 export class GeoMap {
 
     constructor(config) {
@@ -52,14 +35,17 @@ export class GeoMap {
         var innerWidth = options.width - (padding.l + padding.r);
         var innerHeight = options.height - (padding.t + padding.b);
 
-        // y
+        // y - latitude
         this.latScale = fnCreateScale('pos', node.lat, [0, innerHeight]);
-        // x
+        // x - longitude
         this.lonScale = fnCreateScale('pos', node.lon, [innerWidth, 0]);
         // size
         this.sizeScale = fnCreateScale('size', node.size);
         // color
         this.colorScale = fnCreateScale('color', node.color);
+
+        // code
+        this.codeScale = fnCreateScale('value', node.code);
         // fill
         this.fillScale = fnCreateScale('fill', node.fill);
 
@@ -71,10 +57,7 @@ export class GeoMap {
 
     drawFrames(frames) {
 
-        var width = this.W;
-        var height = this.H;
         var guide = this.config.guide;
-
         var options = this.config.options;
         var node = this.config.options.container;
 
@@ -88,47 +71,34 @@ export class GeoMap {
             var lonScale = this.lonScale;
             var sizeScale = this.sizeScale;
             var colorScale = this.colorScale;
+
+            var codeScale = this.codeScale;
             var fillScale = this.fillScale;
+
+            var groupByCode = frames.reduce(
+                (groups, f) => {
+                    var data = f.take();
+                    return data.reduce(
+                        (memo, rec) => {
+                            var key = rec[codeScale.dim];
+                            var val = rec[fillScale.dim];
+                            memo[key] = val;
+                            return memo;
+                        },
+                        groups);
+                },
+                {});
 
             var lats = d3.extent(latScale.domain());
             var lons = d3.extent(lonScale.domain());
-
-            var scale = guide.projectionScale;
-            var offset = [width / 2, height / 2];
             var center = [
                 ((lons[1] + lons[0]) / 2),
                 ((lats[1] + lats[0]) / 2)
             ];
 
-            var d3Projection = d3
-                .geo[guide.projection]()
-                .scale(scale)
-                .center(center)
-                .translate(offset);
+            var d3Projection = this._createProjection(topoJSONData, center);
 
             var path = d3.geo.path().projection(d3Projection);
-
-            // using the path determine the bounds of the current map and use
-            // these to determine better values for the scale and translation
-            var bounds = path.bounds(topojson.feature(topoJSONData, topoJSONData.objects.land));
-
-            var hscale = scale * width  / (bounds[1][0] - bounds[0][0]);
-            var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
-
-            scale = (hscale < vscale) ? hscale : vscale;
-            offset = [
-                width - (bounds[0][0] + bounds[1][0]) / 2,
-                height - (bounds[0][1] + bounds[1][1]) / 2
-            ];
-
-            // new projection
-            d3Projection = d3
-                .geo[guide.projection]()
-                .center(center)
-                .scale(scale)
-                .translate(offset);
-
-            path = path.projection(d3Projection);
 
             var contourObjects = topoJSONData.objects[guide.contour];
 
@@ -138,7 +108,12 @@ export class GeoMap {
                 .enter()
                 .append('path')
                 .attr('d', path)
-                .attr('fill', (d) => fillScale(d.id));
+                .attr('fill', (d) => fillScale(groupByCode[d.id]))
+                .call(function () {
+                    // TODO: update map with contour objects names
+                    this.append('title')
+                        .text((d) => d.id)
+                });
 
             node.append('path')
                 .datum(topojson.mesh(topoJSONData, contourObjects))
@@ -191,5 +166,46 @@ export class GeoMap {
                 .append('g')
                 .call(updateGroups);
         });
+    }
+
+    _createProjection(topoJSONData, center) {
+
+        // The map's scale out is based on the solution:
+        // http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
+
+        var width = this.W;
+        var height = this.H;
+        var guide = this.config.guide;
+
+        var scale = guide.projectionScale;
+        var offset = [width / 2, height / 2];
+
+        var d3Projection = d3
+            .geo[guide.projection]()
+            .scale(scale)
+            .center(center)
+            .translate(offset);
+
+        var path = d3.geo.path().projection(d3Projection);
+
+        // using the path determine the bounds of the current map and use
+        // these to determine better values for the scale and translation
+        var bounds = path.bounds(topojson.feature(topoJSONData, topoJSONData.objects.land));
+
+        var hscale = scale * width  / (bounds[1][0] - bounds[0][0]);
+        var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
+
+        scale = (hscale < vscale) ? hscale : vscale;
+        offset = [
+            width - (bounds[0][0] + bounds[1][0]) / 2,
+            height - (bounds[0][1] + bounds[1][1]) / 2
+        ];
+
+        // new projection
+        return d3
+            .geo[guide.projection]()
+            .center(center)
+            .scale(scale)
+            .translate(offset);
     }
 }
