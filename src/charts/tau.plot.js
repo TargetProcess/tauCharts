@@ -162,7 +162,7 @@ export class Plot extends Emitter {
             return;
         }
 
-        var AAA = false;
+        var AAA = true;
 
         if (AAA) {
             gpl = this

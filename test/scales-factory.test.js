@@ -9,6 +9,7 @@ define(function (require) {
     var ColorScale = require('src/scales/color').ColorScale;
     var SizeScale = require('src/scales/size').SizeScale;
     var OrdinalScale = require('src/scales/ordinal').OrdinalScale;
+    var FillScale = require('src/scales/fill').FillScale;
 
     describe('scales-registry', function () {
 
@@ -416,6 +417,37 @@ define(function (require) {
             expect(scale2('low')).to.equal(25);
             expect(scale2('medium')).to.equal(62.5);
             expect(scale2('high')).to.equal(87.5);
+        });
+
+        it('should support [fill] scale', function () {
+
+            var scale0 = new FillScale(
+                xSrc,
+                {
+                    dim: 's',
+                    brewer: ['white', 'gray', 'black']
+                }).create();
+
+            expect(scale0.domain()).to.deep.equal([-3, 3]);
+
+            expect(scale0(-3)).to.equal('white');
+            expect(scale0(-1.1)).to.equal('white');
+
+            expect(scale0(-1)).to.equal('gray');
+            expect(scale0(-0.9)).to.equal('gray');
+            expect(scale0(+0.9)).to.equal('gray');
+
+            expect(scale0(+1)).to.equal('black');
+            expect(scale0(+3)).to.equal('black');
+
+            expect(function () {
+                new FillScale(
+                    xSrc,
+                    {
+                        dim: 's',
+                        brewer: 'string-brewer'
+                    }).create();
+            }).to.throw('This brewer is not supported');
         });
     });
 });
