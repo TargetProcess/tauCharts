@@ -112,7 +112,7 @@ export class GeoMap {
                 .call(function () {
                     // TODO: update map with contour objects names
                     this.append('title')
-                        .text((d) => d.id)
+                        .text((d) => d.id);
                 });
 
             node.append('path')
