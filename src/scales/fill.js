@@ -29,7 +29,9 @@ export class FillScale extends BaseScale {
         var props = this.scaleConfig;
         var varSet = this.vars;
 
-        var brewer = props.brewer;
+        var defBrewer = ['#F5F5F5', '#DCDCDC', '#D3D3D3', '#C0C0C0', '#A9A9A9', '#808080', '#696969', '#000000'];
+
+        var brewer = props.brewer || defBrewer;
 
         if (!_.isArray(brewer)) {
             throw new Error('This brewer is not supported');

@@ -448,6 +448,17 @@ define(function (require) {
                         brewer: 'string-brewer'
                     }).create();
             }).to.throw('This brewer is not supported');
+
+            var scale1 = new FillScale(
+                xSrc,
+                {
+                    dim: 's'
+                }).create();
+
+            expect(scale1.domain()).to.deep.equal([-3, 3]);
+            expect(scale1(-3)).to.equal('#F5F5F5');
+            expect(scale1(0)).to.equal('#A9A9A9');
+            expect(scale1(+3)).to.equal('#000000');
         });
     });
 });
