@@ -25,6 +25,7 @@ export class GeoMap {
                 contour: 'countries',
                 projection: 'mercator',
                 projectionScale: 150,
+                defaultFill: '#C0C0C0',
                 padding: {l: 0, r: 0, t: 0, b: 0}
             });
     }
@@ -40,9 +41,9 @@ export class GeoMap {
         var innerHeight = options.height - (padding.t + padding.b);
 
         // y - latitude
-        this.latScale = fnCreateScale('pos', node.lat, [0, innerHeight]);
+        this.latScale = fnCreateScale('pos', node.latitude, [0, innerHeight]);
         // x - longitude
-        this.lonScale = fnCreateScale('pos', node.lon, [innerWidth, 0]);
+        this.lonScale = fnCreateScale('pos', node.longitude, [innerWidth, 0]);
         // size
         this.sizeScale = fnCreateScale('size', node.size);
         // color
@@ -62,114 +63,137 @@ export class GeoMap {
     drawFrames(frames) {
 
         var guide = this.config.guide;
+
+        if (typeof (guide.sourcemap) === 'string') {
+
+            d3.json(guide.sourcemap, (e, topoJSONData) => {
+
+                if (e) {
+                    throw e;
+                }
+
+                this._drawMap(frames, topoJSONData);
+            });
+
+        } else {
+            this._drawMap(frames, guide.sourcemap);
+        }
+    }
+
+    _drawMap(frames, topoJSONData) {
+
+        var guide = this.config.guide;
         var options = this.config.options;
         var node = this.config.options.container;
 
-        d3.json(guide.sourcemap, (e, topoJSONData) => {
+        if (!(topoJSONData.objects && topoJSONData.objects.land)) {
+            throw new Error('Invalid map: map should contain land object');
+        }
 
-            if (e) {
-                throw e;
-            }
+        var latScale = this.latScale;
+        var lonScale = this.lonScale;
+        var sizeScale = this.sizeScale;
+        var colorScale = this.colorScale;
 
-            var latScale = this.latScale;
-            var lonScale = this.lonScale;
-            var sizeScale = this.sizeScale;
-            var colorScale = this.colorScale;
+        var codeScale = this.codeScale;
+        var fillScale = this.fillScale;
 
-            var codeScale = this.codeScale;
-            var fillScale = this.fillScale;
+        var groupByCode = frames.reduce(
+            (groups, f) => {
+                var data = f.take();
+                return data.reduce(
+                    (memo, rec) => {
+                        var key = rec[codeScale.dim];
+                        var val = rec[fillScale.dim];
+                        memo[key] = val;
+                        return memo;
+                    },
+                    groups);
+            },
+            {});
 
-            var groupByCode = frames.reduce(
-                (groups, f) => {
-                    var data = f.take();
-                    return data.reduce(
-                        (memo, rec) => {
-                            var key = rec[codeScale.dim];
-                            var val = rec[fillScale.dim];
-                            memo[key] = val;
-                            return memo;
-                        },
-                        groups);
-                },
-                {});
+        var lats = latScale.dim ? d3.extent(latScale.domain()) : [0, 0];
+        var lons = lonScale.dim ? d3.extent(lonScale.domain()) : [0, 0];
+        var center = [
+            ((lons[1] + lons[0]) / 2),
+            ((lats[1] + lats[0]) / 2)
+        ];
 
-            var lats = d3.extent(latScale.domain());
-            var lons = d3.extent(lonScale.domain());
-            var center = [
-                ((lons[1] + lons[0]) / 2),
-                ((lats[1] + lats[0]) / 2)
-            ];
+        var d3Projection = this._createProjection(topoJSONData, center);
 
-            var d3Projection = this._createProjection(topoJSONData, center);
+        var path = d3.geo.path().projection(d3Projection);
 
-            var path = d3.geo.path().projection(d3Projection);
+        var contourObjects = topoJSONData.objects[guide.contour];
 
-            var contourObjects = topoJSONData.objects[guide.contour];
+        node.append('g')
+            .selectAll('path')
+            .data(topojson.feature(topoJSONData, contourObjects).features)
+            .enter()
+            .append('path')
+            .attr('d', path)
+            .attr('fill', (d) => (fillScale(groupByCode[d.id]) || guide.defaultFill))
+            .call(function () {
+                // TODO: update map with contour objects names
+                this.append('title')
+                    .text((d) => d.id);
+            });
 
-            node.append('g')
-                .selectAll('path')
-                .data(topojson.feature(topoJSONData, contourObjects).features)
-                .enter()
-                .append('path')
-                .attr('d', path)
-                .attr('fill', (d) => fillScale(groupByCode[d.id]))
-                .call(function () {
-                    // TODO: update map with contour objects names
-                    this.append('title')
-                        .text((d) => d.id);
+        node.append('path')
+            .datum(topojson.mesh(topoJSONData, contourObjects))
+            .attr('fill', 'none')
+            .attr('stroke', '#fff')
+            .attr('stroke-linejoin', 'round')
+            .attr('d', path);
+
+        if (!latScale.dim || !lonScale.dim) {
+            return [];
+        }
+
+        var update = function () {
+            return this
+                .attr({
+                    r: ({data: d}) => sizeScale(d[sizeScale.dim]),
+                    transform: ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
+                    class: ({data: d}) => colorScale(d[colorScale.dim]),
+                    opacity: 0.5
                 });
+        };
 
-            node.append('path')
-                .datum(topojson.mesh(topoJSONData, contourObjects))
-                .attr('fill', 'none')
-                .attr('stroke', '#fff')
-                .attr('stroke-linejoin', 'round')
-                .attr('d', path);
+        var updateGroups = function () {
 
-            var update = function () {
-                return this
-                    .attr({
-                        r: ({data:d}) => sizeScale(d[sizeScale.dim]),
-                        transform: ({data:d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
-                        class: ({data:d}) => colorScale(d[colorScale.dim]),
-                        opacity: 0.5
-                    });
-            };
+            this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
+                .call(function () {
+                    var points = this
+                        .selectAll('circle')
+                        .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
+                    points
+                        .exit()
+                        .remove();
+                    points
+                        .call(update);
+                    points
+                        .enter()
+                        .append('circle')
+                        .call(update);
+                });
+        };
 
-            var updateGroups = function () {
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
 
-                this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
-                    .call(function () {
-                        var points = this
-                            .selectAll('circle')
-                            .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
-                        points
-                            .exit()
-                            .remove();
-                        points
-                            .call(update);
-                        points
-                            .enter()
-                            .append('circle')
-                            .call(update);
-                    });
-            };
+        var frameGroups = options.container
+            .selectAll('.frame-id-' + options.uid)
+            .data(frames.map(mapper), (f) => f.hash);
+        frameGroups
+            .exit()
+            .remove();
+        frameGroups
+            .call(updateGroups);
+        frameGroups
+            .enter()
+            .append('g')
+            .call(updateGroups);
 
-            var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
-
-            var frameGroups = options.container
-                .selectAll('.frame-id-' + options.uid)
-                .data(frames.map(mapper), (f) => f.hash);
-            frameGroups
-                .exit()
-                .remove();
-            frameGroups
-                .call(updateGroups);
-            frameGroups
-                .enter()
-                .append('g')
-                .call(updateGroups);
-        });
+        return [];
     }
 
     _createProjection(topoJSONData, center) {

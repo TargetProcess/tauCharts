@@ -1,13 +1,36 @@
 import {ScalesFactory} from './scales-factory';
+import {utils} from './utils/utils';
 
 export class SpecTransformCalcSize {
 
     constructor(spec) {
         this.spec = spec;
+        this.isApplicable = true;
+
+        try {
+            utils.traverseSpec(
+                spec.unit,
+                (unit, level) => {
+                    if ((unit.type.indexOf('COORDS.') === 0) && (unit.type !== 'COORDS.RECT')) {
+                        throw new Error('Not applicable');
+                    }
+                },
+                () => {}
+            );
+        } catch (e) {
+            if (e.message === 'Not applicable') {
+                this.isApplicable = false;
+            }
+        }
     }
 
     transform() {
+
         var specRef = this.spec;
+
+        if (!this.isApplicable) {
+            return specRef;
+        }
 
         var fitModel = specRef.settings.fitModel;
 

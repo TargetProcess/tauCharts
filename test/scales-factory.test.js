@@ -459,6 +459,7 @@ define(function (require) {
             expect(scale1(-3)).to.equal('#F5F5F5');
             expect(scale1(0)).to.equal('#A9A9A9');
             expect(scale1(+3)).to.equal('#000000');
+            expect(scale1(undefined)).to.equal(undefined);
         });
     });
 });

@@ -16,6 +16,14 @@ var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRu
     return rootRef;
 };
 
+var traverseSpec = (root, enterFn, exitFn, level = 0) => {
+    var shouldContinue = enterFn(root, level);
+    if (shouldContinue) {
+        (root.units || []).map((rect) => traverseSpec(rect, enterFn, exitFn, level + 1));
+    }
+    exitFn(root, level);
+};
+
 var hashGen = 0;
 var hashMap = {};
 
@@ -425,7 +433,9 @@ var utils = {
 
             return (countOfTicksInTheFacet * tickPxSize + pad) / size;
         };
-    }
+    },
+
+    traverseSpec: traverseSpec
 };
 
 export {utils};

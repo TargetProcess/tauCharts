@@ -100,7 +100,9 @@
 </head>
 <body>
 
-<div id="geo" class="cc"></div>
+<div id="geo1" class="cc"></div>
+
+<div id="geo2" class="cc"></div>
 
 <div id="ooo" class="cc"></div>
 
@@ -168,6 +170,23 @@
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
 <script>
+
+    var chart = new tauCharts.Chart({
+        type: 'map',
+        latitude: 'x',
+        longitude: 'y',
+        size: 'size',
+        data: [
+            {x: 1, y: 1, color: 'red', size: 6},
+            {x: 0.5, y: 0.5, color: 'green', size: 2},
+            {x: 2, y: 2, color: 'green', size: 118}
+        ],
+        guide: {
+        }
+    });
+
+    chart.renderTo('#geo1');
+
     /**/
     new tauCharts.Plot(
             {
@@ -193,34 +212,14 @@
                     'value:default': {type: 'value', source: '?'},
                     'fill:default': {
                         type: 'fill',
-                        source: '?',
-                        brewer: function(code) {
-
-                            return '#C0C0C0';
-
-                            if (code > 30) {
-                                return 'rgba(0, 0, 0, 0.6)';
-                            }
-
-                            if (code > 25) {
-                                return 'rgba(0, 0, 0, 0.5)';
-                            }
-
-                            if (code > 10) {
-                                return 'rgba(0, 0, 0, 0.2)';
-                            }
-
-                            if (code > 0) {
-                                return 'rgba(0, 0, 0, 0)';
-                            }
-                        }
+                        source: '?'
                     }
                 },
 
                 unit: {
                     type: 'COORDS.MAP',
-                    lat: 'lat',
-                    lon: 'lon',
+                    latitude: 'lat',
+                    longitude: 'lon',
                     size: 'size',
                     color: 'color',
 
@@ -233,10 +232,8 @@
                     }
                 }
 
-            }).renderTo('#geo');
+            }).renderTo('#geo2');
 
-
-    throw 1;
     /**/
 
     var chart0 = new tauCharts.Chart({

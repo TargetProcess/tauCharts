@@ -1,3 +1,5 @@
+import {utils} from './utils/utils';
+
 var tryOptimizeSpec = (meta, root, size, localSettings) => {
 
     var mdx = root.guide.x.$minimalDomain || 1;
@@ -57,10 +59,32 @@ export class SpecTransformOptimizeGuide {
 
     constructor(spec) {
         this.spec = spec;
+
+        this.isApplicable = true;
+
+        try {
+            utils.traverseSpec(
+                spec.unit,
+                (unit, level) => {
+                    if ((unit.type.indexOf('COORDS.') === 0) && (unit.type !== 'COORDS.RECT')) {
+                        throw new Error('Not applicable');
+                    }
+                },
+                () => {}
+            );
+        } catch (e) {
+            if (e.message === 'Not applicable') {
+                this.isApplicable = false;
+            }
+        }
     }
 
     transform() {
         var refSpec = this.spec;
+
+        if (!this.isApplicable) {
+            return refSpec;
+        }
 
         tryOptimizeSpec(
             (scaleName) => {

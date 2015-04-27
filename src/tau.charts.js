@@ -22,6 +22,7 @@ import {PeriodScale}    from './scales/period';
 import {TimeScale}      from './scales/time';
 import {LinearScale}    from './scales/linear';
 import {ValueScale}     from './scales/value';
+import {FillScale}      from './scales/fill';
 
 var colorBrewers = {};
 var plugins = {};
@@ -142,6 +143,7 @@ api.unitsRegistry
 
 api.scalesRegistry
     .reg('color', ColorScale)
+    .reg('fill', FillScale)
     .reg('size', SizeScale)
     .reg('ordinal', OrdinalScale)
     .reg('period', PeriodScale)
