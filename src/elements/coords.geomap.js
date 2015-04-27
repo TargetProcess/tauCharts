@@ -17,7 +17,11 @@ export class GeoMap {
             {
                 // sourcemap: 'http://bl.ocks.org/mbostock/raw/4090846/us.json',
                 // contour: 'counties',
-                sourcemap: 'https://gist.githubusercontent.com/d3noob/5189184/raw/598d1ebe0c251cd506c8395c60ab1d08520922a7/world-110m2.json',
+                sourcemap: [
+                    'https://gist.githubusercontent.com/d3noob/5189184',
+                    'raw/598d1ebe0c251cd506c8395c60ab1d08520922a7',
+                    'world-110m2.json'
+                ].join('/'),
                 contour: 'countries',
                 projection: 'mercator',
                 projectionScale: 150,
@@ -125,10 +129,10 @@ export class GeoMap {
             var update = function () {
                 return this
                     .attr({
-                        'r': ({data:d}) => sizeScale(d[sizeScale.dim]),
-                        'transform': ({data:d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
-                        'class': ({data:d}) => colorScale(d[colorScale.dim]),
-                        'opacity': 0.5
+                        r: ({data:d}) => sizeScale(d[sizeScale.dim]),
+                        transform: ({data:d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
+                        class: ({data:d}) => colorScale(d[colorScale.dim]),
+                        opacity: 0.5
                     });
             };
 
