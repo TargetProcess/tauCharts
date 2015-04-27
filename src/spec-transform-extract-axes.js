@@ -5,27 +5,11 @@ export class SpecTransformExtractAxes {
 
     constructor(spec) {
         this.spec = spec;
-
-        this.isApplicable = true;
-
-        try {
-            utils.traverseSpec(
-                spec.unit,
-                (unit, level) => {
-                    if ((unit.type.indexOf('COORDS.') === 0) && (unit.type !== 'COORDS.RECT')) {
-                        throw new Error('Not applicable');
-                    }
-                },
-                () => {}
-            );
-        } catch (e) {
-            if (e.message === 'Not applicable') {
-                this.isApplicable = false;
-            }
-        }
+        this.isApplicable = (spec.settings.layoutEngine === 'EXTRACT') && utils.isSpecRectCoordsOnly(spec.unit);
     }
 
     transform() {
+
         var refSpec = this.spec;
 
         if (!this.isApplicable) {
@@ -53,17 +37,6 @@ export class SpecTransformExtractAxes {
 
         var isElement = (unitRef) => {
             return (unitRef.type.indexOf('ELEMENT.') === 0);
-        };
-
-        var traverse = (root, enterFn, exitFn, level = 0) => {
-
-            var shouldContinue = enterFn(root, level);
-
-            if (shouldContinue) {
-                (root.units || []).map((rect) => traverse(rect, enterFn, exitFn, level + 1));
-            }
-
-            exitFn(root, level);
         };
 
         var ttl = {l:0, r:10, t:10, b:0};
@@ -130,7 +103,7 @@ export class SpecTransformExtractAxes {
             guide.y.padding += (ttl.l - lvl.l);
         };
 
-        traverse(spec.unit, enterIterator, exitIterator);
+        utils.traverseSpec(spec.unit, enterIterator, exitIterator);
 
         spec.unit.guide.padding = ttl;
         spec.unit.guide.autoLayout = '';

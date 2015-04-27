@@ -435,7 +435,30 @@ var utils = {
         };
     },
 
-    traverseSpec: traverseSpec
+    traverseSpec: traverseSpec,
+
+    isSpecRectCoordsOnly: function (root) {
+
+        var isApplicable = true;
+
+        try {
+            utils.traverseSpec(
+                (root),
+                (unit) => {
+                    if ((unit.type.indexOf('COORDS.') === 0) && (unit.type !== 'COORDS.RECT')) {
+                        throw new Error('Not applicable');
+                    }
+                },
+                (unit) => (unit)
+            );
+        } catch (e) {
+            if (e.message === 'Not applicable') {
+                isApplicable = false;
+            }
+        }
+
+        return isApplicable;
+    }
 };
 
 export {utils};

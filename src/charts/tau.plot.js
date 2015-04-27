@@ -42,9 +42,15 @@ export class Plot extends Emitter {
         this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
         this.transformers = [
-            this.configGPL.settings.autoRatio && SpecTransformApplyRatio,
+            SpecTransformApplyRatio,
             SpecTransformAutoLayout
-        ].filter((x) => x);
+        ];
+
+        this.onUnitsStructureExpandedTransformers = [
+            SpecTransformCalcSize,
+            SpecTransformOptimizeGuide,
+            SpecTransformExtractAxes
+        ];
 
         this._originData = _.clone(this.configGPL.sources);
 
@@ -162,13 +168,9 @@ export class Plot extends Emitter {
             return;
         }
 
-        var AAA = true;
-
-        if (AAA) {
-            gpl = this
-                .transformers
-                .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
-        }
+        gpl = this
+            .transformers
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
 
         this._nodes = [];
         gpl.onUnitDraw = (unitNode) => {
@@ -177,17 +179,8 @@ export class Plot extends Emitter {
         };
 
         gpl.onUnitsStructureExpanded = (specRef) => {
-
-            if (AAA) {
-                [
-                    (SpecTransformCalcSize),
-                    (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
-                    (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
-                ]
-                    .filter((n) => n)
-                    .forEach((TClass) => (new TClass(specRef)).transform());
-            }
-
+            this.onUnitsStructureExpandedTransformers
+                .forEach((TClass) => (new TClass(specRef)).transform());
             this.fire(['units', 'structure', 'expanded'].join(''), specRef);
         };
 

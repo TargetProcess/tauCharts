@@ -5,27 +5,11 @@ export class SpecTransformApplyRatio {
 
     constructor(spec) {
         this.spec = spec;
-
-        this.isApplicable = true;
-
-        try {
-            utils.traverseSpec(
-                spec.unit,
-                (unit, level) => {
-                    if ((unit.type.indexOf('COORDS.') === 0) && (unit.type !== 'COORDS.RECT')) {
-                        throw new Error('Not applicable');
-                    }
-                },
-                () => {}
-            );
-        } catch (e) {
-            if (e.message === 'Not applicable') {
-                this.isApplicable = false;
-            }
-        }
+        this.isApplicable = spec.settings.autoRatio && utils.isSpecRectCoordsOnly(spec.unit);
     }
 
     transform(chartInstance) {
+
         var refSpec = this.spec;
 
         if (!this.isApplicable) {
