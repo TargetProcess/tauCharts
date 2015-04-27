@@ -295,9 +295,10 @@ var typesChart = {
         var guide = _.extend(
             {
                 sourcemap: [
-                    'https://gist.githubusercontent.com/d3noob/5189184',
-                    'raw/598d1ebe0c251cd506c8395c60ab1d08520922a7',
-                    'world-110m2.json'
+                    'https://gist.githubusercontent.com',
+                    'vladminsky',
+                    'ae0cbabf2fcbb5db6f07/raw/ea06d2a9a541100ac5c6bd5b9275c1d3336642fe',
+                    'world-map'
                 ].join('/'),
                 contour: 'countries'
             },

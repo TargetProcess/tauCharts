@@ -17,12 +17,6 @@ export class GeoMap {
             {
                 // sourcemap: 'http://bl.ocks.org/mbostock/raw/4090846/us.json',
                 // contour: 'counties',
-                sourcemap: [
-                    'https://gist.githubusercontent.com/d3noob/5189184',
-                    'raw/598d1ebe0c251cd506c8395c60ab1d08520922a7',
-                    'world-110m2.json'
-                ].join('/'),
-                contour: 'countries',
                 projection: 'mercator',
                 projectionScale: 150,
                 defaultFill: '#C0C0C0',
@@ -135,7 +129,10 @@ export class GeoMap {
             .call(function () {
                 // TODO: update map with contour objects names
                 this.append('title')
-                    .text((d) => d.id);
+                    .text((d) => {
+                        var p = d.properties || {};
+                        return `(${p.cca3}) ${p.name}`;
+                    });
             });
 
         node.append('path')
