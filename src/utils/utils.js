@@ -38,47 +38,6 @@ var deepClone = (function () {
         }
     }
 
-    // Shallow Copy
-    function copy(target) {
-        if (typeof target !== 'object') {
-            return target;  // non-object have value sematics, so target is already a copy.
-        } else {
-            var value = target.valueOf();
-            if (target != value) {
-                // the object is a standard object wrapper for a native type, say String.
-                // we can make a copy by instantiating a new object around the value.
-                return new target.constructor(value);
-            } else {
-
-                var c;
-                var property;
-
-                // ok, we have a normal object. If possible, we'll clone the original's prototype
-                // (not the original) to get an empty object with the same prototype chain as
-                // the original.  If just copy the instance properties.  Otherwise, we have to
-                // copy the whole thing, property-by-property.
-                if (target instanceof target.constructor && target.constructor !== Object) {
-                    c = clone(target.constructor.prototype);
-
-                    // give the copy all the instance properties of target.  It has the same
-                    // prototype as target, so inherited properties are already there.
-                    for (property in target) {
-                        if (target.hasOwnProperty(property)) {
-                            c[property] = target[property];
-                        }
-                    }
-                } else {
-                    c = {};
-                    for (property in target) {
-                        c[property] = target[property];
-                    }
-                }
-
-                return c;
-            }
-        }
-    }
-
     // Deep Copy
     var deepCopiers = [];
 

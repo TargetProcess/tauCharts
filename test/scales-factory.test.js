@@ -419,7 +419,22 @@ define(function (require) {
             expect(scale2('high')).to.equal(87.5);
         });
 
-        it('should support [fill] scale', function () {
+        it('should support [fill] scale (default params)', function () {
+
+            var scale1 = new FillScale(
+                xSrc,
+                {
+                    dim: 's'
+                }).create();
+
+            expect(scale1.domain()).to.deep.equal([-3, 3]);
+            expect(scale1(-3)).to.equal('#F5F5F5');
+            expect(scale1(0)).to.equal('#A9A9A9');
+            expect(scale1(+3)).to.equal('#000000');
+            expect(scale1(undefined)).to.equal(undefined);
+        });
+
+        it('should support brewer on [fill] scale', function () {
 
             var scale0 = new FillScale(
                 xSrc,
@@ -439,6 +454,9 @@ define(function (require) {
 
             expect(scale0(+1)).to.equal('black');
             expect(scale0(+3)).to.equal('black');
+        });
+
+        it('should throw on invalid brewer for [fill] scale', function () {
 
             expect(function () {
                 new FillScale(
@@ -448,18 +466,31 @@ define(function (require) {
                         brewer: 'string-brewer'
                     }).create();
             }).to.throw('This brewer is not supported');
+        });
 
-            var scale1 = new FillScale(
+        it('should support autoScale on [fill] scale', function () {
+
+            var scale0 = new FillScale(
                 xSrc,
                 {
-                    dim: 's'
+                    dim: 's',
+                    autoScale: true
                 }).create();
 
-            expect(scale1.domain()).to.deep.equal([-3, 3]);
-            expect(scale1(-3)).to.equal('#F5F5F5');
-            expect(scale1(0)).to.equal('#A9A9A9');
-            expect(scale1(+3)).to.equal('#000000');
-            expect(scale1(undefined)).to.equal(undefined);
+            expect(scale0.domain()).to.deep.equal([-3.5, 3.5]);
+        });
+
+        it('should support min / max on [fill] scale', function () {
+
+            var scale0 = new FillScale(
+                xSrc,
+                {
+                    dim: 's',
+                    min: -10,
+                    max: 100
+                }).create();
+
+            expect(scale0.domain()).to.deep.equal([-10, 100]);
         });
     });
 });

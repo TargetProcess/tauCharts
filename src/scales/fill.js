@@ -1,4 +1,5 @@
 import {BaseScale} from './base';
+import {utils} from '../utils/utils';
 /* jshint ignore:start */
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
