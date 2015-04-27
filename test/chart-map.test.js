@@ -12,6 +12,17 @@ define(function (require) {
             {x: 2, y: 2, color: 'green', size: 8}
         ];
 
+        var target;
+
+        beforeEach(function () {
+            target = document.createElement('div');
+            document.body.appendChild(target);
+        });
+
+        afterEach(function () {
+            target.parentNode.removeChild(target);
+        });
+
         it('should throw if fill is specified without code', function () {
 
             expect(function () {
@@ -83,7 +94,7 @@ define(function (require) {
             });
 
             expect(function () {
-                chart.renderTo('body');
+                chart.renderTo(target);
             }).to.throw('Invalid map: map should contain land object');
         });
 
@@ -98,7 +109,7 @@ define(function (require) {
             });
 
             expect(function () {
-                chart.renderTo('body');
+                chart.renderTo(target);
             }).to.not.throw();
         });
     });
