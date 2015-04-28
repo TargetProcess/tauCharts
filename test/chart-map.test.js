@@ -1,4 +1,5 @@
 define(function (require) {
+    var worldMap = require('json!src/addons/world');
     var expect = require('chai').expect;
     var assert = require('chai').assert;
     var schemes = require('schemes');
@@ -11,6 +12,10 @@ define(function (require) {
             {x: 0.5, y: 0.5, color: 'green', size: 6, cc: 'RUS'},
             {x: 2, y: 2, color: 'green', size: 8, cc: 'BLR'}
         ];
+
+        var settings = {
+            defaultSourceMap: worldMap
+        };
 
         var target;
 
@@ -30,7 +35,8 @@ define(function (require) {
                     type: 'map',
                     data: testData,
                     fill: 'x',
-                    code: null
+                    code: null,
+                    settings: settings
                 });
             }).to.throw('[code] must be specified when using [fill]');
         });
@@ -42,7 +48,8 @@ define(function (require) {
                     type: 'map',
                     data: testData,
                     latitude: 'x',
-                    size: 'size'
+                    size: 'size',
+                    settings: settings
                 });
             }).to.throw('[latitude] and [longitude] both must be specified');
         });
@@ -54,7 +61,8 @@ define(function (require) {
                     type: 'map',
                     latitude: 'x',
                     longitude: 'y',
-                    size: 'size'
+                    size: 'size',
+                    settings: settings
                 });
             }).to.throw('[data] must be specified');
         });
@@ -66,19 +74,14 @@ define(function (require) {
                 latitude: 'x',
                 longitude: 'y',
                 size: 'size',
-                data: testData
+                data: testData,
+                settings: settings
             });
 
             var cfg = chart.getConfig();
 
             expect(cfg.unit.type).to.equal('COORDS.MAP');
-            expect(cfg.unit.guide.contour).to.equal('countries');
-            expect(cfg.unit.guide.sourcemap).to.equal([
-                'https://gist.githubusercontent.com',
-                'vladminsky',
-                'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
-                'world-map'
-            ].join('/'));
+            expect(cfg.unit.guide.sourcemap).to.deep.equal(settings.defaultSourceMap);
         });
 
         it('should throw once sourcemap does not contain land object', function () {
@@ -91,7 +94,8 @@ define(function (require) {
                 data: testData,
                 guide: {
                     sourcemap: {}
-                }
+                },
+                settings: settings
             });
 
             expect(function () {
@@ -116,7 +120,8 @@ define(function (require) {
                             "countries": {}
                         }
                     }
-                }
+                },
+                settings: settings
             });
 
             expect(function () {
@@ -141,7 +146,8 @@ define(function (require) {
                             "countries": {}
                         }
                     }
-                }
+                },
+                settings: settings
             });
 
             expect(function () {
@@ -149,30 +155,52 @@ define(function (require) {
             }).to.throw('Invalid [georole]');
         });
 
-        it('should draw on default map', function () {
+        it('should draw by lat-lon', function (done) {
+
+            this.timeout(15000);
+            setTimeout(done, 15000);
 
             var chart0 = new tauChart.Chart({
                 type: 'map',
                 latitude: 'x',
                 longitude: 'y',
                 size: 'size',
-                data: testData
+                color: 'color',
+                data: testData,
+                settings: settings
             });
 
             expect(function () {
                 chart0.renderTo(target);
             }).to.not.throw();
 
-            var chart1 = new tauChart.Chart({
-                type: 'map',
-                code: 'cc',
-                fill: 'x',
-                data: testData
-            });
+            done();
+        });
 
-            expect(function () {
+        it('should draw by code', function (done) {
+
+            this.timeout(15000);
+            setTimeout(done, 15000);
+
+             var chart1 = new tauChart.Chart({
+             type: 'map',
+             code: 'cc',
+             fill: 'x',
+             data: testData,
+             settings: settings
+             });
+
+             expect(function () {
                 chart1.renderTo(target);
-            }).to.not.throw();
+             }).to.not.throw();
+
+            done();
+        });
+
+        it('should draw by code and lat-lon', function (done) {
+
+            this.timeout(15000);
+            setTimeout(done, 15000);
 
             var chart2 = new tauChart.Chart({
                 type: 'map',
@@ -181,12 +209,15 @@ define(function (require) {
                 size: 'size',
                 code: 'cc',
                 fill: 'x',
-                data: testData
+                data: testData,
+                settings: settings
             });
 
             expect(function () {
                 chart2.renderTo(target);
             }).to.not.throw();
+
+            done();
         });
     });
 });

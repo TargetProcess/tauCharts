@@ -89,6 +89,12 @@ var api = {
         optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
         autoRatio: true,
+        defaultSourceMap: [
+            'https://gist.githubusercontent.com',
+            'vladminsky',
+            'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
+            'world-map'
+        ].join('/'),
 
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 

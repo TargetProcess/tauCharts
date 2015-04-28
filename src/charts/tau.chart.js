@@ -294,13 +294,7 @@ var typesChart = {
 
         var guide = _.extend(
             {
-                sourcemap: [
-                    'https://gist.githubusercontent.com',
-                    'vladminsky',
-                    'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
-                    'world-map'
-                ].join('/'),
-                contour: 'countries'
+                sourcemap: config.settings.defaultSourceMap
             },
             config.guide || {});
 
