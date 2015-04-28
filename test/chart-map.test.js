@@ -7,9 +7,9 @@ define(function (require) {
     describe('Map chart', function () {
 
         var testData = [
-            {x: 1, y: 1, color: 'red', size: 6},
-            {x: 0.5, y: 0.5, color: 'green', size: 6},
-            {x: 2, y: 2, color: 'green', size: 8}
+            {x: 1, y: 1, color: 'red', size: 6, cc: 'USA'},
+            {x: 0.5, y: 0.5, color: 'green', size: 6, cc: 'RUS'},
+            {x: 2, y: 2, color: 'green', size: 8, cc: 'BLR'}
         ];
 
         var target;
@@ -76,7 +76,7 @@ define(function (require) {
             expect(cfg.unit.guide.sourcemap).to.equal([
                 'https://gist.githubusercontent.com',
                 'vladminsky',
-                'ae0cbabf2fcbb5db6f07/raw/ea06d2a9a541100ac5c6bd5b9275c1d3336642fe',
+                'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
                 'world-map'
             ].join('/'));
         });
@@ -99,9 +99,59 @@ define(function (require) {
             }).to.throw('Invalid map: map should contain land object');
         });
 
-        it('should draw on default map', function () {
+        it('should throw once [georole] is missing', function () {
 
             var chart = new tauChart.Chart({
+                type: 'map',
+                fill: 'x',
+                code: 'color',
+                data: testData,
+                guide: {
+                    code: {
+                        georole: ''
+                    },
+                    sourcemap: {
+                        "objects": {
+                            "land": {},
+                            "countries": {}
+                        }
+                    }
+                }
+            });
+
+            expect(function () {
+                chart.renderTo(target);
+            }).to.throw('[georole] is missing');
+        });
+
+        it('should throw once [georole] is invalid', function () {
+
+            var chart = new tauChart.Chart({
+                type: 'map',
+                fill: 'x',
+                code: 'color',
+                data: testData,
+                guide: {
+                    code: {
+                        georole: 'continents'
+                    },
+                    sourcemap: {
+                        "objects": {
+                            "land": {},
+                            "countries": {}
+                        }
+                    }
+                }
+            });
+
+            expect(function () {
+                chart.renderTo(target);
+            }).to.throw('Invalid [georole]');
+        });
+
+        it('should draw on default map', function () {
+
+            var chart0 = new tauChart.Chart({
                 type: 'map',
                 latitude: 'x',
                 longitude: 'y',
@@ -110,7 +160,32 @@ define(function (require) {
             });
 
             expect(function () {
-                chart.renderTo(target);
+                chart0.renderTo(target);
+            }).to.not.throw();
+
+            var chart1 = new tauChart.Chart({
+                type: 'map',
+                code: 'cc',
+                fill: 'x',
+                data: testData
+            });
+
+            expect(function () {
+                chart1.renderTo(target);
+            }).to.not.throw();
+
+            var chart2 = new tauChart.Chart({
+                type: 'map',
+                latitude: 'x',
+                longitude: 'y',
+                size: 'size',
+                code: 'cc',
+                fill: 'x',
+                data: testData
+            });
+
+            expect(function () {
+                chart2.renderTo(target);
             }).to.not.throw();
         });
     });

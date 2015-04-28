@@ -297,14 +297,15 @@ var typesChart = {
                 sourcemap: [
                     'https://gist.githubusercontent.com',
                     'vladminsky',
-                    'ae0cbabf2fcbb5db6f07/raw/ea06d2a9a541100ac5c6bd5b9275c1d3336642fe',
+                    'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
                     'world-map'
                 ].join('/'),
                 contour: 'countries'
             },
             config.guide || {});
 
-        guide.size = _.extend(guide.size || {}, {min: 1, max: 10});
+        guide.size = _.defaults(guide.size || {}, {min: 1, max: 10});
+        guide.code = _.defaults(guide.code || {}, {georole: 'countries'});
 
         var scales = {};
 
@@ -354,7 +355,7 @@ var typesChart = {
 
                 expression: {operator: 'none', source: '/'},
 
-                code: scalesPool('value', config.code),
+                code: scalesPool('value', config.code, guide.code),
                 fill: scalesPool('fill', config.fill),
 
                 size: scalesPool('size', config.size, guide.size),

@@ -5,18 +5,31 @@ import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 
+var hierarchy = [
+    'continents',
+
+    'georegions',
+
+    'countries',
+
+    'regions',
+    'states',
+
+    'counties',
+    'places',
+    'streets'
+];
+
 export class GeoMap {
 
     constructor(config) {
         super();
 
         this.config = config;
-
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
                 // sourcemap: 'http://bl.ocks.org/mbostock/raw/4090846/us.json',
-                // contour: 'counties',
                 projection: 'mercator',
                 projectionScale: 150,
                 defaultFill: '#C0C0C0',
@@ -106,6 +119,29 @@ export class GeoMap {
             },
             {});
 
+        var contours = hierarchy.filter((h) => topoJSONData.objects.hasOwnProperty(h));
+
+        var contourToFill;
+        if (!fillScale.dim) {
+
+            contourToFill = contours[contours.length - 1];
+
+        } else if (codeScale.georole) {
+
+            if (contours.indexOf(codeScale.georole) === -1) {
+                console.log(`There is no contour for georole "${codeScale.georole}"`);
+                console.log(`Available contours are: ${contours.join(' | ')}`);
+
+                throw new Error(`Invalid [georole]`);
+            }
+
+            contourToFill = codeScale.georole;
+
+        } else {
+            console.log('Specify [georole] for code scale');
+            throw new Error('[georole] is missing');
+        }
+
         var lats = latScale.dim ? d3.extent(latScale.domain()) : [0, 0];
         var lons = lonScale.dim ? d3.extent(lonScale.domain()) : [0, 0];
         var center = [
@@ -117,30 +153,45 @@ export class GeoMap {
 
         var path = d3.geo.path().projection(d3Projection);
 
-        var contourObjects = topoJSONData.objects[guide.contour];
-
         node.append('g')
             .selectAll('path')
-            .data(topojson.feature(topoJSONData, contourObjects).features)
+            .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
             .enter()
             .append('path')
             .attr('d', path)
-            .attr('fill', (d) => (fillScale(groupByCode[d.id]) || guide.defaultFill))
+            .attr('fill', (d) => {
+                var props = d.properties;
+                var codes = ['c1', 'c2', 'c3']
+                    .filter((c) => (props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c])));
+
+                var value;
+                if (codes.length === 0) {
+                    // doesn't match
+                    value = guide.defaultFill;
+                } else if (codes.length > 0) {
+                    value = fillScale(groupByCode[props[codes[0]]]);
+                }
+
+                return value;
+            })
             .call(function () {
                 // TODO: update map with contour objects names
                 this.append('title')
                     .text((d) => {
-                        var p = d.properties || {};
-                        return `(${p.cca3}) ${p.name}`;
+                        var p = d.properties;
+                        return p.name;
                     });
             });
 
-        node.append('path')
-            .datum(topojson.mesh(topoJSONData, contourObjects))
-            .attr('fill', 'none')
-            .attr('stroke', '#fff')
-            .attr('stroke-linejoin', 'round')
-            .attr('d', path);
+        var grayScale = ['#fbfbfb', '#fffefe', '#fdfdff', '#fdfdfd', '#ffffff'];
+        contours.forEach((c, i) => {
+            node.append('path')
+                .datum(topojson.mesh(topoJSONData, topoJSONData.objects[c]))
+                .attr('fill', 'none')
+                .attr('stroke', grayScale[i])
+                .attr('stroke-linejoin', 'round')
+                .attr('d', path);
+        });
 
         if (!latScale.dim || !lonScale.dim) {
             return [];

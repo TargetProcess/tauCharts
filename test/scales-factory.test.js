@@ -163,6 +163,18 @@ define(function (require) {
             expect(scale('low')).to.equal('low');
         });
 
+        it('should support georole on [value] scale', function () {
+
+            var scale = new ValueScale(
+                xSrc,
+                {
+                    dim: 'x',
+                    georole: 'countries'
+                }).create();
+
+            expect(scale.georole).to.equal('countries');
+        });
+
         it('should support [time] scale', function () {
 
             var scale0 = new TimeScale(

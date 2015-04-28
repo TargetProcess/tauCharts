@@ -10,6 +10,7 @@ export class ValueScale extends BaseScale {
 
         var scale = ((x) => x);
         scale.scaleType = 'value';
+        scale.georole = this.scaleConfig.georole;
 
         return this.toBaseScale(scale);
     }
