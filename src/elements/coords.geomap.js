@@ -6,6 +6,9 @@ import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 
 var hierarchy = [
+
+    'land',
+
     'continents',
 
     'georegions',
@@ -13,11 +16,10 @@ var hierarchy = [
     'countries',
 
     'regions',
+    'subunits',
     'states',
 
-    'counties',
-    'places',
-    'streets'
+    'counties'
 ];
 
 export class GeoMap {
@@ -29,11 +31,9 @@ export class GeoMap {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                // sourcemap: 'http://bl.ocks.org/mbostock/raw/4090846/us.json',
-                projection: 'mercator',
-                projectionScale: 150,
                 defaultFill: '#C0C0C0',
-                padding: {l: 0, r: 0, t: 0, b: 0}
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                showNames: true
             });
     }
 
@@ -93,10 +93,6 @@ export class GeoMap {
         var options = this.config.options;
         var node = this.config.options.container;
 
-        if (!(topoJSONData.objects && topoJSONData.objects.land)) {
-            throw new Error('Invalid map: map should contain land object');
-        }
-
         var latScale = this.latScale;
         var lonScale = this.lonScale;
         var sizeScale = this.sizeScale;
@@ -119,7 +115,11 @@ export class GeoMap {
             },
             {});
 
-        var contours = hierarchy.filter((h) => topoJSONData.objects.hasOwnProperty(h));
+        var contours = hierarchy.filter((h) => (topoJSONData.objects || {}).hasOwnProperty(h));
+
+        if (contours.length === 0) {
+            throw new Error('Invalid map: should contain some contours');
+        }
 
         var contourToFill;
         if (!fillScale.dim) {
@@ -142,14 +142,18 @@ export class GeoMap {
             throw new Error('[georole] is missing');
         }
 
-        var lats = latScale.dim ? d3.extent(latScale.domain()) : [0, 0];
-        var lons = lonScale.dim ? d3.extent(lonScale.domain()) : [0, 0];
-        var center = [
-            ((lons[1] + lons[0]) / 2),
-            ((lats[1] + lats[0]) / 2)
-        ];
+        var center;
 
-        var d3Projection = this._createProjection(topoJSONData, center);
+        if (latScale.dim && lonScale.dim) {
+            var lats = d3.extent(latScale.domain());
+            var lons = d3.extent(lonScale.domain());
+            center = [
+                ((lons[1] + lons[0]) / 2),
+                ((lats[1] + lats[0]) / 2)
+            ];
+        }
+
+        var d3Projection = this._createProjection(topoJSONData, contours[0], center);
 
         var path = d3.geo.path().projection(d3Projection);
 
@@ -179,12 +183,13 @@ export class GeoMap {
                 this.append('title')
                     .text((d) => {
                         var p = d.properties;
-                        return p.name;
+                        return p.name || d.id;
                     });
             });
 
         var grayScale = ['#fbfbfb', '#fffefe', '#fdfdff', '#fdfdfd', '#ffffff'];
-        contours.forEach((c, i) => {
+        var reverseContours = contours.reduceRight((m, t) => (m.concat(t)), []);
+        reverseContours.forEach((c, i) => {
             node.append('path')
                 .datum(topojson.mesh(topoJSONData, topoJSONData.objects[c]))
                 .attr('fill', 'none')
@@ -192,6 +197,41 @@ export class GeoMap {
                 .attr('stroke-linejoin', 'round')
                 .attr('d', path);
         });
+
+        if (guide.showNames) {
+            reverseContours.forEach((c) => {
+                var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
+                node.selectAll(`.place-label-${c}`)
+                    .data(contourFeatures)
+                    .enter()
+                    .append('text')
+                    .attr('class', `place-label-${c}`)
+                    .attr('transform', (d) => `translate(${path.centroid(d)})`)
+                    .text((d) => ((d.properties || {}).name));
+            });
+        }
+
+        if (topoJSONData.objects.hasOwnProperty('places')) {
+
+            path.pointRadius(1.5);
+
+            var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
+
+            node.append('path')
+                .datum(placesFeature)
+                .attr('d', path)
+                .attr('class', 'place');
+
+            node.selectAll('.place-label')
+                .data(placesFeature.features)
+                .enter()
+                .append('text')
+                .attr('class', 'place-label')
+                .attr('transform', (d) => `translate(${d3Projection(d.geometry.coordinates)})`)
+                .attr('dx', '.35em')
+                .attr('dy', '.35em')
+                .text((d) => d.properties.name);
+        }
 
         if (!latScale.dim || !lonScale.dim) {
             return [];
@@ -244,7 +284,7 @@ export class GeoMap {
         return [];
     }
 
-    _createProjection(topoJSONData, center) {
+    _createProjection(topoJSONData, topContour, center) {
 
         // The map's scale out is based on the solution:
         // http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
@@ -253,20 +293,19 @@ export class GeoMap {
         var height = this.H;
         var guide = this.config.guide;
 
-        var scale = guide.projectionScale;
+        var scale = 100;
         var offset = [width / 2, height / 2];
 
-        var d3Projection = d3
-            .geo[guide.projection]()
-            .scale(scale)
-            .center(center)
-            .translate(offset);
+        var mapCenter = center || topoJSONData.center;
+        var mapProjection = guide.projection || topoJSONData.projection || 'mercator';
+
+        var d3Projection = this._createD3Projection(mapProjection, mapCenter, scale, offset);
 
         var path = d3.geo.path().projection(d3Projection);
 
         // using the path determine the bounds of the current map and use
         // these to determine better values for the scale and translation
-        var bounds = path.bounds(topojson.feature(topoJSONData, topoJSONData.objects.land));
+        var bounds = path.bounds(topojson.feature(topoJSONData, topoJSONData.objects[topContour]));
 
         var hscale = scale * width  / (bounds[1][0] - bounds[0][0]);
         var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
@@ -278,10 +317,35 @@ export class GeoMap {
         ];
 
         // new projection
-        return d3
-            .geo[guide.projection]()
-            .center(center)
-            .scale(scale)
-            .translate(offset);
+        return this._createD3Projection(mapProjection, mapCenter, scale, offset);
+    }
+
+    _createD3Projection(projection, center, scale, translate) {
+
+        var d3ProjectionMethod = d3.geo[projection];
+
+        if (!d3ProjectionMethod) {
+            console.log(`Unknown projection "${projection}"`);
+            console.log(`See available projection types here: https://github.com/mbostock/d3/wiki/Geo-Projections`);
+            throw new Error(`Invalid map: unknown projection "${projection}"`);
+        }
+
+        var d3Projection = d3ProjectionMethod();
+
+        var steps = [
+            {method:'scale', args: scale},
+            {method:'center', args: center},
+            {method:'translate', args: translate}
+        ].filter((step) => !!step.args);
+
+        // because the Albers USA projection does not support rotation or centering
+        return steps.reduce(
+            (proj, step) => {
+                if (proj[step.method]) {
+                    proj = proj[step.method](step.args);
+                }
+                return proj;
+            },
+            d3Projection);
     }
 }

@@ -84,7 +84,7 @@ define(function (require) {
             expect(cfg.unit.guide.sourcemap).to.deep.equal(settings.defaultSourceMap);
         });
 
-        it('should throw once sourcemap does not contain land object', function () {
+        it('should throw once use invalid map', function () {
 
             var chart = new tauChart.Chart({
                 type: 'map',
@@ -100,7 +100,29 @@ define(function (require) {
 
             expect(function () {
                 chart.renderTo(target);
-            }).to.throw('Invalid map: map should contain land object');
+            }).to.throw('Invalid map: should contain some contours');
+        });
+
+        it('should throw once use invalid projection', function () {
+
+            var chart = new tauChart.Chart({
+                type: 'map',
+                latitude: 'x',
+                longitude: 'y',
+                size: 'size',
+                data: testData,
+                guide: {
+                    sourcemap: {
+                        objects: {land:{}}
+                    },
+                    projection: 'invalid-projection'
+                },
+                settings: settings
+            });
+
+            expect(function () {
+                chart.renderTo(target);
+            }).to.throw('Invalid map: unknown projection "invalid-projection"');
         });
 
         it('should throw once [georole] is missing', function () {

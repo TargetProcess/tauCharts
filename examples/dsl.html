@@ -182,6 +182,8 @@
             {x: 2, y: 2, color: 'green', size: 118}
         ],
         guide: {
+            sourcemap: 'http://localhost:63342/tauCharts/src/addons/world.json',
+            projection: 'mercator'
         }
     });
 
@@ -232,12 +234,7 @@
                     },
 
                     guide: {
-                        sourcemap: [
-                            'https://gist.githubusercontent.com',
-                            'vladminsky',
-                            'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
-                            'world-map'
-                        ].join('/'),
+                        sourcemap: 'http://localhost:63342/tauCharts/src/addons/usa.json',
                         contour: 'countries'
                     }
                 }
