@@ -1,5 +1,5 @@
 define(function (require) {
-    var worldMap = require('json!src/addons/world');
+    var worldMap = require('json!src/addons/world-countries');
     var expect = require('chai').expect;
     var assert = require('chai').assert;
     var schemes = require('schemes');

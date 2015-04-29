@@ -336,7 +336,7 @@ export class GeoMap {
             {method:'scale', args: scale},
             {method:'center', args: center},
             {method:'translate', args: translate}
-        ].filter((step) => !!step.args);
+        ].filter((step) => step.args);
 
         // because the Albers USA projection does not support rotation or centering
         return steps.reduce(

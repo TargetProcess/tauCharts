@@ -173,17 +173,15 @@
 
     var chart = new tauCharts.Chart({
         type: 'map',
-        latitude: 'x',
-        longitude: 'y',
+        latitude: 'y',
+        longitude: 'x',
         size: 'size',
         data: [
-            {x: 1, y: 1, color: 'red', size: 6},
-            {x: 0.5, y: 0.5, color: 'green', size: 2},
-            {x: 2, y: 2, color: 'green', size: 118}
+            {x: 135.5, y: 40.5, color: 'green', size: 2},
+            {x: 137.5, y: 41.5, color: 'green', size: 20}
         ],
         guide: {
-            sourcemap: 'http://localhost:63342/tauCharts/src/addons/world.json',
-            projection: 'mercator'
+            sourcemap: 'http://localhost:63342/tauCharts/src/addons/japan-subunits.json'
         }
     });
 
@@ -234,8 +232,7 @@
                     },
 
                     guide: {
-                        sourcemap: 'http://localhost:63342/tauCharts/src/addons/usa.json',
-                        contour: 'countries'
+                        sourcemap: 'http://localhost:63342/tauCharts/src/addons/usa-states.json'
                     }
                 }
 
