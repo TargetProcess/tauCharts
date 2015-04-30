@@ -35,3 +35,7 @@ Have a questions? [Contact us](mailto:michael@targetprocess.com)
 - Flex scales (ratio parameter for ordinal scales)
 - Auto calculate ratio for 2-level facet
 - "Settings" plugin. Allow to control fit to view-port
+
+## [0.4.2] - 2015-04-30
+### Added
+- geo charts (alpha)
