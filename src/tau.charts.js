@@ -9,6 +9,7 @@ import {unitsRegistry} from './units-registry';
 import {scalesRegistry} from './scales-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
+import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
@@ -21,6 +22,7 @@ import {PeriodScale}    from './scales/period';
 import {TimeScale}      from './scales/time';
 import {LinearScale}    from './scales/linear';
 import {ValueScale}     from './scales/value';
+import {FillScale}      from './scales/fill';
 
 var colorBrewers = {};
 var plugins = {};
@@ -87,6 +89,12 @@ var api = {
         optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
         autoRatio: true,
+        defaultSourceMap: [
+            'https://gist.githubusercontent.com',
+            'vladminsky',
+            'ae0cbabf2fcbb5db6f07/raw/7ffb6133ddddcdc5869b2d4de180c22be21d9dea',
+            'world-map'
+        ].join('/'),
 
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
@@ -125,7 +133,10 @@ var api = {
 Plot.globalSettings = api.globalSettings;
 
 api.unitsRegistry
+
     .reg('COORDS.RECT', Cartesian)
+    .reg('COORDS.MAP', GeoMap)
+
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
     .reg('ELEMENT.INTERVAL', Interval)
@@ -138,6 +149,7 @@ api.unitsRegistry
 
 api.scalesRegistry
     .reg('color', ColorScale)
+    .reg('fill', FillScale)
     .reg('size', SizeScale)
     .reg('ordinal', OrdinalScale)
     .reg('period', PeriodScale)

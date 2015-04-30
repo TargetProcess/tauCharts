@@ -52,6 +52,7 @@ module.exports = function (grunt) {
                 name: 'tau.charts',
                 exclude: ['d3', 'underscore'],
                 paths: {
+                    topojson: '../node_modules/topojson/topojson',
                     underscore: '../node_modules/underscore/underscore',
                     d3: '../node_modules/d3/d3'
                 },
@@ -79,6 +80,7 @@ module.exports = function (grunt) {
                 name: 'export',
                 exclude: ['tauCharts', 'd3', 'underscore'],
                 paths: {
+                    topojson: '../node_modules/topojson/topojson',
                     underscore: '../node_modules/underscore/underscore',
                     d3: '../node_modules/d3/d3'
                 },

@@ -5,10 +5,16 @@ export class SpecTransformApplyRatio {
 
     constructor(spec) {
         this.spec = spec;
+        this.isApplicable = spec.settings.autoRatio && utils.isSpecRectCoordsOnly(spec.unit);
     }
 
     transform(chartInstance) {
+
         var refSpec = this.spec;
+
+        if (!this.isApplicable) {
+            return refSpec;
+        }
 
         try {
             this.ruleApplyRatio(refSpec, chartInstance);

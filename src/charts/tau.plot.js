@@ -42,9 +42,15 @@ export class Plot extends Emitter {
         this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
         this.transformers = [
-            this.configGPL.settings.autoRatio && SpecTransformApplyRatio,
+            SpecTransformApplyRatio,
             SpecTransformAutoLayout
-        ].filter((x) => x);
+        ];
+
+        this.onUnitsStructureExpandedTransformers = [
+            SpecTransformCalcSize,
+            SpecTransformOptimizeGuide,
+            SpecTransformExtractAxes
+        ];
 
         this._originData = _.clone(this.configGPL.sources);
 
@@ -173,15 +179,8 @@ export class Plot extends Emitter {
         };
 
         gpl.onUnitsStructureExpanded = (specRef) => {
-
-            [
-                (SpecTransformCalcSize),
-                (specRef.settings.optimizeGuideBySize) && SpecTransformOptimizeGuide,
-                (specRef.settings.layoutEngine === 'EXTRACT') && SpecTransformExtractAxes
-            ]
-                .filter((n) => n)
+            this.onUnitsStructureExpandedTransformers
                 .forEach((TClass) => (new TClass(specRef)).transform());
-
             this.fire(['units', 'structure', 'expanded'].join(''), specRef);
         };
 

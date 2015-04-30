@@ -33,6 +33,9 @@ define(function (require) {
                             ]
                         }
                     ]
+                },
+                settings: {
+                    layoutEngine: 'EXTRACT'
                 }
             };
 
@@ -92,6 +95,9 @@ define(function (require) {
                             ]
                         }
                     ]
+                },
+                settings: {
+                    layoutEngine: 'EXTRACT'
                 }
             };
 
@@ -144,6 +150,9 @@ define(function (require) {
                             ]
                         }
                     ]
+                },
+                settings: {
+                    layoutEngine: 'EXTRACT'
                 }
             };
 

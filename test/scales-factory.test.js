@@ -9,6 +9,7 @@ define(function (require) {
     var ColorScale = require('src/scales/color').ColorScale;
     var SizeScale = require('src/scales/size').SizeScale;
     var OrdinalScale = require('src/scales/ordinal').OrdinalScale;
+    var FillScale = require('src/scales/fill').FillScale;
 
     describe('scales-registry', function () {
 
@@ -160,6 +161,18 @@ define(function (require) {
 
             expect(scale.domain()).to.deep.equal(['low', 'medium', 'high']);
             expect(scale('low')).to.equal('low');
+        });
+
+        it('should support georole on [value] scale', function () {
+
+            var scale = new ValueScale(
+                xSrc,
+                {
+                    dim: 'x',
+                    georole: 'countries'
+                }).create();
+
+            expect(scale.georole).to.equal('countries');
         });
 
         it('should support [time] scale', function () {
@@ -416,6 +429,80 @@ define(function (require) {
             expect(scale2('low')).to.equal(25);
             expect(scale2('medium')).to.equal(62.5);
             expect(scale2('high')).to.equal(87.5);
+        });
+
+        it('should support [fill] scale (default params)', function () {
+
+            var scale1 = new FillScale(
+                xSrc,
+                {
+                    dim: 's'
+                }).create();
+
+            expect(scale1.domain()).to.deep.equal([-3, 3]);
+            expect(scale1(-3)).to.equal('#F5F5F5');
+            expect(scale1(0)).to.equal('#A9A9A9');
+            expect(scale1(+3)).to.equal('#000000');
+            expect(scale1(undefined)).to.equal(undefined);
+        });
+
+        it('should support brewer on [fill] scale', function () {
+
+            var scale0 = new FillScale(
+                xSrc,
+                {
+                    dim: 's',
+                    brewer: ['white', 'gray', 'black']
+                }).create();
+
+            expect(scale0.domain()).to.deep.equal([-3, 3]);
+
+            expect(scale0(-3)).to.equal('white');
+            expect(scale0(-1.1)).to.equal('white');
+
+            expect(scale0(-1)).to.equal('gray');
+            expect(scale0(-0.9)).to.equal('gray');
+            expect(scale0(+0.9)).to.equal('gray');
+
+            expect(scale0(+1)).to.equal('black');
+            expect(scale0(+3)).to.equal('black');
+        });
+
+        it('should throw on invalid brewer for [fill] scale', function () {
+
+            expect(function () {
+                new FillScale(
+                    xSrc,
+                    {
+                        dim: 's',
+                        brewer: 'string-brewer'
+                    }).create();
+            }).to.throw('This brewer is not supported');
+        });
+
+        it('should support autoScale on [fill] scale', function () {
+
+            var scale0 = new FillScale(
+                xSrc,
+                {
+                    dim: 's',
+                    autoScale: true
+                }).create();
+
+            expect(scale0.domain()).to.deep.equal([-3.5, 3.5]);
+        });
+
+        it('should support min / max on [fill] scale', function () {
+
+            var scale0 = new FillScale(
+                xSrc,
+                {
+                    dim: 's',
+                    min: -10,
+                    max: 100
+                }).create();
+
+            expect(scale0.domain()).to.deep.equal([-10, 100]);
         });
     });
 });

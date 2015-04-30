@@ -100,6 +100,10 @@
 </head>
 <body>
 
+<div id="geo1" class="cc"></div>
+
+<div id="geo2" class="cc"></div>
+
 <div id="ooo" class="cc"></div>
 
 <div id="xxx" class="cc"></div>
@@ -166,6 +170,75 @@
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
 <script>
+
+    var chart = new tauCharts.Chart({
+        type: 'map',
+        latitude: 'y',
+        longitude: 'x',
+        size: 'size',
+        data: [
+            {x: 135.5, y: 40.5, color: 'green', size: 2},
+            {x: 137.5, y: 41.5, color: 'green', size: 20}
+        ],
+        guide: {
+            sourcemap: 'http://localhost:63342/tauCharts/src/addons/japan-subunits.json'
+        }
+    });
+
+    chart.renderTo('#geo1');
+
+    /**/
+    new tauCharts.Plot(
+            {
+                sources: {
+                    '?': {
+                        dims: {},
+                        data: [{}]
+                    },
+                    '/': {
+                        dims: {},
+                        data: [
+                            {latitude: 42.36, longitude: -71, count: 5, city: 'Boston'},
+                            {latitude: 34.03, longitude: -118.15, count: 25, city: 'LA'}
+                        ]
+                    }
+                },
+
+                scales: {
+                    lat: {type: 'linear', dim: 'latitude', source: '/'},
+                    lon: {type: 'linear', dim: 'longitude', source: '/'},
+                    size: {type: 'size', dim: 'count', source: '/', mid: 5, min: 1, max: 10},
+                    color: {type: 'color', dim: 'city', source: '/'},
+                    'value:default': {type: 'value', source: '?'},
+                    'fill:default': {
+                        type: 'fill',
+                        source: '?'
+                    }
+                },
+
+                unit: {
+                    type: 'COORDS.MAP',
+                    latitude: 'lat',
+                    longitude: 'lon',
+                    size: 'size',
+                    color: 'color',
+
+                    // code: 'value:default',
+                    // fill: 'default:color',
+
+                    expression: {
+                        operator: 'none',
+                        source: '/'
+                    },
+
+                    guide: {
+                        sourcemap: 'http://localhost:63342/tauCharts/src/addons/usa-states.json'
+                    }
+                }
+
+            }).renderTo('#geo2');
+
+    /**/
 
     var chart0 = new tauCharts.Chart({
         "type": "horizontalBar",

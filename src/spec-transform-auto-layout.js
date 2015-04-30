@@ -688,11 +688,17 @@ export class SpecTransformAutoLayout {
     constructor(spec) {
         this.spec = spec;
         this.scalesCreator = new ScalesFactory(spec.sources);
+        this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
     }
 
     transform() {
 
         var spec = this.spec;
+
+        if (!this.isApplicable) {
+            return spec;
+        }
+
         var size = spec.settings.size;
 
         var rule = _.find(spec.settings.specEngine, (rule) => (size.width <= rule.width));

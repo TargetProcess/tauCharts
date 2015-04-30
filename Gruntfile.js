@@ -284,7 +284,10 @@ module.exports = function (grunt) {
                 'plugins/*.js',
                 'src/**'
             ],
-            options: {config: '.jscsrc'}
+            options: {
+                config: '.jscsrc',
+                excludeFiles: ['src/addons/*.*']
+            }
         }
     });
     // load local tasks
