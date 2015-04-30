@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.1 - 2015-04-22
+/*! taucharts - v0.4.2 - 2015-04-30
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1254,6 +1254,18 @@ define('utils/utils',["exports", "../elements/element.point", "../elements/eleme
         return rootRef;
     };
 
+    var traverseSpec = function (root, enterFn, exitFn) {
+        var level = arguments[3] === undefined ? 0 : arguments[3];
+
+        var shouldContinue = enterFn(root, level);
+        if (shouldContinue) {
+            (root.units || []).map(function (rect) {
+                return traverseSpec(rect, enterFn, exitFn, level + 1);
+            });
+        }
+        exitFn(root, level);
+    };
+
     var hashGen = 0;
     var hashMap = {};
 
@@ -1265,47 +1277,6 @@ define('utils/utils',["exports", "../elements/element.point", "../elements/eleme
                 return JSON.parse(JSON.stringify(target));
             } else {
                 return target;
-            }
-        }
-
-        // Shallow Copy
-        function copy(target) {
-            if (typeof target !== "object") {
-                return target; // non-object have value sematics, so target is already a copy.
-            } else {
-                var value = target.valueOf();
-                if (target != value) {
-                    // the object is a standard object wrapper for a native type, say String.
-                    // we can make a copy by instantiating a new object around the value.
-                    return new target.constructor(value);
-                } else {
-
-                    var c;
-                    var property;
-
-                    // ok, we have a normal object. If possible, we'll clone the original's prototype
-                    // (not the original) to get an empty object with the same prototype chain as
-                    // the original.  If just copy the instance properties.  Otherwise, we have to
-                    // copy the whole thing, property-by-property.
-                    if (target instanceof target.constructor && target.constructor !== Object) {
-                        c = clone(target.constructor.prototype);
-
-                        // give the copy all the instance properties of target.  It has the same
-                        // prototype as target, so inherited properties are already there.
-                        for (property in target) {
-                            if (target.hasOwnProperty(property)) {
-                                c[property] = target[property];
-                            }
-                        }
-                    } else {
-                        c = {};
-                        for (property in target) {
-                            c[property] = target[property];
-                        }
-                    }
-
-                    return c;
-                }
             }
         }
 
@@ -1655,6 +1626,29 @@ define('utils/utils',["exports", "../elements/element.point", "../elements/eleme
 
                 return (countOfTicksInTheFacet * tickPxSize + pad) / size;
             };
+        },
+
+        traverseSpec: traverseSpec,
+
+        isSpecRectCoordsOnly: function isSpecRectCoordsOnly(root) {
+
+            var isApplicable = true;
+
+            try {
+                utils.traverseSpec(root, function (unit) {
+                    if (unit.type.indexOf("COORDS.") === 0 && unit.type !== "COORDS.RECT") {
+                        throw new Error("Not applicable");
+                    }
+                }, function (unit) {
+                    return unit;
+                });
+            } catch (e) {
+                if (e.message === "Not applicable") {
+                    isApplicable = false;
+                }
+            }
+
+            return isApplicable;
         }
     };
 
@@ -4361,6 +4355,7 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
 
             this.spec = spec;
             this.scalesCreator = new ScalesFactory(spec.sources);
+            this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
         }
 
         _createClass(SpecTransformAutoLayout, {
@@ -4369,6 +4364,11 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
                     var _this = this;
 
                     var spec = this.spec;
+
+                    if (!this.isApplicable) {
+                        return spec;
+                    }
+
                     var size = spec.settings.size;
 
                     var rule = _.find(spec.settings.specEngine, function (rule) {
@@ -4390,7 +4390,7 @@ define('spec-transform-auto-layout',["exports", "underscore", "./utils/utils", "
         return SpecTransformAutoLayout;
     })();
 });
-define('spec-transform-calc-size',["exports", "./scales-factory"], function (exports, _scalesFactory) {
+define('spec-transform-calc-size',["exports", "./scales-factory", "./utils/utils"], function (exports, _scalesFactory, _utilsUtils) {
     
 
     var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
@@ -4403,18 +4403,25 @@ define('spec-transform-calc-size',["exports", "./scales-factory"], function (exp
         value: true
     });
     var ScalesFactory = _scalesFactory.ScalesFactory;
+    var utils = _utilsUtils.utils;
 
     var SpecTransformCalcSize = exports.SpecTransformCalcSize = (function () {
         function SpecTransformCalcSize(spec) {
             _classCallCheck(this, SpecTransformCalcSize);
 
             this.spec = spec;
+            this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
         }
 
         _createClass(SpecTransformCalcSize, {
             transform: {
                 value: function transform() {
+
                     var specRef = this.spec;
+
+                    if (!this.isApplicable) {
+                        return specRef;
+                    }
 
                     var fitModel = specRef.settings.fitModel;
 
@@ -4554,12 +4561,18 @@ define('spec-transform-apply-ratio',["exports", "underscore", "./utils/utils"], 
             _classCallCheck(this, SpecTransformApplyRatio);
 
             this.spec = spec;
+            this.isApplicable = spec.settings.autoRatio && utils.isSpecRectCoordsOnly(spec.unit);
         }
 
         _createClass(SpecTransformApplyRatio, {
             transform: {
                 value: function transform(chartInstance) {
+
                     var refSpec = this.spec;
+
+                    if (!this.isApplicable) {
+                        return refSpec;
+                    }
 
                     try {
                         this.ruleApplyRatio(refSpec, chartInstance);
@@ -4690,12 +4703,18 @@ define('spec-transform-extract-axes',["exports", "underscore", "./utils/utils"],
             _classCallCheck(this, SpecTransformExtractAxes);
 
             this.spec = spec;
+            this.isApplicable = spec.settings.layoutEngine === "EXTRACT" && utils.isSpecRectCoordsOnly(spec.unit);
         }
 
         _createClass(SpecTransformExtractAxes, {
             transform: {
                 value: function transform() {
+
                     var refSpec = this.spec;
+
+                    if (!this.isApplicable) {
+                        return refSpec;
+                    }
 
                     try {
                         this.ruleExtractAxes(refSpec);
@@ -4719,20 +4738,6 @@ define('spec-transform-extract-axes',["exports", "underscore", "./utils/utils"],
 
                     var isElement = function (unitRef) {
                         return unitRef.type.indexOf("ELEMENT.") === 0;
-                    };
-
-                    var traverse = function (root, enterFn, exitFn) {
-                        var level = arguments[3] === undefined ? 0 : arguments[3];
-
-                        var shouldContinue = enterFn(root, level);
-
-                        if (shouldContinue) {
-                            (root.units || []).map(function (rect) {
-                                return traverse(rect, enterFn, exitFn, level + 1);
-                            });
-                        }
-
-                        exitFn(root, level);
                     };
 
                     var ttl = { l: 0, r: 10, t: 10, b: 0 };
@@ -4799,7 +4804,7 @@ define('spec-transform-extract-axes',["exports", "underscore", "./utils/utils"],
                         guide.y.padding += ttl.l - lvl.l;
                     };
 
-                    traverse(spec.unit, enterIterator, exitIterator);
+                    utils.traverseSpec(spec.unit, enterIterator, exitIterator);
 
                     spec.unit.guide.padding = ttl;
                     spec.unit.guide.autoLayout = "";
@@ -4810,7 +4815,7 @@ define('spec-transform-extract-axes',["exports", "underscore", "./utils/utils"],
         return SpecTransformExtractAxes;
     })();
 });
-define('spec-transform-optimize-guide',["exports"], function (exports) {
+define('spec-transform-optimize-guide',["exports", "./utils/utils"], function (exports, _utilsUtils) {
     
 
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -4820,6 +4825,8 @@ define('spec-transform-optimize-guide',["exports"], function (exports) {
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
+    var utils = _utilsUtils.utils;
+
     var tryOptimizeSpec = function (meta, root, size, localSettings) {
 
         var mdx = root.guide.x.$minimalDomain || 1;
@@ -4873,12 +4880,18 @@ define('spec-transform-optimize-guide',["exports"], function (exports) {
             _classCallCheck(this, SpecTransformOptimizeGuide);
 
             this.spec = spec;
+            this.isApplicable = spec.settings.optimizeGuideBySize && utils.isSpecRectCoordsOnly(spec.unit);
         }
 
         _createClass(SpecTransformOptimizeGuide, {
             transform: {
                 value: function transform() {
+
                     var refSpec = this.spec;
+
+                    if (!this.isApplicable) {
+                        return refSpec;
+                    }
 
                     tryOptimizeSpec(function (scaleName) {
                         var dim = refSpec.scales[scaleName].dim;
@@ -4958,9 +4971,9 @@ define('charts/tau.plot',["exports", "../api/balloon", "../event", "../plugins",
 
             this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
-            this.transformers = [this.configGPL.settings.autoRatio && SpecTransformApplyRatio, SpecTransformAutoLayout].filter(function (x) {
-                return x;
-            });
+            this.transformers = [SpecTransformApplyRatio, SpecTransformAutoLayout];
+
+            this.onUnitsStructureExpandedTransformers = [SpecTransformCalcSize, SpecTransformOptimizeGuide, SpecTransformExtractAxes];
 
             this._originData = _.clone(this.configGPL.sources);
 
@@ -5078,13 +5091,9 @@ define('charts/tau.plot',["exports", "../api/balloon", "../event", "../plugins",
                     };
 
                     gpl.onUnitsStructureExpanded = function (specRef) {
-
-                        [SpecTransformCalcSize, specRef.settings.optimizeGuideBySize && SpecTransformOptimizeGuide, specRef.settings.layoutEngine === "EXTRACT" && SpecTransformExtractAxes].filter(function (n) {
-                            return n;
-                        }).forEach(function (TClass) {
+                        _this.onUnitsStructureExpandedTransformers.forEach(function (TClass) {
                             return new TClass(specRef).transform();
                         });
-
                         _this.fire(["units", "structure", "expanded"].join(""), specRef);
                     };
 
@@ -5455,10 +5464,13 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
     }
 
     var typesChart = {
-        scatterplot: function (config) {
+        scatterplot: function (rawConfig) {
+            var config = normalizeConfig(rawConfig);
             return transformConfig("ELEMENT.POINT", config);
         },
-        line: function (config) {
+        line: function (rawConfig) {
+
+            var config = normalizeConfig(rawConfig);
 
             var data = config.data;
 
@@ -5529,13 +5541,97 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
 
             return transformConfig("ELEMENT.LINE", config);
         },
-        bar: function (config) {
+        bar: function (rawConfig) {
+            var config = normalizeConfig(rawConfig);
             config.flip = false;
             return transformConfig("ELEMENT.INTERVAL", config);
         },
-        horizontalBar: function (config) {
+        horizontalBar: function (rawConfig) {
+            var config = normalizeConfig(rawConfig);
             config.flip = true;
             return transformConfig("ELEMENT.INTERVAL", config);
+        },
+
+        map: function (config) {
+
+            var shouldSpecifyFillWithCode = config.fill && config.code;
+            if (config.fill && !shouldSpecifyFillWithCode) {
+                throw new Error("[code] must be specified when using [fill]");
+            }
+
+            var shouldSpecifyBothLatLong = config.latitude && config.longitude;
+            if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
+                throw new Error("[latitude] and [longitude] both must be specified");
+            }
+
+            var shouldSpecifyData = config.data;
+            if (!shouldSpecifyData) {
+                throw new Error("[data] must be specified");
+            }
+
+            var guide = _.extend({
+                sourcemap: config.settings.defaultSourceMap
+            }, config.guide || {});
+
+            guide.size = _.defaults(guide.size || {}, { min: 1, max: 10 });
+            guide.code = _.defaults(guide.code || {}, { georole: "countries" });
+
+            var scales = {};
+
+            var scalesPool = function (type, prop) {
+                var guide = arguments[2] === undefined ? {} : arguments[2];
+
+                var key;
+                var dim = prop;
+                var src;
+                if (!prop) {
+                    key = "" + type + ":default";
+                    src = "?";
+                } else {
+                    key = "" + type + "_" + prop;
+                    src = "/";
+                }
+
+                if (!scales.hasOwnProperty(key)) {
+                    scales[key] = _.extend({ type: type, source: src, dim: dim }, guide);
+                }
+
+                return key;
+            };
+
+            return {
+                sources: {
+                    "?": {
+                        dims: {},
+                        data: [{}]
+                    },
+                    "/": {
+                        dims: Object.keys(config.dimensions).reduce(function (dims, k) {
+                            dims[k] = { type: config.dimensions[k].type };
+                            return dims;
+                        }, {}),
+                        data: config.data
+                    }
+                },
+
+                scales: scales,
+
+                unit: {
+                    type: "COORDS.MAP",
+
+                    expression: { operator: "none", source: "/" },
+
+                    code: scalesPool("value", config.code, guide.code),
+                    fill: scalesPool("fill", config.fill),
+
+                    size: scalesPool("size", config.size, guide.size),
+                    color: scalesPool("color", config.color, guide.color),
+                    latitude: scalesPool("linear", config.latitude, { autoScale: false }),
+                    longitude: scalesPool("linear", config.longitude, { autoScale: false }),
+
+                    guide: guide
+                }
+            };
         }
     };
 
@@ -5553,9 +5649,7 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
             config.settings = Plot.setupSettings(config.settings);
             config.dimensions = Plot.setupMetaInfo(config.dimensions, config.data);
 
-            var normConfig = normalizeConfig(config);
-
-            _get(Object.getPrototypeOf(Chart.prototype), "constructor", this).call(this, chartFactory(normConfig));
+            _get(Object.getPrototypeOf(Chart.prototype), "constructor", this).call(this, chartFactory(config));
 
             if (config.autoResize) {
                 Chart.winAware.push(this);
@@ -6211,6 +6305,873 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
         });
 
         return Cartesian;
+    })();
+});
+!function() {
+  var topojson = {
+    version: "1.6.19",
+    mesh: function(topology) { return object(topology, meshArcs.apply(this, arguments)); },
+    meshArcs: meshArcs,
+    merge: function(topology) { return object(topology, mergeArcs.apply(this, arguments)); },
+    mergeArcs: mergeArcs,
+    feature: featureOrCollection,
+    neighbors: neighbors,
+    presimplify: presimplify
+  };
+
+  function stitchArcs(topology, arcs) {
+    var stitchedArcs = {},
+        fragmentByStart = {},
+        fragmentByEnd = {},
+        fragments = [],
+        emptyIndex = -1;
+
+    // Stitch empty arcs first, since they may be subsumed by other arcs.
+    arcs.forEach(function(i, j) {
+      var arc = topology.arcs[i < 0 ? ~i : i], t;
+      if (arc.length < 3 && !arc[1][0] && !arc[1][1]) {
+        t = arcs[++emptyIndex], arcs[emptyIndex] = i, arcs[j] = t;
+      }
+    });
+
+    arcs.forEach(function(i) {
+      var e = ends(i),
+          start = e[0],
+          end = e[1],
+          f, g;
+
+      if (f = fragmentByEnd[start]) {
+        delete fragmentByEnd[f.end];
+        f.push(i);
+        f.end = end;
+        if (g = fragmentByStart[end]) {
+          delete fragmentByStart[g.start];
+          var fg = g === f ? f : f.concat(g);
+          fragmentByStart[fg.start = f.start] = fragmentByEnd[fg.end = g.end] = fg;
+        } else {
+          fragmentByStart[f.start] = fragmentByEnd[f.end] = f;
+        }
+      } else if (f = fragmentByStart[end]) {
+        delete fragmentByStart[f.start];
+        f.unshift(i);
+        f.start = start;
+        if (g = fragmentByEnd[start]) {
+          delete fragmentByEnd[g.end];
+          var gf = g === f ? f : g.concat(f);
+          fragmentByStart[gf.start = g.start] = fragmentByEnd[gf.end = f.end] = gf;
+        } else {
+          fragmentByStart[f.start] = fragmentByEnd[f.end] = f;
+        }
+      } else {
+        f = [i];
+        fragmentByStart[f.start = start] = fragmentByEnd[f.end = end] = f;
+      }
+    });
+
+    function ends(i) {
+      var arc = topology.arcs[i < 0 ? ~i : i], p0 = arc[0], p1;
+      if (topology.transform) p1 = [0, 0], arc.forEach(function(dp) { p1[0] += dp[0], p1[1] += dp[1]; });
+      else p1 = arc[arc.length - 1];
+      return i < 0 ? [p1, p0] : [p0, p1];
+    }
+
+    function flush(fragmentByEnd, fragmentByStart) {
+      for (var k in fragmentByEnd) {
+        var f = fragmentByEnd[k];
+        delete fragmentByStart[f.start];
+        delete f.start;
+        delete f.end;
+        f.forEach(function(i) { stitchedArcs[i < 0 ? ~i : i] = 1; });
+        fragments.push(f);
+      }
+    }
+
+    flush(fragmentByEnd, fragmentByStart);
+    flush(fragmentByStart, fragmentByEnd);
+    arcs.forEach(function(i) { if (!stitchedArcs[i < 0 ? ~i : i]) fragments.push([i]); });
+
+    return fragments;
+  }
+
+  function meshArcs(topology, o, filter) {
+    var arcs = [];
+
+    if (arguments.length > 1) {
+      var geomsByArc = [],
+          geom;
+
+      function arc(i) {
+        var j = i < 0 ? ~i : i;
+        (geomsByArc[j] || (geomsByArc[j] = [])).push({i: i, g: geom});
+      }
+
+      function line(arcs) {
+        arcs.forEach(arc);
+      }
+
+      function polygon(arcs) {
+        arcs.forEach(line);
+      }
+
+      function geometry(o) {
+        if (o.type === "GeometryCollection") o.geometries.forEach(geometry);
+        else if (o.type in geometryType) geom = o, geometryType[o.type](o.arcs);
+      }
+
+      var geometryType = {
+        LineString: line,
+        MultiLineString: polygon,
+        Polygon: polygon,
+        MultiPolygon: function(arcs) { arcs.forEach(polygon); }
+      };
+
+      geometry(o);
+
+      geomsByArc.forEach(arguments.length < 3
+          ? function(geoms) { arcs.push(geoms[0].i); }
+          : function(geoms) { if (filter(geoms[0].g, geoms[geoms.length - 1].g)) arcs.push(geoms[0].i); });
+    } else {
+      for (var i = 0, n = topology.arcs.length; i < n; ++i) arcs.push(i);
+    }
+
+    return {type: "MultiLineString", arcs: stitchArcs(topology, arcs)};
+  }
+
+  function mergeArcs(topology, objects) {
+    var polygonsByArc = {},
+        polygons = [],
+        components = [];
+
+    objects.forEach(function(o) {
+      if (o.type === "Polygon") register(o.arcs);
+      else if (o.type === "MultiPolygon") o.arcs.forEach(register);
+    });
+
+    function register(polygon) {
+      polygon.forEach(function(ring) {
+        ring.forEach(function(arc) {
+          (polygonsByArc[arc = arc < 0 ? ~arc : arc] || (polygonsByArc[arc] = [])).push(polygon);
+        });
+      });
+      polygons.push(polygon);
+    }
+
+    function exterior(ring) {
+      return cartesianRingArea(object(topology, {type: "Polygon", arcs: [ring]}).coordinates[0]) > 0; // TODO allow spherical?
+    }
+
+    polygons.forEach(function(polygon) {
+      if (!polygon._) {
+        var component = [],
+            neighbors = [polygon];
+        polygon._ = 1;
+        components.push(component);
+        while (polygon = neighbors.pop()) {
+          component.push(polygon);
+          polygon.forEach(function(ring) {
+            ring.forEach(function(arc) {
+              polygonsByArc[arc < 0 ? ~arc : arc].forEach(function(polygon) {
+                if (!polygon._) {
+                  polygon._ = 1;
+                  neighbors.push(polygon);
+                }
+              });
+            });
+          });
+        }
+      }
+    });
+
+    polygons.forEach(function(polygon) {
+      delete polygon._;
+    });
+
+    return {
+      type: "MultiPolygon",
+      arcs: components.map(function(polygons) {
+        var arcs = [];
+
+        // Extract the exterior (unique) arcs.
+        polygons.forEach(function(polygon) {
+          polygon.forEach(function(ring) {
+            ring.forEach(function(arc) {
+              if (polygonsByArc[arc < 0 ? ~arc : arc].length < 2) {
+                arcs.push(arc);
+              }
+            });
+          });
+        });
+
+        // Stitch the arcs into one or more rings.
+        arcs = stitchArcs(topology, arcs);
+
+        // If more than one ring is returned,
+        // at most one of these rings can be the exterior;
+        // this exterior ring has the same winding order
+        // as any exterior ring in the original polygons.
+        if ((n = arcs.length) > 1) {
+          var sgn = exterior(polygons[0][0]);
+          for (var i = 0, t; i < n; ++i) {
+            if (sgn === exterior(arcs[i])) {
+              t = arcs[0], arcs[0] = arcs[i], arcs[i] = t;
+              break;
+            }
+          }
+        }
+
+        return arcs;
+      })
+    };
+  }
+
+  function featureOrCollection(topology, o) {
+    return o.type === "GeometryCollection" ? {
+      type: "FeatureCollection",
+      features: o.geometries.map(function(o) { return feature(topology, o); })
+    } : feature(topology, o);
+  }
+
+  function feature(topology, o) {
+    var f = {
+      type: "Feature",
+      id: o.id,
+      properties: o.properties || {},
+      geometry: object(topology, o)
+    };
+    if (o.id == null) delete f.id;
+    return f;
+  }
+
+  function object(topology, o) {
+    var absolute = transformAbsolute(topology.transform),
+        arcs = topology.arcs;
+
+    function arc(i, points) {
+      if (points.length) points.pop();
+      for (var a = arcs[i < 0 ? ~i : i], k = 0, n = a.length, p; k < n; ++k) {
+        points.push(p = a[k].slice());
+        absolute(p, k);
+      }
+      if (i < 0) reverse(points, n);
+    }
+
+    function point(p) {
+      p = p.slice();
+      absolute(p, 0);
+      return p;
+    }
+
+    function line(arcs) {
+      var points = [];
+      for (var i = 0, n = arcs.length; i < n; ++i) arc(arcs[i], points);
+      if (points.length < 2) points.push(points[0].slice());
+      return points;
+    }
+
+    function ring(arcs) {
+      var points = line(arcs);
+      while (points.length < 4) points.push(points[0].slice());
+      return points;
+    }
+
+    function polygon(arcs) {
+      return arcs.map(ring);
+    }
+
+    function geometry(o) {
+      var t = o.type;
+      return t === "GeometryCollection" ? {type: t, geometries: o.geometries.map(geometry)}
+          : t in geometryType ? {type: t, coordinates: geometryType[t](o)}
+          : null;
+    }
+
+    var geometryType = {
+      Point: function(o) { return point(o.coordinates); },
+      MultiPoint: function(o) { return o.coordinates.map(point); },
+      LineString: function(o) { return line(o.arcs); },
+      MultiLineString: function(o) { return o.arcs.map(line); },
+      Polygon: function(o) { return polygon(o.arcs); },
+      MultiPolygon: function(o) { return o.arcs.map(polygon); }
+    };
+
+    return geometry(o);
+  }
+
+  function reverse(array, n) {
+    var t, j = array.length, i = j - n; while (i < --j) t = array[i], array[i++] = array[j], array[j] = t;
+  }
+
+  function bisect(a, x) {
+    var lo = 0, hi = a.length;
+    while (lo < hi) {
+      var mid = lo + hi >>> 1;
+      if (a[mid] < x) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+
+  function neighbors(objects) {
+    var indexesByArc = {}, // arc index -> array of object indexes
+        neighbors = objects.map(function() { return []; });
+
+    function line(arcs, i) {
+      arcs.forEach(function(a) {
+        if (a < 0) a = ~a;
+        var o = indexesByArc[a];
+        if (o) o.push(i);
+        else indexesByArc[a] = [i];
+      });
+    }
+
+    function polygon(arcs, i) {
+      arcs.forEach(function(arc) { line(arc, i); });
+    }
+
+    function geometry(o, i) {
+      if (o.type === "GeometryCollection") o.geometries.forEach(function(o) { geometry(o, i); });
+      else if (o.type in geometryType) geometryType[o.type](o.arcs, i);
+    }
+
+    var geometryType = {
+      LineString: line,
+      MultiLineString: polygon,
+      Polygon: polygon,
+      MultiPolygon: function(arcs, i) { arcs.forEach(function(arc) { polygon(arc, i); }); }
+    };
+
+    objects.forEach(geometry);
+
+    for (var i in indexesByArc) {
+      for (var indexes = indexesByArc[i], m = indexes.length, j = 0; j < m; ++j) {
+        for (var k = j + 1; k < m; ++k) {
+          var ij = indexes[j], ik = indexes[k], n;
+          if ((n = neighbors[ij])[i = bisect(n, ik)] !== ik) n.splice(i, 0, ik);
+          if ((n = neighbors[ik])[i = bisect(n, ij)] !== ij) n.splice(i, 0, ij);
+        }
+      }
+    }
+
+    return neighbors;
+  }
+
+  function presimplify(topology, triangleArea) {
+    var absolute = transformAbsolute(topology.transform),
+        relative = transformRelative(topology.transform),
+        heap = minAreaHeap();
+
+    if (!triangleArea) triangleArea = cartesianTriangleArea;
+
+    topology.arcs.forEach(function(arc) {
+      var triangles = [],
+          maxArea = 0,
+          triangle;
+
+      // To store each point’s effective area, we create a new array rather than
+      // extending the passed-in point to workaround a Chrome/V8 bug (getting
+      // stuck in smi mode). For midpoints, the initial effective area of
+      // Infinity will be computed in the next step.
+      for (var i = 0, n = arc.length, p; i < n; ++i) {
+        p = arc[i];
+        absolute(arc[i] = [p[0], p[1], Infinity], i);
+      }
+
+      for (var i = 1, n = arc.length - 1; i < n; ++i) {
+        triangle = arc.slice(i - 1, i + 2);
+        triangle[1][2] = triangleArea(triangle);
+        triangles.push(triangle);
+        heap.push(triangle);
+      }
+
+      for (var i = 0, n = triangles.length; i < n; ++i) {
+        triangle = triangles[i];
+        triangle.previous = triangles[i - 1];
+        triangle.next = triangles[i + 1];
+      }
+
+      while (triangle = heap.pop()) {
+        var previous = triangle.previous,
+            next = triangle.next;
+
+        // If the area of the current point is less than that of the previous point
+        // to be eliminated, use the latter's area instead. This ensures that the
+        // current point cannot be eliminated without eliminating previously-
+        // eliminated points.
+        if (triangle[1][2] < maxArea) triangle[1][2] = maxArea;
+        else maxArea = triangle[1][2];
+
+        if (previous) {
+          previous.next = next;
+          previous[2] = triangle[2];
+          update(previous);
+        }
+
+        if (next) {
+          next.previous = previous;
+          next[0] = triangle[0];
+          update(next);
+        }
+      }
+
+      arc.forEach(relative);
+    });
+
+    function update(triangle) {
+      heap.remove(triangle);
+      triangle[1][2] = triangleArea(triangle);
+      heap.push(triangle);
+    }
+
+    return topology;
+  };
+
+  function cartesianRingArea(ring) {
+    var i = -1,
+        n = ring.length,
+        a,
+        b = ring[n - 1],
+        area = 0;
+
+    while (++i < n) {
+      a = b;
+      b = ring[i];
+      area += a[0] * b[1] - a[1] * b[0];
+    }
+
+    return area * .5;
+  }
+
+  function cartesianTriangleArea(triangle) {
+    var a = triangle[0], b = triangle[1], c = triangle[2];
+    return Math.abs((a[0] - c[0]) * (b[1] - a[1]) - (a[0] - b[0]) * (c[1] - a[1]));
+  }
+
+  function compareArea(a, b) {
+    return a[1][2] - b[1][2];
+  }
+
+  function minAreaHeap() {
+    var heap = {},
+        array = [],
+        size = 0;
+
+    heap.push = function(object) {
+      up(array[object._ = size] = object, size++);
+      return size;
+    };
+
+    heap.pop = function() {
+      if (size <= 0) return;
+      var removed = array[0], object;
+      if (--size > 0) object = array[size], down(array[object._ = 0] = object, 0);
+      return removed;
+    };
+
+    heap.remove = function(removed) {
+      var i = removed._, object;
+      if (array[i] !== removed) return; // invalid request
+      if (i !== --size) object = array[size], (compareArea(object, removed) < 0 ? up : down)(array[object._ = i] = object, i);
+      return i;
+    };
+
+    function up(object, i) {
+      while (i > 0) {
+        var j = ((i + 1) >> 1) - 1,
+            parent = array[j];
+        if (compareArea(object, parent) >= 0) break;
+        array[parent._ = i] = parent;
+        array[object._ = i = j] = object;
+      }
+    }
+
+    function down(object, i) {
+      while (true) {
+        var r = (i + 1) << 1,
+            l = r - 1,
+            j = i,
+            child = array[j];
+        if (l < size && compareArea(array[l], child) < 0) child = array[j = l];
+        if (r < size && compareArea(array[r], child) < 0) child = array[j = r];
+        if (j === i) break;
+        array[child._ = i] = child;
+        array[object._ = i = j] = object;
+      }
+    }
+
+    return heap;
+  }
+
+  function transformAbsolute(transform) {
+    if (!transform) return noop;
+    var x0,
+        y0,
+        kx = transform.scale[0],
+        ky = transform.scale[1],
+        dx = transform.translate[0],
+        dy = transform.translate[1];
+    return function(point, i) {
+      if (!i) x0 = y0 = 0;
+      point[0] = (x0 += point[0]) * kx + dx;
+      point[1] = (y0 += point[1]) * ky + dy;
+    };
+  }
+
+  function transformRelative(transform) {
+    if (!transform) return noop;
+    var x0,
+        y0,
+        kx = transform.scale[0],
+        ky = transform.scale[1],
+        dx = transform.translate[0],
+        dy = transform.translate[1];
+    return function(point, i) {
+      if (!i) x0 = y0 = 0;
+      var x1 = (point[0] - dx) / kx | 0,
+          y1 = (point[1] - dy) / ky | 0;
+      point[0] = x1 - x0;
+      point[1] = y1 - y0;
+      x0 = x1;
+      y0 = y1;
+    };
+  }
+
+  function noop() {}
+
+  if (typeof define === "function" && define.amd) define('topojson',topojson);
+  else if (typeof module === "object" && module.exports) module.exports = topojson;
+  else this.topojson = topojson;
+}();
+
+define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../utils/utils-draw", "../const", "../formatter-registry"], function (exports, _d3, _underscore, _topojson, _utilsUtilsDraw, _const, _formatterRegistry) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var d3 = _interopRequire(_d3);
+
+    var _ = _interopRequire(_underscore);
+
+    var topojson = _interopRequire(_topojson);
+
+    var utilsDraw = _utilsUtilsDraw.utilsDraw;
+    var CSS_PREFIX = _const.CSS_PREFIX;
+    var FormatterRegistry = _formatterRegistry.FormatterRegistry;
+
+    var hierarchy = ["land", "continents", "georegions", "countries", "regions", "subunits", "states", "counties"];
+
+    var GeoMap = exports.GeoMap = (function () {
+        function GeoMap(config) {
+            _classCallCheck(this, GeoMap);
+
+            _get(Object.getPrototypeOf(GeoMap.prototype), "constructor", this).call(this);
+
+            this.config = config;
+            this.config.guide = _.defaults(this.config.guide || {}, {
+                defaultFill: "#C0C0C0",
+                padding: { l: 0, r: 0, t: 0, b: 0 },
+                showNames: true
+            });
+        }
+
+        _createClass(GeoMap, {
+            drawLayout: {
+                value: function drawLayout(fnCreateScale) {
+
+                    var node = this.config;
+
+                    var options = node.options;
+                    var padding = node.guide.padding;
+
+                    var innerWidth = options.width - (padding.l + padding.r);
+                    var innerHeight = options.height - (padding.t + padding.b);
+
+                    // y - latitude
+                    this.latScale = fnCreateScale("pos", node.latitude, [0, innerHeight]);
+                    // x - longitude
+                    this.lonScale = fnCreateScale("pos", node.longitude, [innerWidth, 0]);
+                    // size
+                    this.sizeScale = fnCreateScale("size", node.size);
+                    // color
+                    this.colorScale = fnCreateScale("color", node.color);
+
+                    // code
+                    this.codeScale = fnCreateScale("value", node.code);
+                    // fill
+                    this.fillScale = fnCreateScale("fill", node.fill);
+
+                    this.W = innerWidth;
+                    this.H = innerHeight;
+
+                    return this;
+                }
+            },
+            drawFrames: {
+                value: function drawFrames(frames) {
+                    var _this = this;
+
+                    var guide = this.config.guide;
+
+                    if (typeof guide.sourcemap === "string") {
+
+                        d3.json(guide.sourcemap, function (e, topoJSONData) {
+
+                            if (e) {
+                                throw e;
+                            }
+
+                            _this._drawMap(frames, topoJSONData);
+                        });
+                    } else {
+                        this._drawMap(frames, guide.sourcemap);
+                    }
+                }
+            },
+            _drawMap: {
+                value: function _drawMap(frames, topoJSONData) {
+
+                    var guide = this.config.guide;
+                    var options = this.config.options;
+                    var node = this.config.options.container;
+
+                    var latScale = this.latScale;
+                    var lonScale = this.lonScale;
+                    var sizeScale = this.sizeScale;
+                    var colorScale = this.colorScale;
+
+                    var codeScale = this.codeScale;
+                    var fillScale = this.fillScale;
+
+                    var groupByCode = frames.reduce(function (groups, f) {
+                        var data = f.take();
+                        return data.reduce(function (memo, rec) {
+                            var key = rec[codeScale.dim];
+                            var val = rec[fillScale.dim];
+                            memo[key] = val;
+                            return memo;
+                        }, groups);
+                    }, {});
+
+                    var contours = hierarchy.filter(function (h) {
+                        return (topoJSONData.objects || {}).hasOwnProperty(h);
+                    });
+
+                    if (contours.length === 0) {
+                        throw new Error("Invalid map: should contain some contours");
+                    }
+
+                    var contourToFill;
+                    if (!fillScale.dim) {
+
+                        contourToFill = contours[contours.length - 1];
+                    } else if (codeScale.georole) {
+
+                        if (contours.indexOf(codeScale.georole) === -1) {
+                            console.log("There is no contour for georole \"" + codeScale.georole + "\"");
+                            console.log("Available contours are: " + contours.join(" | "));
+
+                            throw new Error("Invalid [georole]");
+                        }
+
+                        contourToFill = codeScale.georole;
+                    } else {
+                        console.log("Specify [georole] for code scale");
+                        throw new Error("[georole] is missing");
+                    }
+
+                    var center;
+
+                    if (latScale.dim && lonScale.dim) {
+                        var lats = d3.extent(latScale.domain());
+                        var lons = d3.extent(lonScale.domain());
+                        center = [(lons[1] + lons[0]) / 2, (lats[1] + lats[0]) / 2];
+                    }
+
+                    var d3Projection = this._createProjection(topoJSONData, contours[0], center);
+
+                    var path = d3.geo.path().projection(d3Projection);
+
+                    node.append("g").selectAll("path").data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features).enter().append("path").attr("d", path).attr("fill", function (d) {
+                        var props = d.properties;
+                        var codes = ["c1", "c2", "c3"].filter(function (c) {
+                            return props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c]);
+                        });
+
+                        var value;
+                        if (codes.length === 0) {
+                            // doesn't match
+                            value = guide.defaultFill;
+                        } else if (codes.length > 0) {
+                            value = fillScale(groupByCode[props[codes[0]]]);
+                        }
+
+                        return value;
+                    }).call(function () {
+                        // TODO: update map with contour objects names
+                        this.append("title").text(function (d) {
+                            var p = d.properties;
+                            return p.name || d.id;
+                        });
+                    });
+
+                    var grayScale = ["#fbfbfb", "#fffefe", "#fdfdff", "#fdfdfd", "#ffffff"];
+                    var reverseContours = contours.reduceRight(function (m, t) {
+                        return m.concat(t);
+                    }, []);
+                    reverseContours.forEach(function (c, i) {
+                        node.append("path").datum(topojson.mesh(topoJSONData, topoJSONData.objects[c])).attr("fill", "none").attr("stroke", grayScale[i]).attr("stroke-linejoin", "round").attr("d", path);
+                    });
+
+                    if (guide.showNames) {
+                        reverseContours.forEach(function (c) {
+                            var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
+                            node.selectAll(".place-label-" + c).data(contourFeatures).enter().append("text").attr("class", "place-label-" + c).attr("transform", function (d) {
+                                return "translate(" + path.centroid(d) + ")";
+                            }).text(function (d) {
+                                return (d.properties || {}).name;
+                            });
+                        });
+                    }
+
+                    if (topoJSONData.objects.hasOwnProperty("places")) {
+
+                        path.pointRadius(1.5);
+
+                        var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
+
+                        node.append("path").datum(placesFeature).attr("d", path).attr("class", "place");
+
+                        node.selectAll(".place-label").data(placesFeature.features).enter().append("text").attr("class", "place-label").attr("transform", function (d) {
+                            return "translate(" + d3Projection(d.geometry.coordinates) + ")";
+                        }).attr("dx", ".35em").attr("dy", ".35em").text(function (d) {
+                            return d.properties.name;
+                        });
+                    }
+
+                    if (!latScale.dim || !lonScale.dim) {
+                        return [];
+                    }
+
+                    var update = function update() {
+                        return this.attr({
+                            r: function (_ref) {
+                                var d = _ref.data;
+                                return sizeScale(d[sizeScale.dim]);
+                            },
+                            transform: function (_ref) {
+                                var d = _ref.data;
+                                return "translate(" + d3Projection([d[lonScale.dim], d[latScale.dim]]) + ")";
+                            },
+                            "class": function (_ref) {
+                                var d = _ref.data;
+                                return colorScale(d[colorScale.dim]);
+                            },
+                            opacity: 0.5
+                        });
+                    };
+
+                    var updateGroups = function updateGroups() {
+
+                        this.attr("class", function (f) {
+                            return "frame-id-" + options.uid + " frame-" + f.hash;
+                        }).call(function () {
+                            var points = this.selectAll("circle").data(function (frame) {
+                                return frame.data.map(function (item) {
+                                    return { data: item, uid: options.uid };
+                                });
+                            });
+                            points.exit().remove();
+                            points.call(update);
+                            points.enter().append("circle").call(update);
+                        });
+                    };
+
+                    var mapper = function (f) {
+                        return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    };
+
+                    var frameGroups = options.container.selectAll(".frame-id-" + options.uid).data(frames.map(mapper), function (f) {
+                        return f.hash;
+                    });
+                    frameGroups.exit().remove();
+                    frameGroups.call(updateGroups);
+                    frameGroups.enter().append("g").call(updateGroups);
+
+                    return [];
+                }
+            },
+            _createProjection: {
+                value: function _createProjection(topoJSONData, topContour, center) {
+
+                    // The map's scale out is based on the solution:
+                    // http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
+
+                    var width = this.W;
+                    var height = this.H;
+                    var guide = this.config.guide;
+
+                    var scale = 100;
+                    var offset = [width / 2, height / 2];
+
+                    var mapCenter = center || topoJSONData.center;
+                    var mapProjection = guide.projection || topoJSONData.projection || "mercator";
+
+                    var d3Projection = this._createD3Projection(mapProjection, mapCenter, scale, offset);
+
+                    var path = d3.geo.path().projection(d3Projection);
+
+                    // using the path determine the bounds of the current map and use
+                    // these to determine better values for the scale and translation
+                    var bounds = path.bounds(topojson.feature(topoJSONData, topoJSONData.objects[topContour]));
+
+                    var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
+                    var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
+
+                    scale = hscale < vscale ? hscale : vscale;
+                    offset = [width - (bounds[0][0] + bounds[1][0]) / 2, height - (bounds[0][1] + bounds[1][1]) / 2];
+
+                    // new projection
+                    return this._createD3Projection(mapProjection, mapCenter, scale, offset);
+                }
+            },
+            _createD3Projection: {
+                value: function _createD3Projection(projection, center, scale, translate) {
+
+                    var d3ProjectionMethod = d3.geo[projection];
+
+                    if (!d3ProjectionMethod) {
+                        console.log("Unknown projection \"" + projection + "\"");
+                        console.log("See available projection types here: https://github.com/mbostock/d3/wiki/Geo-Projections");
+                        throw new Error("Invalid map: unknown projection \"" + projection + "\"");
+                    }
+
+                    var d3Projection = d3ProjectionMethod();
+
+                    var steps = [{ method: "scale", args: scale }, { method: "center", args: center }, { method: "translate", args: translate }].filter(function (step) {
+                        return step.args;
+                    });
+
+                    // because the Albers USA projection does not support rotation or centering
+                    return steps.reduce(function (proj, step) {
+                        if (proj[step.method]) {
+                            proj = proj[step.method](step.args);
+                        }
+                        return proj;
+                    }, d3Projection);
+                }
+            }
+        });
+
+        return GeoMap;
     })();
 });
 define('elements/element.pie',["exports", "../const", "../utils/css-class-map"], function (exports, _const, _utilsCssClassMap) {
@@ -6969,6 +7930,7 @@ define('scales/value',["exports", "./base", "underscore", "d3"], function (expor
                         return x;
                     };
                     scale.scaleType = "value";
+                    scale.georole = this.scaleConfig.georole;
 
                     return this.toBaseScale(scale);
                 }
@@ -6978,7 +7940,88 @@ define('scales/value',["exports", "./base", "underscore", "d3"], function (expor
         return ValueScale;
     })(BaseScale);
 });
-define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./scales-registry", "./elements/coords.cartesian", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval", "./scales/color", "./scales/size", "./scales/ordinal", "./scales/period", "./scales/time", "./scales/linear", "./scales/value"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue) {
+define('scales/fill',["exports", "./base", "../utils/utils", "underscore", "d3"], function (exports, _base, _utilsUtils, _underscore, _d3) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+    var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var BaseScale = _base.BaseScale;
+    var utils = _utilsUtils.utils;
+
+    /* jshint ignore:start */
+
+    var _ = _interopRequire(_underscore);
+
+    var d3 = _interopRequire(_d3);
+
+    /* jshint ignore:end */
+
+    var FillScale = exports.FillScale = (function (_BaseScale) {
+        function FillScale(xSource, scaleConfig) {
+            _classCallCheck(this, FillScale);
+
+            _get(Object.getPrototypeOf(FillScale.prototype), "constructor", this).call(this, xSource, scaleConfig);
+
+            var props = this.scaleConfig;
+            var vars = this.vars;
+
+            var domain = props.autoScale ? utils.autoScale(vars) : d3.extent(vars);
+
+            var min = _.isNumber(props.min) ? props.min : domain[0];
+            var max = _.isNumber(props.max) ? props.max : domain[1];
+
+            this.vars = [Math.min(min, domain[0]), Math.max(max, domain[1])];
+        }
+
+        _inherits(FillScale, _BaseScale);
+
+        _createClass(FillScale, {
+            create: {
+                value: function create() {
+
+                    var props = this.scaleConfig;
+                    var varSet = this.vars;
+
+                    var defBrewer = ["#F5F5F5", "#DCDCDC", "#D3D3D3", "#C0C0C0", "#A9A9A9", "#808080", "#696969", "#000000"];
+
+                    var brewer = props.brewer || defBrewer;
+
+                    if (!_.isArray(brewer)) {
+                        throw new Error("This brewer is not supported");
+                    }
+
+                    var size = brewer.length;
+                    var step = (varSet[1] - varSet[0]) / size;
+                    var domain = _.times(size - 1, function (i) {
+                        return i + 1;
+                    }).reduce(function (memo, i) {
+                        return memo.concat([varSet[0] + i * step]);
+                    }, []);
+
+                    var func = d3.scale.threshold().domain(domain).range(brewer);
+
+                    func.scaleType = "fill";
+
+                    return this.toBaseScale(func);
+                }
+            }
+        });
+
+        return FillScale;
+    })(BaseScale);
+});
+define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./scales-registry", "./elements/coords.cartesian", "./elements/coords.geomap", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval", "./scales/color", "./scales/size", "./scales/ordinal", "./scales/period", "./scales/time", "./scales/linear", "./scales/value", "./scales/fill"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill) {
     
 
     Object.defineProperty(exports, "__esModule", {
@@ -6994,6 +8037,7 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var unitsRegistry = _unitsRegistry.unitsRegistry;
     var scalesRegistry = _scalesRegistry.scalesRegistry;
     var Cartesian = _elementsCoordsCartesian.Cartesian;
+    var GeoMap = _elementsCoordsGeomap.GeoMap;
     var Point = _elementsElementPoint.Point;
     var Line = _elementsElementLine.Line;
     var Pie = _elementsElementPie.Pie;
@@ -7005,6 +8049,7 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var TimeScale = _scalesTime.TimeScale;
     var LinearScale = _scalesLinear.LinearScale;
     var ValueScale = _scalesValue.ValueScale;
+    var FillScale = _scalesFill.FillScale;
 
     var colorBrewers = {};
     var plugins = {};
@@ -7068,6 +8113,7 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
             optimizeGuideBySize: true,
             layoutEngine: "EXTRACT",
             autoRatio: true,
+            defaultSourceMap: ["https://raw.githubusercontent.com", "TargetProcess/tauCharts/master/src/addons", "world-countries.json"].join("/"),
 
             getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, function (text) {
                 return (text || "").length;
@@ -7107,9 +8153,9 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
 
     Plot.globalSettings = api.globalSettings;
 
-    api.unitsRegistry.reg("COORDS.RECT", Cartesian).reg("ELEMENT.POINT", Point).reg("ELEMENT.LINE", Line).reg("ELEMENT.INTERVAL", Interval).reg("RECT", Cartesian).reg("POINT", Point).reg("INTERVAL", Interval).reg("LINE", Line).reg("PIE", Pie);
+    api.unitsRegistry.reg("COORDS.RECT", Cartesian).reg("COORDS.MAP", GeoMap).reg("ELEMENT.POINT", Point).reg("ELEMENT.LINE", Line).reg("ELEMENT.INTERVAL", Interval).reg("RECT", Cartesian).reg("POINT", Point).reg("INTERVAL", Interval).reg("LINE", Line).reg("PIE", Pie);
 
-    api.scalesRegistry.reg("color", ColorScale).reg("size", SizeScale).reg("ordinal", OrdinalScale).reg("period", PeriodScale).reg("time", TimeScale).reg("linear", LinearScale).reg("value", ValueScale);
+    api.scalesRegistry.reg("color", ColorScale).reg("fill", FillScale).reg("size", SizeScale).reg("ordinal", OrdinalScale).reg("period", PeriodScale).reg("time", TimeScale).reg("linear", LinearScale).reg("value", ValueScale);
 
     exports.GPL = GPL;
     exports.Plot = Plot;

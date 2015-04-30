@@ -6743,7 +6743,7 @@ define("../bower_components/fetch/fetch", function(){});
                 if (!this._cssPaths) {
                     this._cssPaths = [];
                     tauCharts.api.globalSettings.log(
-                        'You should specified cssPath for correct work export plugin',
+                        '[export plugin]: the "cssPath" parameter should be specified for correct operation',
                         'warn'
                     );
                 }

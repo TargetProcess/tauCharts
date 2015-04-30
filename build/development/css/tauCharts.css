@@ -291,6 +291,17 @@
   display: block;
   overflow: hidden;
 }
+.graphical-report__svg .place-label {
+  font-size: 11px;
+}
+.graphical-report__svg .place-label-countries,
+.graphical-report__svg .place-label-subunits,
+.graphical-report__svg .place-label-states {
+  fill: #777;
+  fill-opacity: .5;
+  font-size: 13px;
+  text-anchor: middle;
+}
 .graphical-report__svg .axis line,
 .graphical-report__svg .axis path {
   stroke-width: 1;
