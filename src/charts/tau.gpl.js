@@ -52,6 +52,8 @@ export class GPL extends Emitter {
 
         this.root = this._expandUnitsStructure(this.config.unit);
 
+        this._adaptSpecToUnitsStructure(this.root, this.config);
+
         this.onUnitsStructureExpanded(this.config);
 
         var xSvg = d3Target.selectAll('svg').data([1]);
@@ -131,6 +133,22 @@ export class GPL extends Emitter {
         root.frames.forEach(
             (f) => (f.units.forEach(
                 (unit) => this._expandUnitsStructure(unit, f.pipe)
+            ))
+        );
+
+        return root;
+    }
+
+    _adaptSpecToUnitsStructure(root, spec) {
+
+        var UnitClass = this.unitSet.get(root.type);
+        if (UnitClass.embedUnitFrameToSpec) {
+            UnitClass.embedUnitFrameToSpec(root, spec); // static method
+        }
+
+        root.frames.forEach(
+            (f) => (f.units.forEach(
+                (unit) => this._adaptSpecToUnitsStructure(unit, spec)
             ))
         );
 
