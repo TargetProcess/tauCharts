@@ -78,7 +78,7 @@ export class StackedInterval {
                         .selectAll('.bar')
                         .data((frame) => {
                             // var totals = {}; // if 1-only frame support is required
-                            return frame.data.map((d) => ({uid: uid, data: d, view: viewMapper(totals, d)}))
+                            return frame.data.map((d) => ({uid: uid, data: d, view: viewMapper(totals, d)}));
                         });
                     bars
                         .exit()
@@ -124,11 +124,11 @@ export class StackedInterval {
         let calculateY = ((d) => (yScale(d.y)));
 
         return {
-            'x': (({view:d}) => calculateX(d)),
-            'y': (({view:d}) => calculateY(d)),
-            'height': (({view:d}) => calculateH(d)),
-            'width': (({view:d}) => calculateW(d)),
-            'class': (({view:d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d.c)}`)
+            x: (({view:d}) => calculateX(d)),
+            y: (({view:d}) => calculateY(d)),
+            height: (({view:d}) => calculateH(d)),
+            width: (({view:d}) => calculateW(d)),
+            class: (({view:d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d.c)}`)
         };
     }
 }
