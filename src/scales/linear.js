@@ -50,6 +50,7 @@ export class LinearScale extends BaseScale {
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
         scale.scaleType = 'linear';
+        scale.stepSize = (() => 0);
 
         return this.toBaseScale(scale, interval);
     }

@@ -49,6 +49,7 @@ export class TimeScale extends BaseScale {
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
         scale.scaleType = 'time';
+        scale.stepSize = (() => 0);
 
         return this.toBaseScale(scale, interval);
     }
