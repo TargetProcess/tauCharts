@@ -18,9 +18,14 @@ export class SizeScale extends BaseScale {
         var f = (x) => Math.sqrt(x);
 
         var values = _.filter(varSet, _.isFinite);
+
+        var normalize = props.normalize || localProps.normalize;
+
+        var fnNorm = (normalize) ? ((x, maxX) => (x / maxX)) : (x => x);
+
         var func;
         if (values.length === 0) {
-            func = (x) => midSize;
+            func = (x) => fnNorm(midSize, midSize);
         } else {
             var k = 1;
             var xMin = 0;
@@ -44,12 +49,12 @@ export class SizeScale extends BaseScale {
                 var numX = (x !== null) ? parseFloat(x) : 0;
 
                 if (!_.isFinite(numX)) {
-                    return maxSize;
+                    return fnNorm(maxSize, maxSize);
                 }
 
                 var posX = (numX - xMin); // translate to positive x domain
 
-                return (minSize + (f(posX) * k));
+                return fnNorm((minSize + (f(posX) * k)), maxSize);
             };
         }
 

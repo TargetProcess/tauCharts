@@ -20,7 +20,6 @@ export class StackedInterval {
 
         if (!scale.hasOwnProperty('max') || scale.max < maxSum) {
             scale.max = maxSum;
-            scale.autoScale = false;
         }
     }
 
@@ -34,7 +33,32 @@ export class StackedInterval {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-        this.size = fnCreateScale('size', config.size, {});
+
+        var fitSize = (w, h, maxRelLimit, srcSize, minimalSize) => {
+            var minRefPoint = Math.min(w, h);
+            var minSize = minRefPoint * maxRelLimit;
+            return Math.max(minimalSize, Math.min(srcSize, minSize));
+        };
+
+        var width = config.options.width;
+        var height = config.options.height;
+        var g = config.guide;
+        var minimalSize = 1;
+        var maxRelLimit = 1;
+        var isNotZero = (x) => x !== 0;
+        var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
+        var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+
+        this.size = fnCreateScale(
+            'size',
+            config.size,
+            {
+                normalize: true,
+
+                min: fitSize(width, height, maxRelLimit, 2, minimalSize),
+                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
+                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
+            });
 
         return this;
     }
@@ -44,7 +68,7 @@ export class StackedInterval {
         var options = config.options;
         var xScale = this.xScale;
         var yScale = this.yScale;
-        var sizeScale = _.memoize((x) => (Math.random())); // this.size;
+        var sizeScale = this.size;
         var colorScale = this.color;
 
         var isHorizontal = config.guide.flip;

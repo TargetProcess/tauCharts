@@ -37,5 +37,5 @@ var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
         return (minSize + (f(posX) * k));
     };
 };
-var s = 23;
+
 export {sizeScale};
