@@ -202,6 +202,9 @@ define(function (require) {
             expect(scale1.domain()).to.deep.equal([new Date('2015-04-15'), new Date('2015-04-20')]);
             expect(scale1(new Date('2015-04-15'))).to.equal(0);
             expect(scale1(new Date('2015-04-20'))).to.equal(100);
+
+            expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale1.stepSize()).to.equal(0);
         });
 
         it('should support [period] scale', function () {
@@ -226,6 +229,9 @@ define(function (require) {
                 }).create([0, 100]);
 
             expect(scale1.domain().length).to.equal(6);
+
+            expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale1.stepSize()).to.equal(100 / scale1.domain().length);
         });
 
         it('should support [linear] scale', function () {
@@ -256,6 +262,19 @@ define(function (require) {
             expect(scale1(-10)).to.equal(0);
             expect(scale1(10)).to.equal(100);
 
+            var scale1A = new LinearScale(
+                xSrc,
+                {
+                    dim: 'i',
+                    min: -10,
+                    max: 10,
+                    autoScale: true
+                }).create([0, 100]);
+
+            expect(scale1A.domain()).to.deep.equal([-12, 12]);
+            expect(scale1A(-12)).to.equal(0);
+            expect(scale1A(12)).to.equal(100);
+
             var scale2 = new LinearScale(
                 xSrc,
                 {
@@ -268,6 +287,9 @@ define(function (require) {
             expect(scale2(-10)).to.equal(0);
             expect(scale2(3.2)).to.equal(100);
             expect(scale2(5)).to.equal(100);
+
+            expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale2.stepSize()).to.equal(0);
         });
 
         it('should support [color] scale', function () {
@@ -390,6 +412,9 @@ define(function (require) {
             expect(scale0('medium')).to.equal(45);
             expect(scale0('high')).to.equal(75);
 
+            expect(scale0.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale0.stepSize()).to.equal(90 / scale0.domain().length);
+
             var scale1 = new OrdinalScale(
                 xSrc,
                 {
@@ -407,6 +432,11 @@ define(function (require) {
             expect(scale1('low')).to.equal(25);
             expect(scale1('medium')).to.equal(62.5);
             expect(scale1('high')).to.equal(87.5);
+
+            expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale1.stepSize('low')).to.equal(100 * 0.5);
+            expect(scale1.stepSize('medium')).to.equal(100 * 0.25);
+            expect(scale1.stepSize('high')).to.equal(100 * 0.25);
 
             var scale2 = new OrdinalScale(
                 xSrc,
@@ -429,6 +459,11 @@ define(function (require) {
             expect(scale2('low')).to.equal(25);
             expect(scale2('medium')).to.equal(62.5);
             expect(scale2('high')).to.equal(87.5);
+
+            expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale2.stepSize('low')).to.equal(100 * 0.5);
+            expect(scale2.stepSize('medium')).to.equal(100 * 0.25);
+            expect(scale2.stepSize('high')).to.equal(100 * 0.25);
         });
 
         it('should support [fill] scale (default params)', function () {
@@ -503,6 +538,20 @@ define(function (require) {
                 }).create();
 
             expect(scale0.domain()).to.deep.equal([-10, 100]);
+        });
+
+        it('should support min / max + autoScale on [fill] scale', function () {
+
+            var scale0 = new FillScale(
+                xSrc,
+                {
+                    dim: 's',
+                    min: -10,
+                    max: 100,
+                    autoScale: true
+                }).create();
+
+            expect(scale0.domain()).to.deep.equal([-20, 110]);
         });
     });
 });
