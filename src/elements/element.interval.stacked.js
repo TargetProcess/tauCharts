@@ -8,10 +8,14 @@ import {flipHub, drawInterval} from './element.interval.fn';
 export class StackedInterval {
 
     static embedUnitFrameToSpec(cfg, spec) {
-        var scale = spec.scales[cfg.y];
-        var dimY = scale.dim;
 
-        var sums = cfg.frames.map((f) => f.take().reduce(((s, d) => (s += d[dimY])), 0));
+        var isHorizontal = cfg.guide.flip;
+
+        var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
+        var scale = spec.scales[stackedScaleName];
+        var prop = scale.dim;
+
+        var sums = cfg.frames.map((f) => f.take().reduce(((s, d) => (s += d[prop])), 0));
         var maxSum = Math.max(...sums);
 
         if (!scale.hasOwnProperty('max') || scale.max < maxSum) {
@@ -42,25 +46,44 @@ export class StackedInterval {
         var yScale = this.yScale;
         var sizeScale = _.memoize((x) => (Math.random())); // this.size;
         var colorScale = this.color;
-        var width = config.options.width;
-        var height = config.options.height;
 
-        var viewMapper = (totals, d) => {
-            var x = d[xScale.dim];
-            var y = d[yScale.dim];
-            var stack = totals[x] = ((totals[x] || 0) + y);
-            var size = d[sizeScale.dim];
-            var color = d[colorScale.dim];
-            return {
-                x: x,
-                y: stack,
-                h: y,
-                w: size, // allows to make funnels
-                c: color
+        var isHorizontal = config.guide.flip;
+
+        var viewMapper;
+
+        if (isHorizontal) {
+            viewMapper = (totals, d) => {
+                var x = d[xScale.dim];
+                var y = d[yScale.dim];
+                var stack = totals[y] = ((totals[y] || 0) + x);
+                var size = d[sizeScale.dim];
+                var color = d[colorScale.dim];
+                return {
+                    x: stack,
+                    y: y,
+                    h: x,
+                    w: size,
+                    c: color
+                };
             };
-        };
+        } else {
+            viewMapper = (totals, d) => {
+                var x = d[xScale.dim];
+                var y = d[yScale.dim];
+                var stack = totals[x] = ((totals[x] || 0) + y);
+                var size = d[sizeScale.dim];
+                var color = d[colorScale.dim];
+                return {
+                    x: x,
+                    y: stack,
+                    h: y,
+                    w: size,
+                    c: color
+                };
+            };
+        }
 
-        var d3Attrs = this._buildMethod({xScale, yScale, sizeScale, colorScale});
+        var d3Attrs = this._buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale});
 
         var updateBar = function () {
             return this
@@ -109,7 +132,7 @@ export class StackedInterval {
         return [];
     }
 
-    _buildMethod({xScale, yScale, sizeScale, colorScale}) {
+    _buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale}) {
 
         // show at least 1px gap for bar to make it clickable
         var minH = 1;
@@ -117,11 +140,28 @@ export class StackedInterval {
         var minW = 5;
         var relW = 0.5;
 
-        let calculateW = ((d) => ((xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w)));
-        let calculateH = ((d) => Math.max(minH, Math.abs(yScale(d.y) - yScale(d.y - d.h))));
+        var calculateH;
+        var calculateW;
+        var calculateY;
+        var calculateX;
 
-        let calculateX = ((d) => (xScale(d.x) - (calculateW(d) / 2)));
-        let calculateY = ((d) => (yScale(d.y)));
+        if (isHorizontal) {
+
+            calculateW = ((d) => Math.max(minH, Math.abs(xScale(d.x) - xScale(d.x - d.h))));
+            calculateH = ((d) => ((yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w)));
+
+            calculateX = ((d) => (xScale(d.x - d.h)));
+            calculateY = ((d) => (yScale(d.y) - (calculateH(d) / 2)));
+
+        } else {
+
+            calculateW = ((d) => ((xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w)));
+            calculateH = ((d) => Math.max(minH, Math.abs(yScale(d.y) - yScale(d.y - d.h))));
+
+            calculateX = ((d) => (xScale(d.x) - (calculateW(d) / 2)));
+            calculateY = ((d) => (yScale(d.y)));
+
+        }
 
         return {
             x: (({view:d}) => calculateX(d)),
