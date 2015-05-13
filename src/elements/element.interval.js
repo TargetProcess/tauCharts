@@ -5,6 +5,7 @@ export class Interval {
 
     constructor(config) {
         this.config = config;
+        this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
     }
 
     drawLayout(fnCreateScale) {
@@ -38,10 +39,11 @@ export class Interval {
             colorScale,
             colorIndexScale,
             width: config.options.width,
-            height: config.options.height
+            height: config.options.height,
+            prettify: config.guide.prettify
         };
 
-        var isHorizontal = config.guide.flip || config.flip;
+        var isHorizontal = config.flip || config.guide.flip;
 
         var d3Attrs = isHorizontal ? this._buildHorizontalDrawMethod(args) : this._buildVerticalDrawMethod(args);
 
@@ -79,7 +81,7 @@ export class Interval {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, xScale, yScale, colorIndexScale, width, height}) {
+    _buildVerticalDrawMethod({colorScale, xScale, yScale, colorIndexScale, width, height, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
@@ -95,23 +97,32 @@ export class Interval {
             x: (({data: d}) => calculateBarX(d)),
             y: (({data: d}) => {
                 var y = calculateBarY(d);
-                // decorate for better visual look & feel
-                var h = calculateBarH(d);
-                var isTooSmall = (h < minBarH);
-                return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
+
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var h = calculateBarH(d);
+                    var isTooSmall = (h < minBarH);
+                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
+                } else {
+                    return y;
+                }
             }),
             height: (({data: d}) => {
                 var h = calculateBarH(d);
-                // decorate for better visual look & feel
-                var y = d[yScale.dim];
-                return (y === 0) ? h : Math.max(minBarH, h);
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var y = d[yScale.dim];
+                    return (y === 0) ? h : Math.max(minBarH, h);
+                } else {
+                    return h;
+                }
             }),
             width: (({data: d}) => calculateBarW(d)),
             class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.dim])}`)
         };
     }
 
-    _buildHorizontalDrawMethod({colorScale, xScale, yScale, colorIndexScale, width, height}) {
+    _buildHorizontalDrawMethod({colorScale, xScale, yScale, colorIndexScale, width, height, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
@@ -127,24 +138,34 @@ export class Interval {
             y: (({data: d}) => calculateBarX(d)),
             x: (({data: d}) => {
                 var x = calculateBarY(d);
-                // decorate for better visual look & feel
-                var h = calculateBarH(d);
-                var dx = d[xScale.dim];
-                var offset = 0;
 
-                if (dx === 0) {offset = 0;}
-                if (dx > 0) {offset = (h);}
-                if (dx < 0) {offset = (0 - minBarH);}
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var h = calculateBarH(d);
+                    var dx = d[xScale.dim];
+                    var offset = 0;
 
-                var isTooSmall = (h < minBarH);
-                return (isTooSmall) ? (x + offset) : (x);
+                    if (dx === 0) {offset = 0;}
+                    if (dx > 0) {offset = (h);}
+                    if (dx < 0) {offset = (0 - minBarH);}
+
+                    var isTooSmall = (h < minBarH);
+                    return (isTooSmall) ? (x + offset) : (x);
+                } else {
+                    return x;
+                }
             }),
             height: (({data: d}) => calculateBarW(d)),
             width: (({data: d}) => {
                 var w = calculateBarH(d);
-                // decorate for better visual look & feel
-                var x = d[xScale.dim];
-                return (x === 0) ? w : Math.max(minBarH, w);
+
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var x = d[xScale.dim];
+                    return (x === 0) ? w : Math.max(minBarH, w);
+                } else {
+                    return w;
+                }
             }),
             class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.dim])}`)
         };
