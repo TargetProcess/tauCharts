@@ -5,27 +5,7 @@ define(function (require) {
     var schemes = require('schemes');
     var _ = require('underscore');
     var tauCharts = require('src/tau.charts');
-    var Cartesian = require('src/elements/coords.cartesian').Cartesian;
-    var StackedInterval = require('src/elements/element.interval.stacked').StackedInterval;
     var testUtils = require('testUtils');
-    var unitsMap = {};
-    var unitsRegistry = {
-        reg: function (unitType, xUnit) {
-            unitsMap[unitType] = xUnit;
-            return this;
-        },
-        get: function (unitType) {
-
-            if (!unitsMap.hasOwnProperty(unitType)) {
-                throw new Error('Unknown unit type: ' + unitType);
-            }
-
-            return unitsMap[unitType];
-        }
-    };
-    unitsRegistry
-        .reg('COORDS.RECT', Cartesian)
-        .reg('ELEMENT.INTERVAL.STACKED', StackedInterval);
 
     var getGroupBar = function(div) {
         return div.getElementsByClassName('i-role-bar-group');
@@ -54,13 +34,19 @@ define(function (require) {
         //        });
         //    });
         //});
-
-        // console.log(JSON.stringify(r, null, 2));
+        //
+        //console.log(JSON.stringify(r, null, 2));
 
         _.each(bars, function (bar, index) {
             _.each(bar.childNodes, function (el, ind) {
-                expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x), `x (${index} / ${ind})`);
-                expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y), `y (${index} / ${ind})`);
+
+                if (coords[index][ind].hasOwnProperty('x')) {
+                    expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x), `x (${index} / ${ind})`);
+                }
+
+                if (coords[index][ind].hasOwnProperty('y')) {
+                    expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y), `y (${index} / ${ind})`);
+                }
 
                 if (coords[index][ind].hasOwnProperty('width')) {
                     expect(convertToFixed(attrib(el, 'width')))
@@ -85,21 +71,19 @@ define(function (require) {
 
     describe('ELEMENT.INTERVAL.STACKED', function() {
 
-        var size = {width:200, height:200};
+        var div;
+        var size = {width: 200, height: 200};
 
-        var createDiv = function () {
-            var div = document.createElement('div');
+        beforeEach(function () {
+            div = document.createElement('div');
             document.body.appendChild(div);
-            return div;
-        };
+        });
 
-        var removeDiv = function (div) {
+        afterEach(function () {
             div.parentNode.removeChild(div);
-        };
+        });
 
-        it('should draw vertical stacked bar on y-measure / x-measure', function() {
-
-            var div = createDiv();
+        it('should draw vertical stacked bar on y-measure / x-measure', function () {
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -122,7 +106,7 @@ define(function (require) {
                                 type: 'ELEMENT.INTERVAL.STACKED',
                                 x: 'x',
                                 y: 'y',
-                                guide: {prettify:false}
+                                guide: {prettify: false}
                             }
                         ]
                     }
@@ -158,13 +142,9 @@ define(function (require) {
                         }
                     ]
                 ]);
-
-            removeDiv(div);
         });
 
-        it('should draw horizontal stacked bar on y-measure / x-measure', function() {
-
-            var div = createDiv();
+        it('should draw horizontal stacked bar on y-measure / x-measure', function () {
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -188,7 +168,7 @@ define(function (require) {
                                 flip: true,
                                 x: 'x',
                                 y: 'y',
-                                guide: {prettify:false}
+                                guide: {prettify: false}
                             }
                         ]
                     }
@@ -226,13 +206,9 @@ define(function (require) {
                         }
                     ]
                 ]);
-
-            removeDiv(div);
         });
 
-        it('should draw vertical stacked bar on y-measure / x-category', function() {
-
-            var div = createDiv();
+        it('should draw vertical stacked bar on y-measure / x-category', function () {
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -258,7 +234,7 @@ define(function (require) {
                                 type: 'ELEMENT.INTERVAL.STACKED',
                                 x: 'x',
                                 y: 'y',
-                                guide: {prettify:false}
+                                guide: {prettify: false}
                             }
                         ]
                     }
@@ -307,13 +283,9 @@ define(function (require) {
                         }
                     ]
                 ]);
-
-            removeDiv(div);
         });
 
-        it('should draw horizontal stacked bar on y-category / x-measure', function() {
-
-            var div = createDiv();
+        it('should draw horizontal stacked bar on y-category / x-measure', function () {
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -340,7 +312,7 @@ define(function (require) {
                                 flip: true,
                                 x: 'x',
                                 y: 'y',
-                                guide: {prettify:false}
+                                guide: {prettify: false}
                             }
                         ]
                     }
@@ -388,13 +360,9 @@ define(function (require) {
                         }
                     ]
                 ]);
-
-            removeDiv(div);
         });
 
-        it('should draw horizontal stacked bar on y-category / x-measure / + color + size', function() {
-
-            var div = createDiv();
+        it('should draw horizontal stacked bar with color and size', function() {
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -408,8 +376,6 @@ define(function (require) {
                         type: 'COORDS.RECT',
                         x: 'x',
                         y: 'y',
-                        color: 'c',
-                        size: 's',
                         guide: {
                             padding: {l: 0, r: 0, t: 0, b: 0},
                             x: {hide: true},
@@ -420,6 +386,8 @@ define(function (require) {
                                 type: 'ELEMENT.INTERVAL.STACKED',
                                 x: 'x',
                                 y: 'y',
+                                color: 'c',
+                                size: 's',
                                 guide: {prettify:false}
                             }
                         ]
@@ -442,14 +410,18 @@ define(function (require) {
                             "y": 80,
                             "height": 120,
                             "class": "color20-1"
-                        },
+                        }
+                    ],
+                    [
                         {
-                            "x": 31.0489,
-                            "width": 37.9022,
+                            // "x": 31.0489,
+                            // "width": 37.9022,
                             "y": 0,
                             "height": 80,
                             "class": "color20-2"
-                        },
+                        }
+                    ],
+                    [
                         {
                             "x": 125,
                             "width": 50,
@@ -459,13 +431,9 @@ define(function (require) {
                         }
                     ]
                 ]);
-
-            removeDiv(div);
         });
 
         it('should throw on y-category / x-category', function() {
-
-            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -494,13 +462,9 @@ define(function (require) {
             expect(function () {
                 plot.renderTo(div, size);
             }).to.throw('Stacked field [y] should be a non-negative number');
-
-            removeDiv(div);
         });
 
         it('should throw on negative values in stacked scale', function() {
-
-            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -530,8 +494,6 @@ define(function (require) {
             expect(function () {
                 plot.renderTo(div, size);
             }).to.throw('Stacked field [y] should be a non-negative number');
-
-            removeDiv(div);
         });
     });
 });
