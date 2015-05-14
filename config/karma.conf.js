@@ -16,7 +16,7 @@ module.exports = function (config) {
             {pattern: 'css/base.css', included: true},
             'test/tests-main.js'
         ],
-        browsers: ['PhantomJS'],
+        browsers: ['Chrome'],
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
         reporters: ['coverage', 'dots', 'coveralls'],
         coverageReporter: {
