@@ -138,8 +138,10 @@ export class StackedInterval {
         var updateBar = function () {
             return this
                 .attr(d3Attrs)
+                // TODO: move to CSS styles
                 .style('stroke-width', 1)
-                .style('stroke', 'rgba(255, 255, 255, 0.5)');
+                .style('stroke', '#fff')
+                .style('stroke-opacity', '0.5');
         };
 
         var uid = options.uid;

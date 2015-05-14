@@ -85,19 +85,21 @@ define(function (require) {
 
     describe('ELEMENT.INTERVAL.STACKED', function() {
 
-        var div;
         var size = {width:200, height:200};
 
-        beforeEach(function () {
-            div = document.createElement('div');
+        var createDiv = function () {
+            var div = document.createElement('div');
             document.body.appendChild(div);
-        });
+            return div;
+        };
 
-        afterEach(function () {
+        var removeDiv = function (div) {
             div.parentNode.removeChild(div);
-        });
+        };
 
         it('should draw vertical stacked bar on y-measure / x-measure', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -156,9 +158,13 @@ define(function (require) {
                         }
                     ]
                 ]);
+
+            removeDiv(div);
         });
 
         it('should draw horizontal stacked bar on y-measure / x-measure', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -220,9 +226,13 @@ define(function (require) {
                         }
                     ]
                 ]);
+
+            removeDiv(div);
         });
 
         it('should draw vertical stacked bar on y-measure / x-category', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -297,9 +307,13 @@ define(function (require) {
                         }
                     ]
                 ]);
+
+            removeDiv(div);
         });
 
         it('should draw horizontal stacked bar on y-category / x-measure', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -374,9 +388,13 @@ define(function (require) {
                         }
                     ]
                 ]);
+
+            removeDiv(div);
         });
 
         it('should draw horizontal stacked bar on y-category / x-measure / + color + size', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -441,9 +459,13 @@ define(function (require) {
                         }
                     ]
                 ]);
+
+            removeDiv(div);
         });
 
         it('should throw on y-category / x-category', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -472,9 +494,13 @@ define(function (require) {
             expect(function () {
                 plot.renderTo(div, size);
             }).to.throw('Stacked field [y] should be a non-negative number');
+
+            removeDiv(div);
         });
 
         it('should throw on negative values in stacked scale', function() {
+
+            var div = createDiv();
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -504,6 +530,8 @@ define(function (require) {
             expect(function () {
                 plot.renderTo(div, size);
             }).to.throw('Stacked field [y] should be a non-negative number');
+
+            removeDiv(div);
         });
     });
 });
