@@ -1,30 +1,48 @@
+import {default as _} from 'underscore';
 import {CSS_PREFIX} from '../const';
-import {flipHub, drawInterval} from './element.interval.fn';
-
-// Possibly it is better to assign static transformation
-// during element registration process
-// e.g. some kind of decorators
 
 export class StackedInterval {
 
     static embedUnitFrameToSpec(cfg, spec) {
 
-        var isHorizontal = cfg.guide.flip;
+        var isHorizontal = cfg.flip;
 
         var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
-        var scale = spec.scales[stackedScaleName];
-        var prop = scale.dim;
+        var baseScaleName = isHorizontal ? cfg.y : cfg.x;
+        var stackScale = spec.scales[stackedScaleName];
+        var baseScale = spec.scales[baseScaleName];
+        var baseDim = baseScale.dim;
 
-        var sums = cfg.frames.map((f) => f.take().reduce(((s, d) => (s += d[prop])), 0));
-        var maxSum = Math.max(...sums);
+        var prop = stackScale.dim;
 
-        if (!scale.hasOwnProperty('max') || scale.max < maxSum) {
-            scale.max = maxSum;
+        var sums = cfg.frames.reduce((s0, f) => {
+            return f
+                .take()
+                .reduce(((s, d) => {
+                    var stackedVal = d[prop];
+
+                    if ((typeof (stackedVal) !== 'number') || (stackedVal < 0)) {
+                        throw new Error(`Stacked field [${prop}] should be a non-negative number`);
+                    }
+
+                    var baseVal = d[baseDim];
+                    s[baseVal] = s[baseVal] || 0;
+                    s[baseVal] += stackedVal;
+                    return s;
+                }),
+                s0);
+        }, {});
+
+        var maxSum = Math.max(..._.values(sums));
+
+        if (!stackScale.hasOwnProperty('max') || stackScale.max < maxSum) {
+            stackScale.max = maxSum;
         }
     }
 
     constructor(config) {
         this.config = config;
+        this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
     }
 
     drawLayout(fnCreateScale) {
@@ -71,7 +89,7 @@ export class StackedInterval {
         var sizeScale = this.size;
         var colorScale = this.color;
 
-        var isHorizontal = config.guide.flip;
+        var isHorizontal = config.flip;
 
         var viewMapper;
 
@@ -107,7 +125,15 @@ export class StackedInterval {
             };
         }
 
-        var d3Attrs = this._buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale});
+        var d3Attrs = this._buildDrawModel(
+            isHorizontal,
+            {
+                xScale,
+                yScale,
+                sizeScale,
+                colorScale,
+                prettify: config.guide.prettify
+            });
 
         var updateBar = function () {
             return this
@@ -119,7 +145,7 @@ export class StackedInterval {
         var uid = options.uid;
         var totals = {};
         var updateGroups = function () {
-            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash}`)
+            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`)
                 .call(function () {
                     var bars = this
                         .selectAll('.bar')
@@ -156,7 +182,7 @@ export class StackedInterval {
         return [];
     }
 
-    _buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale}) {
+    _buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale, prettify}) {
 
         // show at least 1px gap for bar to make it clickable
         var minH = 1;
@@ -171,7 +197,13 @@ export class StackedInterval {
 
         if (isHorizontal) {
 
-            calculateW = ((d) => Math.max(minH, Math.abs(xScale(d.x) - xScale(d.x - d.h))));
+            calculateW = ((d) => {
+                var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
+                if (prettify) {
+                    w = Math.max(minH, w);
+                }
+                return w;
+            });
             calculateH = ((d) => ((yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w)));
 
             calculateX = ((d) => (xScale(d.x - d.h)));
@@ -180,7 +212,13 @@ export class StackedInterval {
         } else {
 
             calculateW = ((d) => ((xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w)));
-            calculateH = ((d) => Math.max(minH, Math.abs(yScale(d.y) - yScale(d.y - d.h))));
+            calculateH = ((d) => {
+                var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
+                if (prettify) {
+                    h = Math.max(minH, h);
+                }
+                return h;
+            });
 
             calculateX = ((d) => (xScale(d.x) - (calculateW(d) / 2)));
             calculateY = ((d) => (yScale(d.y)));

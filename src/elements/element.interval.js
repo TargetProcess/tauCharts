@@ -1,5 +1,4 @@
 import {CSS_PREFIX} from '../const';
-import {flipHub, drawInterval} from './element.interval.fn';
 
 export class Interval {
 

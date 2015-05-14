@@ -14,6 +14,7 @@ import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
+import {StackedInterval}   from './elements/element.interval.stacked';
 
 import {ColorScale}     from './scales/color';
 import {SizeScale}      from './scales/size';
@@ -139,6 +140,7 @@ api.unitsRegistry
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
     .reg('ELEMENT.INTERVAL', Interval)
+    .reg('ELEMENT.INTERVAL.STACKED', StackedInterval)
 
     .reg('RECT', Cartesian)
     .reg('POINT', Point)
