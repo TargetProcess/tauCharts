@@ -414,8 +414,8 @@ define(function (require) {
                     ],
                     [
                         {
-                            // "x": 31.0489,
-                            // "width": 37.9022,
+                            "x": 25,
+                            "width": 50,
                             "y": 0,
                             "height": 80,
                             "class": "color20-2"
