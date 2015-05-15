@@ -72,7 +72,7 @@ define(function (require) {
     describe('ELEMENT.INTERVAL.STACKED', function() {
 
         var div;
-        var size = {width: 200, height: 200};
+        var size = {width: 1000, height: 1000};
 
         beforeEach(function () {
             div = document.createElement('div');
@@ -123,22 +123,22 @@ define(function (require) {
                 [
                     [
                         {
-                            "x": 198.75,
+                            "x": 998.75,
                             width: 2.5,
-                            "y": 80,
-                            height: 120
+                            "y": 400,
+                            height: 600
                         },
                         {
-                            "x": 198.75,
+                            "x": 998.75,
                             width: 2.5,
-                            "y": 20,
-                            height: 60
+                            "y": 100,
+                            height: 300
                         },
                         {
-                            "x": 198.75,
+                            "x": 998.75,
                             width: 2.5,
                             "y": 0,
-                            height: 20
+                            height: 100
                         }
                     ]
                 ]);
@@ -188,21 +188,21 @@ define(function (require) {
                             "y": -1.25,
                             height: 2.5,
                             "x": 0,
-                            width: 120      // 200 * 0.6
+                            width: 600      // 200 * 0.6
                         },
                         {
                             "y": -1.25,
                             height: 2.5,
 
-                            "x": 120,
-                            width: 60       // 200 * 0.3
+                            "x": 600,
+                            width: 300       // 200 * 0.3
                         },
                         {
                             "y": -1.25,
                             height: 2.5,
 
-                            "x": 180,
-                            width: 20       // 200 * 0.1
+                            "x": 900,
+                            width: 100       // 200 * 0.1
                         }
                     ]
                 ]);
@@ -251,35 +251,35 @@ define(function (require) {
                 [
                     [
                         {
-                            "x": "25.0000",
-                            "width": "50.0000",
-                            "y": "80.0000",
-                            "height": "120.0000" // A0.6
+                            "x": 125,
+                            "width": 250,
+                            "y": 400,
+                            "height": 600 // A0.6
                         },
                         {
-                            "x": "25.0000",
-                            "width": "50.0000",
-                            "y": "20.0000",
-                            "height": "60.0000" // A0.3
+                            "x": 125,
+                            "width": 250,
+                            "y": 100,
+                            "height": 300 // A0.3
                         },
                         {
-                            "x": "25.0000",
-                            "width": "50.0000",
-                            "y": "0.0000",
-                            "height": "20.0000" // A0.1
+                            "x": 125,
+                            "width": 250,
+                            "y": 0,
+                            "height": 100 // A0.1
                         },
 
                         {
-                            "x": "125.0000",
-                            "width": "50.0000",
-                            "y": "20.0000",
-                            "height": "180.0000" // B0.9
+                            "x": 625,
+                            "width": 250,
+                            "y": 100,
+                            "height": 900 // B0.9
                         },
                         {
-                            "x": "125.0000",
-                            "width": "50.0000",
-                            "y": "0.0000",
-                            "height": "20.0000" // B0.1
+                            "x": 625,
+                            "width": 250,
+                            "y": 0,
+                            "height": 100 // B0.1
                         }
                     ]
                 ]);
@@ -329,40 +329,40 @@ define(function (require) {
                 [
                     [
                         {
-                            "x": "0.0000",
-                            "width": "109.0000",
-                            "y": "125.0000",
-                            "height": "50.0000"
+                            "x": 0,
+                            "width": 545,
+                            "y": 625,
+                            "height": 250
                         },
                         {
-                            "x": "109.0000",
-                            "width": "55.0000",
-                            "y": "125.0000",
-                            "height": "50.0000"
+                            "x": 545,
+                            "width": 273,
+                            "y": 625,
+                            "height": 250
                         },
                         {
-                            "x": "164.0000",
-                            "width": "18.0000",
-                            "y": "125.0000",
-                            "height": "50.0000"
+                            "x": 818,
+                            "width": 91,
+                            "y": 625,
+                            "height": 250
                         },
                         {
-                            "x": "0.0000",
-                            "width": "164.0000",
-                            "y": "25.0000",
-                            "height": "50.0000"
+                            "x": 0,
+                            "width": 818,
+                            "y": 125,
+                            "height": 250
                         },
                         {
-                            "x": "164.0000",
-                            "width": "18.0000",
-                            "y": "25.0000",
-                            "height": "50.0000"
+                            "x": 818,
+                            "width": 91,
+                            "y": 125,
+                            "height": 250
                         }
                     ]
                 ]);
         });
 
-        it('should draw horizontal stacked bar with color and size', function() {
+        it('should draw vertical stacked bar with color and size', function() {
 
             var plot = new tauCharts.Plot({
                 data: [
@@ -405,28 +405,28 @@ define(function (require) {
                 [
                     [
                         {
-                            "x": 25,
-                            "width": 50,
-                            "y": 80,
-                            "height": 120,
+                            "x": 125,
+                            "width": 250,
+                            "y": 400,
+                            "height": 600,
                             "class": "color20-1"
                         }
                     ],
                     [
                         {
-                            "x": 25,
-                            "width": 50,
+                            "x": 125,
+                            "width": 250,
                             "y": 0,
-                            "height": 80,
+                            "height": 400,
                             "class": "color20-2"
                         }
                     ],
                     [
                         {
-                            "x": 125,
-                            "width": 50,
+                            "x": 625,
+                            "width": 250,
                             "y": 0,
-                            "height": 200,
+                            "height": 1000,
                             "class": "color20-3"
                         }
                     ]
