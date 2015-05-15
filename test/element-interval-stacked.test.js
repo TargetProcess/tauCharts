@@ -504,6 +504,78 @@ define(function (require) {
                 ]);
         });
 
+        it('should draw horizontal stacked bar with color and size + prettify', function() {
+
+            var plot = new tauCharts.Plot({
+                data: [
+                    {y: 'A', x: 0.60, c: 'C1', s: 100},
+                    {y: 'A', x: 0.40, c: 'C2', s: 50},
+
+                    {y: 'B', x: 1.00, c: 'C3', s: 0}
+                ],
+                spec: {
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'x',
+                        y: 'y',
+                        guide: {
+                            padding: {l: 0, r: 0, t: 0, b: 0},
+                            x: {hide: true, autoScale: false, min: 0, max: 1},
+                            y: {hide: true}
+                        },
+                        unit: [
+                            {
+                                type: 'ELEMENT.INTERVAL.STACKED',
+                                flip: true,
+                                x: 'x',
+                                y: 'y',
+                                color: 'c',
+                                size: 's',
+                                guide: {prettify:true}
+                            }
+                        ]
+                    }
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            plot.renderTo(div, size);
+
+            expectCoordsElement(
+                div,
+                expect,
+                [
+                    [
+                        {
+                            "x": 0,
+                            "width": 600,
+                            "y": 625,
+                            "height": 250,
+                            "class": "color20-1"
+                        }
+                    ],
+                    [
+                        {
+                            "x": 600,
+                            "width": 400,
+                            "y": 687.5,
+                            "height": 125,
+                            "class": "color20-2"
+                        }
+                    ],
+                    [
+                        {
+                            "x": 0,
+                            "width": 1000,
+                            "y": 249.5,
+                            "height": 1,
+                            "class": "color20-3"
+                        }
+                    ]
+                ]);
+        });
+
         it('should throw on y-category / x-category', function() {
 
             var plot = new tauCharts.Plot({
