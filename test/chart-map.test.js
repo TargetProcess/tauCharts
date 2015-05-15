@@ -7,6 +7,8 @@ define(function (require) {
 
     describe('Map chart', function () {
 
+        var drawTimeout = 60000;
+
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6, cc: 'USA'},
             {x: 0.5, y: 0.5, color: 'green', size: 6, cc: 'RUS'},
@@ -179,8 +181,8 @@ define(function (require) {
 
         it('should draw by lat-lon', function (done) {
 
-            this.timeout(15000);
-            setTimeout(done, 15000);
+            this.timeout(drawTimeout);
+            setTimeout(done, drawTimeout);
 
             var chart0 = new tauChart.Chart({
                 type: 'map',
@@ -201,8 +203,8 @@ define(function (require) {
 
         it('should draw by code', function (done) {
 
-            this.timeout(15000);
-            setTimeout(done, 15000);
+            this.timeout(drawTimeout);
+            setTimeout(done, drawTimeout);
 
              var chart1 = new tauChart.Chart({
              type: 'map',
@@ -221,8 +223,8 @@ define(function (require) {
 
         it('should draw by code and lat-lon', function (done) {
 
-            this.timeout(15000);
-            setTimeout(done, 15000);
+            this.timeout(drawTimeout);
+            setTimeout(done, drawTimeout);
 
             var chart2 = new tauChart.Chart({
                 type: 'map',
