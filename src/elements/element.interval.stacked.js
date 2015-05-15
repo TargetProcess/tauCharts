@@ -52,7 +52,6 @@ export class StackedInterval {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
 
-        /*
         var fitSize = (w, h, maxRelLimit, srcSize, minimalSize) => {
             var minRefPoint = Math.min(w, h);
             var minSize = minRefPoint * maxRelLimit;
@@ -78,9 +77,6 @@ export class StackedInterval {
                 max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
                 mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
             });
-        */
-
-        this.size = (() => 1);
 
         return this;
     }
