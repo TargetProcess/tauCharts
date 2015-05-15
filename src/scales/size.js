@@ -4,7 +4,7 @@ import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
-let FuncTypes = {
+let funcTypes = {
     sqrt: (x) => Math.sqrt(x),
     linear: (x) => (x)
 };
@@ -23,7 +23,7 @@ export class SizeScale extends BaseScale {
         var maxSize = p.max;
         var midSize = p.mid;
 
-        var f = FuncTypes[funType];
+        var f = funcTypes[funType];
 
         var values = _.filter(varSet, _.isFinite);
 
