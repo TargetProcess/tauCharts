@@ -45,8 +45,7 @@ var ChartLine = (rawConfig) => {
                 var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
                 if (r.result) {
                     variantIndex = i;
-                }
-                else {
+                } else {
                     log([
                         'Attempt to find a functional relation between',
                         item[0] + ' and ' + item[1] + ' is failed.',
@@ -60,8 +59,7 @@ var ChartLine = (rawConfig) => {
             var propSortBy;
             if (isMatchAny) {
                 propSortBy = variations[variantIndex][0][0];
-            }
-            else {
+            } else {
                 log([
                     'All attempts are failed.',
                     'Will orient line horizontally by default.',
