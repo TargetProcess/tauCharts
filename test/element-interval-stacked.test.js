@@ -638,5 +638,122 @@ define(function (require) {
                 plot.renderTo(div, size);
             }).to.throw('Stacked field [y] should be a non-negative number');
         });
+
+        it('should be available as shortcut alias [stacked-bar]', function() {
+
+            var chart = new tauCharts.Chart({
+                type: 'stacked-bar',
+                data: [
+                    {x: 'A', y: 0.60, c: 'C1', s: 100},
+                    {x: 'A', y: 0.40, c: 'C2', s: 50},
+                    {x: 'B', y: 1.00, c: 'C3', s: 0}
+                ],
+                x: 'x',
+                y: 'y',
+                color: 'c',
+                size: 's',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true},
+                    y: {hide: true, autoScale: false, min: 0, max: 1},
+                    prettify: false
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(div, size);
+
+            expectCoordsElement(
+                div,
+                expect,
+                [
+                    [
+                        {
+                            "x": 125,
+                            "width": 250,
+                            "y": 400,
+                            "height": 600,
+                            "class": "color20-1"
+                        }
+                    ],
+                    [
+                        {
+                            "x": 187.5,
+                            "width": 125,
+                            "y": 0,
+                            "height": 400,
+                            "class": "color20-2"
+                        }
+                    ],
+                    [
+                        {
+                            "x": 750,
+                            "width": 0,
+                            "y": 0,
+                            "height": 1000,
+                            "class": "color20-3"
+                        }
+                    ]
+                ]);
+        });
+
+        it('should be available as shortcut alias [horizontal-stacked-bar]', function () {
+
+            var chart = new tauCharts.Chart({
+                type: 'horizontal-stacked-bar',
+                data: [
+                    {y: 'A', x: 0.60, c: 'C1', s: 100},
+                    {y: 'A', x: 0.40, c: 'C2', s: 50},
+                    {y: 'B', x: 1.00, c: 'C3', s: 0}
+                ],
+                x: 'x',
+                y: 'y',
+                color: 'c',
+                size: 's',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, autoScale: false, min:0},
+                    y: {hide: true}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(div, size);
+
+            expectCoordsElement(
+                div,
+                expect,
+                [
+                    [
+                        {
+                            "x": 0,
+                            "width": 600,
+                            "y": 625,
+                            "height": 250,
+                            "class": "color20-1"
+                        }
+                    ],
+                    [
+                        {
+                            "x": 600,
+                            "width": 400,
+                            "y": 687.5,
+                            "height": 125,
+                            "class": "color20-2"
+                        }
+                    ],
+                    [
+                        {
+                            "x": 0,
+                            "width": 1000,
+                            "y": 249.5,
+                            "height": 1,
+                            "class": "color20-3"
+                        }
+                    ]
+                ]);
+        });
     });
 });
