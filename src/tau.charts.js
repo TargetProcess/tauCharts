@@ -14,6 +14,7 @@ import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
+import {StackedInterval}   from './elements/element.interval.stacked';
 
 import {ColorScale}     from './scales/color';
 import {SizeScale}      from './scales/size';
@@ -23,6 +24,13 @@ import {TimeScale}      from './scales/time';
 import {LinearScale}    from './scales/linear';
 import {ValueScale}     from './scales/value';
 import {FillScale}      from './scales/fill';
+
+import {ChartTypesRegistry}      from './chart-alias-registry';
+import {ChartMap}      from './api/chart-map';
+import {ChartInterval} from './api/chart-interval';
+import {ChartScatterplot} from './api/chart-scatterplot';
+import {ChartLine} from './api/chart-line';
+import {ChartIntervalStacked} from './api/chart-interval-stacked';
 
 var colorBrewers = {};
 var plugins = {};
@@ -132,13 +140,13 @@ var api = {
 Plot.globalSettings = api.globalSettings;
 
 api.unitsRegistry
-
     .reg('COORDS.RECT', Cartesian)
     .reg('COORDS.MAP', GeoMap)
 
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
     .reg('ELEMENT.INTERVAL', Interval)
+    .reg('ELEMENT.INTERVAL.STACKED', StackedInterval)
 
     .reg('RECT', Cartesian)
     .reg('POINT', Point)
@@ -155,5 +163,14 @@ api.scalesRegistry
     .reg('time', TimeScale)
     .reg('linear', LinearScale)
     .reg('value', ValueScale);
+
+ChartTypesRegistry
+    .add('scatterplot', ChartScatterplot)
+    .add('line', ChartLine)
+    .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)))
+    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
+    .add('map', ChartMap)
+    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)))
+    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)));
 
 export {GPL, Plot, Chart, __api__, api};

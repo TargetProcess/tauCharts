@@ -117,7 +117,7 @@ export class Point {
         var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
 
         var frameGroups = options.container
-            .selectAll('.frame-id-' + options.uid)
+            .selectAll(`.frame-id-${options.uid}`)
             .data(frames.map(mapper), (f) => f.hash);
         frameGroups
             .exit()

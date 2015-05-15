@@ -19,7 +19,7 @@ define(function(require){
                     color: 'color',
                     size: 'size'
                 });
-            }).to.throw('Chart type invalidType is not supported. Use one of scatterplot, line, bar, horizontalBar, map.');
+            }).to.throw('Chart type invalidType is not supported.');
 
         });
 

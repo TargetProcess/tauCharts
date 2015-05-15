@@ -167,7 +167,7 @@ define(function (require) {
             // 25 "25.00" string length
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.equal(89);
+            expect(full.unit.guide.padding.l).to.equal(94);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });

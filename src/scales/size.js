@@ -4,6 +4,11 @@ import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
+let funcTypes = {
+    sqrt: (x) => Math.sqrt(x),
+    linear: (x) => (x)
+};
+
 export class SizeScale extends BaseScale {
 
     create(localProps = {}) {
@@ -11,30 +16,32 @@ export class SizeScale extends BaseScale {
         var props = this.scaleConfig;
         var varSet = this.vars;
 
-        var minSize = localProps.min || props.min;
-        var maxSize = localProps.max || props.max;
-        var midSize = localProps.mid || props.mid;
+        var p = _.defaults({}, localProps, props, {func: 'sqrt', normalize: false});
 
-        var f = (x) => Math.sqrt(x);
+        var funType = p.func;
+        var minSize = p.min;
+        var maxSize = p.max;
+        var midSize = p.mid;
+
+        var f = funcTypes[funType];
 
         var values = _.filter(varSet, _.isFinite);
+
+        var normalize = props.normalize || localProps.normalize;
+
+        var fnNorm = (normalize) ? ((x, maxX) => (x / maxX)) : (x => x);
+
         var func;
         if (values.length === 0) {
-            func = (x) => midSize;
+            func = (x) => fnNorm(midSize, midSize);
         } else {
             var k = 1;
             var xMin = 0;
 
-            var min = Math.min.apply(null, values);
-            var max = Math.max.apply(null, values);
+            var min = Math.min(...values);
+            var max = Math.max(...values);
 
-            var len = f(Math.max.apply(
-                null,
-                [
-                    Math.abs(min),
-                    Math.abs(max),
-                    max - min
-                ]));
+            var len = f(Math.max(...[Math.abs(min), Math.abs(max), max - min]));
 
             xMin = (min < 0) ? min : 0;
             k = (len === 0) ? 1 : ((maxSize - minSize) / len);
@@ -44,12 +51,12 @@ export class SizeScale extends BaseScale {
                 var numX = (x !== null) ? parseFloat(x) : 0;
 
                 if (!_.isFinite(numX)) {
-                    return maxSize;
+                    return fnNorm(maxSize, maxSize);
                 }
 
                 var posX = (numX - xMin); // translate to positive x domain
 
-                return (minSize + (f(posX) * k));
+                return fnNorm((minSize + (f(posX) * k)), maxSize);
             };
         }
 
