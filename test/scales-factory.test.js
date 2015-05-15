@@ -395,6 +395,37 @@ define(function (require) {
 
             expect(scale2(3)).to.equal(10);
             expect(scale2(-3)).to.equal(1);
+
+            var scale3 = new SizeScale(
+                xSrc,
+                {
+                    dim: 's',
+                    func: 'linear',
+                    min: 0,
+                    max: 100
+                }).create();
+
+            expect(scale3.domain()).to.deep.equal([-3, 3, 1]);
+
+            expect(scale3(3)).to.equal(100);
+            expect(scale3(0)).to.equal(50);
+            expect(scale3(-3)).to.equal(0);
+
+            var scale4 = new SizeScale(
+                xSrc,
+                {
+                    dim: 's',
+                    func: 'linear',
+                    min: 0,
+                    max: 100,
+                    normalize: true
+                }).create();
+
+            expect(scale4.domain()).to.deep.equal([-3, 3, 1]);
+
+            expect(scale4(3)).to.equal(1);
+            expect(scale4(0)).to.equal(0.5);
+            expect(scale4(-3)).to.equal(0);
         });
 
         it('should support [ordinal] scale', function () {

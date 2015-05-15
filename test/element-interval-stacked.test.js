@@ -369,7 +369,7 @@ define(function (require) {
                     {x: 'A', y: 0.60, c: 'C1', s: 100},
                     {x: 'A', y: 0.40, c: 'C2', s: 50},
 
-                    {x: 'B', y: 1.00, c: 'C3', s: 100}
+                    {x: 'B', y: 1.00, c: 'C3', s: 0}
                 ],
                 spec: {
                     unit: {
@@ -414,8 +414,8 @@ define(function (require) {
                     ],
                     [
                         {
-                            "x": 155.2444,
-                            "width": 189.5112,
+                            "x": 187.5,
+                            "width": 125,
                             "y": 0,
                             "height": 400,
                             "class": "color20-2"
@@ -423,8 +423,8 @@ define(function (require) {
                     ],
                     [
                         {
-                            "x": 625,
-                            "width": 250,
+                            "x": 750,
+                            "width": 0,
                             "y": 0,
                             "height": 1000,
                             "class": "color20-3"

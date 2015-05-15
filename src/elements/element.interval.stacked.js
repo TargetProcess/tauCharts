@@ -73,7 +73,9 @@ export class StackedInterval {
             {
                 normalize: true,
 
-                min: fitSize(width, height, maxRelLimit, 2, minimalSize),
+                func: 'linear',
+
+                min: 0,
                 max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
                 mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
             });
@@ -206,14 +208,28 @@ export class StackedInterval {
                 }
                 return w;
             });
-            calculateH = ((d) => ((yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w)));
+
+            calculateH = ((d) => {
+                var h = ((yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w));
+                if (prettify) {
+                    h = Math.max(minH, h);
+                }
+                return h;
+            });
 
             calculateX = ((d) => (xScale(d.x - d.h)));
             calculateY = ((d) => (yScale(d.y) - (calculateH(d) / 2)));
 
         } else {
 
-            calculateW = ((d) => ((xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w)));
+            calculateW = ((d) => {
+                var w = ((xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w));
+                if (prettify) {
+                    w = Math.max(minH, w);
+                }
+                return w;
+            });
+
             calculateH = ((d) => {
                 var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
                 if (prettify) {
