@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.2 - 2015-04-30
+/*! taucharts - v0.4.3 - 2015-05-18
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -915,232 +915,10 @@ define('elements/element.line',["exports", "../const", "../utils/css-class-map"]
         return Line;
     })();
 });
-define('utils/utils-draw',["exports"], function (exports) {
-    
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    /* jshint ignore:start */
-    var utilsDraw = {
-        translate: function (left, top) {
-            return "translate(" + left + "," + top + ")";
-        },
-        rotate: function (angle) {
-            return "rotate(" + angle + ")";
-        },
-        getOrientation: function (scaleOrient) {
-            return ["bottom", "top"].indexOf(scaleOrient.toLowerCase()) >= 0 ? "h" : "v";
-        }
-    };
-    /* jshint ignore:end */
-
-    exports.utilsDraw = utilsDraw;
-});
-define('elements/element.interval.fn',["exports", "../utils/utils-draw", "../const"], function (exports, _utilsUtilsDraw, _const) {
+define('elements/element.interval',["exports", "../const"], function (exports, _const) {
     
 
     var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    var utilsDraw = _utilsUtilsDraw.utilsDraw;
-    var CSS_PREFIX = _const.CSS_PREFIX;
-
-    var BAR_GROUP = "i-role-bar-group";
-    var BAR_GAP = 1;
-    var getSizesParams = function (params) {
-        var countDomainValue = params.domain().length;
-        var countCategory = params.categoryLength;
-        var tickWidth = params.size / countDomainValue;
-        var intervalWidth = tickWidth / (countCategory + 1);
-        return {
-            tickWidth: tickWidth,
-            intervalWidth: intervalWidth,
-            offsetCategory: intervalWidth
-        };
-    };
-    var isMeasure = function (dim) {
-        return dim.scaleType === "linear" || dim.scaleType === "time";
-    };
-    var flipHub = {
-        NORM: function (_ref) {
-            var colorScale = _ref.colorScale;
-            var node = _ref.node;
-            var xScale = _ref.xScale;
-            var yScale = _ref.yScale;
-            var colorIndexScale = _ref.colorIndexScale;
-            var width = _ref.width;
-            var height = _ref.height;
-            var defaultSizeParams = _ref.defaultSizeParams;
-
-            var minimalHeight = 1;
-            var yMin = Math.min.apply(Math, _toConsumableArray(yScale.domain()));
-            var isYNumber = !isNaN(yMin);
-            var startValue = !isYNumber || yMin <= 0 ? 0 : yMin;
-            var isXNumber = isMeasure(node.x);
-
-            var _ref2 = isXNumber ? defaultSizeParams : getSizesParams({
-                domain: xScale.domain,
-                categoryLength: colorIndexScale.count(),
-                size: width
-            });
-
-            var tickWidth = _ref2.tickWidth;
-            var intervalWidth = _ref2.intervalWidth;
-            var offsetCategory = _ref2.offsetCategory;
-
-            var gapSize = intervalWidth > 2 * BAR_GAP ? BAR_GAP : 0;
-
-            var calculateX = function (_ref3) {
-                var d = _ref3.data;
-                return xScale(d[node.x.scaleDim]) - tickWidth / 2 + gapSize;
-            };
-            var calculateY = isYNumber ? function (_ref3) {
-                var d = _ref3.data;
-
-                var valY = d[node.y.scaleDim];
-                var dotY = yScale(Math.max(startValue, valY));
-                var h = Math.abs(yScale(valY) - yScale(startValue));
-                var isTooSmall = h < minimalHeight;
-                return isTooSmall && valY > 0 ? dotY - minimalHeight : dotY;
-            } : function (_ref3) {
-                var d = _ref3.data;
-                return yScale(d[node.y.scaleDim]);
-            };
-
-            var calculateWidth = function (_ref3) {
-                var d = _ref3.data;
-                return intervalWidth - 2 * gapSize;
-            };
-            var calculateHeight = isYNumber ? function (_ref3) {
-                var d = _ref3.data;
-
-                var valY = d[node.y.scaleDim];
-                var h = Math.abs(yScale(valY) - yScale(startValue));
-                return valY === 0 ? h : Math.max(minimalHeight, h);
-            } : function (_ref3) {
-                var d = _ref3.data;
-                return height - yScale(d[node.y.scaleDim]);
-            };
-
-            var calculateTranslate = function (_ref3) {
-                var d = _ref3.key;
-                return utilsDraw.translate(colorIndexScale({ key: d }) * offsetCategory + offsetCategory / 2, 0);
-            };
-
-            return { colorScale: colorScale, calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
-        },
-
-        FLIP: function (_ref) {
-            var colorScale = _ref.colorScale;
-            var node = _ref.node;
-            var xScale = _ref.xScale;
-            var yScale = _ref.yScale;
-            var colorIndexScale = _ref.colorIndexScale;
-            var width = _ref.width;
-            var height = _ref.height;
-            var defaultSizeParams = _ref.defaultSizeParams;
-
-            var minimalHeight = 1;
-            var xMin = Math.min.apply(Math, _toConsumableArray(xScale.domain()));
-            var isXNumber = !isNaN(xMin);
-            var startValue = !isXNumber || xMin <= 0 ? 0 : xMin;
-            var isYNumber = isMeasure(node.y);
-
-            var _ref2 = isYNumber ? defaultSizeParams : getSizesParams({
-                domain: yScale.domain,
-                categoryLength: colorIndexScale.count(),
-                size: height
-            });
-
-            var tickWidth = _ref2.tickWidth;
-            var intervalWidth = _ref2.intervalWidth;
-            var offsetCategory = _ref2.offsetCategory;
-
-            var gapSize = intervalWidth > 2 * BAR_GAP ? BAR_GAP : 0;
-
-            var calculateX = isXNumber ? function (_ref3) {
-                var d = _ref3.data;
-
-                var valX = d[node.x.scaleDim];
-                var h = Math.abs(xScale(valX) - xScale(startValue));
-                var dotX = xScale(Math.min(startValue, valX));
-                var delta = h - minimalHeight;
-                var offset = valX > 0 ? minimalHeight + delta : valX < 0 ? 0 - minimalHeight : 0;
-
-                var isTooSmall = delta < 0;
-                return isTooSmall ? dotX + offset : dotX;
-            } : 0;
-            var calculateY = function (_ref3) {
-                var d = _ref3.data;
-                return yScale(d[node.y.scaleDim]) - tickWidth / 2 + gapSize;
-            };
-            var calculateWidth = isXNumber ? function (_ref3) {
-                var d = _ref3.data;
-
-                var valX = d[node.x.scaleDim];
-                var h = Math.abs(xScale(valX) - xScale(startValue));
-                return valX === 0 ? h : Math.max(minimalHeight, h);
-            } : function (_ref3) {
-                var d = _ref3.data;
-                return xScale(d[node.x.scaleDim]);
-            };
-            var calculateHeight = function (_ref3) {
-                var d = _ref3.data;
-                return intervalWidth - 2 * gapSize;
-            };
-            var calculateTranslate = function (_ref3) {
-                var d = _ref3.key;
-                return utilsDraw.translate(0, colorIndexScale({ key: d }) * offsetCategory + offsetCategory / 2);
-            };
-
-            return { colorScale: colorScale, calculateX: calculateX, calculateY: calculateY, calculateWidth: calculateWidth, calculateHeight: calculateHeight, calculateTranslate: calculateTranslate };
-        }
-    };
-
-    function drawInterval(_ref, container, data) {
-        var calculateX = _ref.calculateX;
-        var calculateY = _ref.calculateY;
-        var colorScale = _ref.colorScale;
-        var calculateWidth = _ref.calculateWidth;
-        var calculateHeight = _ref.calculateHeight;
-        var calculateTranslate = _ref.calculateTranslate;
-
-        var updateBar = function updateBar() {
-            return this.attr("height", calculateHeight).attr("width", calculateWidth).attr("class", function (_ref2) {
-                var d = _ref2.data;
-
-                return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d[colorScale.scaleDim]);
-            }).attr("x", calculateX).attr("y", calculateY);
-        };
-
-        var updateBarContainer = function updateBarContainer() {
-            this.attr("class", BAR_GROUP).attr("transform", calculateTranslate);
-            var bars = this.selectAll(".bar").data(function (d) {
-                return d.values.map(function (item) {
-                    return {
-                        data: item,
-                        uid: d.uid
-                    };
-                });
-            });
-            bars.call(updateBar);
-            bars.enter().append("rect").call(updateBar);
-            bars.exit().remove();
-        };
-        var elements = container.selectAll("." + BAR_GROUP).data(data);
-        elements.call(updateBarContainer);
-        elements.enter().append("g").call(updateBarContainer);
-        elements.exit().remove();
-    }
-
-    exports.flipHub = flipHub;
-    exports.drawInterval = drawInterval;
-});
-define('elements/element.interval',["exports", "../const", "./element.interval.fn"], function (exports, _const, _elementIntervalFn) {
-    
 
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -1150,14 +928,13 @@ define('elements/element.interval',["exports", "../const", "./element.interval.f
         value: true
     });
     var CSS_PREFIX = _const.CSS_PREFIX;
-    var flipHub = _elementIntervalFn.flipHub;
-    var drawInterval = _elementIntervalFn.drawInterval;
 
     var Interval = exports.Interval = (function () {
         function Interval(config) {
             _classCallCheck(this, Interval);
 
             this.config = config;
+            this.config.guide = _.defaults(this.config.guide || {}, { prettify: true });
         }
 
         _createClass(Interval, {
@@ -1177,55 +954,262 @@ define('elements/element.interval',["exports", "../const", "./element.interval.f
                 value: function drawFrames(frames) {
                     var _this = this;
 
-                    var canvas = this.config.options.container;
+                    var options = this.config.options;
                     var config = this.config;
                     var xScale = this.xScale;
                     var yScale = this.yScale;
                     var colorScale = this.color;
-                    var node = {
-                        options: {
-                            container: canvas,
-                            xScale: xScale,
-                            yScale: yScale,
-                            color: colorScale,
-                            width: config.options.width,
-                            height: config.options.height
-                        },
-                        x: xScale,
-                        y: yScale,
-                        color: colorScale
-                    };
-                    var method = flipHub[this.config.flip ? "FLIP" : "NORM"];
+
+                    var domain = colorScale.domain();
                     var colorIndexScale = function (d) {
-                        var expectedValue = (d.key || {})[colorScale.scaleDim];
-                        var findIndex = _.findIndex(domain, function (value) {
-                            return value === expectedValue;
-                        });
+                        var findIndex = domain.indexOf(d[colorScale.dim]);
                         return findIndex === -1 ? 0 : findIndex;
                     };
-                    //  colorScale.scaleDim = node.color.scaleDim;
-                    var domain = colorScale.domain();
-                    colorIndexScale.count = function () {
-                        return domain.length || 1;
-                    };
+                    colorIndexScale.koeff = 1 / ((domain.length || 1) + 1);
 
-                    var params = method({
-                        node: node,
+                    var args = {
                         xScale: xScale,
                         yScale: yScale,
                         colorScale: colorScale,
                         colorIndexScale: colorIndexScale,
                         width: config.options.width,
                         height: config.options.height,
-                        defaultSizeParams: {
-                            tickWidth: 5,
-                            intervalWidth: 5,
-                            offsetCategory: 0
-                        }
-                    });
-                    drawInterval(params, canvas, frames.map(function (fr) {
+                        prettify: config.guide.prettify
+                    };
+
+                    var isHorizontal = config.flip || config.guide.flip;
+
+                    var d3Attrs = isHorizontal ? this._buildHorizontalDrawMethod(args) : this._buildVerticalDrawMethod(args);
+
+                    var updateBar = function updateBar() {
+                        return this.attr(d3Attrs);
+                    };
+
+                    var updateBarContainer = function updateBarContainer() {
+                        this.attr("class", "i-role-bar-group");
+                        var bars = this.selectAll(".bar").data(function (d) {
+                            return d.values.map(function (item) {
+                                return {
+                                    data: item,
+                                    uid: d.uid
+                                };
+                            });
+                        });
+                        bars.exit().remove();
+                        bars.call(updateBar);
+                        bars.enter().append("rect").call(updateBar);
+                    };
+                    var elements = options.container.selectAll(".i-role-bar-group").data(frames.map(function (fr) {
                         return { key: fr.key, values: fr.data, uid: _this.config.options.uid };
                     }));
+                    elements.exit().remove();
+                    elements.call(updateBarContainer);
+                    elements.enter().append("g").call(updateBarContainer);
+                }
+            },
+            _buildVerticalDrawMethod: {
+                value: function _buildVerticalDrawMethod(_ref) {
+                    var colorScale = _ref.colorScale;
+                    var xScale = _ref.xScale;
+                    var yScale = _ref.yScale;
+                    var colorIndexScale = _ref.colorIndexScale;
+                    var width = _ref.width;
+                    var height = _ref.height;
+                    var prettify = _ref.prettify;
+
+                    var _buildDrawMethod = this._buildDrawMethod({
+                        baseScale: xScale,
+                        valsScale: yScale,
+                        colorIndexScale: colorIndexScale,
+                        defaultBaseAbsPosition: height
+                    });
+
+                    var calculateBarX = _buildDrawMethod.calculateBarX;
+                    var calculateBarY = _buildDrawMethod.calculateBarY;
+                    var calculateBarH = _buildDrawMethod.calculateBarH;
+                    var calculateBarW = _buildDrawMethod.calculateBarW;
+
+                    var minBarH = 1;
+
+                    return {
+                        x: function (_ref2) {
+                            var d = _ref2.data;
+                            return calculateBarX(d);
+                        },
+                        y: function (_ref2) {
+                            var d = _ref2.data;
+
+                            var y = calculateBarY(d);
+
+                            if (prettify) {
+                                // decorate for better visual look & feel
+                                var h = calculateBarH(d);
+                                var isTooSmall = h < minBarH;
+                                return isTooSmall && d[yScale.dim] > 0 ? y - minBarH : y;
+                            } else {
+                                return y;
+                            }
+                        },
+                        height: function (_ref2) {
+                            var d = _ref2.data;
+
+                            var h = calculateBarH(d);
+                            if (prettify) {
+                                // decorate for better visual look & feel
+                                var y = d[yScale.dim];
+                                return y === 0 ? h : Math.max(minBarH, h);
+                            } else {
+                                return h;
+                            }
+                        },
+                        width: function (_ref2) {
+                            var d = _ref2.data;
+                            return calculateBarW(d);
+                        },
+                        "class": function (_ref2) {
+                            var d = _ref2.data;
+                            return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d[colorScale.dim]);
+                        }
+                    };
+                }
+            },
+            _buildHorizontalDrawMethod: {
+                value: function _buildHorizontalDrawMethod(_ref) {
+                    var colorScale = _ref.colorScale;
+                    var xScale = _ref.xScale;
+                    var yScale = _ref.yScale;
+                    var colorIndexScale = _ref.colorIndexScale;
+                    var width = _ref.width;
+                    var height = _ref.height;
+                    var prettify = _ref.prettify;
+
+                    var _buildDrawMethod = this._buildDrawMethod({
+                        baseScale: yScale,
+                        valsScale: xScale,
+                        colorIndexScale: colorIndexScale,
+                        defaultBaseAbsPosition: 0
+                    });
+
+                    var calculateBarX = _buildDrawMethod.calculateBarX;
+                    var calculateBarY = _buildDrawMethod.calculateBarY;
+                    var calculateBarH = _buildDrawMethod.calculateBarH;
+                    var calculateBarW = _buildDrawMethod.calculateBarW;
+
+                    var minBarH = 1;
+
+                    return {
+                        y: function (_ref2) {
+                            var d = _ref2.data;
+                            return calculateBarX(d);
+                        },
+                        x: function (_ref2) {
+                            var d = _ref2.data;
+
+                            var x = calculateBarY(d);
+
+                            if (prettify) {
+                                // decorate for better visual look & feel
+                                var h = calculateBarH(d);
+                                var dx = d[xScale.dim];
+                                var offset = 0;
+
+                                if (dx === 0) {
+                                    offset = 0;
+                                }
+                                if (dx > 0) {
+                                    offset = h;
+                                }
+                                if (dx < 0) {
+                                    offset = 0 - minBarH;
+                                }
+
+                                var isTooSmall = h < minBarH;
+                                return isTooSmall ? x + offset : x;
+                            } else {
+                                return x;
+                            }
+                        },
+                        height: function (_ref2) {
+                            var d = _ref2.data;
+                            return calculateBarW(d);
+                        },
+                        width: function (_ref2) {
+                            var d = _ref2.data;
+
+                            var w = calculateBarH(d);
+
+                            if (prettify) {
+                                // decorate for better visual look & feel
+                                var x = d[xScale.dim];
+                                return x === 0 ? w : Math.max(minBarH, w);
+                            } else {
+                                return w;
+                            }
+                        },
+                        "class": function (_ref2) {
+                            var d = _ref2.data;
+                            return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d[colorScale.dim]);
+                        }
+                    };
+                }
+            },
+            _buildDrawMethod: {
+                value: function _buildDrawMethod(_ref) {
+                    var valsScale = _ref.valsScale;
+                    var baseScale = _ref.baseScale;
+                    var colorIndexScale = _ref.colorIndexScale;
+                    var defaultBaseAbsPosition = _ref.defaultBaseAbsPosition;
+
+                    var minBarW = 5;
+                    var barsGap = 1;
+
+                    var baseAbsPos = (function () {
+                        // TODO: create [.isContinues] property on scale object
+                        var xMin = Math.min.apply(Math, _toConsumableArray(valsScale.domain()));
+                        var isXNumber = !isNaN(xMin);
+
+                        return isXNumber ? valsScale(xMin <= 0 ? 0 : xMin) : defaultBaseAbsPosition;
+                    })();
+
+                    var calculateIntervalWidth = function (d) {
+                        return baseScale.stepSize(d[baseScale.dim]) * colorIndexScale.koeff || minBarW;
+                    };
+                    var calculateGapSize = function (intervalWidth) {
+                        return intervalWidth > 2 * barsGap ? barsGap : 0;
+                    };
+                    var calculateOffset = function (d) {
+                        return baseScale.stepSize(d[baseScale.dim]) === 0 ? 0 : calculateIntervalWidth(d);
+                    };
+
+                    var calculateBarW = function (d) {
+                        var intSize = calculateIntervalWidth(d);
+                        var gapSize = calculateGapSize(intSize);
+                        return intSize - 2 * gapSize;
+                    };
+
+                    var calculateBarH = function (d) {
+                        return Math.abs(valsScale(d[valsScale.dim]) - baseAbsPos);
+                    };
+
+                    var calculateBarX = function (d) {
+                        var dy = d[baseScale.dim];
+                        var absTickMiddle = baseScale(dy) - baseScale.stepSize(dy) / 2;
+                        var absBarMiddle = absTickMiddle - calculateBarW(d) / 2;
+                        var absBarOffset = (colorIndexScale(d) + 1) * calculateOffset(d);
+
+                        return absBarMiddle + absBarOffset;
+                    };
+
+                    var calculateBarY = function (d) {
+                        return Math.min(baseAbsPos, valsScale(d[valsScale.dim]));
+                    };
+
+                    return {
+                        calculateBarX: calculateBarX,
+                        calculateBarY: calculateBarY,
+                        calculateBarH: calculateBarH,
+                        calculateBarW: calculateBarW
+                    };
                 }
             }
         });
@@ -2239,6 +2223,8 @@ define('charts/tau.gpl',["exports", "../event", "../utils/utils", "../utils/util
 
                     this.root = this._expandUnitsStructure(this.config.unit);
 
+                    this._adaptSpecToUnitsStructure(this.root, this.config);
+
                     this.onUnitsStructureExpanded(this.config);
 
                     var xSvg = d3Target.selectAll("svg").data([1]);
@@ -2312,6 +2298,24 @@ define('charts/tau.gpl',["exports", "../event", "../utils/utils", "../utils/util
                     root.frames.forEach(function (f) {
                         return f.units.forEach(function (unit) {
                             return _this._expandUnitsStructure(unit, f.pipe);
+                        });
+                    });
+
+                    return root;
+                }
+            },
+            _adaptSpecToUnitsStructure: {
+                value: function _adaptSpecToUnitsStructure(root, spec) {
+                    var _this = this;
+
+                    var UnitClass = this.unitSet.get(root.type);
+                    if (UnitClass.embedUnitFrameToSpec) {
+                        UnitClass.embedUnitFrameToSpec(root, spec); // static method
+                    }
+
+                    root.frames.forEach(function (f) {
+                        return f.units.forEach(function (unit) {
+                            return _this._adaptSpecToUnitsStructure(unit, spec);
                         });
                     });
 
@@ -3624,6 +3628,28 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
 
         return SpecConverter;
     })();
+});
+define('utils/utils-draw',["exports"], function (exports) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    /* jshint ignore:start */
+    var utilsDraw = {
+        translate: function (left, top) {
+            return "translate(" + left + "," + top + ")";
+        },
+        rotate: function (angle) {
+            return "rotate(" + angle + ")";
+        },
+        getOrientation: function (scaleOrient) {
+            return ["bottom", "top"].indexOf(scaleOrient.toLowerCase()) >= 0 ? "h" : "v";
+        }
+    };
+    /* jshint ignore:end */
+
+    exports.utilsDraw = utilsDraw;
 });
 define('formatter-registry',["exports", "d3"], function (exports, _d3) {
     
@@ -5267,10 +5293,47 @@ define('charts/tau.plot',["exports", "../api/balloon", "../event", "../plugins",
         return Plot;
     })(Emitter);
 });
-define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-processor"], function (exports, _tauPlot, _utilsUtils, _dataProcessor) {
+define('chart-alias-registry',["exports", "d3", "./utils/utils", "./data-processor"], function (exports, _d3, _utilsUtils, _dataProcessor) {
     
 
-    var _defineProperty = function (obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); };
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var d3 = _interopRequire(_d3);
+
+    var utils = _utilsUtils.utils;
+    var DataProcessor = _dataProcessor.DataProcessor;
+
+    var chartTypes = {};
+
+    var ChartTypesRegistry = {
+
+        get: function get(alias) {
+            var chartFactory = chartTypes[alias];
+
+            if (!_.isFunction(chartFactory)) {
+                var msg = "Chart type " + alias + " is not supported.";
+                console.log(msg);
+                console.log("Use one of " + _.keys(chartTypes).join(", ") + ".");
+                throw new Error(msg);
+            }
+
+            return chartFactory;
+        },
+
+        add: function add(alias, converter) {
+            chartTypes[alias] = converter;
+            return this;
+        }
+    };
+
+    exports.ChartTypesRegistry = ChartTypesRegistry;
+});
+define('charts/tau.chart',["exports", "./tau.plot", "../chart-alias-registry"], function (exports, _tauPlot, _chartAliasRegistry) {
+    
 
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -5284,366 +5347,13 @@ define('charts/tau.chart',["exports", "./tau.plot", "../utils/utils", "../data-p
         value: true
     });
     var Plot = _tauPlot.Plot;
-    var utils = _utilsUtils.utils;
-    var DataProcessor = _dataProcessor.DataProcessor;
-
-    var convertAxis = function (data) {
-        return !data ? null : data;
-    };
-
-    var normalizeSettings = function (axis) {
-        var defaultValue = arguments[1] === undefined ? null : arguments[1];
-
-        return !utils.isArray(axis) ? [axis] : axis.length === 0 ? [defaultValue] : axis;
-    };
-
-    var createElement = function (type, config) {
-        return {
-            type: type,
-            x: config.x,
-            y: config.y,
-            color: config.color,
-            guide: {
-                color: config.colorGuide,
-                size: config.sizeGuide
-            },
-            flip: config.flip,
-            size: config.size
-        };
-    };
-
-    var status = {
-        SUCCESS: "SUCCESS",
-        WARNING: "WARNING",
-        FAIL: "FAIL"
-    };
-    /* jshint ignore:start */
-
-    var strategyNormalizeAxis = (function () {
-        var _strategyNormalizeAxis = {};
-
-        _defineProperty(_strategyNormalizeAxis, status.SUCCESS, function (axis) {
-            return axis;
-        });
-
-        _defineProperty(_strategyNormalizeAxis, status.FAIL, function (axis, data) {
-            throw new Error((data.messages || []).join("\n") ||
-            // jscs:disable
-            "This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
-        });
-
-        _defineProperty(_strategyNormalizeAxis, status.WARNING, function (axis, config, guide) {
-            var axisName = config.axis;
-            var index = config.indexMeasureAxis[0];
-            var measure = axis[index];
-            var newAxis = _.without(axis, measure);
-            newAxis.push(measure);
-
-            var measureGuide = guide[index][axisName] || {};
-            var categoryGuide = guide[guide.length - 1][axisName] || {};
-
-            guide[guide.length - 1][axisName] = measureGuide;
-            guide[index][axisName] = categoryGuide;
-
-            return newAxis;
-        });
-
-        return _strategyNormalizeAxis;
-    })();
-    /* jshint ignore:end */
-    function validateAxis(dimensions, axis, axisName) {
-        return axis.reduce(function (result, item, index) {
-            var dimension = dimensions[item];
-            if (!dimension) {
-                result.status = status.FAIL;
-                if (item) {
-                    result.messages.push("\"" + item + "\" dimension is undefined for \"" + axisName + "\" axis");
-                } else {
-                    result.messages.push("\"" + axisName + "\" axis should be specified");
-                }
-            } else if (result.status != status.FAIL) {
-                if (dimension.type === "measure") {
-                    result.countMeasureAxis++;
-                    result.indexMeasureAxis.push(index);
-                }
-                if (dimension.type !== "measure" && result.countMeasureAxis === 1) {
-                    result.status = status.WARNING;
-                } else if (result.countMeasureAxis > 1) {
-                    result.status = status.FAIL;
-                    result.messages.push("There is more than one measure dimension for \"" + axisName + "\" axis");
-                }
-            }
-            return result;
-        }, { status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [], axis: axisName });
-    }
-
-    function normalizeConfig(config) {
-
-        var x = normalizeSettings(config.x);
-        var y = normalizeSettings(config.y);
-
-        var maxDeep = Math.max(x.length, y.length);
-
-        var guide = normalizeSettings(config.guide, {});
-
-        // feel the gaps if needed
-        _.times(maxDeep - guide.length, function () {
-            return guide.push({});
-        });
-
-        // cut items
-        guide = guide.slice(0, maxDeep);
-
-        var validatedX = validateAxis(config.dimensions, x, "x");
-        var validatedY = validateAxis(config.dimensions, y, "y");
-        x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
-        y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
-
-        return _.extend({}, config, {
-            x: x,
-            y: y,
-            guide: guide
-        });
-    }
-
-    function transformConfig(type, config) {
-
-        var x = config.x;
-        var y = config.y;
-        var guide = config.guide;
-        var maxDepth = Math.max(x.length, y.length);
-
-        var spec = {
-            type: "COORDS.RECT",
-            unit: []
-        };
-
-        var xs = [].concat(x);
-        var ys = [].concat(y);
-        var gs = [].concat(guide);
-
-        for (var i = maxDepth; i > 0; i--) {
-            var currentX = xs.pop();
-            var currentY = ys.pop();
-            var currentGuide = gs.pop() || {};
-            if (i === maxDepth) {
-                spec.x = currentX;
-                spec.y = currentY;
-                spec.unit.push(createElement(type, {
-                    x: convertAxis(currentX),
-                    y: convertAxis(currentY),
-                    color: config.color,
-                    size: config.size,
-                    flip: config.flip,
-                    colorGuide: currentGuide.color,
-                    sizeGuide: currentGuide.size
-                }));
-                spec.guide = _.defaults(currentGuide, {
-                    x: { label: currentX },
-                    y: { label: currentY }
-                });
-            } else {
-                spec = {
-                    type: "COORDS.RECT",
-                    x: convertAxis(currentX),
-                    y: convertAxis(currentY),
-                    unit: [spec],
-                    guide: _.defaults(currentGuide, {
-                        x: { label: currentX },
-                        y: { label: currentY }
-                    })
-                };
-            }
-        }
-
-        config.spec = {
-            dimensions: config.dimensions,
-            unit: spec
-        };
-        return config;
-    }
-
-    var typesChart = {
-        scatterplot: function (rawConfig) {
-            var config = normalizeConfig(rawConfig);
-            return transformConfig("ELEMENT.POINT", config);
-        },
-        line: function (rawConfig) {
-
-            var config = normalizeConfig(rawConfig);
-
-            var data = config.data;
-
-            var log = config.settings.log;
-
-            var lineOrientationStrategies = {
-
-                none: function (config) {
-                    return null;
-                },
-
-                horizontal: function (config) {
-                    var xs = utils.isArray(config.x) ? config.x : [config.x];
-                    return xs[xs.length - 1];
-                },
-
-                vertical: function (config) {
-                    var ys = utils.isArray(config.y) ? config.y : [config.y];
-                    return ys[ys.length - 1];
-                },
-
-                auto: function (config) {
-                    var xs = utils.isArray(config.x) ? config.x : [config.x];
-                    var ys = utils.isArray(config.y) ? config.y : [config.y];
-                    var primaryX = xs[xs.length - 1];
-                    var secondaryX = xs.slice(0, xs.length - 1);
-                    var primaryY = ys[ys.length - 1];
-                    var secondaryY = ys.slice(0, ys.length - 1);
-                    var colorProp = config.color;
-
-                    var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter(function (x) {
-                        return x !== null;
-                    });
-
-                    var variantIndex = -1;
-                    var variations = [[[primaryX].concat(rest), primaryY], [[primaryY].concat(rest), primaryX]];
-                    var isMatchAny = variations.some(function (item, i) {
-                        var domainFields = item[0];
-                        var rangeProperty = item[1];
-                        var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
-                        if (r.result) {
-                            variantIndex = i;
-                        } else {
-                            log(["Attempt to find a functional relation between", item[0] + " and " + item[1] + " is failed.", "There are several " + r.error.keyY + " values (e.g. " + r.error.errY.join(",") + ")", "for (" + r.error.keyX + " = " + r.error.valX + ")."].join(" "));
-                        }
-                        return r.result;
-                    });
-
-                    var propSortBy;
-                    if (isMatchAny) {
-                        propSortBy = variations[variantIndex][0][0];
-                    } else {
-                        log(["All attempts are failed.", "Will orient line horizontally by default.", "NOTE: the [scatterplot] chart is more convenient for that data."].join(" "));
-                        propSortBy = primaryX;
-                    }
-
-                    return propSortBy;
-                }
-            };
-
-            var orient = (config.lineOrientation || "auto").toLowerCase();
-            var strategy = lineOrientationStrategies.hasOwnProperty(orient) ? lineOrientationStrategies[orient] : lineOrientationStrategies.auto;
-
-            var propSortBy = strategy(config);
-            if (propSortBy !== null) {
-                config.data = _(data).sortBy(propSortBy);
-            }
-
-            return transformConfig("ELEMENT.LINE", config);
-        },
-        bar: function (rawConfig) {
-            var config = normalizeConfig(rawConfig);
-            config.flip = false;
-            return transformConfig("ELEMENT.INTERVAL", config);
-        },
-        horizontalBar: function (rawConfig) {
-            var config = normalizeConfig(rawConfig);
-            config.flip = true;
-            return transformConfig("ELEMENT.INTERVAL", config);
-        },
-
-        map: function (config) {
-
-            var shouldSpecifyFillWithCode = config.fill && config.code;
-            if (config.fill && !shouldSpecifyFillWithCode) {
-                throw new Error("[code] must be specified when using [fill]");
-            }
-
-            var shouldSpecifyBothLatLong = config.latitude && config.longitude;
-            if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
-                throw new Error("[latitude] and [longitude] both must be specified");
-            }
-
-            var shouldSpecifyData = config.data;
-            if (!shouldSpecifyData) {
-                throw new Error("[data] must be specified");
-            }
-
-            var guide = _.extend({
-                sourcemap: config.settings.defaultSourceMap
-            }, config.guide || {});
-
-            guide.size = _.defaults(guide.size || {}, { min: 1, max: 10 });
-            guide.code = _.defaults(guide.code || {}, { georole: "countries" });
-
-            var scales = {};
-
-            var scalesPool = function (type, prop) {
-                var guide = arguments[2] === undefined ? {} : arguments[2];
-
-                var key;
-                var dim = prop;
-                var src;
-                if (!prop) {
-                    key = "" + type + ":default";
-                    src = "?";
-                } else {
-                    key = "" + type + "_" + prop;
-                    src = "/";
-                }
-
-                if (!scales.hasOwnProperty(key)) {
-                    scales[key] = _.extend({ type: type, source: src, dim: dim }, guide);
-                }
-
-                return key;
-            };
-
-            return {
-                sources: {
-                    "?": {
-                        dims: {},
-                        data: [{}]
-                    },
-                    "/": {
-                        dims: Object.keys(config.dimensions).reduce(function (dims, k) {
-                            dims[k] = { type: config.dimensions[k].type };
-                            return dims;
-                        }, {}),
-                        data: config.data
-                    }
-                },
-
-                scales: scales,
-
-                unit: {
-                    type: "COORDS.MAP",
-
-                    expression: { operator: "none", source: "/" },
-
-                    code: scalesPool("value", config.code, guide.code),
-                    fill: scalesPool("fill", config.fill),
-
-                    size: scalesPool("size", config.size, guide.size),
-                    color: scalesPool("color", config.color, guide.color),
-                    latitude: scalesPool("linear", config.latitude, { autoScale: false }),
-                    longitude: scalesPool("linear", config.longitude, { autoScale: false }),
-
-                    guide: guide
-                }
-            };
-        }
-    };
+    var ChartTypesRegistry = _chartAliasRegistry.ChartTypesRegistry;
 
     var Chart = (function (_Plot) {
         function Chart(config) {
             _classCallCheck(this, Chart);
 
-            var chartFactory = typesChart[config.type];
-
-            if (!_.isFunction(chartFactory)) {
-                throw new Error("Chart type " + config.type + " is not supported. Use one of " + _.keys(typesChart).join(", ") + ".");
-            }
+            var chartFactory = ChartTypesRegistry.get(config.type);
 
             config = _.defaults(config, { autoResize: true });
             config.settings = Plot.setupSettings(config.settings);
@@ -7264,6 +6974,296 @@ define('elements/element.pie',["exports", "../const", "../utils/css-class-map"],
         return Pie;
     })();
 });
+define('elements/element.interval.stacked',["exports", "underscore", "../const"], function (exports, _underscore, _const) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var _ = _interopRequire(_underscore);
+
+    var CSS_PREFIX = _const.CSS_PREFIX;
+
+    var StackedInterval = exports.StackedInterval = (function () {
+        function StackedInterval(config) {
+            _classCallCheck(this, StackedInterval);
+
+            this.config = config;
+            this.config.guide = _.defaults(this.config.guide || {}, { prettify: true });
+        }
+
+        _createClass(StackedInterval, {
+            drawLayout: {
+                value: function drawLayout(fnCreateScale) {
+
+                    var config = this.config;
+                    this.xScale = fnCreateScale("pos", config.x, [0, config.options.width]);
+                    this.yScale = fnCreateScale("pos", config.y, [config.options.height, 0]);
+                    this.color = fnCreateScale("color", config.color, {});
+
+                    var fitSize = function (w, h, maxRelLimit, srcSize, minimalSize) {
+                        var minRefPoint = Math.min(w, h);
+                        var minSize = minRefPoint * maxRelLimit;
+                        return Math.max(minimalSize, Math.min(srcSize, minSize));
+                    };
+
+                    var width = config.options.width;
+                    var height = config.options.height;
+                    var g = config.guide;
+                    var minimalSize = 1;
+                    var maxRelLimit = 1;
+                    var isNotZero = function (x) {
+                        return x !== 0;
+                    };
+                    var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
+                    var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+
+                    this.size = fnCreateScale("size", config.size, {
+                        normalize: true,
+
+                        func: "linear",
+
+                        min: 0,
+                        max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
+                        mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
+                    });
+
+                    return this;
+                }
+            },
+            drawFrames: {
+                value: function drawFrames(frames) {
+                    var config = this.config;
+                    var options = config.options;
+                    var xScale = this.xScale;
+                    var yScale = this.yScale;
+                    var sizeScale = this.size;
+                    var colorScale = this.color;
+
+                    var isHorizontal = config.flip;
+
+                    var viewMapper;
+
+                    if (isHorizontal) {
+                        viewMapper = function (totals, d) {
+                            var x = d[xScale.dim];
+                            var y = d[yScale.dim];
+                            var stack = totals[y] = (totals[y] || 0) + x;
+                            var size = d[sizeScale.dim];
+                            var color = d[colorScale.dim];
+                            return {
+                                x: stack,
+                                y: y,
+                                h: x,
+                                w: size,
+                                c: color
+                            };
+                        };
+                    } else {
+                        viewMapper = function (totals, d) {
+                            var x = d[xScale.dim];
+                            var y = d[yScale.dim];
+                            var stack = totals[x] = (totals[x] || 0) + y;
+                            var size = d[sizeScale.dim];
+                            var color = d[colorScale.dim];
+                            return {
+                                x: x,
+                                y: stack,
+                                h: y,
+                                w: size,
+                                c: color
+                            };
+                        };
+                    }
+
+                    var d3Attrs = this._buildDrawModel(isHorizontal, {
+                        xScale: xScale,
+                        yScale: yScale,
+                        sizeScale: sizeScale,
+                        colorScale: colorScale,
+                        prettify: config.guide.prettify
+                    });
+
+                    var updateBar = function updateBar() {
+                        return this.attr(d3Attrs)
+                        // TODO: move to CSS styles
+                        .style("stroke-width", 1).style("stroke", "#fff").style("stroke-opacity", "0.5");
+                    };
+
+                    var uid = options.uid;
+                    var totals = {};
+                    var updateGroups = function updateGroups() {
+                        this.attr("class", function (f) {
+                            return "frame-id-" + uid + " frame-" + f.hash + " i-role-bar-group";
+                        }).call(function () {
+                            var bars = this.selectAll(".bar").data(function (frame) {
+                                // var totals = {}; // if 1-only frame support is required
+                                return frame.data.map(function (d) {
+                                    return { uid: uid, data: d, view: viewMapper(totals, d) };
+                                });
+                            });
+                            bars.exit().remove();
+                            bars.call(updateBar);
+                            bars.enter().append("rect").call(updateBar);
+                        });
+                    };
+
+                    var mapper = function (f) {
+                        return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    };
+                    var frameGroups = options.container.selectAll(".frame-id-" + uid).data(frames.map(mapper), function (f) {
+                        return f.hash;
+                    });
+                    frameGroups.exit().remove();
+                    frameGroups.call(updateGroups);
+                    frameGroups.enter().append("g").call(updateGroups);
+
+                    return [];
+                }
+            },
+            _buildDrawModel: {
+                value: function _buildDrawModel(isHorizontal, _ref) {
+                    var xScale = _ref.xScale;
+                    var yScale = _ref.yScale;
+                    var sizeScale = _ref.sizeScale;
+                    var colorScale = _ref.colorScale;
+                    var prettify = _ref.prettify;
+
+                    // show at least 1px gap for bar to make it clickable
+                    var minH = 1;
+                    // default width for continues scales is 5px
+                    var minW = 5;
+                    var relW = 0.5;
+
+                    var calculateH;
+                    var calculateW;
+                    var calculateY;
+                    var calculateX;
+
+                    if (isHorizontal) {
+
+                        calculateW = function (d) {
+                            var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
+                            if (prettify) {
+                                w = Math.max(minH, w);
+                            }
+                            return w;
+                        };
+
+                        calculateH = function (d) {
+                            var h = (yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w);
+                            if (prettify) {
+                                h = Math.max(minH, h);
+                            }
+                            return h;
+                        };
+
+                        calculateX = function (d) {
+                            return xScale(d.x - d.h);
+                        };
+                        calculateY = function (d) {
+                            return yScale(d.y) - calculateH(d) / 2;
+                        };
+                    } else {
+
+                        calculateW = function (d) {
+                            var w = (xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w);
+                            if (prettify) {
+                                w = Math.max(minH, w);
+                            }
+                            return w;
+                        };
+
+                        calculateH = function (d) {
+                            var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
+                            if (prettify) {
+                                h = Math.max(minH, h);
+                            }
+                            return h;
+                        };
+
+                        calculateX = function (d) {
+                            return xScale(d.x) - calculateW(d) / 2;
+                        };
+                        calculateY = function (d) {
+                            return yScale(d.y);
+                        };
+                    }
+
+                    return {
+                        x: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateX(d);
+                        },
+                        y: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateY(d);
+                        },
+                        height: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateH(d);
+                        },
+                        width: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateW(d);
+                        },
+                        "class": function (_ref2) {
+                            var d = _ref2.view;
+                            return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d.c);
+                        }
+                    };
+                }
+            }
+        }, {
+            embedUnitFrameToSpec: {
+                value: function embedUnitFrameToSpec(cfg, spec) {
+
+                    var isHorizontal = cfg.flip;
+
+                    var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
+                    var baseScaleName = isHorizontal ? cfg.y : cfg.x;
+                    var stackScale = spec.scales[stackedScaleName];
+                    var baseScale = spec.scales[baseScaleName];
+                    var baseDim = baseScale.dim;
+
+                    var prop = stackScale.dim;
+
+                    var sums = cfg.frames.reduce(function (s0, f) {
+                        return f.take().reduce(function (s, d) {
+                            var stackedVal = d[prop];
+
+                            if (typeof stackedVal !== "number" || stackedVal < 0) {
+                                throw new Error("Stacked field [" + prop + "] should be a non-negative number");
+                            }
+
+                            var baseVal = d[baseDim];
+                            s[baseVal] = s[baseVal] || 0;
+                            s[baseVal] += stackedVal;
+                            return s;
+                        }, s0);
+                    }, {});
+
+                    var maxSum = Math.max.apply(Math, _toConsumableArray(_.values(sums)));
+
+                    if (!stackScale.hasOwnProperty("max") || stackScale.max < maxSum) {
+                        stackScale.max = maxSum;
+                    }
+                }
+            }
+        });
+
+        return StackedInterval;
+    })();
+});
 define('scales/base',["exports", "../utils/utils", "underscore"], function (exports, _utilsUtils, _underscore) {
     
 
@@ -7450,6 +7450,8 @@ define('scales/size',["exports", "./base", "underscore", "d3"], function (export
 
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
+    var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
+
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
     var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
@@ -7468,6 +7470,15 @@ define('scales/size',["exports", "./base", "underscore", "d3"], function (export
     var d3 = _interopRequire(_d3);
 
     /* jshint ignore:end */
+
+    var funcTypes = {
+        sqrt: function (x) {
+            return Math.sqrt(x);
+        },
+        linear: function (x) {
+            return x;
+        }
+    };
 
     var SizeScale = exports.SizeScale = (function (_BaseScale) {
         function SizeScale() {
@@ -7488,28 +7499,38 @@ define('scales/size',["exports", "./base", "underscore", "d3"], function (export
                     var props = this.scaleConfig;
                     var varSet = this.vars;
 
-                    var minSize = localProps.min || props.min;
-                    var maxSize = localProps.max || props.max;
-                    var midSize = localProps.mid || props.mid;
+                    var p = _.defaults({}, localProps, props, { func: "sqrt", normalize: false });
 
-                    var f = function (x) {
-                        return Math.sqrt(x);
-                    };
+                    var funType = p.func;
+                    var minSize = p.min;
+                    var maxSize = p.max;
+                    var midSize = p.mid;
+
+                    var f = funcTypes[funType];
 
                     var values = _.filter(varSet, _.isFinite);
+
+                    var normalize = props.normalize || localProps.normalize;
+
+                    var fnNorm = normalize ? function (x, maxX) {
+                        return x / maxX;
+                    } : function (x) {
+                        return x;
+                    };
+
                     var func;
                     if (values.length === 0) {
                         func = function (x) {
-                            return midSize;
+                            return fnNorm(midSize, midSize);
                         };
                     } else {
                         var k = 1;
                         var xMin = 0;
 
-                        var min = Math.min.apply(null, values);
-                        var max = Math.max.apply(null, values);
+                        var min = Math.min.apply(Math, _toConsumableArray(values));
+                        var max = Math.max.apply(Math, _toConsumableArray(values));
 
-                        var len = f(Math.max.apply(null, [Math.abs(min), Math.abs(max), max - min]));
+                        var len = f(Math.max.apply(Math, [Math.abs(min), Math.abs(max), max - min]));
 
                         xMin = min < 0 ? min : 0;
                         k = len === 0 ? 1 : (maxSize - minSize) / len;
@@ -7519,12 +7540,12 @@ define('scales/size',["exports", "./base", "underscore", "d3"], function (export
                             var numX = x !== null ? parseFloat(x) : 0;
 
                             if (!_.isFinite(numX)) {
-                                return maxSize;
+                                return fnNorm(maxSize, maxSize);
                             }
 
                             var posX = numX - xMin; // translate to positive x domain
 
-                            return minSize + f(posX) * k;
+                            return fnNorm(minSize + f(posX) * k, maxSize);
                         };
                     }
 
@@ -7794,6 +7815,9 @@ define('scales/time',["exports", "./base", "underscore", "d3"], function (export
                     });
 
                     scale.scaleType = "time";
+                    scale.stepSize = function () {
+                        return 0;
+                    };
 
                     return this.toBaseScale(scale, interval);
                 }
@@ -7837,14 +7861,14 @@ define('scales/linear',["exports", "./base", "../utils/utils", "underscore", "d3
             _get(Object.getPrototypeOf(LinearScale.prototype), "constructor", this).call(this, xSource, scaleConfig);
 
             var props = this.scaleConfig;
-            var vars = this.vars;
+            var vars = d3.extent(this.vars);
 
-            var domain = props.autoScale ? utils.autoScale(vars) : d3.extent(vars);
+            var min = _.isNumber(props.min) ? props.min : vars[0];
+            var max = _.isNumber(props.max) ? props.max : vars[1];
 
-            var min = _.isNumber(props.min) ? props.min : domain[0];
-            var max = _.isNumber(props.max) ? props.max : domain[1];
+            vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
 
-            this.vars = [Math.min(min, domain[0]), Math.max(max, domain[1])];
+            this.vars = props.autoScale ? utils.autoScale(vars) : d3.extent(vars);
         }
 
         _inherits(LinearScale, _BaseScale);
@@ -7878,6 +7902,9 @@ define('scales/linear',["exports", "./base", "../utils/utils", "underscore", "d3
                     });
 
                     scale.scaleType = "linear";
+                    scale.stepSize = function () {
+                        return 0;
+                    };
 
                     return this.toBaseScale(scale, interval);
                 }
@@ -7974,14 +8001,14 @@ define('scales/fill',["exports", "./base", "../utils/utils", "underscore", "d3"]
             _get(Object.getPrototypeOf(FillScale.prototype), "constructor", this).call(this, xSource, scaleConfig);
 
             var props = this.scaleConfig;
-            var vars = this.vars;
+            var vars = d3.extent(this.vars);
 
-            var domain = props.autoScale ? utils.autoScale(vars) : d3.extent(vars);
+            var min = _.isNumber(props.min) ? props.min : vars[0];
+            var max = _.isNumber(props.max) ? props.max : vars[1];
 
-            var min = _.isNumber(props.min) ? props.min : domain[0];
-            var max = _.isNumber(props.max) ? props.max : domain[1];
+            vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
 
-            this.vars = [Math.min(min, domain[0]), Math.max(max, domain[1])];
+            this.vars = props.autoScale ? utils.autoScale(vars) : d3.extent(vars);
         }
 
         _inherits(FillScale, _BaseScale);
@@ -8021,7 +8048,424 @@ define('scales/fill',["exports", "./base", "../utils/utils", "underscore", "d3"]
         return FillScale;
     })(BaseScale);
 });
-define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./scales-registry", "./elements/coords.cartesian", "./elements/coords.geomap", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval", "./scales/color", "./scales/size", "./scales/ordinal", "./scales/period", "./scales/time", "./scales/linear", "./scales/value", "./scales/fill"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill) {
+define('api/chart-map',["exports"], function (exports) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var ChartMap = function (config) {
+
+        var shouldSpecifyFillWithCode = config.fill && config.code;
+        if (config.fill && !shouldSpecifyFillWithCode) {
+            throw new Error("[code] must be specified when using [fill]");
+        }
+
+        var shouldSpecifyBothLatLong = config.latitude && config.longitude;
+        if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
+            throw new Error("[latitude] and [longitude] both must be specified");
+        }
+
+        var shouldSpecifyData = config.data;
+        if (!shouldSpecifyData) {
+            throw new Error("[data] must be specified");
+        }
+
+        var guide = _.extend({
+            sourcemap: config.settings.defaultSourceMap
+        }, config.guide || {});
+
+        guide.size = _.defaults(guide.size || {}, { min: 1, max: 10 });
+        guide.code = _.defaults(guide.code || {}, { georole: "countries" });
+
+        var scales = {};
+
+        var scalesPool = function (type, prop) {
+            var guide = arguments[2] === undefined ? {} : arguments[2];
+
+            var key;
+            var dim = prop;
+            var src;
+            if (!prop) {
+                key = "" + type + ":default";
+                src = "?";
+            } else {
+                key = "" + type + "_" + prop;
+                src = "/";
+            }
+
+            if (!scales.hasOwnProperty(key)) {
+                scales[key] = _.extend({ type: type, source: src, dim: dim }, guide);
+            }
+
+            return key;
+        };
+
+        return {
+            sources: {
+                "?": {
+                    dims: {},
+                    data: [{}]
+                },
+                "/": {
+                    dims: Object.keys(config.dimensions).reduce(function (dims, k) {
+                        dims[k] = { type: config.dimensions[k].type };
+                        return dims;
+                    }, {}),
+                    data: config.data
+                }
+            },
+
+            scales: scales,
+
+            unit: {
+                type: "COORDS.MAP",
+
+                expression: { operator: "none", source: "/" },
+
+                code: scalesPool("value", config.code, guide.code),
+                fill: scalesPool("fill", config.fill),
+
+                size: scalesPool("size", config.size, guide.size),
+                color: scalesPool("color", config.color, guide.color),
+                latitude: scalesPool("linear", config.latitude, { autoScale: false }),
+                longitude: scalesPool("linear", config.longitude, { autoScale: false }),
+
+                guide: guide
+            }
+        };
+    };
+
+    exports.ChartMap = ChartMap;
+});
+define('api/converter-helpers',["exports", "d3", "../utils/utils"], function (exports, _d3, _utilsUtils) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    var _defineProperty = function (obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var d3 = _interopRequire(_d3);
+
+    var utils = _utilsUtils.utils;
+
+    var convertAxis = function (data) {
+        return !data ? null : data;
+    };
+
+    var normalizeSettings = function (axis) {
+        var defaultValue = arguments[1] === undefined ? null : arguments[1];
+
+        return !utils.isArray(axis) ? [axis] : axis.length === 0 ? [defaultValue] : axis;
+    };
+
+    var createElement = function (type, config) {
+        return {
+            type: type,
+            x: config.x,
+            y: config.y,
+            color: config.color,
+            guide: {
+                color: config.colorGuide,
+                size: config.sizeGuide
+            },
+            flip: config.flip,
+            size: config.size
+        };
+    };
+
+    var status = {
+        SUCCESS: "SUCCESS",
+        WARNING: "WARNING",
+        FAIL: "FAIL"
+    };
+
+    var strategyNormalizeAxis = (function () {
+        var _strategyNormalizeAxis = {};
+
+        _defineProperty(_strategyNormalizeAxis, status.SUCCESS, function (axis) {
+            return axis;
+        });
+
+        _defineProperty(_strategyNormalizeAxis, status.FAIL, function (axis, data) {
+            throw new Error((data.messages || []).join("\n") ||
+            // jscs:disable
+            "This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart");
+        });
+
+        _defineProperty(_strategyNormalizeAxis, status.WARNING, function (axis, config, guide) {
+            var axisName = config.axis;
+            var index = config.indexMeasureAxis[0];
+            var measure = axis[index];
+            var newAxis = _.without(axis, measure);
+            newAxis.push(measure);
+
+            var measureGuide = guide[index][axisName] || {};
+            var categoryGuide = guide[guide.length - 1][axisName] || {};
+
+            guide[guide.length - 1][axisName] = measureGuide;
+            guide[index][axisName] = categoryGuide;
+
+            return newAxis;
+        });
+
+        return _strategyNormalizeAxis;
+    })();
+
+    function validateAxis(dimensions, axis, axisName) {
+        return axis.reduce(function (result, item, index) {
+            var dimension = dimensions[item];
+            if (!dimension) {
+                result.status = status.FAIL;
+                if (item) {
+                    result.messages.push("\"" + item + "\" dimension is undefined for \"" + axisName + "\" axis");
+                } else {
+                    result.messages.push("\"" + axisName + "\" axis should be specified");
+                }
+            } else if (result.status != status.FAIL) {
+                if (dimension.type === "measure") {
+                    result.countMeasureAxis++;
+                    result.indexMeasureAxis.push(index);
+                }
+                if (dimension.type !== "measure" && result.countMeasureAxis === 1) {
+                    result.status = status.WARNING;
+                } else if (result.countMeasureAxis > 1) {
+                    result.status = status.FAIL;
+                    result.messages.push("There is more than one measure dimension for \"" + axisName + "\" axis");
+                }
+            }
+            return result;
+        }, { status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [], axis: axisName });
+    }
+
+    function normalizeConfig(config) {
+
+        var x = normalizeSettings(config.x);
+        var y = normalizeSettings(config.y);
+
+        var maxDeep = Math.max(x.length, y.length);
+
+        var guide = normalizeSettings(config.guide, {});
+
+        // feel the gaps if needed
+        _.times(maxDeep - guide.length, function () {
+            return guide.push({});
+        });
+
+        // cut items
+        guide = guide.slice(0, maxDeep);
+
+        var validatedX = validateAxis(config.dimensions, x, "x");
+        var validatedY = validateAxis(config.dimensions, y, "y");
+        x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
+        y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
+
+        return _.extend({}, config, {
+            x: x,
+            y: y,
+            guide: guide
+        });
+    }
+
+    function transformConfig(type, config) {
+
+        var x = config.x;
+        var y = config.y;
+        var guide = config.guide;
+        var maxDepth = Math.max(x.length, y.length);
+
+        var spec = {
+            type: "COORDS.RECT",
+            unit: []
+        };
+
+        var xs = [].concat(x);
+        var ys = [].concat(y);
+        var gs = [].concat(guide);
+
+        for (var i = maxDepth; i > 0; i--) {
+            var currentX = xs.pop();
+            var currentY = ys.pop();
+            var currentGuide = gs.pop() || {};
+            if (i === maxDepth) {
+                spec.x = currentX;
+                spec.y = currentY;
+                spec.unit.push(createElement(type, {
+                    x: convertAxis(currentX),
+                    y: convertAxis(currentY),
+                    color: config.color,
+                    size: config.size,
+                    flip: config.flip,
+                    colorGuide: currentGuide.color,
+                    sizeGuide: currentGuide.size
+                }));
+                spec.guide = _.defaults(currentGuide, {
+                    x: { label: currentX },
+                    y: { label: currentY }
+                });
+            } else {
+                spec = {
+                    type: "COORDS.RECT",
+                    x: convertAxis(currentX),
+                    y: convertAxis(currentY),
+                    unit: [spec],
+                    guide: _.defaults(currentGuide, {
+                        x: { label: currentX },
+                        y: { label: currentY }
+                    })
+                };
+            }
+        }
+
+        config.spec = {
+            dimensions: config.dimensions,
+            unit: spec
+        };
+        return config;
+    }
+
+    exports.normalizeConfig = normalizeConfig;
+    exports.transformConfig = transformConfig;
+});
+define('api/chart-interval',["exports", "./converter-helpers"], function (exports, _converterHelpers) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var normalizeConfig = _converterHelpers.normalizeConfig;
+    var transformConfig = _converterHelpers.transformConfig;
+
+    var ChartInterval = function (rawConfig) {
+        var config = normalizeConfig(rawConfig);
+        return transformConfig("ELEMENT.INTERVAL", config);
+    };
+
+    exports.ChartInterval = ChartInterval;
+});
+define('api/chart-scatterplot',["exports", "./converter-helpers"], function (exports, _converterHelpers) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var normalizeConfig = _converterHelpers.normalizeConfig;
+    var transformConfig = _converterHelpers.transformConfig;
+
+    var ChartScatterplot = function (rawConfig) {
+        var config = normalizeConfig(rawConfig);
+        return transformConfig("ELEMENT.POINT", config);
+    };
+
+    exports.ChartScatterplot = ChartScatterplot;
+});
+define('api/chart-line',["exports", "../utils/utils", "../data-processor", "./converter-helpers"], function (exports, _utilsUtils, _dataProcessor, _converterHelpers) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var utils = _utilsUtils.utils;
+    var DataProcessor = _dataProcessor.DataProcessor;
+    var normalizeConfig = _converterHelpers.normalizeConfig;
+    var transformConfig = _converterHelpers.transformConfig;
+
+    var ChartLine = function (rawConfig) {
+        var config = normalizeConfig(rawConfig);
+
+        var data = config.data;
+
+        var log = config.settings.log;
+
+        var lineOrientationStrategies = {
+
+            none: function (config) {
+                return null;
+            },
+
+            horizontal: function (config) {
+                var xs = utils.isArray(config.x) ? config.x : [config.x];
+                return xs[xs.length - 1];
+            },
+
+            vertical: function (config) {
+                var ys = utils.isArray(config.y) ? config.y : [config.y];
+                return ys[ys.length - 1];
+            },
+
+            auto: function (config) {
+                var xs = utils.isArray(config.x) ? config.x : [config.x];
+                var ys = utils.isArray(config.y) ? config.y : [config.y];
+                var primaryX = xs[xs.length - 1];
+                var secondaryX = xs.slice(0, xs.length - 1);
+                var primaryY = ys[ys.length - 1];
+                var secondaryY = ys.slice(0, ys.length - 1);
+                var colorProp = config.color;
+
+                var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter(function (x) {
+                    return x !== null;
+                });
+
+                var variantIndex = -1;
+                var variations = [[[primaryX].concat(rest), primaryY], [[primaryY].concat(rest), primaryX]];
+                var isMatchAny = variations.some(function (item, i) {
+                    var domainFields = item[0];
+                    var rangeProperty = item[1];
+                    var r = DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
+                    if (r.result) {
+                        variantIndex = i;
+                    } else {
+                        log(["Attempt to find a functional relation between", item[0] + " and " + item[1] + " is failed.", "There are several " + r.error.keyY + " values (e.g. " + r.error.errY.join(",") + ")", "for (" + r.error.keyX + " = " + r.error.valX + ")."].join(" "));
+                    }
+                    return r.result;
+                });
+
+                var propSortBy;
+                if (isMatchAny) {
+                    propSortBy = variations[variantIndex][0][0];
+                } else {
+                    log(["All attempts are failed.", "Will orient line horizontally by default.", "NOTE: the [scatterplot] chart is more convenient for that data."].join(" "));
+                    propSortBy = primaryX;
+                }
+
+                return propSortBy;
+            }
+        };
+
+        var orient = (config.lineOrientation || "auto").toLowerCase();
+        var strategy = lineOrientationStrategies.hasOwnProperty(orient) ? lineOrientationStrategies[orient] : lineOrientationStrategies.auto;
+
+        var propSortBy = strategy(config);
+        if (propSortBy !== null) {
+            config.data = _(data).sortBy(propSortBy);
+        }
+
+        return transformConfig("ELEMENT.LINE", config);
+    };
+
+    exports.ChartLine = ChartLine;
+});
+define('api/chart-interval-stacked',["exports", "./converter-helpers"], function (exports, _converterHelpers) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var normalizeConfig = _converterHelpers.normalizeConfig;
+    var transformConfig = _converterHelpers.transformConfig;
+
+    var ChartIntervalStacked = function (rawConfig) {
+        var config = normalizeConfig(rawConfig);
+        return transformConfig("ELEMENT.INTERVAL.STACKED", config);
+    };
+
+    exports.ChartIntervalStacked = ChartIntervalStacked;
+});
+define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./scales-registry", "./elements/coords.cartesian", "./elements/coords.geomap", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval", "./elements/element.interval.stacked", "./scales/color", "./scales/size", "./scales/ordinal", "./scales/period", "./scales/time", "./scales/linear", "./scales/value", "./scales/fill", "./chart-alias-registry", "./api/chart-map", "./api/chart-interval", "./api/chart-scatterplot", "./api/chart-line", "./api/chart-interval-stacked"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _elementsElementIntervalStacked, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartIntervalStacked) {
     
 
     Object.defineProperty(exports, "__esModule", {
@@ -8042,6 +8486,7 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var Line = _elementsElementLine.Line;
     var Pie = _elementsElementPie.Pie;
     var Interval = _elementsElementInterval.Interval;
+    var StackedInterval = _elementsElementIntervalStacked.StackedInterval;
     var ColorScale = _scalesColor.ColorScale;
     var SizeScale = _scalesSize.SizeScale;
     var OrdinalScale = _scalesOrdinal.OrdinalScale;
@@ -8050,6 +8495,12 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var LinearScale = _scalesLinear.LinearScale;
     var ValueScale = _scalesValue.ValueScale;
     var FillScale = _scalesFill.FillScale;
+    var ChartTypesRegistry = _chartAliasRegistry.ChartTypesRegistry;
+    var ChartMap = _apiChartMap.ChartMap;
+    var ChartInterval = _apiChartInterval.ChartInterval;
+    var ChartScatterplot = _apiChartScatterplot.ChartScatterplot;
+    var ChartLine = _apiChartLine.ChartLine;
+    var ChartIntervalStacked = _apiChartIntervalStacked.ChartIntervalStacked;
 
     var colorBrewers = {};
     var plugins = {};
@@ -8153,9 +8604,19 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
 
     Plot.globalSettings = api.globalSettings;
 
-    api.unitsRegistry.reg("COORDS.RECT", Cartesian).reg("COORDS.MAP", GeoMap).reg("ELEMENT.POINT", Point).reg("ELEMENT.LINE", Line).reg("ELEMENT.INTERVAL", Interval).reg("RECT", Cartesian).reg("POINT", Point).reg("INTERVAL", Interval).reg("LINE", Line).reg("PIE", Pie);
+    api.unitsRegistry.reg("COORDS.RECT", Cartesian).reg("COORDS.MAP", GeoMap).reg("ELEMENT.POINT", Point).reg("ELEMENT.LINE", Line).reg("ELEMENT.INTERVAL", Interval).reg("ELEMENT.INTERVAL.STACKED", StackedInterval).reg("RECT", Cartesian).reg("POINT", Point).reg("INTERVAL", Interval).reg("LINE", Line).reg("PIE", Pie);
 
     api.scalesRegistry.reg("color", ColorScale).reg("fill", FillScale).reg("size", SizeScale).reg("ordinal", OrdinalScale).reg("period", PeriodScale).reg("time", TimeScale).reg("linear", LinearScale).reg("value", ValueScale);
+
+    ChartTypesRegistry.add("scatterplot", ChartScatterplot).add("line", ChartLine).add("bar", function (cfg) {
+        return ChartInterval(_.defaults({ flip: false }, cfg));
+    }).add("horizontalBar", function (cfg) {
+        return ChartInterval(_.defaults({ flip: true }, cfg));
+    }).add("map", ChartMap).add("stacked-bar", function (cfg) {
+        return ChartIntervalStacked(_.defaults({ flip: false }, cfg));
+    }).add("horizontal-stacked-bar", function (cfg) {
+        return ChartIntervalStacked(_.defaults({ flip: true }, cfg));
+    });
 
     exports.GPL = GPL;
     exports.Plot = Plot;
