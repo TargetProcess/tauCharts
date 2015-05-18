@@ -39,3 +39,7 @@ Have a questions? [Contact us](mailto:michael@targetprocess.com)
 ## [0.4.2] - 2015-04-30
 ### Added
 - geo charts (alpha)
+
+## [0.4.3] - 2015-05-18
+### Added
+- stacked bar charts
