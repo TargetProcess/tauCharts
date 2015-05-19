@@ -104,6 +104,8 @@
 
 <div id="geo2" class="cc"></div>
 
+<div id="geo3" class="cc"></div>
+
 <div id="ooo" class="cc"></div>
 
 <div id="xxx" class="cc"></div>
@@ -177,15 +179,38 @@
         longitude: 'x',
         size: 'size',
         data: [
-            {x: 135.5, y: 40.5, color: 'green', size: 2},
-            {x: 137.5, y: 41.5, color: 'green', size: 20}
+            {x: 0.5, y: 51.32, color: 'green', size: 2}
         ],
         guide: {
-            sourcemap: 'http://localhost:63342/tauCharts/src/addons/japan-subunits.json'
+            sourcemap: 'http://localhost:63342/tauCharts/src/addons/uk-subunits-places.json'
         }
     });
 
     chart.renderTo('#geo1');
+
+    new tauCharts.Chart({
+        type: 'map',
+        code: 'state',
+        fill: 'population',
+        guide: {
+            code: {georole:'states'},
+            fill: {
+//                brewer: _.times(9, function(i) {
+//                    return 'rgba(150, 218, 195, ' + (0.1 * i + 0.1) + ')';
+//                })
+            },
+            sourcemap: 'http://localhost:63342/tauCharts/src/addons/usa-states.json'
+        },
+        data: [
+            {state: 'wa', population: 25},
+            {state: 'ks', population: 35},
+            {state: 'ca', population: 3005},
+            {state: 'ma', population: 300},
+            {state: 'ny', population: 250},
+            {state: 'ak', population: 5000},
+            {state: 'co', population: 1250}
+        ]
+    }).renderTo('#geo2');
 
     /**/
     new tauCharts.Plot(
@@ -208,7 +233,8 @@
                     lat: {type: 'linear', dim: 'latitude', source: '/'},
                     lon: {type: 'linear', dim: 'longitude', source: '/'},
                     size: {type: 'size', dim: 'count', source: '/', mid: 5, min: 1, max: 10},
-                    color: {type: 'color', dim: 'city', source: '/'},
+//                    color: {type: 'color', dim: 'city', source: '/'},
+                    color: {type: 'color', source: '?'},
                     'value:default': {type: 'value', source: '?'},
                     'fill:default': {
                         type: 'fill',
@@ -236,7 +262,7 @@
                     }
                 }
 
-            }).renderTo('#geo2');
+            }).renderTo('#geo3');
 
     /**/
 

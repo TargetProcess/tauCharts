@@ -30,7 +30,7 @@ export class FillScale extends BaseScale {
         var props = this.scaleConfig;
         var varSet = this.vars;
 
-        var defBrewer = ['#F5F5F5', '#DCDCDC', '#D3D3D3', '#C0C0C0', '#A9A9A9', '#808080', '#696969', '#000000'];
+        var defBrewer = _.times(10, (i) => `rgba(150, 215, 195, ${((i + 1) * 0.1).toFixed(2)})`);
 
         var brewer = props.brewer || defBrewer;
 

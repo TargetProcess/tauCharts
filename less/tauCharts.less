@@ -73,17 +73,30 @@
         display: block;
         overflow: hidden;
 
+        .place {
+            fill: #fff;
+            stroke: #000;
+            stroke-opacity: 0.7;
+            stroke-width: 0.5;
+        }
+
         .place-label {
+            opacity: 0.7;
             font-size: 11px;
+            color: #000000;
+            letter-spacing: 0.2px;
+            line-height: 13px;
         }
 
         .place-label-countries,
         .place-label-subunits,
         .place-label-states {
-            fill: #777;
-            fill-opacity: .5;
-            font-size: 13px;
             text-anchor: middle;
+            font-size: 10px;
+            fill: rgba(51, 36, 0, 0.45);
+            letter-spacing: 0.5px;
+            line-height: 10px;
+            text-transform: uppercase;
         }
 
         .axis {

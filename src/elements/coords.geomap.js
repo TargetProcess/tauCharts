@@ -31,7 +31,7 @@ export class GeoMap {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                defaultFill: '#C0C0C0',
+                defaultFill: '#EBEBEB',
                 padding: {l: 0, r: 0, t: 0, b: 0},
                 showNames: true
             });
@@ -106,7 +106,7 @@ export class GeoMap {
                 var data = f.take();
                 return data.reduce(
                     (memo, rec) => {
-                        var key = rec[codeScale.dim];
+                        var key = (rec[codeScale.dim] || '').toLowerCase();
                         var val = rec[fillScale.dim];
                         memo[key] = val;
                         return memo;
@@ -165,15 +165,16 @@ export class GeoMap {
             .attr('d', path)
             .attr('fill', (d) => {
                 var props = d.properties;
-                var codes = ['c1', 'c2', 'c3']
-                    .filter((c) => (props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c])));
+                var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
+                    return props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c].toLowerCase());
+                });
 
                 var value;
                 if (codes.length === 0) {
                     // doesn't match
                     value = guide.defaultFill;
                 } else if (codes.length > 0) {
-                    value = fillScale(groupByCode[props[codes[0]]]);
+                    value = fillScale(groupByCode[props[codes[0]].toLowerCase()]);
                 }
 
                 return value;
@@ -207,20 +208,33 @@ export class GeoMap {
                     .append('text')
                     .attr('class', `place-label-${c}`)
                     .attr('transform', (d) => `translate(${path.centroid(d)})`)
-                    .text((d) => ((d.properties || {}).name));
+                    .text((d) => {
+                        var info = (d.properties || {});
+                        var name = info.name || '';
+                        var b = path.bounds(d);
+                        var br = b[1][0];
+                        var bl = b[0][0];
+                        var avgCharSize = 5.5;
+                        if ((br - bl) < (name.length * avgCharSize)) {
+                            name = info.abbr || `${name.substr(0, 2)}..`;
+                        }
+
+                        return name;
+                    });
             });
         }
 
         if (topoJSONData.objects.hasOwnProperty('places')) {
 
-            path.pointRadius(1.5);
-
             var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
 
-            node.append('path')
-                .datum(placesFeature)
-                .attr('d', path)
-                .attr('class', 'place');
+            node.selectAll('.place')
+                .data(placesFeature.features)
+                .enter()
+                .append('circle')
+                .attr('class', 'place')
+                .attr('transform', (d) => `translate(${d3Projection(d.geometry.coordinates)})`)
+                .attr('r', '2.5px');
 
             node.selectAll('.place-label')
                 .data(placesFeature.features)
