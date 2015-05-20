@@ -89,6 +89,8 @@ export class GeoMap {
 
     _drawMap(frames, topoJSONData) {
 
+        const avgCharSize = 5.5;
+
         var guide = this.config.guide;
         var options = this.config.options;
         var node = this.config.options.container;
@@ -100,6 +102,9 @@ export class GeoMap {
 
         var codeScale = this.codeScale;
         var fillScale = this.fillScale;
+
+        var innerW = this.W;
+        var innerH = this.H;
 
         var groupByCode = frames.reduce(
             (groups, f) => {
@@ -201,26 +206,119 @@ export class GeoMap {
         });
 
         if (guide.showNames) {
+
+            var nextTextCenter = (c, centersState) => {
+                if (centersState.length) {
+                    centersState[1] += 10;
+                } else {
+                    centersState[0] = innerW - (4 * avgCharSize);
+                    centersState[1] = c[1];
+                }
+                return centersState;
+            };
+
             reverseContours.forEach((c) => {
+
+                var notes = [];
+
                 var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
-                node.selectAll(`.place-label-${c}`)
+                node.selectAll(`.place-label-group-${c}`)
                     .data(contourFeatures)
                     .enter()
-                    .append('text')
-                    .attr('class', `place-label-${c}`)
-                    .attr('transform', (d) => `translate(${path.centroid(d)})`)
-                    .text((d) => {
+                    .append('g')
+                    .attr('class', `place-label-group-${c}`)
+                    .attr('-txt-', (d) => {
+
                         var info = (d.properties || {});
+
+                        var center = path.centroid(d);
+                        var bounds = path.bounds(d);
+                        var br = bounds[1][0];
+                        var bl = bounds[0][0];
+                        var size = br - bl;
+                        var text = null;
                         var name = info.name || '';
-                        var b = path.bounds(d);
-                        var br = b[1][0];
-                        var bl = b[0][0];
-                        var avgCharSize = 5.5;
-                        if ((br - bl) < (name.length * avgCharSize)) {
-                            name = info.abbr || `${name.substr(0, 2)}..`;
+                        var abbr = info.abbr || `${name.substr(0, 2)}..`;
+
+                        if (size < ((abbr.length + 1) * avgCharSize)) {
+                            notes.push([center[0], center[1], d]);
+                            text = null;
+                        } else if (size < (name.length * avgCharSize)) {
+                            text = info.abbr;
+                        } else {
+                            text = info.name;
                         }
 
-                        return name;
+                        if (text) {
+                            node.append('text')
+                                .attr('transform', `translate(${center})`)
+                                .attr('class', `place-label-${c}`)
+                                .text(text);
+                        }
+                    });
+
+                notes = notes
+                    .filter(x => !isNaN(x[0]) && !isNaN(x[1]))
+                    .sort((a, b) => (a[1] - b[1]));
+
+                _.times(notes.length, (indexA) => {
+
+                    var collided = true;
+
+                    while (collided) {
+                        // swap items
+                        var centersRef = [];
+                        var combination = notes.map((x) => {
+                            var textCenter = nextTextCenter([x[0], x[1]], centersRef);
+                            return [
+                                x[0],
+                                x[1],
+                                textCenter[0],
+                                textCenter[1]
+                            ];
+                        });
+
+                        var indexB = _(combination)
+                            .findIndex((n) => utilsDraw.isIntersect(...(combination[indexA].concat(n))));
+
+                        if (indexB >= 0) {
+                            var a = notes[indexA];
+                            var b = notes[indexB];
+                            notes[indexA] = b;
+                            notes[indexB] = a;
+                            collided = true;
+                        } else {
+                            collided = false;
+                        }
+                    }
+                });
+
+                var textCentersRef = [];
+                node.selectAll(`.place-label-notes-${c}`)
+                    .data(notes)
+                    .enter()
+                    .append('g')
+                    .attr('class', `place-label-notes-${c}`)
+                    .attr('-txt-', (x) => {
+                        var d = x[2];
+                        var center = [x[0], x[1]];
+                        var info = (d.properties || {});
+                        var name = info.abbr || `${info.name.substr(0, 2)}..`;
+
+                        var textCenter = nextTextCenter(center, textCentersRef);
+                        node.append('text')
+                            .attr('transform', `translate(${textCenter})`)
+                            .attr('class', `place-label-${c}`)
+                            .style('text-anchor', 'start')
+                            .text(name);
+
+                        node.append('line')
+                            .attr('x1', textCenter[0] - 3)
+                            .attr('y1', textCenter[1] - 3)
+                            .attr('x2', center[0])
+                            .attr('y2', center[1])
+                            .style('stroke', 'rgba(0, 0, 0, 0.5)')
+                            .style('stroke-width', 0.5);
                     });
             });
         }
