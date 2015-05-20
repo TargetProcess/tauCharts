@@ -303,14 +303,15 @@ export class GeoMap {
                         var d = x[2];
                         var center = [x[0], x[1]];
                         var info = (d.properties || {});
-                        var name = info.abbr || `${info.name.substr(0, 2)}..`;
+                        var name = info.name || '';
+                        var abbr = info.abbr || `${name.substr(0, 2)}..`;
 
                         var textCenter = nextTextCenter(center, textCentersRef);
                         node.append('text')
                             .attr('transform', `translate(${textCenter})`)
                             .attr('class', `place-label-${c}`)
                             .style('text-anchor', 'start')
-                            .text(name);
+                            .text(abbr);
 
                         node.append('line')
                             .attr('x1', textCenter[0] - 3)
