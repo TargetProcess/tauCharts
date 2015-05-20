@@ -163,6 +163,7 @@ export class GeoMap {
             .enter()
             .append('path')
             .attr('d', path)
+            .attr('class', 'map-contour')
             .attr('fill', (d) => {
                 var props = d.properties;
                 var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
