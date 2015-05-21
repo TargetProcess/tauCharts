@@ -506,9 +506,9 @@ define(function (require) {
                 }).create();
 
             expect(scale1.domain()).to.deep.equal([-3, 3]);
-            expect(scale1(-3)).to.equal('rgba(150, 215, 195, 0.10)');
-            expect(scale1(0)).to.equal('rgba(150, 215, 195, 0.60)');
-            expect(scale1(+3)).to.equal('rgba(150, 215, 195, 1.00)');
+            expect(scale1(-3)).to.equal('rgba(90,180,90,0.20)');
+            expect(scale1(0)).to.equal('rgba(90,180,90,0.64)');
+            expect(scale1(+3)).to.equal('rgba(90,180,90,1.00)');
             expect(scale1(undefined)).to.equal(undefined);
         });
 
