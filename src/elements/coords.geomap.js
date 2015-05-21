@@ -169,7 +169,7 @@ export class GeoMap {
             .remove();
         xmap.enter()
             .append('g')
-            .call(function() {
+            .call(function () {
 
                 var node = this;
 
@@ -344,9 +344,9 @@ export class GeoMap {
             .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
             .call(function () {
                 this.attr('fill', (d) => {
-                    var props = d.properties;
+                    var prop = d.properties;
                     var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
-                        return props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c].toLowerCase());
+                        return prop.hasOwnProperty(c) && prop[c] && groupByCode.hasOwnProperty(prop[c].toLowerCase());
                     });
 
                     var value;
@@ -354,7 +354,7 @@ export class GeoMap {
                         // doesn't match
                         value = guide.defaultFill;
                     } else if (codes.length > 0) {
-                        value = fillScale(groupByCode[props[codes[0]].toLowerCase()]);
+                        value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
                     }
 
                     return value;
