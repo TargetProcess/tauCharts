@@ -2,8 +2,11 @@ import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {default as topojson} from 'topojson';
 import {utilsDraw} from '../utils/utils-draw';
+import {d3Labeler} from '../utils/d3-labeler';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
+
+d3 = d3Labeler(d3);
 
 var hierarchy = [
 
@@ -199,120 +202,85 @@ export class GeoMap {
 
                 if (guide.showNames) {
 
-                    var nextTextCenter = (c, centersState) => {
-                        if (centersState.length) {
-                            centersState[1] += 10;
-                        } else {
-                            centersState[0] = innerW - (4 * avgCharSize);
-                            centersState[1] = c[1];
-                        }
-                        return centersState;
-                    };
-
                     reverseContours.forEach((c) => {
 
-                        var notes = [];
-
                         var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
-                        node.selectAll(`.place-label-group-${c}`)
-                            .data(contourFeatures)
-                            .enter()
-                            .append('g')
-                            .attr('class', `place-label-group-${c}`)
-                            .attr('-txt-', (d) => {
+
+                        var labels = contourFeatures
+                            .map((d) => {
 
                                 var info = (d.properties || {});
 
                                 var center = path.centroid(d);
                                 var bounds = path.bounds(d);
+
+                                var sx = center[0];
+                                var sy = center[1];
+
                                 var br = bounds[1][0];
                                 var bl = bounds[0][0];
                                 var size = br - bl;
-                                var text = null;
                                 var name = info.name || '';
-                                var abbr = info.abbr || `${name.substr(0, 2)}..`;
+                                var abbr = info.abbr || name;
+                                var isAbbr = (size < (name.length * avgCharSize));
+                                var text = isAbbr ? abbr : name;
+                                var isRef = (size < (2.5 * avgCharSize));
+                                var r = (isRef ? (innerW - sx - 3 * avgCharSize) : 0);
 
-                                if (size < (abbr.length * 2 * avgCharSize)) {
-                                    notes.push([center[0], center[1], d]);
-                                    text = null;
-                                } else if (size < (name.length * avgCharSize)) {
-                                    text = info.abbr;
-                                } else {
-                                    text = info.name;
-                                }
+                                return {
+                                    sx: sx,
+                                    sy: sy,
+                                    x: sx + r,
+                                    y: sy,
+                                    width: text.length * avgCharSize,
+                                    height: 10,
+                                    name: text,
+                                    r: r,
+                                    isRef: isRef
+                                };
+                            })
+                            .filter((d) => !isNaN(d.x) && !isNaN(d.y));
 
-                                if (text) {
-                                    node.append('text')
-                                        .attr('transform', `translate(${center})`)
-                                        .attr('class', `place-label-${c}`)
-                                        .text(text);
-                                }
-                            });
+                        var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
 
-                        notes = notes
-                            .filter(x => !isNaN(x[0]) && !isNaN(x[1]))
-                            .sort((a, b) => (a[1] - b[1]));
+                        d3.labeler()
+                            .label(labels)
+                            .anchor(anchors)
+                            .width(innerW)
+                            .height(innerH)
+                            .start(100);
 
-                        _.times(notes.length, (indexA) => {
-
-                            var collided = true;
-
-                            while (collided) {
-                                // swap items
-                                var centersRef = [];
-                                var combination = notes.map((x) => {
-                                    var textCenter = nextTextCenter([x[0], x[1]], centersRef);
-                                    return [
-                                        x[0],
-                                        x[1],
-                                        textCenter[0],
-                                        textCenter[1]
-                                    ];
-                                });
-
-                                var indexB = _(combination)
-                                    .findIndex((n) => utilsDraw.isIntersect(...(combination[indexA].concat(n))));
-
-                                if (indexB >= 0) {
-                                    var a = notes[indexA];
-                                    var b = notes[indexB];
-                                    notes[indexA] = b;
-                                    notes[indexB] = a;
-                                    collided = true;
-                                } else {
-                                    collided = false;
-                                }
-                            }
-                        });
-
-                        var textCentersRef = [];
-                        node.selectAll(`.place-label-notes-${c}`)
-                            .data(notes)
+                        node.selectAll(`.place-label-${c}`)
+                            .data(labels.filter((x, i) => !x.isRef))
                             .enter()
-                            .append('g')
-                            .attr('class', `place-label-notes-${c}`)
-                            .attr('-txt-', (x) => {
-                                var d = x[2];
-                                var center = [x[0], x[1]];
-                                var info = (d.properties || {});
-                                var name = info.name || '';
-                                var abbr = info.abbr || `${name.substr(0, 2)}..`;
+                            .append('text')
+                            .attr('class', `place-label-${c}`)
+                            .attr('transform', (d) => `translate(${[d.sx, d.sy]})`)
+                            .text(d => d.name);
 
-                                var textCenter = nextTextCenter(center, textCentersRef);
-                                node.append('text')
-                                    .attr('transform', `translate(${textCenter})`)
-                                    .attr('class', `place-label-${c}`)
-                                    .style('text-anchor', 'start')
-                                    .text(abbr);
+                        var references = labels.filter((x) => x.isRef);
+                        if (references.length < 6) {
+                            node.selectAll(`.place-label-ref-${c}`)
+                                .data(references)
+                                .enter()
+                                .append('text')
+                                .attr('class', `place-label-${c}`)
+                                .attr('transform', (d) => `translate(${[d.x, d.y]})`)
+                                .attr('text-anchor', 'start')
+                                .text(d => d.name);
 
-                                node.append('line')
-                                    .attr('x1', textCenter[0] - 3)
-                                    .attr('y1', textCenter[1] - 3)
-                                    .attr('x2', center[0])
-                                    .attr('y2', center[1])
-                                    .style('stroke', 'rgba(0, 0, 0, 0.5)')
-                                    .style('stroke-width', 0.5);
-                            });
+                            node.selectAll(`.place-label-ref-link-${c}`)
+                                .data(references)
+                                .enter()
+                                .append('line')
+                                .attr('class', `.place-label-link-${c}`)
+                                .attr('x1', (d) => (d.sx))
+                                .attr('y1', (d) => (d.sy))
+                                .attr('x2', (d) => (d.x - d.name.length * 0.6 * avgCharSize))
+                                .attr('y2', (d) => (d.y - 3.5))
+                                .attr('stroke-width', 0.25)
+                                .attr('stroke', 'gray');
+                        }
                     });
                 }
 
@@ -320,23 +288,52 @@ export class GeoMap {
 
                     var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
 
+                    var labels = placesFeature
+                        .features
+                        .map((d) => {
+                            var coords = d3Projection(d.geometry.coordinates);
+                            return {
+                                x: coords[0] + 3.5,
+                                y: coords[1] + 3.5,
+                                width: d.properties.name.length * avgCharSize,
+                                height: 12,
+                                name: d.properties.name
+                            };
+                        });
+
+                    var anchors = placesFeature
+                        .features
+                        .map((d) => {
+                            var coords = d3Projection(d.geometry.coordinates);
+                            return {
+                                x: coords[0],
+                                y: coords[1],
+                                r: 2.5
+                            };
+                        });
+
+                    d3.labeler()
+                        .label(labels)
+                        .anchor(anchors)
+                        .width(innerW)
+                        .height(innerH)
+                        .start(100);
+
                     node.selectAll('.place')
-                        .data(placesFeature.features)
+                        .data(anchors)
                         .enter()
                         .append('circle')
                         .attr('class', 'place')
-                        .attr('transform', (d) => `translate(${d3Projection(d.geometry.coordinates)})`)
-                        .attr('r', '2.5px');
+                        .attr('transform', (d) => `translate(${d.x},${d.y})`)
+                        .attr('r', (d) => `${d.r}px`);
 
                     node.selectAll('.place-label')
-                        .data(placesFeature.features)
+                        .data(labels)
                         .enter()
                         .append('text')
                         .attr('class', 'place-label')
-                        .attr('transform', (d) => `translate(${d3Projection(d.geometry.coordinates)})`)
-                        .attr('dx', '.35em')
-                        .attr('dy', '.35em')
-                        .text((d) => d.properties.name);
+                        .attr('transform', (d) => `translate(${d.x},${d.y})`)
+                        .text((d) => d.name);
                 }
             });
 
