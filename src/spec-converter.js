@@ -96,7 +96,7 @@ export class SpecConverter {
                             r[k] = null;
                         }
 
-                        if ((r[k] != null) && meta[k] && (['period', 'time'].indexOf(meta[k].scale) >= 0)) {
+                        if ((r[k] !== null) && meta[k] && (['period', 'time'].indexOf(meta[k].scale) >= 0)) {
                             r[k] = new Date(r[k]);
                         }
 
