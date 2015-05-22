@@ -8,6 +8,8 @@ import {FormatterRegistry} from '../formatter-registry';
 
 d3 = d3Labeler(d3);
 
+const avgCharSize = 5.5;
+
 var hierarchy = [
 
     'land',
@@ -34,7 +36,7 @@ export class GeoMap {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                defaultFill: '#EBEBEB',
+                defaultFill: 'rgba(128,128,128,0.25)',
                 padding: {l: 0, r: 0, t: 0, b: 0},
                 showNames: true
             });
@@ -90,9 +92,91 @@ export class GeoMap {
         }
     }
 
+    _calcLabels(topoJSONData, reverseContours, path) {
+
+        var innerW = this.W;
+        var innerH = this.H;
+
+        var labelsHashRef = {};
+
+        reverseContours.forEach((c) => {
+
+            var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
+
+            var labels = contourFeatures
+                .map((d) => {
+
+                    var info = (d.properties || {});
+
+                    var center = path.centroid(d);
+                    var bounds = path.bounds(d);
+
+                    var sx = center[0];
+                    var sy = center[1];
+
+                    var br = bounds[1][0];
+                    var bl = bounds[0][0];
+                    var size = br - bl;
+                    var name = info.name || '';
+                    var abbr = info.abbr || name;
+                    var isAbbr = (size < (name.length * avgCharSize));
+                    var text = isAbbr ? abbr : name;
+                    var isRef = (size < (2.5 * avgCharSize));
+                    var r = (isRef ? (innerW - sx - 3 * avgCharSize) : 0);
+
+                    return {
+                        id: `${c}-${d.id}`,
+                        sx: sx,
+                        sy: sy,
+                        x: sx + r,
+                        y: sy,
+                        width: text.length * avgCharSize,
+                        height: 10,
+                        name: text,
+                        r: r,
+                        isRef: isRef
+                    };
+                })
+                .filter((d) => !isNaN(d.x) && !isNaN(d.y));
+
+            var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
+
+            d3.labeler()
+                .label(labels)
+                .anchor(anchors)
+                .width(innerW)
+                .height(innerH)
+                .start(100);
+
+            labels
+                .filter((item) => !item.isRef)
+                .map((item) => {
+                    item.x = item.sx;
+                    item.y = item.sy;
+                    return item;
+                })
+                .reduce((memo, item) => {
+                    memo[item.id] = item;
+                    return memo;
+                },
+                labelsHashRef);
+
+            var references = labels.filter((item) => item.isRef);
+            if (references.length < 6) {
+                references.reduce((memo, item) => {
+                        memo[item.id] = item;
+                        return memo;
+                    },
+                    labelsHashRef);
+            }
+        });
+
+        return labelsHashRef;
+    }
+
     _drawMap(frames, topoJSONData) {
 
-        const avgCharSize = 5.5;
+        var self = this;
 
         var guide = this.config.guide;
         var options = this.config.options;
@@ -108,20 +192,6 @@ export class GeoMap {
 
         var innerW = this.W;
         var innerH = this.H;
-
-        var groupByCode = frames.reduce(
-            (groups, f) => {
-                var data = f.take();
-                return data.reduce(
-                    (memo, rec) => {
-                        var key = (rec[codeScale.dim] || '').toLowerCase();
-                        var val = rec[fillScale.dim];
-                        memo[key] = val;
-                        return memo;
-                    },
-                    groups);
-            },
-            {});
 
         var contours = hierarchy.filter((h) => (topoJSONData.objects || {}).hasOwnProperty(h));
 
@@ -177,112 +247,72 @@ export class GeoMap {
                 var node = this;
 
                 node.attr('class', 'map-container');
-                node.selectAll('.map-contour')
-                    .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
-                    .enter()
-                    .append('path')
-                    .attr('d', path)
-                    .attr('class', 'map-contour')
-                    .call(function () {
-                        // TODO: update map with contour objects names
-                        this.append('title')
-                            .text((d) => (d.properties || {}).name);
-                    });
 
-                var grayScale = ['#fbfbfb', '#fffefe', '#fdfdff', '#fdfdfd', '#ffffff'];
+                var labelsHash = {};
                 var reverseContours = contours.reduceRight((m, t) => (m.concat(t)), []);
-                reverseContours.forEach((c, i) => {
-                    node.append('path')
-                        .datum(topojson.mesh(topoJSONData, topoJSONData.objects[c]))
-                        .attr('fill', 'none')
-                        .attr('stroke', grayScale[i])
-                        .attr('stroke-linejoin', 'round')
-                        .attr('d', path);
-                });
 
                 if (guide.showNames) {
-
-                    reverseContours.forEach((c) => {
-
-                        var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
-
-                        var labels = contourFeatures
-                            .map((d) => {
-
-                                var info = (d.properties || {});
-
-                                var center = path.centroid(d);
-                                var bounds = path.bounds(d);
-
-                                var sx = center[0];
-                                var sy = center[1];
-
-                                var br = bounds[1][0];
-                                var bl = bounds[0][0];
-                                var size = br - bl;
-                                var name = info.name || '';
-                                var abbr = info.abbr || name;
-                                var isAbbr = (size < (name.length * avgCharSize));
-                                var text = isAbbr ? abbr : name;
-                                var isRef = (size < (2.5 * avgCharSize));
-                                var r = (isRef ? (innerW - sx - 3 * avgCharSize) : 0);
-
-                                return {
-                                    sx: sx,
-                                    sy: sy,
-                                    x: sx + r,
-                                    y: sy,
-                                    width: text.length * avgCharSize,
-                                    height: 10,
-                                    name: text,
-                                    r: r,
-                                    isRef: isRef
-                                };
-                            })
-                            .filter((d) => !isNaN(d.x) && !isNaN(d.y));
-
-                        var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
-
-                        d3.labeler()
-                            .label(labels)
-                            .anchor(anchors)
-                            .width(innerW)
-                            .height(innerH)
-                            .start(100);
-
-                        node.selectAll(`.place-label-${c}`)
-                            .data(labels.filter((x, i) => !x.isRef))
-                            .enter()
-                            .append('text')
-                            .attr('class', `place-label-${c}`)
-                            .attr('transform', (d) => `translate(${[d.sx, d.sy]})`)
-                            .text(d => d.name);
-
-                        var references = labels.filter((x) => x.isRef);
-                        if (references.length < 6) {
-                            node.selectAll(`.place-label-ref-${c}`)
-                                .data(references)
-                                .enter()
-                                .append('text')
-                                .attr('class', `place-label-${c}`)
-                                .attr('transform', (d) => `translate(${[d.x, d.y]})`)
-                                .attr('text-anchor', 'start')
-                                .text(d => d.name);
-
-                            node.selectAll(`.place-label-ref-link-${c}`)
-                                .data(references)
-                                .enter()
-                                .append('line')
-                                .attr('class', `.place-label-link-${c}`)
-                                .attr('x1', (d) => (d.sx))
-                                .attr('y1', (d) => (d.sy))
-                                .attr('x2', (d) => (d.x - d.name.length * 0.6 * avgCharSize))
-                                .attr('y2', (d) => (d.y - 3.5))
-                                .attr('stroke-width', 0.25)
-                                .attr('stroke', 'gray');
-                        }
-                    });
+                    labelsHash = self._calcLabels(topoJSONData, reverseContours, path);
                 }
+
+                var grayScale = ['#fbfbfb', '#fffefe', '#fdfdff', '#fdfdfd', '#ffffff'];
+                reverseContours.forEach((c, i) => {
+
+                    var getInfo = (d) => labelsHash[`${c}-${d.id}`];
+
+                    node.selectAll(`.map-contour-${c}`)
+                        .data(topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [])
+                        .enter()
+                        .append('g')
+                        .call(function() {
+
+                            var cont = this;
+
+                            cont.attr('class', `map-contour-${c}`)
+                                .attr('fill', 'none');
+
+                            cont.append('title')
+                                .text((d) => (d.properties || {}).name);
+
+                            cont.append('path')
+                                .attr('d', path)
+                                .attr('stroke', grayScale[i])
+                                .attr('stroke-opacity', 0.5)
+                                .attr('stroke-linejoin', 'round');
+
+                            cont.append('text')
+                                .attr('class', `place-label-${c}`)
+                                .attr('transform', (d) => {
+                                    var i = getInfo(d);
+                                    return i ? `translate(${[i.x, i.y]})` : '';
+                                })
+                                .text(d => {
+                                    var i = getInfo(d);
+                                    return i ? i.name : '';
+                                });
+
+                            cont.append('line')
+                                .attr('class', `place-label-link-${c}`)
+                                .attr('stroke', 'gray')
+                                .attr('stroke-width', 0.25)
+                                .attr('x1', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? i.sx : 0;
+                                })
+                                .attr('y1', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? i.sy : 0;
+                                })
+                                .attr('x2', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? (i.x - i.name.length * 0.6 * avgCharSize) : 0;
+                                })
+                                .attr('y2', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? (i.y - 3.5) : 0;
+                                });
+                        });
+                });
 
                 if (topoJSONData.objects.hasOwnProperty('places')) {
 
@@ -337,25 +367,41 @@ export class GeoMap {
                 }
             });
 
-        xmap.selectAll('.map-contour')
+        var groupByCode = frames.reduce(
+            (groups, f) => {
+                var data = f.take();
+                return data.reduce(
+                    (memo, rec) => {
+                        var key = (rec[codeScale.dim] || '').toLowerCase();
+                        memo[key] = rec[fillScale.dim];
+                        return memo;
+                    },
+                    groups);
+            },
+            {});
+
+        xmap.selectAll(`.map-contour-${contourToFill}`)
             .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
             .call(function () {
-                this.attr('fill', (d) => {
-                    var prop = d.properties;
-                    var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
-                        return prop.hasOwnProperty(c) && prop[c] && groupByCode.hasOwnProperty(prop[c].toLowerCase());
+                this.attr('class', `map-contour map-contour-${contourToFill}`)
+                    .attr('fill', (d) => {
+                        var prop = d.properties;
+                        var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
+                            return prop.hasOwnProperty(c) &&
+                                prop[c] &&
+                                groupByCode.hasOwnProperty(prop[c].toLowerCase());
+                        });
+
+                        var value;
+                        if (codes.length === 0) {
+                            // doesn't match
+                            value = guide.defaultFill;
+                        } else if (codes.length > 0) {
+                            value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
+                        }
+
+                        return value;
                     });
-
-                    var value;
-                    if (codes.length === 0) {
-                        // doesn't match
-                        value = guide.defaultFill;
-                    } else if (codes.length > 0) {
-                        value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
-                    }
-
-                    return value;
-                });
             });
 
         if (!latScale.dim || !lonScale.dim) {

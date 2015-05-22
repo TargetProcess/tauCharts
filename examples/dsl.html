@@ -100,6 +100,8 @@
 </head>
 <body>
 
+<div id="www" class="cc"></div>
+
 <div id="geo1" class="cc"></div>
 
 <div id="geo2" class="cc"></div>
@@ -172,6 +174,21 @@
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
 <script>
+
+    var chart = new tauCharts.Chart({
+        type: 'map',
+        latitude: 'y',
+        longitude: 'x',
+        size: 'size',
+        data: [
+            {x: 0.5, y: 51.32, color: 'green', size: 2}
+        ],
+        guide: {
+            sourcemap: 'http://localhost:63342/tauCharts/src/addons/world-countries.json'
+        }
+    });
+
+    chart.renderTo('#www');
 
     var chart = new tauCharts.Chart({
         type: 'map',
