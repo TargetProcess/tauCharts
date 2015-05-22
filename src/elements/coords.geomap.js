@@ -164,10 +164,9 @@ export class GeoMap {
             var references = labels.filter((item) => item.isRef);
             if (references.length < 6) {
                 references.reduce((memo, item) => {
-                        memo[item.id] = item;
-                        return memo;
-                    },
-                    labelsHashRef);
+                    memo[item.id] = item;
+                    return memo;
+                }, labelsHashRef);
             }
         });
 
@@ -264,7 +263,7 @@ export class GeoMap {
                         .data(topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [])
                         .enter()
                         .append('g')
-                        .call(function() {
+                        .call(function () {
 
                             var cont = this;
 
