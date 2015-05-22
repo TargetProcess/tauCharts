@@ -17,7 +17,7 @@ define(function (require) {
                     {
                         team: 'alpha',
                         proj: 'TP2',
-                        date: new Date('2015-01-01'),
+                        date: '2015-01-01',
                         count: 10
                     }
                 ],
@@ -153,6 +153,13 @@ define(function (require) {
                         team: 'alpha',
                         proj: {id: 13, name: 'TP2'},
                         date: new Date('2015-01-01'),
+                        week: '2015-01-04',
+                        count: 10
+                    },
+                    {
+                        team: 'alpha',
+                        proj: {id: 13, name: 'TP2'},
+                        date: new Date('2015-01-01'),
                         week: new Date('2015-01-04'),
                         count: 10
                     }
@@ -206,15 +213,26 @@ define(function (require) {
                             "count": {"type": "measure"},
                             "proj.name": {"type": "category"}
                         },
-                        "data": [{
-                            "team": "alpha",
-                            "proj": {"id": 13, "name": "TP2"},
-                            "date": "2015-01-01T00:00:00.000Z",
-                            "week": "2015-01-04T00:00:00.000Z",
-                            "count": 10,
-                            "proj.id": 13,
-                            "proj.name": "TP2"
-                        }]
+                        "data": [
+                            {
+                                "team": "alpha",
+                                "proj": {"id": 13, "name": "TP2"},
+                                "date": "2015-01-01T00:00:00.000Z",
+                                "week": "2015-01-04T00:00:00.000Z",
+                                "count": 10,
+                                "proj.id": 13,
+                                "proj.name": "TP2"
+                            },
+                            {
+                                "team": "alpha",
+                                "proj": {"id": 13, "name": "TP2"},
+                                "date": "2015-01-01T00:00:00.000Z",
+                                "week": "2015-01-04T00:00:00.000Z",
+                                "count": 10,
+                                "proj.id": 13,
+                                "proj.name": "TP2"
+                            }
+                        ]
                     }
                 },
                 "scales": {

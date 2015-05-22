@@ -72,6 +72,8 @@ export class SpecConverter {
 
     ruleAssignSourceData(srcSpec, gplSpec) {
 
+        var meta = srcSpec.spec.dimensions || {};
+
         var dims = gplSpec.sources['/'].dims;
 
         var reduceIterator = (row, key) => {
@@ -92,6 +94,10 @@ export class SpecConverter {
 
                         if (!r.hasOwnProperty(k)) {
                             r[k] = null;
+                        }
+
+                        if ((r[k] != null) && meta[k] && (['period', 'time'].indexOf(meta[k].scale) >= 0)) {
+                            r[k] = new Date(r[k]);
                         }
 
                         return r;
