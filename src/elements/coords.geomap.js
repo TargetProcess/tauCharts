@@ -254,7 +254,6 @@ export class GeoMap {
                     labelsHash = self._calcLabels(topoJSONData, reverseContours, path);
                 }
 
-                var grayScale = ['#fbfbfb', '#fffefe', '#fdfdff', '#fdfdfd', '#ffffff'];
                 reverseContours.forEach((c, i) => {
 
                     var getInfo = (d) => labelsHash[`${c}-${d.id}`];
@@ -267,17 +266,14 @@ export class GeoMap {
 
                             var cont = this;
 
-                            cont.attr('class', `map-contour-${c}`)
+                            cont.attr('class', `map-contour-${c} map-contour-level map-contour-level-${i}`)
                                 .attr('fill', 'none');
 
                             cont.append('title')
                                 .text((d) => (d.properties || {}).name);
 
                             cont.append('path')
-                                .attr('d', path)
-                                .attr('stroke', grayScale[i])
-                                .attr('stroke-opacity', 0.5)
-                                .attr('stroke-linejoin', 'round');
+                                .attr('d', path);
 
                             cont.append('text')
                                 .attr('class', `place-label-${c}`)
@@ -382,7 +378,7 @@ export class GeoMap {
         xmap.selectAll(`.map-contour-${contourToFill}`)
             .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
             .call(function () {
-                this.attr('class', `map-contour map-contour-${contourToFill}`)
+                this.classed('map-contour', true)
                     .attr('fill', (d) => {
                         var prop = d.properties;
                         var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
