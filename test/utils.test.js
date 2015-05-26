@@ -2,6 +2,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var assert = require('chai').assert;
     var utils = require('src/utils/utils').utils;
+    var drawUtils = require('src/utils/utils-draw').utilsDraw;
 
     var check = function (samples) {
         samples.forEach(function (s) {
@@ -126,6 +127,24 @@ define(function (require) {
 
             expect(fy('a1', 100, ['a1', 'a2'])).to.equal(0.68);
             expect(fy('a2', 100, ['a1', 'a2'])).to.equal(0.32);
+        });
+    });
+
+    describe('utils-draw', function() {
+        it('should support isIntersect method', function() {
+            var x0 = drawUtils.isIntersect(
+                0, 0, 1, 1,
+                1, 0, 2, 1
+            );
+
+            expect(x0).to.equal(false);
+
+            var x1 = drawUtils.isIntersect(
+                0, 0, 1, 1,
+                1, 0, 0, 1
+            );
+
+            expect(x1).to.equal(true);
         });
     });
 });
