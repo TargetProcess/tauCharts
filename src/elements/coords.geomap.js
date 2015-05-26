@@ -236,7 +236,7 @@ export class GeoMap {
 
         var xmap = node
             .selectAll('.map-container')
-            .data([`${innerW}${innerH}${contours.join('-')}`], (x) => x);
+            .data([`${innerW}${innerH}${contours.join('-')}`], _.identity);
         xmap.exit()
             .remove();
         xmap.enter()
