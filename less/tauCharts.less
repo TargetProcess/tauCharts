@@ -73,17 +73,55 @@
         display: block;
         overflow: hidden;
 
+        .place {
+            fill: #fff;
+            stroke: #000;
+            stroke-opacity: 0.7;
+            stroke-width: 0.5;
+        }
+
         .place-label {
+            opacity: 0.7;
             font-size: 11px;
+            color: #000000;
+            letter-spacing: 0.2px;
+            line-height: 13px;
+            text-anchor: start;
         }
 
         .place-label-countries,
         .place-label-subunits,
         .place-label-states {
-            fill: #777;
-            fill-opacity: .5;
-            font-size: 13px;
             text-anchor: middle;
+            font-size: 10px;
+            fill: rgba(51, 36, 0, 0.65);
+            letter-spacing: 0.5px;
+            line-height: 10px;
+            text-transform: uppercase;
+        }
+
+        .map-contour-level path {
+            stroke-opacity: 0.5;
+            stroke-linejoin: 'round';
+        }
+        .map-contour-level-0 path {
+            stroke: #fbfbfb;
+        }
+        .map-contour-level-1 path {
+            stroke: #fffefe;
+        }
+        .map-contour-level-2 path {
+            stroke: #fdfdff;
+        }
+        .map-contour-level-3 path {
+            stroke: #fdfdfd;
+        }
+        .map-contour-level-4 path {
+            stroke: #ffffff;
+        }
+
+        .map-contour:hover {
+            fill: rgba(255,191,0,0.50);
         }
 
         .axis {

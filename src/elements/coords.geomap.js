@@ -2,8 +2,13 @@ import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {default as topojson} from 'topojson';
 import {utilsDraw} from '../utils/utils-draw';
+import {d3Labeler} from '../utils/d3-labeler';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
+
+d3 = d3Labeler(d3);
+
+const avgCharSize = 5.5;
 
 var hierarchy = [
 
@@ -31,7 +36,7 @@ export class GeoMap {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                defaultFill: '#C0C0C0',
+                defaultFill: 'rgba(128,128,128,0.25)',
                 padding: {l: 0, r: 0, t: 0, b: 0},
                 showNames: true
             });
@@ -87,7 +92,90 @@ export class GeoMap {
         }
     }
 
+    _calcLabels(topoJSONData, reverseContours, path) {
+
+        var innerW = this.W;
+        var innerH = this.H;
+
+        var labelsHashRef = {};
+
+        reverseContours.forEach((c) => {
+
+            var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
+
+            var labels = contourFeatures
+                .map((d) => {
+
+                    var info = (d.properties || {});
+
+                    var center = path.centroid(d);
+                    var bounds = path.bounds(d);
+
+                    var sx = center[0];
+                    var sy = center[1];
+
+                    var br = bounds[1][0];
+                    var bl = bounds[0][0];
+                    var size = br - bl;
+                    var name = info.name || '';
+                    var abbr = info.abbr || name;
+                    var isAbbr = (size < (name.length * avgCharSize));
+                    var text = isAbbr ? abbr : name;
+                    var isRef = (size < (2.5 * avgCharSize));
+                    var r = (isRef ? (innerW - sx - 3 * avgCharSize) : 0);
+
+                    return {
+                        id: `${c}-${d.id}`,
+                        sx: sx,
+                        sy: sy,
+                        x: sx + r,
+                        y: sy,
+                        width: text.length * avgCharSize,
+                        height: 10,
+                        name: text,
+                        r: r,
+                        isRef: isRef
+                    };
+                })
+                .filter((d) => !isNaN(d.x) && !isNaN(d.y));
+
+            var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
+
+            d3.labeler()
+                .label(labels)
+                .anchor(anchors)
+                .width(innerW)
+                .height(innerH)
+                .start(100);
+
+            labels
+                .filter((item) => !item.isRef)
+                .map((item) => {
+                    item.x = item.sx;
+                    item.y = item.sy;
+                    return item;
+                })
+                .reduce((memo, item) => {
+                    memo[item.id] = item;
+                    return memo;
+                },
+                labelsHashRef);
+
+            var references = labels.filter((item) => item.isRef);
+            if (references.length < 6) {
+                references.reduce((memo, item) => {
+                    memo[item.id] = item;
+                    return memo;
+                }, labelsHashRef);
+            }
+        });
+
+        return labelsHashRef;
+    }
+
     _drawMap(frames, topoJSONData) {
+
+        var self = this;
 
         var guide = this.config.guide;
         var options = this.config.options;
@@ -101,19 +189,8 @@ export class GeoMap {
         var codeScale = this.codeScale;
         var fillScale = this.fillScale;
 
-        var groupByCode = frames.reduce(
-            (groups, f) => {
-                var data = f.take();
-                return data.reduce(
-                    (memo, rec) => {
-                        var key = rec[codeScale.dim];
-                        var val = rec[fillScale.dim];
-                        memo[key] = val;
-                        return memo;
-                    },
-                    groups);
-            },
-            {});
+        var innerW = this.W;
+        var innerH = this.H;
 
         var contours = hierarchy.filter((h) => (topoJSONData.objects || {}).hasOwnProperty(h));
 
@@ -157,81 +234,170 @@ export class GeoMap {
 
         var path = d3.geo.path().projection(d3Projection);
 
-        node.append('g')
-            .selectAll('path')
-            .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
-            .enter()
-            .append('path')
-            .attr('d', path)
-            .attr('fill', (d) => {
-                var props = d.properties;
-                var codes = ['c1', 'c2', 'c3']
-                    .filter((c) => (props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c])));
+        var xmap = node
+            .selectAll('.map-container')
+            .data([`${innerW}${innerH}${contours.join('-')}`], _.identity);
+        xmap.exit()
+            .remove();
+        xmap.enter()
+            .append('g')
+            .call(function () {
 
-                var value;
-                if (codes.length === 0) {
-                    // doesn't match
-                    value = guide.defaultFill;
-                } else if (codes.length > 0) {
-                    value = fillScale(groupByCode[props[codes[0]]]);
+                var node = this;
+
+                node.attr('class', 'map-container');
+
+                var labelsHash = {};
+                var reverseContours = contours.reduceRight((m, t) => (m.concat(t)), []);
+
+                if (guide.showNames) {
+                    labelsHash = self._calcLabels(topoJSONData, reverseContours, path);
                 }
 
-                return value;
-            })
+                reverseContours.forEach((c, i) => {
+
+                    var getInfo = (d) => labelsHash[`${c}-${d.id}`];
+
+                    node.selectAll(`.map-contour-${c}`)
+                        .data(topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [])
+                        .enter()
+                        .append('g')
+                        .call(function () {
+
+                            var cont = this;
+
+                            cont.attr('class', `map-contour-${c} map-contour-level map-contour-level-${i}`)
+                                .attr('fill', 'none');
+
+                            cont.append('title')
+                                .text((d) => (d.properties || {}).name);
+
+                            cont.append('path')
+                                .attr('d', path);
+
+                            cont.append('text')
+                                .attr('class', `place-label-${c}`)
+                                .attr('transform', (d) => {
+                                    var i = getInfo(d);
+                                    return i ? `translate(${[i.x, i.y]})` : '';
+                                })
+                                .text(d => {
+                                    var i = getInfo(d);
+                                    return i ? i.name : '';
+                                });
+
+                            cont.append('line')
+                                .attr('class', `place-label-link-${c}`)
+                                .attr('stroke', 'gray')
+                                .attr('stroke-width', 0.25)
+                                .attr('x1', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? i.sx : 0;
+                                })
+                                .attr('y1', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? i.sy : 0;
+                                })
+                                .attr('x2', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? (i.x - i.name.length * 0.6 * avgCharSize) : 0;
+                                })
+                                .attr('y2', (d) => {
+                                    var i = getInfo(d);
+                                    return (i && i.isRef) ? (i.y - 3.5) : 0;
+                                });
+                        });
+                });
+
+                if (topoJSONData.objects.hasOwnProperty('places')) {
+
+                    var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
+
+                    var labels = placesFeature
+                        .features
+                        .map((d) => {
+                            var coords = d3Projection(d.geometry.coordinates);
+                            return {
+                                x: coords[0] + 3.5,
+                                y: coords[1] + 3.5,
+                                width: d.properties.name.length * avgCharSize,
+                                height: 12,
+                                name: d.properties.name
+                            };
+                        });
+
+                    var anchors = placesFeature
+                        .features
+                        .map((d) => {
+                            var coords = d3Projection(d.geometry.coordinates);
+                            return {
+                                x: coords[0],
+                                y: coords[1],
+                                r: 2.5
+                            };
+                        });
+
+                    d3.labeler()
+                        .label(labels)
+                        .anchor(anchors)
+                        .width(innerW)
+                        .height(innerH)
+                        .start(100);
+
+                    node.selectAll('.place')
+                        .data(anchors)
+                        .enter()
+                        .append('circle')
+                        .attr('class', 'place')
+                        .attr('transform', (d) => `translate(${d.x},${d.y})`)
+                        .attr('r', (d) => `${d.r}px`);
+
+                    node.selectAll('.place-label')
+                        .data(labels)
+                        .enter()
+                        .append('text')
+                        .attr('class', 'place-label')
+                        .attr('transform', (d) => `translate(${d.x},${d.y})`)
+                        .text((d) => d.name);
+                }
+            });
+
+        var groupByCode = frames.reduce(
+            (groups, f) => {
+                var data = f.take();
+                return data.reduce(
+                    (memo, rec) => {
+                        var key = (rec[codeScale.dim] || '').toLowerCase();
+                        memo[key] = rec[fillScale.dim];
+                        return memo;
+                    },
+                    groups);
+            },
+            {});
+
+        xmap.selectAll(`.map-contour-${contourToFill}`)
+            .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
             .call(function () {
-                // TODO: update map with contour objects names
-                this.append('title')
-                    .text((d) => {
-                        var p = d.properties;
-                        return p.name || d.id;
+                this.classed('map-contour', true)
+                    .attr('fill', (d) => {
+                        var prop = d.properties;
+                        var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
+                            return prop.hasOwnProperty(c) &&
+                                prop[c] &&
+                                groupByCode.hasOwnProperty(prop[c].toLowerCase());
+                        });
+
+                        var value;
+                        if (codes.length === 0) {
+                            // doesn't match
+                            value = guide.defaultFill;
+                        } else if (codes.length > 0) {
+                            value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
+                        }
+
+                        return value;
                     });
             });
-
-        var grayScale = ['#fbfbfb', '#fffefe', '#fdfdff', '#fdfdfd', '#ffffff'];
-        var reverseContours = contours.reduceRight((m, t) => (m.concat(t)), []);
-        reverseContours.forEach((c, i) => {
-            node.append('path')
-                .datum(topojson.mesh(topoJSONData, topoJSONData.objects[c]))
-                .attr('fill', 'none')
-                .attr('stroke', grayScale[i])
-                .attr('stroke-linejoin', 'round')
-                .attr('d', path);
-        });
-
-        if (guide.showNames) {
-            reverseContours.forEach((c) => {
-                var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
-                node.selectAll(`.place-label-${c}`)
-                    .data(contourFeatures)
-                    .enter()
-                    .append('text')
-                    .attr('class', `place-label-${c}`)
-                    .attr('transform', (d) => `translate(${path.centroid(d)})`)
-                    .text((d) => ((d.properties || {}).name));
-            });
-        }
-
-        if (topoJSONData.objects.hasOwnProperty('places')) {
-
-            path.pointRadius(1.5);
-
-            var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
-
-            node.append('path')
-                .datum(placesFeature)
-                .attr('d', path)
-                .attr('class', 'place');
-
-            node.selectAll('.place-label')
-                .data(placesFeature.features)
-                .enter()
-                .append('text')
-                .attr('class', 'place-label')
-                .attr('transform', (d) => `translate(${d3Projection(d.geometry.coordinates)})`)
-                .attr('dx', '.35em')
-                .attr('dy', '.35em')
-                .text((d) => d.properties.name);
-        }
 
         if (!latScale.dim || !lonScale.dim) {
             return [];
@@ -268,7 +434,7 @@ export class GeoMap {
 
         var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
 
-        var frameGroups = options.container
+        var frameGroups = xmap
             .selectAll('.frame-id-' + options.uid)
             .data(frames.map(mapper), (f) => f.hash);
         frameGroups

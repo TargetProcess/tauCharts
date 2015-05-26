@@ -1,5 +1,6 @@
 define(function (require) {
     var worldMap = require('json!src/addons/world-countries');
+    var theUKMap = require('json!src/addons/uk-subunits-places');
     var expect = require('chai').expect;
     var assert = require('chai').assert;
     var schemes = require('schemes');
@@ -234,6 +235,32 @@ define(function (require) {
                 code: 'cc',
                 fill: 'x',
                 data: testData,
+                settings: settings
+            });
+
+            expect(function () {
+                chart2.renderTo(target);
+            }).to.not.throw();
+
+            done();
+        });
+
+        it('should draw UK map with places', function (done) {
+
+            this.timeout(drawTimeout);
+            setTimeout(done, drawTimeout);
+
+            var chart2 = new tauChart.Chart({
+                type: 'map',
+                latitude: 'y',
+                longitude: 'x',
+                size: 'size',
+                data: [
+                    {x: 0.5, y: 51.32, color: 'green', size: 2}
+                ],
+                guide: {
+                    sourcemap: theUKMap
+                },
                 settings: settings
             });
 

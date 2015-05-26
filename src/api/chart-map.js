@@ -73,7 +73,7 @@ var ChartMap = (config) => {
             expression: {operator: 'none', source: '/'},
 
             code: scalesPool('value', config.code, guide.code),
-            fill: scalesPool('fill', config.fill),
+            fill: scalesPool('fill', config.fill, guide.fill),
 
             size: scalesPool('size', config.size, guide.size),
             color: scalesPool('color', config.color, guide.color),
