@@ -14,12 +14,7 @@ var utilsDraw = {
         s = (-s1_y * (ax0 - bx0) + s1_x * (ay0 - by0)) / (-s2_x * s1_y + s1_x * s2_y);
         t = ( s2_x * (ay0 - by0) - s2_y * (ax0 - bx0)) / (-s2_x * s1_y + s1_x * s2_y);
 
-        if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-            // Collision detected
-            return 1;
-        }
-
-        return 0; // No collision
+        return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
     }
 };
 /* jshint ignore:end */
