@@ -9,12 +9,14 @@ import {unitsRegistry} from './units-registry';
 import {scalesRegistry} from './scales-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
+import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
 import {StackedInterval}   from './elements/element.interval.stacked';
+import {ParallelLine}      from './elements/element.parallel.line';
 
 import {ColorScale}     from './scales/color';
 import {SizeScale}      from './scales/size';
@@ -142,6 +144,7 @@ Plot.globalSettings = api.globalSettings;
 api.unitsRegistry
     .reg('COORDS.RECT', Cartesian)
     .reg('COORDS.MAP', GeoMap)
+    .reg('COORDS.PARALLEL', Parallel)
 
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
@@ -152,6 +155,8 @@ api.unitsRegistry
     .reg('POINT', Point)
     .reg('INTERVAL', Interval)
     .reg('LINE', Line)
+
+    .reg('PARALLEL/ELEMENT.LINE', ParallelLine)
     .reg('PIE', Pie);
 
 api.scalesRegistry
