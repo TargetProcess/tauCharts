@@ -22,7 +22,6 @@ export class Parallel {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                showGridLines: 'xy',
                 padding: {l: 50, r: 0, t: 50, b: 50}
             });
     }
@@ -96,17 +95,14 @@ export class Parallel {
             updateCellLayers(options.frameId, d3.select(this), cellFrame);
         };
 
-        var cells = this
+        var frms = this
             ._fnDrawGrid(options.container, node, innerH, innerW, options.frameId, '')
             .selectAll(`.parent-frame-${options.frameId}`)
             .data(frames, (f) => f.hash());
-        cells
-            .exit()
+        frms.exit()
             .remove();
-        cells
-            .each(cellFrameIterator);
-        cells
-            .enter()
+        frms.each(cellFrameIterator);
+        frms.enter()
             .append('g')
             .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
             .each(cellFrameIterator);
@@ -116,6 +112,7 @@ export class Parallel {
 
         var options = node.options;
         var padding = node.guide.padding;
+        var xsGuide = node.guide.x || [];
 
         var l = options.left + padding.l;
         var t = options.top + padding.t;
@@ -127,7 +124,7 @@ export class Parallel {
             .attr('class', 'graphical-report__cell cell')
             .attr('transform', utilsDraw.translate(l, t));
 
-        var fnDrawDimAxis = function (target, scale, position) {
+        var fnDrawDimAxis = function (target, scale, offset, labelText) {
 
             var axisD3 = d3.svg
                 .axis()
@@ -137,16 +134,22 @@ export class Parallel {
             var axis = target
                 .append('g')
                 .attr('class', 'y axis')
-                .attr('transform', utilsDraw.translate(...position))
+                .attr('transform', utilsDraw.translate(offset, 0))
                 .call(axisD3);
 
             axis.selectAll('.tick text')
                 .attr('transform', utilsDraw.rotate(0))
                 .style('text-anchor', 'end');
+
+            target
+                .append('text')
+                .attr('transform', utilsDraw.translate(offset, -10))
+                .attr('text-anchor', 'middle')
+                .text(labelText);
         };
 
         var offset = width / (scalesArr.length - 1);
-        scalesArr.forEach((scale, i) => fnDrawDimAxis(slot, scale, [i * offset, 0]));
+        scalesArr.forEach((scale, i) => fnDrawDimAxis(slot, scale, i * offset, xsGuide[i].label.text));
 
         var grid = slot
             .append('g')

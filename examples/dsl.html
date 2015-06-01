@@ -204,6 +204,7 @@
                 },
 
                 scales: {
+                    car: {type: 'ordinal', dim: 'car', source: '/'},
                     co2: {type: 'linear', dim: 'co2', source: '/'},
                     mpg: {type: 'linear', dim: 'mpg', source: '/'},
                     hp: {type: 'linear', dim: 'hp', source: '/'},
@@ -215,24 +216,25 @@
                 unit: {
                     type: 'COORDS.PARALLEL',
                     color: 'color',
-                    x: [
-                        'co2',
-                        'mpg',
-                        'hp'
-                    ],
+                    x: ['car', 'co2', 'mpg', 'hp'],
                     expression: {
                         operator: 'none',
                         source: '/'
+                    },
+                    guide: {
+                        padding: {l: 120, b: 50, t: 50, r: 50},
+                        x: [
+                            {label: {text: 'Car Name'       }},
+                            {label: {text: 'CO2'            }},
+                            {label: {text: 'Miles per galon'}},
+                            {label: {text: 'Horse power'    }}
+                        ]
                     },
                     units:[
                         {
                             type: 'PARALLEL/ELEMENT.LINE',
                             color: 'color',
-                            x: [
-                                'co2',
-                                'mpg',
-                                'hp'
-                            ],
+                            x: ['car', 'co2', 'mpg', 'hp'],
                             expression: {
                                 operator: 'none',
                                 source: '/'
@@ -241,6 +243,8 @@
                     ]
                 }
             }).renderTo('#parallel-container');
+
+    throw 123;
 
     var chart = new tauCharts.Chart({
         type: 'map',
