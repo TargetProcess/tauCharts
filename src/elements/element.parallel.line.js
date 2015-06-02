@@ -4,7 +4,11 @@ export class ParallelLine {
 
     constructor(config) {
         this.config = config;
-        this.config.guide = this.config.guide || {};
+        this.config.guide = _.defaults(
+            this.config.guide || {},
+            {
+                // params here
+            });
     }
 
     drawLayout(fnCreateScale) {
@@ -13,7 +17,7 @@ export class ParallelLine {
         var options = config.options;
 
         this.color = fnCreateScale('color', config.color, {});
-        this.scalesMap = config.x.reduce(
+        this.scalesMap = config.columns.reduce(
             (memo, xi) => {
                 memo[xi] = fnCreateScale('pos', xi, [options.height, 0]);
                 return memo;
@@ -27,25 +31,27 @@ export class ParallelLine {
 
         var node = this.config;
         var options = this.config.options;
+        var guide = node.guide;
 
         var scalesMap = this.scalesMap;
         var color = this.color;
 
-        var segment = options.width / (node.x.length - 1);
-        var segmentMap = node.x
+        var segment = options.width / (node.columns.length - 1);
+        var segmentMap = node
+            .columns
             .reduce((memo, p, i) => {
                 memo[p] = (i * segment);
                 return memo;
             },
             {});
 
-        var fnLine = d3.svg
+        var d3Line = d3.svg
             .line()
             .x((d) => segmentMap[d.key])
             .y((d) => scalesMap[d.key](d.val));
 
         var updatePaths = function () {
-            this.attr('d', fnLine);
+            this.attr('d', d3Line);
         };
 
         var updateLines = function () {
@@ -64,7 +70,7 @@ export class ParallelLine {
         var categories = frames.reduce(
             (memo, data) => memo.concat(data
                 .take()
-                .map((row) => node.x.map((xi) => ({key: xi, val: row[xi], c: row[color.dim]})))),
+                .map((row) => node.columns.map((xi) => ({key: xi, val: row[xi], c: row[color.dim]})))),
             []);
 
         var elem = options

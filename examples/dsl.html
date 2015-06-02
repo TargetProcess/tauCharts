@@ -216,25 +216,25 @@
                 unit: {
                     type: 'COORDS.PARALLEL',
                     color: 'color',
-                    x: ['car', 'co2', 'mpg', 'hp'],
+                    columns: ['car', 'hp', 'co2', 'mpg'],
                     expression: {
                         operator: 'none',
                         source: '/'
                     },
                     guide: {
                         padding: {l: 120, b: 50, t: 50, r: 50},
-                        x: [
+                        columns: [
                             {label: {text: 'Car Name'       }},
+                            {label: {text: 'Horse power'    }},
                             {label: {text: 'CO2'            }},
-                            {label: {text: 'Miles per galon'}},
-                            {label: {text: 'Horse power'    }}
+                            {label: {text: 'Miles per galon'}}
                         ]
                     },
                     units:[
                         {
                             type: 'PARALLEL/ELEMENT.LINE',
                             color: 'color',
-                            x: ['car', 'co2', 'mpg', 'hp'],
+                            columns: ['car', 'hp', 'co2', 'mpg'],
                             expression: {
                                 operator: 'none',
                                 source: '/'
@@ -244,7 +244,7 @@
                 }
             }).renderTo('#parallel-container');
 
-    throw 123;
+    // throw 123;
 
     var chart = new tauCharts.Chart({
         type: 'map',

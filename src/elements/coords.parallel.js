@@ -28,10 +28,10 @@ export class Parallel {
 
     drawLayout(fnCreateScale) {
 
-        var node = this.config;
+        var cfg = this.config;
 
-        var options = node.options;
-        var padding = node.guide.padding;
+        var options = cfg.options;
+        var padding = cfg.guide.padding;
 
         var innerWidth = options.width - (padding.l + padding.r);
         var innerHeight = options.height - (padding.t + padding.b);
@@ -39,16 +39,16 @@ export class Parallel {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        this.scaleObjArr = node.x.map((xi) => fnCreateScale('pos', xi, [innerHeight, 0]));
+        this.scaleObjArr = cfg.columns.map((xi) => fnCreateScale('pos', xi, [innerHeight, 0]));
 
         return this;
     }
 
     drawFrames(frames, continuation) {
 
-        var node = _.extend({}, this.config);
-        var options = node.options;
-        var padding = node.guide.padding;
+        var cfg = _.extend({}, this.config);
+        var options = cfg.options;
+        var padding = cfg.guide.padding;
 
         var innerW = options.width - (padding.l + padding.r);
         var innerH = options.height - (padding.t + padding.b);
@@ -96,7 +96,7 @@ export class Parallel {
         };
 
         var frms = this
-            ._fnDrawGrid(options.container, node, innerH, innerW, options.frameId, '')
+            ._fnDrawGrid(options.container, cfg, innerH, innerW, options.frameId, '')
             .selectAll(`.parent-frame-${options.frameId}`)
             .data(frames, (f) => f.hash());
         frms.exit()
@@ -112,7 +112,7 @@ export class Parallel {
 
         var options = node.options;
         var padding = node.guide.padding;
-        var xsGuide = node.guide.x || [];
+        var colsGuide = node.guide.columns || [];
 
         var l = options.left + padding.l;
         var t = options.top + padding.t;
@@ -143,13 +143,14 @@ export class Parallel {
 
             target
                 .append('text')
+                .attr('class', 'label')
                 .attr('transform', utilsDraw.translate(offset, -10))
                 .attr('text-anchor', 'middle')
                 .text(labelText);
         };
 
         var offset = width / (scalesArr.length - 1);
-        scalesArr.forEach((scale, i) => fnDrawDimAxis(slot, scale, i * offset, xsGuide[i].label.text));
+        scalesArr.forEach((scale, i) => fnDrawDimAxis(slot, scale, i * offset, colsGuide[i].label.text));
 
         var grid = slot
             .append('g')
