@@ -141,10 +141,9 @@ export class Parallel {
                 .attr('transform', utilsDraw.rotate(0))
                 .style('text-anchor', 'end');
 
-            target
-                .append('text')
+            axis.append('text')
                 .attr('class', 'label')
-                .attr('transform', utilsDraw.translate(offset, -10))
+                .attr('transform', utilsDraw.translate(0, -10))
                 .attr('text-anchor', 'middle')
                 .text(labelText);
         };
