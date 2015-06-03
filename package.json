@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "almond": "0.3.1",
-    "autoprefixer-core": "^5.1.7",
+    "autoprefixer-core": "^5.2.0",
     "babel": "^4.7.9",
     "babel-core": "^4.7.9",
     "babel-loader": "^4.1.0",
@@ -52,7 +52,7 @@
     "grunt-gh-pages": "^0.10.0",
     "grunt-jscs": "^1.5.0",
     "grunt-karma": "0.10.1",
-    "grunt-postcss": "^0.3.0",
+    "grunt-postcss": "0.4.0",
     "grunt-shell": "",
     "grunt-webpack": "^1.0.8",
     "imports-loader": "^0.6.3",

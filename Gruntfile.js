@@ -119,7 +119,7 @@ module.exports = function (grunt) {
             }
         },
         postcss: {
-            options: {processors: [autoprefixer({browsers: ['last 2 version']}).postcss]},
+            options: {processors: [autoprefixer({browsers: ['last 2 version']})]},
             dist: {src: 'css/*.css'}
         },
         copy: {
