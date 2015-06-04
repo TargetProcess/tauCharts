@@ -39,7 +39,17 @@ export class Parallel {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        this.scaleObjArr = cfg.columns.map((xi) => fnCreateScale('pos', xi, [innerHeight, 0]));
+        this.columnsScales = cfg.columns.map((xi) => fnCreateScale('pos', xi, [innerHeight, 0]));
+
+        var step = innerWidth / (cfg.columns.length - 1);
+        var colsMap = cfg.columns.reduce(
+            (memo, p, i) => {
+                memo[p] = (i * step);
+                return memo;
+            },
+            {});
+
+        this.xBase = ((p) => colsMap[p]);
 
         return this;
     }
@@ -96,7 +106,7 @@ export class Parallel {
         };
 
         var frms = this
-            ._fnDrawGrid(options.container, cfg, innerH, innerW, options.frameId, '')
+            ._fnDrawGrid(options.container, cfg, options.frameId, '')
             .selectAll(`.parent-frame-${options.frameId}`)
             .data(frames, (f) => f.hash());
         frms.exit()
@@ -108,54 +118,132 @@ export class Parallel {
             .each(cellFrameIterator);
     }
 
-    _fnDrawGrid(container, node, height, width, frameId, uniqueHash) {
+    _fnDrawGrid(container, config, frameId, uniqueHash) {
 
-        var options = node.options;
-        var padding = node.guide.padding;
-        var colsGuide = node.guide.columns || [];
+        var self = this;
+        var options = config.options;
+        var padding = config.guide.padding;
+        var colsGuide = config.guide.columns || {};
+
+        var xBase = this.xBase;
 
         var l = options.left + padding.l;
         var t = options.top + padding.t;
 
-        var scalesArr = this.scaleObjArr;
+        var columnsScales = this.columnsScales;
+        var d3Axis = d3.svg.axis().orient('left');
 
-        var slot = container
+        var grid = container
+            .selectAll(`.grid_${frameId}`)
+            .data([uniqueHash], (x => x));
+        grid.exit()
+            .remove();
+        grid.enter()
             .append('g')
-            .attr('class', 'graphical-report__cell cell')
-            .attr('transform', utilsDraw.translate(l, t));
+            .attr('class', `grid grid_${frameId}`)
+            .attr('transform', utilsDraw.translate(l, t))
+            .call(function () {
 
-        var fnDrawDimAxis = function (target, scale, offset, labelText) {
+                var cols = this
+                    .selectAll('.column')
+                    .data(columnsScales);
+                cols.enter()
+                    .append('g')
+                    .attr('class', 'column')
+                    .attr('transform', (d) => utilsDraw.translate(xBase(d.dim), 0));
 
-            var axisD3 = d3.svg
-                .axis()
-                .scale(scale)
-                .orient('left');
+                cols.append('g')
+                    .attr('class', 'y axis')
+                    .each(function (d) {
+                        d3.select(this).call(d3Axis.scale(d));
+                    })
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('text-anchor', 'middle')
+                    .attr('y', -9)
+                    .text((d) => ((colsGuide[d.dim] || {}).label || {}).text || d.dim);
 
-            var axis = target
-                .append('g')
-                .attr('class', 'y axis')
-                .attr('transform', utilsDraw.translate(offset, 0))
-                .call(axisD3);
-
-            axis.selectAll('.tick text')
-                .attr('transform', utilsDraw.rotate(0))
-                .style('text-anchor', 'end');
-
-            axis.append('text')
-                .attr('class', 'label')
-                .attr('transform', utilsDraw.translate(0, -10))
-                .attr('text-anchor', 'middle')
-                .text(labelText);
-        };
-
-        var offset = width / (scalesArr.length - 1);
-        scalesArr.forEach((scale, i) => fnDrawDimAxis(slot, scale, i * offset, colsGuide[i].label.text));
-
-        var grid = slot
-            .append('g')
-            .attr('class', 'grid')
-            .attr('transform', utilsDraw.translate(0, 0));
+                if (config.guide.enableBrushing || true) {
+                    self._brushingDecorate(cols, colsGuide);
+                }
+            });
 
         return grid;
+    }
+
+    _brushingDecorate(cols, columnsGuide = {}) {
+
+        var columnsScalesMap = {};
+        var columnsBrushes = {};
+
+        var onBrushStartEventHandler = (e) => e;
+        var onBrushEndEventHandler = (e) => e;
+        var onBrushEventHandler = function () {
+            var eventBrush = Object
+                .keys(columnsBrushes)
+                .filter((k) => !columnsBrushes[k].empty())
+                .map((k) => {
+                    var ext = columnsBrushes[k].extent();
+                    var rng = [];
+                    if (columnsScalesMap[k].descrete) {
+                        rng = columnsScalesMap[k]
+                            .domain()
+                            .filter((val) => {
+                                var pos = columnsScalesMap[k](val);
+                                return (ext[0] <= pos) && (ext[1] >= pos);
+                            });
+                    } else {
+                        rng = [ext[0], ext[1]];
+                    }
+
+                    return {
+                        dim: k,
+                        func: columnsScalesMap[k].descrete ? 'inset' : 'between',
+                        args: rng
+                    };
+                });
+
+            console.log('brush', eventBrush);
+        };
+
+        cols.append('g')
+            .attr('class', 'brush')
+            .each(function (d) {
+                var dim = d.dim;
+                columnsScalesMap[dim] = d;
+                columnsBrushes[dim] = d3.svg
+                    .brush()
+                    .y(d)
+                    .on('brushstart', onBrushStartEventHandler)
+                    .on('brush', onBrushEventHandler)
+                    .on('brushend', onBrushEndEventHandler);
+
+                d3.select(this)
+                    .classed(`brush-${dim}`, true)
+                    .call(columnsBrushes[dim]);
+            })
+            .selectAll('rect')
+            .attr('x', -8)
+            .attr('width', 16);
+
+        Object
+            .keys(columnsGuide)
+            .filter((k) => columnsScalesMap[k] && columnsGuide[k] && columnsGuide[k].brush)
+            .forEach((k) => {
+                var brushExt = columnsGuide[k].brush;
+                var ext = [];
+                if (columnsScalesMap[k].descrete) {
+                    var positions = brushExt.map(columnsScalesMap[k]).filter(x => (x >= 0));
+                    var stepSize = columnsScalesMap[k].stepSize() / 2;
+                    ext = [Math.min(...positions) - stepSize, Math.max(...positions) + stepSize];
+                } else {
+                    ext = [brushExt[0], brushExt[1]];
+                }
+                columnsBrushes[k].extent(ext);
+                columnsBrushes[k](d3.select(`.brush-${k}`));
+                columnsBrushes[k].event(d3.select(`.brush-${k}`));
+            });
+
+        return cols;
     }
 }

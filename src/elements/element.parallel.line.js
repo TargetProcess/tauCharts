@@ -24,6 +24,16 @@ export class ParallelLine {
             },
             {});
 
+        var step = options.width / (config.columns.length - 1);
+        var colsMap = config.columns.reduce(
+            (memo, p, i) => {
+                memo[p] = (i * step);
+                return memo;
+            },
+            {});
+
+        this.xBase = ((p) => colsMap[p]);
+
         return this;
     }
 
@@ -31,57 +41,39 @@ export class ParallelLine {
 
         var node = this.config;
         var options = this.config.options;
-        var guide = node.guide;
 
         var scalesMap = this.scalesMap;
+        var xBase = this.xBase;
         var color = this.color;
 
-        var segment = options.width / (node.columns.length - 1);
-        var segmentMap = node
-            .columns
-            .reduce((memo, p, i) => {
-                memo[p] = (i * segment);
-                return memo;
-            },
-            {});
+        var d3Line = d3.svg.line();
 
-        var d3Line = d3.svg
-            .line()
-            .x((d) => segmentMap[d.key])
-            .y((d) => scalesMap[d.key](d.val));
-
-        var updatePaths = function () {
-            this.attr('d', d3Line);
+        var updatePath = function () {
+            this.attr('class', (row) => `${CSS_PREFIX}__line line ${color(row[color.dim])}`)
+                .attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[p])])));
         };
 
-        var updateLines = function () {
-            var line = this
-                .attr('class', (pairs) => `graphical-report__line line ${color(pairs[0].c)}`)
+        var updateFrame = function () {
+            var path = this
                 .selectAll('path')
-                .data((d) => ([d]));
-            line.exit()
+                .data(f => f.take());
+            path.exit()
                 .remove();
-            line.call(updatePaths);
-            line.enter()
+            path.call(updatePath);
+            path.enter()
                 .append('path')
-                .call(updatePaths);
+                .call(updatePath);
         };
 
-        var categories = frames.reduce(
-            (memo, data) => memo.concat(data
-                .take()
-                .map((row) => node.columns.map((xi) => ({key: xi, val: row[xi], c: row[color.dim]})))),
-            []);
-
-        var elem = options
-            .container
-            .selectAll('.line')
-            .data(categories);
-        elem.exit()
+        var part = options.container
+            .selectAll('.lines-frame')
+            .data(frames, (f => f.hash()));
+        part.exit()
             .remove();
-        elem.call(updateLines);
-        elem.enter()
+        part.call(updateFrame);
+        part.enter()
             .append('g')
-            .call(updateLines);
+            .attr('class', 'lines-frame')
+            .call(updateFrame);
     }
 }

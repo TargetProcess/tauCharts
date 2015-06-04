@@ -207,7 +207,7 @@
                     car: {type: 'ordinal', dim: 'car', source: '/'},
                     co2: {type: 'linear', dim: 'co2', source: '/'},
                     mpg: {type: 'linear', dim: 'mpg', source: '/'},
-                    hp: {type: 'linear', dim: 'hp', source: '/'},
+                    hp : {type: 'linear', dim: 'hp', source: '/'},
 //                  size: {type: 'size', dim: 'count', source: '/', mid: 5, min: 1, max: 10},
 //                  color: {type: 'color', dim: 'city', source: '/'},
                     color: {type: 'color', source: '?'}
@@ -223,12 +223,18 @@
                     },
                     guide: {
                         padding: {l: 120, b: 50, t: 50, r: 50},
-                        columns: [
-                            {label: {text: 'Car Name'       }},
-                            {label: {text: 'Horse power'    }},
-                            {label: {text: 'CO2'            }},
-                            {label: {text: 'Miles per galon'}}
-                        ]
+                        columns: {
+                            car: {
+                                label: {text: 'Car Name'},
+                                brush: ['Lexus RX', 'BMV X5']
+                            },
+                            hp: {
+                                label: {text: 'Horse power'},
+                                brush: [150, 250]
+                            },
+                            co2: {label: {text: 'CO2'}},
+                            mpg: {label: {text: 'Miles per galon'}}
+                        }
                     },
                     units:[
                         {
@@ -244,7 +250,7 @@
                 }
             }).renderTo('#parallel-container');
 
-    // throw 123;
+    throw 123;
 
     var chart = new tauCharts.Chart({
         type: 'map',

@@ -45,6 +45,7 @@ export class PeriodScale extends BaseScale {
 
         scale.scaleType = 'period';
         scale.stepSize = (key) => (size / varSet.length);
+        scale.descrete = true;
 
         return this.toBaseScale(scale, interval);
     }
