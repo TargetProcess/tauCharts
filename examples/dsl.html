@@ -173,6 +173,7 @@
 <script src="../plugins/legend.js"></script>
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
+<script src="../plugins/parallel-brushing.js"></script>
 <script>
 
     var parallelChart = new tauCharts.Plot(
@@ -247,7 +248,12 @@
                             }
                         }
                     ]
-                }
+                },
+
+                plugins: [
+                    tauCharts.api.plugins.get('parallel-brushing')()
+                ]
+
             }).renderTo('#parallel-container');
 
     throw 123;

@@ -76,4 +76,12 @@ export class ParallelLine {
             .attr('class', 'lines-frame')
             .call(updateFrame);
     }
+
+    highlight(filter) {
+        this.config
+            .options
+            .container
+            .selectAll('.lines-frame path')
+            .attr('opacity', (d) => (filter(d) ? '' : 0.5));
+    }
 }

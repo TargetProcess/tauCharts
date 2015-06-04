@@ -159,7 +159,7 @@ export class Plot extends Emitter {
 
         this.configGPL.settings.size = size;
 
-        var gpl = utils.clone(this.configGPL);
+        var gpl = utils.clone(_.omit(this.configGPL, 'plugins'));
         gpl.sources = this.getData({isNew: true});
         gpl.settings = this.configGPL.settings;
 

@@ -1,5 +1,6 @@
 import {default as d3} from 'd3';
 import {default as _} from 'underscore';
+import {Emitter} from '../event';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
@@ -11,7 +12,7 @@ import {
     d3_decorator_prettify_categorical_axis_ticks
     } from '../utils/d3-decorators';
 
-export class Parallel {
+export class Parallel extends Emitter {
 
     constructor(config) {
 
@@ -178,7 +179,7 @@ export class Parallel {
 
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
-        var onBrushEventHandler = function () {
+        var onBrushEventHandler = (e) => {
             var eventBrush = Object
                 .keys(columnsBrushes)
                 .filter((k) => !columnsBrushes[k].empty())
@@ -203,7 +204,7 @@ export class Parallel {
                     };
                 });
 
-            console.log('brush', eventBrush);
+            this.fire('brush', eventBrush);
         };
 
         cols.append('g')
