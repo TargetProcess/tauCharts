@@ -1,6 +1,7 @@
 import {CSS_PREFIX} from '../const';
+import {Emitter} from '../event';
 
-export class ParallelLine {
+export class ParallelLine extends Emitter {
 
     constructor(config) {
         this.config = config;
@@ -9,6 +10,8 @@ export class ParallelLine {
             {
                 // params here
             });
+
+        this.on('highlight', (sender, e) => this.highlight(e));
     }
 
     drawLayout(fnCreateScale) {

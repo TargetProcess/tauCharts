@@ -18,7 +18,8 @@
         var settings = _.defaults(
             xSettings || {},
             {
-                verbose: false
+                verbose: false,
+                forceBrush: {}
             });
 
         var plugin = {
@@ -27,6 +28,15 @@
                 if (settings.verbose) {
                     plugin.panel = chart.insertToRightSidebar(this.template());
                 }
+
+                chart.traverseSpec(
+                    chart.getConfig(),
+                    function (unit) {
+                        if (unit && unit.type === 'COORDS.PARALLEL') {
+                            unit.guide = unit.guide || {};
+                            unit.guide.enableBrushing = true;
+                        }
+                    });
             },
 
             onRender: function (chart) {
@@ -35,7 +45,7 @@
                     .select(function (node) {
                         return node.config.type === 'PARALLEL/ELEMENT.LINE';
                     })
-                    .forEach(function (node, i) {
+                    .map(function (node, i) {
                         node.parentUnit.on('brush', function (sender, e) {
 
                             var predicates = e.map(function (item) {
@@ -62,7 +72,7 @@
                             });
 
                             var matches = 0;
-                            node.highlight(function (row) {
+                            node.fire('highlight', function (row) {
 
                                 var r = predicates.every(function (func) {
                                     return func(row);
@@ -89,6 +99,12 @@
                                 );
                             }
                         });
+
+                        return node;
+                    })
+                    .map(function (node) {
+                        node.parentUnit.fire('force-brush', settings.forceBrush);
+                        return node;
                     });
             },
 

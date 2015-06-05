@@ -23,8 +23,13 @@ export class Parallel extends Emitter {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                padding: {l: 50, r: 0, t: 50, b: 50}
+                padding: {l: 50, r: 0, t: 50, b: 50},
+                enableBrushing: false
             });
+
+        this.columnsBrushes = {};
+
+        this.on('force-brush', (sender, e) => this._forceBrushing(e));
     }
 
     drawLayout(fnCreateScale) {
@@ -41,6 +46,12 @@ export class Parallel extends Emitter {
         this.H = innerHeight;
 
         this.columnsScales = cfg.columns.map((xi) => fnCreateScale('pos', xi, [innerHeight, 0]));
+        this.columnsScalesMap = this.columnsScales.reduce(
+            (memo, scale) => {
+                memo[scale.dim] = scale;
+                return memo;
+            },
+            {});
 
         var step = innerWidth / (cfg.columns.length - 1);
         var colsMap = cfg.columns.reduce(
@@ -164,18 +175,18 @@ export class Parallel extends Emitter {
                     .attr('y', -9)
                     .text((d) => ((colsGuide[d.dim] || {}).label || {}).text || d.dim);
 
-                if (config.guide.enableBrushing || true) {
-                    self._brushingDecorate(cols, colsGuide);
+                if (config.guide.enableBrushing) {
+                    self._enableBrushing(cols);
                 }
             });
 
         return grid;
     }
 
-    _brushingDecorate(cols, columnsGuide = {}) {
+    _enableBrushing(cols) {
 
-        var columnsScalesMap = {};
-        var columnsBrushes = {};
+        var columnsScalesMap = this.columnsScalesMap;
+        var columnsBrushes = this.columnsBrushes;
 
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
@@ -210,9 +221,7 @@ export class Parallel extends Emitter {
         cols.append('g')
             .attr('class', 'brush')
             .each(function (d) {
-                var dim = d.dim;
-                columnsScalesMap[dim] = d;
-                columnsBrushes[dim] = d3.svg
+                columnsBrushes[d.dim] = d3.svg
                     .brush()
                     .y(d)
                     .on('brushstart', onBrushStartEventHandler)
@@ -220,18 +229,26 @@ export class Parallel extends Emitter {
                     .on('brushend', onBrushEndEventHandler);
 
                 d3.select(this)
-                    .classed(`brush-${dim}`, true)
-                    .call(columnsBrushes[dim]);
+                    .classed(`brush-${d.dim}`, true)
+                    .call(columnsBrushes[d.dim]);
             })
             .selectAll('rect')
             .attr('x', -8)
             .attr('width', 16);
 
+        return cols;
+    }
+
+    _forceBrushing(colsBrushSettings = {}) {
+
+        var columnsBrushes = this.columnsBrushes;
+        var columnsScalesMap = this.columnsScalesMap;
+
         Object
-            .keys(columnsGuide)
-            .filter((k) => columnsScalesMap[k] && columnsGuide[k] && columnsGuide[k].brush)
+            .keys(colsBrushSettings)
+            .filter((k) => columnsBrushes[k] && columnsScalesMap[k] && colsBrushSettings[k])
             .forEach((k) => {
-                var brushExt = columnsGuide[k].brush;
+                var brushExt = colsBrushSettings[k];
                 var ext = [];
                 if (columnsScalesMap[k].descrete) {
                     var positions = brushExt.map(columnsScalesMap[k]).filter(x => (x >= 0));
@@ -244,7 +261,5 @@ export class Parallel extends Emitter {
                 columnsBrushes[k](d3.select(`.brush-${k}`));
                 columnsBrushes[k].event(d3.select(`.brush-${k}`));
             });
-
-        return cols;
     }
 }

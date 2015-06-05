@@ -251,12 +251,16 @@
                 },
 
                 plugins: [
-                    tauCharts.api.plugins.get('parallel-brushing')()
+                    tauCharts.api.plugins.get('parallel-brushing')({
+                        forceBrush: {
+                            hp: [150, 200]
+                        }
+                    })
                 ]
 
             }).renderTo('#parallel-container');
 
-    throw 123;
+    //throw 123;
 
     var chart = new tauCharts.Chart({
         type: 'map',
