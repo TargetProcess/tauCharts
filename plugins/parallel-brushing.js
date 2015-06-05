@@ -33,7 +33,7 @@
 
                 chart
                     .select(function (node) {
-                        return node.config.type === "PARALLEL/ELEMENT.LINE";
+                        return node.config.type === 'PARALLEL/ELEMENT.LINE';
                     })
                     .forEach(function (node, i) {
                         node.parentUnit.on('brush', function (sender, e) {
