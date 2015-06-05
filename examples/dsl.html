@@ -101,6 +101,7 @@
 <body>
 
 <div id="parallel-container" class="cc"></div>
+<div id="parallel-container1" class="cc"></div>
 
 <div id="www" class="cc"></div>
 
@@ -175,6 +176,23 @@
 <script src="../plugins/settings.js"></script>
 <script src="../plugins/parallel-brushing.js"></script>
 <script>
+
+    d3.csv("http://bl.ocks.org/jasondavies/raw/1341281/85c1cedeba1ba1b9bdd2f5e9aac16ef7dc5bf2e1/cars.csv", function(error, cars) {
+        var parallelChart = new tauCharts.Chart(
+                {
+                    type: 'parallel',
+                    data: cars,
+                    columns: ['economy (mpg)','cylinders','displacement (cc)','power (hp)','0-60 mph (s)','year'],
+                    plugins: [
+                        tauCharts.api.plugins.get('parallel-brushing')({
+                            forceBrush: {
+                                // hp: [150, 200]
+                            }
+                        })
+                    ]
+
+                }).renderTo('#parallel-container');
+    });
 
     var parallelChart = new tauCharts.Plot(
             {
@@ -258,7 +276,7 @@
                     })
                 ]
 
-            }).renderTo('#parallel-container');
+            }).renderTo('#parallel-container1');
 
     //throw 123;
 

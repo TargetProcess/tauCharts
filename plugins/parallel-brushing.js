@@ -41,6 +41,19 @@
 
             onRender: function (chart) {
 
+                var scales = chart.getConfig().scales;
+
+                var toBrush = Object
+                    .keys(scales)
+                    .reduce(function (memo, k) {
+                        var dim = scales[k].dim;
+                        if (settings.forceBrush[dim]) {
+                            memo[k] = settings.forceBrush[dim];
+                        }
+                        return memo;
+                    },
+                    {});
+
                 chart
                     .select(function (node) {
                         return node.config.type === 'PARALLEL/ELEMENT.LINE';
@@ -103,7 +116,7 @@
                         return node;
                     })
                     .map(function (node) {
-                        node.parentUnit.fire('force-brush', settings.forceBrush);
+                        node.parentUnit.fire('force-brush', toBrush);
                         return node;
                     });
             },

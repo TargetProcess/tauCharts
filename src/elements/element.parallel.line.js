@@ -53,7 +53,7 @@ export class ParallelLine extends Emitter {
 
         var updatePath = function () {
             this.attr('class', (row) => `${CSS_PREFIX}__line line ${color(row[color.dim])}`)
-                .attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[p])])));
+                .attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])])));
         };
 
         var updateFrame = function () {

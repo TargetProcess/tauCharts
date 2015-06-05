@@ -3,14 +3,6 @@ import {default as _} from 'underscore';
 import {Emitter} from '../event';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
-import {FormatterRegistry} from '../formatter-registry';
-import {
-    d3_decorator_wrap_tick_label,
-    d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_bottom_line,
-    d3_decorator_fix_horizontal_axis_ticks_overflow,
-    d3_decorator_prettify_categorical_axis_ticks
-    } from '../utils/d3-decorators';
 
 export class Parallel extends Emitter {
 
@@ -23,7 +15,7 @@ export class Parallel extends Emitter {
         this.config.guide = _.defaults(
             this.config.guide || {},
             {
-                padding: {l: 50, r: 0, t: 50, b: 50},
+                padding: {l: 50, r: 50, t: 50, b: 50},
                 enableBrushing: false
             });
 
@@ -45,15 +37,15 @@ export class Parallel extends Emitter {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        this.columnsScales = cfg.columns.map((xi) => fnCreateScale('pos', xi, [innerHeight, 0]));
-        this.columnsScalesMap = this.columnsScales.reduce(
-            (memo, scale) => {
-                memo[scale.dim] = scale;
-                return memo;
-            },
-            {});
+        this.columnsScalesMap = {};
+        this.columnsScales = cfg.columns.map((xi) => {
+            var scale = fnCreateScale('pos', xi, [innerHeight, 0]);
+            this.columnsScalesMap[xi] = scale;
+            return scale;
+        });
 
         var step = innerWidth / (cfg.columns.length - 1);
+
         var colsMap = cfg.columns.reduce(
             (memo, p, i) => {
                 memo[p] = (i * step);
@@ -143,6 +135,7 @@ export class Parallel extends Emitter {
         var t = options.top + padding.t;
 
         var columnsScales = this.columnsScales;
+        var columnsScalesMap = this.columnsScalesMap;
         var d3Axis = d3.svg.axis().orient('left');
 
         var grid = container
@@ -158,22 +151,22 @@ export class Parallel extends Emitter {
 
                 var cols = this
                     .selectAll('.column')
-                    .data(columnsScales);
+                    .data(config.columns);
                 cols.enter()
                     .append('g')
                     .attr('class', 'column')
-                    .attr('transform', (d) => utilsDraw.translate(xBase(d.dim), 0));
+                    .attr('transform', (d) => utilsDraw.translate(xBase(d), 0));
 
                 cols.append('g')
                     .attr('class', 'y axis')
                     .each(function (d) {
-                        d3.select(this).call(d3Axis.scale(d));
+                        d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
                     })
                     .append('text')
                     .attr('class', 'label')
                     .attr('text-anchor', 'middle')
                     .attr('y', -9)
-                    .text((d) => ((colsGuide[d.dim] || {}).label || {}).text || d.dim);
+                    .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
 
                 if (config.guide.enableBrushing) {
                     self._enableBrushing(cols);
@@ -209,7 +202,7 @@ export class Parallel extends Emitter {
                     }
 
                     return {
-                        dim: k,
+                        dim: columnsScalesMap[k].dim,
                         func: columnsScalesMap[k].descrete ? 'inset' : 'between',
                         args: rng
                     };
@@ -221,16 +214,16 @@ export class Parallel extends Emitter {
         cols.append('g')
             .attr('class', 'brush')
             .each(function (d) {
-                columnsBrushes[d.dim] = d3.svg
+                columnsBrushes[d] = d3.svg
                     .brush()
-                    .y(d)
+                    .y(columnsScalesMap[d])
                     .on('brushstart', onBrushStartEventHandler)
                     .on('brush', onBrushEventHandler)
                     .on('brushend', onBrushEndEventHandler);
 
                 d3.select(this)
-                    .classed(`brush-${d.dim}`, true)
-                    .call(columnsBrushes[d.dim]);
+                    .classed(`brush-${d}`, true)
+                    .call(columnsBrushes[d]);
             })
             .selectAll('rect')
             .attr('x', -8)

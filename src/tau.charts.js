@@ -27,12 +27,13 @@ import {LinearScale}    from './scales/linear';
 import {ValueScale}     from './scales/value';
 import {FillScale}      from './scales/fill';
 
-import {ChartTypesRegistry}      from './chart-alias-registry';
-import {ChartMap}      from './api/chart-map';
-import {ChartInterval} from './api/chart-interval';
-import {ChartScatterplot} from './api/chart-scatterplot';
-import {ChartLine} from './api/chart-line';
-import {ChartIntervalStacked} from './api/chart-interval-stacked';
+import {ChartTypesRegistry}     from './chart-alias-registry';
+import {ChartMap}               from './api/chart-map';
+import {ChartInterval}          from './api/chart-interval';
+import {ChartScatterplot}       from './api/chart-scatterplot';
+import {ChartLine}              from './api/chart-line';
+import {ChartIntervalStacked}   from './api/chart-interval-stacked';
+import {ChartParallel}          from './api/chart-parallel';
 
 var colorBrewers = {};
 var plugins = {};
@@ -176,6 +177,7 @@ ChartTypesRegistry
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
     .add('map', ChartMap)
     .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)))
-    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)));
+    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)))
+    .add('parallel', ChartParallel);
 
 export {GPL, Plot, Chart, __api__, api};
