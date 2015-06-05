@@ -37,12 +37,12 @@ export class Parallel extends Emitter {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        this.columnsScalesMap = {};
-        this.columnsScales = cfg.columns.map((xi) => {
-            var scale = fnCreateScale('pos', xi, [innerHeight, 0]);
-            this.columnsScalesMap[xi] = scale;
-            return scale;
-        });
+        this.columnsScalesMap = cfg.columns.reduce(
+            (memo, xi) => {
+                memo[xi] = fnCreateScale('pos', xi, [innerHeight, 0]);
+                return memo;
+            },
+            {});
 
         var step = innerWidth / (cfg.columns.length - 1);
 
@@ -109,8 +109,9 @@ export class Parallel extends Emitter {
             updateCellLayers(options.frameId, d3.select(this), cellFrame);
         };
 
-        var frms = this
-            ._fnDrawGrid(options.container, cfg, options.frameId, '')
+        var grid = this._fnDrawGrid(options.container, cfg, options.frameId, '');
+
+        var frms = grid
             .selectAll(`.parent-frame-${options.frameId}`)
             .data(frames, (f) => f.hash());
         frms.exit()
@@ -120,23 +121,21 @@ export class Parallel extends Emitter {
             .append('g')
             .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
             .each(cellFrameIterator);
+
+        var cols = this._fnDrawColumns(grid, cfg);
+
+        if (cfg.guide.enableBrushing) {
+            this._enableBrushing(cols);
+        }
     }
 
     _fnDrawGrid(container, config, frameId, uniqueHash) {
 
-        var self = this;
         var options = config.options;
         var padding = config.guide.padding;
-        var colsGuide = config.guide.columns || {};
-
-        var xBase = this.xBase;
 
         var l = options.left + padding.l;
         var t = options.top + padding.t;
-
-        var columnsScales = this.columnsScales;
-        var columnsScalesMap = this.columnsScalesMap;
-        var d3Axis = d3.svg.axis().orient('left');
 
         var grid = container
             .selectAll(`.grid_${frameId}`)
@@ -146,34 +145,36 @@ export class Parallel extends Emitter {
         grid.enter()
             .append('g')
             .attr('class', `grid grid_${frameId}`)
-            .attr('transform', utilsDraw.translate(l, t))
-            .call(function () {
-
-                var cols = this
-                    .selectAll('.column')
-                    .data(config.columns);
-                cols.enter()
-                    .append('g')
-                    .attr('class', 'column')
-                    .attr('transform', (d) => utilsDraw.translate(xBase(d), 0));
-
-                cols.append('g')
-                    .attr('class', 'y axis')
-                    .each(function (d) {
-                        d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
-                    })
-                    .append('text')
-                    .attr('class', 'label')
-                    .attr('text-anchor', 'middle')
-                    .attr('y', -9)
-                    .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
-
-                if (config.guide.enableBrushing) {
-                    self._enableBrushing(cols);
-                }
-            });
+            .attr('transform', utilsDraw.translate(l, t));
 
         return grid;
+    }
+
+    _fnDrawColumns(grid, config) {
+        var colsGuide = config.guide.columns || {};
+        var xBase = this.xBase;
+        var columnsScalesMap = this.columnsScalesMap;
+        var d3Axis = d3.svg.axis().orient('left');
+
+        var cols = grid
+            .selectAll('.column')
+            .data(config.columns);
+        cols.enter()
+            .append('g')
+            .attr('class', 'column')
+            .attr('transform', (d) => utilsDraw.translate(xBase(d), 0));
+        cols.append('g')
+            .attr('class', 'y axis')
+            .each(function (d) {
+                d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
+            })
+            .append('text')
+            .attr('class', 'label')
+            .attr('text-anchor', 'middle')
+            .attr('y', -9)
+            .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
+
+        return cols;
     }
 
     _enableBrushing(cols) {

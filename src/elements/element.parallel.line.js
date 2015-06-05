@@ -85,6 +85,7 @@ export class ParallelLine extends Emitter {
             .options
             .container
             .selectAll('.lines-frame path')
-            .attr('opacity', (d) => (filter(d) ? '' : 0.5));
+            .style('opacity', (d) => (filter(d) ? '' : 0.5))
+            .style('stroke', (d) => (filter(d) ? '' : '#eee'));
     }
 }
