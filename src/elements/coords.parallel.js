@@ -1,10 +1,10 @@
 import {default as d3} from 'd3';
 import {default as _} from 'underscore';
-import {Emitter} from '../event';
+import {Element} from './element';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 
-export class Parallel extends Emitter {
+export class Parallel extends Element {
 
     constructor(config) {
 

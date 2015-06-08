@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
-import {Emitter} from '../event';
+import {Element} from './element';
 
-export class ParallelLine extends Emitter {
+export class ParallelLine extends Element {
 
     constructor(config) {
         this.config = config;
