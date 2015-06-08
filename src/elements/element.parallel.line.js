@@ -51,21 +51,47 @@ export class ParallelLine extends Emitter {
 
         var d3Line = d3.svg.line();
 
-        var updatePath = function () {
-            this.attr('class', (row) => `${CSS_PREFIX}__line line ${color(row[color.dim])}`)
-                .attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])])));
+        var drawPath = function () {
+            this.attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])])));
+        };
+
+        var markPath = function () {
+            this.attr('class', (row) => `${CSS_PREFIX}__line line ${color(row[color.dim])} foreground`);
         };
 
         var updateFrame = function () {
-            var path = this
-                .selectAll('path')
+            var backgroundPath = this
+                .selectAll('.background')
                 .data(f => f.take());
-            path.exit()
+            backgroundPath
+                .exit()
                 .remove();
-            path.call(updatePath);
-            path.enter()
+            backgroundPath
+                .call(drawPath);
+            backgroundPath
+                .enter()
                 .append('path')
-                .call(updatePath);
+                .attr('class', 'background')
+                .call(drawPath);
+
+            var foregroundPath = this
+                .selectAll('.foreground')
+                .data(f => f.take());
+            foregroundPath
+                .exit()
+                .remove();
+            foregroundPath
+                .call(function () {
+                    drawPath.call(this);
+                    markPath.call(this);
+                });
+            foregroundPath
+                .enter()
+                .append('path')
+                .call(function () {
+                    drawPath.call(this);
+                    markPath.call(this);
+                });
         };
 
         var part = options.container
@@ -84,8 +110,7 @@ export class ParallelLine extends Emitter {
         this.config
             .options
             .container
-            .selectAll('.lines-frame path')
-            .style('opacity', (d) => (filter(d) ? '' : 0.5))
-            .style('stroke', (d) => (filter(d) ? '' : '#eee'));
+            .selectAll('.lines-frame .foreground')
+            .style('visibility', (d) => (filter(d) ? '' : 'hidden'));
     }
 }
