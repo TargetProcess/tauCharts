@@ -104,6 +104,13 @@ export class ParallelLine extends Emitter {
             .append('g')
             .attr('class', 'lines-frame')
             .call(updateFrame);
+
+        options
+            .container
+            .selectAll('.lines-frame .foreground')
+            .on('mouseover', (d) => this.fire('mouseover', {data: d, event: d3.event}))
+            .on('mouseout', (d) => this.fire('mouseout', {data: d, event: d3.event}))
+            .on('click', (d) => this.fire('click', {data: d, event: d3.event}));
     }
 
     highlight(filter) {
