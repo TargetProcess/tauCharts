@@ -175,6 +175,7 @@
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
 <script src="../plugins/parallel-brushing.js"></script>
+<script src="../plugins/parallel-tooltip.js"></script>
 <script>
 
     d3.csv("http://bl.ocks.org/jasondavies/raw/1341281/85c1cedeba1ba1b9bdd2f5e9aac16ef7dc5bf2e1/cars.csv", function(error, cars) {
@@ -197,7 +198,8 @@
                             forceBrush: {
                                 year: [80, 81]
                             }
-                        })
+                        }),
+                        tauCharts.api.plugins.get('parallel-tooltip')()
                     ]
 
                 }).renderTo('#parallel-container');
