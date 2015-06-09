@@ -109,7 +109,14 @@ export class Parallel extends Element {
             updateCellLayers(options.frameId, d3.select(this), cellFrame);
         };
 
-        var grid = this._fnDrawGrid(options.container, cfg, options.frameId, '');
+        var grid = this._fnDrawGrid(
+            options.container,
+            cfg,
+            options.frameId,
+            Object
+                .keys(this.columnsScalesMap)
+                .reduce((memo, k) => memo.concat([this.columnsScalesMap[k].getHash()]), [])
+                .join('_'));
 
         var frms = grid
             .selectAll(`.parent-frame-${options.frameId}`)
@@ -139,7 +146,7 @@ export class Parallel extends Element {
 
         var grid = container
             .selectAll(`.grid_${frameId}`)
-            .data([uniqueHash], (x => x));
+            .data([uniqueHash], _.identity);
         grid.exit()
             .remove();
         grid.enter()
@@ -158,21 +165,25 @@ export class Parallel extends Element {
 
         var cols = grid
             .selectAll('.column')
-            .data(config.columns);
+            .data(config.columns, _.identity);
+        cols.exit()
+            .remove();
         cols.enter()
             .append('g')
             .attr('class', 'column')
-            .attr('transform', (d) => utilsDraw.translate(xBase(d), 0));
-        cols.append('g')
-            .attr('class', 'y axis')
-            .each(function (d) {
-                d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
-            })
-            .append('text')
-            .attr('class', 'label')
-            .attr('text-anchor', 'middle')
-            .attr('y', -9)
-            .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
+            .attr('transform', (d) => utilsDraw.translate(xBase(d), 0))
+            .call(function () {
+                this.append('g')
+                    .attr('class', 'y axis')
+                    .each(function (d) {
+                        d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
+                    })
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('text-anchor', 'middle')
+                    .attr('y', -9)
+                    .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
+            });
 
         return cols;
     }
@@ -212,6 +223,8 @@ export class Parallel extends Element {
             this.fire('brush', eventBrush);
         };
 
+        cols.selectAll('.brush')
+            .remove();
         cols.append('g')
             .attr('class', 'brush')
             .each(function (d) {

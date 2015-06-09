@@ -128,5 +128,52 @@ define(function (require) {
                 }
             ]);
         });
+
+        it('should be consistent after refresh', function () {
+            var chart = new tauChart.Chart({
+                type: 'parallel',
+                columns: ['id', 'x1', 'x2'],
+                data: [
+                    {id: 'A', x1: 0, x2: 10},
+                    {id: 'B', x1: 5, x2: 5},
+                    {id: 'C', x1: 10, x2: 0}
+                ],
+                guide: {
+                    enableBrushing: true
+                }
+            });
+
+            chart.renderTo(target);
+
+            var svgBefore = d3.select(chart.getSVG());
+
+            var axes = svgBefore.selectAll('.column .axis');
+            expect(axes.length).to.equal(1);
+            expect(axes[0].length).to.equal(3);
+
+            var brushes = svgBefore.selectAll('.column .brush');
+            expect(brushes.length).to.equal(1);
+            expect(brushes[0].length).to.equal(3);
+
+            var elems = svgBefore.selectAll('.foreground');
+            expect(elems.length).to.equal(1);
+            expect(elems[0].length).to.equal(3);
+
+            chart.refresh();
+
+            var svgAfter = d3.select(chart.getSVG());
+
+            var axesAfter = svgAfter.selectAll('.column .axis');
+            expect(axesAfter.length).to.equal(1);
+            expect(axesAfter[0].length).to.equal(3);
+
+            var brushesAfter = svgAfter.selectAll('.column .brush');
+            expect(brushesAfter.length).to.equal(1);
+            expect(brushesAfter[0].length).to.equal(3);
+
+            var elemsAfter = svgAfter.selectAll('.foreground');
+            expect(elemsAfter.length).to.equal(1);
+            expect(elemsAfter[0].length).to.equal(3);
+        });
     });
 });

@@ -110,6 +110,7 @@
                 '</div>',
                 '</div>'
             ].join(''),
+
             itemTemplate: [
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
