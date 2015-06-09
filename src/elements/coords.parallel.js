@@ -2,6 +2,7 @@ import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {Element} from './element';
 import {utilsDraw} from '../utils/utils-draw';
+import {utils} from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 
 export class Parallel extends Element {
@@ -236,7 +237,7 @@ export class Parallel extends Element {
                     .on('brushend', onBrushEndEventHandler);
 
                 d3.select(this)
-                    .classed(`brush-${d}`, true)
+                    .classed(`brush-${utils.generateHash(d)}`, true)
                     .call(columnsBrushes[d]);
             })
             .selectAll('rect')
@@ -264,9 +265,10 @@ export class Parallel extends Element {
                 } else {
                     ext = [brushExt[0], brushExt[1]];
                 }
+                var hashK = utils.generateHash(k);
                 columnsBrushes[k].extent(ext);
-                columnsBrushes[k](d3.select(`.brush-${k}`));
-                columnsBrushes[k].event(d3.select(`.brush-${k}`));
+                columnsBrushes[k](d3.select(`.brush-${hashK}`));
+                columnsBrushes[k].event(d3.select(`.brush-${hashK}`));
             });
     }
 }

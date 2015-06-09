@@ -25,7 +25,7 @@
 
             init: function (chart) {
 
-                this._cursor;
+                this._cursor = null;
                 this._chart = chart;
                 this._tooltip = chart.addBalloon(
                     {
@@ -51,6 +51,49 @@
 
                         this._hide();
 
+                    }.bind(this), false);
+
+                var self = this;
+                var timeoutHide;
+                this.showTooltip = function (e) {
+
+                    clearTimeout(timeoutHide);
+
+                    self._cursor = e.data;
+
+                    var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
+                    if (content[0]) {
+                        content[0].innerHTML = Object
+                            .keys(e.data)
+                            .map(function (k) {
+                                return _.template(self.itemTemplate)({label: k, value: e.data[k]});
+                            })
+                            .join('');
+                    }
+
+                    self._tooltip
+                        .show(e.event.x, e.event.y)
+                        .updateSize();
+                };
+
+                this.hideTooltip = function (e) {
+                    timeoutHide = setTimeout(
+                        function () {
+                            self._tooltip.hide();
+                        },
+                        1000);
+                };
+
+                this._tooltip
+                    .getElement()
+                    .addEventListener('mouseover', function (e) {
+                        clearTimeout(timeoutHide);
+                    }.bind(this), false);
+
+                this._tooltip
+                    .getElement()
+                    .addEventListener('mouseleave', function (e) {
+                        this._hide();
                     }.bind(this), false);
             },
 
@@ -79,24 +122,15 @@
                         return node.config.type.indexOf('PARALLEL/ELEMENT.LINE') >= 0;
                     })
                     .map(function (node) {
-                        node.on('click', function (sender, e) {
 
-                            self._cursor = e.data;
-
-                            var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
-                            if (content[0]) {
-                                content[0].innerHTML = Object
-                                    .keys(e.data)
-                                    .map(function (k) {
-                                        return _.template(self.itemTemplate)({label: k, value: e.data[k]});
-                                    })
-                                    .join('');
-                            }
-
-                            self._tooltip
-                                .show(e.event.x, e.event.y)
-                                .updateSize();
+                        node.on('mouseout', function (sender, e) {
+                            self.hideTooltip(e);
                         });
+
+                        node.on('mouseover', function (sender, e) {
+                            self.showTooltip(e);
+                        });
+
                         return node;
                     });
             },

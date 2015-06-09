@@ -37,6 +37,8 @@
                             unit.guide.enableBrushing = true;
                         }
                     });
+
+                plugin.forceBrush = settings.forceBrush || {};
             },
 
             onRender: function (chart) {
@@ -47,8 +49,8 @@
                     .keys(scales)
                     .reduce(function (memo, k) {
                         var dim = scales[k].dim;
-                        if (settings.forceBrush[dim]) {
-                            memo[k] = settings.forceBrush[dim];
+                        if (plugin.forceBrush[dim]) {
+                            memo[k] = plugin.forceBrush[dim];
                         }
                         return memo;
                     },
@@ -61,10 +63,15 @@
                     .map(function (node, i) {
                         node.parentUnit.on('brush', function (sender, e) {
 
+                            plugin.forceBrush = {};
+
                             var predicates = e.map(function (item) {
                                 var p = item.dim;
                                 var f = item.func;
                                 var a = item.args;
+
+                                plugin.forceBrush[p] = a;
+
                                 var r = function () {
                                     return true;
                                 };
