@@ -1,13 +1,10 @@
-var ChartMap = (config) => {
+var ChartParallel = (config) => {
 
     var guide = _.extend(
         {
-            sourcemap: config.settings.defaultSourceMap
+            columns: {}
         },
         config.guide || {});
-
-    guide.size = _.defaults(guide.size || {}, {min: 1, max: 10});
-    guide.code = _.defaults(guide.code || {}, {georole: 'countries'});
 
     var scales = {};
 
@@ -33,6 +30,8 @@ var ChartMap = (config) => {
         return key;
     };
 
+    var cols = config.columns.map((c) => scalesPool(config.dimensions[c].scale, c, guide.columns[c]));
+
     return {
         sources: {
             '?': {
@@ -53,21 +52,22 @@ var ChartMap = (config) => {
         scales: scales,
 
         unit: {
-            type: 'COORDS.MAP',
-
+            type: 'COORDS.PARALLEL',
             expression: {operator: 'none', source: '/'},
+            columns: cols,
+            guide: guide,
+            units: [
+                {
+                    type: 'PARALLEL/ELEMENT.LINE',
+                    color: scalesPool('color', config.color, guide.color),
+                    columns: cols,
+                    expression: {operator: 'none', source: '/'}
+                }
+            ]
+        },
 
-            code: scalesPool('value', config.code, guide.code),
-            fill: scalesPool('fill', config.fill, guide.fill),
-
-            size: scalesPool('size', config.size, guide.size),
-            color: scalesPool('color', config.color, guide.color),
-            latitude: scalesPool('linear', config.latitude, {autoScale: false}),
-            longitude: scalesPool('linear', config.longitude, {autoScale: false}),
-
-            guide: guide
-        }
+        plugins: config.plugins || []
     };
 };
 
-export {ChartMap};
+export {ChartParallel};

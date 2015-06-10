@@ -9,12 +9,14 @@ import {unitsRegistry} from './units-registry';
 import {scalesRegistry} from './scales-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
+import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
 import {StackedInterval}   from './elements/element.interval.stacked';
+import {ParallelLine}      from './elements/element.parallel.line';
 
 import {ColorScale}     from './scales/color';
 import {SizeScale}      from './scales/size';
@@ -25,12 +27,13 @@ import {LinearScale}    from './scales/linear';
 import {ValueScale}     from './scales/value';
 import {FillScale}      from './scales/fill';
 
-import {ChartTypesRegistry}      from './chart-alias-registry';
-import {ChartMap}      from './api/chart-map';
-import {ChartInterval} from './api/chart-interval';
-import {ChartScatterplot} from './api/chart-scatterplot';
-import {ChartLine} from './api/chart-line';
-import {ChartIntervalStacked} from './api/chart-interval-stacked';
+import {ChartTypesRegistry}     from './chart-alias-registry';
+import {ChartMap}               from './api/chart-map';
+import {ChartInterval}          from './api/chart-interval';
+import {ChartScatterplot}       from './api/chart-scatterplot';
+import {ChartLine}              from './api/chart-line';
+import {ChartIntervalStacked}   from './api/chart-interval-stacked';
+import {ChartParallel}          from './api/chart-parallel';
 
 var colorBrewers = {};
 var plugins = {};
@@ -142,6 +145,7 @@ Plot.globalSettings = api.globalSettings;
 api.unitsRegistry
     .reg('COORDS.RECT', Cartesian)
     .reg('COORDS.MAP', GeoMap)
+    .reg('COORDS.PARALLEL', Parallel)
 
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
@@ -152,6 +156,8 @@ api.unitsRegistry
     .reg('POINT', Point)
     .reg('INTERVAL', Interval)
     .reg('LINE', Line)
+
+    .reg('PARALLEL/ELEMENT.LINE', ParallelLine)
     .reg('PIE', Pie);
 
 api.scalesRegistry
@@ -164,13 +170,39 @@ api.scalesRegistry
     .reg('linear', LinearScale)
     .reg('value', ValueScale);
 
+var commonRules = [
+    ((config) => (!config.data) ? ['[data] must be specified'] : [])
+];
+
 ChartTypesRegistry
-    .add('scatterplot', ChartScatterplot)
-    .add('line', ChartLine)
-    .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)))
-    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
-    .add('map', ChartMap)
-    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)))
-    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)));
+    .add('scatterplot', ChartScatterplot, commonRules)
+    .add('line', ChartLine, commonRules)
+    .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)), commonRules)
+    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)), commonRules)
+    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)), commonRules)
+    .add('map', ChartMap, commonRules.concat([
+        (config) => {
+            var shouldSpecifyFillWithCode = (config.fill && config.code);
+            if (config.fill && !shouldSpecifyFillWithCode) {
+                return '[code] must be specified when using [fill]';
+            }
+        },
+        (config) => {
+            var shouldSpecifyBothLatLong = (config.latitude && config.longitude);
+            if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
+                return '[latitude] and [longitude] both must be specified';
+            }
+        }
+    ]))
+    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)), commonRules)
+    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)), commonRules)
+    .add('parallel', ChartParallel, commonRules.concat([
+        (config) => {
+            var shouldSpecifyColumns = (config.columns && config.columns.length > 1);
+            if (!shouldSpecifyColumns) {
+                return '[columns] property must contain at least 2 dimensions';
+            }
+        }
+    ]));
 
 export {GPL, Plot, Chart, __api__, api};

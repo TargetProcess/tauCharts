@@ -49,6 +49,7 @@ export class OrdinalScale extends BaseScale {
 
         scale.scaleType = 'ordinal';
         scale.stepSize = (x) => (fnRatio(x) * size);
+        scale.descrete = true;
 
         return this.toBaseScale(scale, interval);
     }

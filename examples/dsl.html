@@ -100,6 +100,9 @@
 </head>
 <body>
 
+<div id="parallel-container" class="cc"></div>
+<div id="parallel-container1" class="cc"></div>
+
 <div id="www" class="cc"></div>
 
 <div id="geo1" class="cc"></div>
@@ -141,8 +144,6 @@
 <div id="chart-priority-container-extract" class="cc">
 </div>
 
-<!--<div id="parallel-container" class="cc"></div>-->
-
 <div id="facet-of-facets-container" class="cc">
 </div>
 
@@ -173,7 +174,122 @@
 <script src="../plugins/legend.js"></script>
 <script src="../plugins/trendline.js"></script>
 <script src="../plugins/settings.js"></script>
+<script src="../plugins/parallel-brushing.js"></script>
+<script src="../plugins/parallel-tooltip.js"></script>
 <script>
+
+    d3.csv("http://bl.ocks.org/jasondavies/raw/1341281/85c1cedeba1ba1b9bdd2f5e9aac16ef7dc5bf2e1/cars.csv", function(error, cars) {
+
+        var parallelChart = new tauCharts.Chart(
+                {
+                    type: 'parallel',
+                    data: cars.map(function(r) {
+                        return Object.keys(r).reduce(function(row, k) {
+                            if (k !== 'name') {
+                                row[k] = parseFloat(row[k]) || 0;
+                            }
+                            return row;
+                        }, r);
+                    }),
+                    columns: ['economy (mpg)','cylinders','displacement (cc)','power (hp)','0-60 mph (s)','year'],
+                    color: 'year',
+                    plugins: [
+                        tauCharts.api.plugins.get('parallel-brushing')({
+                            forceBrush: {
+                                year: [80, 81]
+                            }
+                        }),
+                        tauCharts.api.plugins.get('parallel-tooltip')()
+                    ]
+
+                }).renderTo('#parallel-container');
+    });
+
+    var parallelChart = new tauCharts.Plot(
+            {
+                sources: {
+                    '?': {
+                        dims: {},
+                        data: [{}]
+                    },
+                    '/': {
+                        dims: {
+                            'car': {type: 'category'},
+                            'co2': {type: 'measure'},
+                            'hp': {type: 'measure'},
+                            'mpg': {type: 'measure'}
+                        },
+                        data: [
+                            {car: "Toyota Prius+",       co2:  96, hp:  99, mpg: 3.8},
+                            {car: "Volvo S60",           co2: 135, hp: 150, mpg: 7.4},
+                            {car: "BMV X5",              co2: 197, hp: 306, mpg: 11.2},
+                            {car: "Infinity FX",         co2: 238, hp: 238, mpg: 11.2},
+                            {car: "Mercedes Vito",       co2: 203, hp:  95, mpg: 9.4},
+                            {car: "Peugeot 3008",        co2: 155, hp: 120, mpg: 9.2},
+                            {car: "Subaru Forester",     co2: 186, hp: 150, mpg: 10.4},
+                            {car: "Lexus RX",            co2: 233, hp: 188, mpg: 13.3},
+                            {car: "Bentley Continental", co2: 246, hp: 507, mpg: 15.4}
+                        ]
+                    }
+                },
+
+                scales: {
+                    car: {type: 'ordinal', dim: 'car', source: '/'},
+                    co2: {type: 'linear', dim: 'co2', source: '/'},
+                    mpg: {type: 'linear', dim: 'mpg', source: '/'},
+                    hp : {type: 'linear', dim: 'hp', source: '/'},
+//                  size: {type: 'size', dim: 'count', source: '/', mid: 5, min: 1, max: 10},
+//                  color: {type: 'color', dim: 'city', source: '/'},
+                    color: {type: 'color', source: '?'}
+                },
+
+                unit: {
+                    type: 'COORDS.PARALLEL',
+                    color: 'color',
+                    columns: ['car', 'hp', 'co2', 'mpg'],
+                    expression: {
+                        operator: 'none',
+                        source: '/'
+                    },
+                    guide: {
+                        padding: {l: 120, b: 50, t: 50, r: 50},
+                        columns: {
+                            car: {
+                                label: {text: 'Car Name'},
+                                brush: ['Lexus RX', 'BMV X5']
+                            },
+                            hp: {
+                                label: {text: 'Horse power'},
+                                brush: [150, 250]
+                            },
+                            co2: {label: {text: 'CO2'}},
+                            mpg: {label: {text: 'Miles per galon'}}
+                        }
+                    },
+                    units:[
+                        {
+                            type: 'PARALLEL/ELEMENT.LINE',
+                            color: 'color',
+                            columns: ['car', 'hp', 'co2', 'mpg'],
+                            expression: {
+                                operator: 'none',
+                                source: '/'
+                            }
+                        }
+                    ]
+                },
+
+                plugins: [
+                    tauCharts.api.plugins.get('parallel-brushing')({
+                        forceBrush: {
+                            hp: [150, 200]
+                        }
+                    })
+                ]
+
+            }).renderTo('#parallel-container1');
+
+    //throw 123;
 
     var chart = new tauCharts.Chart({
         type: 'map',
@@ -1231,47 +1347,6 @@
                     tauCharts.api.plugins.get('tooltip')({fields:['count']})
                 ]
             }).renderTo('#datetime-container');
-
-    var parallelChart = new tauCharts.Plot(
-            {
-                specEngine: 'DEFAULT',
-                layoutEngine: 'DEFAULT',
-                data: [
-                    {car: "Toyota Prius+",       co2:  96, hp:  99, mpg: 3.8},
-                    {car: "Volvo S60",           co2: 135, hp: 150, mpg: 7.4},
-                    {car: "BMV X5",              co2: 197, hp: 306, mpg: 11.2},
-                    {car: "Infinity FX",         co2: 238, hp: 238, mpg: 11.2},
-                    {car: "Mercedes Vito",       co2: 203, hp:  95, mpg: 9.4},
-                    {car: "Peugeot 3008",        co2: 155, hp: 120, mpg: 9.2},
-                    {car: "Subaru Forester",     co2: 186, hp: 150, mpg: 10.4},
-                    {car: "Lexus RX",            co2: 233, hp: 188, mpg: 13.3},
-                    {car: "Bentley Continental", co2: 246, hp: 507, mpg: 15.4}
-                ],
-                spec: {
-                    dimensions: {
-                        co2: { type: 'measure' },
-                        mpg: { type: 'measure' },
-                        hp: { type: 'measure' }
-                    },
-                    unit: {
-                        type: 'COORDS.PARALLEL',
-                        guide: {
-                            padding: {l:40, r:0, t:8, b:8}
-                        },
-                        x: [
-                            'co2',
-                            'mpg',
-                            'hp'
-                        ],
-                        unit: [
-                            {
-                                type: 'PARALLEL/ELEMENT.LINE',
-                                color: 'car'
-                            }
-                        ]
-                    }
-                }
-            });//.renderTo('#parallel-container');
 
     var rawData = _.map(
             getUserStories(),
