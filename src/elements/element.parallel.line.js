@@ -4,6 +4,9 @@ import {Element} from './element';
 export class ParallelLine extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = _.defaults(
             this.config.guide || {},

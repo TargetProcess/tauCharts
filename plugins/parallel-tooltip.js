@@ -35,23 +35,24 @@
                     });
 
                 this._tooltip
-                    .getElement()
-                    .insertAdjacentHTML('afterbegin', this.template);
+                    .content(this.template);
 
                 this._tooltip
                     .getElement()
                     .addEventListener('click', function (e) {
+
                         var target = e.target;
+
                         while (target !== e.currentTarget && target !== null) {
                             if (target.classList.contains('i-role-exclude')) {
-                                this._exclude();
+                                self._exclude();
                             }
                             target = target.parentNode;
                         }
 
-                        this._hide();
+                        self._tooltip.hide();
 
-                    }.bind(this), false);
+                    }, false);
 
                 var self = this;
                 var timeoutHide;
@@ -66,7 +67,7 @@
                         content[0].innerHTML = Object
                             .keys(e.data)
                             .map(function (k) {
-                                return _.template(self.itemTemplate)({label: k, value: e.data[k]});
+                                return self.itemTemplate({label: k, value: e.data[k]});
                             })
                             .join('');
                     }
@@ -88,13 +89,13 @@
                     .getElement()
                     .addEventListener('mouseover', function (e) {
                         clearTimeout(timeoutHide);
-                    }.bind(this), false);
+                    }, false);
 
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
-                        this._hide();
-                    }.bind(this), false);
+                        self._tooltip.hide();
+                    }, false);
             },
 
             _exclude: function () {
@@ -109,19 +110,15 @@
                     });
             },
 
-            _hide: function () {
-                this._tooltip.hide();
-            },
-
             onRender: function (chart) {
 
                 var self = this;
 
                 chart
                     .select(function (node) {
-                        return node.config.type.indexOf('PARALLEL/ELEMENT.LINE') >= 0;
+                        return node.config.type === 'PARALLEL/ELEMENT.LINE';
                     })
-                    .map(function (node) {
+                    .forEach(function (node) {
 
                         node.on('mouseout', function (sender, e) {
                             self.hideTooltip(e);
@@ -130,8 +127,6 @@
                         node.on('mouseover', function (sender, e) {
                             self.showTooltip(e);
                         });
-
-                        return node;
                     });
             },
 
@@ -145,12 +140,12 @@
                 '</div>'
             ].join(''),
 
-            itemTemplate: [
+            itemTemplate: _.template([
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
                 '</div>'
-            ].join('')
+            ].join(''))
         };
 
         return plugin;

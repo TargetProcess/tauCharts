@@ -26,7 +26,7 @@
 
             init: function (chart) {
                 if (settings.verbose) {
-                    plugin.panel = chart.insertToRightSidebar(this.template());
+                    this.panel = chart.insertToRightSidebar(this.template());
                 }
 
                 chart.traverseSpec(
@@ -56,79 +56,77 @@
                     },
                     {});
 
-                chart
-                    .select(function (node) {
-                        return node.config.type === 'PARALLEL/ELEMENT.LINE';
-                    })
-                    .map(function (node, i) {
-                        node.parentUnit.on('brush', function (sender, e) {
+                var parallelLines = chart.select(function (node) {
+                    return node.config.type === 'PARALLEL/ELEMENT.LINE';
+                });
 
-                            plugin.forceBrush = {};
+                parallelLines.forEach(function (node, i) {
+                    node.parentUnit.on('brush', function (sender, e) {
 
-                            var predicates = e.map(function (item) {
-                                var p = item.dim;
-                                var f = item.func;
-                                var a = item.args;
+                        plugin.forceBrush = {};
 
-                                plugin.forceBrush[p] = a;
+                        var predicates = e.map(function (item) {
+                            var p = item.dim;
+                            var f = item.func;
+                            var a = item.args;
 
-                                var r = function () {
-                                    return true;
+                            plugin.forceBrush[p] = a;
+
+                            var r = function () {
+                                return true;
+                            };
+
+                            if (f === 'between') {
+                                r = function (row) {
+                                    return (row[p] >= a[0]) && (a[1] >= row[p]);
                                 };
-
-                                if (f === 'between') {
-                                    r = function (row) {
-                                        return (row[p] >= a[0]) && (a[1] >= row[p]);
-                                    };
-                                }
-
-                                if (f === 'inset') {
-                                    r = function (row) {
-                                        return a.indexOf(row[p]) >= 0;
-                                    };
-                                }
-
-                                return r;
-                            });
-
-                            var matches = 0;
-                            node.fire('highlight', function (row) {
-
-                                var r = predicates.every(function (func) {
-                                    return func(row);
-                                });
-
-                                matches += (r ? 1 : 0);
-
-                                return r;
-                            });
-
-                            if (settings.verbose) {
-                                var part = plugin.panel.getElementsByClassName('i-' + i);
-                                if (part.length === 0) {
-                                    var div = document.createElement('div');
-                                    div.className = ('i-' + i);
-                                    plugin.panel.appendChild(div);
-                                    part[0] = div;
-                                }
-                                part[0].innerHTML = e.reduce(
-                                    function (s, item) {
-                                        return (s += '<div>' + item.dim + ': [' + item.args.join(',') + ']' + '</div>');
-                                    },
-                                    '<div>' + 'Matched: ' + matches + '</div>'
-                                );
                             }
+
+                            if (f === 'inset') {
+                                r = function (row) {
+                                    return a.indexOf(row[p]) >= 0;
+                                };
+                            }
+
+                            return r;
                         });
 
-                        return node;
-                    })
-                    .map(function (node) {
-                        node.parentUnit.fire('force-brush', toBrush);
-                        return node;
+                        var matches = 0;
+                        node.fire('highlight', function (row) {
+
+                            var r = predicates.every(function (func) {
+                                return func(row);
+                            });
+
+                            matches += (r ? 1 : 0);
+
+                            return r;
+                        });
+
+                        if (settings.verbose) {
+                            var part = plugin.panel.getElementsByClassName('i-' + i);
+                            if (part.length === 0) {
+                                var div = document.createElement('div');
+                                div.className = ('i-' + i);
+                                plugin.panel.appendChild(div);
+                                part[0] = div;
+                            }
+                            part[0].innerHTML = e.reduce(
+                                function (s, item) {
+                                    return (s += '<div>' + item.dim + ': [' + item.args.join(',') + ']' + '</div>');
+                                },
+                                '<div>' + 'Matched: ' + matches + '</div>'
+                            );
+                        }
                     });
+                });
+
+                parallelLines.forEach(function (node) {
+                    node.parentUnit.fire('force-brush', toBrush);
+                });
             },
 
-            template: _.template(['<div class="graphical-report__chart_brushing_panel"></div>'].join(''))
+            template: _.template('<div class="graphical-report__chart_brushing_panel"></div>')
         };
 
         return plugin;

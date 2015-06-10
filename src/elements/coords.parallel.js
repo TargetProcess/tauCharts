@@ -9,7 +9,7 @@ export class Parallel extends Element {
 
     constructor(config) {
 
-        super();
+        super(config);
 
         this.config = config;
 
@@ -191,6 +191,8 @@ export class Parallel extends Element {
 
     _enableBrushing(cols) {
 
+        const brushWidth = 16;
+
         var columnsScalesMap = this.columnsScalesMap;
         var columnsBrushes = this.columnsBrushes;
 
@@ -241,8 +243,8 @@ export class Parallel extends Element {
                     .call(columnsBrushes[d]);
             })
             .selectAll('rect')
-            .attr('x', -8)
-            .attr('width', 16);
+            .attr('x', (brushWidth / 2) * -1)
+            .attr('width', brushWidth);
 
         return cols;
     }

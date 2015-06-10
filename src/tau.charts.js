@@ -175,6 +175,7 @@ ChartTypesRegistry
     .add('line', ChartLine)
     .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)))
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
+    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
     .add('map', ChartMap)
     .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)))
     .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)))
