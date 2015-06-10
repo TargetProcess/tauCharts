@@ -1,17 +1,17 @@
 import {Plot} from './tau.plot';
-import {ChartTypesRegistry} from '../chart-alias-registry';
+import {chartTypesRegistry} from '../chart-alias-registry';
 
 class Chart extends Plot {
 
     constructor(config) {
 
-        var errors = ChartTypesRegistry.validate(config.type, config);
+        var errors = chartTypesRegistry.validate(config.type, config);
 
         if (errors.length > 0) {
             throw new Error(errors[0]);
         }
 
-        var chartFactory = ChartTypesRegistry.get(config.type);
+        var chartFactory = chartTypesRegistry.get(config.type);
 
         config = _.defaults(config, {autoResize: true});
         config.settings = Plot.setupSettings(config.settings);

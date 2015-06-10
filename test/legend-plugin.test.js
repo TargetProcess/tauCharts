@@ -8,10 +8,14 @@ define(function (require) {
     var trendline = require('plugins/trendline');
     var exportTo = require('plugins/export');
     var _ = require('underscore');
+    var tauCharts = require('src/tau.charts');
+    var chartTypes = tauCharts.api.chartTypesRegistry.getAllRegisteredTypes();
     var describeChart = testUtils.describeChart;
+
     function getText(node) {
         return node.parentNode.parentNode.textContent;
     }
+
     var expectLegend = function (expect, chart) {
         var prefix = 'color20';
         var sidebar = chart._layout.rightSidebar;
@@ -28,8 +32,7 @@ define(function (require) {
         expect(getText(nodeList[2])).to.equal('green');
         expect(nodeList[2].classList.contains(prefix + '-3')).to.be.ok;
     };
-    var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
-    chartType.forEach(function (item) {
+    Object.keys(chartTypes).filter(type=>['map', 'parallel'].indexOf(type) === -1).forEach(function (item) {
         describeChart(
             "legend for " + item,
             {
@@ -44,7 +47,7 @@ define(function (require) {
                 y: 2,
                 color: null
 
-            },{
+            }, {
                 x: 2,
                 y: 2,
                 color: 'yellow'
@@ -134,10 +137,10 @@ define(function (require) {
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
 
         svg = chart.getSVG();
-        var  isHighlight = function (elements) {
-           return _.every(elements, function (element) {
-               return testUtils.hasClass(element, 'graphical-report__highlighted');
-           });
+        var isHighlight = function (elements) {
+            return _.every(elements, function (element) {
+                return testUtils.hasClass(element, 'graphical-report__highlighted');
+            });
         };
 
         expect(isHighlight(svg.querySelectorAll(prefix + '-1'))).not.be.ok;
@@ -167,7 +170,7 @@ define(function (require) {
             y: 2,
             color: 'yellow'
 
-        },{
+        }, {
             x: 3,
             y: 3,
             color: 'yellow'
@@ -178,7 +181,7 @@ define(function (require) {
             color: 'green'
 
         }],
-        function(context) {
+        function (context) {
             it("shouldn't render spec", function () {
                 AssertToggleOnHover(context, expect);
             });
@@ -209,8 +212,8 @@ define(function (require) {
         }],
         function (context) {
             it("toggle by color", function () {
-                AssertToggleOnClick(context,expect);
-                AssertToggleOnHover(context,expect);
+                AssertToggleOnClick(context, expect);
+                AssertToggleOnHover(context, expect);
             });
         },
         {
@@ -240,7 +243,7 @@ define(function (require) {
         }],
         function (context) {
             it("shouldn't render spec", function () {
-                AssertToggleOnClick(context,expect);
+                AssertToggleOnClick(context, expect);
             });
         },
         {
@@ -282,20 +285,20 @@ define(function (require) {
             x: 'x',
             y: 'y',
             color: 'color',
-            size:'size',
+            size: 'size',
             plugins: [legend()]
         },
         [{
             x: 2,
             y: 2,
             color: undefined,
-            size:10
+            size: 10
 
-        },{
+        }, {
             x: 4,
             y: 5,
             color: 'color',
-            size:123
+            size: 123
 
         }],
         function (context) {
