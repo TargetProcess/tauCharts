@@ -1,20 +1,5 @@
 var ChartMap = (config) => {
 
-    var shouldSpecifyFillWithCode = (config.fill && config.code);
-    if (config.fill && !shouldSpecifyFillWithCode) {
-        throw new Error('[code] must be specified when using [fill]');
-    }
-
-    var shouldSpecifyBothLatLong = (config.latitude && config.longitude);
-    if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
-        throw new Error('[latitude] and [longitude] both must be specified');
-    }
-
-    var shouldSpecifyData = (config.data);
-    if (!shouldSpecifyData) {
-        throw new Error('[data] must be specified');
-    }
-
     var guide = _.extend(
         {
             sourcemap: config.settings.defaultSourceMap

@@ -1,15 +1,5 @@
 var ChartParallel = (config) => {
 
-    var shouldSpecifyColumns = (config.columns && config.columns.length > 1);
-    if (!shouldSpecifyColumns) {
-        throw new Error('[columns] property must contain at least 2 dimensions');
-    }
-
-    var shouldSpecifyData = (config.data);
-    if (!shouldSpecifyData) {
-        throw new Error('[data] must be specified');
-    }
-
     var guide = _.extend(
         {
             columns: {}

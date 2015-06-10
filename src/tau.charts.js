@@ -170,15 +170,39 @@ api.scalesRegistry
     .reg('linear', LinearScale)
     .reg('value', ValueScale);
 
+var commonRules = [
+    ((config) => (!config.data) ? ['[data] must be specified'] : [])
+];
+
 ChartTypesRegistry
-    .add('scatterplot', ChartScatterplot)
-    .add('line', ChartLine)
-    .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)))
-    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
-    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)))
-    .add('map', ChartMap)
-    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)))
-    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)))
-    .add('parallel', ChartParallel);
+    .add('scatterplot', ChartScatterplot, commonRules)
+    .add('line', ChartLine, commonRules)
+    .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)), commonRules)
+    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)), commonRules)
+    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)), commonRules)
+    .add('map', ChartMap, commonRules.concat([
+        (config) => {
+            var shouldSpecifyFillWithCode = (config.fill && config.code);
+            if (config.fill && !shouldSpecifyFillWithCode) {
+                return '[code] must be specified when using [fill]';
+            }
+        },
+        (config) => {
+            var shouldSpecifyBothLatLong = (config.latitude && config.longitude);
+            if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
+                return '[latitude] and [longitude] both must be specified';
+            }
+        }
+    ]))
+    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)), commonRules)
+    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)), commonRules)
+    .add('parallel', ChartParallel, commonRules.concat([
+        (config) => {
+            var shouldSpecifyColumns = (config.columns && config.columns.length > 1);
+            if (!shouldSpecifyColumns) {
+                return '[columns] property must contain at least 2 dimensions';
+            }
+        }
+    ]));
 
 export {GPL, Plot, Chart, __api__, api};

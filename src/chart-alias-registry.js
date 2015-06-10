@@ -3,24 +3,40 @@ import {utils} from './utils/utils';
 import {DataProcessor} from './data-processor';
 
 var chartTypes = {};
+var chartRules = {};
+
+var throwNotSupported = (alias) => {
+    let msg = `Chart type ${alias} is not supported.`;
+    console.log(msg);
+    console.log(`Use one of ${_.keys(chartTypes).join(', ')}.`);
+    throw new Error(msg);
+};
 
 var ChartTypesRegistry = {
 
+    validate (alias, config) {
+
+        if (!chartRules.hasOwnProperty(alias)) {
+            throwNotSupported(alias);
+        }
+
+        return chartRules[alias].reduce((e, rule) => e.concat(rule(config) || []), []);
+    },
+
     get (alias) {
+
         var chartFactory = chartTypes[alias];
 
         if (!_.isFunction(chartFactory)) {
-            let msg = `Chart type ${alias} is not supported.`;
-            console.log(msg);
-            console.log(`Use one of ${_.keys(chartTypes).join(', ')}.`);
-            throw new Error(msg);
+            throwNotSupported(alias);
         }
 
         return chartFactory;
     },
 
-    add (alias, converter) {
+    add (alias, converter, rules = []) {
         chartTypes[alias] = converter;
+        chartRules[alias] = rules;
         return this;
     }
 };

@@ -5,6 +5,12 @@ class Chart extends Plot {
 
     constructor(config) {
 
+        var errors = ChartTypesRegistry.validate(config.type, config);
+
+        if (errors.length > 0) {
+            throw new Error(errors[0]);
+        }
+
         var chartFactory = ChartTypesRegistry.get(config.type);
 
         config = _.defaults(config, {autoResize: true});
