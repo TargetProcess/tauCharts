@@ -43,3 +43,8 @@ Have a questions? [Contact us](mailto:michael@targetprocess.com)
 ## [0.4.3] - 2015-05-18
 ### Added
 - stacked bar charts
+
+## [0.4.4] - 2015-06-11
+### Added
+- fix legend plugin for stacked bar charts
+- add support [parallel coordinates](http://en.wikipedia.org/wiki/Parallel_coordinates) 
