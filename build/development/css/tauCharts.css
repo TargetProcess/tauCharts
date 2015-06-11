@@ -291,16 +291,51 @@
   display: block;
   overflow: hidden;
 }
+.graphical-report__svg .place {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.7;
+  stroke-width: 0.5;
+}
 .graphical-report__svg .place-label {
+  opacity: 0.7;
   font-size: 11px;
+  color: #000000;
+  letter-spacing: 0.2px;
+  line-height: 13px;
+  text-anchor: start;
 }
 .graphical-report__svg .place-label-countries,
 .graphical-report__svg .place-label-subunits,
 .graphical-report__svg .place-label-states {
-  fill: #777;
-  fill-opacity: .5;
-  font-size: 13px;
   text-anchor: middle;
+  font-size: 10px;
+  fill: rgba(51, 36, 0, 0.65);
+  letter-spacing: 0.5px;
+  line-height: 10px;
+  text-transform: uppercase;
+}
+.graphical-report__svg .map-contour-level path {
+  stroke-opacity: 0.5;
+  stroke-linejoin: 'round';
+}
+.graphical-report__svg .map-contour-level-0 path {
+  stroke: #fbfbfb;
+}
+.graphical-report__svg .map-contour-level-1 path {
+  stroke: #fffefe;
+}
+.graphical-report__svg .map-contour-level-2 path {
+  stroke: #fdfdff;
+}
+.graphical-report__svg .map-contour-level-3 path {
+  stroke: #fdfdfd;
+}
+.graphical-report__svg .map-contour-level-4 path {
+  stroke: #ffffff;
+}
+.graphical-report__svg .map-contour:hover {
+  fill: rgba(255, 191, 0, 0.5);
 }
 .graphical-report__svg .axis line,
 .graphical-report__svg .axis path {
@@ -371,6 +406,14 @@
   fill: gray;
   text-transform: none;
   letter-spacing: 0px;
+}
+.graphical-report__svg .brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+.graphical-report__svg .background {
+  stroke: #eee;
 }
 .graphical-report__dot {
   opacity: 0.6;

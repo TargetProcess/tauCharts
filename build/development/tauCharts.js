@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.3 - 2015-05-18
+/*! taucharts - v0.4.4 - 2015-06-11
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1217,7 +1217,297 @@ define('elements/element.interval',["exports", "../const"], function (exports, _
         return Interval;
     })();
 });
-define('utils/utils',["exports", "../elements/element.point", "../elements/element.line", "../elements/element.interval"], function (exports, _elementsElementPoint, _elementsElementLine, _elementsElementInterval) {
+define('elements/element.interval.stacked',["exports", "underscore", "../const"], function (exports, _underscore, _const) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var _ = _interopRequire(_underscore);
+
+    var CSS_PREFIX = _const.CSS_PREFIX;
+
+    var StackedInterval = exports.StackedInterval = (function () {
+        function StackedInterval(config) {
+            _classCallCheck(this, StackedInterval);
+
+            this.config = config;
+            this.config.guide = _.defaults(this.config.guide || {}, { prettify: true });
+        }
+
+        _createClass(StackedInterval, {
+            drawLayout: {
+                value: function drawLayout(fnCreateScale) {
+
+                    var config = this.config;
+                    this.xScale = fnCreateScale("pos", config.x, [0, config.options.width]);
+                    this.yScale = fnCreateScale("pos", config.y, [config.options.height, 0]);
+                    this.color = fnCreateScale("color", config.color, {});
+
+                    var fitSize = function (w, h, maxRelLimit, srcSize, minimalSize) {
+                        var minRefPoint = Math.min(w, h);
+                        var minSize = minRefPoint * maxRelLimit;
+                        return Math.max(minimalSize, Math.min(srcSize, minSize));
+                    };
+
+                    var width = config.options.width;
+                    var height = config.options.height;
+                    var g = config.guide;
+                    var minimalSize = 1;
+                    var maxRelLimit = 1;
+                    var isNotZero = function (x) {
+                        return x !== 0;
+                    };
+                    var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
+                    var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+
+                    this.size = fnCreateScale("size", config.size, {
+                        normalize: true,
+
+                        func: "linear",
+
+                        min: 0,
+                        max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
+                        mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
+                    });
+
+                    return this;
+                }
+            },
+            drawFrames: {
+                value: function drawFrames(frames) {
+                    var config = this.config;
+                    var options = config.options;
+                    var xScale = this.xScale;
+                    var yScale = this.yScale;
+                    var sizeScale = this.size;
+                    var colorScale = this.color;
+
+                    var isHorizontal = config.flip;
+
+                    var viewMapper;
+
+                    if (isHorizontal) {
+                        viewMapper = function (totals, d) {
+                            var x = d[xScale.dim];
+                            var y = d[yScale.dim];
+                            var stack = totals[y] = (totals[y] || 0) + x;
+                            var size = d[sizeScale.dim];
+                            var color = d[colorScale.dim];
+                            return {
+                                x: stack,
+                                y: y,
+                                h: x,
+                                w: size,
+                                c: color
+                            };
+                        };
+                    } else {
+                        viewMapper = function (totals, d) {
+                            var x = d[xScale.dim];
+                            var y = d[yScale.dim];
+                            var stack = totals[x] = (totals[x] || 0) + y;
+                            var size = d[sizeScale.dim];
+                            var color = d[colorScale.dim];
+                            return {
+                                x: x,
+                                y: stack,
+                                h: y,
+                                w: size,
+                                c: color
+                            };
+                        };
+                    }
+
+                    var d3Attrs = this._buildDrawModel(isHorizontal, {
+                        xScale: xScale,
+                        yScale: yScale,
+                        sizeScale: sizeScale,
+                        colorScale: colorScale,
+                        prettify: config.guide.prettify
+                    });
+
+                    var updateBar = function updateBar() {
+                        return this.attr(d3Attrs)
+                        // TODO: move to CSS styles
+                        .style("stroke-width", 1).style("stroke", "#fff").style("stroke-opacity", "0.5");
+                    };
+
+                    var uid = options.uid;
+                    var totals = {};
+                    var updateGroups = function updateGroups() {
+                        this.attr("class", function (f) {
+                            return "frame-id-" + uid + " frame-" + f.hash + " i-role-bar-group";
+                        }).call(function () {
+                            var bars = this.selectAll(".bar").data(function (frame) {
+                                // var totals = {}; // if 1-only frame support is required
+                                return frame.data.map(function (d) {
+                                    return { uid: uid, data: d, view: viewMapper(totals, d) };
+                                });
+                            });
+                            bars.exit().remove();
+                            bars.call(updateBar);
+                            bars.enter().append("rect").call(updateBar);
+                        });
+                    };
+
+                    var mapper = function (f) {
+                        return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    };
+                    var frameGroups = options.container.selectAll(".frame-id-" + uid).data(frames.map(mapper), function (f) {
+                        return f.hash;
+                    });
+                    frameGroups.exit().remove();
+                    frameGroups.call(updateGroups);
+                    frameGroups.enter().append("g").call(updateGroups);
+
+                    return [];
+                }
+            },
+            _buildDrawModel: {
+                value: function _buildDrawModel(isHorizontal, _ref) {
+                    var xScale = _ref.xScale;
+                    var yScale = _ref.yScale;
+                    var sizeScale = _ref.sizeScale;
+                    var colorScale = _ref.colorScale;
+                    var prettify = _ref.prettify;
+
+                    // show at least 1px gap for bar to make it clickable
+                    var minH = 1;
+                    // default width for continues scales is 5px
+                    var minW = 5;
+                    var relW = 0.5;
+
+                    var calculateH;
+                    var calculateW;
+                    var calculateY;
+                    var calculateX;
+
+                    if (isHorizontal) {
+
+                        calculateW = function (d) {
+                            var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
+                            if (prettify) {
+                                w = Math.max(minH, w);
+                            }
+                            return w;
+                        };
+
+                        calculateH = function (d) {
+                            var h = (yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w);
+                            if (prettify) {
+                                h = Math.max(minH, h);
+                            }
+                            return h;
+                        };
+
+                        calculateX = function (d) {
+                            return xScale(d.x - d.h);
+                        };
+                        calculateY = function (d) {
+                            return yScale(d.y) - calculateH(d) / 2;
+                        };
+                    } else {
+
+                        calculateW = function (d) {
+                            var w = (xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w);
+                            if (prettify) {
+                                w = Math.max(minH, w);
+                            }
+                            return w;
+                        };
+
+                        calculateH = function (d) {
+                            var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
+                            if (prettify) {
+                                h = Math.max(minH, h);
+                            }
+                            return h;
+                        };
+
+                        calculateX = function (d) {
+                            return xScale(d.x) - calculateW(d) / 2;
+                        };
+                        calculateY = function (d) {
+                            return yScale(d.y);
+                        };
+                    }
+
+                    return {
+                        x: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateX(d);
+                        },
+                        y: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateY(d);
+                        },
+                        height: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateH(d);
+                        },
+                        width: function (_ref2) {
+                            var d = _ref2.view;
+                            return calculateW(d);
+                        },
+                        "class": function (_ref2) {
+                            var d = _ref2.view;
+                            return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d.c);
+                        }
+                    };
+                }
+            }
+        }, {
+            embedUnitFrameToSpec: {
+                value: function embedUnitFrameToSpec(cfg, spec) {
+
+                    var isHorizontal = cfg.flip;
+
+                    var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
+                    var baseScaleName = isHorizontal ? cfg.y : cfg.x;
+                    var stackScale = spec.scales[stackedScaleName];
+                    var baseScale = spec.scales[baseScaleName];
+                    var baseDim = baseScale.dim;
+
+                    var prop = stackScale.dim;
+
+                    var sums = cfg.frames.reduce(function (s0, f) {
+                        return f.take().reduce(function (s, d) {
+                            var stackedVal = d[prop];
+
+                            if (typeof stackedVal !== "number" || stackedVal < 0) {
+                                throw new Error("Stacked field [" + prop + "] should be a non-negative number");
+                            }
+
+                            var baseVal = d[baseDim];
+                            s[baseVal] = s[baseVal] || 0;
+                            s[baseVal] += stackedVal;
+                            return s;
+                        }, s0);
+                    }, {});
+
+                    var maxSum = Math.max.apply(Math, _toConsumableArray(_.values(sums)));
+
+                    if (!stackScale.hasOwnProperty("max") || stackScale.max < maxSum) {
+                        stackScale.max = maxSum;
+                    }
+                }
+            }
+        });
+
+        return StackedInterval;
+    })();
+});
+define('utils/utils',["exports", "../elements/element.point", "../elements/element.line", "../elements/element.interval", "../elements/element.interval.stacked"], function (exports, _elementsElementPoint, _elementsElementLine, _elementsElementInterval, _elementsElementIntervalStacked) {
     
 
     Object.defineProperty(exports, "__esModule", {
@@ -1226,6 +1516,7 @@ define('utils/utils',["exports", "../elements/element.point", "../elements/eleme
     var Point = _elementsElementPoint.Point;
     var Line = _elementsElementLine.Line;
     var Interval = _elementsElementInterval.Interval;
+    var StackedInterval = _elementsElementIntervalStacked.StackedInterval;
 
     var traverseJSON = function (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) {
 
@@ -1480,7 +1771,7 @@ define('utils/utils',["exports", "../elements/element.point", "../elements/eleme
 
         return deepCopy;
     })();
-
+    var chartElement = [Interval, Point, Line, StackedInterval];
     var utils = {
         clone: function clone(obj) {
             return deepClone(obj);
@@ -1489,7 +1780,9 @@ define('utils/utils',["exports", "../elements/element.point", "../elements/eleme
             return Array.isArray(obj);
         },
         isChartElement: function isChartElement(element) {
-            return element instanceof Interval || element instanceof Point || element instanceof Line;
+            return chartElement.some(function (Element) {
+                return element instanceof Element;
+            });
         },
         isLineElement: function isLineElement(element) {
             return element instanceof Line;
@@ -3412,6 +3705,8 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
             ruleAssignSourceData: {
                 value: function ruleAssignSourceData(srcSpec, gplSpec) {
 
+                    var meta = srcSpec.spec.dimensions || {};
+
                     var dims = gplSpec.sources["/"].dims;
 
                     var reduceIterator = function (row, key) {
@@ -3431,6 +3726,10 @@ define('spec-converter',["exports", "underscore", "./utils/utils"], function (ex
 
                             if (!r.hasOwnProperty(k)) {
                                 r[k] = null;
+                            }
+
+                            if (r[k] !== null && meta[k] && ["period", "time"].indexOf(meta[k].scale) >= 0) {
+                                r[k] = new Date(r[k]);
                             }
 
                             return r;
@@ -3645,6 +3944,19 @@ define('utils/utils-draw',["exports"], function (exports) {
         },
         getOrientation: function (scaleOrient) {
             return ["bottom", "top"].indexOf(scaleOrient.toLowerCase()) >= 0 ? "h" : "v";
+        },
+        isIntersect: function isIntersect(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1) {
+            var s1_x, s1_y, s2_x, s2_y;
+            s1_x = ax1 - ax0;
+            s1_y = ay1 - ay0;
+            s2_x = bx1 - bx0;
+            s2_y = by1 - by0;
+
+            var s, t;
+            s = (-s1_y * (ax0 - bx0) + s1_x * (ay0 - by0)) / (-s2_x * s1_y + s1_x * s2_y);
+            t = (s2_x * (ay0 - by0) - s2_y * (ax0 - bx0)) / (-s2_x * s1_y + s1_x * s2_y);
+
+            return s >= 0 && s <= 1 && t >= 0 && t <= 1;
         }
     };
     /* jshint ignore:end */
@@ -5097,7 +5409,7 @@ define('charts/tau.plot',["exports", "../api/balloon", "../event", "../plugins",
 
                     this.configGPL.settings.size = size;
 
-                    var gpl = utils.clone(this.configGPL);
+                    var gpl = utils.clone(_.omit(this.configGPL, "plugins"));
                     gpl.sources = this.getData({ isNew: true });
                     gpl.settings = this.configGPL.settings;
 
@@ -5308,29 +5620,52 @@ define('chart-alias-registry',["exports", "d3", "./utils/utils", "./data-process
     var DataProcessor = _dataProcessor.DataProcessor;
 
     var chartTypes = {};
+    var chartRules = {};
 
-    var ChartTypesRegistry = {
+    var throwNotSupported = function (alias) {
+        var msg = "Chart type " + alias + " is not supported.";
+        console.log(msg);
+        console.log("Use one of " + _.keys(chartTypes).join(", ") + ".");
+        throw new Error(msg);
+    };
+
+    var chartTypesRegistry = {
+
+        validate: function validate(alias, config) {
+
+            if (!chartRules.hasOwnProperty(alias)) {
+                throwNotSupported(alias);
+            }
+
+            return chartRules[alias].reduce(function (e, rule) {
+                return e.concat(rule(config) || []);
+            }, []);
+        },
 
         get: function get(alias) {
+
             var chartFactory = chartTypes[alias];
 
             if (!_.isFunction(chartFactory)) {
-                var msg = "Chart type " + alias + " is not supported.";
-                console.log(msg);
-                console.log("Use one of " + _.keys(chartTypes).join(", ") + ".");
-                throw new Error(msg);
+                throwNotSupported(alias);
             }
 
             return chartFactory;
         },
 
         add: function add(alias, converter) {
+            var rules = arguments[2] === undefined ? [] : arguments[2];
+
             chartTypes[alias] = converter;
+            chartRules[alias] = rules;
             return this;
+        },
+        getAllRegisteredTypes: function getAllRegisteredTypes() {
+            return chartTypes;
         }
     };
 
-    exports.ChartTypesRegistry = ChartTypesRegistry;
+    exports.chartTypesRegistry = chartTypesRegistry;
 });
 define('charts/tau.chart',["exports", "./tau.plot", "../chart-alias-registry"], function (exports, _tauPlot, _chartAliasRegistry) {
     
@@ -5347,13 +5682,19 @@ define('charts/tau.chart',["exports", "./tau.plot", "../chart-alias-registry"], 
         value: true
     });
     var Plot = _tauPlot.Plot;
-    var ChartTypesRegistry = _chartAliasRegistry.ChartTypesRegistry;
+    var chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry;
 
     var Chart = (function (_Plot) {
         function Chart(config) {
             _classCallCheck(this, Chart);
 
-            var chartFactory = ChartTypesRegistry.get(config.type);
+            var errors = chartTypesRegistry.validate(config.type, config);
+
+            if (errors.length > 0) {
+                throw new Error(errors[0]);
+            }
+
+            var chartFactory = chartTypesRegistry.get(config.type);
 
             config = _.defaults(config, { autoResize: true });
             config.settings = Plot.setupSettings(config.settings);
@@ -6017,6 +6358,307 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
         return Cartesian;
     })();
 });
+define('elements/element',["exports", "../event"], function (exports, _event) {
+    
+
+    var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var Emitter = _event.Emitter;
+
+    var Element = exports.Element = (function (_Emitter) {
+        function Element() {
+            _classCallCheck(this, Element);
+
+            if (_Emitter != null) {
+                _Emitter.apply(this, arguments);
+            }
+        }
+
+        _inherits(Element, _Emitter);
+
+        return Element;
+    })(Emitter);
+});
+
+// add base behaviour here;
+define('elements/coords.parallel',["exports", "d3", "underscore", "./element", "../utils/utils-draw", "../utils/utils", "../const"], function (exports, _d3, _underscore, _element, _utilsUtilsDraw, _utilsUtils, _const) {
+    
+
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+    var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+    var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var d3 = _interopRequire(_d3);
+
+    var _ = _interopRequire(_underscore);
+
+    var Element = _element.Element;
+    var utilsDraw = _utilsUtilsDraw.utilsDraw;
+    var utils = _utilsUtils.utils;
+    var CSS_PREFIX = _const.CSS_PREFIX;
+
+    var Parallel = exports.Parallel = (function (_Element) {
+        function Parallel(config) {
+            var _this = this;
+
+            _classCallCheck(this, Parallel);
+
+            _get(Object.getPrototypeOf(Parallel.prototype), "constructor", this).call(this, config);
+
+            this.config = config;
+
+            this.config.guide = _.defaults(this.config.guide || {}, {
+                padding: { l: 50, r: 50, t: 50, b: 50 },
+                enableBrushing: false
+            });
+
+            this.columnsBrushes = {};
+
+            this.on("force-brush", function (sender, e) {
+                return _this._forceBrushing(e);
+            });
+        }
+
+        _inherits(Parallel, _Element);
+
+        _createClass(Parallel, {
+            drawLayout: {
+                value: function drawLayout(fnCreateScale) {
+
+                    var cfg = this.config;
+
+                    var options = cfg.options;
+                    var padding = cfg.guide.padding;
+
+                    var innerWidth = options.width - (padding.l + padding.r);
+                    var innerHeight = options.height - (padding.t + padding.b);
+
+                    this.W = innerWidth;
+                    this.H = innerHeight;
+
+                    this.columnsScalesMap = cfg.columns.reduce(function (memo, xi) {
+                        memo[xi] = fnCreateScale("pos", xi, [innerHeight, 0]);
+                        return memo;
+                    }, {});
+
+                    var step = innerWidth / (cfg.columns.length - 1);
+
+                    var colsMap = cfg.columns.reduce(function (memo, p, i) {
+                        memo[p] = i * step;
+                        return memo;
+                    }, {});
+
+                    this.xBase = function (p) {
+                        return colsMap[p];
+                    };
+
+                    return this;
+                }
+            },
+            drawFrames: {
+                value: function drawFrames(frames, continuation) {
+                    var _this = this;
+
+                    var cfg = _.extend({}, this.config);
+                    var options = cfg.options;
+                    var padding = cfg.guide.padding;
+
+                    var innerW = options.width - (padding.l + padding.r);
+                    var innerH = options.height - (padding.t + padding.b);
+
+                    var updateCellLayers = function (cellId, cell, frame) {
+
+                        var frameId = frame.hash();
+                        var mapper = function (unit, i) {
+                            unit.options = {
+                                uid: frameId + i,
+                                frameId: frameId,
+                                container: cell,
+                                containerWidth: innerW,
+                                containerHeight: innerH,
+                                left: 0,
+                                top: 0,
+                                width: innerW,
+                                height: innerH
+                            };
+                            return unit;
+                        };
+
+                        var continueDrawUnit = function continueDrawUnit(unit) {
+                            unit.options.container = d3.select(this);
+                            continuation(unit, frame);
+                        };
+
+                        var layers = cell.selectAll(".layer_" + cellId).data(frame.units.map(mapper), function (unit) {
+                            return unit.options.uid + unit.type;
+                        });
+                        layers.exit().remove();
+                        layers.each(continueDrawUnit);
+                        layers.enter().append("g").attr("class", "layer_" + cellId).each(continueDrawUnit);
+                    };
+
+                    var cellFrameIterator = function cellFrameIterator(cellFrame) {
+                        updateCellLayers(options.frameId, d3.select(this), cellFrame);
+                    };
+
+                    var grid = this._fnDrawGrid(options.container, cfg, options.frameId, Object.keys(this.columnsScalesMap).reduce(function (memo, k) {
+                        return memo.concat([_this.columnsScalesMap[k].getHash()]);
+                    }, []).join("_"));
+
+                    var frms = grid.selectAll(".parent-frame-" + options.frameId).data(frames, function (f) {
+                        return f.hash();
+                    });
+                    frms.exit().remove();
+                    frms.each(cellFrameIterator);
+                    frms.enter().append("g").attr("class", function (d) {
+                        return "" + CSS_PREFIX + "cell cell parent-frame-" + options.frameId + " frame-" + d.hash();
+                    }).each(cellFrameIterator);
+
+                    var cols = this._fnDrawColumns(grid, cfg);
+
+                    if (cfg.guide.enableBrushing) {
+                        this._enableBrushing(cols);
+                    }
+                }
+            },
+            _fnDrawGrid: {
+                value: function _fnDrawGrid(container, config, frameId, uniqueHash) {
+
+                    var options = config.options;
+                    var padding = config.guide.padding;
+
+                    var l = options.left + padding.l;
+                    var t = options.top + padding.t;
+
+                    var grid = container.selectAll(".grid_" + frameId).data([uniqueHash], _.identity);
+                    grid.exit().remove();
+                    grid.enter().append("g").attr("class", "grid grid_" + frameId).attr("transform", utilsDraw.translate(l, t));
+
+                    return grid;
+                }
+            },
+            _fnDrawColumns: {
+                value: function _fnDrawColumns(grid, config) {
+                    var colsGuide = config.guide.columns || {};
+                    var xBase = this.xBase;
+                    var columnsScalesMap = this.columnsScalesMap;
+                    var d3Axis = d3.svg.axis().orient("left");
+
+                    var cols = grid.selectAll(".column").data(config.columns, _.identity);
+                    cols.exit().remove();
+                    cols.enter().append("g").attr("class", "column").attr("transform", function (d) {
+                        return utilsDraw.translate(xBase(d), 0);
+                    }).call(function () {
+                        this.append("g").attr("class", "y axis").each(function (d) {
+                            d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
+                        }).append("text").attr("class", "label").attr("text-anchor", "middle").attr("y", -9).text(function (d) {
+                            return ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim;
+                        });
+                    });
+
+                    return cols;
+                }
+            },
+            _enableBrushing: {
+                value: function _enableBrushing(cols) {
+                    var _this = this;
+
+                    var brushWidth = 16;
+
+                    var columnsScalesMap = this.columnsScalesMap;
+                    var columnsBrushes = this.columnsBrushes;
+
+                    var onBrushStartEventHandler = function (e) {
+                        return e;
+                    };
+                    var onBrushEndEventHandler = function (e) {
+                        return e;
+                    };
+                    var onBrushEventHandler = function (e) {
+                        var eventBrush = Object.keys(columnsBrushes).filter(function (k) {
+                            return !columnsBrushes[k].empty();
+                        }).map(function (k) {
+                            var ext = columnsBrushes[k].extent();
+                            var rng = [];
+                            if (columnsScalesMap[k].descrete) {
+                                rng = columnsScalesMap[k].domain().filter(function (val) {
+                                    var pos = columnsScalesMap[k](val);
+                                    return ext[0] <= pos && ext[1] >= pos;
+                                });
+                            } else {
+                                rng = [ext[0], ext[1]];
+                            }
+
+                            return {
+                                dim: columnsScalesMap[k].dim,
+                                func: columnsScalesMap[k].descrete ? "inset" : "between",
+                                args: rng
+                            };
+                        });
+
+                        _this.fire("brush", eventBrush);
+                    };
+
+                    cols.selectAll(".brush").remove();
+                    cols.append("g").attr("class", "brush").each(function (d) {
+                        columnsBrushes[d] = d3.svg.brush().y(columnsScalesMap[d]).on("brushstart", onBrushStartEventHandler).on("brush", onBrushEventHandler).on("brushend", onBrushEndEventHandler);
+
+                        d3.select(this).classed("brush-" + utils.generateHash(d), true).call(columnsBrushes[d]);
+                    }).selectAll("rect").attr("x", brushWidth / 2 * -1).attr("width", brushWidth);
+
+                    return cols;
+                }
+            },
+            _forceBrushing: {
+                value: function _forceBrushing() {
+                    var colsBrushSettings = arguments[0] === undefined ? {} : arguments[0];
+
+                    var columnsBrushes = this.columnsBrushes;
+                    var columnsScalesMap = this.columnsScalesMap;
+
+                    Object.keys(colsBrushSettings).filter(function (k) {
+                        return columnsBrushes[k] && columnsScalesMap[k] && colsBrushSettings[k];
+                    }).forEach(function (k) {
+                        var brushExt = colsBrushSettings[k];
+                        var ext = [];
+                        if (columnsScalesMap[k].descrete) {
+                            var positions = brushExt.map(columnsScalesMap[k]).filter(function (x) {
+                                return x >= 0;
+                            });
+                            var stepSize = columnsScalesMap[k].stepSize() / 2;
+                            ext = [Math.min.apply(Math, _toConsumableArray(positions)) - stepSize, Math.max.apply(Math, _toConsumableArray(positions)) + stepSize];
+                        } else {
+                            ext = [brushExt[0], brushExt[1]];
+                        }
+                        var hashK = utils.generateHash(k);
+                        columnsBrushes[k].extent(ext);
+                        columnsBrushes[k](d3.select(".brush-" + hashK));
+                        columnsBrushes[k].event(d3.select(".brush-" + hashK));
+                    });
+                }
+            }
+        });
+
+        return Parallel;
+    })(Element);
+});
 !function() {
   var topojson = {
     version: "1.6.19",
@@ -6552,7 +7194,350 @@ define('elements/coords.cartesian',["exports", "d3", "underscore", "../utils/uti
   else this.topojson = topojson;
 }();
 
-define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../utils/utils-draw", "../const", "../formatter-registry"], function (exports, _d3, _underscore, _topojson, _utilsUtilsDraw, _const, _formatterRegistry) {
+define('utils/d3-labeler',["exports"], function (exports) {
+  
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  // jscs:disable
+  var d3Labeler = function d3Labeler(d3) {
+    d3.labeler = function () {
+      var lab = [],
+          anc = [],
+          w = 1,
+          // box width
+      h = 1,
+          // box width
+      labeler = {};
+
+      var max_move = 5,
+          max_angle = 0.5,
+          acc = 0,
+          rej = 0;
+
+      // weights
+      var w_len = 0.2,
+          // leader line length
+      w_inter = 1,
+          // leader line intersection
+      w_lab2 = 30,
+          // label-label overlap
+      w_lab_anc = 30,
+          // label-anchor overlap
+      w_orient = 3; // orientation bias
+
+      // booleans for user defined functions
+      var user_energy = false,
+          user_schedule = false;
+
+      var user_defined_energy, user_defined_schedule;
+
+      var energy = function energy(index) {
+        // energy function, tailored for label placement
+
+        var m = lab.length,
+            ener = 0,
+            dx = lab[index].x - anc[index].x,
+            dy = anc[index].y - lab[index].y,
+            dist = Math.sqrt(dx * dx + dy * dy),
+            overlap = true,
+            amount = 0,
+            theta = 0;
+
+        // penalty for length of leader line
+        if (dist > 0) {
+          ener += dist * w_len;
+        }
+
+        // label orientation bias
+        dx /= dist;
+        dy /= dist;
+        if (dx > 0 && dy > 0) {
+          ener += 0 * w_orient;
+        } else if (dx < 0 && dy > 0) {
+          ener += 1 * w_orient;
+        } else if (dx < 0 && dy < 0) {
+          ener += 2 * w_orient;
+        } else {
+          ener += 3 * w_orient;
+        }
+
+        var x21 = lab[index].x,
+            y21 = lab[index].y - lab[index].height + 2,
+            x22 = lab[index].x + lab[index].width,
+            y22 = lab[index].y + 2;
+        var x11, x12, y11, y12, x_overlap, y_overlap, overlap_area;
+
+        for (var i = 0; i < m; i++) {
+          if (i != index) {
+
+            // penalty for intersection of leader lines
+            overlap = intersect(anc[index].x, lab[index].x, anc[i].x, lab[i].x, anc[index].y, lab[index].y, anc[i].y, lab[i].y);
+            if (overlap) {
+              ener += w_inter;
+            }
+
+            // penalty for label-label overlap
+            x11 = lab[i].x;
+            y11 = lab[i].y - lab[i].height + 2;
+            x12 = lab[i].x + lab[i].width;
+            y12 = lab[i].y + 2;
+            x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
+            y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
+            overlap_area = x_overlap * y_overlap;
+            ener += overlap_area * w_lab2;
+          }
+
+          // penalty for label-anchor overlap
+          x11 = anc[i].x - anc[i].r;
+          y11 = anc[i].y - anc[i].r;
+          x12 = anc[i].x + anc[i].r;
+          y12 = anc[i].y + anc[i].r;
+          x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
+          y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
+          overlap_area = x_overlap * y_overlap;
+          ener += overlap_area * w_lab_anc;
+        }
+        return ener;
+      };
+
+      var mcmove = function mcmove(currT) {
+        // Monte Carlo translation move
+
+        // select a random label
+        var i = Math.floor(Math.random() * lab.length);
+
+        // save old coordinates
+        var x_old = lab[i].x;
+        var y_old = lab[i].y;
+
+        // old energy
+        var old_energy;
+        if (user_energy) {
+          old_energy = user_defined_energy(i, lab, anc);
+        } else {
+          old_energy = energy(i);
+        }
+
+        // random translation
+        lab[i].x += (Math.random() - 0.5) * max_move;
+        lab[i].y += (Math.random() - 0.5) * max_move;
+
+        // hard wall boundaries
+        if (lab[i].x > w) {
+          lab[i].x = x_old;
+        }
+        if (lab[i].x < 0) {
+          lab[i].x = x_old;
+        }
+        if (lab[i].y > h) {
+          lab[i].y = y_old;
+        }
+        if (lab[i].y < 0) {
+          lab[i].y = y_old;
+        }
+
+        // new energy
+        var new_energy;
+        if (user_energy) {
+          new_energy = user_defined_energy(i, lab, anc);
+        } else {
+          new_energy = energy(i);
+        }
+
+        // delta E
+        var delta_energy = new_energy - old_energy;
+
+        if (Math.random() < Math.exp(-delta_energy / currT)) {
+          acc += 1;
+        } else {
+          // move back to old coordinates
+          lab[i].x = x_old;
+          lab[i].y = y_old;
+          rej += 1;
+        }
+      };
+
+      var mcrotate = function mcrotate(currT) {
+        // Monte Carlo rotation move
+
+        // select a random label
+        var i = Math.floor(Math.random() * lab.length);
+
+        // save old coordinates
+        var x_old = lab[i].x;
+        var y_old = lab[i].y;
+
+        // old energy
+        var old_energy;
+        if (user_energy) {
+          old_energy = user_defined_energy(i, lab, anc);
+        } else {
+          old_energy = energy(i);
+        }
+
+        // random angle
+        var angle = (Math.random() - 0.5) * max_angle;
+
+        var s = Math.sin(angle);
+        var c = Math.cos(angle);
+
+        // translate label (relative to anchor at origin):
+        lab[i].x -= anc[i].x;
+        lab[i].y -= anc[i].y;
+
+        // rotate label
+        var x_new = lab[i].x * c - lab[i].y * s,
+            y_new = lab[i].x * s + lab[i].y * c;
+
+        // translate label back
+        lab[i].x = x_new + anc[i].x;
+        lab[i].y = y_new + anc[i].y;
+
+        // hard wall boundaries
+        if (lab[i].x > w) {
+          lab[i].x = x_old;
+        }
+        if (lab[i].x < 0) {
+          lab[i].x = x_old;
+        }
+        if (lab[i].y > h) {
+          lab[i].y = y_old;
+        }
+        if (lab[i].y < 0) {
+          lab[i].y = y_old;
+        }
+
+        // new energy
+        var new_energy;
+        if (user_energy) {
+          new_energy = user_defined_energy(i, lab, anc);
+        } else {
+          new_energy = energy(i);
+        }
+
+        // delta E
+        var delta_energy = new_energy - old_energy;
+
+        if (Math.random() < Math.exp(-delta_energy / currT)) {
+          acc += 1;
+        } else {
+          // move back to old coordinates
+          lab[i].x = x_old;
+          lab[i].y = y_old;
+          rej += 1;
+        }
+      };
+
+      var intersect = function intersect(x1, x2, x3, x4, y1, y2, y3, y4) {
+        // returns true if two lines intersect, else false
+        // from http://paulbourke.net/geometry/lineline2d/
+
+        var mua, mub;
+        var denom, numera, numerb;
+
+        denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+        numera = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
+        numerb = (x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3);
+
+        /* Is the intersection along the the segments */
+        mua = numera / denom;
+        mub = numerb / denom;
+        if (!(mua < 0 || mua > 1 || mub < 0 || mub > 1)) {
+          return true;
+        }
+        return false;
+      };
+
+      var cooling_schedule = function cooling_schedule(currT, initialT, nsweeps) {
+        // linear cooling
+        return currT - initialT / nsweeps;
+      };
+
+      labeler.start = function (nsweeps) {
+        // main simulated annealing function
+        var m = lab.length,
+            currT = 1,
+            initialT = 1;
+
+        for (var i = 0; i < nsweeps; i++) {
+          for (var j = 0; j < m; j++) {
+            if (Math.random() < 0.5) {
+              mcmove(currT);
+            } else {
+              mcrotate(currT);
+            }
+          }
+          currT = cooling_schedule(currT, initialT, nsweeps);
+        }
+      };
+
+      labeler.width = function (x) {
+        // users insert graph width
+        if (!arguments.length) {
+          return w;
+        }
+        w = x;
+        return labeler;
+      };
+
+      labeler.height = function (x) {
+        // users insert graph height
+        if (!arguments.length) {
+          return h;
+        }
+        h = x;
+        return labeler;
+      };
+
+      labeler.label = function (x) {
+        // users insert label positions
+        if (!arguments.length) {
+          return lab;
+        }
+        lab = x;
+        return labeler;
+      };
+
+      labeler.anchor = function (x) {
+        // users insert anchor positions
+        if (!arguments.length) {
+          return anc;
+        }
+        anc = x;
+        return labeler;
+      };
+
+      labeler.alt_energy = function (x) {
+        // user defined energy
+        if (!arguments.length) {
+          return energy;
+        }
+        user_defined_energy = x;
+        user_energy = true;
+        return labeler;
+      };
+
+      labeler.alt_schedule = function (x) {
+        // user defined cooling_schedule
+        if (!arguments.length) {
+          return cooling_schedule;
+        }
+        user_defined_schedule = x;
+        user_schedule = true;
+        return labeler;
+      };
+
+      return labeler;
+    };
+
+    return d3;
+  };
+
+  exports.d3Labeler = d3Labeler;
+});
+define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../utils/utils-draw", "../utils/d3-labeler", "../const", "../formatter-registry"], function (exports, _d3, _underscore, _topojson, _utilsUtilsDraw, _utilsD3Labeler, _const, _formatterRegistry) {
     
 
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -6574,8 +7559,13 @@ define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../
     var topojson = _interopRequire(_topojson);
 
     var utilsDraw = _utilsUtilsDraw.utilsDraw;
+    var d3Labeler = _utilsD3Labeler.d3Labeler;
     var CSS_PREFIX = _const.CSS_PREFIX;
     var FormatterRegistry = _formatterRegistry.FormatterRegistry;
+
+    d3 = d3Labeler(d3);
+
+    var avgCharSize = 5.5;
 
     var hierarchy = ["land", "continents", "georegions", "countries", "regions", "subunits", "states", "counties"];
 
@@ -6587,7 +7577,7 @@ define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../
 
             this.config = config;
             this.config.guide = _.defaults(this.config.guide || {}, {
-                defaultFill: "#C0C0C0",
+                defaultFill: "rgba(128,128,128,0.25)",
                 padding: { l: 0, r: 0, t: 0, b: 0 },
                 showNames: true
             });
@@ -6646,8 +7636,89 @@ define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../
                     }
                 }
             },
+            _calcLabels: {
+                value: function _calcLabels(topoJSONData, reverseContours, path) {
+
+                    var innerW = this.W;
+                    var innerH = this.H;
+
+                    var labelsHashRef = {};
+
+                    reverseContours.forEach(function (c) {
+
+                        var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
+
+                        var labels = contourFeatures.map(function (d) {
+
+                            var info = d.properties || {};
+
+                            var center = path.centroid(d);
+                            var bounds = path.bounds(d);
+
+                            var sx = center[0];
+                            var sy = center[1];
+
+                            var br = bounds[1][0];
+                            var bl = bounds[0][0];
+                            var size = br - bl;
+                            var name = info.name || "";
+                            var abbr = info.abbr || name;
+                            var isAbbr = size < name.length * avgCharSize;
+                            var text = isAbbr ? abbr : name;
+                            var isRef = size < 2.5 * avgCharSize;
+                            var r = isRef ? innerW - sx - 3 * avgCharSize : 0;
+
+                            return {
+                                id: "" + c + "-" + d.id,
+                                sx: sx,
+                                sy: sy,
+                                x: sx + r,
+                                y: sy,
+                                width: text.length * avgCharSize,
+                                height: 10,
+                                name: text,
+                                r: r,
+                                isRef: isRef
+                            };
+                        }).filter(function (d) {
+                            return !isNaN(d.x) && !isNaN(d.y);
+                        });
+
+                        var anchors = labels.map(function (d) {
+                            return { x: d.sx, y: d.sy, r: d.r };
+                        });
+
+                        d3.labeler().label(labels).anchor(anchors).width(innerW).height(innerH).start(100);
+
+                        labels.filter(function (item) {
+                            return !item.isRef;
+                        }).map(function (item) {
+                            item.x = item.sx;
+                            item.y = item.sy;
+                            return item;
+                        }).reduce(function (memo, item) {
+                            memo[item.id] = item;
+                            return memo;
+                        }, labelsHashRef);
+
+                        var references = labels.filter(function (item) {
+                            return item.isRef;
+                        });
+                        if (references.length < 6) {
+                            references.reduce(function (memo, item) {
+                                memo[item.id] = item;
+                                return memo;
+                            }, labelsHashRef);
+                        }
+                    });
+
+                    return labelsHashRef;
+                }
+            },
             _drawMap: {
                 value: function _drawMap(frames, topoJSONData) {
+
+                    var self = this;
 
                     var guide = this.config.guide;
                     var options = this.config.options;
@@ -6661,15 +7732,8 @@ define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../
                     var codeScale = this.codeScale;
                     var fillScale = this.fillScale;
 
-                    var groupByCode = frames.reduce(function (groups, f) {
-                        var data = f.take();
-                        return data.reduce(function (memo, rec) {
-                            var key = rec[codeScale.dim];
-                            var val = rec[fillScale.dim];
-                            memo[key] = val;
-                            return memo;
-                        }, groups);
-                    }, {});
+                    var innerW = this.W;
+                    var innerH = this.H;
 
                     var contours = hierarchy.filter(function (h) {
                         return (topoJSONData.objects || {}).hasOwnProperty(h);
@@ -6710,62 +7774,132 @@ define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../
 
                     var path = d3.geo.path().projection(d3Projection);
 
-                    node.append("g").selectAll("path").data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features).enter().append("path").attr("d", path).attr("fill", function (d) {
-                        var props = d.properties;
-                        var codes = ["c1", "c2", "c3"].filter(function (c) {
-                            return props.hasOwnProperty(c) && props[c] && groupByCode.hasOwnProperty(props[c]);
-                        });
+                    var xmap = node.selectAll(".map-container").data(["" + innerW + "" + innerH + "" + contours.join("-")], _.identity);
+                    xmap.exit().remove();
+                    xmap.enter().append("g").call(function () {
 
-                        var value;
-                        if (codes.length === 0) {
-                            // doesn't match
-                            value = guide.defaultFill;
-                        } else if (codes.length > 0) {
-                            value = fillScale(groupByCode[props[codes[0]]]);
+                        var node = this;
+
+                        node.attr("class", "map-container");
+
+                        var labelsHash = {};
+                        var reverseContours = contours.reduceRight(function (m, t) {
+                            return m.concat(t);
+                        }, []);
+
+                        if (guide.showNames) {
+                            labelsHash = self._calcLabels(topoJSONData, reverseContours, path);
                         }
 
-                        return value;
-                    }).call(function () {
-                        // TODO: update map with contour objects names
-                        this.append("title").text(function (d) {
-                            var p = d.properties;
-                            return p.name || d.id;
-                        });
-                    });
+                        reverseContours.forEach(function (c, i) {
 
-                    var grayScale = ["#fbfbfb", "#fffefe", "#fdfdff", "#fdfdfd", "#ffffff"];
-                    var reverseContours = contours.reduceRight(function (m, t) {
-                        return m.concat(t);
-                    }, []);
-                    reverseContours.forEach(function (c, i) {
-                        node.append("path").datum(topojson.mesh(topoJSONData, topoJSONData.objects[c])).attr("fill", "none").attr("stroke", grayScale[i]).attr("stroke-linejoin", "round").attr("d", path);
-                    });
+                            var getInfo = function (d) {
+                                return labelsHash["" + c + "-" + d.id];
+                            };
 
-                    if (guide.showNames) {
-                        reverseContours.forEach(function (c) {
-                            var contourFeatures = topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [];
-                            node.selectAll(".place-label-" + c).data(contourFeatures).enter().append("text").attr("class", "place-label-" + c).attr("transform", function (d) {
-                                return "translate(" + path.centroid(d) + ")";
-                            }).text(function (d) {
-                                return (d.properties || {}).name;
+                            node.selectAll(".map-contour-" + c).data(topojson.feature(topoJSONData, topoJSONData.objects[c]).features || []).enter().append("g").call(function () {
+
+                                var cont = this;
+
+                                cont.attr("class", "map-contour-" + c + " map-contour-level map-contour-level-" + i).attr("fill", "none");
+
+                                cont.append("title").text(function (d) {
+                                    return (d.properties || {}).name;
+                                });
+
+                                cont.append("path").attr("d", path);
+
+                                cont.append("text").attr("class", "place-label-" + c).attr("transform", function (d) {
+                                    var i = getInfo(d);
+                                    return i ? "translate(" + [i.x, i.y] + ")" : "";
+                                }).text(function (d) {
+                                    var i = getInfo(d);
+                                    return i ? i.name : "";
+                                });
+
+                                cont.append("line").attr("class", "place-label-link-" + c).attr("stroke", "gray").attr("stroke-width", 0.25).attr("x1", function (d) {
+                                    var i = getInfo(d);
+                                    return i && i.isRef ? i.sx : 0;
+                                }).attr("y1", function (d) {
+                                    var i = getInfo(d);
+                                    return i && i.isRef ? i.sy : 0;
+                                }).attr("x2", function (d) {
+                                    var i = getInfo(d);
+                                    return i && i.isRef ? i.x - i.name.length * 0.6 * avgCharSize : 0;
+                                }).attr("y2", function (d) {
+                                    var i = getInfo(d);
+                                    return i && i.isRef ? i.y - 3.5 : 0;
+                                });
                             });
                         });
-                    }
 
-                    if (topoJSONData.objects.hasOwnProperty("places")) {
+                        if (topoJSONData.objects.hasOwnProperty("places")) {
 
-                        path.pointRadius(1.5);
+                            var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
 
-                        var placesFeature = topojson.feature(topoJSONData, topoJSONData.objects.places);
+                            var labels = placesFeature.features.map(function (d) {
+                                var coords = d3Projection(d.geometry.coordinates);
+                                return {
+                                    x: coords[0] + 3.5,
+                                    y: coords[1] + 3.5,
+                                    width: d.properties.name.length * avgCharSize,
+                                    height: 12,
+                                    name: d.properties.name
+                                };
+                            });
 
-                        node.append("path").datum(placesFeature).attr("d", path).attr("class", "place");
+                            var anchors = placesFeature.features.map(function (d) {
+                                var coords = d3Projection(d.geometry.coordinates);
+                                return {
+                                    x: coords[0],
+                                    y: coords[1],
+                                    r: 2.5
+                                };
+                            });
 
-                        node.selectAll(".place-label").data(placesFeature.features).enter().append("text").attr("class", "place-label").attr("transform", function (d) {
-                            return "translate(" + d3Projection(d.geometry.coordinates) + ")";
-                        }).attr("dx", ".35em").attr("dy", ".35em").text(function (d) {
-                            return d.properties.name;
+                            d3.labeler().label(labels).anchor(anchors).width(innerW).height(innerH).start(100);
+
+                            node.selectAll(".place").data(anchors).enter().append("circle").attr("class", "place").attr("transform", function (d) {
+                                return "translate(" + d.x + "," + d.y + ")";
+                            }).attr("r", function (d) {
+                                return "" + d.r + "px";
+                            });
+
+                            node.selectAll(".place-label").data(labels).enter().append("text").attr("class", "place-label").attr("transform", function (d) {
+                                return "translate(" + d.x + "," + d.y + ")";
+                            }).text(function (d) {
+                                return d.name;
+                            });
+                        }
+                    });
+
+                    var groupByCode = frames.reduce(function (groups, f) {
+                        var data = f.take();
+                        return data.reduce(function (memo, rec) {
+                            var key = (rec[codeScale.dim] || "").toLowerCase();
+                            memo[key] = rec[fillScale.dim];
+                            return memo;
+                        }, groups);
+                    }, {});
+
+                    xmap.selectAll(".map-contour-" + contourToFill).data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features).call(function () {
+                        this.classed("map-contour", true).attr("fill", function (d) {
+                            var prop = d.properties;
+                            var codes = ["c1", "c2", "c3", "abbr", "name"].filter(function (c) {
+                                return prop.hasOwnProperty(c) && prop[c] && groupByCode.hasOwnProperty(prop[c].toLowerCase());
+                            });
+
+                            var value;
+                            if (codes.length === 0) {
+                                // doesn't match
+                                value = guide.defaultFill;
+                            } else if (codes.length > 0) {
+                                value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
+                            }
+
+                            return value;
                         });
-                    }
+                    });
 
                     if (!latScale.dim || !lonScale.dim) {
                         return [];
@@ -6809,7 +7943,7 @@ define('elements/coords.geomap',["exports", "d3", "underscore", "topojson", "../
                         return { tags: f.key || {}, hash: f.hash(), data: f.take() };
                     };
 
-                    var frameGroups = options.container.selectAll(".frame-id-" + options.uid).data(frames.map(mapper), function (f) {
+                    var frameGroups = xmap.selectAll(".frame-id-" + options.uid).data(frames.map(mapper), function (f) {
                         return f.hash;
                     });
                     frameGroups.exit().remove();
@@ -6974,296 +8108,146 @@ define('elements/element.pie',["exports", "../const", "../utils/css-class-map"],
         return Pie;
     })();
 });
-define('elements/element.interval.stacked',["exports", "underscore", "../const"], function (exports, _underscore, _const) {
+define('elements/element.parallel.line',["exports", "../const", "./element"], function (exports, _const, _element) {
     
 
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-
-    var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
-
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+    var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
-
-    var _ = _interopRequire(_underscore);
-
     var CSS_PREFIX = _const.CSS_PREFIX;
+    var Element = _element.Element;
 
-    var StackedInterval = exports.StackedInterval = (function () {
-        function StackedInterval(config) {
-            _classCallCheck(this, StackedInterval);
+    var ParallelLine = exports.ParallelLine = (function (_Element) {
+        function ParallelLine(config) {
+            var _this = this;
+
+            _classCallCheck(this, ParallelLine);
+
+            _get(Object.getPrototypeOf(ParallelLine.prototype), "constructor", this).call(this, config);
 
             this.config = config;
-            this.config.guide = _.defaults(this.config.guide || {}, { prettify: true });
+            this.config.guide = _.defaults(this.config.guide || {}, {});
+
+            this.on("highlight", function (sender, e) {
+                return _this.highlight(e);
+            });
         }
 
-        _createClass(StackedInterval, {
+        _inherits(ParallelLine, _Element);
+
+        _createClass(ParallelLine, {
             drawLayout: {
                 value: function drawLayout(fnCreateScale) {
 
                     var config = this.config;
-                    this.xScale = fnCreateScale("pos", config.x, [0, config.options.width]);
-                    this.yScale = fnCreateScale("pos", config.y, [config.options.height, 0]);
+                    var options = config.options;
+
                     this.color = fnCreateScale("color", config.color, {});
+                    this.scalesMap = config.columns.reduce(function (memo, xi) {
+                        memo[xi] = fnCreateScale("pos", xi, [options.height, 0]);
+                        return memo;
+                    }, {});
 
-                    var fitSize = function (w, h, maxRelLimit, srcSize, minimalSize) {
-                        var minRefPoint = Math.min(w, h);
-                        var minSize = minRefPoint * maxRelLimit;
-                        return Math.max(minimalSize, Math.min(srcSize, minSize));
+                    var step = options.width / (config.columns.length - 1);
+                    var colsMap = config.columns.reduce(function (memo, p, i) {
+                        memo[p] = i * step;
+                        return memo;
+                    }, {});
+
+                    this.xBase = function (p) {
+                        return colsMap[p];
                     };
-
-                    var width = config.options.width;
-                    var height = config.options.height;
-                    var g = config.guide;
-                    var minimalSize = 1;
-                    var maxRelLimit = 1;
-                    var isNotZero = function (x) {
-                        return x !== 0;
-                    };
-                    var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
-                    var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
-
-                    this.size = fnCreateScale("size", config.size, {
-                        normalize: true,
-
-                        func: "linear",
-
-                        min: 0,
-                        max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
-                        mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
-                    });
 
                     return this;
                 }
             },
             drawFrames: {
                 value: function drawFrames(frames) {
-                    var config = this.config;
-                    var options = config.options;
-                    var xScale = this.xScale;
-                    var yScale = this.yScale;
-                    var sizeScale = this.size;
-                    var colorScale = this.color;
+                    var _this = this;
 
-                    var isHorizontal = config.flip;
+                    var node = this.config;
+                    var options = this.config.options;
 
-                    var viewMapper;
+                    var scalesMap = this.scalesMap;
+                    var xBase = this.xBase;
+                    var color = this.color;
 
-                    if (isHorizontal) {
-                        viewMapper = function (totals, d) {
-                            var x = d[xScale.dim];
-                            var y = d[yScale.dim];
-                            var stack = totals[y] = (totals[y] || 0) + x;
-                            var size = d[sizeScale.dim];
-                            var color = d[colorScale.dim];
-                            return {
-                                x: stack,
-                                y: y,
-                                h: x,
-                                w: size,
-                                c: color
-                            };
-                        };
-                    } else {
-                        viewMapper = function (totals, d) {
-                            var x = d[xScale.dim];
-                            var y = d[yScale.dim];
-                            var stack = totals[x] = (totals[x] || 0) + y;
-                            var size = d[sizeScale.dim];
-                            var color = d[colorScale.dim];
-                            return {
-                                x: x,
-                                y: stack,
-                                h: y,
-                                w: size,
-                                c: color
-                            };
-                        };
-                    }
+                    var d3Line = d3.svg.line();
 
-                    var d3Attrs = this._buildDrawModel(isHorizontal, {
-                        xScale: xScale,
-                        yScale: yScale,
-                        sizeScale: sizeScale,
-                        colorScale: colorScale,
-                        prettify: config.guide.prettify
-                    });
-
-                    var updateBar = function updateBar() {
-                        return this.attr(d3Attrs)
-                        // TODO: move to CSS styles
-                        .style("stroke-width", 1).style("stroke", "#fff").style("stroke-opacity", "0.5");
-                    };
-
-                    var uid = options.uid;
-                    var totals = {};
-                    var updateGroups = function updateGroups() {
-                        this.attr("class", function (f) {
-                            return "frame-id-" + uid + " frame-" + f.hash + " i-role-bar-group";
-                        }).call(function () {
-                            var bars = this.selectAll(".bar").data(function (frame) {
-                                // var totals = {}; // if 1-only frame support is required
-                                return frame.data.map(function (d) {
-                                    return { uid: uid, data: d, view: viewMapper(totals, d) };
-                                });
-                            });
-                            bars.exit().remove();
-                            bars.call(updateBar);
-                            bars.enter().append("rect").call(updateBar);
+                    var drawPath = function drawPath() {
+                        this.attr("d", function (row) {
+                            return d3Line(node.columns.map(function (p) {
+                                return [xBase(p), scalesMap[p](row[scalesMap[p].dim])];
+                            }));
                         });
                     };
 
-                    var mapper = function (f) {
-                        return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    var markPath = function markPath() {
+                        this.attr("class", function (row) {
+                            return "" + CSS_PREFIX + "__line line " + color(row[color.dim]) + " foreground";
+                        });
                     };
-                    var frameGroups = options.container.selectAll(".frame-id-" + uid).data(frames.map(mapper), function (f) {
-                        return f.hash;
-                    });
-                    frameGroups.exit().remove();
-                    frameGroups.call(updateGroups);
-                    frameGroups.enter().append("g").call(updateGroups);
 
-                    return [];
+                    var updateFrame = function updateFrame() {
+                        var backgroundPath = this.selectAll(".background").data(function (f) {
+                            return f.take();
+                        });
+                        backgroundPath.exit().remove();
+                        backgroundPath.call(drawPath);
+                        backgroundPath.enter().append("path").attr("class", "background").call(drawPath);
+
+                        var foregroundPath = this.selectAll(".foreground").data(function (f) {
+                            return f.take();
+                        });
+                        foregroundPath.exit().remove();
+                        foregroundPath.call(function () {
+                            drawPath.call(this);
+                            markPath.call(this);
+                        });
+                        foregroundPath.enter().append("path").call(function () {
+                            drawPath.call(this);
+                            markPath.call(this);
+                        });
+                    };
+
+                    var part = options.container.selectAll(".lines-frame").data(frames, function (f) {
+                        return f.hash();
+                    });
+                    part.exit().remove();
+                    part.call(updateFrame);
+                    part.enter().append("g").attr("class", "lines-frame").call(updateFrame);
+
+                    options.container.selectAll(".lines-frame .foreground").on("mouseover", function (d) {
+                        return _this.fire("mouseover", { data: d, event: d3.event });
+                    }).on("mouseout", function (d) {
+                        return _this.fire("mouseout", { data: d, event: d3.event });
+                    }).on("click", function (d) {
+                        return _this.fire("click", { data: d, event: d3.event });
+                    });
                 }
             },
-            _buildDrawModel: {
-                value: function _buildDrawModel(isHorizontal, _ref) {
-                    var xScale = _ref.xScale;
-                    var yScale = _ref.yScale;
-                    var sizeScale = _ref.sizeScale;
-                    var colorScale = _ref.colorScale;
-                    var prettify = _ref.prettify;
-
-                    // show at least 1px gap for bar to make it clickable
-                    var minH = 1;
-                    // default width for continues scales is 5px
-                    var minW = 5;
-                    var relW = 0.5;
-
-                    var calculateH;
-                    var calculateW;
-                    var calculateY;
-                    var calculateX;
-
-                    if (isHorizontal) {
-
-                        calculateW = function (d) {
-                            var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
-                            if (prettify) {
-                                w = Math.max(minH, w);
-                            }
-                            return w;
-                        };
-
-                        calculateH = function (d) {
-                            var h = (yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w);
-                            if (prettify) {
-                                h = Math.max(minH, h);
-                            }
-                            return h;
-                        };
-
-                        calculateX = function (d) {
-                            return xScale(d.x - d.h);
-                        };
-                        calculateY = function (d) {
-                            return yScale(d.y) - calculateH(d) / 2;
-                        };
-                    } else {
-
-                        calculateW = function (d) {
-                            var w = (xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w);
-                            if (prettify) {
-                                w = Math.max(minH, w);
-                            }
-                            return w;
-                        };
-
-                        calculateH = function (d) {
-                            var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
-                            if (prettify) {
-                                h = Math.max(minH, h);
-                            }
-                            return h;
-                        };
-
-                        calculateX = function (d) {
-                            return xScale(d.x) - calculateW(d) / 2;
-                        };
-                        calculateY = function (d) {
-                            return yScale(d.y);
-                        };
-                    }
-
-                    return {
-                        x: function (_ref2) {
-                            var d = _ref2.view;
-                            return calculateX(d);
-                        },
-                        y: function (_ref2) {
-                            var d = _ref2.view;
-                            return calculateY(d);
-                        },
-                        height: function (_ref2) {
-                            var d = _ref2.view;
-                            return calculateH(d);
-                        },
-                        width: function (_ref2) {
-                            var d = _ref2.view;
-                            return calculateW(d);
-                        },
-                        "class": function (_ref2) {
-                            var d = _ref2.view;
-                            return "i-role-element i-role-datum bar " + CSS_PREFIX + "bar " + colorScale(d.c);
-                        }
-                    };
-                }
-            }
-        }, {
-            embedUnitFrameToSpec: {
-                value: function embedUnitFrameToSpec(cfg, spec) {
-
-                    var isHorizontal = cfg.flip;
-
-                    var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
-                    var baseScaleName = isHorizontal ? cfg.y : cfg.x;
-                    var stackScale = spec.scales[stackedScaleName];
-                    var baseScale = spec.scales[baseScaleName];
-                    var baseDim = baseScale.dim;
-
-                    var prop = stackScale.dim;
-
-                    var sums = cfg.frames.reduce(function (s0, f) {
-                        return f.take().reduce(function (s, d) {
-                            var stackedVal = d[prop];
-
-                            if (typeof stackedVal !== "number" || stackedVal < 0) {
-                                throw new Error("Stacked field [" + prop + "] should be a non-negative number");
-                            }
-
-                            var baseVal = d[baseDim];
-                            s[baseVal] = s[baseVal] || 0;
-                            s[baseVal] += stackedVal;
-                            return s;
-                        }, s0);
-                    }, {});
-
-                    var maxSum = Math.max.apply(Math, _toConsumableArray(_.values(sums)));
-
-                    if (!stackScale.hasOwnProperty("max") || stackScale.max < maxSum) {
-                        stackScale.max = maxSum;
-                    }
+            highlight: {
+                value: function highlight(filter) {
+                    this.config.options.container.selectAll(".lines-frame .foreground").style("visibility", function (d) {
+                        return filter(d) ? "" : "hidden";
+                    });
                 }
             }
         });
 
-        return StackedInterval;
-    })();
+        return ParallelLine;
+    })(Element);
 });
+
+// params here;
 define('scales/base',["exports", "../utils/utils", "underscore"], function (exports, _utilsUtils, _underscore) {
     
 
@@ -7645,6 +8629,7 @@ define('scales/ordinal',["exports", "./base", "underscore", "d3"], function (exp
                     scale.stepSize = function (x) {
                         return fnRatio(x) * size;
                     };
+                    scale.descrete = true;
 
                     return this.toBaseScale(scale, interval);
                 }
@@ -7730,6 +8715,7 @@ define('scales/period',["exports", "./base", "../unit-domain-period-generator", 
                     scale.stepSize = function (key) {
                         return size / varSet.length;
                     };
+                    scale.descrete = true;
 
                     return this.toBaseScale(scale, interval);
                 }
@@ -8020,7 +9006,10 @@ define('scales/fill',["exports", "./base", "../utils/utils", "underscore", "d3"]
                     var props = this.scaleConfig;
                     var varSet = this.vars;
 
-                    var defBrewer = ["#F5F5F5", "#DCDCDC", "#D3D3D3", "#C0C0C0", "#A9A9A9", "#808080", "#696969", "#000000"];
+                    var opacityStep = (1 - 0.2) / 9;
+                    var defBrewer = _.times(10, function (i) {
+                        return "rgba(90,180,90," + (0.2 + i * opacityStep).toFixed(2) + ")";
+                    });
 
                     var brewer = props.brewer || defBrewer;
 
@@ -8055,21 +9044,6 @@ define('api/chart-map',["exports"], function (exports) {
         value: true
     });
     var ChartMap = function (config) {
-
-        var shouldSpecifyFillWithCode = config.fill && config.code;
-        if (config.fill && !shouldSpecifyFillWithCode) {
-            throw new Error("[code] must be specified when using [fill]");
-        }
-
-        var shouldSpecifyBothLatLong = config.latitude && config.longitude;
-        if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
-            throw new Error("[latitude] and [longitude] both must be specified");
-        }
-
-        var shouldSpecifyData = config.data;
-        if (!shouldSpecifyData) {
-            throw new Error("[data] must be specified");
-        }
 
         var guide = _.extend({
             sourcemap: config.settings.defaultSourceMap
@@ -8124,7 +9098,7 @@ define('api/chart-map',["exports"], function (exports) {
                 expression: { operator: "none", source: "/" },
 
                 code: scalesPool("value", config.code, guide.code),
-                fill: scalesPool("fill", config.fill),
+                fill: scalesPool("fill", config.fill, guide.fill),
 
                 size: scalesPool("size", config.size, guide.size),
                 color: scalesPool("color", config.color, guide.color),
@@ -8465,7 +9439,82 @@ define('api/chart-interval-stacked',["exports", "./converter-helpers"], function
 
     exports.ChartIntervalStacked = ChartIntervalStacked;
 });
-define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./scales-registry", "./elements/coords.cartesian", "./elements/coords.geomap", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval", "./elements/element.interval.stacked", "./scales/color", "./scales/size", "./scales/ordinal", "./scales/period", "./scales/time", "./scales/linear", "./scales/value", "./scales/fill", "./chart-alias-registry", "./api/chart-map", "./api/chart-interval", "./api/chart-scatterplot", "./api/chart-line", "./api/chart-interval-stacked"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _elementsElementIntervalStacked, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartIntervalStacked) {
+define('api/chart-parallel',["exports"], function (exports) {
+    
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var ChartParallel = function (config) {
+
+        var guide = _.extend({
+            columns: {}
+        }, config.guide || {});
+
+        var scales = {};
+
+        var scalesPool = function (type, prop) {
+            var guide = arguments[2] === undefined ? {} : arguments[2];
+
+            var key;
+            var dim = prop;
+            var src;
+            if (!prop) {
+                key = "" + type + ":default";
+                src = "?";
+            } else {
+                key = "" + type + "_" + prop;
+                src = "/";
+            }
+
+            if (!scales.hasOwnProperty(key)) {
+                scales[key] = _.extend({ type: type, source: src, dim: dim }, guide);
+            }
+
+            return key;
+        };
+
+        var cols = config.columns.map(function (c) {
+            return scalesPool(config.dimensions[c].scale, c, guide.columns[c]);
+        });
+
+        return {
+            sources: {
+                "?": {
+                    dims: {},
+                    data: [{}]
+                },
+                "/": {
+                    dims: Object.keys(config.dimensions).reduce(function (dims, k) {
+                        dims[k] = { type: config.dimensions[k].type };
+                        return dims;
+                    }, {}),
+                    data: config.data
+                }
+            },
+
+            scales: scales,
+
+            unit: {
+                type: "COORDS.PARALLEL",
+                expression: { operator: "none", source: "/" },
+                columns: cols,
+                guide: guide,
+                units: [{
+                    type: "PARALLEL/ELEMENT.LINE",
+                    color: scalesPool("color", config.color, guide.color),
+                    columns: cols,
+                    expression: { operator: "none", source: "/" }
+                }]
+            },
+
+            plugins: config.plugins || []
+        };
+    };
+
+    exports.ChartParallel = ChartParallel;
+});
+define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/tau.gpl", "./charts/tau.plot", "./charts/tau.chart", "./unit-domain-period-generator", "./formatter-registry", "./units-registry", "./scales-registry", "./elements/coords.cartesian", "./elements/coords.parallel", "./elements/coords.geomap", "./elements/element.point", "./elements/element.line", "./elements/element.pie", "./elements/element.interval", "./elements/element.interval.stacked", "./elements/element.parallel.line", "./scales/color", "./scales/size", "./scales/ordinal", "./scales/period", "./scales/time", "./scales/linear", "./scales/value", "./scales/fill", "./chart-alias-registry", "./api/chart-map", "./api/chart-interval", "./api/chart-scatterplot", "./api/chart-line", "./api/chart-interval-stacked", "./api/chart-parallel"], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartIntervalStacked, _apiChartParallel) {
     
 
     Object.defineProperty(exports, "__esModule", {
@@ -8481,12 +9530,14 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var unitsRegistry = _unitsRegistry.unitsRegistry;
     var scalesRegistry = _scalesRegistry.scalesRegistry;
     var Cartesian = _elementsCoordsCartesian.Cartesian;
+    var Parallel = _elementsCoordsParallel.Parallel;
     var GeoMap = _elementsCoordsGeomap.GeoMap;
     var Point = _elementsElementPoint.Point;
     var Line = _elementsElementLine.Line;
     var Pie = _elementsElementPie.Pie;
     var Interval = _elementsElementInterval.Interval;
     var StackedInterval = _elementsElementIntervalStacked.StackedInterval;
+    var ParallelLine = _elementsElementParallelLine.ParallelLine;
     var ColorScale = _scalesColor.ColorScale;
     var SizeScale = _scalesSize.SizeScale;
     var OrdinalScale = _scalesOrdinal.OrdinalScale;
@@ -8495,12 +9546,13 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
     var LinearScale = _scalesLinear.LinearScale;
     var ValueScale = _scalesValue.ValueScale;
     var FillScale = _scalesFill.FillScale;
-    var ChartTypesRegistry = _chartAliasRegistry.ChartTypesRegistry;
+    var chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry;
     var ChartMap = _apiChartMap.ChartMap;
     var ChartInterval = _apiChartInterval.ChartInterval;
     var ChartScatterplot = _apiChartScatterplot.ChartScatterplot;
     var ChartLine = _apiChartLine.ChartLine;
     var ChartIntervalStacked = _apiChartIntervalStacked.ChartIntervalStacked;
+    var ChartParallel = _apiChartParallel.ChartParallel;
 
     var colorBrewers = {};
     var plugins = {};
@@ -8604,19 +9656,40 @@ define('tau.charts',["exports", "./utils/utils-dom", "./utils/utils", "./charts/
 
     Plot.globalSettings = api.globalSettings;
 
-    api.unitsRegistry.reg("COORDS.RECT", Cartesian).reg("COORDS.MAP", GeoMap).reg("ELEMENT.POINT", Point).reg("ELEMENT.LINE", Line).reg("ELEMENT.INTERVAL", Interval).reg("ELEMENT.INTERVAL.STACKED", StackedInterval).reg("RECT", Cartesian).reg("POINT", Point).reg("INTERVAL", Interval).reg("LINE", Line).reg("PIE", Pie);
+    api.unitsRegistry.reg("COORDS.RECT", Cartesian).reg("COORDS.MAP", GeoMap).reg("COORDS.PARALLEL", Parallel).reg("ELEMENT.POINT", Point).reg("ELEMENT.LINE", Line).reg("ELEMENT.INTERVAL", Interval).reg("ELEMENT.INTERVAL.STACKED", StackedInterval).reg("RECT", Cartesian).reg("POINT", Point).reg("INTERVAL", Interval).reg("LINE", Line).reg("PARALLEL/ELEMENT.LINE", ParallelLine).reg("PIE", Pie);
 
     api.scalesRegistry.reg("color", ColorScale).reg("fill", FillScale).reg("size", SizeScale).reg("ordinal", OrdinalScale).reg("period", PeriodScale).reg("time", TimeScale).reg("linear", LinearScale).reg("value", ValueScale);
 
-    ChartTypesRegistry.add("scatterplot", ChartScatterplot).add("line", ChartLine).add("bar", function (cfg) {
+    var commonRules = [function (config) {
+        return !config.data ? ["[data] must be specified"] : [];
+    }];
+
+    api.chartTypesRegistry = chartTypesRegistry.add("scatterplot", ChartScatterplot, commonRules).add("line", ChartLine, commonRules).add("bar", function (cfg) {
         return ChartInterval(_.defaults({ flip: false }, cfg));
-    }).add("horizontalBar", function (cfg) {
+    }, commonRules).add("horizontalBar", function (cfg) {
         return ChartInterval(_.defaults({ flip: true }, cfg));
-    }).add("map", ChartMap).add("stacked-bar", function (cfg) {
+    }, commonRules).add("horizontal-bar", function (cfg) {
+        return ChartInterval(_.defaults({ flip: true }, cfg));
+    }, commonRules).add("map", ChartMap, commonRules.concat([function (config) {
+        var shouldSpecifyFillWithCode = config.fill && config.code;
+        if (config.fill && !shouldSpecifyFillWithCode) {
+            return "[code] must be specified when using [fill]";
+        }
+    }, function (config) {
+        var shouldSpecifyBothLatLong = config.latitude && config.longitude;
+        if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
+            return "[latitude] and [longitude] both must be specified";
+        }
+    }])).add("stacked-bar", function (cfg) {
         return ChartIntervalStacked(_.defaults({ flip: false }, cfg));
-    }).add("horizontal-stacked-bar", function (cfg) {
+    }, commonRules).add("horizontal-stacked-bar", function (cfg) {
         return ChartIntervalStacked(_.defaults({ flip: true }, cfg));
-    });
+    }, commonRules).add("parallel", ChartParallel, commonRules.concat([function (config) {
+        var shouldSpecifyColumns = config.columns && config.columns.length > 1;
+        if (!shouldSpecifyColumns) {
+            return "[columns] property must contain at least 2 dimensions";
+        }
+    }]));
 
     exports.GPL = GPL;
     exports.Plot = Plot;
