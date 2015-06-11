@@ -1,7 +1,6 @@
 import {CSS_PREFIX} from '../const';
 
 export class Point {
-
     constructor(config) {
         this.config = config;
 

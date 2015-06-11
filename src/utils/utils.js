@@ -1,6 +1,7 @@
 import {Point}      from '../elements/element.point';
 import {Line}       from '../elements/element.line';
-import {Interval}        from '../elements/element.interval';
+import {Interval}   from '../elements/element.interval';
+import {StackedInterval} from '../elements/element.interval.stacked';
 
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
@@ -257,7 +258,12 @@ var deepClone = (function () {
     return deepCopy;
 
 })();
-
+var chartElement = [
+    Interval,
+    Point,
+    Line,
+    StackedInterval
+];
 var utils = {
     clone(obj) {
         return deepClone(obj);
@@ -266,7 +272,7 @@ var utils = {
         return Array.isArray(obj);
     },
     isChartElement(element) {
-        return element instanceof Interval || element instanceof Point || element instanceof Line;
+        return chartElement.some(Element => element instanceof Element);
     },
     isLineElement(element) {
         return element instanceof Line;

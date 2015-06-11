@@ -12,7 +12,7 @@ var throwNotSupported = (alias) => {
     throw new Error(msg);
 };
 
-var ChartTypesRegistry = {
+var chartTypesRegistry = {
 
     validate (alias, config) {
 
@@ -38,7 +38,10 @@ var ChartTypesRegistry = {
         chartTypes[alias] = converter;
         chartRules[alias] = rules;
         return this;
+    },
+    getAllRegisteredTypes: function () {
+        return chartTypes;
     }
 };
 
-export {ChartTypesRegistry};
+export {chartTypesRegistry};

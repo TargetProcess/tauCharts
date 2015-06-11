@@ -129,18 +129,18 @@
          * @extends Plugin */
         var defData = [
             {type: 'us', count: 0, date: 2},
-            {type: 'us', count: -0.012301230123, date: 2},
-            {type: 'us', count: 123, date: 2},
+            {type: 'us', count: 0.012301230123, date: 2},
+            {type: 'us', count: 12, date: 2},
             {type: 'us', count: 10, date: 3},
             {type: 'us', count: 15, date: 4},
 
-            {type: 'bug', count: 0.12, date: 5},
-            {type: 'bug', count: 0.16, date: 6},
-            {type: 'bug', count: 0.1313, date: 7},
+            {type: 'bug', count: 12, date: 2},
+            {type: 'bug', count: 16, date: 2},
+            {type: 'bug', count: 13, date: 7},
 
-            {type: 'request', count: 0.22, date: 5},
-            {type: 'request', count: 0.26, date: 6},
-            {type: 'request', count: 0.2313, date: 7},
+            {type: 'request', count: 22, date: 5},
+            {type: 'request', count: 26, date: 6},
+            {type: 'request', count: 13, date: 7},
 
             {type: 'task', count: 1.12, date: 5},
             {type: 'task', count: 1.16, date: 6},
@@ -153,14 +153,13 @@
         };
 
         var chart = new tauCharts.Chart({
-            "type": "bar",
-            "color": "colorValue",
-            "size": "sizeValue",
+            "type": "stacked-bar",
+            "color": "type",
             "x": [
-                "simple1"
+                "date"
             ],
             "y": [
-                "simple"
+                "count"
             ],
            /* "guide": [
                *//* {
@@ -187,63 +186,8 @@
 
                 }
             ],*/
-            "dimensions": {
-                "complex": {
-                    "type": "category",
-                    "scale": "ordinal",
-                    "value": "id"
-                },
-                "date": {
-                    "type": "order",
-                    "scale": "period"
-                },
-                "simple": {
-                    "type": "measure",
-                    "scale": "linear"
-                },
-                "simple1": {
-                    "type": "measure",
-                    "scale": "linear"
-                },
-                "colorValue": {
-                    "type": "category",
-                    "scale": "ordinal"
-                },
-                "sizeValue": {
-                    "type": "measure",
-                    "scale": "linear"
-                }
-            },
-            plugins: [tooltip({fields: ['complex.name', 'date', 'simple', 'colorValue', 'sizeValue']}), trendline()],
-            data: [
-                {
-                    "complex": {
-                        "id": 1,
-                        "name": "TP3"
-                    },
-                    "date": new Date(iso("2015-01-08T00:00:00")),
-                    "simple": 0.5,
-                    "simple1": 0.5,
-                    "colorValue": "UserStory",
-                    "sizeValue": 10
-                },
-                {
-                    "complex": null,
-                    "date": new Date(iso("2015-01-08T00:00:00")),
-                    "simple": 0.4,
-                    "simple1": 0.3,
-                    "colorValue": "UserStory",
-                    "sizeValue": 10
-                }/*,
-                {
-                    "complex": null,
-                    "date": new Date(iso("2015-01-09T00:00:00")),
-                    "simple": 0.9,
-                    "simple1": 0.34,
-                    "colorValue": "Bug",
-                    "sizeValue": 20
-                }*/
-            ]
+            plugins: [tooltip({fields: ['count']}), legend()],
+            data: defData
         });
 
         chart.renderTo('#line');

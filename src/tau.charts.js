@@ -27,7 +27,7 @@ import {LinearScale}    from './scales/linear';
 import {ValueScale}     from './scales/value';
 import {FillScale}      from './scales/fill';
 
-import {ChartTypesRegistry}     from './chart-alias-registry';
+import {chartTypesRegistry}     from './chart-alias-registry';
 import {ChartMap}               from './api/chart-map';
 import {ChartInterval}          from './api/chart-interval';
 import {ChartScatterplot}       from './api/chart-scatterplot';
@@ -45,8 +45,8 @@ var api = {
     unitsRegistry: unitsRegistry,
     scalesRegistry: scalesRegistry,
     tickFormat: FormatterRegistry,
-    isChartElement:utils.isChartElement,
-    isLineElement:utils.isLineElement,
+    isChartElement: utils.isChartElement,
+    isLineElement: utils.isLineElement,
     d3: d3,
     _: _,
     tickPeriod: UnitDomainPeriodGenerator,
@@ -174,12 +174,12 @@ var commonRules = [
     ((config) => (!config.data) ? ['[data] must be specified'] : [])
 ];
 
-ChartTypesRegistry
+api.chartTypesRegistry = chartTypesRegistry
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', ChartLine, commonRules)
-    .add('bar', (cfg) => ChartInterval(_.defaults({flip:false}, cfg)), commonRules)
-    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)), commonRules)
-    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip:true}, cfg)), commonRules)
+    .add('bar', (cfg) => ChartInterval(_.defaults({flip: false}, cfg)), commonRules)
+    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
+    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('map', ChartMap, commonRules.concat([
         (config) => {
             var shouldSpecifyFillWithCode = (config.fill && config.code);
@@ -194,8 +194,8 @@ ChartTypesRegistry
             }
         }
     ]))
-    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:false}, cfg)), commonRules)
-    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip:true}, cfg)), commonRules)
+    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip: false}, cfg)), commonRules)
+    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip: true}, cfg)), commonRules)
     .add('parallel', ChartParallel, commonRules.concat([
         (config) => {
             var shouldSpecifyColumns = (config.columns && config.columns.length > 1);
