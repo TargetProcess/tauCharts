@@ -1,6 +1,90 @@
 import {ScalesFactory} from './scales-factory';
 import {utils} from './utils/utils';
 
+var tryOptimizeSpec = (root, localSettings) => {
+
+    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0) {
+        root.guide.x.rotate = 0;
+        root.guide.x.textAnchor = 'middle';
+        // root.guide.x.tickFormatWordWrapLimit = perTickX;
+
+        var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
+        var xDelta = 0 - s + root.guide.x.$maxTickTextH;
+
+        root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
+
+        if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
+            root.guide.x.label.padding += xDelta;
+        }
+    }
+
+    (root.units || [])
+        .filter((u) => u.type === 'COORDS.RECT')
+        .forEach((u) => tryOptimizeSpec(u, localSettings));
+};
+
+var byMaxText = ((gx) => gx.$maxTickTextW);
+var byDensity = ((gx) => gx.density);
+
+var fitModelStrategies = {
+
+    'entire-view': (srcSize, calcSize, specRef) => {
+
+        var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
+        if (widthByMaxText <= srcSize.width) {
+            tryOptimizeSpec(specRef.unit, specRef.settings);
+        }
+
+        var newW = srcSize.width;
+        var newH = srcSize.height;
+
+        return {newW, newH};
+    },
+
+    'minimal': (srcSize, calcSize, specRef) => {
+        var newW = calcSize('x', specRef.unit, byDensity);
+        var newH = calcSize('y', specRef.unit, byDensity);
+        return {newW, newH};
+    },
+
+    'normal': (srcSize, calcSize, specRef) => {
+
+        var newW;
+
+        var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
+        var originalWidth = srcSize.width;
+
+        if (widthByMaxText <= originalWidth) {
+            tryOptimizeSpec(specRef.unit, specRef.settings);
+            newW = Math.max(originalWidth, widthByMaxText);
+        } else {
+            newW = Math.max(originalWidth, Math.max(srcSize.width, calcSize('x', specRef.unit, byDensity)));
+        }
+
+        var newH = Math.max(srcSize.height, calcSize('y', specRef.unit, byDensity));
+
+        return {newW, newH};
+    },
+
+    'fit-width': (srcSize, calcSize, specRef) => {
+        var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
+        if (widthByMaxText <= srcSize.width) {
+            tryOptimizeSpec(specRef.unit, specRef.settings);
+        }
+
+        var newW = srcSize.width;
+        var newH = calcSize('y', specRef.unit, byDensity);
+        return {newW, newH};
+    },
+
+    'fit-height': (srcSize, calcSize, specRef) => {
+        var newW = calcSize('x', specRef.unit, byDensity);
+        var newH = srcSize.height;
+        return {newW, newH};
+    }
+};
+
+
 export class SpecTransformCalcSize {
 
     constructor(spec) {
@@ -51,14 +135,12 @@ export class SpecTransformCalcSize {
             return r;
         };
 
-        var calcWidth = (prop, root, frame = null) => {
+        var calcSizeRecursively = (prop, root, takeStepSizeStrategy, frame = null) => {
 
             var xCfg = (prop === 'x') ? scales[root.x] : scales[root.y];
             var yCfg = (prop === 'x') ? scales[root.y] : scales[root.x];
             var guide = root.guide;
-            var xSize = (prop === 'x') ?
-                Math.max(guide.x.density, guide.x.$maxTickTextW) :
-                guide.y.density;
+            var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
 
             var resScaleSize = (prop === 'x') ?
                 (guide.padding.l + guide.padding.r) :
@@ -76,7 +158,7 @@ export class SpecTransformCalcSize {
                     .keys(rows)
                     .map((kRow) => {
                         return rows[kRow]
-                            .map((f) => calcWidth(prop, f.units[0], f))
+                            .map((f) => calcSizeRecursively(prop, f.units[0], takeStepSizeStrategy, f))
                             .reduce((sum, size) => (sum + size), 0);
                     });
 
@@ -91,25 +173,11 @@ export class SpecTransformCalcSize {
         var newW = srcSize.width;
         var newH = srcSize.height;
 
-        if (fitModel === 'entire-view') {
-            newW = srcSize.width;
-            newH = srcSize.height;
-
-        } else if (fitModel === 'minimal') {
-            newW = calcWidth('x', specRef.unit);
-            newH = calcWidth('y', specRef.unit);
-
-        } else if (fitModel === 'normal') {
-            newW = Math.max(srcSize.width, calcWidth('x', specRef.unit));
-            newH = Math.max(srcSize.height, calcWidth('y', specRef.unit));
-
-        } else if (fitModel === 'fit-width') {
-            newW = srcSize.width;
-            newH = calcWidth('y', specRef.unit);
-
-        } else if (fitModel === 'fit-height') {
-            newW = calcWidth('x', specRef.unit);
-            newH = srcSize.height;
+        var strategy = fitModelStrategies[fitModel];
+        if (strategy) {
+            let newSize = strategy(srcSize, calcSizeRecursively, specRef);
+            newW = newSize.newW;
+            newH = newSize.newH;
         }
 
         var prettifySize = (srcSize, newSize) => {

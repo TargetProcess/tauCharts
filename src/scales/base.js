@@ -20,7 +20,7 @@ export class BaseScale {
         var vars = this.getVarSet(data, scaleConfig);
 
         if (scaleConfig.order) {
-            vars = _.union(scaleConfig.order, vars);
+            vars = _.intersection(scaleConfig.order, vars);
         }
 
         this.vars = vars;
