@@ -13,7 +13,6 @@ import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
 import {SpecTransformCalcSize} from '../spec-transform-calc-size';
 import {SpecTransformApplyRatio} from '../spec-transform-apply-ratio';
 import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
-import {SpecTransformOptimizeGuide} from '../spec-transform-optimize-guide';
 
 import {GPL} from './tau.gpl';
 
@@ -48,7 +47,6 @@ export class Plot extends Emitter {
 
         this.onUnitsStructureExpandedTransformers = [
             SpecTransformCalcSize,
-            SpecTransformOptimizeGuide,
             SpecTransformExtractAxes
         ];
 

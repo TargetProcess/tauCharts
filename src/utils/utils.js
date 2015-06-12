@@ -352,7 +352,9 @@ var utils = {
     },
 
     generateRatioFunction: (dimPropName, paramsList, chartInstanceRef) => {
-        //
+
+        var unify = (v) => (v instanceof Date) ? v.getTime() : v;
+
         return (key, size, varSet) => {
 
             var facetSize = varSet.length;
@@ -374,7 +376,7 @@ var utils = {
             var xHash = (keys) => {
                 return _(data)
                     .chain()
-                    .map((row) => (keys.reduce((r, k) => (r.concat(row[k])), [])))
+                    .map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), [])))
                     .uniq((t) => JSON.stringify(t))
                     .reduce((memo, t) => {
                         var k = t[0];

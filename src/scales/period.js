@@ -14,8 +14,6 @@ export class PeriodScale extends BaseScale {
         var props = this.scaleConfig;
         var vars = this.vars;
 
-        // extract: ((x) => UnitDomainPeriodGenerator.get(xOptions.period).cast(new Date(x)))
-
         var domain = d3.extent(vars);
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domain[1] : new Date(props.max).getTime();
@@ -25,12 +23,22 @@ export class PeriodScale extends BaseScale {
             new Date(Math.max(max, domain[1]))
         ];
 
-        this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
+        if (props.fitToFrameByDims) {
+            this.vars = _(vars).chain()
+                .uniq((x) => new Date(x).getTime())
+                .map((x) => new Date(x))
+                .sortBy((x) => -x)
+                .value();
+        } else {
+            this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
+        }
     }
 
     create(interval) {
 
         var varSet = this.vars;
+        var varSetTicks = this.vars.map(t => t.getTime());
+        var props = this.scaleConfig;
 
         var d3Domain = d3.scale.ordinal().domain(varSet);
 
@@ -38,13 +46,43 @@ export class PeriodScale extends BaseScale {
 
         var size = Math.max(...interval);
 
-        var scale = (x) => d3Scale(new Date(x));
+        var fnRatio = (key) => {
+
+            var tick = new Date(key).getTime();
+
+            var ratioType = typeof(props.ratio);
+            if (ratioType === 'function') {
+                return props.ratio(tick, size, varSetTicks);
+            } else if (ratioType === 'object') {
+                return props.ratio[tick];
+            } else {
+                // uniform distribution
+                return 1 / varSet.length;
+            }
+        };
+
+        var scale = (x) => {
+
+            var r;
+            var dx = new Date(x);
+            var tx = dx.getTime();
+
+            if (!props.ratio) {
+                r = d3Scale(dx);
+            } else {
+                r = size - varSetTicks.slice(varSetTicks.indexOf(tx) + 1).reduce(
+                        (acc, v) => (acc + (size * fnRatio(v))),
+                        (size * fnRatio(x) * 0.5));
+            }
+
+            return r;
+        };
 
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
         scale.scaleType = 'period';
-        scale.stepSize = (key) => (size / varSet.length);
+        scale.stepSize = (x) => (fnRatio(x) * size);
         scale.descrete = true;
 
         return this.toBaseScale(scale, interval);

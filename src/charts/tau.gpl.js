@@ -185,8 +185,32 @@ export class GPL extends Emitter {
     _datify(frame) {
         var data = this.sources[frame.source].data;
         var trans = this.transformations;
+        var pipeReducer = (data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args);
         frame.hash = () => utils.generateHash([frame.pipe, frame.key, frame.source].map(JSON.stringify).join(''));
-        frame.take = () => frame.pipe.reduce((data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args), data);
+        frame.take = () => frame.pipe.reduce(pipeReducer, data);
+        frame.partByDims = (dims) => {
+            return frame
+                .pipe
+                .map((f) => {
+                    var r = {};
+                    if (f.type === 'where' && f.args) {
+                        r.type = f.type;
+                        r.args = dims.reduce(
+                            (memo, d) => {
+                                if (f.args.hasOwnProperty(d)) {
+                                    memo[d] = f.args[d];
+                                }
+                                return memo;
+                            },
+                            {});
+                    } else {
+                        r = f;
+                    }
+
+                    return r;
+                })
+                .reduce(pipeReducer, data);
+        };
         frame.data = frame.take();
         return frame;
     }

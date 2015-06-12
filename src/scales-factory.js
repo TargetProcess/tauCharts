@@ -16,8 +16,9 @@ export class ScalesFactory {
         var type = (this.sources[src].dims[dim] || {}).type;
         var data = (this.sources[src].data);
         var xSrc = {
+            full: (() => (data)),
             part: (() => (frame ? frame.take() : data)),
-            full: (() => (data))
+            partByDims: ((dims) => (frame ? frame.partByDims(dims) : data))
         };
 
         scaleConfig.dimType = type;
