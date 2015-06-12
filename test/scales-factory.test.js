@@ -230,7 +230,37 @@ define(function (require) {
             expect(scale1.domain().length).to.equal(6);
 
             expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
-            expect(scale1.stepSize()).to.equal(100 / scale1.domain().length);
+            expect(scale1.stepSize().toFixed(4)).to.equal((100 / scale1.domain().length).toFixed(4));
+
+            var scale2 = new PeriodScale(
+                xSrc,
+                {
+                    dim: 't',
+                    period: 'day',
+                    fitToFrameByDims: []
+                }).create([0, 100]);
+
+            expect(scale2.domain().length).to.equal(3);
+
+            expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale2.stepSize().toFixed(4)).to.equal((100 / scale2.domain().length).toFixed(4));
+
+            var scale3Ratio = {};
+            scale3Ratio[new Date('2015-04-17').getTime()] = 0.5;
+            scale3Ratio[new Date('2015-04-16').getTime()] = 0.1;
+            scale3Ratio[new Date('2015-04-19').getTime()] = 0.4;
+            var scale3 = new PeriodScale(
+                xSrc,
+                {
+                    dim: 't',
+                    ratio: scale3Ratio,
+                    fitToFrameByDims: []
+                }).create([0, 100]);
+
+            expect(scale3.domain().length).to.equal(3);
+            expect(scale3.stepSize(new Date('2015-04-17').getTime()).toFixed(4)).to.equal((100 * 0.5).toFixed(4));
+            expect(scale3.stepSize(new Date('2015-04-16')).toFixed(4)).to.equal((100 * 0.1).toFixed(4));
+            expect(scale3.stepSize(new Date('2015-04-19')).toFixed(4)).to.equal((100 * 0.4).toFixed(4));
         });
 
         it('should support [linear] scale', function () {
