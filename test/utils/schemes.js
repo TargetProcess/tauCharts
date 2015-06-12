@@ -66,7 +66,7 @@ define(['js-schema'], function (schema) {
             })
         });
 
-        var scale = schema({type: String, scale: String});
+        var scale = schema({type: String, source:String});
         var scales = {
             '*': [null, scale]
         };
