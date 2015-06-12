@@ -14,8 +14,6 @@ import {
 export class Cartesian {
 
     constructor(config) {
-        super();
-
         this.config = config;
 
         this.config.guide = _.defaults(

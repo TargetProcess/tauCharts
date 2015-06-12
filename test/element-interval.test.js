@@ -76,12 +76,12 @@ define(function (require) {
                     var predicates = _.map(tuple, function (v, k) {
                         return function (row) {
                             return (row[k] === v);
-                        }
+                        };
                     });
                     return _(data).filter(function (row) {
                         return _.every(predicates, function (p) {
                             return p(row);
-                        })
+                        });
                     });
                 }
             },
@@ -204,7 +204,7 @@ define(function (require) {
                 units: [
                     {
                         type: 'ELEMENT.INTERVAL',
-                        guide: {prettify:false},
+                        guide: {prettify: false},
                         x: 'x',
                         flip: false,
                         y: 'y',
@@ -220,11 +220,11 @@ define(function (require) {
             }
         },
         [
-            {x: 'a', y: 100,  color: 'red'},
+            {x: 'a', y: 100, color: 'red'},
 
-            {x: 'b', y: 50,   color: 'green'},
-            {x: 'c', y: 0,    color: 'green'},
-            {x: 'c', y: -50,  color: 'green'},
+            {x: 'b', y: 50, color: 'green'},
+            {x: 'c', y: 0, color: 'green'},
+            {x: 'c', y: -50, color: 'green'},
 
             {x: 'c', y: -100, color: 'yellow'}
         ],
@@ -300,7 +300,7 @@ define(function (require) {
                     {
                         x: 'y',
                         y: 'x',
-                        guide: {prettify:false},
+                        guide: {prettify: false},
                         expression: {
                             inherit: true,
                             source: '/',
@@ -370,14 +370,14 @@ define(function (require) {
                 y: 'catY',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide:true, autoScale: false},
-                    y: {hide:true, autoScale: false}
+                    x: {hide: true, autoScale: false},
+                    y: {hide: true, autoScale: false}
                 },
                 units: [
                     {
                         x: 'x',
                         y: 'catY',
-                        guide: {prettify:false},
+                        guide: {prettify: false},
                         expression: {
                             inherit: true,
                             source: '/',
@@ -439,8 +439,8 @@ define(function (require) {
                 y: 'x',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide:true, autoScale: false},
-                    y: {hide:true, autoScale: false}
+                    x: {hide: true, autoScale: false},
+                    y: {hide: true, autoScale: false}
                 },
                 units: [
                     {
@@ -448,7 +448,7 @@ define(function (require) {
                         flip: true,
                         y: 'x',
                         color: 'color',
-                        guide: {prettify:false}
+                        guide: {prettify: false}
                     }
                 ]
             }
@@ -517,13 +517,13 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide:true, autoScale: false},
-                    y: {hide:true, autoScale: false}
+                    x: {hide: true, autoScale: false},
+                    y: {hide: true, autoScale: false}
                 },
                 units: [
                     {
                         flip: true,
-                        guide: {prettify:false}
+                        guide: {prettify: false}
                     }
                 ]
             }
@@ -585,13 +585,13 @@ define(function (require) {
                 y: 'catY',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide:true, autoScale: false},
-                    y: {hide:true, autoScale: false}
+                    x: {hide: true, autoScale: false},
+                    y: {hide: true, autoScale: false}
                 },
                 units: [
                     {
                         flip: true,
-                        guide: {prettify:false}
+                        guide: {prettify: false}
                     }
                 ]
             }
@@ -659,13 +659,13 @@ define(function (require) {
                 y: 'count',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide:true, autoScale: false},
-                    y: {hide:true, autoScale: false}
+                    x: {hide: true, autoScale: false},
+                    y: {hide: true, autoScale: false}
                 },
                 units: [
                     {
                         type: 'ELEMENT.INTERVAL',
-                        guide: {prettify:false}
+                        guide: {prettify: false}
                     }
                 ]
             }
@@ -736,13 +736,13 @@ define(function (require) {
                 y: 'date',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide:true, autoScale: false, min: 0, max: 100},
-                    y: {hide:true, autoScale: false}
+                    x: {hide: true, autoScale: false, min: 0, max: 100},
+                    y: {hide: true, autoScale: false}
                 },
                 units: [
                     {
                         flip: true,
-                        guide: {prettify:false}
+                        guide: {prettify: false}
                     }
                 ]
             }

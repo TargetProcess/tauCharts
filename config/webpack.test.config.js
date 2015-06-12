@@ -62,7 +62,7 @@ var generateConf = function (postLoader) {
             reasons: true
         },
         progress: true
-    }
+    };
 };
 
 module.exports = {

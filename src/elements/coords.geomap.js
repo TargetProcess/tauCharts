@@ -6,7 +6,7 @@ import {d3Labeler} from '../utils/d3-labeler';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 
-d3 = d3Labeler(d3);
+d3.labeler = d3Labeler;
 
 const avgCharSize = 5.5;
 
@@ -30,8 +30,6 @@ var hierarchy = [
 export class GeoMap {
 
     constructor(config) {
-        super();
-
         this.config = config;
         this.config.guide = _.defaults(
             this.config.guide || {},
