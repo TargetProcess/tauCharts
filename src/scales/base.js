@@ -15,7 +15,12 @@ export class BaseScale {
 
     constructor(xSource, scaleConfig) {
 
-        var data = scaleConfig.fitToFrame ? xSource.part() : xSource.full();
+        var data;
+        if (_.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
+            data = xSource.partByDims(scaleConfig.fitToFrameByDims);
+        } else {
+            data = xSource.full();
+        }
 
         var vars = this.getVarSet(data, scaleConfig);
 

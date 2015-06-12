@@ -232,7 +232,7 @@ export class SpecConverter {
                 item.period = guide.tickPeriod;
             }
 
-            item.fitToFrame = guide.fitToFrame;
+            item.fitToFrameByDims = guide.fitToFrameByDims;
 
             item.ratio = guide.ratio;
         }

@@ -64,7 +64,6 @@ define(function (require) {
                         'A': 0.8,
                         'B': 0.2
                     },
-                    fitToFrame: true,
                     source: '/',
                     dim: 'x1'
                 },

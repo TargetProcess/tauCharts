@@ -78,31 +78,25 @@ export class SpecTransformApplyRatio {
         traverse(spec.unit, enterIterator, ((unitRef, level) => 0));
 
         var toScaleConfig = ((scaleName) => spec.scales[scaleName]);
-        var isValidScale = ((scale) => ((scale.source === '/') && !scale.ratio && !scale.fitToFrame));
+        var isValidScale = ((scale) => ((scale.source === '/') && !scale.ratio && !scale.fitToFrameByDims));
         var isOrdinalScale = ((scale) => (scale.type === 'ordinal'));
 
         var realXs = xs.map(toScaleConfig).filter(isValidScale);
         var realYs = ys.map(toScaleConfig).filter(isValidScale);
 
         var xyProd = 2;
-        if ((realXs.length * realYs.length) !== xyProd) {
-            throw new Error('Not applicable');
-        }
+        if ([realXs.length, realYs.length].some(l => l === xyProd)) {
+            let exDim = ((s) => s.dim);
+            let scalesIterator = ((s, i, list) => (s.fitToFrameByDims = list.slice(0, i).map(exDim)));
+            let tryApplyRatioToScales = (axis, scalesRef) => {
+                if (scalesRef.filter(isOrdinalScale).length === xyProd) {
+                    scalesRef.forEach(scalesIterator);
+                    scalesRef[0].ratio = utils.generateRatioFunction(axis, scalesRef.map(exDim), chartInstance);
+                }
+            };
 
-        if (realXs.filter(isOrdinalScale).length === xyProd) {
-            realXs.forEach((s) => (s.fitToFrame = true));
-            realXs[0].ratio = utils.generateRatioFunction(
-                'x',
-                realXs.map((s) => s.dim),
-                chartInstance);
-        }
-
-        if (realYs.filter(isOrdinalScale).length === xyProd) {
-            realYs.forEach((s) => (s.fitToFrame = true));
-            realYs[0].ratio = utils.generateRatioFunction(
-                'y',
-                realYs.map((s) => s.dim),
-                chartInstance);
+            tryApplyRatioToScales('x', realXs);
+            tryApplyRatioToScales('y', realYs);
         }
     }
 }
