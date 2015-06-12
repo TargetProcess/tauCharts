@@ -79,7 +79,9 @@ export class SpecTransformApplyRatio {
 
         var toScaleConfig = ((scaleName) => spec.scales[scaleName]);
         var isValidScale = ((scale) => ((scale.source === '/') && !scale.ratio && !scale.fitToFrameByDims));
-        var isOrdinalScale = ((scale) => (['ordinal', 'period'].indexOf(scale.type) >= 0));
+        var isOrdinalScale = ((scale) => {
+            return scale.type === 'ordinal' || (scale.type === 'period' && !scale.period);
+        });
 
         var realXs = xs.map(toScaleConfig).filter(isValidScale);
         var realYs = ys.map(toScaleConfig).filter(isValidScale);
