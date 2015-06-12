@@ -25,7 +25,7 @@ export class BaseScale {
         var vars = this.getVarSet(data, scaleConfig);
 
         if (scaleConfig.order) {
-            vars = _.intersection(scaleConfig.order, vars);
+            vars = _.union(_.intersection(scaleConfig.order, vars), vars);
         }
 
         this.vars = vars;
