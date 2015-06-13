@@ -78,7 +78,6 @@
   "scripts": {
     "test": "npm run bower && npm run travis && karma start config/karma.conf.js",
     "travis": "grunt travis",
-    "bower": "bower install",
-    "release": "run bower && grunt publish && grunt gh-pages"
+    "release": "bower install && grunt publish && grunt gh-pages"
   }
 }
