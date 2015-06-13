@@ -1389,7 +1389,7 @@ OTHER DEALINGS IN THE SOFTWARE.
  */
 (function ( global, factory ) {
 
-	
+	'use strict';
 
 	// export as AMD...
 	if ( typeof define !== 'undefined' && define.amd ) {
@@ -4424,7 +4424,7 @@ define('../bower_components/FileSaver.js/FileSaver',[], function() {
         navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
             // Everyone else
         || (function (view) {
-            
+            "use strict";
             // IE <10 is explicitly unsupported
             if (typeof navigator !== "undefined" &&
                 /MSIE [1-9]\./.test(navigator.userAgent)) {
@@ -4645,7 +4645,7 @@ define('../bower_components/FileSaver.js/FileSaver',[], function() {
  */
 
 (function() {
-    
+    "use strict";
 
     function $$utils$$objectOrFunction(x) {
       return typeof x === 'function' || (typeof x === 'object' && x !== null);
@@ -5607,7 +5607,7 @@ define('../bower_components/FileSaver.js/FileSaver',[], function() {
   java, location, Components, FileUtils */
 
 define('../node_modules/requirejs-text/text',['module'], function (module) {
-    
+    'use strict';
 
     var text, fs, Cc, Ci, xpcIsWindows,
         progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -5991,7 +5991,7 @@ define('../node_modules/requirejs-text/text',['module'], function (module) {
 define('../node_modules/requirejs-text/text!print.style.css',[],function () { return 'body > * {\n    visibility: hidden;\n}\nbody {\n    overflow: hidden;\n}\nbody * {\n    visibility: hidden !important;\n}\n\n.graphical-report__print-block {\n    position: absolute;\n    top: 0;\n    left: 0;\n    visibility: visible !important;\n    display: block !important;\n    width: 100%;\n    /*height: 100%;*/\n}\n';});
 
 (function() {
-  
+  'use strict';
 
   if (self.fetch) {
     return
