@@ -13,13 +13,24 @@
 
     var _ = tauCharts.api._;
 
-    function ChartParallelTooltip(xSettings) {
+    function ChartGeoMapTooltip(xSettings) {
 
         var settings = _.defaults(
             xSettings || {},
             {
                 // add default settings here
             });
+
+        var falsyFilter = function () {
+            return false;
+        };
+
+        var equalFilter = function (data) {
+            var str = JSON.stringify(data);
+            return function (row) {
+                return JSON.stringify(row) === str;
+            };
+        };
 
         var plugin = {
 
@@ -46,12 +57,13 @@
                         while (target !== e.currentTarget && target !== null) {
                             if (target.classList.contains('i-role-exclude')) {
                                 self._exclude();
+                                self._tooltip.hide();
+                                if (self._current) {
+                                    self._current.fire('highlight-area', falsyFilter);
+                                }
                             }
                             target = target.parentNode;
                         }
-
-                        self._tooltip.hide();
-
                     }, false);
 
                 var self = this;
@@ -62,14 +74,23 @@
 
                     self._cursor = e.data;
 
-                    var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
-                    if (content[0]) {
-                        content[0].innerHTML = Object
+                    var message = 'No data';
+                    if (e.data !== null) {
+                        message = Object
                             .keys(e.data)
                             .map(function (k) {
                                 return self.itemTemplate({label: k, value: e.data[k]});
                             })
                             .join('');
+                    }
+                    var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
+                    if (content[0]) {
+                        content[0].innerHTML = message;
+                    }
+
+                    var exclude = self._tooltip.getElement().querySelectorAll('.i-role-exclude');
+                    if (exclude[0]) {
+                        exclude[0].style.visibility = e.data ? 'visible' : 'hidden';
                     }
 
                     self._tooltip
@@ -77,12 +98,12 @@
                         .updateSize();
                 };
 
-                this.hideTooltip = function (e) {
+                this.hideTooltip = function (immediately) {
                     timeoutHide = setTimeout(
                         function () {
                             self._tooltip.hide();
                         },
-                        1000);
+                        immediately ? 0 : 1000);
                 };
 
                 this._tooltip
@@ -94,7 +115,7 @@
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
-                        self._tooltip.hide();
+                        self.hideTooltip(true);
                     }, false);
             },
 
@@ -116,16 +137,37 @@
 
                 chart
                     .select(function (node) {
-                        return node.config.type === 'PARALLEL/ELEMENT.LINE';
+                        return node.config.type === 'COORDS.MAP';
                     })
                     .forEach(function (node) {
 
-                        node.on('mouseout', function (sender, e) {
-                            self.hideTooltip(e);
+                        var isCodeEmpty = !node.codeScale.dim;
+                        if (!isCodeEmpty) {
+                            node.on('area-click', function (sender, e) {
+
+                                self._current = sender;
+
+                                if (!e.data) {
+                                    node.fire('highlight-area', falsyFilter);
+                                    self.showTooltip(e);
+                                    self.hideTooltip(false);
+                                } else if (self._cursor === e.data) {
+                                    node.fire('highlight-area', falsyFilter);
+                                    self.hideTooltip(true);
+                                    self._cursor = null;
+                                } else {
+                                    node.fire('highlight-area', equalFilter(e.data));
+                                    self.showTooltip(e);
+                                }
+                            });
+                        }
+
+                        node.on('point-mouseover', function (sender, e) {
+                            self.showTooltip(e);
                         });
 
-                        node.on('mouseover', function (sender, e) {
-                            self.showTooltip(e);
+                        node.on('point-mouseout', function (sender, e) {
+                            self.hideTooltip();
                         });
                     });
             },
@@ -151,7 +193,7 @@
         return plugin;
     }
 
-    tauCharts.api.plugins.add('parallel-tooltip', ChartParallelTooltip);
+    tauCharts.api.plugins.add('geomap-tooltip', ChartGeoMapTooltip);
 
-    return ChartParallelTooltip;
+    return ChartGeoMapTooltip;
 });

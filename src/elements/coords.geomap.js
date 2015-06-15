@@ -5,6 +5,7 @@ import {utilsDraw} from '../utils/utils-draw';
 import {d3Labeler} from '../utils/d3-labeler';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
+import {Element} from './element';
 
 d3.labeler = d3Labeler;
 
@@ -27,9 +28,12 @@ var hierarchy = [
     'counties'
 ];
 
-export class GeoMap {
+export class GeoMap extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = _.defaults(
             this.config.guide || {},
@@ -38,6 +42,9 @@ export class GeoMap {
                 padding: {l: 0, r: 0, t: 0, b: 0},
                 showNames: true
             });
+        this.contourToFill = null;
+
+        this.on('highlight-area', (sender, e) => this._highlightArea(e));
     }
 
     drawLayout(fnCreateScale) {
@@ -217,6 +224,8 @@ export class GeoMap {
             throw new Error('[georole] is missing');
         }
 
+        this.contourToFill = contourToFill;
+
         var center;
 
         if (latScale.dim && lonScale.dim) {
@@ -360,42 +369,35 @@ export class GeoMap {
                 }
             });
 
-        var groupByCode = frames.reduce(
+        this.groupByCode = frames.reduce(
             (groups, f) => {
                 var data = f.take();
                 return data.reduce(
                     (memo, rec) => {
                         var key = (rec[codeScale.dim] || '').toLowerCase();
-                        memo[key] = rec[fillScale.dim];
+                        memo[key] = rec;
                         return memo;
                     },
                     groups);
             },
             {});
 
+        var toData = this._resolveFeature.bind(this);
+
         xmap.selectAll(`.map-contour-${contourToFill}`)
             .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
             .call(function () {
                 this.classed('map-contour', true)
                     .attr('fill', (d) => {
-                        var prop = d.properties;
-                        var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
-                            return prop.hasOwnProperty(c) &&
-                                prop[c] &&
-                                groupByCode.hasOwnProperty(prop[c].toLowerCase());
-                        });
-
-                        var value;
-                        if (codes.length === 0) {
-                            // doesn't match
-                            value = guide.defaultFill;
-                        } else if (codes.length > 0) {
-                            value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
-                        }
-
-                        return value;
+                        var row = toData(d);
+                        return (row === null) ?
+                            guide.defaultFill :
+                            fillScale(row[fillScale.dim]);
                     });
-            });
+            })
+            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3.event}))
+            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3.event}))
+            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3.event}));
 
         if (!latScale.dim || !lonScale.dim) {
             return [];
@@ -408,7 +410,10 @@ export class GeoMap {
                     transform: ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
                     class: ({data: d}) => colorScale(d[colorScale.dim]),
                     opacity: 0.5
-                });
+                })
+                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
+                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
+                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3.event}));
         };
 
         var updateGroups = function () {
@@ -446,6 +451,34 @@ export class GeoMap {
             .call(updateGroups);
 
         return [];
+    }
+
+    _resolveFeature(d) {
+        var groupByCode = this.groupByCode;
+        var prop = d.properties;
+        var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter((c) => {
+            return prop.hasOwnProperty(c) &&
+                prop[c] &&
+                groupByCode.hasOwnProperty(prop[c].toLowerCase());
+        });
+
+        var value;
+        if (codes.length === 0) {
+            // doesn't match
+            value = null;
+        } else if (codes.length > 0) {
+            let k = prop[codes[0]].toLowerCase();
+            value = groupByCode[k];
+        }
+
+        return value;
+    }
+
+    _highlightArea(filter) {
+        var node = this.config.options.container;
+        var contourToFill = this.contourToFill;
+        node.selectAll(`.map-contour-${contourToFill}`)
+            .classed('map-contour-highlighted', (d) => filter(this._resolveFeature(d)));
     }
 
     _createProjection(topoJSONData, topContour, center) {
