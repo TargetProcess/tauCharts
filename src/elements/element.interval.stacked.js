@@ -1,5 +1,6 @@
 import {default as _} from 'underscore';
-import {CSS_PREFIX} from '../const';
+import {CSS_PREFIX} from './../const';
+import {TauChartError as Error, errorCodes} from './../error';
 
 export class StackedInterval {
 
@@ -22,7 +23,10 @@ export class StackedInterval {
                     var stackedVal = d[prop];
 
                     if ((typeof (stackedVal) !== 'number') || (stackedVal < 0)) {
-                        throw new Error(`Stacked field [${prop}] should be a non-negative number`);
+                        throw new Error(
+                            `Stacked field [${prop}] should be a non-negative number`,
+                            errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART
+                        );
                     }
 
                     var baseVal = d[baseDim];
@@ -42,7 +46,7 @@ export class StackedInterval {
 
     constructor(config) {
         this.config = config;
-        this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
+        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
     }
 
     drawLayout(fnCreateScale) {

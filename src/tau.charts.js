@@ -35,6 +35,8 @@ import {ChartLine}              from './api/chart-line';
 import {ChartIntervalStacked}   from './api/chart-interval-stacked';
 import {ChartParallel}          from './api/chart-parallel';
 
+import {errorCodes} from './error';
+
 var colorBrewers = {};
 var plugins = {};
 
@@ -42,6 +44,7 @@ var __api__ = {
     UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
 };
 var api = {
+    errorCodes,
     unitsRegistry: unitsRegistry,
     scalesRegistry: scalesRegistry,
     tickFormat: FormatterRegistry,
