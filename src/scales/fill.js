@@ -48,6 +48,7 @@ export class FillScale extends BaseScale {
         var func = d3.scale.threshold().domain(domain).range(brewer);
 
         func.scaleType = 'fill';
+        func.brewer = brewer;
 
         return this.toBaseScale(func);
     }

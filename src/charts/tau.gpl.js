@@ -2,7 +2,6 @@ import {Emitter} from '../event';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {unitsRegistry} from '../units-registry';
-import {getLayout} from '../utils/layuot-template';
 import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
