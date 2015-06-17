@@ -340,6 +340,11 @@
             init: function (chart) {
 
                 this._chart = chart;
+                this._applicableElements = [
+                    'ELEMENT.POINT',
+                    'ELEMENT.LINE',
+                    'ELEMENT.INTERVAL'
+                ];
 
                 this._isApplicable = this.checkIfApplicable(chart);
 
@@ -392,13 +397,11 @@
                 var specRef = chart.getConfig();
                 var isApplicable = false;
 
-                chart.traverseSpec(
-                    specRef,
-                    function (unit, parentUnit) {
-                        if (self.predicateIsApplicable(specRef, unit, parentUnit)) {
-                            isApplicable = true;
-                        }
-                    });
+                chart.traverseSpec(specRef, function (unit, parentUnit) {
+                    if (self.predicateIsApplicable(specRef, unit, parentUnit)) {
+                        isApplicable = true;
+                    }
+                });
 
                 return isApplicable;
             },
@@ -409,18 +412,14 @@
                     return false;
                 }
 
-                if (unit.type.indexOf('ELEMENT.') === -1) {
+                if (this._applicableElements.indexOf(unit.type) === -1) {
                     return false;
                 }
 
                 var xScale = specRef.scales[unit.x];
                 var yScale = specRef.scales[unit.y];
 
-                if (xScale.type === 'ordinal' || yScale.type === 'ordinal') {
-                    return false;
-                }
-
-                return true;
+                return !(xScale.type === 'ordinal' || yScale.type === 'ordinal');
             },
 
             onSpecReady: function (chart, specRef) {
