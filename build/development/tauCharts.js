@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.5 - 2015-06-13
+/*! taucharts - v0.4.6 - 2015-06-17
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1214,7 +1214,45 @@ define('elements/element.interval',['exports', '../const'], function (exports, _
 
     exports.Interval = Interval;
 });
-define('elements/element.interval.stacked',['exports', 'underscore', '../const'], function (exports, _underscore, _const) {
+define('error',['exports'], function (exports) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+    var TauChartError = (function (_Error) {
+        function TauChartError(message, errorCode) {
+            _classCallCheck(this, TauChartError);
+
+            _get(Object.getPrototypeOf(TauChartError.prototype), 'constructor', this).call(this);
+            this.name = 'TauChartError';
+            this.message = message;
+            this.errorCode = errorCode;
+        }
+
+        _inherits(TauChartError, _Error);
+
+        return TauChartError;
+    })(Error);
+
+    var errorCodes = {
+        INVALID_DATA_TO_STACKED_BAR_CHART: 'INVALID_DATA_TO_STACKED_BAR_CHART',
+        NO_DATA: 'NO_DATA',
+        NOT_SUPPORTED_TYPE_CHART: 'NOT_SUPPORTED_TYPE_CHART',
+        UNKNOWN_UNIT_TYPE: 'UNKNOWN_UNIT_TYPE'
+    };
+
+    exports.TauChartError = TauChartError;
+    exports.errorCodes = errorCodes;
+});
+define('elements/element.interval.stacked',['exports', 'underscore', './../const', './../error'], function (exports, _underscore, _const, _error) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -1479,7 +1517,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', '../const']
                         var stackedVal = d[prop];
 
                         if (typeof stackedVal !== 'number' || stackedVal < 0) {
-                            throw new Error('Stacked field [' + prop + '] should be a non-negative number');
+                            throw new _error.TauChartError('Stacked field [' + prop + '] should be a non-negative number', _error.errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART);
                         }
 
                         var baseVal = d[baseDim];
@@ -2097,12 +2135,13 @@ define('event',['exports'], function (exports) {
     //
     exports.Emitter = Emitter;
 });
-define('units-registry',['exports'], function (exports) {
+define('units-registry',['exports', './error'], function (exports, _error) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
         value: true
     });
+
     var UnitsMap = {};
 
     var unitsRegistry = {
@@ -2115,7 +2154,7 @@ define('units-registry',['exports'], function (exports) {
         get: function get(unitType) {
 
             if (!UnitsMap.hasOwnProperty(unitType)) {
-                throw new Error('Unknown unit type: ' + unitType);
+                throw new _error.TauChartError('Unknown unit type: ' + unitType, _error.errorCodes.UNKNOWN_UNIT_TYPE);
             }
 
             return UnitsMap[unitType];
@@ -5560,7 +5599,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
     exports.Plot = Plot;
 });
-define('chart-alias-registry',['exports', 'd3', './utils/utils', './data-processor'], function (exports, _d3, _utilsUtils, _dataProcessor) {
+define('chart-alias-registry',['exports', 'd3', './utils/utils', './data-processor', './error'], function (exports, _d3, _utilsUtils, _dataProcessor, _error) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -5578,7 +5617,7 @@ define('chart-alias-registry',['exports', 'd3', './utils/utils', './data-process
         var msg = 'Chart type ' + alias + ' is not supported.';
         console.log(msg);
         console.log('Use one of ' + _.keys(chartTypes).join(', ') + '.');
-        throw new Error(msg);
+        throw new _error.TauChartError(msg, _error.errorCodes.NOT_SUPPORTED_TYPE_CHART);
     };
 
     var chartTypesRegistry = {
@@ -9453,7 +9492,7 @@ define('api/chart-parallel',['exports'], function (exports) {
 
     exports.ChartParallel = ChartParallel;
 });
-define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/tau.gpl', './charts/tau.plot', './charts/tau.chart', './unit-domain-period-generator', './formatter-registry', './units-registry', './scales-registry', './elements/coords.cartesian', './elements/coords.parallel', './elements/coords.geomap', './elements/element.point', './elements/element.line', './elements/element.pie', './elements/element.interval', './elements/element.interval.stacked', './elements/element.parallel.line', './scales/color', './scales/size', './scales/ordinal', './scales/period', './scales/time', './scales/linear', './scales/value', './scales/fill', './chart-alias-registry', './api/chart-map', './api/chart-interval', './api/chart-scatterplot', './api/chart-line', './api/chart-interval-stacked', './api/chart-parallel'], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartIntervalStacked, _apiChartParallel) {
+define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/tau.gpl', './charts/tau.plot', './charts/tau.chart', './unit-domain-period-generator', './formatter-registry', './units-registry', './scales-registry', './elements/coords.cartesian', './elements/coords.parallel', './elements/coords.geomap', './elements/element.point', './elements/element.line', './elements/element.pie', './elements/element.interval', './elements/element.interval.stacked', './elements/element.parallel.line', './scales/color', './scales/size', './scales/ordinal', './scales/period', './scales/time', './scales/linear', './scales/value', './scales/fill', './chart-alias-registry', './api/chart-map', './api/chart-interval', './api/chart-scatterplot', './api/chart-line', './api/chart-interval-stacked', './api/chart-parallel', './error'], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartIntervalStacked, _apiChartParallel, _error) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -9467,6 +9506,7 @@ define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/
         UnitDomainPeriodGenerator: _unitDomainPeriodGenerator.UnitDomainPeriodGenerator
     };
     var api = {
+        errorCodes: _error.errorCodes,
         unitsRegistry: _unitsRegistry.unitsRegistry,
         scalesRegistry: _scalesRegistry.scalesRegistry,
         tickFormat: _formatterRegistry.FormatterRegistry,

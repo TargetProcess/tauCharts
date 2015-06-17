@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "Simple charts library based on d3",
   "author": {
@@ -79,6 +79,6 @@
     "test": "npm run bower && npm run travis && karma start config/karma.conf.js",
     "travis": "grunt travis",
     "bower": "bower install",
-    "release": "bower install && grunt publish && grunt gh-pages"
+    "release": "npm run bower && grunt publish && grunt gh-pages"
   }
 }
