@@ -28,7 +28,7 @@
                 this._chart = chart;
                 this._color = Object
                     .keys(config.scales)
-                    .reduce(function(memo, k) {
+                    .reduce(function (memo, k) {
                         var s = config.scales[k];
                         if (s.type === 'color' && s.dim) {
                             memo.push(k);
@@ -38,7 +38,7 @@
 
                 this._fill = Object
                     .keys(config.scales)
-                    .reduce(function(memo, k) {
+                    .reduce(function (memo, k) {
                         var s = config.scales[k];
                         if (s.type === 'fill' && s.dim) {
                             memo.push(k);
@@ -124,6 +124,7 @@
                 });
             },
 
+            // jscs:disable maximumLineLength
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
@@ -139,6 +140,7 @@
                 '</div>',
                 '</div>'
             ].join(''))
+            // jscs:enable maximumLineLength
         };
 
         return plugin;
