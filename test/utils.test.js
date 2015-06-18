@@ -3,6 +3,7 @@ define(function (require) {
     var assert = require('chai').assert;
     var utils = require('src/utils/utils').utils;
     var drawUtils = require('src/utils/utils-draw').utilsDraw;
+    var d3_decorator_avoid_labels_collisions = require('src/utils/d3-decorators').d3_decorator_avoid_labels_collisions;
 
     var check = function (samples) {
         samples.forEach(function (s) {
@@ -145,6 +146,78 @@ define(function (require) {
             );
 
             expect(x1).to.equal(true);
+        });
+    });
+
+    describe('d3 decorators', function() {
+
+        var svgNode;
+        var div;
+
+        beforeEach(function () {
+
+            div = document.createElement('div');
+            document.body.appendChild(div);
+
+            svgNode = d3
+                .select(div)
+                .append('svg')
+                .attr('width', 100)
+                .attr('height', 100);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+        });
+
+        it('should support d3_decorator_avoid_labels_collisions method', function() {
+
+            var domain = [
+                'Too long name for the ordinal axis 0',
+                'Too long name for the ordinal axis 1',
+                'Too long name for the ordinal axis 3',
+                'Too long name for the ordinal axis 4'
+            ];
+
+            var scale = d3.scale.ordinal().domain(domain).rangePoints([0, 100], 1);
+
+            var axis = d3.svg
+                .axis()
+                .scale(scale)
+                .orient('bottom');
+
+            var d3Axis = svgNode.append('g').call(axis);
+
+            var ticks = d3Axis.selectAll('.tick');
+            var actBefore = [];
+            ticks.each(function () {
+                var d3Tick = d3.select(this);
+                actBefore.push(d3Tick.selectAll('text').attr('y'));
+            });
+            expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
+            expect(actBefore).to.deep.equal(['9', '9', '9', '9'], 'text y before decorator');
+
+            d3_decorator_avoid_labels_collisions(d3Axis);
+
+            var actAfter = [];
+            var lineAfter = [];
+            ticks.each(function () {
+                var d3Tick = d3.select(this);
+                actAfter.push(d3Tick.selectAll('text').attr('y'));
+                var lineRef = d3Tick.selectAll('.label-ref');
+                lineAfter.push([
+                    lineRef.attr('y1'),
+                    lineRef.attr('y2')
+                ]);
+            });
+            expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
+            expect(actAfter).to.deep.equal(['-2', '9', '20', '-2'], 'text y after decorator');
+            expect(lineAfter).to.deep.equal([
+                ['-3', '-10'],
+                ['8', '-10'],
+                ['19', '-10'],
+                ['-3', '-10']
+            ], 'text y after decorator');
         });
     });
 });

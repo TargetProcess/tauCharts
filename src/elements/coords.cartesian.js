@@ -8,7 +8,8 @@ import {
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_bottom_line,
     d3_decorator_fix_horizontal_axis_ticks_overflow,
-    d3_decorator_prettify_categorical_axis_ticks
+    d3_decorator_prettify_categorical_axis_ticks,
+    d3_decorator_avoid_labels_collisions
     } from '../utils/d3-decorators';
 
 export class Cartesian {
@@ -287,6 +288,10 @@ export class Cartesian {
                     var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
                     if (prettifyTick) {
                         d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
+                    }
+
+                    if (prettifyTick && isHorizontal && scale.guide.avoidCollisions) {
+                        d3_decorator_avoid_labels_collisions(refAxisNode);
                     }
 
                     d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
