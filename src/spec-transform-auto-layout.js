@@ -442,6 +442,7 @@ var SpecEngineTypeMap = {
                 if (isFacetUnit) {
                     // unit is a facet!
                     unit.guide.x.cssClass += ' facet-axis';
+                    unit.guide.x.avoidCollisions = true;
                     unit.guide.y.cssClass += ' facet-axis';
                 }
 

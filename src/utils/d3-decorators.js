@@ -252,12 +252,87 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
     }
 };
 
+var d3_decorator_avoid_labels_collisions = (nodeScale) => {
+    const textOffsetStep = 11;
+    const refOffsetStart = -10;
+    var layoutModel = [];
+    nodeScale
+        .selectAll('.tick')
+        .each(function (a, i) {
+            var tick = d3.select(this);
+            var text = tick.text();
+            var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[0]);
+            var tText = tick.selectAll('text');
+            var tSpan = tText.selectAll('tspan');
+            var tNode = tSpan.empty() ? tText : tSpan;
+
+            var textWidth = tNode.node().getBBox().width;
+
+            var halfText = (textWidth / 2);
+            var s = translateX - halfText;
+            var e = translateX + halfText;
+            layoutModel.push({s: s, e: e, l: 0, textRef: tNode, tickRef: tick});
+        });
+
+    var iterateByTriples = (coll, iterator) => {
+        return coll.map((curr, i, list) => {
+            return iterator(
+                list[i - 1] || {e: -Infinity, s: -Infinity, l: 0},
+                curr,
+                list[i + 1] || {e: Infinity, s: Infinity, l: 0}
+            );
+        });
+    };
+
+    var resolveCollide = (prevLevel, prevCollide) => {
+
+        var rules = {
+            '[T][1]': -1,
+            '[T][-1]': 0,
+            '[T][0]': 1,
+            '[F][0]': -1
+        };
+
+        var k = `[${prevCollide.toString().toUpperCase().charAt(0)}][${prevLevel}]`;
+
+        return (rules.hasOwnProperty(k)) ? rules[k] : 0;
+    };
+
+    iterateByTriples(layoutModel, (prev, curr, next) => {
+
+        var collideL = (prev.e > curr.s);
+        var collideR = (next.s < curr.e);
+
+        if (collideL || collideR) {
+            curr.l = resolveCollide(prev.l, collideL);
+
+            var oldY = parseFloat(curr.textRef.attr('y'));
+
+            var newY = oldY + (curr.l * textOffsetStep); // -1 | 0 | +1
+
+            curr.textRef.attr('y', newY);
+            curr.tickRef
+                .append('line')
+                .attr('class', 'label-ref')
+                .attr({
+                    x1: 0,
+                    x2: 0,
+                    y1: newY - 1,
+                    y2: refOffsetStart
+                });
+        }
+
+        return curr;
+    });
+};
+
 export {
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_bottom_line,
     d3_decorator_fix_horizontal_axis_ticks_overflow,
     d3_decorator_prettify_categorical_axis_ticks,
+    d3_decorator_avoid_labels_collisions,
     wrapText,
     cutText
 };
