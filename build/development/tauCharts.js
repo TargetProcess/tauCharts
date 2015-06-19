@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.6 - 2015-06-17
+/*! taucharts - v0.4.6 - 2015-06-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -4516,6 +4516,7 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
                 if (isFacetUnit) {
                     // unit is a facet!
                     unit.guide.x.cssClass += ' facet-axis';
+                    unit.guide.x.avoidCollisions = true;
                     unit.guide.y.cssClass += ' facet-axis';
                 }
 
@@ -5979,11 +5980,77 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
         }
     };
 
+    var d3_decorator_avoid_labels_collisions = function d3_decorator_avoid_labels_collisions(nodeScale) {
+        var textOffsetStep = 11;
+        var refOffsetStart = -10;
+        var layoutModel = [];
+        nodeScale.selectAll('.tick').each(function (a, i) {
+            var tick = _d32['default'].select(this);
+            var text = tick.text();
+            var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[0]);
+            var tText = tick.selectAll('text');
+            var tSpan = tText.selectAll('tspan');
+            var tNode = tSpan.empty() ? tText : tSpan;
+
+            var textWidth = tNode.node().getBBox().width;
+
+            var halfText = textWidth / 2;
+            var s = translateX - halfText;
+            var e = translateX + halfText;
+            layoutModel.push({ s: s, e: e, l: 0, textRef: tNode, tickRef: tick });
+        });
+
+        var iterateByTriples = function iterateByTriples(coll, iterator) {
+            return coll.map(function (curr, i, list) {
+                return iterator(list[i - 1] || { e: -Infinity, s: -Infinity, l: 0 }, curr, list[i + 1] || { e: Infinity, s: Infinity, l: 0 });
+            });
+        };
+
+        var resolveCollide = function resolveCollide(prevLevel, prevCollide) {
+
+            var rules = {
+                '[T][1]': -1,
+                '[T][-1]': 0,
+                '[T][0]': 1,
+                '[F][0]': -1
+            };
+
+            var k = '[' + prevCollide.toString().toUpperCase().charAt(0) + '][' + prevLevel + ']';
+
+            return rules.hasOwnProperty(k) ? rules[k] : 0;
+        };
+
+        iterateByTriples(layoutModel, function (prev, curr, next) {
+
+            var collideL = prev.e > curr.s;
+            var collideR = next.s < curr.e;
+
+            if (collideL || collideR) {
+                curr.l = resolveCollide(prev.l, collideL);
+
+                var oldY = parseFloat(curr.textRef.attr('y'));
+
+                var newY = oldY + curr.l * textOffsetStep; // -1 | 0 | +1
+
+                curr.textRef.attr('y', newY);
+                curr.tickRef.append('line').attr('class', 'label-ref').attr({
+                    x1: 0,
+                    x2: 0,
+                    y1: newY - 1,
+                    y2: refOffsetStart
+                });
+            }
+
+            return curr;
+        });
+    };
+
     exports.d3_decorator_wrap_tick_label = d3_decorator_wrap_tick_label;
     exports.d3_decorator_prettify_axis_label = d3_decorator_prettify_axis_label;
     exports.d3_decorator_fix_axis_bottom_line = d3_decorator_fix_axis_bottom_line;
     exports.d3_decorator_fix_horizontal_axis_ticks_overflow = d3_decorator_fix_horizontal_axis_ticks_overflow;
     exports.d3_decorator_prettify_categorical_axis_ticks = d3_decorator_prettify_categorical_axis_ticks;
+    exports.d3_decorator_avoid_labels_collisions = d3_decorator_avoid_labels_collisions;
     exports.wrapText = wrapText;
     exports.cutText = cutText;
 });
@@ -6237,6 +6304,10 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', '../utils/uti
                         var prettifyTick = scale.scaleType === 'ordinal' || scale.scaleType === 'period';
                         if (prettifyTick) {
                             (0, _utilsD3Decorators.d3_decorator_prettify_categorical_axis_ticks)(refAxisNode, scale, isHorizontal);
+                        }
+
+                        if (prettifyTick && isHorizontal && scale.guide.avoidCollisions) {
+                            (0, _utilsD3Decorators.d3_decorator_avoid_labels_collisions)(refAxisNode);
                         }
 
                         (0, _utilsD3Decorators.d3_decorator_wrap_tick_label)(refAxisNode, scale.guide, isHorizontal);
