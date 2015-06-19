@@ -6,20 +6,26 @@ import {default as d3} from 'd3';
 
 export class ColorScale extends BaseScale {
 
+    constructor(xSource, scaleConfig) {
+
+        super(xSource, scaleConfig);
+
+        this.defaultColorClass = _.constant('color-default');
+        var scaleBrewer = this.scaleConfig.brewer || _.times(20, (i) => 'color20-' + (1 + i));
+
+        this.addField('scaleType', 'color')
+            .addField('brewer', scaleBrewer);
+    }
+
     create() {
 
-        var props = this.scaleConfig;
         var varSet = this.vars;
 
-        var brewer = props.brewer;
-
-        var defaultColorClass = _.constant('color-default');
-
-        var defaultRangeColor = _.times(20, (i) => 'color20-' + (1 + i));
+        var brewer = this.getField('brewer');
 
         var buildArrayGetClass = (domain, brewer) => {
             if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
-                return defaultColorClass;
+                return this.defaultColorClass;
             } else {
                 var fullDomain = domain.map((x) => String(x).toString());
                 return d3.scale.ordinal().range(brewer).domain(fullDomain);
@@ -33,27 +39,27 @@ export class ColorScale extends BaseScale {
             return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
         };
 
-        var wrapString = (f) => (d) => f(String(d).toString());
+        var wrapString = (f) => ((d) => f(String(d).toString()));
 
         var func;
 
-        if (!brewer) {
-            func = wrapString(buildArrayGetClass(varSet, defaultRangeColor));
+        if (_.isArray(brewer)) {
 
-        } else if (_.isArray(brewer)) {
             func = wrapString(buildArrayGetClass(varSet, brewer));
 
         } else if (_.isFunction(brewer)) {
-            func = (d) => brewer(d, wrapString(buildArrayGetClass(varSet, defaultRangeColor)));
+
+            func = (d) => brewer(d, wrapString(buildArrayGetClass(varSet, _.times(20, (i) => 'color20-' + (1 + i)))));
 
         } else if (_.isObject(brewer)) {
-            func = buildObjectGetClass(brewer, defaultColorClass);
+
+            func = buildObjectGetClass(brewer, this.defaultColorClass);
 
         } else {
-            throw new Error('This brewer is not supported');
-        }
 
-        func.scaleType = 'color';
+            throw new Error('This brewer is not supported');
+
+        }
 
         return this.toBaseScale(func);
     }

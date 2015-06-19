@@ -6,12 +6,15 @@ import {default as d3} from 'd3';
 
 export class ValueScale extends BaseScale {
 
+    constructor(xSource, scaleConfig) {
+
+        super(xSource, scaleConfig);
+
+        this.addField('scaleType', 'value')
+            .addField('georole', scaleConfig.georole);
+    }
+
     create() {
-
-        var scale = ((x) => x);
-        scale.scaleType = 'value';
-        scale.georole = this.scaleConfig.georole;
-
-        return this.toBaseScale(scale);
+        return this.toBaseScale(((x) => x));
     }
 }

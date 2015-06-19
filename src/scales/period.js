@@ -32,6 +32,9 @@ export class PeriodScale extends BaseScale {
         } else {
             this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
         }
+
+        this.addField('scaleType', 'period')
+            .addField('descrete', true);
     }
 
     create(interval) {
@@ -81,9 +84,7 @@ export class PeriodScale extends BaseScale {
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
-        scale.scaleType = 'period';
         scale.stepSize = (x) => (fnRatio(x) * size);
-        scale.descrete = true;
 
         return this.toBaseScale(scale, interval);
     }

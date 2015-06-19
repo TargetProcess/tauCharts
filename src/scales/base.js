@@ -15,6 +15,8 @@ export class BaseScale {
 
     constructor(xSource, scaleConfig) {
 
+        this._fields = {};
+
         var data;
         if (_.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
             data = xSource.partByDims(scaleConfig.fitToFrameByDims);
@@ -30,18 +32,34 @@ export class BaseScale {
 
         this.vars = vars;
         this.scaleConfig = scaleConfig;
+
+        this.addField('dim', this.scaleConfig.dim)
+            .addField('scaleDim', this.scaleConfig.dim)
+            .addField('source', this.scaleConfig.source)
+            .addField('domain', (() => this.vars));
+    }
+
+    addField(key, val) {
+        this._fields[key] = val;
+        return this;
+    }
+
+    getField(key) {
+        return this._fields[key];
     }
 
     toBaseScale(func, dynamicProps = null) {
 
-        func.dim        = this.scaleConfig.dim;
-        func.scaleDim   = this.scaleConfig.dim;
-        func.source     = this.scaleConfig.source;
+        var scaleFn = Object
+            .keys(this._fields)
+            .reduce((memo, k) => {
+                memo[k] = this._fields[k];
+                return memo;
+            }, func);
 
-        func.domain     = (() => this.vars);
-        func.getHash    = (() => generateHashFunction(this.vars, dynamicProps));
+        scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
 
-        return func;
+        return scaleFn;
     }
 
     getVarSet(arr, scale) {

@@ -11,6 +11,13 @@ let funcTypes = {
 
 export class SizeScale extends BaseScale {
 
+    constructor(xSource, scaleConfig) {
+
+        super(xSource, scaleConfig);
+
+        this.addField('scaleType', 'size');
+    }
+
     create(localProps = {}) {
 
         var props = this.scaleConfig;
@@ -59,8 +66,6 @@ export class SizeScale extends BaseScale {
                 return fnNorm((minSize + (f(posX) * k)), maxSize);
             };
         }
-
-        func.scaleType = 'size';
 
         return this.toBaseScale(func, localProps);
     }
