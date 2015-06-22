@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.6 - 2015-06-19
+/*! taucharts - v0.4.6 - 2015-06-22
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1886,6 +1886,27 @@ define('utils/utils',['exports', '../elements/element.point', '../elements/eleme
                 return v instanceof Date ? v.getTime() : v;
             };
 
+            var dataNewSnap = 0;
+            var dataPrevRef = null;
+            var xHash = _.memoize(function (data, keys) {
+                return _(data).chain().map(function (row) {
+                    return keys.reduce(function (r, k) {
+                        return r.concat(unify(row[k]));
+                    }, []);
+                }).uniq(function (t) {
+                    return JSON.stringify(t);
+                }).reduce(function (memo, t) {
+                    var k = t[0];
+                    memo[k] = memo[k] || 0;
+                    memo[k] += 1;
+                    return memo;
+                }, {}).value();
+            }, function (data, keys) {
+                var seed = dataPrevRef === data ? dataNewSnap : ++dataNewSnap;
+                dataPrevRef = data;
+                return '' + keys.join('') + '-' + seed;
+            });
+
             return function (key, size, varSet) {
 
                 var facetSize = varSet.length;
@@ -1904,29 +1925,14 @@ define('utils/utils',['exports', '../elements/element.point', '../elements/eleme
                     pad = level2Guide.padding.t + level2Guide.padding.b;
                 }
 
-                var xHash = function xHash(keys) {
-                    return _(data).chain().map(function (row) {
-                        return keys.reduce(function (r, k) {
-                            return r.concat(unify(row[k]));
-                        }, []);
-                    }).uniq(function (t) {
-                        return JSON.stringify(t);
-                    }).reduce(function (memo, t) {
-                        var k = t[0];
-                        memo[k] = memo[k] || 0;
-                        memo[k] += 1;
-                        return memo;
-                    }, {}).value();
-                };
-
                 var xTotal = function xTotal(keys) {
-                    return _.values(xHash(keys)).reduce(function (sum, v) {
+                    return _.values(xHash(data, keys)).reduce(function (sum, v) {
                         return sum + v;
                     }, 0);
                 };
 
                 var xPart = function xPart(keys, k) {
-                    return xHash(keys)[k];
+                    return xHash(data, keys)[k];
                 };
 
                 var totalItems = xTotal(paramsList);
