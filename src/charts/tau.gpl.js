@@ -166,7 +166,10 @@ export class GPL extends Emitter {
 
                 var name = alias ? alias : `${type}:default`;
 
-                return self.scalesCreator.create(self.scales[name], rootFrame, settings);
+                return self
+                    .scalesCreator
+                    .createScale(self.scales[name], rootFrame)
+                    .create(settings);
             })
             .drawFrames(unitConfig.frames, (function (rootUnit) {
                 return function (rootConf, rootFrame) {

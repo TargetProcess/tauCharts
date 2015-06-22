@@ -7,6 +7,12 @@ export class ScalesFactory {
     }
 
     create(scaleConfig, frame, dynamicConfig) {
+        return this
+            .createScale(scaleConfig, frame)
+            .create(dynamicConfig);
+    }
+
+    createScale(scaleConfig, frame) {
 
         var ScaleClass = scalesRegistry.get(scaleConfig.type);
 
@@ -23,6 +29,6 @@ export class ScalesFactory {
 
         scaleConfig.dimType = type;
 
-        return (new ScaleClass(xSrc, scaleConfig)).create(dynamicConfig);
+        return (new ScaleClass(xSrc, scaleConfig));
     }
 }
