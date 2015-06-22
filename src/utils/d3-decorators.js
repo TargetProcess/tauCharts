@@ -252,16 +252,17 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
     }
 };
 
-var d3_decorator_avoid_labels_collisions = (nodeScale) => {
+var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     const textOffsetStep = 11;
-    const refOffsetStart = -10;
+    const refOffsetStart = isHorizontal ? -10 : 20;
+    const translateParam = isHorizontal ? 0 : 1;
     var layoutModel = [];
     nodeScale
         .selectAll('.tick')
         .each(function (a, i) {
             var tick = d3.select(this);
             var text = tick.text();
-            var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[0]);
+            var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[translateParam]);
             var tText = tick.selectAll('text');
             var tSpan = tText.selectAll('tspan');
             var tNode = tSpan.empty() ? tText : tSpan;
@@ -319,15 +320,20 @@ var d3_decorator_avoid_labels_collisions = (nodeScale) => {
             curr.textRef
                 .text((d, i) => i === 0 ? text : '')
                 .attr('y', newY);
+
+            var attrs = {};
+            attrs['x1'] = 0;
+            attrs['x2'] = 0;
+            attrs['y1'] = newY + (isHorizontal ? -1 : 5);
+            attrs['y2'] = refOffsetStart;
+            if (!isHorizontal) {
+                attrs['transform'] = 'rotate(-90)';
+            }
+
             curr.tickRef
                 .append('line')
                 .attr('class', 'label-ref')
-                .attr({
-                    x1: 0,
-                    x2: 0,
-                    y1: newY - 1,
-                    y2: refOffsetStart
-                });
+                .attr(attrs);
         }
 
         return curr;

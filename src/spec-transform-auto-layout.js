@@ -444,6 +444,7 @@ var SpecEngineTypeMap = {
                     unit.guide.x.cssClass += ' facet-axis';
                     unit.guide.x.avoidCollisions = true;
                     unit.guide.y.cssClass += ' facet-axis';
+                    unit.guide.y.avoidCollisions = false;
                 }
 
                 var dimX = meta.dimension(unit.x);
@@ -608,6 +609,7 @@ var SpecEngineTypeMap = {
                 unit.guide.x.cssClass += ' facet-axis compact';
                 unit.guide.x.avoidCollisions = true;
                 unit.guide.y.cssClass += ' facet-axis compact';
+                unit.guide.y.avoidCollisions = true;
 
                 return calcUnitGuide(
                     unit,
