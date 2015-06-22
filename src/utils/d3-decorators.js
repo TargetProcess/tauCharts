@@ -306,11 +306,19 @@ var d3_decorator_avoid_labels_collisions = (nodeScale) => {
         if (collideL || collideR) {
             curr.l = resolveCollide(prev.l, collideL);
 
-            var oldY = parseFloat(curr.textRef.attr('y'));
+            var size = curr.textRef[0].length;
+            var text = curr.textRef.text();
 
+            if (size > 1) {
+                text = text.replace(/([\.]*$)/gi, '') + '...';
+            }
+
+            var oldY = parseFloat(curr.textRef.attr('y'));
             var newY = oldY + (curr.l * textOffsetStep); // -1 | 0 | +1
 
-            curr.textRef.attr('y', newY);
+            curr.textRef
+                .text((d, i) => i === 0 ? text : '')
+                .attr('y', newY);
             curr.tickRef
                 .append('line')
                 .attr('class', 'label-ref')
