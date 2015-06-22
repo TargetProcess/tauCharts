@@ -355,6 +355,28 @@ var utils = {
 
         var unify = (v) => (v instanceof Date) ? v.getTime() : v;
 
+        var dataNewSnap = 0;
+        var dataPrevRef = null;
+        var xHash = _.memoize(
+            (data, keys) => {
+                return _(data)
+                    .chain()
+                    .map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), [])))
+                    .uniq((t) => JSON.stringify(t))
+                    .reduce((memo, t) => {
+                        var k = t[0];
+                        memo[k] = memo[k] || 0;
+                        memo[k] += 1;
+                        return memo;
+                    }, {})
+                    .value();
+            },
+            (data, keys) => {
+                let seed = (dataPrevRef === data) ? dataNewSnap : (++dataNewSnap);
+                dataPrevRef = data;
+                return `${keys.join('')}-${seed}`;
+            });
+
         return (key, size, varSet) => {
 
             var facetSize = varSet.length;
@@ -373,25 +395,11 @@ var utils = {
                 pad = level2Guide.padding.t + level2Guide.padding.b;
             }
 
-            var xHash = (keys) => {
-                return _(data)
-                    .chain()
-                    .map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), [])))
-                    .uniq((t) => JSON.stringify(t))
-                    .reduce((memo, t) => {
-                        var k = t[0];
-                        memo[k] = memo[k] || 0;
-                        memo[k] += 1;
-                        return memo;
-                    }, {})
-                    .value();
-            };
-
             var xTotal = (keys) => {
-                return _.values(xHash(keys)).reduce((sum, v) => (sum + v), 0);
+                return _.values(xHash(data, keys)).reduce((sum, v) => (sum + v), 0);
             };
 
-            var xPart = ((keys, k) => (xHash(keys)[k]));
+            var xPart = ((keys, k) => (xHash(data, keys)[k]));
 
             var totalItems = xTotal(paramsList);
 
