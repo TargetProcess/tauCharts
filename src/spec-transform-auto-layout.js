@@ -606,6 +606,7 @@ var SpecEngineTypeMap = {
 
                 // facet level
                 unit.guide.x.cssClass += ' facet-axis compact';
+                unit.guide.x.avoidCollisions = true;
                 unit.guide.y.cssClass += ' facet-axis compact';
 
                 return calcUnitGuide(

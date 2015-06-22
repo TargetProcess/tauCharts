@@ -269,6 +269,7 @@ define(function (require) {
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis facet-axis');
+            expect(x.avoidCollisions).to.equal(true);
             expect(x.rotate).to.equal(0);
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
@@ -433,6 +434,7 @@ define(function (require) {
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis facet-axis compact');
+            expect(x.avoidCollisions).to.equal(true);
             expect(x.rotate).to.equal(0);
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
