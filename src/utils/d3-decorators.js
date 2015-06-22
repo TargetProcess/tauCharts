@@ -321,13 +321,15 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 .text((d, i) => i === 0 ? text : '')
                 .attr('y', newY);
 
-            var attrs = {};
-            attrs['x1'] = 0;
-            attrs['x2'] = 0;
-            attrs['y1'] = newY + (isHorizontal ? -1 : 5);
-            attrs['y2'] = refOffsetStart;
+            var attrs = {
+                x1: 0,
+                x2: 0,
+                y1: newY + (isHorizontal ? -1 : 5),
+                y2: refOffsetStart
+            };
+
             if (!isHorizontal) {
-                attrs['transform'] = 'rotate(-90)';
+                attrs.transform = 'rotate(-90)';
             }
 
             curr.tickRef
