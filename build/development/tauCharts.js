@@ -4656,6 +4656,7 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
 
                 // facet level
                 unit.guide.x.cssClass += ' facet-axis compact';
+                unit.guide.x.avoidCollisions = true;
                 unit.guide.y.cssClass += ' facet-axis compact';
 
                 return calcUnitGuide(unit, meta, _2['default'].defaults({
