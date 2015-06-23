@@ -5,6 +5,8 @@ import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
 import {unitsRegistry} from '../units-registry';
+import {scalesRegistry} from '../scales-registry';
+import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
@@ -157,42 +159,47 @@ export class Plot extends Emitter {
 
         this.configGPL.settings.size = size;
 
-        var gpl = utils.clone(_.omit(this.configGPL, 'plugins'));
-        gpl.sources = this.getData({isNew: true});
-        gpl.settings = this.configGPL.settings;
+        this._liveSpec = utils.clone(_.omit(this.configGPL, 'plugins'));
+        this._liveSpec.sources = this.getData({isNew: true});
+        this._liveSpec.settings = this.configGPL.settings;
+        this._scalesHub = new ScalesFactory(scalesRegistry, this._liveSpec.sources, this._liveSpec.scales);
 
-        if (this.isEmptySources(gpl.sources)) {
+        if (this.isEmptySources(this._liveSpec.sources)) {
             content.innerHTML = this._emptyContainer;
             return;
         }
 
-        gpl = this
+        this._liveSpec = this
             .transformers
-            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), this._liveSpec);
 
         this._nodes = [];
-        gpl.onUnitDraw = (unitNode) => {
+
+        this._liveSpec.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
         };
 
-        gpl.onUnitsStructureExpanded = (specRef) => {
+        this._liveSpec.onUnitsStructureExpanded = (specRef) => {
             this.onUnitsStructureExpandedTransformers
-                .forEach((TClass) => (new TClass(specRef)).transform());
+                .forEach((TClass) => (new TClass(specRef)).transform(this));
             this.fire(['units', 'structure', 'expanded'].join(''), specRef);
         };
 
-        this._liveSpec = gpl;
+        this.fire('specready', this._liveSpec);
 
-        this.fire('specready', gpl);
-
-        new GPL(gpl).renderTo(content, gpl.settings.size);
+        new GPL(this._liveSpec, this._scalesHub, unitsRegistry)
+            .renderTo(content, this._liveSpec.settings.size);
 
         var svgXElement = d3.select(content).select('svg');
 
         this._svg = svgXElement.node();
-        this._layout.rightSidebar.style.maxHeight = (`${gpl.settings.size.height}px`);
+        this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
+    }
+
+    getLogicalScaleByName(name, frame = null) {
+        return this._scalesHub ? this._scalesHub.createScaleByName(name, frame) : null;
     }
 
     getData(param = {}) {

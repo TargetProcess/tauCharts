@@ -3,6 +3,9 @@ define(function (require) {
     var expect = require('chai').expect;
     var SpecAutoLayout = require('src/spec-transform-auto-layout').SpecTransformAutoLayout;
     var SpecConverter = require('src/spec-converter').SpecConverter;
+    var tauCharts = require('src/tau.charts');
+    var scalesRegistry = tauCharts.api.scalesRegistry;
+    var ScalesFactory = require('src/scales-factory').ScalesFactory;
 
     describe('Spec engine factory', function () {
 
@@ -64,6 +67,17 @@ define(function (require) {
             return specGPL;
         };
 
+        var chartAPI = function (spec) {
+
+            var factory = new ScalesFactory(scalesRegistry, spec.sources, spec.scales);
+
+            return {
+                getLogicalScaleByName(name, frame) {
+                    return factory.createScaleByName(name, frame);
+                }
+            };
+        };
+
         var convSpec = function (spec, specEngineName) {
 
             var specClone = JSON.parse(JSON.stringify(spec));
@@ -89,7 +103,7 @@ define(function (require) {
 
             var testSpecEngine = new SpecAutoLayout(spec);
 
-            var full = testSpecEngine.transform();
+            var full = testSpecEngine.transform(chartAPI(spec));
 
             expect(full.unit.guide.padding.l).to.equal(0);
             expect(full.unit.guide.padding.b).to.equal(0);
@@ -130,7 +144,7 @@ define(function (require) {
 
             var testSpecEngine = new SpecAutoLayout(spec);
 
-            var full = testSpecEngine.transform();
+            var full = testSpecEngine.transform(chartAPI(spec));
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -178,7 +192,7 @@ define(function (require) {
 
             var testSpecEngine = new SpecAutoLayout(spec);
 
-            var full = testSpecEngine.transform();
+            var full = testSpecEngine.transform(chartAPI(spec));
 
             var x = full.unit.guide.x;
             var y = full.unit.guide.y;
@@ -256,8 +270,9 @@ define(function (require) {
                 }
             };
 
-            var testSpecEngine = new SpecAutoLayout(convSpec(spec, 'AUTO'));
-            var full = testSpecEngine.transform();
+            var fullSpec = convSpec(spec, 'AUTO');
+            var testSpecEngine = new SpecAutoLayout(fullSpec);
+            var full = testSpecEngine.transform(chartAPI(fullSpec));
             var measurer = full.settings;
 
             var x = full.unit.guide.x;
@@ -374,8 +389,9 @@ define(function (require) {
                 }
             };
 
-            var testSpecEngine = new SpecAutoLayout(convSpec(spec, 'AUTO'));
-            var full = testSpecEngine.transform();
+            var fullSpec = convSpec(spec, 'AUTO');
+            var testSpecEngine = new SpecAutoLayout(fullSpec);
+            var full = testSpecEngine.transform(chartAPI(fullSpec));
             var measurer = full.settings;
 
             var part = full.unit.units[0];
@@ -421,8 +437,9 @@ define(function (require) {
                 }
             };
 
-            var testSpecEngine = new SpecAutoLayout(convSpec(spec, 'COMPACT'));
-            var full = testSpecEngine.transform();
+            var fullSpec = convSpec(spec, 'COMPACT');
+            var testSpecEngine = new SpecAutoLayout(fullSpec);
+            var full = testSpecEngine.transform(chartAPI(fullSpec));
             var measurer = full.settings;
 
             var x = full.unit.guide.x;

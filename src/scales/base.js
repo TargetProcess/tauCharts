@@ -35,12 +35,18 @@ export class BaseScale {
 
         this.addField('dim', this.scaleConfig.dim)
             .addField('scaleDim', this.scaleConfig.dim)
+            .addField('scaleType', this.scaleConfig.type)
             .addField('source', this.scaleConfig.source)
             .addField('domain', (() => this.vars));
     }
 
+    domain() {
+        return this.vars;
+    }
+
     addField(key, val) {
         this._fields[key] = val;
+        this[key] = val;
         return this;
     }
 

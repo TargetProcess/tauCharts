@@ -91,7 +91,7 @@ export class SpecTransformCalcSize {
         this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
     }
 
-    transform() {
+    transform(chart) {
 
         var specRef = this.spec;
 
@@ -106,8 +106,6 @@ export class SpecTransformCalcSize {
         }
 
         var scales = specRef.scales;
-
-        var scalesCreator = new ScalesFactory(specRef.sources);
 
         var groupFramesBy = (frames, dim) => {
             return frames
@@ -136,8 +134,8 @@ export class SpecTransformCalcSize {
 
         var calcSizeRecursively = (prop, root, takeStepSizeStrategy, frame = null) => {
 
-            var xCfg = (prop === 'x') ? scales[root.x] : scales[root.y];
-            var yCfg = (prop === 'x') ? scales[root.y] : scales[root.x];
+            var xCfg = (prop === 'x') ? root.x : root.y;
+            var yCfg = (prop === 'x') ? root.y : root.x;
             var guide = root.guide;
             var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
 
@@ -147,12 +145,12 @@ export class SpecTransformCalcSize {
 
             if (root.units[0].type !== 'COORDS.RECT') {
 
-                var xScale = scalesCreator.create(xCfg, frame, [0, 100]);
+                var xScale = chart.getLogicalScaleByName(xCfg, frame);
                 return resScaleSize + calcScaleSize(xScale, xSize);
 
             } else {
 
-                var rows = groupFramesBy(root.frames, yCfg.dim);
+                var rows = groupFramesBy(root.frames, scales[yCfg].dim);
                 var rowsSizes = Object
                     .keys(rows)
                     .map((kRow) => {

@@ -42,19 +42,21 @@ define(function (require) {
                 {"x1": "B", "x2": "C10", "y1": 10}
             ];
 
-            var f = new ScalesFactory({
-                '/': {
-                    dims: {
-                        x1: {
-                            type: 'ordinal'
+            var f = new ScalesFactory(
+                ScalesRegistry,
+                {
+                    '/': {
+                        dims: {
+                            x1: {
+                                type: 'ordinal'
+                            },
+                            x2: {
+                                type: 'ordinal'
+                            }
                         },
-                        x2: {
-                            type: 'ordinal'
-                        }
-                    },
-                    data: data
-                }
-            });
+                        data: data
+                    }
+                });
 
             var scaleFixedRatio = f.create(
                 {

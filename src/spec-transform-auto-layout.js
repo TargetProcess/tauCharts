@@ -3,7 +3,6 @@ import {utils} from './utils/utils';
 import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
 import {utilsDom} from './utils/utils-dom';
-import {ScalesFactory} from './scales-factory';
 
 function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
@@ -691,11 +690,10 @@ export class SpecTransformAutoLayout {
 
     constructor(spec) {
         this.spec = spec;
-        this.scalesCreator = new ScalesFactory(spec.sources);
         this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
     }
 
-    transform() {
+    transform(chart) {
 
         var spec = this.spec;
 
@@ -707,20 +705,11 @@ export class SpecTransformAutoLayout {
 
         var rule = _.find(spec.settings.specEngine, (rule) => (size.width <= rule.width));
 
-        var auto = SpecEngineFactory.get(
+        return SpecEngineFactory.get(
             rule.name,
             spec.settings,
             spec,
-            (type, alias) => {
-
-                var name = alias ? alias : `${type}:default`;
-
-                return this
-                    .scalesCreator
-                    .create(spec.scales[name], null, [0, 100]);
-            }
+            (type, alias) => chart.getLogicalScaleByName(alias || `${type}:default`)
         );
-
-        return auto;
     }
 }

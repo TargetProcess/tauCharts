@@ -1,8 +1,6 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {unitsRegistry} from '../units-registry';
-import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
 
@@ -10,19 +8,17 @@ var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {
 
-    constructor(config) {
+    constructor(config, scalesRegistryInstance, unitsRegistry) {
 
         super();
 
         this.config = config;
 
         this.config.settings = this.config.settings || {};
-
-        this.unitSet = config.unitsRegistry || unitsRegistry;
-
         this.sources = config.sources;
 
-        this.scalesCreator = new ScalesFactory(config.sources);
+        this.unitSet = unitsRegistry;
+        this.scalesCreator = scalesRegistryInstance;
 
         this.scales = config.scales;
 
@@ -162,14 +158,11 @@ export class GPL extends Emitter {
         var unitNode = new UnitClass(unitConfig);
         unitNode.parentUnit = rootUnit;
         unitNode
-            .createScales((type, alias, settings) => {
-
-                var name = alias || `${type}:default`;
-
+            .createScales((type, alias, dynamicProps) => {
                 return self
                     .scalesCreator
-                    .createScale(self.scales[name], rootFrame)
-                    .create(settings);
+                    .createScaleByName((alias || `${type}:default`), rootFrame)
+                    .create(dynamicProps);
             })
             .drawFrames(unitConfig.frames, (function (rootUnit) {
                 return function (rootConf, rootFrame) {
