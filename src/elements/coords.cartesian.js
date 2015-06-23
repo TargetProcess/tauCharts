@@ -97,7 +97,7 @@ export class Cartesian {
         }
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var node = this.config;
 

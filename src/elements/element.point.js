@@ -25,7 +25,7 @@ export class Point {
         );
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 

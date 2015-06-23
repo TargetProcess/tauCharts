@@ -7,7 +7,7 @@ export class Interval {
         this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);

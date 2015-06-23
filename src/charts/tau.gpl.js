@@ -162,9 +162,9 @@ export class GPL extends Emitter {
         var unitNode = new UnitClass(unitConfig);
         unitNode.parentUnit = rootUnit;
         unitNode
-            .drawLayout((type, alias, settings) => {
+            .createScales((type, alias, settings) => {
 
-                var name = alias ? alias : `${type}:default`;
+                var name = alias || `${type}:default`;
 
                 return self
                     .scalesCreator

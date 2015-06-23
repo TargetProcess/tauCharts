@@ -47,7 +47,7 @@ export class GeoMap extends Element {
         this.on('highlight-area', (sender, e) => this._highlightArea(e));
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var node = this.config;
 

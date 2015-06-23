@@ -14,7 +14,7 @@ export class Pie {
         );
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 

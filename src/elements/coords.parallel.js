@@ -25,7 +25,7 @@ export class Parallel extends Element {
         this.on('force-brush', (sender, e) => this._forceBrushing(e));
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var cfg = this.config;
 

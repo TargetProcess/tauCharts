@@ -17,7 +17,7 @@ export class ParallelLine extends Element {
         this.on('highlight', (sender, e) => this.highlight(e));
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
         var options = config.options;

@@ -16,7 +16,7 @@ export class Line {
         );
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 
