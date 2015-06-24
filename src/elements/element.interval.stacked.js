@@ -16,31 +16,40 @@ export class StackedInterval {
 
         var prop = stackScale.dim;
 
-        var sums = cfg.frames.reduce((s0, f) => {
-            return f
-                .take()
-                .reduce(((s, d) => {
+        var groupsSums = cfg.frames.reduce((groups, f) => {
+            var dataFrame = f.take();
+            var hasErrors = dataFrame.some((d) => (typeof (d[prop]) !== 'number'));
+            if (hasErrors) {
+                throw new Error(
+                    `Stacked field [${prop}] should be a number`,
+                    errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART
+                );
+            }
+
+            dataFrame.reduce(
+                (hash, d) => {
                     var stackedVal = d[prop];
-
-                    if ((typeof (stackedVal) !== 'number') || (stackedVal < 0)) {
-                        throw new Error(
-                            `Stacked field [${prop}] should be a non-negative number`,
-                            errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART
-                        );
-                    }
-
                     var baseVal = d[baseDim];
-                    s[baseVal] = s[baseVal] || 0;
-                    s[baseVal] += stackedVal;
-                    return s;
-                }),
-                s0);
-        }, {});
+                    var ttl = stackedVal >= 0 ? hash.positive : hash.negative;
+                    ttl[baseVal] = ttl[baseVal] || 0;
+                    ttl[baseVal] += stackedVal;
+                    return hash;
+                },
+                groups);
 
-        var maxSum = Math.max(..._.values(sums));
+            return groups;
 
-        if (!stackScale.hasOwnProperty('max') || stackScale.max < maxSum) {
-            stackScale.max = maxSum;
+        }, {negative: {}, positive: {}});
+
+        var negativeSum = Math.min(..._.values(groupsSums.negative).concat(0));
+        var positiveSum = Math.max(..._.values(groupsSums.positive).concat(0));
+
+        if (!stackScale.hasOwnProperty('max') || stackScale.max < positiveSum) {
+            stackScale.max = positiveSum;
+        }
+
+        if (!stackScale.hasOwnProperty('min') || stackScale.min > negativeSum) {
+            stackScale.min = negativeSum;
         }
     }
 
@@ -103,31 +112,49 @@ export class StackedInterval {
             viewMapper = (totals, d) => {
                 var x = d[xScale.dim];
                 var y = d[yScale.dim];
-                var stack = totals[y] = ((totals[y] || 0) + x);
-                var size = d[sizeScale.dim];
-                var color = d[colorScale.dim];
-                return {
-                    x: stack,
+
+                var item = {
                     y: y,
-                    h: x,
-                    w: size,
-                    c: color
+                    w: d[sizeScale.dim],
+                    c: d[colorScale.dim]
                 };
+
+                if (x >= 0) {
+                    totals.positive[y] = ((totals.positive[y] || 0) + x);
+                    item.x = totals.positive[y];
+                    item.h = x;
+                } else {
+                    var prevStack = (totals.negative[y] || 0);
+                    totals.negative[y] = (prevStack + x);
+                    item.x = prevStack;
+                    item.h = Math.abs(x);
+                }
+
+                return item;
             };
         } else {
             viewMapper = (totals, d) => {
                 var x = d[xScale.dim];
                 var y = d[yScale.dim];
-                var stack = totals[x] = ((totals[x] || 0) + y);
-                var size = d[sizeScale.dim];
-                var color = d[colorScale.dim];
-                return {
+
+                var item = {
                     x: x,
-                    y: stack,
-                    h: y,
-                    w: size,
-                    c: color
+                    w: d[sizeScale.dim],
+                    c: d[colorScale.dim]
                 };
+
+                if (y >= 0) {
+                    totals.positive[x] = ((totals.positive[x] || 0) + y);
+                    item.y = totals.positive[x];
+                    item.h = y;
+                } else {
+                    let prevStack = (totals.negative[x] || 0);
+                    totals.negative[x] = (prevStack + y);
+                    item.y = prevStack;
+                    item.h = Math.abs(y);
+                }
+
+                return item;
             };
         }
 
@@ -151,7 +178,10 @@ export class StackedInterval {
         };
 
         var uid = options.uid;
-        var totals = {};
+        var totals = {
+            positive: {},
+            negative: {}
+        };
         var updateGroups = function () {
             this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`)
                 .call(function () {
