@@ -1,8 +1,9 @@
 import {default as _} from 'underscore';
 import {CSS_PREFIX} from './../const';
+import {Element} from './element';
 import {TauChartError as Error, errorCodes} from './../error';
 
-export class StackedInterval {
+export class StackedInterval extends Element {
 
     static embedUnitFrameToSpec(cfg, spec) {
 
@@ -54,6 +55,9 @@ export class StackedInterval {
     }
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
     }

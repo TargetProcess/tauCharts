@@ -18,7 +18,7 @@ export class GPL extends Emitter {
         this.sources = config.sources;
 
         this.unitSet = unitsRegistry;
-        this.scalesCreator = scalesRegistryInstance;
+        this.scalesHub = scalesRegistryInstance;
 
         this.scales = config.scales;
 
@@ -160,7 +160,7 @@ export class GPL extends Emitter {
         unitNode
             .createScales((type, alias, dynamicProps) => {
                 return self
-                    .scalesCreator
+                    .scalesHub
                     .createScaleByName((alias || `${type}:default`), rootFrame)
                     .create(dynamicProps);
             })

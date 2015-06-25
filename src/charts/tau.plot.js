@@ -22,7 +22,6 @@ export class Plot extends Emitter {
     constructor(config) {
         super();
         this._nodes = [];
-        this._liveSpec = null;
         this._svg = null;
         this._filtersStore = {
             filters: {},
@@ -53,7 +52,7 @@ export class Plot extends Emitter {
         ];
 
         this._originData = _.clone(this.configGPL.sources);
-
+        this._liveSpec = this.configGPL;
         this._plugins = new Plugins(this.config.plugins, this);
     }
 

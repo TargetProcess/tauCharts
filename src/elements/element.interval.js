@@ -1,8 +1,12 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 
-export class Interval {
+export class Interval extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
     }

@@ -1,7 +1,12 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 
-export class Point {
+export class Point extends Element {
+
     constructor(config) {
+
+        super(config);
+
         this.config = config;
 
         this.config.guide = this.config.guide || {};

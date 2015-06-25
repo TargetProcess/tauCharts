@@ -1,9 +1,13 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 
-export class Line {
+export class Line extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = this.config.guide || {};
         this.config.guide = _.defaults(
