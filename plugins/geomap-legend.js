@@ -40,7 +40,7 @@
                 var config = chart.getConfig();
 
                 var reducer = function (scaleType) {
-                    return function(memo, k) {
+                    return function (memo, k) {
                         var s = config.scales[k];
                         if (s.type === scaleType && s.dim) {
                             memo.push(k);
@@ -92,7 +92,7 @@
 
                         var domain = _(fullData)
                             .chain()
-                            .map(function(r) {
+                            .map(function (r) {
                                 return r[colorScale.dim];
                             })
                             .uniq()
