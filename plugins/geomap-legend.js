@@ -55,6 +55,10 @@
 
                 var self = this;
 
+                if (self._container) {
+                    self._container.innerHTML = '';
+                }
+
                 self._color.forEach(function (c) {
                     var nodes = self
                         ._chart
