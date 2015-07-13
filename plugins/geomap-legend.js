@@ -68,6 +68,24 @@
                 }
             },
 
+            onSpecReady: function () {
+                var self = this;
+                var spec = self._chart.getSpec();
+
+                self._color.forEach(function (c) {
+                    if (!spec.scales[c].brewer) {
+                        var fullData = self
+                            ._chart
+                            .getData({
+                                excludeFilter: ['legend'],
+                                isNew: true
+                            })[spec.scales[c].source]
+                            .data;
+                        spec.scales[c].brewer = self._getColorMap(fullData, spec.scales[c].dim);
+                    }
+                });
+            },
+
             onRender: function () {
 
                 var self = this;
@@ -85,7 +103,7 @@
 
                     if (nodes.length > 0) {
                         var colorScale = nodes[0].getScale('color');
-                        var fullData = chart.getData({
+                        var fullData = self._chart.getData({
                             excludeFilter: ['legend'],
                             isNew: true
                         })[colorScale.source].data;
@@ -105,7 +123,7 @@
                                 dim: colorScale.dim,
                                 color: colorScale(d),
                                 classDisabled: self._currentFilters[key] ? 'disabled' : '',
-                                label: d || 'label',
+                                label: d,
                                 value: val
                             });
                         });
@@ -201,6 +219,26 @@
                     target.classList.add('disabled');
                     this._currentFilters[key] = chart.addFilter(filter);
                 }
+            },
+
+            _getColorMap: function (data, dim) {
+
+                var defBrewer = _.times(20, function (i) {
+                    return 'color20-' + (1 + i);
+                });
+
+                return _(data)
+                    .chain()
+                    .map(function (row) {
+                        return row[dim];
+                    })
+                    .uniq()
+                    .value()
+                    .reduce(function (memo, val, i) {
+                        memo[val] = defBrewer[i];
+                        return memo;
+                    },
+                    {});
             }
         };
 
