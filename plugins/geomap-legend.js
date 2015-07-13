@@ -21,33 +21,50 @@
                 // add default settings here
             });
 
+        var _delegateEvent = function (element, eventName, selector, callback) {
+            element.addEventListener(eventName, function (e) {
+                var target = e.target;
+                while (target !== e.currentTarget && target !== null) {
+                    if (target.classList.contains(selector)) {
+                        callback(e, target);
+                    }
+                    target = target.parentNode;
+                }
+            });
+        };
+
         var plugin = {
 
             init: function (chart) {
-                var config = chart.getConfig();
-                this._chart = chart;
-                this._color = Object
-                    .keys(config.scales)
-                    .reduce(function (memo, k) {
-                        var s = config.scales[k];
-                        if (s.type === 'color' && s.dim) {
-                            memo.push(k);
-                        }
-                        return memo;
-                    }, []);
 
-                this._fill = Object
-                    .keys(config.scales)
-                    .reduce(function (memo, k) {
+                var config = chart.getConfig();
+
+                var reducer = function (scaleType) {
+                    return function(memo, k) {
                         var s = config.scales[k];
-                        if (s.type === 'fill' && s.dim) {
+                        if (s.type === scaleType && s.dim) {
                             memo.push(k);
                         }
                         return memo;
-                    }, []);
+                    };
+                };
+
+                this._chart = chart;
+                this._color = Object.keys(config.scales).reduce(reducer('color'), []);
+                this._fill = Object.keys(config.scales).reduce(reducer('fill'), []);
+
+                this._currentFilters = {};
+                this._storageValues = {};
 
                 if (this._color.length > 0 || this._fill.length > 0) {
                     this._container = chart.insertToRightSidebar(this._containerTemplate);
+                    _delegateEvent(
+                        this._container,
+                        'click',
+                        'graphical-report__legend__item-color',
+                        function (e, currentTarget) {
+                            this._toggleLegendItem(currentTarget, chart);
+                        }.bind(this));
                 }
             },
 
@@ -67,14 +84,29 @@
                         });
 
                     if (nodes.length > 0) {
-                        var colorScale = nodes[0].colorScale;
-                        var domain = colorScale.domain();
+                        var colorScale = nodes[0].getScale('color');
+                        var fullData = chart.getData({
+                            excludeFilter: ['legend'],
+                            isNew: true
+                        })[colorScale.source].data;
+
+                        var domain = _(fullData)
+                            .chain()
+                            .map(function(r) {
+                                return r[colorScale.dim];
+                            })
+                            .uniq()
+                            .value();
+
                         var items = domain.map(function (d) {
+                            var val = _.escape(d);
+                            var key = colorScale.dim + val;
                             return self._itemTemplate({
+                                dim: colorScale.dim,
                                 color: colorScale(d),
-                                classDisabled: 'disabled',
+                                classDisabled: self._currentFilters[key] ? 'disabled' : '',
                                 label: d || 'label',
-                                value: _.escape(d)
+                                value: val
                             });
                         });
 
@@ -94,7 +126,7 @@
                         });
 
                     if (nodes.length > 0) {
-                        var fillScale = nodes[0].fillScale;
+                        var fillScale = nodes[0].getScale('fill');
                         var brewer = fillScale.brewer;
                         var domain = fillScale.domain();
 
@@ -132,7 +164,7 @@
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
-                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
+                '<div data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '<div class="graphical-report__legend__guide__wrap"><div class="graphical-report__legend__guide <%=color%>" ></div></div><%=label%>',
                 '</div>'
             ].join('')),
@@ -143,8 +175,33 @@
                 '   <span style="padding-left: 20px"><%=label%></span>',
                 '</div>',
                 '</div>'
-            ].join(''))
+            ].join('')),
             // jscs:enable maximumLineLength
+
+            _toggleLegendItem: function (target, chart) {
+
+                var dim = target.getAttribute('data-dim');
+                var val = target.getAttribute('data-value');
+                var key = dim + val;
+
+                if (this._currentFilters.hasOwnProperty(key)) {
+                    var currentFilterID = this._currentFilters[key];
+                    delete this._currentFilters[key];
+                    target.classList.remove('disabled');
+
+                    chart.removeFilter(currentFilterID);
+                } else {
+                    this._currentFilters[key] = 1;
+                    var filter = {
+                        tag: 'legend',
+                        predicate: function (row) {
+                            return row[dim] !== val;
+                        }
+                    };
+                    target.classList.add('disabled');
+                    this._currentFilters[key] = chart.addFilter(filter);
+                }
+            }
         };
 
         return plugin;

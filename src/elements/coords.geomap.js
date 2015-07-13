@@ -74,7 +74,13 @@ export class GeoMap extends Element {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        return this;
+        return this
+            .regScale('latitude', this.latScale)
+            .regScale('longitude', this.lonScale)
+            .regScale('size', this.sizeScale)
+            .regScale('color', this.colorScale)
+            .regScale('code', this.codeScale)
+            .regScale('fill', this.fillScale);
     }
 
     drawFrames(frames) {
@@ -243,7 +249,7 @@ export class GeoMap extends Element {
 
         var xmap = node
             .selectAll('.map-container')
-            .data([`${innerW}${innerH}${contours.join('-')}`], _.identity);
+            .data([`${innerW}${innerH}${center}${contours.join('-')}`], _.identity);
         xmap.exit()
             .remove();
         xmap.enter()
