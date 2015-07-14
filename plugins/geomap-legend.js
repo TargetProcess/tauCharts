@@ -39,13 +39,12 @@
 
                 this._chart = chart;
                 this._currentFilters = {};
-                this._storageValues = {};
 
-                var config = this._chart.getConfig();
+                var spec = this._chart.getSpec();
 
                 var reducer = function (scaleType) {
                     return function (memo, k) {
-                        var s = config.scales[k];
+                        var s = spec.scales[k];
                         if (s.type === scaleType && s.dim) {
                             memo.push(k);
                         }
@@ -53,21 +52,25 @@
                     };
                 };
 
-                this._color = Object.keys(config.scales).reduce(reducer('color'), []);
-                this._fill = Object.keys(config.scales).reduce(reducer('fill'), []);
+                this._color = Object.keys(spec.scales).reduce(reducer('color'), []);
+                this._fill = Object.keys(spec.scales).reduce(reducer('fill'), []);
 
-                if (this._color.length > 0 || this._fill.length > 0) {
+                var hasColorScales = (this._color.length > 0);
+                var hasFillScales = (this._fill.length > 0);
+
+                if (hasColorScales || hasFillScales) {
+
                     this._container = this._chart.insertToRightSidebar(this._containerTemplate);
-                }
 
-                if (this._color.length > 0) {
-                    _delegateEvent(
-                        this._container,
-                        'click',
-                        'graphical-report__legend__item-color',
-                        function (e, currentTarget) {
-                            this._toggleLegendItem(currentTarget, this._chart);
-                        }.bind(this));
+                    if (hasColorScales) {
+                        _delegateEvent(
+                            this._container,
+                            'click',
+                            'graphical-report__legend__item-color',
+                            function (e, currentTarget) {
+                                this._toggleLegendItem(currentTarget);
+                            }.bind(this));
+                    }
                 }
             },
 
@@ -76,32 +79,56 @@
             },
 
             onRender: function () {
+                this._clearPanel();
+                this._drawColorLegend();
+                this._drawFillLegend();
+            },
 
+            // jscs:disable maximumLineLength
+            _containerTemplate: '<div class="graphical-report__legend"></div>',
+            _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
+            _itemTemplate: _.template([
+                '<div data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
+                '<div class="graphical-report__legend__guide__wrap">',
+                '<div class="graphical-report__legend__guide <%=color%>"></div>',
+                '</div>',
+                '<%=label%>',
+                '</div>'
+            ].join('')),
+            _itemFillTemplate: _.template([
+                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 20px 10px 40px;">',
+                '<div class="graphical-report__legend__guide__wrap" style="top:0">',
+                '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
+                '   <span style="padding-left: 20px"><%=label%></span>',
+                '</div>',
+                '</div>'
+            ].join('')),
+            // jscs:enable maximumLineLength
+
+            _clearPanel: function () {
+                if (this._container) {
+                    this._container.innerHTML = '';
+                }
+            },
+
+            _drawColorLegend: function () {
                 var self = this;
 
-                if (self._container) {
-                    self._container.innerHTML = '';
-                }
-
                 self._color.forEach(function (c) {
-                    var nodes = self
+                    var firstNode = self
                         ._chart
                         .select(function (unit) {
-                            return (unit.config.type === 'COORDS.MAP') && (unit.config.color === c);
-                        });
+                            return (unit.config.color === c);
+                        })
+                        [0];
 
-                    if (nodes.length > 0) {
-                        var colorScale = nodes[0].getScale('color');
-                        var fullData = self._chart.getData({
-                            excludeFilter: ['legend'],
-                            isNew: true
-                        })[colorScale.source].data;
+                    if (firstNode) {
+                        var colorScale = firstNode.getScale('color');
+                        var dataSource = self._chart.getDataSources({excludeFilter: ['legend']});
 
-                        var domain = _(fullData)
+                        var domain = _(dataSource[colorScale.source].data)
                             .chain()
-                            .map(function (r) {
-                                return r[colorScale.dim];
-                            })
+                            .pluck(colorScale.dim)
                             .uniq()
                             .value();
 
@@ -120,10 +147,14 @@
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
                                 items: items.join(''),
-                                name: ((((nodes[0].guide || {}).color || {}).label || {}).text) || colorScale.dim
+                                name: ((((firstNode.guide || {}).color || {}).label || {}).text) || colorScale.dim
                             }));
                     }
                 });
+            },
+
+            _drawFillLegend: function () {
+                var self = this;
 
                 self._fill.forEach(function (c) {
                     var nodes = self
@@ -167,46 +198,26 @@
                 });
             },
 
-            // jscs:disable maximumLineLength
-            _containerTemplate: '<div class="graphical-report__legend"></div>',
-            _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
-            _itemTemplate: _.template([
-                '<div data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
-                '<div class="graphical-report__legend__guide__wrap"><div class="graphical-report__legend__guide <%=color%>" ></div></div><%=label%>',
-                '</div>'
-            ].join('')),
-            _itemFillTemplate: _.template([
-                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 20px 10px 40px;">',
-                '<div class="graphical-report__legend__guide__wrap" style="top:0">',
-                '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
-                '   <span style="padding-left: 20px"><%=label%></span>',
-                '</div>',
-                '</div>'
-            ].join('')),
-            // jscs:enable maximumLineLength
-
-            _toggleLegendItem: function (target, chart) {
+            _toggleLegendItem: function (target) {
 
                 var dim = target.getAttribute('data-dim');
                 var val = target.getAttribute('data-value');
                 var key = dim + val;
 
-                if (this._currentFilters.hasOwnProperty(key)) {
-                    var currentFilterID = this._currentFilters[key];
-                    delete this._currentFilters[key];
+                var state = this._currentFilters;
+                if (state.hasOwnProperty(key)) {
+                    var filterId = state[key];
+                    delete state[key];
                     target.classList.remove('disabled');
-
-                    chart.removeFilter(currentFilterID);
+                    this._chart.removeFilter(filterId);
                 } else {
-                    this._currentFilters[key] = 1;
-                    var filter = {
+                    target.classList.add('disabled');
+                    state[key] = this._chart.addFilter({
                         tag: 'legend',
                         predicate: function (row) {
                             return row[dim] !== val;
                         }
-                    };
-                    target.classList.add('disabled');
-                    this._currentFilters[key] = chart.addFilter(filter);
+                    });
                 }
             },
 
@@ -232,17 +243,14 @@
             _assignStaticBrewersOrEx: function () {
                 var self = this;
                 var spec = self._chart.getSpec();
-                var sources = self._chart.getData({excludeFilter: ['legend'], isNew: true});
+                var sources = self._chart.getDataSources({excludeFilter: ['legend']});
 
-                self._color.reduce(
-                    function (scalesRef, c) {
-                        var scaleConfig = scalesRef[c];
-                        scaleConfig.brewer = scaleConfig.brewer ?
-                            scaleConfig.brewer :
-                            self._generateColorMap(sources[scaleConfig.source].data, scaleConfig.dim);
-                        return scalesRef;
-                    },
-                    spec.scales);
+                self._color.forEach(function (c) {
+                    var scaleConfig = spec.scales[c];
+                    scaleConfig.brewer = scaleConfig.brewer ?
+                        scaleConfig.brewer :
+                        self._generateColorMap(sources[scaleConfig.source].data, scaleConfig.dim);
+                });
             }
         };
 
