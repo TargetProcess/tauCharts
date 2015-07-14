@@ -10,6 +10,7 @@ import {Element} from './element';
 d3.labeler = d3Labeler;
 
 const avgCharSize = 5.5;
+const iterationsCount = 10;
 
 var hierarchy = [
 
@@ -157,7 +158,7 @@ export class GeoMap extends Element {
                 .anchor(anchors)
                 .width(innerW)
                 .height(innerH)
-                .start(100);
+                .start(iterationsCount);
 
             labels
                 .filter((item) => !item.isRef)
