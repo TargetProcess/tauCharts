@@ -37,7 +37,11 @@
 
             init: function (chart) {
 
-                var config = chart.getConfig();
+                this._chart = chart;
+                this._currentFilters = {};
+                this._storageValues = {};
+
+                var config = this._chart.getConfig();
 
                 var reducer = function (scaleType) {
                     return function (memo, k) {
@@ -49,41 +53,26 @@
                     };
                 };
 
-                this._chart = chart;
                 this._color = Object.keys(config.scales).reduce(reducer('color'), []);
                 this._fill = Object.keys(config.scales).reduce(reducer('fill'), []);
 
-                this._currentFilters = {};
-                this._storageValues = {};
-
                 if (this._color.length > 0 || this._fill.length > 0) {
-                    this._container = chart.insertToRightSidebar(this._containerTemplate);
+                    this._container = this._chart.insertToRightSidebar(this._containerTemplate);
+                }
+
+                if (this._color.length > 0) {
                     _delegateEvent(
                         this._container,
                         'click',
                         'graphical-report__legend__item-color',
                         function (e, currentTarget) {
-                            this._toggleLegendItem(currentTarget, chart);
+                            this._toggleLegendItem(currentTarget, this._chart);
                         }.bind(this));
                 }
             },
 
             onSpecReady: function () {
-                var self = this;
-                var spec = self._chart.getSpec();
-
-                self._color.forEach(function (c) {
-                    if (!spec.scales[c].brewer) {
-                        var fullData = self
-                            ._chart
-                            .getData({
-                                excludeFilter: ['legend'],
-                                isNew: true
-                            })[spec.scales[c].source]
-                            .data;
-                        spec.scales[c].brewer = self._getColorMap(fullData, spec.scales[c].dim);
-                    }
-                });
+                this._assignStaticBrewersOrEx();
             },
 
             onRender: function () {
@@ -221,24 +210,39 @@
                 }
             },
 
-            _getColorMap: function (data, dim) {
+            _generateColorMap: function (data, dim) {
 
-                var defBrewer = _.times(20, function (i) {
+                var limit = 20;
+                var defBrewer = _.times(limit, function (i) {
                     return 'color20-' + (1 + i);
                 });
 
                 return _(data)
                     .chain()
-                    .map(function (row) {
-                        return row[dim];
-                    })
+                    .pluck(dim)
                     .uniq()
                     .value()
                     .reduce(function (memo, val, i) {
-                        memo[val] = defBrewer[i];
+                        memo[val] = defBrewer[i % limit];
                         return memo;
                     },
                     {});
+            },
+
+            _assignStaticBrewersOrEx: function () {
+                var self = this;
+                var spec = self._chart.getSpec();
+                var sources = self._chart.getData({excludeFilter: ['legend'], isNew: true});
+
+                self._color.reduce(
+                    function (scalesRef, c) {
+                        var scaleConfig = scalesRef[c];
+                        scaleConfig.brewer = scaleConfig.brewer ?
+                            scaleConfig.brewer :
+                            self._generateColorMap(sources[scaleConfig.source].data, scaleConfig.dim);
+                        return scalesRef;
+                    },
+                    spec.scales);
             }
         };
 
