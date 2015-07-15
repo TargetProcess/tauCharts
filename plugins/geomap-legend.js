@@ -39,6 +39,7 @@
 
                 this._chart = chart;
                 this._currentFilters = {};
+                this._legendColorByScaleId = {};
 
                 var spec = this._chart.getSpec();
 
@@ -88,7 +89,7 @@
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
-                '<div data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
+                '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '<div class="graphical-report__legend__guide__wrap">',
                 '<div class="graphical-report__legend__guide <%=color%>"></div>',
                 '</div>',
@@ -132,21 +133,34 @@
                             .uniq()
                             .value();
 
-                        var items = domain.map(function (d) {
+                        var legendColorItems = domain.map(function (d) {
                             var val = _.escape(d);
                             var key = colorScale.dim + val;
-                            return self._itemTemplate({
+                            return {
+                                scaleId: c,
                                 dim: colorScale.dim,
                                 color: colorScale(d),
-                                classDisabled: self._currentFilters[key] ? 'disabled' : '',
+                                disabled: self._currentFilters.hasOwnProperty(key),
                                 label: d,
                                 value: val
-                            });
+                            };
                         });
 
+                        self._legendColorByScaleId[c] = legendColorItems;
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
-                                items: items.join(''),
+                                items: legendColorItems
+                                    .map(function (d) {
+                                        return self._itemTemplate({
+                                            scaleId: d.scaleId,
+                                            dim: d.dim,
+                                            color: d.color,
+                                            classDisabled: d.disabled ? 'disabled' : '',
+                                            label: d.label,
+                                            value: d.value
+                                        });
+                                    })
+                                    .join(''),
                                 name: ((((firstNode.guide || {}).color || {}).label || {}).text) || colorScale.dim
                             }));
                     }
@@ -200,9 +214,19 @@
 
             _toggleLegendItem: function (target) {
 
+                var scaleId = target.getAttribute('data-scale-id');
                 var dim = target.getAttribute('data-dim');
                 var val = target.getAttribute('data-value');
                 var key = dim + val;
+
+                var items = this._legendColorByScaleId[scaleId];
+                var activeItems = items.filter(function (x) {
+                    return !x.disabled;
+                });
+
+                if (activeItems.length === 1 && scaleId === activeItems[0].scaleId && val === activeItems[0].value) {
+                    return;
+                }
 
                 var state = this._currentFilters;
                 if (state.hasOwnProperty(key)) {
@@ -212,6 +236,8 @@
                     this._chart.removeFilter(filterId);
                 } else {
                     target.classList.add('disabled');
+                    state[key] = 1;
+                    // TODO: remove [refresh] call from [addFilter] method
                     state[key] = this._chart.addFilter({
                         tag: 'legend',
                         predicate: function (row) {
