@@ -36,7 +36,8 @@
 
             init: function (chart) {
 
-                this._cursor = null;
+                this._currNode = null;
+                this._currData = null;
                 this._chart = chart;
                 this._tooltip = chart.addBalloon(
                     {
@@ -58,9 +59,7 @@
                             if (target.classList.contains('i-role-exclude')) {
                                 self._exclude();
                                 self._tooltip.hide();
-                                if (self._current) {
-                                    self._current.fire('highlight-area', falsyFilter);
-                                }
+                                self._blurSelection();
                             }
                             target = target.parentNode;
                         }
@@ -68,11 +67,11 @@
 
                 var self = this;
                 var timeoutHide;
-                this.showTooltip = function (e) {
+                this._showTooltip = function (e) {
 
                     clearTimeout(timeoutHide);
 
-                    self._cursor = e.data;
+                    self._currData = e.data;
 
                     var message = 'No data';
                     if (e.data !== null) {
@@ -90,7 +89,8 @@
 
                     var exclude = self._tooltip.getElement().querySelectorAll('.i-role-exclude');
                     if (exclude[0]) {
-                        exclude[0].style.visibility = e.data ? 'visible' : 'hidden';
+                        var allowExclude = e.data && (self._chart.getData().length > 1);
+                        exclude[0].style.visibility = allowExclude ? 'visible' : 'hidden';
                     }
 
                     self._tooltip
@@ -98,7 +98,7 @@
                         .updateSize();
                 };
 
-                this.hideTooltip = function (immediately) {
+                this._hideTooltip = function (immediately) {
                     timeoutHide = setTimeout(
                         function () {
                             self._tooltip.hide();
@@ -115,60 +115,22 @@
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
-                        self.hideTooltip(true);
+                        self._hideTooltip(true);
+                        self._blurSelection();
                     }, false);
             },
 
-            _exclude: function () {
-                this._chart
-                    .addFilter({
-                        tag: 'exclude',
-                        predicate: (function (element) {
-                            return function (row) {
-                                return JSON.stringify(row) !== JSON.stringify(element);
-                            };
-                        }(this._cursor))
-                    });
-            },
-
-            onRender: function (chart) {
+            onRender: function () {
 
                 var self = this;
 
-                chart
+                this._chart
                     .select(function (node) {
                         return node.config.type === 'COORDS.MAP';
                     })
                     .forEach(function (node) {
-
-                        var isCodeEmpty = !node.codeScale.dim;
-                        if (!isCodeEmpty) {
-                            node.on('area-click', function (sender, e) {
-
-                                self._current = sender;
-
-                                if (!e.data) {
-                                    node.fire('highlight-area', falsyFilter);
-                                    self.showTooltip(e);
-                                    self.hideTooltip(false);
-                                } else if (self._cursor === e.data) {
-                                    node.fire('highlight-area', falsyFilter);
-                                    self.hideTooltip(true);
-                                    self._cursor = null;
-                                } else {
-                                    node.fire('highlight-area', equalFilter(e.data));
-                                    self.showTooltip(e);
-                                }
-                            });
-                        }
-
-                        node.on('point-mouseover', function (sender, e) {
-                            self.showTooltip(e);
-                        });
-
-                        node.on('point-mouseout', function (sender, e) {
-                            self.hideTooltip();
-                        });
+                        self._subscribeToPoints(node);
+                        self._subscribeToArea(node);
                     });
             },
 
@@ -187,7 +149,72 @@
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
                 '</div>'
-            ].join(''))
+            ].join('')),
+
+            _exclude: function () {
+                this._chart
+                    .addFilter({
+                        tag: 'exclude',
+                        predicate: (function (element) {
+                            return function (row) {
+                                return JSON.stringify(row) !== JSON.stringify(element);
+                            };
+                        }(this._currData))
+                    });
+            },
+
+            _blurSelection: function () {
+                this._chart
+                    .select(function (node) {
+                        return node.config.type === 'COORDS.MAP';
+                    })
+                    .forEach(function (node) {
+                        node.fire('highlight-area', falsyFilter);
+                    });
+
+                this._currNode = null;
+                this._currData = null;
+            },
+
+            _subscribeToPoints: function (node) {
+
+                var self = this;
+
+                node.on('point-mouseover', function (sender, e) {
+                    self._showTooltip(e);
+                });
+
+                node.on('point-mouseout', function (sender, e) {
+                    self._hideTooltip();
+                });
+            },
+
+            _subscribeToArea: function (node) {
+
+                var self = this;
+
+                var isCodeEmpty = !node.getScale('code').dim;
+                if (isCodeEmpty) {
+                    return;
+                }
+
+                node.on('area-click', function (sender, e) {
+
+                    self._currNode = sender;
+
+                    if (!e.data) {
+                        self._showTooltip(e);
+                        self._hideTooltip(false);
+                        self._blurSelection();
+                    } else if (self._currData === e.data) {
+                        self._hideTooltip(true);
+                        self._blurSelection();
+                    } else {
+                        node.fire('highlight-area', equalFilter(e.data));
+                        self._showTooltip(e);
+                    }
+                });
+            }
         };
 
         return plugin;
