@@ -19,7 +19,11 @@ export class Interval extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale)
+            .regScale('size', this.size)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {

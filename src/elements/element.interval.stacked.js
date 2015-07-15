@@ -97,7 +97,11 @@ export class StackedInterval extends Element {
                 mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
             });
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale)
+            .regScale('size', this.size)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {

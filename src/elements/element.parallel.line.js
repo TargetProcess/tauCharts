@@ -40,7 +40,9 @@ export class ParallelLine extends Element {
 
         this.xBase = ((p) => colsMap[p]);
 
-        return this;
+        return this
+            .regScale('columns', this.scalesMap)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {

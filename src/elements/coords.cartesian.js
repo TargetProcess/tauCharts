@@ -117,7 +117,9 @@ export class Cartesian extends Element {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale);
     }
 
     drawFrames(frames, continuation) {

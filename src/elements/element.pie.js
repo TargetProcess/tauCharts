@@ -26,7 +26,10 @@ export class Pie extends Element {
         this.labelScale = fnCreateScale('value', config.label);
         this.colorScale = fnCreateScale('color', config.color, {});
 
-        return this;
+        return this
+            .regScale('proportion', this.proportionScale)
+            .regScale('label', this.labelScale)
+            .regScale('color', this.colorScale);
     }
 
     drawFrames(frames) {
