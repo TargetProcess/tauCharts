@@ -11,6 +11,7 @@ d3.labeler = d3Labeler;
 
 const avgCharSize = 5.5;
 const iterationsCount = 10;
+const pointOpacity = 0.5;
 
 var hierarchy = [
 
@@ -46,6 +47,7 @@ export class GeoMap extends Element {
         this.contourToFill = null;
 
         this.on('highlight-area', (sender, e) => this._highlightArea(e));
+        this.on('highlight-point', (sender, e) => this._highlightPoint(e));
     }
 
     createScales(fnCreateScale) {
@@ -416,7 +418,7 @@ export class GeoMap extends Element {
                     r: ({data: d}) => sizeScale(d[sizeScale.dim]),
                     transform: ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
                     class: ({data: d}) => colorScale(d[colorScale.dim]),
-                    opacity: 0.5
+                    opacity: pointOpacity
                 })
                 .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
                 .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
@@ -486,6 +488,14 @@ export class GeoMap extends Element {
         var contourToFill = this.contourToFill;
         node.selectAll(`.map-contour-${contourToFill}`)
             .classed('map-contour-highlighted', (d) => filter(this._resolveFeature(d)));
+    }
+
+    _highlightPoint(filter) {
+        this.config
+            .options
+            .container
+            .selectAll('circle')
+            .attr('opacity', ({data:d}) => (filter(d) ? pointOpacity : 0.1));
     }
 
     _createProjection(topoJSONData, topContour, center) {

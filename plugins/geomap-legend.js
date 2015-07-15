@@ -71,6 +71,24 @@
                             function (e, currentTarget) {
                                 this._toggleLegendItem(currentTarget);
                             }.bind(this));
+
+                        _delegateEvent(
+                            this._container,
+                            'mouseover',
+                            'graphical-report__legend__item-color',
+                            function (e, currentTarget) {
+                                this._highlightToggle(currentTarget, true);
+                            }.bind(this)
+                        );
+
+                        _delegateEvent(
+                            this._container,
+                            'mouseout',
+                            'graphical-report__legend__item-color',
+                            function (e, currentTarget) {
+                                this._highlightToggle(currentTarget, false);
+                            }.bind(this)
+                        );
                     }
                 }
             },
@@ -245,6 +263,22 @@
                         }
                     });
                 }
+            },
+
+            _highlightToggle: function (target, doHighlight) {
+                var scaleId = target.getAttribute('data-scale-id');
+                var dim = target.getAttribute('data-dim');
+                var val = target.getAttribute('data-value');
+
+                this._chart
+                    .select(function (unit) {
+                        return unit.config.color === scaleId;
+                    })
+                    .forEach(function (unit) {
+                        unit.fire('highlight-point', function (row) {
+                            return doHighlight ? (row[dim] == val) : true;
+                        });
+                    });
             },
 
             _generateColorMap: function (data, dim) {
