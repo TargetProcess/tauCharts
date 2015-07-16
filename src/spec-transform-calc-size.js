@@ -118,13 +118,14 @@ export class SpecTransformCalcSize {
                 }, {});
         };
 
-        var calcScaleSize = (xScale, maxTickText) => {
+        var calcScaleSize = (scaleInfo, maxTickText) => {
 
             var r = 0;
 
-            if (['ordinal', 'period'].indexOf(xScale.scaleType) >= 0) {
-                var domain = xScale.domain();
-                r = maxTickText * domain.length;
+            var isDiscrete = (['ordinal', 'period'].indexOf(scaleInfo.scaleType) >= 0);
+
+            if (isDiscrete) {
+                r = maxTickText * scaleInfo.domain().length;
             } else {
                 r = maxTickText * 4;
             }
@@ -145,7 +146,7 @@ export class SpecTransformCalcSize {
 
             if (root.units[0].type !== 'COORDS.RECT') {
 
-                var xScale = chart.getLogicalScaleByName(xCfg, frame);
+                var xScale = chart.getScaleInfo(xCfg, frame);
                 return resScaleSize + calcScaleSize(xScale, xSize);
 
             } else {

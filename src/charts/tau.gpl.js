@@ -206,6 +206,8 @@ export class GPL extends Emitter {
                 })
                 .reduce(pipeReducer, data);
         };
+
+        // TODO: remove [data] property - use [take()] method in place
         frame.data = frame.take();
         return frame;
     }

@@ -709,7 +709,7 @@ export class SpecTransformAutoLayout {
             rule.name,
             spec.settings,
             spec,
-            (type, alias) => chart.getLogicalScaleByName(alias || `${type}:default`)
+            (type, alias) => chart.getScaleInfo(alias || `${type}:default`)
         );
     }
 }

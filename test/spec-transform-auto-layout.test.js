@@ -72,7 +72,7 @@ define(function (require) {
             var factory = new ScalesFactory(scalesRegistry, spec.sources, spec.scales);
 
             return {
-                getLogicalScaleByName(name, frame) {
+                getScaleInfo(name, frame) {
                     return factory.createScaleByName(name, frame);
                 }
             };

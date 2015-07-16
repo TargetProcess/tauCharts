@@ -197,8 +197,12 @@ export class Plot extends Emitter {
         this.fire('render', this._svg);
     }
 
-    getLogicalScaleByName(name, frame = null) {
+    getScaleInfo(name, frame = null) {
         return this._scalesHub ? this._scalesHub.createScaleByName(name, frame) : null;
+    }
+
+    getDataFrame(params) {
+
     }
 
     getSourceFiltersIterator(rejectFiltersPredicate) {
