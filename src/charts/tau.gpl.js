@@ -3,6 +3,7 @@ import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
+import {DataFrame} from '../data-frame';
 
 var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
@@ -178,34 +179,10 @@ export class GPL extends Emitter {
     }
 
     _datify(frame) {
-        var data = this.sources[frame.source].data;
-        var trans = this.transformations;
-        var pipeReducer = (data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args);
-        frame.hash = () => utils.generateHash([frame.pipe, frame.key, frame.source].map(JSON.stringify).join(''));
-        frame.take = () => frame.pipe.reduce(pipeReducer, data);
-        frame.partByDims = (dims) => {
-            return frame
-                .pipe
-                .map((f) => {
-                    var r = {};
-                    if (f.type === 'where' && f.args) {
-                        r.type = f.type;
-                        r.args = dims.reduce(
-                            (memo, d) => {
-                                if (f.args.hasOwnProperty(d)) {
-                                    memo[d] = f.args[d];
-                                }
-                                return memo;
-                            },
-                            {});
-                    } else {
-                        r = f;
-                    }
-
-                    return r;
-                })
-                .reduce(pipeReducer, data);
-        };
+        var df = new DataFrame(frame, this.sources[frame.source].data, this.transformations);
+        frame.hash = () => df.hash();
+        frame.take = () => df.take();
+        frame.partByDims = (dims) => df.partByDims(dims);
 
         // TODO: remove [data] property - use [take()] method in place
         frame.data = frame.take();
@@ -216,13 +193,15 @@ export class GPL extends Emitter {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;
-        var bInherit = (expr.inherit !== false); // true by default
+        var bInherit = expr.inherit !== false; // true by default
         var funcArgs = expr.params;
 
-        var src = this.sources[srcAlias];
-        var dataFn = bInherit ?
-            (() => parentPipe.reduce((data, cfg) => this.transformations[cfg.type](data, cfg.args), src.data)) :
-            (() => src.data);
+        var frameConfig = {
+            source: srcAlias,
+            pipe: bInherit ? parentPipe : []
+        };
+
+        var dataFn = () => this._datify(frameConfig).take();
 
         var func = FramesAlgebra[funcName];
 
