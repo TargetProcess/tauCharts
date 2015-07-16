@@ -115,8 +115,8 @@
                 '</div>'
             ].join('')),
             _itemFillTemplate: _.template([
-                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 20px 10px 40px;">',
-                '<div class="graphical-report__legend__guide__wrap" style="top:0">',
+                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
+                '<div class="graphical-report__legend__guide__wrap" style="top:0;left:0;">',
                 '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
                 '   <span style="padding-left: 20px"><%=label%></span>',
                 '</div>',
