@@ -108,6 +108,7 @@
                             };
                         }(this._cursor))
                     });
+                this._chart.refresh();
             },
 
             onRender: function (chart) {

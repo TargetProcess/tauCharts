@@ -167,6 +167,7 @@
                     target.classList.add('disabled');
                     this._currentFilters[value] = chart.addFilter(filter);
                 }
+                chart.refresh();
             },
 
             _isNeedLegend: function (chart) {
@@ -257,7 +258,7 @@
                         var label = _.escape(isEmpty(item.label) ? ('No ' + colorScaleName) : item.label);
                         data.items.push(this._itemTemplate({
                             color: item.color,
-                            classDisabled: this._currentFilters[value] ? 'disabled' : '',
+                            classDisabled: this._currentFilters.hasOwnProperty(value) ? 'disabled' : '',
                             label: label,
                             value: _.escape(value)
                         }));

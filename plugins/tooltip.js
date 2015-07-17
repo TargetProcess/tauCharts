@@ -264,6 +264,7 @@
                         };
                     }(this._currentElement))
                 });
+                this._chart.refresh();
                 this.onExcludeData(this._currentElement);
             },
             _calculateLength: function (x1, y1, x2, y2) {

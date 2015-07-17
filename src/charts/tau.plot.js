@@ -278,7 +278,6 @@ export class Plot extends Emitter {
         var id = this._filtersStore.tick++;
         filter.id = id;
         filters.push(filter);
-        this.refresh();
         return id;
     }
 
@@ -286,7 +285,7 @@ export class Plot extends Emitter {
         _.each(this._filtersStore.filters, (filters, key) => {
             this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
         });
-        this.refresh();
+        return this;
     }
 
     refresh() {

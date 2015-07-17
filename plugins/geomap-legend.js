@@ -254,8 +254,6 @@
                     this._chart.removeFilter(filterId);
                 } else {
                     target.classList.add('disabled');
-                    state[key] = 1;
-                    // TODO: remove [refresh] call from [addFilter] method
                     state[key] = this._chart.addFilter({
                         tag: 'legend',
                         predicate: function (row) {
@@ -263,6 +261,7 @@
                         }
                     });
                 }
+                this._chart.refresh();
             },
 
             _highlightToggle: function (target, doHighlight) {

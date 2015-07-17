@@ -161,6 +161,7 @@
                             };
                         }(this._currData))
                     });
+                this._chart.refresh();
             },
 
             _blurSelection: function () {
