@@ -160,9 +160,10 @@ export class GPL extends Emitter {
         unitNode.parentUnit = rootUnit;
         unitNode
             .createScales((type, alias, dynamicProps) => {
+                var key = (alias || `${type}:default`);
                 return self
                     .scalesHub
-                    .createScaleByName((alias || `${type}:default`), rootFrame)
+                    .createScaleInfo(self.scales[key], rootFrame)
                     .create(dynamicProps);
             })
             .drawFrames(unitConfig.frames, (function (rootUnit) {
@@ -181,11 +182,13 @@ export class GPL extends Emitter {
     _datify(frame) {
         var df = new DataFrame(frame, this.sources[frame.source].data, this.transformations);
         frame.hash = () => df.hash();
-        frame.take = () => df.take();
-        frame.partByDims = (dims) => df.partByDims(dims);
+        frame.full = () => df.full();
+        frame.take = (mapper) => df.take(mapper);
+        frame.part = (mapper) => df.part(mapper);
 
         // TODO: remove [data] property - use [take()] method in place
         frame.data = frame.take();
+
         return frame;
     }
 

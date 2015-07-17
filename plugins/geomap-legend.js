@@ -281,19 +281,15 @@
                     });
             },
 
-            _generateColorMap: function (data, dim) {
+            _generateColorMap: function (domain) {
 
                 var limit = 20;
+
                 var defBrewer = _.times(limit, function (i) {
                     return 'color20-' + (1 + i);
                 });
 
-                return _(data)
-                    .chain()
-                    .pluck(dim)
-                    .uniq()
-                    .value()
-                    .reduce(function (memo, val, i) {
+                return domain.reduce(function (memo, val, i) {
                         memo[val] = defBrewer[i % limit];
                         return memo;
                     },
@@ -302,14 +298,25 @@
 
             _assignStaticBrewersOrEx: function () {
                 var self = this;
-                var spec = self._chart.getSpec();
-                var sources = self._chart.getDataSources({excludeFilter: ['legend']});
-
                 self._color.forEach(function (c) {
-                    var scaleConfig = spec.scales[c];
-                    scaleConfig.brewer = scaleConfig.brewer ?
-                        scaleConfig.brewer :
-                        self._generateColorMap(sources[scaleConfig.source].data, scaleConfig.dim);
+                    var scaleConfig = self
+                        ._chart
+                        .getSpec()
+                        .scales[c];
+
+                    var fullLegendDataSource = self
+                        ._chart
+                        .getDataSources({excludeFilter: ['legend']});
+
+                    var fullLegendDomain = self
+                        ._chart
+                        .getScaleFactory(fullLegendDataSource)
+                        .createScaleInfoByName(c)
+                        .domain();
+
+                    if (!scaleConfig.brewer) {
+                        scaleConfig.brewer = self._generateColorMap(fullLegendDomain);
+                    }
                 });
             }
         };

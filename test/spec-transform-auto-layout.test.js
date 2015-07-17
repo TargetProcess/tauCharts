@@ -73,7 +73,7 @@ define(function (require) {
 
             return {
                 getScaleInfo(name, frame) {
-                    return factory.createScaleByName(name, frame);
+                    return factory.createScaleInfoByName(name, frame);
                 }
             };
         };

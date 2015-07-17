@@ -1,21 +1,20 @@
+import {DataFrame} from './data-frame';
+
 export class ScalesFactory {
 
     constructor(scalesRegistry, sources, scales) {
         this.registry = scalesRegistry;
         this.sources = sources;
         this.scales = scales;
-
-        this.items = {};
-        this.cache = {};
     }
 
     create(scaleConfig, frame, dynamicConfig) {
         return this
-            .createScale(scaleConfig, frame)
+            .createScaleInfo(scaleConfig, frame)
             .create(dynamicConfig);
     }
 
-    createScale(scaleConfig, frame) {
+    createScaleInfo(scaleConfig, dataFrame = null) {
 
         var ScaleClass = this.registry.get(scaleConfig.type);
 
@@ -24,31 +23,15 @@ export class ScalesFactory {
 
         var type = (this.sources[src].dims[dim] || {}).type;
         var data = (this.sources[src].data);
-        var xSrc = {
-            full: (() => (data)),
-            part: (() => (frame ? frame.take() : data)),
-            partByDims: ((dims) => (frame ? frame.partByDims(dims) : data))
-        };
+
+        var frame = dataFrame || (new DataFrame({source: src}, data));
 
         scaleConfig.dimType = type;
 
-        return (new ScaleClass(xSrc, scaleConfig));
+        return (new ScaleClass(frame, scaleConfig));
     }
 
-    createScaleByName(name, dataFrame = null) {
-
-        var frameHash = dataFrame ? dataFrame.hash() : '';
-
-        var key = `${name}-${frameHash}`;
-        var instance;
-
-        if (this.cache.hasOwnProperty(key)) {
-            instance = this.cache[key];
-        } else {
-            instance = this.createScale(this.scales[name], dataFrame);
-            this.items[name] = instance;
-        }
-
-        return instance;
+    createScaleInfoByName(name, dataFrame = null) {
+        return this.createScaleInfo(this.scales[name], dataFrame);
     }
 }

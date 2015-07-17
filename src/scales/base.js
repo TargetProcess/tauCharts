@@ -13,15 +13,36 @@ var generateHashFunction = (varSet, interval) => utils.generateHash([varSet, int
 
 export class BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    constructor(dataFrame, scaleConfig) {
 
         this._fields = {};
 
         var data;
         if (_.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
-            data = xSource.partByDims(scaleConfig.fitToFrameByDims);
+
+            let leaveDimsInWhereArgsOrEx = (f) => {
+                var r = {};
+                if (f.type === 'where' && f.args) {
+                    r.type = f.type;
+                    r.args = scaleConfig
+                        .fitToFrameByDims
+                        .reduce((memo, d) => {
+                            if (f.args.hasOwnProperty(d)) {
+                                memo[d] = f.args[d];
+                            }
+                            return memo;
+                        },
+                        {});
+                } else {
+                    r = f;
+                }
+
+                return r;
+            };
+
+            data = dataFrame.part(leaveDimsInWhereArgsOrEx);
         } else {
-            data = xSource.full();
+            data = dataFrame.full();
         }
 
         var vars = this.getVarSet(data, scaleConfig);

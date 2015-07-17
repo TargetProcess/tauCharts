@@ -3,6 +3,7 @@ import {Emitter} from '../event';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
+import {DataFrame} from '../data-frame';
 import {CSS_PREFIX} from '../const';
 import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
@@ -187,7 +188,7 @@ export class Plot extends Emitter {
 
         this.fire('specready', this._liveSpec);
 
-        new GPL(this._liveSpec, this._scalesHub, unitsRegistry)
+        new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry)
             .renderTo(content, this._liveSpec.settings.size);
 
         var svgXElement = d3.select(content).select('svg');
@@ -197,12 +198,18 @@ export class Plot extends Emitter {
         this.fire('render', this._svg);
     }
 
-    getScaleInfo(name, frame = null) {
-        return this._scalesHub ? this._scalesHub.createScaleByName(name, frame) : null;
+    getScaleFactory(dataSources = null) {
+        return new ScalesFactory(
+            scalesRegistry,
+            dataSources || this._liveSpec.sources,
+            this._liveSpec.scales
+        );
     }
 
-    getDataFrame(params) {
-
+    getScaleInfo(name, dataFrame = null) {
+        return this
+            .getScaleFactory()
+            .createScaleInfoByName(name, dataFrame);
     }
 
     getSourceFiltersIterator(rejectFiltersPredicate) {
@@ -220,14 +227,14 @@ export class Plot extends Emitter {
 
     getDataSources(param = {}) {
 
-        var excludeFiltersBySource = (k) => ((f) => ((_.contains(param.excludeFilter, f.tag)) || f.src !== k));
+        var excludeFiltersByTagAndSource = (k) => ((f) => ((_.contains(param.excludeFilter, f.tag)) || f.src !== k));
 
         return Object
             .keys(this._originData)
             .filter((k) => k !== '?')
             .reduce((memo, k) => {
                 var item = this._originData[k];
-                var filterIterator = this.getSourceFiltersIterator(excludeFiltersBySource(k));
+                var filterIterator = this.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
                 memo[k] = {
                     dims: item.dims,
                     data: item.data.filter(filterIterator)
@@ -249,8 +256,8 @@ export class Plot extends Emitter {
     }
 
     getData(param = {}, src = '/') {
-        var ds = this.getDataSources(param);
-        return ds[src].data;
+        var sources = this.getDataSources(param);
+        return sources[src].data;
     }
 
     setData(data, src = '/') {
