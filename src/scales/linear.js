@@ -25,7 +25,7 @@ export class LinearScale extends BaseScale {
         this.vars = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);
 
         this.addField('scaleType', 'linear')
-            .addField('descrete', false);
+            .addField('discrete', false);
     }
 
     create(interval) {

@@ -11,7 +11,7 @@ export class OrdinalScale extends BaseScale {
         super(xSource, scaleConfig);
 
         this.addField('scaleType', 'ordinal')
-            .addField('descrete', true);
+            .addField('discrete', true);
     }
 
     create(interval) {
