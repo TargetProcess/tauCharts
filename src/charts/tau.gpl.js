@@ -104,25 +104,19 @@ export class GPL extends Emitter {
                     .concat([{type: 'where', args: tuple}])
                     .concat(root.transformation);
 
-                var item = {
+                return self._datify({
+                    key: tuple,
+                    pipe: pipe,
                     source: expr.source,
-                    pipe: pipe
-                };
-
-                if (tuple) {
-                    item.key = tuple;
-                }
-
-                item.units = (root.units) ?
-                    root.units.map((unit) => {
-                        var clone = utils.clone(unit);
-                        // pass guide by reference
-                        clone.guide = unit.guide;
-                        return clone;
-                    }) :
-                    [];
-
-                return self._datify(item);
+                    units: (root.units) ?
+                        root.units.map((unit) => {
+                            var clone = utils.clone(unit);
+                            // pass guide by reference
+                            clone.guide = unit.guide;
+                            return clone;
+                        }) :
+                        []
+                });
             });
         }
 
@@ -180,16 +174,12 @@ export class GPL extends Emitter {
     }
 
     _datify(frame) {
-        var df = new DataFrame(frame, this.sources[frame.source].data, this.transformations);
-        frame.hash = () => df.hash();
-        frame.full = () => df.full();
-        frame.take = (mapper) => df.take(mapper);
-        frame.part = (mapper) => df.part(mapper);
+        var dataFrame = new DataFrame(frame, this.sources[frame.source].data, this.transformations);
 
         // TODO: remove [data] property - use [take()] method in place
-        frame.data = frame.take();
+        dataFrame.data = dataFrame.take();
 
-        return frame;
+        return dataFrame;
     }
 
     _parseExpression(expr, parentPipe) {

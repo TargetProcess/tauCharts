@@ -2,7 +2,12 @@ import {utils} from './utils/utils';
 
 export class DataFrame {
 
-    constructor({key: key, pipe: pipe, source: source}, dataSource, transformations = {}) {
+    constructor({key: key, pipe: pipe, source: source, units: units}, dataSource, transformations = {}) {
+
+        this.key = key;
+        this.pipe = pipe;
+        this.source = source;
+        this.units = units;
 
         this._frame = {key, source, pipe: pipe || []};
         this._data = dataSource;

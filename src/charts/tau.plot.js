@@ -162,7 +162,6 @@ export class Plot extends Emitter {
         this._liveSpec = utils.clone(_.omit(this.configGPL, 'plugins'));
         this._liveSpec.sources = this.getDataSources();
         this._liveSpec.settings = this.configGPL.settings;
-        this._scalesHub = new ScalesFactory(scalesRegistry, this._liveSpec.sources, this._liveSpec.scales);
 
         if (this.isEmptySources(this._liveSpec.sources)) {
             content.innerHTML = this._emptyContainer;
