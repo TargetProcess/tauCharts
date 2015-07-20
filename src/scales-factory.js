@@ -8,12 +8,6 @@ export class ScalesFactory {
         this.scales = scales;
     }
 
-    create(scaleConfig, frame, dynamicConfig) {
-        return this
-            .createScaleInfo(scaleConfig, frame)
-            .create(dynamicConfig);
-    }
-
     createScaleInfo(scaleConfig, dataFrame = null) {
 
         var ScaleClass = this.registry.get(scaleConfig.type);

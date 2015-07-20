@@ -58,8 +58,8 @@ define(function (require) {
                     }
                 });
 
-            var scaleFixedRatio = f.create(
-                {
+            var scaleFixedRatio = f
+                .createScaleInfo({
                     name: 'x1',
                     type: 'ordinal',
                     ratio: {
@@ -68,10 +68,8 @@ define(function (require) {
                     },
                     source: '/',
                     dim: 'x1'
-                },
-                null,
-                [0, 100]
-            );
+                })
+                .create([0, 100]);
 
             expect(scaleFixedRatio('A')).to.deep.equal(40);
             expect(scaleFixedRatio('B')).to.deep.equal(90);
@@ -79,8 +77,8 @@ define(function (require) {
             expect(scaleFixedRatio.stepSize('A')).to.deep.equal(80);
             expect(scaleFixedRatio.stepSize('B')).to.deep.equal(20);
 
-            var scaleDynamicRatio = f.create(
-                {
+            var scaleDynamicRatio = f
+                .createScaleInfo({
                     name: 'x1',
                     type: 'ordinal',
                     ratio: function (key, size, varSet) {
@@ -121,10 +119,8 @@ define(function (require) {
                     },
                     source: '/',
                     dim: 'x1'
-                },
-                null,
-                [0, 100]
-            );
+                })
+                .create([0, 100]);
 
             expect(scaleDynamicRatio('A')).to.deep.equal(34);
             expect(scaleDynamicRatio('B')).to.deep.equal(84);
