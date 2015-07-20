@@ -117,7 +117,7 @@ export class Line extends Element {
         };
 
         var mapper = (f) => {
-            return {data: {tags: f.key || {}, hash: f.hash(), data: f.take()}, uid: options.uid};
+            return {data: {tags: f.key || {}, hash: f.hash(), data: f.part()}, uid: options.uid};
         };
 
         var drawFrame = (tag, id, filter) => {

@@ -133,7 +133,7 @@
                     var key = this._generateKey(unitMeta.config.options.uid);
                     this._unitMeta[key] = unitMeta;
                     var values = unitMeta.config.frames.reduce(function (data, item) {
-                        return data.concat(item.data);
+                        return data.concat(item.part());
                     }, []);
                     this._dataWithCoords[key] = values.map(function (item) {
                         return {

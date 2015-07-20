@@ -26,11 +26,7 @@ export class DataFrame {
         return this._data;
     }
 
-    part(pipeMapper) {
-        return this.take(pipeMapper);
-    }
-
-    take(pipeMapper = (x => x)) {
+    part(pipeMapper = (x => x)) {
         return this
             ._frame
             .pipe

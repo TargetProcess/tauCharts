@@ -380,8 +380,7 @@ export class GeoMap extends Element {
 
         this.groupByCode = frames.reduce(
             (groups, f) => {
-                var data = f.take();
-                return data.reduce(
+                return f.part().reduce(
                     (memo, rec) => {
                         var key = (rec[codeScale.dim] || '').toLowerCase();
                         memo[key] = rec;
@@ -444,7 +443,7 @@ export class GeoMap extends Element {
                 });
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
         var frameGroups = xmap
             .selectAll('.frame-id-' + options.uid)

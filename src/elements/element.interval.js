@@ -76,7 +76,7 @@ export class Interval extends Element {
         var elements = options
             .container
             .selectAll(`.i-role-bar-group`)
-            .data(frames.map((fr)=>({key: fr.key, values: fr.take(), uid: this.config.options.uid})));
+            .data(frames.map((fr)=>({key: fr.key, values: fr.part(), uid: this.config.options.uid})));
         elements
             .exit()
             .remove();

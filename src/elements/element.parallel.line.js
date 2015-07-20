@@ -67,7 +67,7 @@ export class ParallelLine extends Element {
         var updateFrame = function () {
             var backgroundPath = this
                 .selectAll('.background')
-                .data(f => f.take());
+                .data(f => f.part());
             backgroundPath
                 .exit()
                 .remove();
@@ -81,7 +81,7 @@ export class ParallelLine extends Element {
 
             var foregroundPath = this
                 .selectAll('.foreground')
-                .data(f => f.take());
+                .data(f => f.part());
             foregroundPath
                 .exit()
                 .remove();

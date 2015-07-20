@@ -18,7 +18,7 @@ export class StackedInterval extends Element {
         var prop = stackScale.dim;
 
         var groupsSums = cfg.frames.reduce((groups, f) => {
-            var dataFrame = f.take();
+            var dataFrame = f.part();
             var hasErrors = dataFrame.some((d) => (typeof (d[prop]) !== 'number'));
             if (hasErrors) {
                 throw new Error(
@@ -211,7 +211,7 @@ export class StackedInterval extends Element {
                 });
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
         var frameGroups = options.container
             .selectAll(`.frame-id-${uid}`)
             .data(frames.map(mapper), (f) => f.hash);

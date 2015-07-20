@@ -46,7 +46,7 @@ export class Pie extends Element {
         var h = options.height;
         var r = h / 2;
 
-        var data = frames[0].take();
+        var data = frames[0].part();
 
         var vis = options.container
             .append('svg:svg')

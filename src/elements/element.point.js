@@ -122,7 +122,7 @@ export class Point extends Element {
                 });
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
         var frameGroups = options.container
             .selectAll(`.frame-id-${options.uid}`)

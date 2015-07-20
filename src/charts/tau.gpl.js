@@ -174,12 +174,7 @@ export class GPL extends Emitter {
     }
 
     _datify(frame) {
-        var dataFrame = new DataFrame(frame, this.sources[frame.source].data, this.transformations);
-
-        // TODO: remove [data] property - use [take()] method in place
-        dataFrame.data = dataFrame.take();
-
-        return dataFrame;
+        return new DataFrame(frame, this.sources[frame.source].data, this.transformations);
     }
 
     _parseExpression(expr, parentPipe) {
@@ -194,7 +189,7 @@ export class GPL extends Emitter {
             pipe: bInherit ? parentPipe : []
         };
 
-        var dataFn = () => this._datify(frameConfig).take();
+        var dataFn = () => this._datify(frameConfig).part();
 
         var func = FramesAlgebra[funcName];
 
