@@ -180,7 +180,6 @@
 <script src="../plugins/settings.js"></script>
 <script src="../plugins/parallel-brushing.js"></script>
 <script src="../plugins/parallel-tooltip.js"></script>
-<script src="../plugins/parallel-legend.js"></script>
 <script src="../plugins/geomap-tooltip.js"></script>
 <script src="../plugins/geomap-legend.js"></script>
 <script>
@@ -358,7 +357,7 @@
                             }
                         }),
                         tauCharts.api.plugins.get('parallel-tooltip')(),
-                        tauCharts.api.plugins.get('parallel-legend')()
+                        tauCharts.api.plugins.get('geomap-legend')()
                     ]
 
                 }).renderTo('#parallel-container');
@@ -444,7 +443,8 @@
                             hp: [150, 200]
                         }
                     }),
-                    tauCharts.api.plugins.get('parallel-tooltip')()
+                    tauCharts.api.plugins.get('parallel-tooltip')(),
+                    tauCharts.api.plugins.get('geomap-legend')()
                 ]
 
             }).renderTo('#parallel-container1');

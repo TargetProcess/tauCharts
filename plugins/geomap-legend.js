@@ -257,7 +257,7 @@
                     state[key] = this._chart.addFilter({
                         tag: 'legend',
                         predicate: function (row) {
-                            return row[dim] !== val;
+                            return row[dim] != val;
                         }
                     });
                 }
@@ -274,7 +274,7 @@
                         return unit.config.color === scaleId;
                     })
                     .forEach(function (unit) {
-                        unit.fire('highlight-point', function (row) {
+                        unit.fire('highlight', function (row) {
                             return doHighlight ? (row[dim] == val) : true;
                         });
                     });
