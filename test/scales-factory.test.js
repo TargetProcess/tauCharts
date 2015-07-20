@@ -259,6 +259,32 @@ define(function (require) {
             expect(scale3.stepSize(new Date('2015-04-17').getTime()).toFixed(4)).to.equal((100 * 0.5).toFixed(4));
             expect(scale3.stepSize(new Date('2015-04-16')).toFixed(4)).to.equal((100 * 0.1).toFixed(4));
             expect(scale3.stepSize(new Date('2015-04-19')).toFixed(4)).to.equal((100 * 0.4).toFixed(4));
+
+            var scale4Ratio = function (x) {
+
+                var xDate = new Date(x);
+
+                if (xDate.getTime() === new Date('2015-04-17').getTime()) return 0.5;
+                if (xDate.getTime() === new Date('2015-04-16').getTime()) return 0.1;
+                if (xDate.getTime() === new Date('2015-04-19').getTime()) return 0.4;
+            };
+
+            var scale4 = new PeriodScale(
+                xSrc,
+                {
+                    dim: 't',
+                    ratio: scale4Ratio,
+                    fitToFrameByDims: []
+                }).create([0, 100]);
+
+            expect(scale4.domain().length).to.equal(3);
+            expect(scale4.stepSize(new Date('2015-04-17').getTime()).toFixed(4)).to.equal((100 * 0.5).toFixed(4));
+            expect(scale4.stepSize(new Date('2015-04-16')).toFixed(4)).to.equal((100 * 0.1).toFixed(4));
+            expect(scale4.stepSize(new Date('2015-04-19')).toFixed(4)).to.equal((100 * 0.4).toFixed(4));
+
+            expect(scale4(new Date('2015-04-19').getTime())).to.equal(20);
+            expect(scale4(new Date('2015-04-17').getTime())).to.equal(65);
+            expect(scale4(new Date('2015-04-16').getTime())).to.equal(95);
         });
 
         it('should support [linear] scale', function () {
@@ -320,6 +346,23 @@ define(function (require) {
         });
 
         it('should support [color] scale', function () {
+
+            var scaleEmpty = new ColorScale(
+                {
+                    part: function () {
+                        return [];
+                    },
+                    full: function () {
+                        return [];
+                    }
+                },
+                {
+                    dim: 'x',
+                    order: ['low', 'medium', 'high']
+                }).create();
+
+            expect(scaleEmpty.domain()).to.deep.equal([]);
+            expect(scaleEmpty('any')).to.equal('color-default');
 
             var scale0 = new ColorScale(
                 xSrc,
