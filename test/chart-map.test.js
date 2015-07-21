@@ -315,6 +315,48 @@ define(function (require) {
 
             expect(actualEvents.join('/')).to.equal('point-mouseover/point-click/point-mouseout');
 
+            var highlightedPoints0 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints0[0].length).to.equal(0);
+
+            geoNode.fire('highlight', function (row) {
+                return row && row.cc == 'BLR';
+            });
+
+            var highlightedPoints1 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints1[0].length).to.equal(1);
+
+            // alias for [highlight] event
+            geoNode.fire('highlight-point', function (row) {
+                return row && row.cc != 'BLR';
+            });
+
+            var highlightedPoints2 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints2[0].length).to.equal(2);
+
+            geoNode.fire('highlight-point', function (row) {
+                return false;
+            });
+
+            var highlightedPoints3 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints3[0].length).to.equal(0);
+
+            expect(geoNode.getScale('latitude').scaleType).to.equal('linear');
+            expect(geoNode.getScale('longitude').scaleType).to.equal('linear');
+            expect(geoNode.getScale('size').scaleType).to.equal('size');
+            expect(geoNode.getScale('color').scaleType).to.equal('color');
+            expect(geoNode.getScale('fill').scaleType).to.equal('fill');
+            expect(geoNode.getScale('code').scaleType).to.equal('value');
+
+            expect(geoNode.getScale('nope')).to.equal(null);
+
             done();
         });
 

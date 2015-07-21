@@ -495,6 +495,7 @@ export class GeoMap extends Element {
             .options
             .container
             .selectAll('circle')
+            .classed('map-point-highlighted', ({data:d}) => filter(d))
             .attr('opacity', ({data:d}) => (filter(d) ? pointOpacity : 0.1));
     }
 
