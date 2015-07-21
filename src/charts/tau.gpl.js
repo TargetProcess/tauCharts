@@ -1,29 +1,25 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {unitsRegistry} from '../units-registry';
-import {getLayout} from '../utils/layuot-template';
-import {ScalesFactory} from '../scales-factory';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
+import {DataFrame} from '../data-frame';
 
 var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {
 
-    constructor(config) {
+    constructor(config, scalesRegistryInstance, unitsRegistry) {
 
         super();
 
         this.config = config;
 
         this.config.settings = this.config.settings || {};
-
-        this.unitSet = config.unitsRegistry || unitsRegistry;
-
         this.sources = config.sources;
 
-        this.scalesCreator = new ScalesFactory(config.sources);
+        this.unitSet = unitsRegistry;
+        this.scalesHub = scalesRegistryInstance;
 
         this.scales = config.scales;
 
@@ -108,25 +104,19 @@ export class GPL extends Emitter {
                     .concat([{type: 'where', args: tuple}])
                     .concat(root.transformation);
 
-                var item = {
+                return self._datify({
+                    key: tuple,
+                    pipe: pipe,
                     source: expr.source,
-                    pipe: pipe
-                };
-
-                if (tuple) {
-                    item.key = tuple;
-                }
-
-                item.units = (root.units) ?
-                    root.units.map((unit) => {
-                        var clone = utils.clone(unit);
-                        // pass guide by reference
-                        clone.guide = unit.guide;
-                        return clone;
-                    }) :
-                    [];
-
-                return self._datify(item);
+                    units: (root.units) ?
+                        root.units.map((unit) => {
+                            var clone = utils.clone(unit);
+                            // pass guide by reference
+                            clone.guide = unit.guide;
+                            return clone;
+                        }) :
+                        []
+                });
             });
         }
 
@@ -163,11 +153,12 @@ export class GPL extends Emitter {
         var unitNode = new UnitClass(unitConfig);
         unitNode.parentUnit = rootUnit;
         unitNode
-            .drawLayout((type, alias, settings) => {
-
-                var name = alias ? alias : `${type}:default`;
-
-                return self.scalesCreator.create(self.scales[name], rootFrame, settings);
+            .createScales((type, alias, dynamicProps) => {
+                var key = (alias || `${type}:default`);
+                return self
+                    .scalesHub
+                    .createScaleInfo(self.scales[key], rootFrame)
+                    .create(dynamicProps);
             })
             .drawFrames(unitConfig.frames, (function (rootUnit) {
                 return function (rootConf, rootFrame) {
@@ -183,49 +174,22 @@ export class GPL extends Emitter {
     }
 
     _datify(frame) {
-        var data = this.sources[frame.source].data;
-        var trans = this.transformations;
-        var pipeReducer = (data, pipeCfg) => trans[pipeCfg.type](data, pipeCfg.args);
-        frame.hash = () => utils.generateHash([frame.pipe, frame.key, frame.source].map(JSON.stringify).join(''));
-        frame.take = () => frame.pipe.reduce(pipeReducer, data);
-        frame.partByDims = (dims) => {
-            return frame
-                .pipe
-                .map((f) => {
-                    var r = {};
-                    if (f.type === 'where' && f.args) {
-                        r.type = f.type;
-                        r.args = dims.reduce(
-                            (memo, d) => {
-                                if (f.args.hasOwnProperty(d)) {
-                                    memo[d] = f.args[d];
-                                }
-                                return memo;
-                            },
-                            {});
-                    } else {
-                        r = f;
-                    }
-
-                    return r;
-                })
-                .reduce(pipeReducer, data);
-        };
-        frame.data = frame.take();
-        return frame;
+        return new DataFrame(frame, this.sources[frame.source].data, this.transformations);
     }
 
     _parseExpression(expr, parentPipe) {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;
-        var bInherit = (expr.inherit !== false); // true by default
+        var bInherit = expr.inherit !== false; // true by default
         var funcArgs = expr.params;
 
-        var src = this.sources[srcAlias];
-        var dataFn = bInherit ?
-            (() => parentPipe.reduce((data, cfg) => this.transformations[cfg.type](data, cfg.args), src.data)) :
-            (() => src.data);
+        var frameConfig = {
+            source: srcAlias,
+            pipe: bInherit ? parentPipe : []
+        };
+
+        var dataFn = () => this._datify(frameConfig).part();
 
         var func = FramesAlgebra[funcName];
 

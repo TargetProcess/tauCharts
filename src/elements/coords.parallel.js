@@ -25,7 +25,7 @@ export class Parallel extends Element {
         this.on('force-brush', (sender, e) => this._forceBrushing(e));
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var cfg = this.config;
 
@@ -56,7 +56,7 @@ export class Parallel extends Element {
 
         this.xBase = ((p) => colsMap[p]);
 
-        return this;
+        return this.regScale('columns', this.columnsScalesMap);
     }
 
     drawFrames(frames, continuation) {
@@ -205,7 +205,7 @@ export class Parallel extends Element {
                 .map((k) => {
                     var ext = columnsBrushes[k].extent();
                     var rng = [];
-                    if (columnsScalesMap[k].descrete) {
+                    if (columnsScalesMap[k].discrete) {
                         rng = columnsScalesMap[k]
                             .domain()
                             .filter((val) => {
@@ -218,7 +218,7 @@ export class Parallel extends Element {
 
                     return {
                         dim: columnsScalesMap[k].dim,
-                        func: columnsScalesMap[k].descrete ? 'inset' : 'between',
+                        func: columnsScalesMap[k].discrete ? 'inset' : 'between',
                         args: rng
                     };
                 });
@@ -260,7 +260,7 @@ export class Parallel extends Element {
             .forEach((k) => {
                 var brushExt = colsBrushSettings[k];
                 var ext = [];
-                if (columnsScalesMap[k].descrete) {
+                if (columnsScalesMap[k].discrete) {
                     var positions = brushExt.map(columnsScalesMap[k]).filter(x => (x >= 0));
                     var stepSize = columnsScalesMap[k].stepSize() / 2;
                     ext = [Math.min(...positions) - stepSize, Math.max(...positions) + stepSize];

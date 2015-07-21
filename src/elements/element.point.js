@@ -1,7 +1,12 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 
-export class Point {
+export class Point extends Element {
+
     constructor(config) {
+
+        super(config);
+
         this.config = config;
 
         this.config.guide = this.config.guide || {};
@@ -25,7 +30,7 @@ export class Point {
         );
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 
@@ -57,7 +62,11 @@ export class Point {
                 mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
             });
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale)
+            .regScale('size', this.size)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {
@@ -113,7 +122,7 @@ export class Point {
                 });
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
         var frameGroups = options.container
             .selectAll(`.frame-id-${options.uid}`)

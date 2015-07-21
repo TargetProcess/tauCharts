@@ -66,7 +66,9 @@ var ChartMap = (config) => {
             longitude: scalesPool('linear', config.longitude, {autoScale: false}),
 
             guide: guide
-        }
+        },
+
+        plugins: config.plugins || []
     };
 };
 

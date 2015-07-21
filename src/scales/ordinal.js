@@ -6,6 +6,14 @@ import {default as d3} from 'd3';
 
 export class OrdinalScale extends BaseScale {
 
+    constructor(xSource, scaleConfig) {
+
+        super(xSource, scaleConfig);
+
+        this.addField('scaleType', 'ordinal')
+            .addField('discrete', true);
+    }
+
     create(interval) {
 
         var props = this.scaleConfig;
@@ -47,9 +55,7 @@ export class OrdinalScale extends BaseScale {
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
-        scale.scaleType = 'ordinal';
         scale.stepSize = (x) => (fnRatio(x) * size);
-        scale.descrete = true;
 
         return this.toBaseScale(scale, interval);
     }

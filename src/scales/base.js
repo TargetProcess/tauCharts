@@ -13,13 +13,36 @@ var generateHashFunction = (varSet, interval) => utils.generateHash([varSet, int
 
 export class BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    constructor(dataFrame, scaleConfig) {
+
+        this._fields = {};
 
         var data;
         if (_.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
-            data = xSource.partByDims(scaleConfig.fitToFrameByDims);
+
+            let leaveDimsInWhereArgsOrEx = (f) => {
+                var r = {};
+                if (f.type === 'where' && f.args) {
+                    r.type = f.type;
+                    r.args = scaleConfig
+                        .fitToFrameByDims
+                        .reduce((memo, d) => {
+                            if (f.args.hasOwnProperty(d)) {
+                                memo[d] = f.args[d];
+                            }
+                            return memo;
+                        },
+                        {});
+                } else {
+                    r = f;
+                }
+
+                return r;
+            };
+
+            data = dataFrame.part(leaveDimsInWhereArgsOrEx);
         } else {
-            data = xSource.full();
+            data = dataFrame.full();
         }
 
         var vars = this.getVarSet(data, scaleConfig);
@@ -30,18 +53,40 @@ export class BaseScale {
 
         this.vars = vars;
         this.scaleConfig = scaleConfig;
+
+        this.addField('dim', this.scaleConfig.dim)
+            .addField('scaleDim', this.scaleConfig.dim)
+            .addField('scaleType', this.scaleConfig.type)
+            .addField('source', this.scaleConfig.source)
+            .addField('domain', (() => this.vars));
+    }
+
+    domain() {
+        return this.vars;
+    }
+
+    addField(key, val) {
+        this._fields[key] = val;
+        this[key] = val;
+        return this;
+    }
+
+    getField(key) {
+        return this._fields[key];
     }
 
     toBaseScale(func, dynamicProps = null) {
 
-        func.dim        = this.scaleConfig.dim;
-        func.scaleDim   = this.scaleConfig.dim;
-        func.source     = this.scaleConfig.source;
+        var scaleFn = Object
+            .keys(this._fields)
+            .reduce((memo, k) => {
+                memo[k] = this._fields[k];
+                return memo;
+            }, func);
 
-        func.domain     = (() => this.vars);
-        func.getHash    = (() => generateHashFunction(this.vars, dynamicProps));
+        scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
 
-        return func;
+        return scaleFn;
     }
 
     getVarSet(arr, scale) {

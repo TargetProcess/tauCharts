@@ -1,9 +1,13 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 
-export class Pie {
+export class Pie extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = this.config.guide || {};
         this.config.guide = _.defaults(
@@ -14,7 +18,7 @@ export class Pie {
         );
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 
@@ -22,7 +26,10 @@ export class Pie {
         this.labelScale = fnCreateScale('value', config.label);
         this.colorScale = fnCreateScale('color', config.color, {});
 
-        return this;
+        return this
+            .regScale('proportion', this.proportionScale)
+            .regScale('label', this.labelScale)
+            .regScale('color', this.colorScale);
     }
 
     drawFrames(frames) {
@@ -39,7 +46,7 @@ export class Pie {
         var h = options.height;
         var r = h / 2;
 
-        var data = frames[0].take();
+        var data = frames[0].part();
 
         var vis = options.container
             .append('svg:svg')

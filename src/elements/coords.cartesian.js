@@ -1,5 +1,6 @@
 import {default as d3} from 'd3';
 import {default as _} from 'underscore';
+import {Element} from './element';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
@@ -12,9 +13,12 @@ import {
     d3_decorator_avoid_labels_collisions
     } from '../utils/d3-decorators';
 
-export class Cartesian {
+export class Cartesian extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
 
         this.config.guide = _.defaults(
@@ -97,7 +101,7 @@ export class Cartesian {
         }
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var node = this.config;
 
@@ -113,7 +117,9 @@ export class Cartesian {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale);
     }
 
     drawFrames(frames, continuation) {

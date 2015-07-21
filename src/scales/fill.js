@@ -23,17 +23,21 @@ export class FillScale extends BaseScale {
         ];
 
         this.vars = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);
-    }
-
-    create() {
-
-        var props = this.scaleConfig;
-        var varSet = this.vars;
 
         var opacityStep = (1 - 0.2) / 9;
         var defBrewer = _.times(10, (i) => `rgba(90,180,90,${(0.2 + i * opacityStep).toFixed(2)})`);
 
         var brewer = props.brewer || defBrewer;
+
+        this.addField('scaleType', 'fill')
+            .addField('brewer', brewer);
+    }
+
+    create() {
+
+        var varSet = this.vars;
+
+        var brewer = this.getField('brewer');
 
         if (!_.isArray(brewer)) {
             throw new Error('This brewer is not supported');
@@ -46,8 +50,6 @@ export class FillScale extends BaseScale {
             .reduce((memo, i) => memo.concat([varSet[0] + (i * step)]), []);
 
         var func = d3.scale.threshold().domain(domain).range(brewer);
-
-        func.scaleType = 'fill';
 
         return this.toBaseScale(func);
     }

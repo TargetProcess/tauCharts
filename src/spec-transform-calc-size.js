@@ -91,7 +91,7 @@ export class SpecTransformCalcSize {
         this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
     }
 
-    transform() {
+    transform(chart) {
 
         var specRef = this.spec;
 
@@ -107,8 +107,6 @@ export class SpecTransformCalcSize {
 
         var scales = specRef.scales;
 
-        var scalesCreator = new ScalesFactory(specRef.sources);
-
         var groupFramesBy = (frames, dim) => {
             return frames
                 .reduce((memo, f) => {
@@ -120,13 +118,14 @@ export class SpecTransformCalcSize {
                 }, {});
         };
 
-        var calcScaleSize = (xScale, maxTickText) => {
+        var calcScaleSize = (scaleInfo, maxTickText) => {
 
             var r = 0;
 
-            if (['ordinal', 'period'].indexOf(xScale.scaleType) >= 0) {
-                var domain = xScale.domain();
-                r = maxTickText * domain.length;
+            var isDiscrete = (['ordinal', 'period'].indexOf(scaleInfo.scaleType) >= 0);
+
+            if (isDiscrete) {
+                r = maxTickText * scaleInfo.domain().length;
             } else {
                 r = maxTickText * 4;
             }
@@ -136,8 +135,8 @@ export class SpecTransformCalcSize {
 
         var calcSizeRecursively = (prop, root, takeStepSizeStrategy, frame = null) => {
 
-            var xCfg = (prop === 'x') ? scales[root.x] : scales[root.y];
-            var yCfg = (prop === 'x') ? scales[root.y] : scales[root.x];
+            var xCfg = (prop === 'x') ? root.x : root.y;
+            var yCfg = (prop === 'x') ? root.y : root.x;
             var guide = root.guide;
             var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
 
@@ -147,12 +146,12 @@ export class SpecTransformCalcSize {
 
             if (root.units[0].type !== 'COORDS.RECT') {
 
-                var xScale = scalesCreator.create(xCfg, frame, [0, 100]);
+                var xScale = chart.getScaleInfo(xCfg, frame);
                 return resScaleSize + calcScaleSize(xScale, xSize);
 
             } else {
 
-                var rows = groupFramesBy(root.frames, yCfg.dim);
+                var rows = groupFramesBy(root.frames, scales[yCfg].dim);
                 var rowsSizes = Object
                     .keys(rows)
                     .map((kRow) => {

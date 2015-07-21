@@ -73,7 +73,7 @@
                     }
 
                     self._tooltip
-                        .show(e.event.x, e.event.y)
+                        .show(e.event.pageX, e.event.pageY)
                         .updateSize();
                 };
 
@@ -108,6 +108,7 @@
                             };
                         }(this._cursor))
                     });
+                this._chart.refresh();
             },
 
             onRender: function (chart) {

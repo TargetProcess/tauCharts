@@ -42,22 +42,24 @@ define(function (require) {
                 {"x1": "B", "x2": "C10", "y1": 10}
             ];
 
-            var f = new ScalesFactory({
-                '/': {
-                    dims: {
-                        x1: {
-                            type: 'ordinal'
-                        },
-                        x2: {
-                            type: 'ordinal'
-                        }
-                    },
-                    data: data
-                }
-            });
-
-            var scaleFixedRatio = f.create(
+            var f = new ScalesFactory(
+                ScalesRegistry,
                 {
+                    '/': {
+                        dims: {
+                            x1: {
+                                type: 'ordinal'
+                            },
+                            x2: {
+                                type: 'ordinal'
+                            }
+                        },
+                        data: data
+                    }
+                });
+
+            var scaleFixedRatio = f
+                .createScaleInfo({
                     name: 'x1',
                     type: 'ordinal',
                     ratio: {
@@ -66,10 +68,8 @@ define(function (require) {
                     },
                     source: '/',
                     dim: 'x1'
-                },
-                null,
-                [0, 100]
-            );
+                })
+                .create([0, 100]);
 
             expect(scaleFixedRatio('A')).to.deep.equal(40);
             expect(scaleFixedRatio('B')).to.deep.equal(90);
@@ -77,8 +77,8 @@ define(function (require) {
             expect(scaleFixedRatio.stepSize('A')).to.deep.equal(80);
             expect(scaleFixedRatio.stepSize('B')).to.deep.equal(20);
 
-            var scaleDynamicRatio = f.create(
-                {
+            var scaleDynamicRatio = f
+                .createScaleInfo({
                     name: 'x1',
                     type: 'ordinal',
                     ratio: function (key, size, varSet) {
@@ -119,10 +119,8 @@ define(function (require) {
                     },
                     source: '/',
                     dim: 'x1'
-                },
-                null,
-                [0, 100]
-            );
+                })
+                .create([0, 100]);
 
             expect(scaleDynamicRatio('A')).to.deep.equal(34);
             expect(scaleDynamicRatio('B')).to.deep.equal(84);
@@ -261,6 +259,32 @@ define(function (require) {
             expect(scale3.stepSize(new Date('2015-04-17').getTime()).toFixed(4)).to.equal((100 * 0.5).toFixed(4));
             expect(scale3.stepSize(new Date('2015-04-16')).toFixed(4)).to.equal((100 * 0.1).toFixed(4));
             expect(scale3.stepSize(new Date('2015-04-19')).toFixed(4)).to.equal((100 * 0.4).toFixed(4));
+
+            var scale4Ratio = function (x) {
+
+                var xDate = new Date(x);
+
+                if (xDate.getTime() === new Date('2015-04-17').getTime()) return 0.5;
+                if (xDate.getTime() === new Date('2015-04-16').getTime()) return 0.1;
+                if (xDate.getTime() === new Date('2015-04-19').getTime()) return 0.4;
+            };
+
+            var scale4 = new PeriodScale(
+                xSrc,
+                {
+                    dim: 't',
+                    ratio: scale4Ratio,
+                    fitToFrameByDims: []
+                }).create([0, 100]);
+
+            expect(scale4.domain().length).to.equal(3);
+            expect(scale4.stepSize(new Date('2015-04-17').getTime()).toFixed(4)).to.equal((100 * 0.5).toFixed(4));
+            expect(scale4.stepSize(new Date('2015-04-16')).toFixed(4)).to.equal((100 * 0.1).toFixed(4));
+            expect(scale4.stepSize(new Date('2015-04-19')).toFixed(4)).to.equal((100 * 0.4).toFixed(4));
+
+            expect(scale4(new Date('2015-04-19').getTime())).to.equal(20);
+            expect(scale4(new Date('2015-04-17').getTime())).to.equal(65);
+            expect(scale4(new Date('2015-04-16').getTime())).to.equal(95);
         });
 
         it('should support [linear] scale', function () {
@@ -322,6 +346,23 @@ define(function (require) {
         });
 
         it('should support [color] scale', function () {
+
+            var scaleEmpty = new ColorScale(
+                {
+                    part: function () {
+                        return [];
+                    },
+                    full: function () {
+                        return [];
+                    }
+                },
+                {
+                    dim: 'x',
+                    order: ['low', 'medium', 'high']
+                }).create();
+
+            expect(scaleEmpty.domain()).to.deep.equal([]);
+            expect(scaleEmpty('any')).to.equal('color-default');
 
             var scale0 = new ColorScale(
                 xSrc,

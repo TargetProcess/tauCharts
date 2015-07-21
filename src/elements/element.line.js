@@ -1,9 +1,13 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 
-export class Line {
+export class Line extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = this.config.guide || {};
         this.config.guide = _.defaults(
@@ -16,7 +20,7 @@ export class Line {
         );
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 
@@ -25,7 +29,11 @@ export class Line {
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale)
+            .regScale('size', this.size)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {
@@ -109,7 +117,7 @@ export class Line {
         };
 
         var mapper = (f) => {
-            return {data: {tags: f.key || {}, hash: f.hash(), data: f.take()}, uid: options.uid};
+            return {data: {tags: f.key || {}, hash: f.hash(), data: f.part()}, uid: options.uid};
         };
 
         var drawFrame = (tag, id, filter) => {

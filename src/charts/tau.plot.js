@@ -3,8 +3,11 @@ import {Emitter} from '../event';
 import {Plugins, propagateDatumEvents} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
+import {DataFrame} from '../data-frame';
 import {CSS_PREFIX} from '../const';
 import {unitsRegistry} from '../units-registry';
+import {scalesRegistry} from '../scales-registry';
+import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
@@ -20,7 +23,6 @@ export class Plot extends Emitter {
     constructor(config) {
         super();
         this._nodes = [];
-        this._liveSpec = null;
         this._svg = null;
         this._filtersStore = {
             filters: {},
@@ -51,7 +53,7 @@ export class Plot extends Emitter {
         ];
 
         this._originData = _.clone(this.configGPL.sources);
-
+        this._liveSpec = this.configGPL;
         this._plugins = new Plugins(this.config.plugins, this);
     }
 
@@ -157,77 +159,90 @@ export class Plot extends Emitter {
 
         this.configGPL.settings.size = size;
 
-        var gpl = utils.clone(_.omit(this.configGPL, 'plugins'));
-        gpl.sources = this.getData({isNew: true});
-        gpl.settings = this.configGPL.settings;
+        this._liveSpec = utils.clone(_.omit(this.configGPL, 'plugins'));
+        this._liveSpec.sources = this.getDataSources();
+        this._liveSpec.settings = this.configGPL.settings;
 
-        if (this.isEmptySources(gpl.sources)) {
+        if (this.isEmptySources(this._liveSpec.sources)) {
             content.innerHTML = this._emptyContainer;
             return;
         }
 
-        gpl = this
+        this._liveSpec = this
             .transformers
-            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), gpl);
+            .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), this._liveSpec);
 
         this._nodes = [];
-        gpl.onUnitDraw = (unitNode) => {
+
+        this._liveSpec.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
         };
 
-        gpl.onUnitsStructureExpanded = (specRef) => {
+        this._liveSpec.onUnitsStructureExpanded = (specRef) => {
             this.onUnitsStructureExpandedTransformers
-                .forEach((TClass) => (new TClass(specRef)).transform());
+                .forEach((TClass) => (new TClass(specRef)).transform(this));
             this.fire(['units', 'structure', 'expanded'].join(''), specRef);
         };
 
-        this._liveSpec = gpl;
+        this.fire('specready', this._liveSpec);
 
-        this.fire('specready', gpl);
-
-        new GPL(gpl).renderTo(content, gpl.settings.size);
+        new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry)
+            .renderTo(content, this._liveSpec.settings.size);
 
         var svgXElement = d3.select(content).select('svg');
 
         this._svg = svgXElement.node();
-        this._layout.rightSidebar.style.maxHeight = (`${gpl.settings.size.height}px`);
+        this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
     }
 
-    getData(param = {}) {
+    getScaleFactory(dataSources = null) {
+        return new ScalesFactory(
+            scalesRegistry,
+            dataSources || this._liveSpec.sources,
+            this._liveSpec.scales
+        );
+    }
 
-        var applyFilterMap = (data, filtersSelector) => {
+    getScaleInfo(name, dataFrame = null) {
+        return this
+            .getScaleFactory()
+            .createScaleInfoByName(name, dataFrame);
+    }
 
-            var filters = _(this._filtersStore.filters)
-                .chain()
-                .values()
-                .flatten()
-                .reject((f) => (_.contains(param.excludeFilter, f.tag) || !filtersSelector(f)))
-                .pluck('predicate')
-                .value();
+    getSourceFiltersIterator(rejectFiltersPredicate) {
 
-            return data.filter((row) => filters.reduce((prev, f) => (prev && f(row)), true));
-        };
+        var filters = _(this._filtersStore.filters)
+            .chain()
+            .values()
+            .flatten()
+            .reject((f) => rejectFiltersPredicate(f))
+            .pluck('predicate')
+            .value();
 
-        if (param.isNew) {
-            var filteredSources = {};
-            filteredSources['?'] = this._originData['?'];
-            return Object
-                .keys(this._originData)
-                .filter((k) => k !== '?')
-                .reduce((memo, key) => {
-                    var item = this._originData[key];
-                    memo[key] = {
-                        dims: item.dims,
-                        data: applyFilterMap(item.data, (f) => f.src === key)
-                    };
-                    return memo;
-                },
-                filteredSources);
-        } else {
-            return applyFilterMap(this.config.data, (f) => true);
-        }
+        return (row) => filters.reduce((prev, f) => (prev && f(row)), true);
+    }
+
+    getDataSources(param = {}) {
+
+        var excludeFiltersByTagAndSource = (k) => ((f) => ((_.contains(param.excludeFilter, f.tag)) || f.src !== k));
+
+        return Object
+            .keys(this._originData)
+            .filter((k) => k !== '?')
+            .reduce((memo, k) => {
+                var item = this._originData[k];
+                var filterIterator = this.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+                memo[k] = {
+                    dims: item.dims,
+                    data: item.data.filter(filterIterator)
+                };
+                return memo;
+            },
+            {
+                '?': this._originData['?']
+            });
     }
 
     isEmptySources(sources) {
@@ -239,9 +254,14 @@ export class Plot extends Emitter {
             .length;
     }
 
-    setData(data) {
+    getData(param = {}, src = '/') {
+        var sources = this.getDataSources(param);
+        return sources[src].data;
+    }
+
+    setData(data, src = '/') {
         this.config.data = data;
-        this.configGPL.sources['/'].data = data;
+        this.configGPL.sources[src].data = data;
         this._originData = _.clone(this.configGPL.sources);
         this.refresh();
     }
@@ -257,7 +277,6 @@ export class Plot extends Emitter {
         var id = this._filtersStore.tick++;
         filter.id = id;
         filters.push(filter);
-        this.refresh();
         return id;
     }
 
@@ -265,7 +284,7 @@ export class Plot extends Emitter {
         _.each(this._filtersStore.filters, (filters, key) => {
             this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
         });
-        this.refresh();
+        return this;
     }
 
     refresh() {

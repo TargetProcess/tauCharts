@@ -22,6 +22,8 @@ export class TimeScale extends BaseScale {
             new Date(Math.min(min, domain[0])),
             new Date(Math.max(max, domain[1]))
         ];
+
+        this.addField('scaleType', 'time');
     }
 
     create(interval) {
@@ -48,7 +50,6 @@ export class TimeScale extends BaseScale {
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
-        scale.scaleType = 'time';
         scale.stepSize = (() => 0);
 
         return this.toBaseScale(scale, interval);

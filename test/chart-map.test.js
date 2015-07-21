@@ -5,6 +5,7 @@ define(function (require) {
     var assert = require('chai').assert;
     var schemes = require('schemes');
     var tauChart = require('src/tau.charts');
+    var testUtils = require('testUtils');
 
     describe('Map chart', function () {
 
@@ -207,17 +208,60 @@ define(function (require) {
             this.timeout(drawTimeout);
             setTimeout(done, drawTimeout);
 
-             var chart1 = new tauChart.Chart({
-             type: 'map',
-             code: 'cc',
-             fill: 'x',
-             data: testData,
-             settings: settings
-             });
+            var chart1 = new tauChart.Chart({
+                type: 'map',
+                code: 'cc',
+                fill: 'x',
+                data: testData,
+                settings: settings
+            });
 
-             expect(function () {
+            expect(function () {
                 chart1.renderTo(target);
-             }).to.not.throw();
+            }).to.not.throw();
+
+            var geoNode = chart1.select(function (node) {
+                return node.config.type === 'COORDS.MAP';
+            })[0];
+
+            var actualEvents = [];
+
+            geoNode.on('area-click', function (sender, r) {
+                actualEvents.push('area-click');
+            });
+
+            geoNode.on('area-mouseover', function (sender, r) {
+                actualEvents.push('area-mouseover');
+            });
+
+            geoNode.on('area-mouseout', function (sender, r) {
+                actualEvents.push('area-mouseout');
+            });
+
+            var contourNode = d3
+                .select(target)
+                .select('.map-contour-countries')
+                .node();
+
+            testUtils.simulateEvent('mouseover', contourNode);
+            testUtils.simulateEvent('click', contourNode);
+            testUtils.simulateEvent('mouseout', contourNode);
+
+            expect(actualEvents.join('/')).to.equal('area-mouseover/area-click/area-mouseout');
+
+            var highlightedContours0 = d3
+                .select(target)
+                .selectAll('.map-contour-highlighted');
+            expect(highlightedContours0[0].length).to.equal(0);
+
+            geoNode.fire('highlight-area', function (row) {
+                return row && row.cc == 'BLR';
+            });
+
+            var highlightedContours1 = d3
+                .select(target)
+                .selectAll('.map-contour-highlighted');
+            expect(highlightedContours1[0].length).to.equal(1);
 
             done();
         });
@@ -241,6 +285,77 @@ define(function (require) {
             expect(function () {
                 chart2.renderTo(target);
             }).to.not.throw();
+
+            var geoNode = chart2.select(function (node) {
+                return node.config.type === 'COORDS.MAP';
+            })[0];
+
+            var actualEvents = [];
+
+            geoNode.on('point-click', function (sender, r) {
+                actualEvents.push('point-click');
+            });
+
+            geoNode.on('point-mouseover', function (sender, r) {
+                actualEvents.push('point-mouseover');
+            });
+
+            geoNode.on('point-mouseout', function (sender, r) {
+                actualEvents.push('point-mouseout');
+            });
+
+            var pointNode = d3
+                .select(target)
+                .select('circle')
+                .node();
+
+            testUtils.simulateEvent('mouseover', pointNode);
+            testUtils.simulateEvent('click', pointNode);
+            testUtils.simulateEvent('mouseout', pointNode);
+
+            expect(actualEvents.join('/')).to.equal('point-mouseover/point-click/point-mouseout');
+
+            var highlightedPoints0 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints0[0].length).to.equal(0);
+
+            geoNode.fire('highlight', function (row) {
+                return row && row.cc == 'BLR';
+            });
+
+            var highlightedPoints1 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints1[0].length).to.equal(1);
+
+            // alias for [highlight] event
+            geoNode.fire('highlight-point', function (row) {
+                return row && row.cc != 'BLR';
+            });
+
+            var highlightedPoints2 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints2[0].length).to.equal(2);
+
+            geoNode.fire('highlight-point', function (row) {
+                return false;
+            });
+
+            var highlightedPoints3 = d3
+                .select(target)
+                .selectAll('.map-point-highlighted');
+            expect(highlightedPoints3[0].length).to.equal(0);
+
+            expect(geoNode.getScale('latitude').scaleType).to.equal('linear');
+            expect(geoNode.getScale('longitude').scaleType).to.equal('linear');
+            expect(geoNode.getScale('size').scaleType).to.equal('size');
+            expect(geoNode.getScale('color').scaleType).to.equal('color');
+            expect(geoNode.getScale('fill').scaleType).to.equal('fill');
+            expect(geoNode.getScale('code').scaleType).to.equal('value');
+
+            expect(geoNode.getScale('nope')).to.equal(null);
 
             done();
         });

@@ -1,28 +1,31 @@
-import {scalesRegistry} from './scales-registry';
+import {DataFrame} from './data-frame';
 
 export class ScalesFactory {
 
-    constructor(sources) {
+    constructor(scalesRegistry, sources, scales) {
+        this.registry = scalesRegistry;
         this.sources = sources;
+        this.scales = scales;
     }
 
-    create(scaleConfig, frame, dynamicConfig) {
+    createScaleInfo(scaleConfig, dataFrame = null) {
 
-        var ScaleClass = scalesRegistry.get(scaleConfig.type);
+        var ScaleClass = this.registry.get(scaleConfig.type);
 
         var dim = scaleConfig.dim;
         var src = scaleConfig.source;
 
         var type = (this.sources[src].dims[dim] || {}).type;
         var data = (this.sources[src].data);
-        var xSrc = {
-            full: (() => (data)),
-            part: (() => (frame ? frame.take() : data)),
-            partByDims: ((dims) => (frame ? frame.partByDims(dims) : data))
-        };
+
+        var frame = dataFrame || (new DataFrame({source: src}, data));
 
         scaleConfig.dimType = type;
 
-        return (new ScaleClass(xSrc, scaleConfig)).create(dynamicConfig);
+        return (new ScaleClass(frame, scaleConfig));
+    }
+
+    createScaleInfoByName(name, dataFrame = null) {
+        return this.createScaleInfo(this.scales[name], dataFrame);
     }
 }

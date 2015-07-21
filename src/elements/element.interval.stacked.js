@@ -1,8 +1,9 @@
 import {default as _} from 'underscore';
 import {CSS_PREFIX} from './../const';
+import {Element} from './element';
 import {TauChartError as Error, errorCodes} from './../error';
 
-export class StackedInterval {
+export class StackedInterval extends Element {
 
     static embedUnitFrameToSpec(cfg, spec) {
 
@@ -17,7 +18,7 @@ export class StackedInterval {
         var prop = stackScale.dim;
 
         var groupsSums = cfg.frames.reduce((groups, f) => {
-            var dataFrame = f.take();
+            var dataFrame = f.part();
             var hasErrors = dataFrame.some((d) => (typeof (d[prop]) !== 'number'));
             if (hasErrors) {
                 throw new Error(
@@ -54,11 +55,14 @@ export class StackedInterval {
     }
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
@@ -93,7 +97,11 @@ export class StackedInterval {
                 mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
             });
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale)
+            .regScale('size', this.size)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {
@@ -203,7 +211,7 @@ export class StackedInterval {
                 });
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.take()});
+        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
         var frameGroups = options.container
             .selectAll(`.frame-id-${uid}`)
             .data(frames.map(mapper), (f) => f.hash);

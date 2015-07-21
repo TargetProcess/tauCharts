@@ -1,13 +1,17 @@
 import {CSS_PREFIX} from '../const';
+import {Element} from './element';
 
-export class Interval {
+export class Interval extends Element {
 
     constructor(config) {
+
+        super(config);
+
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
@@ -15,7 +19,11 @@ export class Interval {
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
 
-        return this;
+        return this
+            .regScale('x', this.xScale)
+            .regScale('y', this.yScale)
+            .regScale('size', this.size)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {
@@ -68,7 +76,7 @@ export class Interval {
         var elements = options
             .container
             .selectAll(`.i-role-bar-group`)
-            .data(frames.map((fr)=>({key: fr.key, values: fr.data, uid: this.config.options.uid})));
+            .data(frames.map((fr)=>({key: fr.key, values: fr.part(), uid: this.config.options.uid})));
         elements
             .exit()
             .remove();

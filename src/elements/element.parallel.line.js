@@ -17,7 +17,7 @@ export class ParallelLine extends Element {
         this.on('highlight', (sender, e) => this.highlight(e));
     }
 
-    drawLayout(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
         var options = config.options;
@@ -40,7 +40,9 @@ export class ParallelLine extends Element {
 
         this.xBase = ((p) => colsMap[p]);
 
-        return this;
+        return this
+            .regScale('columns', this.scalesMap)
+            .regScale('color', this.color);
     }
 
     drawFrames(frames) {
@@ -65,7 +67,7 @@ export class ParallelLine extends Element {
         var updateFrame = function () {
             var backgroundPath = this
                 .selectAll('.background')
-                .data(f => f.take());
+                .data(f => f.part());
             backgroundPath
                 .exit()
                 .remove();
@@ -79,7 +81,7 @@ export class ParallelLine extends Element {
 
             var foregroundPath = this
                 .selectAll('.foreground')
-                .data(f => f.take());
+                .data(f => f.part());
             foregroundPath
                 .exit()
                 .remove();

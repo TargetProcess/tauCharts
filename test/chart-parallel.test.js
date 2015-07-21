@@ -2,6 +2,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var tauChart = require('src/tau.charts');
+    var testUtils = require('testUtils');
 
     describe('Parallel chart', function () {
 
@@ -127,6 +128,53 @@ define(function (require) {
                     args: [5, 10]
                 }
             ]);
+        });
+
+        it('should support on [click / mouseover / mouseout] interaction', function () {
+
+            var chart = new tauChart.Chart({
+                type: 'parallel',
+                columns: ['id', 'x1', 'x2'],
+                data: [
+                    {id: 'A', x1: 0, x2: 10},
+                    {id: 'B', x1: 5, x2: 5},
+                    {id: 'C', x1: 10, x2: 0}
+                ],
+                guide: {
+                    enableBrushing: true
+                }
+            });
+
+            chart.renderTo(target);
+
+            var geom = chart.select(function (node) {
+                return node.config.type === 'PARALLEL/ELEMENT.LINE';
+            });
+
+            expect(geom.length).to.equal(1);
+
+            var actualEvents = [];
+            geom[0].on('click', function(sender, r) {
+                actualEvents.push('click');
+            });
+
+            geom[0].on('mouseover', function(sender, r) {
+                actualEvents.push('mouseover');
+            });
+
+            geom[0].on('mouseout', function(sender, r) {
+                actualEvents.push('mouseout');
+            });
+
+            var svg = d3.select(chart.getSVG());
+
+            var elems = svg.select('.foreground').node();
+
+            testUtils.simulateEvent('mouseover', elems);
+            testUtils.simulateEvent('click', elems);
+            testUtils.simulateEvent('mouseout', elems);
+
+            expect(actualEvents.join('/')).to.equal('mouseover/click/mouseout');
         });
 
         it('should be consistent after refresh', function () {

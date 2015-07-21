@@ -380,6 +380,7 @@ define(function (require) {
                     return item.z === 'category3';
                 }
             });
+            plot.refresh();
 
             expect(plot.getData()).to.be.eql([newConfig.data[2]]);
             var id2 = plot.addFilter({
@@ -387,13 +388,16 @@ define(function (require) {
                     return item.z !== 'category2';
                 }
             });
+            plot.refresh();
             expect(plot.getData({excludeFilter: ['testFilter']})).to.be.eql([newConfig.data[0], newConfig.data[2]]);
             plot.removeFilter(id);
+            plot.refresh();
             expect(plot.getData()).to.be.eql([newConfig.data[0], newConfig.data[2]]);
             plot.renderTo(div);
             var svg = plot.getSVG();
             expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(2);
             plot.removeFilter(id2);
+            plot.refresh();
             svg = plot.getSVG();
             expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(3);
             id = plot.addFilter({
@@ -401,6 +405,7 @@ define(function (require) {
                     return item.z === 'category3';
                 }
             });
+            plot.refresh();
             svg = plot.getSVG();
             expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(1);
 

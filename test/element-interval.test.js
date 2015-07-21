@@ -6,8 +6,10 @@ define(function (require) {
     var _ = require('underscore');
     var assert = require('chai').assert;
     var tauCharts = require('src/tau.charts');
+    var scalesRegistry = tauCharts.api.scalesRegistry;
     var Cartesian = require('src/elements/coords.cartesian').Cartesian;
     var Interval = require('src/elements/element.interval').Interval;
+    var ScalesFactory = require('src/scales-factory').ScalesFactory;
     var testUtils = require('testUtils');
     var unitsMap = {};
     var unitsRegistry = {
@@ -142,7 +144,11 @@ define(function (require) {
                         console.log(JSON.stringify(sss, null, 2));
                     }
 
-                    context.chart = new tauCharts.GPL(sss);
+                    context.chart = new tauCharts.GPL(
+                        sss,
+                        new ScalesFactory(scalesRegistry, sss.sources, sss.scales),
+                        unitsRegistry
+                    );
 
                     context.chart.renderTo(
                         context.element,
