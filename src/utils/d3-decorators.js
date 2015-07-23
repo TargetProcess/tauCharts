@@ -263,9 +263,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
             var tick = d3.select(this);
             var text = tick.text();
             var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[translateParam]);
-            var tText = tick.selectAll('text');
-            var tSpan = tText.selectAll('tspan');
-            var tNode = tSpan.empty() ? tText : tSpan;
+            var tNode = tick.selectAll('text');
 
             var textWidth = tNode.node().getBBox().width;
 
