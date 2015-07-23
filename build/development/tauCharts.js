@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.8 - 2015-06-24
+/*! taucharts - v0.4.9 - 2015-07-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -6030,9 +6030,7 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
             var tick = _d32['default'].select(this);
             var text = tick.text();
             var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[translateParam]);
-            var tText = tick.selectAll('text');
-            var tSpan = tText.selectAll('tspan');
-            var tNode = tSpan.empty() ? tText : tSpan;
+            var tNode = tick.selectAll('text');
 
             var textWidth = tNode.node().getBBox().width;
 
