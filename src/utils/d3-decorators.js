@@ -256,13 +256,22 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     const textOffsetStep = 11;
     const refOffsetStart = isHorizontal ? -10 : 20;
     const translateParam = isHorizontal ? 0 : 1;
+    const directionKoeff = isHorizontal ? 1 : -1;
     var layoutModel = [];
     nodeScale
         .selectAll('.tick')
         .each(function (a, i) {
             var tick = d3.select(this);
             var text = tick.text();
-            var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[translateParam]);
+
+            var translateXStr = tick
+                .attr('transform')
+                .replace('translate(', '')
+                .replace(' ', ',') // IE specific
+                .split(',')
+                [translateParam];
+
+            var translateX = directionKoeff * parseFloat(translateXStr);
             var tNode = tick.selectAll('text');
 
             var textWidth = tNode.node().getBBox().width;
@@ -270,7 +279,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
             var halfText = (textWidth / 2);
             var s = translateX - halfText;
             var e = translateX + halfText;
-            layoutModel.push({s: s, e: e, l: 0, textRef: tNode, tickRef: tick});
+            layoutModel.push({c: translateX, s: s, e: e, l: 0, textRef: tNode, tickRef: tick});
         });
 
     var iterateByTriples = (coll, iterator) => {
@@ -297,12 +306,15 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
         return (rules.hasOwnProperty(k)) ? rules[k] : 0;
     };
 
-    iterateByTriples(layoutModel, (prev, curr, next) => {
+    var axisLayoutModel = layoutModel.sort((a, b) => (a.c - b.c));
+
+    iterateByTriples(axisLayoutModel, (prev, curr, next) => {
 
         var collideL = (prev.e > curr.s);
         var collideR = (next.s < curr.e);
 
         if (collideL || collideR) {
+
             curr.l = resolveCollide(prev.l, collideL);
 
             var size = curr.textRef[0].length;
