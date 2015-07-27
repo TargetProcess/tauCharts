@@ -4,6 +4,7 @@ import {Element} from './element';
 import {utilsDraw} from '../utils/utils-draw';
 import {utils} from '../utils/utils';
 import {CSS_PREFIX} from '../const';
+import {FormatterRegistry} from '../formatter-registry';
 
 export class Parallel extends Element {
 
@@ -177,7 +178,15 @@ export class Parallel extends Element {
                 this.append('g')
                     .attr('class', 'y axis')
                     .each(function (d) {
-                        d3.select(this).call(d3Axis.scale(columnsScalesMap[d]));
+                        var propName = columnsScalesMap[d].dim;
+                        var axisScale = d3Axis.scale(columnsScalesMap[d]);
+                        var columnGuide = colsGuide[propName] || {};
+                        var formatter = FormatterRegistry.get(columnGuide.tickFormat, columnGuide.tickFormatNullAlias);
+                        if (formatter !== null) {
+                            axisScale.tickFormat(formatter);
+                        }
+
+                        d3.select(this).call(axisScale);
                     })
                     .append('text')
                     .attr('class', 'label')
