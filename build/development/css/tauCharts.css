@@ -334,6 +334,7 @@
 .graphical-report__svg .map-contour-level-4 path {
   stroke: #ffffff;
 }
+.graphical-report__svg .map-contour-highlighted,
 .graphical-report__svg .map-contour:hover {
   fill: rgba(255, 191, 0, 0.5);
 }

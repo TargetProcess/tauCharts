@@ -180,6 +180,8 @@
 <script src="../plugins/settings.js"></script>
 <script src="../plugins/parallel-brushing.js"></script>
 <script src="../plugins/parallel-tooltip.js"></script>
+<script src="../plugins/geomap-tooltip.js"></script>
+<script src="../plugins/geomap-legend.js"></script>
 <script>
 
     var chart = new tauCharts.Chart({
@@ -333,7 +335,7 @@
 
     // throw 1;
 
-    d3.csv("http://bl.ocks.org/jasondavies/raw/1341281/85c1cedeba1ba1b9bdd2f5e9aac16ef7dc5bf2e1/cars.csv", function(error, cars) {
+    d3.csv("/tauCharts/examples/cars.csv", function(error, cars) {
 
         var parallelChart = new tauCharts.Chart(
                 {
@@ -354,7 +356,8 @@
                                 year: [80, 81]
                             }
                         }),
-                        tauCharts.api.plugins.get('parallel-tooltip')()
+                        tauCharts.api.plugins.get('parallel-tooltip')(),
+                        tauCharts.api.plugins.get('geomap-legend')()
                     ]
 
                 }).renderTo('#parallel-container');
@@ -439,7 +442,9 @@
                         forceBrush: {
                             hp: [150, 200]
                         }
-                    })
+                    }),
+                    tauCharts.api.plugins.get('parallel-tooltip')(),
+                    tauCharts.api.plugins.get('geomap-legend')()
                 ]
 
             }).renderTo('#parallel-container1');
@@ -450,13 +455,19 @@
         type: 'map',
         latitude: 'y',
         longitude: 'x',
+        color: 'color',
         size: 'size',
         data: [
-            {x: 0.5, y: 51.32, color: 'green', size: 2}
+            {x: 0.5, y: 51.32, color: 'green', size: 2},
+            {x: 0.5, y: 15.32, color: 'red', size: 2}
         ],
         guide: {
             sourcemap: 'http://localhost:63342/tauCharts/src/addons/world-countries.json'
-        }
+        },
+        plugins: [
+            tauCharts.api.plugins.get('geomap-tooltip')(),
+            tauCharts.api.plugins.get('geomap-legend')()
+        ]
     });
 
     chart.renderTo('#www');
@@ -467,11 +478,16 @@
         longitude: 'x',
         size: 'size',
         data: [
-            {x: 0.5, y: 51.32, color: 'green', size: 2}
+            {x: 0.5, y: 51.32, color: 'green', size: 2},
+            {x: 0.5, y: 51.35, color: 'red', size: 20}
         ],
         guide: {
             sourcemap: 'http://localhost:63342/tauCharts/src/addons/uk-subunits-places.json'
-        }
+        },
+        plugins: [
+            tauCharts.api.plugins.get('geomap-tooltip')(),
+            tauCharts.api.plugins.get('geomap-legend')()
+        ]
     });
 
     chart.renderTo('#geo1');
@@ -497,6 +513,10 @@
             {state: 'ny', population: 250},
             {state: 'ak', population: 5000},
             {state: 'co', population: 1250}
+        ],
+        plugins: [
+            tauCharts.api.plugins.get('geomap-tooltip')(),
+            tauCharts.api.plugins.get('geomap-legend')()
         ]
     }).renderTo('#geo2');
 

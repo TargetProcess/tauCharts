@@ -1,4 +1,4 @@
-/*! taucharts - v0.4.9 - 2015-07-23
+/*! taucharts - v0.5.0 - 2015-07-28
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -560,7 +560,7 @@ define('const',['exports'], function (exports) {
   var CSS_PREFIX = 'graphical-report__';
   exports.CSS_PREFIX = CSS_PREFIX;
 });
-define('elements/element.point',['exports', '../const'], function (exports, _const) {
+define('event',['exports'], function (exports) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -571,9 +571,232 @@ define('elements/element.point',['exports', '../const'], function (exports, _con
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    var Point = (function () {
+    var NULL_HANDLER = {};
+    var events = {};
+
+    /**
+     * Creates new type of event or returns existing one, if it was created before.
+     * @param {string} eventName
+     * @return {function(..eventArgs)}
+     */
+    function createDispatcher(eventName) {
+        var eventFunction = events[eventName];
+
+        if (!eventFunction) {
+            eventFunction = function () {
+                var cursor = this;
+                var args;
+                var fn;
+                var i = 0;
+                while (cursor = cursor.handler) {
+                    // jshint ignore:line
+                    // callback call
+                    fn = cursor.callbacks[eventName];
+                    if (typeof fn === 'function') {
+                        if (!args) {
+                            // it should be better for browser optimizations
+                            // (instead of [this].concat(slice.call(arguments)))
+                            args = [this];
+                            for (i = 0; i < arguments.length; i++) {
+                                args.push(arguments[i]);
+                            }
+                        }
+
+                        fn.apply(cursor.context, args);
+                    }
+
+                    // any event callback call
+                    fn = cursor.callbacks['*'];
+                    if (typeof fn === 'function') {
+                        if (!args) {
+                            // it should be better for browser optimizations
+                            // (instead of [this].concat(slice.call(arguments)))
+                            args = [this];
+                            for (i = 0; i < arguments.length; i++) {
+                                args.push(arguments[i]);
+                            }
+                        }
+
+                        fn.call(cursor.context, {
+                            sender: this,
+                            type: eventName,
+                            args: args
+                        });
+                    }
+                }
+            };
+
+            events[eventName] = eventFunction;
+        }
+
+        return eventFunction;
+    }
+
+    /**
+     * Base class for event dispatching. It provides interface for instance
+     * to add and remove handler for desired events, and call it when event happens.
+     * @class
+     */
+
+    var Emitter = (function () {
+        /**
+         * @constructor
+         */
+
+        function Emitter() {
+            _classCallCheck(this, Emitter);
+
+            this.handler = null;
+            this.emit_destroy = createDispatcher('destroy');
+        }
+
+        _createClass(Emitter, [{
+            key: 'addHandler',
+
+            /**
+             * Adds new event handler to object.
+             * @param {object} callbacks Callback set.
+             * @param {object=} context Context object.
+             */
+            value: function addHandler(callbacks, context) {
+                context = context || this;
+                // add handler
+                this.handler = {
+                    callbacks: callbacks,
+                    context: context,
+                    handler: this.handler
+                };
+            }
+        }, {
+            key: 'on',
+            value: function on(name, callback, context) {
+                var obj = {};
+                obj[name] = callback;
+                this.addHandler(obj, context);
+                return obj;
+            }
+        }, {
+            key: 'fire',
+            value: function fire(name, data) {
+                createDispatcher.call(this, name).call(this, data);
+            }
+        }, {
+            key: 'removeHandler',
+
+            /**
+             * Removes event handler set from object. For this operation parameters
+             * must be the same (equivalent) as used for addHandler method.
+             * @param {object} callbacks Callback set.
+             * @param {object=} context Context object.
+             */
+            value: function removeHandler(callbacks, context) {
+                var cursor = this;
+                var prev;
+
+                context = context || this;
+
+                // search for handler and remove it
+                while ((prev = cursor, cursor = cursor.handler)) {
+                    // jshint ignore:line
+                    if (cursor.callbacks === callbacks && cursor.context === context) {
+                        // make it non-callable
+                        cursor.callbacks = NULL_HANDLER;
+
+                        // remove from list
+                        prev.handler = cursor.handler;
+
+                        return;
+                    }
+                }
+            }
+        }, {
+            key: 'destroy',
+
+            /**
+             * @destructor
+             */
+            value: function destroy() {
+                // fire object destroy event handlers
+                this.emit_destroy();
+                // drop event handlers if any
+                this.handler = null;
+            }
+        }]);
+
+        return Emitter;
+    })();
+
+    //
+    // export names
+    //
+    exports.Emitter = Emitter;
+});
+define('elements/element',['exports', '../event'], function (exports, _event) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+    var Element = (function (_Emitter) {
+
+        // add base behaviour here
+
+        function Element(config) {
+            _classCallCheck(this, Element);
+
+            _get(Object.getPrototypeOf(Element.prototype), 'constructor', this).call(this, config);
+            this._elementScalesHub = {};
+        }
+
+        _inherits(Element, _Emitter);
+
+        _createClass(Element, [{
+            key: 'regScale',
+            value: function regScale(paramId, scaleObj) {
+                this._elementScalesHub[paramId] = scaleObj;
+                return this;
+            }
+        }, {
+            key: 'getScale',
+            value: function getScale(paramId) {
+                return this._elementScalesHub[paramId] || null;
+            }
+        }]);
+
+        return Element;
+    })(_event.Emitter);
+
+    exports.Element = Element;
+});
+define('elements/element.point',['exports', '../const', './element'], function (exports, _const, _element) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+    var Point = (function (_Element) {
         function Point(config) {
             _classCallCheck(this, Point);
+
+            _get(Object.getPrototypeOf(Point.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
 
@@ -592,9 +815,11 @@ define('elements/element.point',['exports', '../const'], function (exports, _con
             });
         }
 
+        _inherits(Point, _Element);
+
         _createClass(Point, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var config = this.config;
 
@@ -625,7 +850,7 @@ define('elements/element.point',['exports', '../const'], function (exports, _con
                     mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
                 });
 
-                return this;
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
             }
         }, {
             key: 'drawFrames',
@@ -702,7 +927,7 @@ define('elements/element.point',['exports', '../const'], function (exports, _con
                 };
 
                 var mapper = function mapper(f) {
-                    return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    return { tags: f.key || {}, hash: f.hash(), data: f.part() };
                 };
 
                 var frameGroups = options.container.selectAll('.frame-id-' + options.uid).data(frames.map(mapper), function (f) {
@@ -717,7 +942,7 @@ define('elements/element.point',['exports', '../const'], function (exports, _con
         }]);
 
         return Point;
-    })();
+    })(_element.Element);
 
     exports.Point = Point;
 });
@@ -754,7 +979,7 @@ define('utils/css-class-map',['exports', '../const'], function (exports, _const)
     exports.getLineClassesByWidth = getLineClassesByWidth;
     exports.getLineClassesByCount = getLineClassesByCount;
 });
-define('elements/element.line',['exports', '../const', '../utils/css-class-map'], function (exports, _const, _utilsCssClassMap) {
+define('elements/element.line',['exports', '../const', './element', '../utils/css-class-map'], function (exports, _const, _element, _utilsCssClassMap) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -763,11 +988,17 @@ define('elements/element.line',['exports', '../const', '../utils/css-class-map']
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    var Line = (function () {
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+    var Line = (function (_Element) {
         function Line(config) {
             _classCallCheck(this, Line);
+
+            _get(Object.getPrototypeOf(Line.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = this.config.guide || {};
@@ -778,9 +1009,11 @@ define('elements/element.line',['exports', '../const', '../utils/css-class-map']
             });
         }
 
+        _inherits(Line, _Element);
+
         _createClass(Line, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var config = this.config;
 
@@ -789,7 +1022,7 @@ define('elements/element.line',['exports', '../const', '../utils/css-class-map']
                 this.color = fnCreateScale('color', config.color, {});
                 this.size = fnCreateScale('size', config.size, {});
 
-                return this;
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
             }
         }, {
             key: 'drawFrames',
@@ -879,7 +1112,7 @@ define('elements/element.line',['exports', '../const', '../utils/css-class-map']
                 };
 
                 var mapper = function mapper(f) {
-                    return { data: { tags: f.key || {}, hash: f.hash(), data: f.take() }, uid: options.uid };
+                    return { data: { tags: f.key || {}, hash: f.hash(), data: f.part() }, uid: options.uid };
                 };
 
                 var drawFrame = function drawFrame(tag, id, filter) {
@@ -908,11 +1141,11 @@ define('elements/element.line',['exports', '../const', '../utils/css-class-map']
         }]);
 
         return Line;
-    })();
+    })(_element.Element);
 
     exports.Line = Line;
 });
-define('elements/element.interval',['exports', '../const'], function (exports, _const) {
+define('elements/element.interval',['exports', '../const', './element'], function (exports, _const, _element) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -921,21 +1154,29 @@ define('elements/element.interval',['exports', '../const'], function (exports, _
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    var Interval = (function () {
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+    var Interval = (function (_Element) {
         function Interval(config) {
             _classCallCheck(this, Interval);
+
+            _get(Object.getPrototypeOf(Interval.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = _.defaults(this.config.guide || {}, { prettify: true });
         }
 
+        _inherits(Interval, _Element);
+
         _createClass(Interval, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var config = this.config;
                 this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
@@ -943,7 +1184,7 @@ define('elements/element.interval',['exports', '../const'], function (exports, _
                 this.color = fnCreateScale('color', config.color, {});
                 this.size = fnCreateScale('size', config.size, {});
 
-                return this;
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
             }
         }, {
             key: 'drawFrames',
@@ -996,7 +1237,7 @@ define('elements/element.interval',['exports', '../const'], function (exports, _
                     bars.enter().append('rect').call(updateBar);
                 };
                 var elements = options.container.selectAll('.i-role-bar-group').data(frames.map(function (fr) {
-                    return { key: fr.key, values: fr.data, uid: _this.config.options.uid };
+                    return { key: fr.key, values: fr.part(), uid: _this.config.options.uid };
                 }));
                 elements.exit().remove();
                 elements.call(updateBarContainer);
@@ -1210,7 +1451,7 @@ define('elements/element.interval',['exports', '../const'], function (exports, _
         }]);
 
         return Interval;
-    })();
+    })(_element.Element);
 
     exports.Interval = Interval;
 });
@@ -1252,7 +1493,7 @@ define('error',['exports'], function (exports) {
     exports.TauChartError = TauChartError;
     exports.errorCodes = errorCodes;
 });
-define('elements/element.interval.stacked',['exports', 'underscore', './../const', './../error'], function (exports, _underscore, _const, _error) {
+define('elements/element.interval.stacked',['exports', 'underscore', './../const', './element', './../error'], function (exports, _underscore, _const, _element, _error) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -1261,25 +1502,33 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
     var _2 = _interopRequireDefault(_underscore);
 
-    var StackedInterval = (function () {
+    var StackedInterval = (function (_Element) {
         function StackedInterval(config) {
             _classCallCheck(this, StackedInterval);
+
+            _get(Object.getPrototypeOf(StackedInterval.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = _2['default'].defaults(this.config.guide || {}, { prettify: true });
         }
 
+        _inherits(StackedInterval, _Element);
+
         _createClass(StackedInterval, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var config = this.config;
                 this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
@@ -1313,7 +1562,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                     mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
                 });
 
-                return this;
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
             }
         }, {
             key: 'drawFrames',
@@ -1415,7 +1664,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                 };
 
                 var mapper = function mapper(f) {
-                    return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    return { tags: f.key || {}, hash: f.hash(), data: f.part() };
                 };
                 var frameGroups = options.container.selectAll('.frame-id-' + uid).data(frames.map(mapper), function (f) {
                     return f.hash;
@@ -1534,7 +1783,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                 var prop = stackScale.dim;
 
                 var groupsSums = cfg.frames.reduce(function (groups, f) {
-                    var dataFrame = f.take();
+                    var dataFrame = f.part();
                     var hasErrors = dataFrame.some(function (d) {
                         return typeof d[prop] !== 'number';
                     });
@@ -1568,7 +1817,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
         }]);
 
         return StackedInterval;
-    })();
+    })(_element.Element);
 
     exports.StackedInterval = StackedInterval;
 });
@@ -2002,319 +2251,6 @@ define('utils/utils',['exports', '../elements/element.point', '../elements/eleme
 
     exports.utils = utils;
 });
-define('event',['exports'], function (exports) {
-    'use strict';
-
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
-
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-    var NULL_HANDLER = {};
-    var events = {};
-
-    /**
-     * Creates new type of event or returns existing one, if it was created before.
-     * @param {string} eventName
-     * @return {function(..eventArgs)}
-     */
-    function createDispatcher(eventName) {
-        var eventFunction = events[eventName];
-
-        if (!eventFunction) {
-            eventFunction = function () {
-                var cursor = this;
-                var args;
-                var fn;
-                var i = 0;
-                while (cursor = cursor.handler) {
-                    // jshint ignore:line
-                    // callback call
-                    fn = cursor.callbacks[eventName];
-                    if (typeof fn === 'function') {
-                        if (!args) {
-                            // it should be better for browser optimizations
-                            // (instead of [this].concat(slice.call(arguments)))
-                            args = [this];
-                            for (i = 0; i < arguments.length; i++) {
-                                args.push(arguments[i]);
-                            }
-                        }
-
-                        fn.apply(cursor.context, args);
-                    }
-
-                    // any event callback call
-                    fn = cursor.callbacks['*'];
-                    if (typeof fn === 'function') {
-                        if (!args) {
-                            // it should be better for browser optimizations
-                            // (instead of [this].concat(slice.call(arguments)))
-                            args = [this];
-                            for (i = 0; i < arguments.length; i++) {
-                                args.push(arguments[i]);
-                            }
-                        }
-
-                        fn.call(cursor.context, {
-                            sender: this,
-                            type: eventName,
-                            args: args
-                        });
-                    }
-                }
-            };
-
-            events[eventName] = eventFunction;
-        }
-
-        return eventFunction;
-    }
-
-    /**
-     * Base class for event dispatching. It provides interface for instance
-     * to add and remove handler for desired events, and call it when event happens.
-     * @class
-     */
-
-    var Emitter = (function () {
-        /**
-         * @constructor
-         */
-
-        function Emitter() {
-            _classCallCheck(this, Emitter);
-
-            this.handler = null;
-            this.emit_destroy = createDispatcher('destroy');
-        }
-
-        _createClass(Emitter, [{
-            key: 'addHandler',
-
-            /**
-             * Adds new event handler to object.
-             * @param {object} callbacks Callback set.
-             * @param {object=} context Context object.
-             */
-            value: function addHandler(callbacks, context) {
-                context = context || this;
-                // add handler
-                this.handler = {
-                    callbacks: callbacks,
-                    context: context,
-                    handler: this.handler
-                };
-            }
-        }, {
-            key: 'on',
-            value: function on(name, callback, context) {
-                var obj = {};
-                obj[name] = callback;
-                this.addHandler(obj, context);
-                return obj;
-            }
-        }, {
-            key: 'fire',
-            value: function fire(name, data) {
-                createDispatcher.call(this, name).call(this, data);
-            }
-        }, {
-            key: 'removeHandler',
-
-            /**
-             * Removes event handler set from object. For this operation parameters
-             * must be the same (equivalent) as used for addHandler method.
-             * @param {object} callbacks Callback set.
-             * @param {object=} context Context object.
-             */
-            value: function removeHandler(callbacks, context) {
-                var cursor = this;
-                var prev;
-
-                context = context || this;
-
-                // search for handler and remove it
-                while ((prev = cursor, cursor = cursor.handler)) {
-                    // jshint ignore:line
-                    if (cursor.callbacks === callbacks && cursor.context === context) {
-                        // make it non-callable
-                        cursor.callbacks = NULL_HANDLER;
-
-                        // remove from list
-                        prev.handler = cursor.handler;
-
-                        return;
-                    }
-                }
-            }
-        }, {
-            key: 'destroy',
-
-            /**
-             * @destructor
-             */
-            value: function destroy() {
-                // fire object destroy event handlers
-                this.emit_destroy();
-                // drop event handlers if any
-                this.handler = null;
-            }
-        }]);
-
-        return Emitter;
-    })();
-
-    //
-    // export names
-    //
-    exports.Emitter = Emitter;
-});
-define('units-registry',['exports', './error'], function (exports, _error) {
-    'use strict';
-
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
-
-    var UnitsMap = {};
-
-    var unitsRegistry = {
-
-        reg: function reg(unitType, xUnit) {
-            UnitsMap[unitType] = xUnit;
-            return this;
-        },
-
-        get: function get(unitType) {
-
-            if (!UnitsMap.hasOwnProperty(unitType)) {
-                throw new _error.TauChartError('Unknown unit type: ' + unitType, _error.errorCodes.UNKNOWN_UNIT_TYPE);
-            }
-
-            return UnitsMap[unitType];
-        }
-    };
-
-    exports.unitsRegistry = unitsRegistry;
-});
-define('utils/layuot-template',['exports', '../const'], function (exports, _const) {
-    'use strict';
-
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
-
-    var createElement = function createElement(cssClass, parent) {
-        var tag = 'div';
-        var element = document.createElement(tag);
-        element.classList.add(_const.CSS_PREFIX + cssClass);
-        if (parent) {
-            parent.appendChild(element);
-        }
-        return element;
-    };
-    var getLayout = function getLayout() {
-        var layout = createElement('layout');
-        var header = createElement('layout__header', layout);
-        var centerContainer = createElement('layout__container', layout);
-        var leftSidebar = createElement('layout__sidebar', centerContainer);
-        var contentContainer = createElement('layout__content', centerContainer);
-        var content = createElement('layout__content__wrap', contentContainer);
-        var rightSidebarContainer = createElement('layout__sidebar-right', centerContainer);
-        var rightSidebar = createElement('layout__sidebar-right__wrap', rightSidebarContainer);
-        var footer = createElement('layout__footer', layout);
-        /* jshint ignore:start */
-        return {
-            layout: layout,
-            header: header,
-            content: content,
-            leftSidebar: leftSidebar,
-            rightSidebar: rightSidebar,
-            footer: footer
-        };
-        /* jshint ignore:end */
-    };
-
-    exports.getLayout = getLayout;
-});
-define('scales-registry',["exports"], function (exports) {
-    "use strict";
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    var ScalesMap = {};
-
-    var scalesRegistry = {
-
-        reg: function reg(scaleType, scaleClass) {
-            ScalesMap[scaleType] = scaleClass;
-            return this;
-        },
-
-        get: function get(scaleType) {
-            return ScalesMap[scaleType];
-        }
-    };
-
-    exports.scalesRegistry = scalesRegistry;
-});
-define('scales-factory',['exports', './scales-registry'], function (exports, _scalesRegistry) {
-    'use strict';
-
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
-
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-    var ScalesFactory = (function () {
-        function ScalesFactory(sources) {
-            _classCallCheck(this, ScalesFactory);
-
-            this.sources = sources;
-        }
-
-        _createClass(ScalesFactory, [{
-            key: 'create',
-            value: function create(scaleConfig, frame, dynamicConfig) {
-
-                var ScaleClass = _scalesRegistry.scalesRegistry.get(scaleConfig.type);
-
-                var dim = scaleConfig.dim;
-                var src = scaleConfig.source;
-
-                var type = (this.sources[src].dims[dim] || {}).type;
-                var data = this.sources[src].data;
-                var xSrc = {
-                    full: function full() {
-                        return data;
-                    },
-                    part: function part() {
-                        return frame ? frame.take() : data;
-                    },
-                    partByDims: function partByDims(dims) {
-                        return frame ? frame.partByDims(dims) : data;
-                    }
-                };
-
-                scaleConfig.dimType = type;
-
-                return new ScaleClass(xSrc, scaleConfig).create(dynamicConfig);
-            }
-        }]);
-
-        return ScalesFactory;
-    })();
-
-    exports.ScalesFactory = ScalesFactory;
-});
 define('unit-domain-period-generator',["exports"], function (exports) {
     "use strict";
 
@@ -2507,7 +2443,68 @@ define('algebra',['exports', 'underscore', './unit-domain-period-generator'], fu
 
     exports.FramesAlgebra = FramesAlgebra;
 });
-define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/utils-dom', '../units-registry', '../utils/layuot-template', '../scales-factory', '../const', '../algebra'], function (exports, _event, _utilsUtils, _utilsUtilsDom, _unitsRegistry, _utilsLayuotTemplate, _scalesFactory, _const, _algebra) {
+define('data-frame',['exports', './utils/utils'], function (exports, _utilsUtils) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    var DataFrame = (function () {
+        function DataFrame(_ref, dataSource) {
+            var key = _ref.key;
+            var pipe = _ref.pipe;
+            var source = _ref.source;
+            var units = _ref.units;
+            var transformations = arguments[2] === undefined ? {} : arguments[2];
+
+            _classCallCheck(this, DataFrame);
+
+            this.key = key;
+            this.pipe = pipe;
+            this.source = source;
+            this.units = units;
+
+            this._frame = { key: key, source: source, pipe: pipe || [] };
+            this._data = dataSource;
+            this._pipeReducer = function (data, pipeCfg) {
+                return transformations[pipeCfg.type](data, pipeCfg.args);
+            };
+        }
+
+        _createClass(DataFrame, [{
+            key: 'hash',
+            value: function hash() {
+                var x = [this._frame.pipe, this._frame.key, this._frame.source].map(JSON.stringify).join('');
+
+                return _utilsUtils.utils.generateHash(x);
+            }
+        }, {
+            key: 'full',
+            value: function full() {
+                return this._data;
+            }
+        }, {
+            key: 'part',
+            value: function part() {
+                var pipeMapper = arguments[0] === undefined ? function (x) {
+                    return x;
+                } : arguments[0];
+
+                return this._frame.pipe.map(pipeMapper).reduce(this._pipeReducer, this._data);
+            }
+        }]);
+
+        return DataFrame;
+    })();
+
+    exports.DataFrame = DataFrame;
+});
+define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/utils-dom', '../const', '../algebra', '../data-frame'], function (exports, _event, _utilsUtils, _utilsUtilsDom, _const, _algebra, _dataFrame) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -2527,7 +2524,7 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
     };
 
     var GPL = (function (_Emitter) {
-        function GPL(config) {
+        function GPL(config, scalesRegistryInstance, unitsRegistry) {
             _classCallCheck(this, GPL);
 
             _get(Object.getPrototypeOf(GPL.prototype), 'constructor', this).call(this);
@@ -2535,12 +2532,10 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
             this.config = config;
 
             this.config.settings = this.config.settings || {};
-
-            this.unitSet = config.unitsRegistry || _unitsRegistry.unitsRegistry;
-
             this.sources = config.sources;
 
-            this.scalesCreator = new _scalesFactory.ScalesFactory(config.sources);
+            this.unitSet = unitsRegistry;
+            this.scalesHub = scalesRegistryInstance;
 
             this.scales = config.scales;
 
@@ -2629,23 +2624,17 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                         var flow = expr.inherit ? parentPipe : [];
                         var pipe = flow.concat([{ type: 'where', args: tuple }]).concat(root.transformation);
 
-                        var item = {
+                        return self._datify({
+                            key: tuple,
+                            pipe: pipe,
                             source: expr.source,
-                            pipe: pipe
-                        };
-
-                        if (tuple) {
-                            item.key = tuple;
-                        }
-
-                        item.units = root.units ? root.units.map(function (unit) {
-                            var clone = _utilsUtils.utils.clone(unit);
-                            // pass guide by reference
-                            clone.guide = unit.guide;
-                            return clone;
-                        }) : [];
-
-                        return self._datify(item);
+                            units: root.units ? root.units.map(function (unit) {
+                                var clone = _utilsUtils.utils.clone(unit);
+                                // pass guide by reference
+                                clone.guide = unit.guide;
+                                return clone;
+                            }) : []
+                        });
                     });
                 }
 
@@ -2685,11 +2674,9 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                 var UnitClass = self.unitSet.get(unitConfig.type);
                 var unitNode = new UnitClass(unitConfig);
                 unitNode.parentUnit = rootUnit;
-                unitNode.drawLayout(function (type, alias, settings) {
-
-                    var name = alias ? alias : '' + type + ':default';
-
-                    return self.scalesCreator.create(self.scales[name], rootFrame, settings);
+                unitNode.createScales(function (type, alias, dynamicProps) {
+                    var key = alias || '' + type + ':default';
+                    return self.scalesHub.createScaleInfo(self.scales[key], rootFrame).create(dynamicProps);
                 }).drawFrames(unitConfig.frames, (function (rootUnit) {
                     return function (rootConf, rootFrame) {
                         self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
@@ -2705,37 +2692,7 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
         }, {
             key: '_datify',
             value: function _datify(frame) {
-                var data = this.sources[frame.source].data;
-                var trans = this.transformations;
-                var pipeReducer = function pipeReducer(data, pipeCfg) {
-                    return trans[pipeCfg.type](data, pipeCfg.args);
-                };
-                frame.hash = function () {
-                    return _utilsUtils.utils.generateHash([frame.pipe, frame.key, frame.source].map(JSON.stringify).join(''));
-                };
-                frame.take = function () {
-                    return frame.pipe.reduce(pipeReducer, data);
-                };
-                frame.partByDims = function (dims) {
-                    return frame.pipe.map(function (f) {
-                        var r = {};
-                        if (f.type === 'where' && f.args) {
-                            r.type = f.type;
-                            r.args = dims.reduce(function (memo, d) {
-                                if (f.args.hasOwnProperty(d)) {
-                                    memo[d] = f.args[d];
-                                }
-                                return memo;
-                            }, {});
-                        } else {
-                            r = f;
-                        }
-
-                        return r;
-                    }).reduce(pipeReducer, data);
-                };
-                frame.data = frame.take();
-                return frame;
+                return new _dataFrame.DataFrame(frame, this.sources[frame.source].data, this.transformations);
             }
         }, {
             key: '_parseExpression',
@@ -2747,13 +2704,13 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                 var bInherit = expr.inherit !== false; // true by default
                 var funcArgs = expr.params;
 
-                var src = this.sources[srcAlias];
-                var dataFn = bInherit ? function () {
-                    return parentPipe.reduce(function (data, cfg) {
-                        return _this3.transformations[cfg.type](data, cfg.args);
-                    }, src.data);
-                } : function () {
-                    return src.data;
+                var frameConfig = {
+                    source: srcAlias,
+                    pipe: bInherit ? parentPipe : []
+                };
+
+                var dataFn = function dataFn() {
+                    return _this3._datify(frameConfig).part();
                 };
 
                 var func = _algebra.FramesAlgebra[funcName];
@@ -3523,6 +3480,109 @@ define('plugins',['exports', 'd3', './utils/utils'], function (exports, _d3, _ut
 });
 
 /* jshint ignore:end */;
+define('units-registry',['exports', './error'], function (exports, _error) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var UnitsMap = {};
+
+    var unitsRegistry = {
+
+        reg: function reg(unitType, xUnit) {
+            UnitsMap[unitType] = xUnit;
+            return this;
+        },
+
+        get: function get(unitType) {
+
+            if (!UnitsMap.hasOwnProperty(unitType)) {
+                throw new _error.TauChartError('Unknown unit type: ' + unitType, _error.errorCodes.UNKNOWN_UNIT_TYPE);
+            }
+
+            return UnitsMap[unitType];
+        }
+    };
+
+    exports.unitsRegistry = unitsRegistry;
+});
+define('scales-registry',["exports"], function (exports) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    var ScalesMap = {};
+
+    var scalesRegistry = {
+
+        reg: function reg(scaleType, scaleClass) {
+            ScalesMap[scaleType] = scaleClass;
+            return this;
+        },
+
+        get: function get(scaleType) {
+            return ScalesMap[scaleType];
+        }
+    };
+
+    exports.scalesRegistry = scalesRegistry;
+});
+define('scales-factory',['exports', './data-frame'], function (exports, _dataFrame) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    var ScalesFactory = (function () {
+        function ScalesFactory(scalesRegistry, sources, scales) {
+            _classCallCheck(this, ScalesFactory);
+
+            this.registry = scalesRegistry;
+            this.sources = sources;
+            this.scales = scales;
+        }
+
+        _createClass(ScalesFactory, [{
+            key: 'createScaleInfo',
+            value: function createScaleInfo(scaleConfig) {
+                var dataFrame = arguments[1] === undefined ? null : arguments[1];
+
+                var ScaleClass = this.registry.get(scaleConfig.type);
+
+                var dim = scaleConfig.dim;
+                var src = scaleConfig.source;
+
+                var type = (this.sources[src].dims[dim] || {}).type;
+                var data = this.sources[src].data;
+
+                var frame = dataFrame || new _dataFrame.DataFrame({ source: src }, data);
+
+                scaleConfig.dimType = type;
+
+                return new ScaleClass(frame, scaleConfig);
+            }
+        }, {
+            key: 'createScaleInfoByName',
+            value: function createScaleInfoByName(name) {
+                var dataFrame = arguments[1] === undefined ? null : arguments[1];
+
+                return this.createScaleInfo(this.scales[name], dataFrame);
+            }
+        }]);
+
+        return ScalesFactory;
+    })();
+
+    exports.ScalesFactory = ScalesFactory;
+});
 define('data-processor',['exports', './utils/utils'], function (exports, _utilsUtils) {
     'use strict';
 
@@ -3686,6 +3746,46 @@ define('data-processor',['exports', './utils/utils'], function (exports, _utilsU
     };
 
     exports.DataProcessor = DataProcessor;
+});
+define('utils/layuot-template',['exports', '../const'], function (exports, _const) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var createElement = function createElement(cssClass, parent) {
+        var tag = 'div';
+        var element = document.createElement(tag);
+        element.classList.add(_const.CSS_PREFIX + cssClass);
+        if (parent) {
+            parent.appendChild(element);
+        }
+        return element;
+    };
+    var getLayout = function getLayout() {
+        var layout = createElement('layout');
+        var header = createElement('layout__header', layout);
+        var centerContainer = createElement('layout__container', layout);
+        var leftSidebar = createElement('layout__sidebar', centerContainer);
+        var contentContainer = createElement('layout__content', centerContainer);
+        var content = createElement('layout__content__wrap', contentContainer);
+        var rightSidebarContainer = createElement('layout__sidebar-right', centerContainer);
+        var rightSidebar = createElement('layout__sidebar-right__wrap', rightSidebarContainer);
+        var footer = createElement('layout__footer', layout);
+        /* jshint ignore:start */
+        return {
+            layout: layout,
+            header: header,
+            content: content,
+            leftSidebar: leftSidebar,
+            rightSidebar: rightSidebar,
+            footer: footer
+        };
+        /* jshint ignore:end */
+    };
+
+    exports.getLayout = getLayout;
 });
 define('spec-converter',['exports', 'underscore', './utils/utils'], function (exports, _underscore, _utilsUtils) {
     'use strict';
@@ -4138,7 +4238,7 @@ define('formatter-registry',['exports', 'd3'], function (exports, _d3) {
 
     exports.FormatterRegistry = FormatterRegistry;
 });
-define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', './utils/utils-draw', './formatter-registry', './utils/utils-dom', './scales-factory'], function (exports, _underscore, _utilsUtils, _utilsUtilsDraw, _formatterRegistry, _utilsUtilsDom, _scalesFactory) {
+define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', './utils/utils-draw', './formatter-registry', './utils/utils-dom'], function (exports, _underscore, _utilsUtils, _utilsUtilsDraw, _formatterRegistry, _utilsUtilsDom) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -4766,14 +4866,12 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
             _classCallCheck(this, SpecTransformAutoLayout);
 
             this.spec = spec;
-            this.scalesCreator = new _scalesFactory.ScalesFactory(spec.sources);
             this.isApplicable = _utilsUtils.utils.isSpecRectCoordsOnly(spec.unit);
         }
 
         _createClass(SpecTransformAutoLayout, [{
             key: 'transform',
-            value: function transform() {
-                var _this = this;
+            value: function transform(chart) {
 
                 var spec = this.spec;
 
@@ -4787,14 +4885,9 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
                     return size.width <= rule.width;
                 });
 
-                var auto = SpecEngineFactory.get(rule.name, spec.settings, spec, function (type, alias) {
-
-                    var name = alias ? alias : '' + type + ':default';
-
-                    return _this.scalesCreator.create(spec.scales[name], null, [0, 100]);
+                return SpecEngineFactory.get(rule.name, spec.settings, spec, function (type, alias) {
+                    return chart.getScaleInfo(alias || '' + type + ':default');
                 });
-
-                return auto;
             }
         }]);
 
@@ -4915,7 +5008,7 @@ define('spec-transform-calc-size',['exports', './scales-factory', './utils/utils
 
         _createClass(SpecTransformCalcSize, [{
             key: 'transform',
-            value: function transform() {
+            value: function transform(chart) {
 
                 var specRef = this.spec;
 
@@ -4931,8 +5024,6 @@ define('spec-transform-calc-size',['exports', './scales-factory', './utils/utils
 
                 var scales = specRef.scales;
 
-                var scalesCreator = new _scalesFactory.ScalesFactory(specRef.sources);
-
                 var groupFramesBy = function groupFramesBy(frames, dim) {
                     return frames.reduce(function (memo, f) {
                         var fKey = f.key || {};
@@ -4943,13 +5034,14 @@ define('spec-transform-calc-size',['exports', './scales-factory', './utils/utils
                     }, {});
                 };
 
-                var calcScaleSize = function calcScaleSize(xScale, maxTickText) {
+                var calcScaleSize = function calcScaleSize(scaleInfo, maxTickText) {
 
                     var r = 0;
 
-                    if (['ordinal', 'period'].indexOf(xScale.scaleType) >= 0) {
-                        var domain = xScale.domain();
-                        r = maxTickText * domain.length;
+                    var isDiscrete = ['ordinal', 'period'].indexOf(scaleInfo.scaleType) >= 0;
+
+                    if (isDiscrete) {
+                        r = maxTickText * scaleInfo.domain().length;
                     } else {
                         r = maxTickText * 4;
                     }
@@ -4960,8 +5052,8 @@ define('spec-transform-calc-size',['exports', './scales-factory', './utils/utils
                 var calcSizeRecursively = function calcSizeRecursively(prop, root, takeStepSizeStrategy) {
                     var frame = arguments[3] === undefined ? null : arguments[3];
 
-                    var xCfg = prop === 'x' ? scales[root.x] : scales[root.y];
-                    var yCfg = prop === 'x' ? scales[root.y] : scales[root.x];
+                    var xCfg = prop === 'x' ? root.x : root.y;
+                    var yCfg = prop === 'x' ? root.y : root.x;
                     var guide = root.guide;
                     var xSize = prop === 'x' ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
 
@@ -4969,11 +5061,11 @@ define('spec-transform-calc-size',['exports', './scales-factory', './utils/utils
 
                     if (root.units[0].type !== 'COORDS.RECT') {
 
-                        var xScale = scalesCreator.create(xCfg, frame, [0, 100]);
+                        var xScale = chart.getScaleInfo(xCfg, frame);
                         return resScaleSize + calcScaleSize(xScale, xSize);
                     } else {
 
-                        var rows = groupFramesBy(root.frames, yCfg.dim);
+                        var rows = groupFramesBy(root.frames, scales[yCfg].dim);
                         var rowsSizes = Object.keys(rows).map(function (kRow) {
                             return rows[kRow].map(function (f) {
                                 return calcSizeRecursively(prop, f.units[0], takeStepSizeStrategy, f);
@@ -5304,7 +5396,7 @@ define('spec-transform-extract-axes',['exports', 'underscore', './utils/utils'],
 
     exports.SpecTransformExtractAxes = SpecTransformExtractAxes;
 });
-define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins', '../utils/utils', '../utils/utils-dom', '../const', '../units-registry', '../data-processor', '../utils/layuot-template', '../spec-converter', '../spec-transform-auto-layout', '../spec-transform-calc-size', '../spec-transform-apply-ratio', '../spec-transform-extract-axes', './tau.gpl'], function (exports, _apiBalloon, _event, _plugins, _utilsUtils, _utilsUtilsDom, _const, _unitsRegistry, _dataProcessor, _utilsLayuotTemplate, _specConverter, _specTransformAutoLayout, _specTransformCalcSize, _specTransformApplyRatio, _specTransformExtractAxes, _tauGpl) {
+define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins', '../utils/utils', '../utils/utils-dom', '../data-frame', '../const', '../units-registry', '../scales-registry', '../scales-factory', '../data-processor', '../utils/layuot-template', '../spec-converter', '../spec-transform-auto-layout', '../spec-transform-calc-size', '../spec-transform-apply-ratio', '../spec-transform-extract-axes', './tau.gpl'], function (exports, _apiBalloon, _event, _plugins, _utilsUtils, _utilsUtilsDom, _dataFrame, _const, _unitsRegistry, _scalesRegistry, _scalesFactory, _dataProcessor, _utilsLayuotTemplate, _specConverter, _specTransformAutoLayout, _specTransformCalcSize, _specTransformApplyRatio, _specTransformExtractAxes, _tauGpl) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -5313,7 +5405,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x8, _x9, _x10) { var _again = true; _function: while (_again) { var object = _x8, property = _x9, receiver = _x10; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x8 = parent; _x9 = property; _x10 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -5325,7 +5417,6 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
             _get(Object.getPrototypeOf(Plot.prototype), 'constructor', this).call(this);
             this._nodes = [];
-            this._liveSpec = null;
             this._svg = null;
             this._filtersStore = {
                 filters: {},
@@ -5352,7 +5443,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             this.onUnitsStructureExpandedTransformers = [_specTransformCalcSize.SpecTransformCalcSize, _specTransformExtractAxes.SpecTransformExtractAxes];
 
             this._originData = _.clone(this.configGPL.sources);
-
+            this._liveSpec = this.configGPL;
             this._plugins = new _plugins.Plugins(this.config.plugins, this);
         }
 
@@ -5446,84 +5537,97 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
                 this.configGPL.settings.size = size;
 
-                var gpl = _utilsUtils.utils.clone(_.omit(this.configGPL, 'plugins'));
-                gpl.sources = this.getData({ isNew: true });
-                gpl.settings = this.configGPL.settings;
+                this._liveSpec = _utilsUtils.utils.clone(_.omit(this.configGPL, 'plugins'));
+                this._liveSpec.sources = this.getDataSources();
+                this._liveSpec.settings = this.configGPL.settings;
 
-                if (this.isEmptySources(gpl.sources)) {
+                if (this.isEmptySources(this._liveSpec.sources)) {
                     content.innerHTML = this._emptyContainer;
                     return;
                 }
 
-                gpl = this.transformers.reduce(function (memo, TransformClass) {
+                this._liveSpec = this.transformers.reduce(function (memo, TransformClass) {
                     return new TransformClass(memo).transform(_this);
-                }, gpl);
+                }, this._liveSpec);
 
                 this._nodes = [];
-                gpl.onUnitDraw = function (unitNode) {
+
+                this._liveSpec.onUnitDraw = function (unitNode) {
                     _this._nodes.push(unitNode);
                     _this.fire('unitdraw', unitNode);
                 };
 
-                gpl.onUnitsStructureExpanded = function (specRef) {
+                this._liveSpec.onUnitsStructureExpanded = function (specRef) {
                     _this.onUnitsStructureExpandedTransformers.forEach(function (TClass) {
-                        return new TClass(specRef).transform();
+                        return new TClass(specRef).transform(_this);
                     });
                     _this.fire(['units', 'structure', 'expanded'].join(''), specRef);
                 };
 
-                this._liveSpec = gpl;
+                this.fire('specready', this._liveSpec);
 
-                this.fire('specready', gpl);
-
-                new _tauGpl.GPL(gpl).renderTo(content, gpl.settings.size);
+                new _tauGpl.GPL(this._liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry).renderTo(content, this._liveSpec.settings.size);
 
                 var svgXElement = d3.select(content).select('svg');
 
                 this._svg = svgXElement.node();
-                this._layout.rightSidebar.style.maxHeight = '' + gpl.settings.size.height + 'px';
+                this._layout.rightSidebar.style.maxHeight = '' + this._liveSpec.settings.size.height + 'px';
                 this.fire('render', this._svg);
             }
         }, {
-            key: 'getData',
-            value: function getData() {
+            key: 'getScaleFactory',
+            value: function getScaleFactory() {
+                var dataSources = arguments[0] === undefined ? null : arguments[0];
+
+                return new _scalesFactory.ScalesFactory(_scalesRegistry.scalesRegistry, dataSources || this._liveSpec.sources, this._liveSpec.scales);
+            }
+        }, {
+            key: 'getScaleInfo',
+            value: function getScaleInfo(name) {
+                var dataFrame = arguments[1] === undefined ? null : arguments[1];
+
+                return this.getScaleFactory().createScaleInfoByName(name, dataFrame);
+            }
+        }, {
+            key: 'getSourceFiltersIterator',
+            value: function getSourceFiltersIterator(rejectFiltersPredicate) {
+
+                var filters = _(this._filtersStore.filters).chain().values().flatten().reject(function (f) {
+                    return rejectFiltersPredicate(f);
+                }).pluck('predicate').value();
+
+                return function (row) {
+                    return filters.reduce(function (prev, f) {
+                        return prev && f(row);
+                    }, true);
+                };
+            }
+        }, {
+            key: 'getDataSources',
+            value: function getDataSources() {
                 var _this2 = this;
 
                 var param = arguments[0] === undefined ? {} : arguments[0];
 
-                var applyFilterMap = function applyFilterMap(data, filtersSelector) {
-
-                    var filters = _(_this2._filtersStore.filters).chain().values().flatten().reject(function (f) {
-                        return _.contains(param.excludeFilter, f.tag) || !filtersSelector(f);
-                    }).pluck('predicate').value();
-
-                    return data.filter(function (row) {
-                        return filters.reduce(function (prev, f) {
-                            return prev && f(row);
-                        }, true);
-                    });
+                var excludeFiltersByTagAndSource = function excludeFiltersByTagAndSource(k) {
+                    return function (f) {
+                        return _.contains(param.excludeFilter, f.tag) || f.src !== k;
+                    };
                 };
 
-                if (param.isNew) {
-                    var filteredSources = {};
-                    filteredSources['?'] = this._originData['?'];
-                    return Object.keys(this._originData).filter(function (k) {
-                        return k !== '?';
-                    }).reduce(function (memo, key) {
-                        var item = _this2._originData[key];
-                        memo[key] = {
-                            dims: item.dims,
-                            data: applyFilterMap(item.data, function (f) {
-                                return f.src === key;
-                            })
-                        };
-                        return memo;
-                    }, filteredSources);
-                } else {
-                    return applyFilterMap(this.config.data, function (f) {
-                        return true;
-                    });
-                }
+                return Object.keys(this._originData).filter(function (k) {
+                    return k !== '?';
+                }).reduce(function (memo, k) {
+                    var item = _this2._originData[k];
+                    var filterIterator = _this2.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+                    memo[k] = {
+                        dims: item.dims,
+                        data: item.data.filter(filterIterator)
+                    };
+                    return memo;
+                }, {
+                    '?': this._originData['?']
+                });
             }
         }, {
             key: 'isEmptySources',
@@ -5536,10 +5640,21 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 }).length;
             }
         }, {
+            key: 'getData',
+            value: function getData() {
+                var param = arguments[0] === undefined ? {} : arguments[0];
+                var src = arguments[1] === undefined ? '/' : arguments[1];
+
+                var sources = this.getDataSources(param);
+                return sources[src].data;
+            }
+        }, {
             key: 'setData',
             value: function setData(data) {
+                var src = arguments[1] === undefined ? '/' : arguments[1];
+
                 this.config.data = data;
-                this.configGPL.sources['/'].data = data;
+                this.configGPL.sources[src].data = data;
                 this._originData = _.clone(this.configGPL.sources);
                 this.refresh();
             }
@@ -5557,7 +5672,6 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 var id = this._filtersStore.tick++;
                 filter.id = id;
                 filters.push(filter);
-                this.refresh();
                 return id;
             }
         }, {
@@ -5570,7 +5684,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                         return item.id === id;
                     });
                 });
-                this.refresh();
+                return this;
             }
         }, {
             key: 'refresh',
@@ -6025,11 +6139,16 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
         var textOffsetStep = 11;
         var refOffsetStart = isHorizontal ? -10 : 20;
         var translateParam = isHorizontal ? 0 : 1;
+        var directionKoeff = isHorizontal ? 1 : -1;
         var layoutModel = [];
         nodeScale.selectAll('.tick').each(function (a, i) {
             var tick = _d32['default'].select(this);
             var text = tick.text();
-            var translateX = parseFloat(tick.attr('transform').replace('translate(', '').split(',')[translateParam]);
+
+            var translateXStr = tick.attr('transform').replace('translate(', '').replace(' ', ',') // IE specific
+            .split(',')[translateParam];
+
+            var translateX = directionKoeff * parseFloat(translateXStr);
             var tNode = tick.selectAll('text');
 
             var textWidth = tNode.node().getBBox().width;
@@ -6037,7 +6156,7 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
             var halfText = textWidth / 2;
             var s = translateX - halfText;
             var e = translateX + halfText;
-            layoutModel.push({ s: s, e: e, l: 0, textRef: tNode, tickRef: tick });
+            layoutModel.push({ c: translateX, s: s, e: e, l: 0, textRef: tNode, tickRef: tick });
         });
 
         var iterateByTriples = function iterateByTriples(coll, iterator) {
@@ -6060,12 +6179,17 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
             return rules.hasOwnProperty(k) ? rules[k] : 0;
         };
 
-        iterateByTriples(layoutModel, function (prev, curr, next) {
+        var axisLayoutModel = layoutModel.sort(function (a, b) {
+            return a.c - b.c;
+        });
+
+        iterateByTriples(axisLayoutModel, function (prev, curr, next) {
 
             var collideL = prev.e > curr.s;
             var collideR = next.s < curr.e;
 
             if (collideL || collideR) {
+
                 curr.l = resolveCollide(prev.l, collideL);
 
                 var size = curr.textRef[0].length;
@@ -6109,7 +6233,7 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
     exports.wrapText = wrapText;
     exports.cutText = cutText;
 });
-define('elements/coords.cartesian',['exports', 'd3', 'underscore', '../utils/utils-draw', '../const', '../formatter-registry', '../utils/d3-decorators'], function (exports, _d3, _underscore, _utilsUtilsDraw, _const, _formatterRegistry, _utilsD3Decorators) {
+define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', '../utils/utils-draw', '../const', '../formatter-registry', '../utils/d3-decorators'], function (exports, _d3, _underscore, _element, _utilsUtilsDraw, _const, _formatterRegistry, _utilsD3Decorators) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -6118,19 +6242,25 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', '../utils/uti
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
     var _d32 = _interopRequireDefault(_d3);
 
     var _2 = _interopRequireDefault(_underscore);
 
-    var Cartesian = (function () {
+    var Cartesian = (function (_Element) {
         function Cartesian(config) {
             _classCallCheck(this, Cartesian);
+
+            _get(Object.getPrototypeOf(Cartesian.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
 
@@ -6201,9 +6331,11 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', '../utils/uti
             }
         }
 
+        _inherits(Cartesian, _Element);
+
         _createClass(Cartesian, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var node = this.config;
 
@@ -6219,7 +6351,7 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', '../utils/uti
                 this.W = innerWidth;
                 this.H = innerHeight;
 
-                return this;
+                return this.regScale('x', this.xScale).regScale('y', this.yScale);
             }
         }, {
             key: 'drawFrames',
@@ -6456,40 +6588,11 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', '../utils/uti
         }]);
 
         return Cartesian;
-    })();
+    })(_element.Element);
 
     exports.Cartesian = Cartesian;
 });
-define('elements/element',['exports', '../event'], function (exports, _event) {
-    'use strict';
-
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
-
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
-
-    var Element = (function (_Emitter) {
-        function Element() {
-            _classCallCheck(this, Element);
-
-            if (_Emitter != null) {
-                _Emitter.apply(this, arguments);
-            }
-        }
-
-        _inherits(Element, _Emitter);
-
-        return Element;
-    })(_event.Emitter);
-
-    exports.Element = Element;
-});
-
-// add base behaviour here;
-define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '../utils/utils-draw', '../utils/utils', '../const'], function (exports, _d3, _underscore, _element, _utilsUtilsDraw, _utilsUtils, _const) {
+define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '../utils/utils-draw', '../utils/utils', '../const', '../formatter-registry'], function (exports, _d3, _underscore, _element, _utilsUtilsDraw, _utilsUtils, _const, _formatterRegistry) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -6537,8 +6640,8 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
         _inherits(Parallel, _Element);
 
         _createClass(Parallel, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var cfg = this.config;
 
@@ -6567,7 +6670,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
                     return colsMap[p];
                 };
 
-                return this;
+                return this.regScale('columns', this.columnsScalesMap);
             }
         }, {
             key: 'drawFrames',
@@ -6665,7 +6768,15 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
                     return _utilsUtilsDraw.utilsDraw.translate(xBase(d), 0);
                 }).call(function () {
                     this.append('g').attr('class', 'y axis').each(function (d) {
-                        _d32['default'].select(this).call(d3Axis.scale(columnsScalesMap[d]));
+                        var propName = columnsScalesMap[d].dim;
+                        var axisScale = d3Axis.scale(columnsScalesMap[d]);
+                        var columnGuide = colsGuide[propName] || {};
+                        var formatter = _formatterRegistry.FormatterRegistry.get(columnGuide.tickFormat, columnGuide.tickFormatNullAlias);
+                        if (formatter !== null) {
+                            axisScale.tickFormat(formatter);
+                        }
+
+                        _d32['default'].select(this).call(axisScale);
                     }).append('text').attr('class', 'label').attr('text-anchor', 'middle').attr('y', -9).text(function (d) {
                         return ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim;
                     });
@@ -6695,7 +6806,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
                     }).map(function (k) {
                         var ext = columnsBrushes[k].extent();
                         var rng = [];
-                        if (columnsScalesMap[k].descrete) {
+                        if (columnsScalesMap[k].discrete) {
                             rng = columnsScalesMap[k].domain().filter(function (val) {
                                 var pos = columnsScalesMap[k](val);
                                 return ext[0] <= pos && ext[1] >= pos;
@@ -6706,7 +6817,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
 
                         return {
                             dim: columnsScalesMap[k].dim,
-                            func: columnsScalesMap[k].descrete ? 'inset' : 'between',
+                            func: columnsScalesMap[k].discrete ? 'inset' : 'between',
                             args: rng
                         };
                     });
@@ -6736,7 +6847,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
                 }).forEach(function (k) {
                     var brushExt = colsBrushSettings[k];
                     var ext = [];
-                    if (columnsScalesMap[k].descrete) {
+                    if (columnsScalesMap[k].discrete) {
                         var positions = brushExt.map(columnsScalesMap[k]).filter(function (x) {
                             return x >= 0;
                         });
@@ -7631,7 +7742,7 @@ define('utils/d3-labeler',["exports"], function (exports) {
 
     exports.d3Labeler = d3Labeler;
 });
-define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../utils/utils-draw', '../utils/d3-labeler', '../const', '../formatter-registry'], function (exports, _d3, _underscore, _topojson, _utilsUtilsDraw, _utilsD3Labeler, _const, _formatterRegistry) {
+define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../utils/utils-draw', '../utils/d3-labeler', '../const', '../formatter-registry', './element'], function (exports, _d3, _underscore, _topojson, _utilsUtilsDraw, _utilsD3Labeler, _const, _formatterRegistry, _element) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -7640,9 +7751,13 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
     var _d32 = _interopRequireDefault(_d3);
 
@@ -7653,12 +7768,18 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
     _d32['default'].labeler = _utilsD3Labeler.d3Labeler;
 
     var avgCharSize = 5.5;
+    var iterationsCount = 10;
+    var pointOpacity = 0.5;
 
     var hierarchy = ['land', 'continents', 'georegions', 'countries', 'regions', 'subunits', 'states', 'counties'];
 
-    var GeoMap = (function () {
+    var GeoMap = (function (_Element) {
         function GeoMap(config) {
+            var _this = this;
+
             _classCallCheck(this, GeoMap);
+
+            _get(Object.getPrototypeOf(GeoMap.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = _2['default'].defaults(this.config.guide || {}, {
@@ -7666,11 +7787,24 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                 padding: { l: 0, r: 0, t: 0, b: 0 },
                 showNames: true
             });
+            this.contourToFill = null;
+
+            this.on('highlight-area', function (sender, e) {
+                return _this._highlightArea(e);
+            });
+            this.on('highlight-point', function (sender, e) {
+                return _this._highlightPoint(e);
+            });
+            this.on('highlight', function (sender, e) {
+                return _this._highlightPoint(e);
+            });
         }
 
+        _inherits(GeoMap, _Element);
+
         _createClass(GeoMap, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var node = this.config;
 
@@ -7697,12 +7831,12 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                 this.W = innerWidth;
                 this.H = innerHeight;
 
-                return this;
+                return this.regScale('latitude', this.latScale).regScale('longitude', this.lonScale).regScale('size', this.sizeScale).regScale('color', this.colorScale).regScale('code', this.codeScale).regScale('fill', this.fillScale);
             }
         }, {
             key: 'drawFrames',
             value: function drawFrames(frames) {
-                var _this = this;
+                var _this2 = this;
 
                 var guide = this.config.guide;
 
@@ -7714,7 +7848,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                             throw e;
                         }
 
-                        _this._drawMap(frames, topoJSONData);
+                        _this2._drawMap(frames, topoJSONData);
                     });
                 } else {
                     this._drawMap(frames, guide.sourcemap);
@@ -7773,7 +7907,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                         return { x: d.sx, y: d.sy, r: d.r };
                     });
 
-                    _d32['default'].labeler().label(labels).anchor(anchors).width(innerW).height(innerH).start(100);
+                    _d32['default'].labeler().label(labels).anchor(anchors).width(innerW).height(innerH).start(iterationsCount);
 
                     labels.filter(function (item) {
                         return !item.isRef;
@@ -7802,6 +7936,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
         }, {
             key: '_drawMap',
             value: function _drawMap(frames, topoJSONData) {
+                var _this3 = this;
 
                 var self = this;
 
@@ -7847,6 +7982,8 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                     throw new Error('[georole] is missing');
                 }
 
+                this.contourToFill = contourToFill;
+
                 var center;
 
                 if (latScale.dim && lonScale.dim) {
@@ -7859,7 +7996,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
 
                 var path = _d32['default'].geo.path().projection(d3Projection);
 
-                var xmap = node.selectAll('.map-container').data(['' + innerW + '' + innerH + '' + contours.join('-')], _2['default'].identity);
+                var xmap = node.selectAll('.map-container').data(['' + innerW + '' + innerH + '' + center + '' + contours.join('-')], _2['default'].identity);
                 xmap.exit().remove();
                 xmap.enter().append('g').call(function () {
 
@@ -7958,32 +8095,27 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                     }
                 });
 
-                var groupByCode = frames.reduce(function (groups, f) {
-                    var data = f.take();
-                    return data.reduce(function (memo, rec) {
+                this.groupByCode = frames.reduce(function (groups, f) {
+                    return f.part().reduce(function (memo, rec) {
                         var key = (rec[codeScale.dim] || '').toLowerCase();
-                        memo[key] = rec[fillScale.dim];
+                        memo[key] = rec;
                         return memo;
                     }, groups);
                 }, {});
 
+                var toData = this._resolveFeature.bind(this);
+
                 xmap.selectAll('.map-contour-' + contourToFill).data(_topojson2['default'].feature(topoJSONData, topoJSONData.objects[contourToFill]).features).call(function () {
                     this.classed('map-contour', true).attr('fill', function (d) {
-                        var prop = d.properties;
-                        var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter(function (c) {
-                            return prop.hasOwnProperty(c) && prop[c] && groupByCode.hasOwnProperty(prop[c].toLowerCase());
-                        });
-
-                        var value;
-                        if (codes.length === 0) {
-                            // doesn't match
-                            value = guide.defaultFill;
-                        } else if (codes.length > 0) {
-                            value = fillScale(groupByCode[prop[codes[0]].toLowerCase()]);
-                        }
-
-                        return value;
+                        var row = toData(d);
+                        return row === null ? guide.defaultFill : fillScale(row[fillScale.dim]);
                     });
+                }).on('mouseover', function (d) {
+                    return _this3.fire('area-mouseover', { data: toData(d), event: _d32['default'].event });
+                }).on('mouseout', function (d) {
+                    return _this3.fire('area-mouseout', { data: toData(d), event: _d32['default'].event });
+                }).on('click', function (d) {
+                    return _this3.fire('area-click', { data: toData(d), event: _d32['default'].event });
                 });
 
                 if (!latScale.dim || !lonScale.dim) {
@@ -8004,7 +8136,16 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                             var d = _ref3.data;
                             return colorScale(d[colorScale.dim]);
                         },
-                        opacity: 0.5
+                        opacity: pointOpacity
+                    }).on('mouseover', function (_ref4) {
+                        var d = _ref4.data;
+                        return self.fire('point-mouseover', { data: d, event: _d32['default'].event });
+                    }).on('mouseout', function (_ref5) {
+                        var d = _ref5.data;
+                        return self.fire('point-mouseout', { data: d, event: _d32['default'].event });
+                    }).on('click', function (_ref6) {
+                        var d = _ref6.data;
+                        return self.fire('point-click', { data: d, event: _d32['default'].event });
                     });
                 };
 
@@ -8025,7 +8166,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                 };
 
                 var mapper = function mapper(f) {
-                    return { tags: f.key || {}, hash: f.hash(), data: f.take() };
+                    return { tags: f.key || {}, hash: f.hash(), data: f.part() };
                 };
 
                 var frameGroups = xmap.selectAll('.frame-id-' + options.uid).data(frames.map(mapper), function (f) {
@@ -8036,6 +8177,48 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                 frameGroups.enter().append('g').call(updateGroups);
 
                 return [];
+            }
+        }, {
+            key: '_resolveFeature',
+            value: function _resolveFeature(d) {
+                var groupByCode = this.groupByCode;
+                var prop = d.properties;
+                var codes = ['c1', 'c2', 'c3', 'abbr', 'name'].filter(function (c) {
+                    return prop.hasOwnProperty(c) && prop[c] && groupByCode.hasOwnProperty(prop[c].toLowerCase());
+                });
+
+                var value;
+                if (codes.length === 0) {
+                    // doesn't match
+                    value = null;
+                } else if (codes.length > 0) {
+                    var k = prop[codes[0]].toLowerCase();
+                    value = groupByCode[k];
+                }
+
+                return value;
+            }
+        }, {
+            key: '_highlightArea',
+            value: function _highlightArea(filter) {
+                var _this4 = this;
+
+                var node = this.config.options.container;
+                var contourToFill = this.contourToFill;
+                node.selectAll('.map-contour-' + contourToFill).classed('map-contour-highlighted', function (d) {
+                    return filter(_this4._resolveFeature(d));
+                });
+            }
+        }, {
+            key: '_highlightPoint',
+            value: function _highlightPoint(filter) {
+                this.config.options.container.selectAll('circle').classed('map-point-highlighted', function (_ref7) {
+                    var d = _ref7.data;
+                    return filter(d);
+                }).attr('opacity', function (_ref8) {
+                    var d = _ref8.data;
+                    return filter(d) ? pointOpacity : 0.1;
+                });
             }
         }, {
             key: '_createProjection',
@@ -8100,11 +8283,11 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
         }]);
 
         return GeoMap;
-    })();
+    })(_element.Element);
 
     exports.GeoMap = GeoMap;
 });
-define('elements/element.pie',['exports', '../const', '../utils/css-class-map'], function (exports, _const, _utilsCssClassMap) {
+define('elements/element.pie',['exports', '../const', './element', '../utils/css-class-map'], function (exports, _const, _element, _utilsCssClassMap) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -8113,11 +8296,17 @@ define('elements/element.pie',['exports', '../const', '../utils/css-class-map'],
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    var Pie = (function () {
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+    var Pie = (function (_Element) {
         function Pie(config) {
             _classCallCheck(this, Pie);
+
+            _get(Object.getPrototypeOf(Pie.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = this.config.guide || {};
@@ -8126,9 +8315,11 @@ define('elements/element.pie',['exports', '../const', '../utils/css-class-map'],
             });
         }
 
+        _inherits(Pie, _Element);
+
         _createClass(Pie, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var config = this.config;
 
@@ -8136,7 +8327,7 @@ define('elements/element.pie',['exports', '../const', '../utils/css-class-map'],
                 this.labelScale = fnCreateScale('value', config.label);
                 this.colorScale = fnCreateScale('color', config.color, {});
 
-                return this;
+                return this.regScale('proportion', this.proportionScale).regScale('label', this.labelScale).regScale('color', this.colorScale);
             }
         }, {
             key: 'drawFrames',
@@ -8154,7 +8345,7 @@ define('elements/element.pie',['exports', '../const', '../utils/css-class-map'],
                 var h = options.height;
                 var r = h / 2;
 
-                var data = frames[0].take();
+                var data = frames[0].part();
 
                 var vis = options.container.append('svg:svg').data([data]).attr('width', w).attr('height', h).append('svg:g').attr('transform', 'translate(' + r + ',' + r + ')');
 
@@ -8188,7 +8379,7 @@ define('elements/element.pie',['exports', '../const', '../utils/css-class-map'],
         }]);
 
         return Pie;
-    })();
+    })(_element.Element);
 
     exports.Pie = Pie;
 });
@@ -8226,8 +8417,8 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
         _inherits(ParallelLine, _Element);
 
         _createClass(ParallelLine, [{
-            key: 'drawLayout',
-            value: function drawLayout(fnCreateScale) {
+            key: 'createScales',
+            value: function createScales(fnCreateScale) {
 
                 var config = this.config;
                 var options = config.options;
@@ -8248,7 +8439,7 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
                     return colsMap[p];
                 };
 
-                return this;
+                return this.regScale('columns', this.scalesMap).regScale('color', this.color);
             }
         }, {
             key: 'drawFrames',
@@ -8280,14 +8471,14 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
 
                 var updateFrame = function updateFrame() {
                     var backgroundPath = this.selectAll('.background').data(function (f) {
-                        return f.take();
+                        return f.part();
                     });
                     backgroundPath.exit().remove();
                     backgroundPath.call(drawPath);
                     backgroundPath.enter().append('path').attr('class', 'background').call(drawPath);
 
                     var foregroundPath = this.selectAll('.foreground').data(function (f) {
-                        return f.take();
+                        return f.part();
                     });
                     foregroundPath.exit().remove();
                     foregroundPath.call(function () {
@@ -8363,14 +8554,36 @@ define('scales/base',['exports', '../utils/utils', 'underscore'], function (expo
     };
 
     var BaseScale = (function () {
-        function BaseScale(xSource, scaleConfig) {
+        function BaseScale(dataFrame, scaleConfig) {
+            var _this = this;
+
             _classCallCheck(this, BaseScale);
+
+            this._fields = {};
 
             var data;
             if (_2['default'].isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
-                data = xSource.partByDims(scaleConfig.fitToFrameByDims);
+
+                var leaveDimsInWhereArgsOrEx = function leaveDimsInWhereArgsOrEx(f) {
+                    var r = {};
+                    if (f.type === 'where' && f.args) {
+                        r.type = f.type;
+                        r.args = scaleConfig.fitToFrameByDims.reduce(function (memo, d) {
+                            if (f.args.hasOwnProperty(d)) {
+                                memo[d] = f.args[d];
+                            }
+                            return memo;
+                        }, {});
+                    } else {
+                        r = f;
+                    }
+
+                    return r;
+                };
+
+                data = dataFrame.part(leaveDimsInWhereArgsOrEx);
             } else {
-                data = xSource.full();
+                data = dataFrame.full();
             }
 
             var vars = this.getVarSet(data, scaleConfig);
@@ -8381,27 +8594,46 @@ define('scales/base',['exports', '../utils/utils', 'underscore'], function (expo
 
             this.vars = vars;
             this.scaleConfig = scaleConfig;
+
+            this.addField('dim', this.scaleConfig.dim).addField('scaleDim', this.scaleConfig.dim).addField('scaleType', this.scaleConfig.type).addField('source', this.scaleConfig.source).addField('domain', function () {
+                return _this.vars;
+            });
         }
 
         _createClass(BaseScale, [{
+            key: 'domain',
+            value: function domain() {
+                return this.vars;
+            }
+        }, {
+            key: 'addField',
+            value: function addField(key, val) {
+                this._fields[key] = val;
+                this[key] = val;
+                return this;
+            }
+        }, {
+            key: 'getField',
+            value: function getField(key) {
+                return this._fields[key];
+            }
+        }, {
             key: 'toBaseScale',
             value: function toBaseScale(func) {
-                var _this = this;
+                var _this2 = this;
 
                 var dynamicProps = arguments[1] === undefined ? null : arguments[1];
 
-                func.dim = this.scaleConfig.dim;
-                func.scaleDim = this.scaleConfig.dim;
-                func.source = this.scaleConfig.source;
+                var scaleFn = Object.keys(this._fields).reduce(function (memo, k) {
+                    memo[k] = _this2._fields[k];
+                    return memo;
+                }, func);
 
-                func.domain = function () {
-                    return _this.vars;
-                };
-                func.getHash = function () {
-                    return generateHashFunction(_this.vars, dynamicProps);
+                scaleFn.getHash = function () {
+                    return generateHashFunction(_this2.vars, dynamicProps);
                 };
 
-                return func;
+                return scaleFn;
             }
         }, {
             key: 'getVarSet',
@@ -8424,6 +8656,8 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -8439,12 +8673,17 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
     /* jshint ignore:end */
 
     var ColorScale = (function (_BaseScale) {
-        function ColorScale() {
+        function ColorScale(xSource, scaleConfig) {
             _classCallCheck(this, ColorScale);
 
-            if (_BaseScale != null) {
-                _BaseScale.apply(this, arguments);
-            }
+            _get(Object.getPrototypeOf(ColorScale.prototype), 'constructor', this).call(this, xSource, scaleConfig);
+
+            this.defaultColorClass = _2['default'].constant('color-default');
+            var scaleBrewer = this.scaleConfig.brewer || _2['default'].times(20, function (i) {
+                return 'color20-' + (1 + i);
+            });
+
+            this.addField('scaleType', 'color').addField('brewer', scaleBrewer);
         }
 
         _inherits(ColorScale, _BaseScale);
@@ -8452,21 +8691,15 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
         _createClass(ColorScale, [{
             key: 'create',
             value: function create() {
+                var _this = this;
 
-                var props = this.scaleConfig;
                 var varSet = this.vars;
 
-                var brewer = props.brewer;
-
-                var defaultColorClass = _2['default'].constant('color-default');
-
-                var defaultRangeColor = _2['default'].times(20, function (i) {
-                    return 'color20-' + (1 + i);
-                });
+                var brewer = this.getField('brewer');
 
                 var buildArrayGetClass = function buildArrayGetClass(domain, brewer) {
                     if (domain.length === 0 || domain.length === 1 && domain[0] === null) {
-                        return defaultColorClass;
+                        return _this.defaultColorClass;
                     } else {
                         var fullDomain = domain.map(function (x) {
                             return String(x).toString();
@@ -8492,21 +8725,23 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
 
                 var func;
 
-                if (!brewer) {
-                    func = wrapString(buildArrayGetClass(varSet, defaultRangeColor));
-                } else if (_2['default'].isArray(brewer)) {
+                if (_2['default'].isArray(brewer)) {
+
                     func = wrapString(buildArrayGetClass(varSet, brewer));
                 } else if (_2['default'].isFunction(brewer)) {
+
                     func = function (d) {
-                        return brewer(d, wrapString(buildArrayGetClass(varSet, defaultRangeColor)));
+                        return brewer(d, wrapString(buildArrayGetClass(varSet, _2['default'].times(20, function (i) {
+                            return 'color20-' + (1 + i);
+                        }))));
                     };
                 } else if (_2['default'].isObject(brewer)) {
-                    func = buildObjectGetClass(brewer, defaultColorClass);
+
+                    func = buildObjectGetClass(brewer, this.defaultColorClass);
                 } else {
+
                     throw new Error('This brewer is not supported');
                 }
-
-                func.scaleType = 'color';
 
                 return this.toBaseScale(func);
             }
@@ -8525,6 +8760,8 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
     });
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -8552,12 +8789,12 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
     };
 
     var SizeScale = (function (_BaseScale) {
-        function SizeScale() {
+        function SizeScale(xSource, scaleConfig) {
             _classCallCheck(this, SizeScale);
 
-            if (_BaseScale != null) {
-                _BaseScale.apply(this, arguments);
-            }
+            _get(Object.getPrototypeOf(SizeScale.prototype), 'constructor', this).call(this, xSource, scaleConfig);
+
+            this.addField('scaleType', 'size');
         }
 
         _inherits(SizeScale, _BaseScale);
@@ -8620,8 +8857,6 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
                     };
                 }
 
-                func.scaleType = 'size';
-
                 return this.toBaseScale(func, localProps);
             }
         }]);
@@ -8640,6 +8875,8 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
@@ -8657,12 +8894,12 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
     /* jshint ignore:end */
 
     var OrdinalScale = (function (_BaseScale) {
-        function OrdinalScale() {
+        function OrdinalScale(xSource, scaleConfig) {
             _classCallCheck(this, OrdinalScale);
 
-            if (_BaseScale != null) {
-                _BaseScale.apply(this, arguments);
-            }
+            _get(Object.getPrototypeOf(OrdinalScale.prototype), 'constructor', this).call(this, xSource, scaleConfig);
+
+            this.addField('scaleType', 'ordinal').addField('discrete', true);
         }
 
         _inherits(OrdinalScale, _BaseScale);
@@ -8712,11 +8949,9 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
                     return scale[p] = d3Scale[p];
                 });
 
-                scale.scaleType = 'ordinal';
                 scale.stepSize = function (x) {
                     return fnRatio(x) * size;
                 };
-                scale.descrete = true;
 
                 return this.toBaseScale(scale, interval);
             }
@@ -8780,6 +9015,8 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
             } else {
                 this.vars = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
             }
+
+            this.addField('scaleType', 'period').addField('discrete', true);
         }
 
         _inherits(PeriodScale, _BaseScale);
@@ -8837,11 +9074,9 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
                     return scale[p] = d3Scale[p];
                 });
 
-                scale.scaleType = 'period';
                 scale.stepSize = function (x) {
                     return fnRatio(x) * size;
                 };
-                scale.descrete = true;
 
                 return this.toBaseScale(scale, interval);
             }
@@ -8894,6 +9129,8 @@ define('scales/time',['exports', './base', 'underscore', 'd3'], function (export
             var max = _2['default'].isNull(props.max) || _2['default'].isUndefined(props.max) ? domain[1] : new Date(props.max).getTime();
 
             this.vars = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
+
+            this.addField('scaleType', 'time');
         }
 
         _inherits(TimeScale, _BaseScale);
@@ -8926,7 +9163,6 @@ define('scales/time',['exports', './base', 'underscore', 'd3'], function (export
                     return scale[p] = d3Scale[p];
                 });
 
-                scale.scaleType = 'time';
                 scale.stepSize = function () {
                     return 0;
                 };
@@ -8980,6 +9216,8 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
             vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
 
             this.vars = props.autoScale ? _utilsUtils.utils.autoScale(vars) : _d32['default'].extent(vars);
+
+            this.addField('scaleType', 'linear').addField('discrete', false);
         }
 
         _inherits(LinearScale, _BaseScale);
@@ -9012,7 +9250,6 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
                     return scale[p] = d3Scale[p];
                 });
 
-                scale.scaleType = 'linear';
                 scale.stepSize = function () {
                     return 0;
                 };
@@ -9035,6 +9272,8 @@ define('scales/value',['exports', './base', 'underscore', 'd3'], function (expor
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -9050,12 +9289,12 @@ define('scales/value',['exports', './base', 'underscore', 'd3'], function (expor
     /* jshint ignore:end */
 
     var ValueScale = (function (_BaseScale) {
-        function ValueScale() {
+        function ValueScale(xSource, scaleConfig) {
             _classCallCheck(this, ValueScale);
 
-            if (_BaseScale != null) {
-                _BaseScale.apply(this, arguments);
-            }
+            _get(Object.getPrototypeOf(ValueScale.prototype), 'constructor', this).call(this, xSource, scaleConfig);
+
+            this.addField('scaleType', 'value').addField('georole', scaleConfig.georole);
         }
 
         _inherits(ValueScale, _BaseScale);
@@ -9063,14 +9302,9 @@ define('scales/value',['exports', './base', 'underscore', 'd3'], function (expor
         _createClass(ValueScale, [{
             key: 'create',
             value: function create() {
-
-                var scale = function scale(x) {
+                return this.toBaseScale(function (x) {
                     return x;
-                };
-                scale.scaleType = 'value';
-                scale.georole = this.scaleConfig.georole;
-
-                return this.toBaseScale(scale);
+                });
             }
         }]);
 
@@ -9119,6 +9353,15 @@ define('scales/fill',['exports', './base', '../utils/utils', 'underscore', 'd3']
             vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
 
             this.vars = props.autoScale ? _utilsUtils.utils.autoScale(vars) : _d32['default'].extent(vars);
+
+            var opacityStep = (1 - 0.2) / 9;
+            var defBrewer = _2['default'].times(10, function (i) {
+                return 'rgba(90,180,90,' + (0.2 + i * opacityStep).toFixed(2) + ')';
+            });
+
+            var brewer = props.brewer || defBrewer;
+
+            this.addField('scaleType', 'fill').addField('brewer', brewer);
         }
 
         _inherits(FillScale, _BaseScale);
@@ -9127,15 +9370,9 @@ define('scales/fill',['exports', './base', '../utils/utils', 'underscore', 'd3']
             key: 'create',
             value: function create() {
 
-                var props = this.scaleConfig;
                 var varSet = this.vars;
 
-                var opacityStep = (1 - 0.2) / 9;
-                var defBrewer = _2['default'].times(10, function (i) {
-                    return 'rgba(90,180,90,' + (0.2 + i * opacityStep).toFixed(2) + ')';
-                });
-
-                var brewer = props.brewer || defBrewer;
+                var brewer = this.getField('brewer');
 
                 if (!_2['default'].isArray(brewer)) {
                     throw new Error('This brewer is not supported');
@@ -9150,8 +9387,6 @@ define('scales/fill',['exports', './base', '../utils/utils', 'underscore', 'd3']
                 }, []);
 
                 var func = _d32['default'].scale.threshold().domain(domain).range(brewer);
-
-                func.scaleType = 'fill';
 
                 return this.toBaseScale(func);
             }
@@ -9231,7 +9466,9 @@ define('api/chart-map',['exports'], function (exports) {
                 longitude: scalesPool('linear', config.longitude, { autoScale: false }),
 
                 guide: guide
-            }
+            },
+
+            plugins: config.plugins || []
         };
     };
 
