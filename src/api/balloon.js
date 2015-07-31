@@ -20,7 +20,6 @@ var indexOf = function (arr, obj) {
  */
 var win = window;
 var doc = win.document;
-var body = doc.body;
 var docEl = doc.documentElement;
 var verticalPlaces = ['top', 'bottom'];
 
@@ -220,7 +219,7 @@ Tooltip.prototype.changeClassType = function (propName, newClass) {
 Tooltip.prototype.updateSize = function () {
     if (this.hidden) {
         this.element.style.visibility = 'hidden';
-        body.appendChild(this.element);
+        doc.body.appendChild(this.element);
     }
     this.width = this.element.offsetWidth;
     this.height = this.element.offsetHeight;
@@ -228,7 +227,7 @@ Tooltip.prototype.updateSize = function () {
         this.spacing = this.options.spacing != null ? this.options.spacing : parsePx(style(this.element, 'top'));
     }
     if (this.hidden) {
-        body.removeChild(this.element);
+        doc.body.removeChild(this.element);
         this.element.style.visibility = '';
     } else {
         this.position();
@@ -491,7 +490,7 @@ Tooltip.prototype.show = function (x, y) {
     // Stop here if tip is already visible
     if (this.hidden) {
         this.hidden = 0;
-        body.appendChild(this.element);
+        doc.body.appendChild(this.element);
     }
 
     // Make tooltip aware of window resize
@@ -543,7 +542,7 @@ Tooltip.prototype.hide = function () {
     clearTimeout(this.aIndex);
     this.aIndex = setTimeout(function () {
         self.aIndex = 0;
-        body.removeChild(self.element);
+        doc.body.removeChild(self.element);
         self.hidden = 1;
     }, duration);
 
@@ -558,7 +557,7 @@ Tooltip.prototype.destroy = function () {
     clearTimeout(this.aIndex);
     this._unaware();
     if (!this.hidden) {
-        body.removeChild(this.element);
+        doc.body.removeChild(this.element);
     }
     this.element = this.options = null;
 };
