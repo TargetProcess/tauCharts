@@ -1,10 +1,7 @@
 @import "variable";
+
 @import "layout";
 @import "forms";
-@link-color: #3962FF;
-@link-hover-color: #E17152;
-
-@axis-color: #BDC3CD;
 
 /* region Generate .color@{n}-@{i}  function  */
 
@@ -73,9 +70,13 @@
         display: block;
         overflow: hidden;
 
+        text{
+            fill: @font-color;
+        }
+
         .place {
-            fill: #fff;
-            stroke: #000;
+            fill: @place-fill-color;
+            stroke:@place-stroke-color;
             stroke-opacity: 0.7;
             stroke-width: 0.5;
         }
@@ -83,7 +84,7 @@
         .place-label {
             opacity: 0.7;
             font-size: 11px;
-            color: #000000;
+            color: @place-font-color;
             letter-spacing: 0.2px;
             line-height: 13px;
             text-anchor: start;
@@ -94,7 +95,7 @@
         .place-label-states {
             text-anchor: middle;
             font-size: 10px;
-            fill: rgba(51, 36, 0, 0.65);
+            fill: fade(@place-stroke-color, 65%);
             letter-spacing: 0.5px;
             line-height: 10px;
             text-transform: uppercase;
@@ -105,24 +106,24 @@
             stroke-linejoin: 'round';
         }
         .map-contour-level-0 path {
-            stroke: #fbfbfb;
+            stroke: @map-contour-stroke-color0;
         }
         .map-contour-level-1 path {
-            stroke: #fffefe;
+            stroke: @map-contour-stroke-color1;
         }
         .map-contour-level-2 path {
-            stroke: #fdfdff;
+            stroke: @map-contour-stroke-color2;
         }
         .map-contour-level-3 path {
-            stroke: #fdfdfd;
+            stroke: @map-contour-stroke-color3;
         }
         .map-contour-level-4 path {
-            stroke: #ffffff;
+            stroke: @map-contour-stroke-color4;
         }
 
         .map-contour-highlighted,
         .map-contour:hover {
-            fill: rgba(255,191,0,0.50);
+            fill: fade(@map-contour-stroke-color-highlighted, 50%);
         }
 
         .axis {
@@ -219,16 +220,16 @@
                 font-weight: normal;
                 fill: gray;
                 text-transform: none;
-                letter-spacing: 0px;
+                letter-spacing: 0;
             }
         }
         .brush .extent {
             fill-opacity: .3;
-            stroke: #fff;
+            stroke: @bg-color;
             shape-rendering: crispEdges;
         }
         .background {
-            stroke: #eee;
+            stroke: @gray-stroke;
         }
     }
 
@@ -244,10 +245,12 @@
         fill: none;
         transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
     }
+
     &__dot-line {
         opacity: 1;
         transition: stroke-opacity 0.2s ease;
     }
+
     /*  Bar  */
     &__bar {
         shape-rendering: crispEdges;
@@ -275,15 +278,15 @@
 
     &__highlighted_chart &__line, {
         stroke-opacity: 0.2;
-        
+
     }
 
-    &__highlighted_chart &__bar{
+    &__highlighted_chart &__bar {
         opacity: 0.2;
 
     }
 
-    &__highlighted_chart &__dot{
+    &__highlighted_chart &__dot {
         opacity: 0.2;
     }
 
