@@ -2,6 +2,8 @@
 var autoprefixer = require('autoprefixer-core');
 var webpack = require('webpack');
 var webpackConfig = require('./config/webpack.test.config');
+var cssConfig = require('./config/css.config');
+
 module.exports = function (grunt) {
     // Project configuration.
     var src = [
@@ -55,8 +57,7 @@ module.exports = function (grunt) {
                 dest: 'build/production/tauCharts.min.js'
             },
             prodCSS: {
-                src: ['build/development/**/*.css'],
-                dest: 'build/production/tauCharts.min.css'
+               files:cssConfig.prodCss
             }
         },
         'gh-pages': {
@@ -106,16 +107,7 @@ module.exports = function (grunt) {
         },
         cssmin: {
             build: {
-                files: [
-                    {
-                        src: 'build/production/tauCharts.min.css',
-                        dest: 'build/production/tauCharts.min.css'
-                    },
-                    {
-                        src: 'css/base.css',
-                        dest: 'build/production/tauCharts.normalize.min.css'
-                    }
-                ]
+                files: cssConfig.cssMin
             }
         },
         postcss: {
@@ -168,14 +160,7 @@ module.exports = function (grunt) {
                         src: 'README.md',
                         dest: 'build/README.md'
                     },
-                    {
-                        src: 'css/tauCharts.css',
-                        dest: 'build/development/css/tauCharts.css'
-                    },
-                    {
-                        src: 'css/colorbrewer.css',
-                        dest: 'build/development/css/tauCharts.colorbrewer.css'
-                    },
+
                     {
                         src: 'src/addons/color-brewer.js',
                         dest: 'build/development/tauCharts.color-brewer.js'
@@ -191,24 +176,8 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/trendline.js',
                         dest: 'build/development/plugins/tauCharts.trendline.js'
-                    },
-                    {
-                        src: 'css/tooltip.css',
-                        dest: 'build/development/plugins/tauCharts.tooltip.css'
-                    },
-                    {
-                        src: 'css/legend.css',
-                        dest: 'build/development/plugins/tauCharts.legend.css'
-                    },
-                    {
-                        src: 'css/trendline.css',
-                        dest: 'build/development/plugins/tauCharts.trendline.css'
-                    },
-                    {
-                        src: 'css/export.css',
-                        dest: 'build/development/plugins/tauCharts.export.css'
                     }
-                ]
+                ].concat(cssConfig.css)
             }
         },
         shell: {
@@ -227,25 +196,11 @@ module.exports = function (grunt) {
                     'Gruntfile.js'
                 ],
                 options: {
-                    jshintrc:true
+                    jshintrc: true
                 }
             }
         },
-        less: {
-            development: {
-                options: {paths: ['less']},
-                files: {
-                    'css/tooltip.css': 'less/tooltip.less',
-                    'css/export.css': 'less/export.less',
-                    'css/colorbrewer.css': 'less/colorbrewer.less',
-                    'css/base.css': 'less/base.less',
-                    'css/tauCharts.css': 'less/tauCharts.less',
-                    'css/layout.css': 'less/layout.less',
-                    'css/legend.css': 'less/legend.less',
-                    'css/trendline.css': 'less/trendline.less'
-                }
-            }
-        },
+        less: cssConfig.less,
         clean: [
             'build/production/',
             'build/development/'
