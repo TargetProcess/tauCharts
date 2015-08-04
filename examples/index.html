@@ -2,19 +2,61 @@
 <html>
 <meta charset="utf-8">
 <head>
+
+    <link href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css" rel="stylesheet" type="text/css"/>
+    <link href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.normalize.min.css" rel="stylesheet" type="text/css"/>
+    <style>
+        .cc {
+            display:inline-block;
+            margin:2px 2px 2px 2px;
+            float:left;
+            width: 600px;
+            height: 400px;
+            border: dotted 1px #000;
+            overflow: hidden;
+        }
+    </style>
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 
-    <script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js"></script>
-    <link href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css" rel="stylesheet" type="text/css"/>
+    <script src="data-olympics.js"></script>
 </head>
-<body>
+<body></body>
+<script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js"></script>
+<script>
+    window.samples = [];
+</script>
 
-<div>
-    <!--<div id="c1"></div>-->
-    Sample charts will be here
-</div>
+<script src="samples/ex-000.js"></script>
+<script src="samples/ex-001.js"></script>
+<script src="samples/ex-009.js"></script>
+<script src="samples/ex-012.js"></script>
+<script src="samples/ex-010.js"></script>
+<script src="samples/ex-013.js"></script>
+<script src="samples/ex-014.js"></script>
+<script src="samples/ex-011.js"></script>
+<script src="samples/ex-002.js"></script>
+<script src="samples/ex-003.js"></script>
+<script src="samples/ex-004.js"></script>
+<script src="samples/ex-005.js"></script>
+<script src="samples/ex-006.js"></script>
+<script src="samples/ex-007.js"></script>
+<script src="samples/ex-008.js"></script>
 
-</body>
+
+<script>
+    window.samples.filter(_.identity).forEach(function (cfg, i) {
+        $('body').append('<div class="cc" id="div' + i + '"></div>');
+
+        cfg.settings = cfg.settings || {};
+        // cfg.settings.fitModel = 'normal'; // 'entire-view'
+
+        var chart = (cfg.hasOwnProperty('type')) ?
+                (new tauCharts.Chart(cfg)) :
+                (new tauCharts.Plot(cfg));
+        chart.renderTo('#div' + i);
+    });
+</script>
 </html>
