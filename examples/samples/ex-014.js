@@ -2,7 +2,7 @@ window.samples.push({
 
     type: 'horizontal-bar',
     y: ['Sport', 'Athlete'],
-    x: ['Country', 'Total Medals'],
+    x: ['FullYear', 'Total Medals'],
 
     plugins: [
         tauCharts.api.plugins.get('legend')(),
@@ -17,22 +17,28 @@ window.samples.push({
         .chain()
         .filter(function (row) {
             return (
-                (['Belarus', 'Canada', 'United States'].indexOf(row['Country']) >= 0)
+                (['Belarus'].indexOf(row['Country']) >= 0)
                 &&
-                (['Shooting'].indexOf(row['Sport']) >= 0)
+                (['Canoeing'].indexOf(row['Sport']) >= 0)
             );
         })
         .reduce(function (memo, row) {
-            var k = row['Athlete'];
+            var k = row['Athlete'] + row['Year'].getFullYear();
             if (!memo[k]) {
                 memo[k] = _.clone(row);
                 memo[k]['Total Medals'] = 0;
+                memo[k]['FullYear'] = row['Year'].getFullYear();
             }
 
             memo[k]['Total Medals'] += row['Total Medals'];
             return memo;
         }, {})
         .values()
+        .sortBy('FullYear')
+        .map(function (row) {
+            row['FullYear'] = row['FullYear'].toString();
+            return row;
+        })
         .value()
 
 });

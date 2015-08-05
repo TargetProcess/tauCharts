@@ -1,7 +1,7 @@
 window.samples.push({
 
     type: 'horizontal-stacked-bar',
-    x: ['Sport', 'Count'],
+    x: ['Sport', 'SUM(Total Medals)'],
     y: ['Country'],
     color: 'Sport',
 
@@ -24,20 +24,20 @@ window.samples.push({
                 memo[key] = {
                     'Country': row['Country'],
                     'Sport': row['Sport'],
-                    'Count': 0
+                    'SUM(Total Medals)': 0
                 };
             }
 
-            memo[key].Count += row['Total Medals'];
+            memo[key]['SUM(Total Medals)'] += row['Total Medals'];
 
             return memo;
         },
         {})
         .values()
         .filter(function (row) {
-            return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
+            return ['Ice Hockey', 'Bobsleigh'].indexOf(row['Sport']) >= 0;
         })
-        .sortBy('Count')
+        .sortBy('SUM(Total Medals)')
         .value()
 
 });
