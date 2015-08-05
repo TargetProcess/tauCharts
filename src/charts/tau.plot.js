@@ -38,6 +38,8 @@ export class Plot extends Emitter {
             this.configGPL = new SpecConverter(this.config).convert();
         }
 
+        this.configGPL = Plot.setupPeriodData(this.configGPL);
+
         this.config.plugins = this.config.plugins || [];
 
         this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
@@ -96,6 +98,35 @@ export class Plot extends Emitter {
     getConfig(isOld) {
         // this.configGPL
         return isOld ? this.config : this.configGPL || this.config;
+    }
+
+    static setupPeriodData(spec) {
+        var tickPeriod = Plot.__api__.tickPeriod;
+        var dims = Object
+            .keys(spec.scales)
+            .map(s => spec.scales[s])
+            .filter(s => s.type === 'period')
+            .map(s => ({source: s.source, dim: s.dim, period: s.period}));
+
+        var isNullOrUndefined = ((x) => ((x === null) || (typeof(x) === 'undefined')));
+
+        var reducer = (refSources, d) => {
+            refSources[d.source].data = refSources[d.source]
+                .data
+                .map(row => {
+                    var val = row[d.dim];
+                    if (!isNullOrUndefined(val)) {
+                        row[d.dim] = tickPeriod.get(d.period).cast(val);
+                    }
+                    return row;
+                });
+
+            return refSources;
+        };
+
+        spec.sources = dims.reduce(reducer, spec.sources);
+
+        return spec;
     }
 
     static setupMetaInfo(dims, data) {

@@ -143,6 +143,7 @@ var api = {
     }
 };
 
+Plot.__api__ = api;
 Plot.globalSettings = api.globalSettings;
 
 api.unitsRegistry
