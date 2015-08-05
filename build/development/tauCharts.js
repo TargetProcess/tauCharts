@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.0 - 2015-07-28
+/*! taucharts - v0.5.0 - 2015-08-05
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -2764,7 +2764,6 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
      */
     var win = window;
     var doc = win.document;
-    var body = doc.body;
     var docEl = doc.documentElement;
     var verticalPlaces = ['top', 'bottom'];
 
@@ -2965,7 +2964,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
     Tooltip.prototype.updateSize = function () {
         if (this.hidden) {
             this.element.style.visibility = 'hidden';
-            body.appendChild(this.element);
+            doc.body.appendChild(this.element);
         }
         this.width = this.element.offsetWidth;
         this.height = this.element.offsetHeight;
@@ -2973,7 +2972,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
             this.spacing = this.options.spacing != null ? this.options.spacing : parsePx(style(this.element, 'top'));
         }
         if (this.hidden) {
-            body.removeChild(this.element);
+            doc.body.removeChild(this.element);
             this.element.style.visibility = '';
         } else {
             this.position();
@@ -3236,7 +3235,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
         // Stop here if tip is already visible
         if (this.hidden) {
             this.hidden = 0;
-            body.appendChild(this.element);
+            doc.body.appendChild(this.element);
         }
 
         // Make tooltip aware of window resize
@@ -3288,7 +3287,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
         clearTimeout(this.aIndex);
         this.aIndex = setTimeout(function () {
             self.aIndex = 0;
-            body.removeChild(self.element);
+            doc.body.removeChild(self.element);
             self.hidden = 1;
         }, duration);
 
@@ -3303,7 +3302,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
         clearTimeout(this.aIndex);
         this._unaware();
         if (!this.hidden) {
-            body.removeChild(this.element);
+            doc.body.removeChild(this.element);
         }
         this.element = this.options = null;
     };
@@ -5434,6 +5433,8 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 this.configGPL = new _specConverter.SpecConverter(this.config).convert();
             }
 
+            this.configGPL = Plot.setupPeriodData(this.configGPL);
+
             this.config.plugins = this.config.plugins || [];
 
             this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
@@ -5726,6 +5727,38 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 return this._liveSpec;
             }
         }], [{
+            key: 'setupPeriodData',
+            value: function setupPeriodData(spec) {
+                var tickPeriod = Plot.__api__.tickPeriod;
+                var dims = Object.keys(spec.scales).map(function (s) {
+                    return spec.scales[s];
+                }).filter(function (s) {
+                    return s.type === 'period';
+                }).map(function (s) {
+                    return { source: s.source, dim: s.dim, period: s.period };
+                });
+
+                var isNullOrUndefined = function isNullOrUndefined(x) {
+                    return x === null || typeof x === 'undefined';
+                };
+
+                var reducer = function reducer(refSources, d) {
+                    refSources[d.source].data = refSources[d.source].data.map(function (row) {
+                        var val = row[d.dim];
+                        if (!isNullOrUndefined(val)) {
+                            row[d.dim] = tickPeriod.get(d.period).cast(val);
+                        }
+                        return row;
+                    });
+
+                    return refSources;
+                };
+
+                spec.sources = dims.reduce(reducer, spec.sources);
+
+                return spec;
+            }
+        }, {
             key: 'setupMetaInfo',
             value: function setupMetaInfo(dims, data) {
                 var meta = dims ? dims : _dataProcessor.DataProcessor.autoDetectDimTypes(data);
@@ -9964,6 +9997,7 @@ define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/
         }
     };
 
+    _chartsTauPlot.Plot.__api__ = api;
     _chartsTauPlot.Plot.globalSettings = api.globalSettings;
 
     api.unitsRegistry.reg('COORDS.RECT', _elementsCoordsCartesian.Cartesian).reg('COORDS.MAP', _elementsCoordsGeomap.GeoMap).reg('COORDS.PARALLEL', _elementsCoordsParallel.Parallel).reg('ELEMENT.POINT', _elementsElementPoint.Point).reg('ELEMENT.LINE', _elementsElementLine.Line).reg('ELEMENT.INTERVAL', _elementsElementInterval.Interval).reg('ELEMENT.INTERVAL.STACKED', _elementsElementIntervalStacked.StackedInterval).reg('RECT', _elementsCoordsCartesian.Cartesian).reg('POINT', _elementsElementPoint.Point).reg('INTERVAL', _elementsElementInterval.Interval).reg('LINE', _elementsElementLine.Line).reg('PARALLEL/ELEMENT.LINE', _elementsElementParallelLine.ParallelLine).reg('PIE', _elementsElementPie.Pie);

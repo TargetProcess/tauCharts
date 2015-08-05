@@ -1,7 +1,7 @@
-tauCharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
+TauCharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
 =========
 
-tauCharts is a Javascript charting library based on D3. Designed with passion.
+TauCharts is a Javascript charting library based on D3. Designed with passion.
 
 Official website: [www.taucharts.com](http://www.taucharts.com)
 
@@ -15,7 +15,68 @@ http://api.taucharts.com/
 
 #Usage
 
-See [prototype](https://github.com/TargetProcess/tauCharts/tree/master/examples) for some examples of usage
+##Scatter plot
+
+```javascript
+var chart1 = new tauCharts.Chart({
+  type: 'scatterplot',
+  x: 'milespergallon',
+  y: 'price',
+
+  data: [
+    {class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius (1st Gen)", year: 1997},
+    ...
+    {class: "C", milespergallon: 37   , price: 39145   , vehicle: "Chevrolet Volt" , year: 2013}
+  ],
+
+  plugins: [
+    tauCharts.api.plugins.get('trendline')()
+  ]
+});
+chart1.renderTo('#target');
+```
+![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatterplot.png)
+
+##Simple horizontal bar chart
+
+```javascript
+var chart1 = new tauCharts.Chart({
+  type: 'horizontal-bar',
+  y: 'vehicle',
+  x: 'price',
+  data: [
+    {price: 84000 , vehicle: "ActiveHybrid 7L"},
+    ...
+    {price: 118000, vehicle: "Lexus LS600h/hL"}
+  ]
+});
+chart1.renderTo('#target');
+```
+![Horizontal BarChart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar.png)
+
+##Facets
+
+```javascript
+var chart1 = new tauCharts.Chart({
+  type: 'scatterplot',
+  x: ['milespergallon'],
+  y: ['class', 'price'],
+  color: 'class',
+
+  data: [
+    {class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius (1st Gen)", year: 1997},
+    ...
+    {class: "C", milespergallon: 37   , price: 39145   , vehicle: "Chevrolet Volt" , year: 2013}
+  ],
+
+  plugins: [
+    tauCharts.api.plugins.get('legend')(),
+    tauCharts.api.plugins.get('trendline')()
+  ]
+});
+chart1.renderTo('#target');
+```
+![Facet](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)
 
 #License
 
