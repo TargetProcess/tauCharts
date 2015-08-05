@@ -1,5 +1,9 @@
 window.samples.push({
 
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
+
     type: 'horizontal-stacked-bar',
     x: ['Sport', 'SUM(Total Medals)'],
     y: ['Country'],
@@ -40,4 +44,4 @@ window.samples.push({
         .sortBy('SUM(Total Medals)')
         .value()
 
-});
+}});

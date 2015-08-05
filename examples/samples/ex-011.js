@@ -1,47 +1,52 @@
 window.samples.push({
 
-    type: 'stacked-bar',
-    y: ['count'],
-    x: ['process'],
-    color: 'stage',
-    size: 'abs-count',
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
 
-    plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
-    ],
+        type: 'stacked-bar',
+        y: ['count'],
+        x: ['process'],
+        color: 'stage',
+        size: 'abs-count',
 
-    settings: {
-        // layoutEngine: 'NONE'
-    },
+        plugins: [
+            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('tooltip')()
+        ],
 
-    data: [
-        {
-            process: 'sales',
-            stage: 'visit',
-            count: 100
+        settings: {
+            // layoutEngine: 'NONE'
         },
-        {
-            process: 'sales',
-            stage: 'trial',
-            count: 50
-        },
-        {
-            process: 'sales',
-            stage: 'buy',
-            count: 15
-        },
-        {
-            process: 'sales',
-            stage: 'go away',
-            count: -7
-        }
-    ]
-        .reverse()
-        .map(function (row, i) {
-            row['i'] = row.count >= 0 ? i : -i;
-            row['abs-count'] = Math.abs(row.count);
-            return row;
-        })
 
+        data: [
+            {
+                process: 'sales',
+                stage: 'visit',
+                count: 100
+            },
+            {
+                process: 'sales',
+                stage: 'trial',
+                count: 50
+            },
+            {
+                process: 'sales',
+                stage: 'buy',
+                count: 15
+            },
+            {
+                process: 'sales',
+                stage: 'go away',
+                count: -7
+            }
+        ]
+            .reverse()
+            .map(function (row, i) {
+                row['i'] = row.count >= 0 ? i : -i;
+                row['abs-count'] = Math.abs(row.count);
+                return row;
+            })
+
+    }
 });

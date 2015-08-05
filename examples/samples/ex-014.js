@@ -1,44 +1,49 @@
 window.samples.push({
 
-    type: 'horizontal-bar',
-    y: ['Sport', 'Athlete'],
-    x: ['FullYear', 'Total Medals'],
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
 
-    plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
-    ],
+        type: 'horizontal-bar',
+        y: ['Sport', 'Athlete'],
+        x: ['FullYear', 'Total Medals'],
 
-    settings: {
-        fitModel: 'entire-view'
-    },
+        plugins: [
+            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('tooltip')()
+        ],
 
-    data: _(olimpics)
-        .chain()
-        .filter(function (row) {
-            return (
-                (['Belarus'].indexOf(row['Country']) >= 0)
-                &&
-                (['Canoeing'].indexOf(row['Sport']) >= 0)
-            );
-        })
-        .reduce(function (memo, row) {
-            var k = row['Athlete'] + row['Year'].getFullYear();
-            if (!memo[k]) {
-                memo[k] = _.clone(row);
-                memo[k]['Total Medals'] = 0;
-                memo[k]['FullYear'] = row['Year'].getFullYear();
-            }
+        settings: {
+            fitModel: 'entire-view'
+        },
 
-            memo[k]['Total Medals'] += row['Total Medals'];
-            return memo;
-        }, {})
-        .values()
-        .sortBy('FullYear')
-        .map(function (row) {
-            row['FullYear'] = row['FullYear'].toString();
-            return row;
-        })
-        .value()
+        data: _(olimpics)
+            .chain()
+            .filter(function (row) {
+                return (
+                    (['Belarus'].indexOf(row['Country']) >= 0)
+                    &&
+                    (['Canoeing'].indexOf(row['Sport']) >= 0)
+                );
+            })
+            .reduce(function (memo, row) {
+                var k = row['Athlete'] + row['Year'].getFullYear();
+                if (!memo[k]) {
+                    memo[k] = _.clone(row);
+                    memo[k]['Total Medals'] = 0;
+                    memo[k]['FullYear'] = row['Year'].getFullYear();
+                }
 
+                memo[k]['Total Medals'] += row['Total Medals'];
+                return memo;
+            }, {})
+            .values()
+            .sortBy('FullYear')
+            .map(function (row) {
+                row['FullYear'] = row['FullYear'].toString();
+                return row;
+            })
+            .value()
+
+    }
 });

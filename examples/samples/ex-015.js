@@ -1,28 +1,33 @@
 window.samples.push({
 
-    type: 'map',
-    code: 'Country',
-    fill: 'SUM(Total Medals)',
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
 
-    guide: {
-        showNames: false
-    },
+        type: 'map',
+        code: 'Country',
+        fill: 'SUM(Total Medals)',
 
-    data: _(olimpics)
-        .chain()
-        .reduce(function (memo, row) {
-            var k = row['Country'];
-            if (!memo[k]) {
-                memo[k] = {
-                    'Country': k,
-                    'SUM(Total Medals)': 0
-                };
-            }
+        guide: {
+            showNames: false
+        },
 
-            memo[k]['SUM(Total Medals)'] += row['Total Medals'];
-            return memo;
-        }, {})
-        .values()
-        .value()
+        data: _(olimpics)
+            .chain()
+            .reduce(function (memo, row) {
+                var k = row['Country'];
+                if (!memo[k]) {
+                    memo[k] = {
+                        'Country': k,
+                        'SUM(Total Medals)': 0
+                    };
+                }
 
+                memo[k]['SUM(Total Medals)'] += row['Total Medals'];
+                return memo;
+            }, {})
+            .values()
+            .value()
+
+    }
 });

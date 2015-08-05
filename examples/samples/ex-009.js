@@ -1,37 +1,42 @@
 window.samples.push({
 
-    type: 'bar',
-    y: ['Sport', 'SUM(Total Medals)'],
-    x: ['Age'],
-    // color: 'Sport',
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
 
-    plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
-    ],
+        type: 'bar',
+        y: ['Sport', 'SUM(Total Medals)'],
+        x: ['Age'],
+        // color: 'Sport',
 
-    settings: {
-        layoutEngine: 'NONE'
-    },
+        plugins: [
+            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('tooltip')()
+        ],
 
-    data: _(olimpics)
-        .chain()
-        .reduce(function (memo, row) {
-            var key = row['Sport'] + row['Age'];
-            if (!memo.hasOwnProperty(key)) {
-                memo[key] = {
-                    'Sport': row['Sport'],
-                    'Age': row['Age'],
-                    'SUM(Total Medals)': 0
-                };
-            }
-
-            memo[key]['SUM(Total Medals)'] += row['Total Medals'];
-
-            return memo;
+        settings: {
+            layoutEngine: 'NONE'
         },
-        {})
-        .values()
-        .value()
 
+        data: _(olimpics)
+            .chain()
+            .reduce(function (memo, row) {
+                var key = row['Sport'] + row['Age'];
+                if (!memo.hasOwnProperty(key)) {
+                    memo[key] = {
+                        'Sport': row['Sport'],
+                        'Age': row['Age'],
+                        'SUM(Total Medals)': 0
+                    };
+                }
+
+                memo[key]['SUM(Total Medals)'] += row['Total Medals'];
+
+                return memo;
+            },
+            {})
+            .values()
+            .value()
+
+    }
 });

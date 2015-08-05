@@ -10,10 +10,63 @@
             display:inline-block;
             margin:2px 2px 2px 2px;
             float:left;
-            width: 600px;
-            height: 400px;
+            width: 45%;
             border: dotted 1px #000;
+            position: relative;
+        }
+
+        .name {
+            text-align: center;
+            font-weight: bold;
+            font-size: large;
+        }
+
+        .desc {
+            text-align: center;
+            font-size: smaller;
+        }
+
+        .spec {
+            width: 100%;
+            height: 400px;
+            float: left;
             overflow: hidden;
+        }
+
+        .xsrc {
+            position: absolute;
+            background-color: #b5d592;
+            color: #000;
+            font-size: smaller;
+            font-family: monospace;
+        }
+
+        .code {
+            position: absolute;
+            width: 65%;
+            height: 400px;
+            float: left;
+            background-color: #000;
+            color: #fff;
+            opacity: 0.75;
+            overflow-y: auto;
+            font-size: smaller;
+            font-family: monospace;
+
+            display: none;
+        }
+
+        .code .sec-code {
+            margin: 12px;
+        }
+
+        .code .sec-data {
+            border-top: 1px solid #eee;
+            margin: 8px;
+        }
+
+        .graphical-report__layout {
+            overflow-x: hidden;
         }
     </style>
 
@@ -39,26 +92,42 @@
 <script src="samples/ex-014.js"></script>
 <script src="samples/ex-002.js"></script>
 <script src="samples/ex-003.js"></script>
-<!--<script src="samples/ex-004.js"></script>-->
 <script src="samples/ex-005.js"></script>
 <script src="samples/ex-015.js"></script>
 <script src="samples/ex-011.js"></script>
-<!--<script src="samples/ex-006.js"></script>-->
-<!--<script src="samples/ex-007.js"></script>-->
-<!--<script src="samples/ex-008.js"></script>-->
-
 
 <script>
+    var fcode = function (spec) {
+        return JSON.stringify(_.omit(spec, 'data', 'plugins'), null, 4);
+    };
+
+    var fdata = function (spec) {
+        var rows = spec.data.slice(0, 2).concat('... ' + spec.data.length + ' more ...');
+        return JSON.stringify(rows, null, 4);
+    };
+
     window.samples.filter(_.identity).forEach(function (cfg, i) {
-        $('body').append('<div class="cc" id="div' + i + '"></div>');
+        var $container = $('<div class="cc"></div>').appendTo('body');
+        $container.append('<button class="xsrc">&gt;</button>');
+        $container.append('<div class="name">' + cfg.name + '</div>');
+        $container.append('<div class="desc">' + cfg.desc + '</div>');
+        $container.append('<div class="spec" id="div' + i + '"></div>');
+        $container.append('<div class="code"><pre class="sec-code">' + fcode(cfg.spec) + '</pre><pre class="sec-data">' + fdata(cfg.spec) + '</pre></div>');
 
-        cfg.settings = cfg.settings || {};
-        // cfg.settings.fitModel = 'normal'; // 'entire-view'
+        var spec = cfg.spec;
+        spec.settings = spec.settings || {};
 
-        var chart = (cfg.hasOwnProperty('type')) ?
-                (new tauCharts.Chart(cfg)) :
-                (new tauCharts.Plot(cfg));
+        var chart = (spec.hasOwnProperty('type')) ?
+                (new tauCharts.Chart(spec)) :
+                (new tauCharts.Plot(spec));
         chart.renderTo('#div' + i);
+    });
+
+    $('body').on('click', '.cc .xsrc', function (e) {
+        var $t = $(e.target);
+        var sm = $t.text();
+        $t.text(sm === '<' ? '>' : '<');
+        $t.siblings('.code').toggle();
     });
 </script>
 </html>

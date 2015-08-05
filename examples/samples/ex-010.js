@@ -1,41 +1,46 @@
 window.samples.push({
 
-    type: 'stacked-bar',
-    y: ['Sport', 'SUM(Total Medals)'],
-    x: ['Age'],
-    color: 'Country',
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
 
-    plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
-    ],
+        type: 'stacked-bar',
+        y: ['Sport', 'SUM(Total Medals)'],
+        x: ['Age'],
+        color: 'Country',
 
-    settings: {
-        // layoutEngine: 'NONE'
-    },
+        plugins: [
+            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('tooltip')()
+        ],
 
-    data: _(olimpics)
-        .chain()
-        .reduce(function (memo, row) {
-            var key = row['Sport'] + row['Age'] + row['Country'];
-            if (!memo.hasOwnProperty(key)) {
-                memo[key] = {
-                    'Country': row['Country'],
-                    'Sport': row['Sport'],
-                    'Age': row['Age'],
-                    'SUM(Total Medals)': 0
-                };
-            }
-
-            memo[key]['SUM(Total Medals)'] += row['Total Medals'];
-
-            return memo;
+        settings: {
+            // layoutEngine: 'NONE'
         },
-        {})
-        .values()
-        .filter(function (row) {
-            return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
-        })
-        .value()
 
+        data: _(olimpics)
+            .chain()
+            .reduce(function (memo, row) {
+                var key = row['Sport'] + row['Age'] + row['Country'];
+                if (!memo.hasOwnProperty(key)) {
+                    memo[key] = {
+                        'Country': row['Country'],
+                        'Sport': row['Sport'],
+                        'Age': row['Age'],
+                        'SUM(Total Medals)': 0
+                    };
+                }
+
+                memo[key]['SUM(Total Medals)'] += row['Total Medals'];
+
+                return memo;
+            },
+            {})
+            .values()
+            .filter(function (row) {
+                return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
+            })
+            .value()
+
+    }
 });

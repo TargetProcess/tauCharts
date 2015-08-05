@@ -1,17 +1,22 @@
 window.samples.push({
 
-    type: 'scatterplot',
-    x: ['Age'],
-    y: ['Total Medals'],
-    color: 'Sport',
+    name: 'Scatterplot',
+    desc: 'Looks like ...',
+    spec: {
 
-    plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')({
-            fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
-        })
-    ],
+        type: 'scatterplot',
+        x: ['Age'],
+        y: ['Total Medals'],
+        color: 'Sport',
 
-    data: olimpics
+        plugins: [
+            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('tooltip')({
+                fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
+            })
+        ],
 
+        data: olimpics
+
+    }
 });
