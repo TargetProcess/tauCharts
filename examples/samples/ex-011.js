@@ -1,23 +1,19 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Funnel',
+    desc: 'Look, it is a stacked bar chart with size assigned',
     spec: {
 
         type: 'stacked-bar',
         y: ['count'],
         x: ['process'],
         color: 'stage',
-        size: 'abs-count',
+        size: 'ABS(count)',
 
         plugins: [
             tauCharts.api.plugins.get('legend')(),
             tauCharts.api.plugins.get('tooltip')()
         ],
-
-        settings: {
-            // layoutEngine: 'NONE'
-        },
 
         data: [
             {
@@ -42,11 +38,9 @@ window.samples.push({
             }
         ]
             .reverse()
-            .map(function (row, i) {
-                row['i'] = row.count >= 0 ? i : -i;
-                row['abs-count'] = Math.abs(row.count);
+            .map(function (row) {
+                row['ABS(count)'] = Math.abs(row.count);
                 return row;
             })
-
     }
 });

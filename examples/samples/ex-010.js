@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Amount of olympic medals per athlete age in different countries',
+    desc: 'Country as a color',
     spec: {
 
         type: 'stacked-bar',
@@ -13,10 +13,6 @@ window.samples.push({
             tauCharts.api.plugins.get('legend')(),
             tauCharts.api.plugins.get('tooltip')()
         ],
-
-        settings: {
-            // layoutEngine: 'NONE'
-        },
 
         data: _(olimpics)
             .chain()

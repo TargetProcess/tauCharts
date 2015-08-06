@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Geo chart of Olympics data',
+    desc: 'SUM(Total Medals) as color saturation',
     spec: {
 
         type: 'map',

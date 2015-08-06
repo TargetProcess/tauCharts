@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Chart of Fame',
+    desc: 'Explore achievements of belarusian olympic athletes',
     spec: {
 
         type: 'horizontal-bar',

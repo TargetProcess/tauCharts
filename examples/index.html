@@ -35,10 +35,15 @@
 
         .xsrc {
             position: absolute;
-            background-color: #b5d592;
+            background-color: #eee;
             color: #000;
             font-size: smaller;
             font-family: monospace;
+            border-radius: 8px;
+            width: 16px;
+            height: 16px;
+            text-align: center;
+            cursor: pointer;
         }
 
         .code {
@@ -75,6 +80,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
 
     <script src="data-olympics.js"></script>
+    <script src="data-exoplanets.js"></script>
 </head>
 <body></body>
 <script src="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js"></script>
@@ -88,13 +94,13 @@
 <script src="samples/ex-009.js"></script>
 <script src="samples/ex-012.js"></script>
 <script src="samples/ex-010.js"></script>
+<script src="samples/ex-005.js"></script>
 <script src="samples/ex-013.js"></script>
 <script src="samples/ex-014.js"></script>
-<script src="samples/ex-002.js"></script>
 <script src="samples/ex-003.js"></script>
-<script src="samples/ex-005.js"></script>
 <script src="samples/ex-015.js"></script>
 <script src="samples/ex-011.js"></script>
+<script src="samples/ex-002.js"></script>
 
 <script>
     var fcode = function (spec) {
@@ -106,9 +112,9 @@
         return JSON.stringify(rows, null, 4);
     };
 
-    window.samples.filter(_.identity).forEach(function (cfg, i) {
+    var charts = window.samples.filter(_.identity).map(function (cfg, i) {
         var $container = $('<div class="cc"></div>').appendTo('body');
-        $container.append('<button class="xsrc">&gt;</button>');
+        $container.append('<div class="xsrc">&gt;</div>');
         $container.append('<div class="name">' + cfg.name + '</div>');
         $container.append('<div class="desc">' + cfg.desc + '</div>');
         $container.append('<div class="spec" id="div' + i + '"></div>');
@@ -121,7 +127,21 @@
                 (new tauCharts.Chart(spec)) :
                 (new tauCharts.Plot(spec));
         chart.renderTo('#div' + i);
+
+        return chart;
     });
+
+    setInterval(function () {
+        var inst = charts[charts.length - 1];
+        var data = inst.getData();
+        var last = data[data.length - 1];
+        var newX = last.x + (Math.PI / 100);
+        data.shift();
+        data.shift();
+        data.push({x: newX, y: Math.sin(newX), type: 'sin'});
+        data.push({x: newX, y: Math.cos(newX), type: 'cos'});
+        inst.setData(data);
+    }, 100);
 
     $('body').on('click', '.cc .xsrc', function (e) {
         var $t = $(e.target);
@@ -129,5 +149,6 @@
         $t.text(sm === '<' ? '>' : '<');
         $t.siblings('.code').toggle();
     });
+
 </script>
 </html>

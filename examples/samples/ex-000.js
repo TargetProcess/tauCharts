@@ -1,21 +1,21 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Scatterplot of exoplanets period / eccentricity correlation',
+    desc: 'There are some exoplanets similar to Earth by eccentricity and period',
     spec: {
 
         type: 'scatterplot',
-        x: ['Age'],
-        y: ['Total Medals'],
+        x: ['eccentricity'],
+        y: ['period'],
+        color: 'name',
+        size: 'mass',
 
         plugins: [
             tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')({
-                fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
-            })
+            tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: olimpics
+        data: exoplanets
 
     }
 });

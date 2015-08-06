@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Compare dynamic of achievements across sports and countries',
+    desc: 'Looks like Germany has a problems in swimming',
     spec: {
 
         type: 'scatterplot',

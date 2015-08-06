@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Drill down to belarusian canoeing dynamic',
+    desc: 'Looks like the school of champions grows',
     spec: {
 
         type: 'horizontal-bar',

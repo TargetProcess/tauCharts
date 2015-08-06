@@ -1,45 +1,41 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Sin / Cos plot',
+    desc: 'Streaming with trend lines',
     spec: {
 
-        type: 'scatterplot',
-        x: ['Year'],
-        y: ['Country'],
-        color: 'Sport',
-        size: 'Count',
+        type: 'bar',
+        x: ['x'],
+        y: ['type', 'y'],
+        color: 'type',
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')({
-                // fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
-            })
+        guide: [
+            {},
+            {
+                x: {autoScale: false},
+                y: {autoScale: false, min: -1.5, max: 1.5},
+                interpolate: 'basis'
+            }
         ],
 
-        data: _(olimpics)
-            .chain()
-            .reduce(function (memo, row) {
-                var key = row['Country'] + row['Sport'] + row['Year'].getTime();
-                if (!memo.hasOwnProperty(key)) {
-                    memo[key] = {
-                        'Country': row['Country'],
-                        'Sport': row['Sport'],
-                        'Year': row['Year'],
-                        'Count': 0
-                    };
+        data: _.times(100, _.identity).reduce(function (memo, i) {
+            var x = i * (Math.PI / 100);
+            return memo.concat([
+                {
+                    x: x,
+                    y: Math.sin(x),
+                    type: 'sin'
+                },
+                {
+                    x: x,
+                    y: Math.cos(x),
+                    type: 'cos'
                 }
+            ]);
+        }, []),
 
-                memo[key].Count += row['Total Medals'];
-
-                return memo;
-            },
-            {})
-            .values()
-            .filter(function (row) {
-                return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
-            })
-            .value()
-
+        plugins: [
+            tauCharts.api.plugins.get('trendline')({showPanel:false})
+        ]
     }
 });

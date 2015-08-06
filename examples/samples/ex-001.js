@@ -1,22 +1,22 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Scatterplot of period / mass correlation',
+    desc: 'There are no data on exoplanets similar to Earth by mass',
     spec: {
 
         type: 'scatterplot',
-        x: ['Age'],
-        y: ['Total Medals'],
-        color: 'Sport',
+        x: ['mass'],
+        y: ['period'],
+        color: 'name',
+        size: 'eccentricity',
 
         plugins: [
             tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')({
-                fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
-            })
+            tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: olimpics
-
+        data: exoplanets.filter(function (row) {
+            return row['jupiter mass'] <= 1;
+        })
     }
 });

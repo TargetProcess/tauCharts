@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Histogram: amount of olympic medals per athlete age',
+    desc: 'Looks like there are no chances to get medals in Rhythmic Gymnastics after 25...',
     spec: {
 
         type: 'bar',

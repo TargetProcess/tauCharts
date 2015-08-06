@@ -1,7 +1,7 @@
 window.samples.push({
 
-    name: 'Scatterplot',
-    desc: 'Looks like ...',
+    name: 'Amount of olympic medals per athlete age',
+    desc: 'Same data in one place. Sport encoded by color',
     spec: {
 
         type: 'line',
