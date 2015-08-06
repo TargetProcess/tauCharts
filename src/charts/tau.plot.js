@@ -115,7 +115,7 @@ export class Plot extends Emitter {
                 .data
                 .map(row => {
                     var val = row[d.dim];
-                    if (!isNullOrUndefined(val)) {
+                    if (!isNullOrUndefined(val) && d.period) {
                         row[d.dim] = tickPeriod.get(d.period).cast(val);
                     }
                     return row;
