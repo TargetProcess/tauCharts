@@ -91,7 +91,11 @@ export class GPL extends Emitter {
 
         var self = this;
 
-        if (root.expression.operator !== false) {
+        if (root.expression.operator === false) {
+
+            root.frames = root.frames.map((f) => self._datify(f));
+
+        } else {
 
             var expr = this._parseExpression(root.expression, parentPipe);
 

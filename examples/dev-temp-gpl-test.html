@@ -343,12 +343,14 @@
             margin-top: 5px;
             margin-bottom: 5px;
             margin-left: 5px;
+            width: 1200px;
+            height: 600px;
         }
     </style>
 </head>
 <body>
 
-<div id="object-color-legend-container" style="min-height: 600px;"></div>
+<div id="object-color-legend-container" class="cc"></div>
 
 <div id="container" class="cc"></div>
 
@@ -442,7 +444,7 @@
                         bug: 'ISSUE2',
                         count: 15,
                         date: new Date('2014-10-05')
-                    },
+                    }
                 ]
             }
         },
@@ -711,6 +713,10 @@
 <script>
 
     var dashSpec = {
+
+        settings: {
+            fitModel: 'none'
+        },
 
         sources: {
             '?': {
