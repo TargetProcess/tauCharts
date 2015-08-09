@@ -5,11 +5,11 @@ export class DataFrame {
     constructor({key: key, pipe: pipe, source: source, units: units}, dataSource, transformations = {}) {
 
         this.key = key;
-        this.pipe = pipe;
+        this.pipe = pipe || [];
         this.source = source;
         this.units = units;
 
-        this._frame = {key, source, pipe: pipe || []};
+        this._frame = {key, source, pipe: this.pipe};
         this._data = dataSource;
         this._pipeReducer = (data, pipeCfg) => transformations[pipeCfg.type](data, pipeCfg.args);
     }

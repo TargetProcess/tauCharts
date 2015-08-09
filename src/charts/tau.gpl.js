@@ -153,6 +153,9 @@ export class GPL extends Emitter {
 
         var self = this;
 
+        // Rule to cancel parent frame inheritance
+        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
+
         var UnitClass = self.unitSet.get(unitConfig.type);
         var unitNode = new UnitClass(unitConfig);
         unitNode.parentUnit = rootUnit;
@@ -161,7 +164,7 @@ export class GPL extends Emitter {
                 var key = (alias || `${type}:default`);
                 return self
                     .scalesHub
-                    .createScaleInfo(self.scales[key], rootFrame)
+                    .createScaleInfo(self.scales[key], passFrame)
                     .create(dynamicProps);
             })
             .drawFrames(unitConfig.frames, (function (rootUnit) {
