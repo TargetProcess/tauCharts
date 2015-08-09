@@ -362,6 +362,8 @@
 
 <div id="composite1" class="cc"></div>
 
+<div id="composite2" class="cc"></div>
+
 <script>
     var c = new tauCharts.Chart({
 
@@ -383,10 +385,6 @@
     });
 
     c.renderTo('#object-color-legend-container');
-
-    var aaa = c.getSpec();
-    console.log(aaa);
-    // console.log(JSON.stringify(c.getSpec(), null, 4));
 </script>
 
 <script>
@@ -499,7 +497,7 @@
 
     var facetGpl = new tauCharts.Plot(facetSpec);
 
-    // facetGpl.renderTo('#container');
+    facetGpl.renderTo('#container');
 </script>
 
 <script>
@@ -675,7 +673,7 @@
 
     var gpl = new tauCharts.Plot(facetSpec);
 
-    // gpl.renderTo('#trendline');
+    gpl.renderTo('#trendline');
 
     var iteration = 0;
     var updateData = function () {
@@ -692,7 +690,7 @@
         gpl.renderTo('#trendline');
     };
 
-    // setInterval(updateData, 2000);
+    setInterval(updateData, 2000);
 
 </script>
 
@@ -1055,11 +1053,10 @@
 
     var dashGpl = new tauCharts.Plot(dashSpec);
 
-    // dashGpl.renderTo('#dashboard');
+    dashGpl.renderTo('#dashboard');
     </script>
 
-    <script>
-
+<script>
 
     var composite = new tauCharts.Plot({
 
@@ -1105,22 +1102,13 @@
         },
 
         scales: {
-            'car': {type: 'ordinal', source: '/', dim: 'car'},
-            'co2': {type: 'linear', source: '/', dim: 'co2', autoScale: true},
-            'hp': {type: 'linear',  source: '/', dim: 'hp', autoScale: true},
 
             'xScale': {type: 'ordinal', source: '$', dim: 'x'},
-            'yScale': {type: 'ordinal', source: '$', dim: 'y'},
+            'yScale': {type: 'ordinal', source: '$', dim: 'y', ratio: {1: 0.4, 2: 0.6}},
 
-            "x_null":{"type":"ordinal","source":"?"},
-            "y_null":{"type":"ordinal","source":"?"},
-            "size_null":{"type":"size","source":"?","mid":5},
-            "color_null":{"type":"color","source":"?","brewer":null},
-            "pos:default":{"type":"ordinal","source":"?"},
-            "size:default":{"type":"size","source":"?","mid":5},
-            "color:default":{"type":"color","source":"?","brewer":null},
             "x_car":{"type":"ordinal","source":"/","dim":"car","autoScale":true,"dimType":"category"},
             "y_co2":{"type":"linear","source":"/","dim":"co2","autoScale":true,"dimType":"measure"},
+            "y_hp":{"type":"linear","source":"/","dim":"hp","autoScale":true,"dimType":"measure"},
             "color_undefined":{"type":"color","source":"/"},
             "size_undefined":{"type":"size","source":"/","min":2,"max":10,"mid":5}
         },
@@ -1133,6 +1121,9 @@
                 source: '$',
                 inherit: false,
                 operator: false
+            },
+            guide: {
+                showGridLines: ""
             },
             frames: [
                 {
@@ -1153,43 +1144,29 @@
                             guide: {
                                 autoLayout: "",
                                 x: {
-                                    $maxTickTextH: 12,
-                                    $maxTickTextW: 100.34210526315789,
-                                    $minimalDomain: 9,
                                     autoScale: true,
                                     cssClass: "x axis",
-                                    density: 20,
-                                    hide: false,
+                                    hide: true,
                                     label: {
                                         cssClass: "label",
-                                        dock: null,
                                         padding: 129,
                                         rotate: 0,
                                         size: 889.75,
                                         text: "car",
                                         textAnchor: "middle"
                                     },
-                                    padding: 20,
+                                    // padding: 20,
+                                    padding: 0,
                                     rotate: 90,
                                     scaleOrient: "bottom",
-                                    textAnchor: "start",
-                                    tickFontHeight: 12,
-                                    tickFormat: null,
-                                    tickFormatNullAlias: "No car",
-                                    tickFormatWordWrapLimit: 100,
-                                    tickPeriod: null
+                                    textAnchor: "start"
                                 },
                                 y: {
-                                    $maxTickTextH: 12,
-                                    $maxTickTextW: 41.25,
-                                    $minimalDomain: 2,
                                     autoScale: true,
                                     cssClass: "y axis",
-                                    density: 28,
                                     hide: false,
                                     label: {
                                         cssClass: "label",
-                                        dock: null,
                                         padding: 70.25,
                                         rotate: -90,
                                         size: 431,
@@ -1200,14 +1177,11 @@
                                     rotate: 0,
                                     scaleOrient: "left",
                                     textAnchor: "end",
-                                    tickFontHeight: 12,
-                                    tickFormat: "x-num-auto",
-                                    tickFormatNullAlias: "No co2",
-                                    tickFormatWordWrapLimit: 100,
-                                    tickPeriod: null
+                                    tickFormat: "x-num-auto"
                                 },
                                 padding: {
-                                    b: 159,
+                                    // b: 159,
+                                    b: 0,
                                     l: 100.25,
                                     r: 10,
                                     t: 10
@@ -1247,6 +1221,169 @@
                     units: [
                         {
                             x: "x_car",
+                            y: "y_hp",
+                            type: "COORDS.RECT",
+                            expression: {
+                                inherit: false,
+                                operator: "none",
+                                params: [],
+                                source: "/"
+                            },
+                            guide: {
+                                autoLayout: "",
+                                x: {
+                                    autoScale: true,
+                                    cssClass: "x axis",
+                                    hide: false,
+                                    label: {
+                                        cssClass: "label",
+                                        padding: 129,
+                                        rotate: 0,
+                                        size: 889.75,
+                                        text: "car",
+                                        textAnchor: "middle"
+                                    },
+                                    padding: 20,
+                                    rotate: 90,
+                                    scaleOrient: "bottom",
+                                    textAnchor: "start"
+                                },
+                                y: {
+                                    autoScale: true,
+                                    cssClass: "y axis",
+                                    hide: false,
+                                    label: {
+                                        cssClass: "label",
+                                        padding: 70.25,
+                                        rotate: -90,
+                                        size: 431,
+                                        text: "hp",
+                                        textAnchor: "middle"
+                                    },
+                                    padding: 20,
+                                    rotate: 0,
+                                    scaleOrient: "left",
+                                    textAnchor: "end",
+                                    tickFormat: "x-num-auto"
+                                },
+                                padding: {
+                                    b: 159,
+                                    l: 100.25,
+                                    r: 10,
+                                    t: 10
+                                },
+                                showGridLines: "xy"
+                            },
+
+                            units: [
+                                {
+                                    size: "size_undefined",
+                                    type: "ELEMENT.LINE",
+                                    x: "x_car",
+                                    y: "y_hp",
+                                    color: "color_undefined",
+                                    expression: {
+                                        inherit: false,
+                                        operator: "none",
+                                        params: [],
+                                        source: "/"
+                                    },
+                                    guide: {
+                                        anchors: false,
+                                        cssClass: "i-role-datum",
+                                        showGridLines: "xy",
+                                        widthCssClass: ""
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    composite.renderTo('#composite');
+</script>
+
+<script>
+
+
+    var composite1place = new tauCharts.Plot({
+
+        settings: {
+            fitModel: 'none'
+        },
+
+        sources: {
+            '?': {
+                dims: {},
+                data: []
+            },
+
+            '$': {
+                dims: {
+                    x: {type: 'category'},
+                    y: {type: 'category'}
+                },
+                data: [
+                    {x: 1, y: 1}
+                ]
+            },
+
+            '/': {
+                dims: {
+                    car: {type: 'category'},
+                    co2: {type: 'measure'},
+                    hp : {type: 'measure'}
+                },
+                data: [
+                    { car: "BMV X5", co2: 197, hp: 306 },
+                    { car: "Bentley Continental", co2: 246 , hp: 507 },
+                    { car: "Infinity FX", co2: 238 , hp: 238 },
+                    { car: "Toyota Prius+", co2: 96 , hp: 99 },
+                    { car: "Mercedes Vito", co2: 203 , hp: 95 },
+                    { car: "Peugeot 3008", co2: 155 , hp: 120 },
+                    { car: "Volvo S60", co2: 135 , hp: 150 },
+                    { car: "Subaru Forester", co2: 186, hp: 150 },
+                    { car: "Lexus RX", co2: 233, hp: 188 }
+                ]
+            }
+        },
+
+        scales: {
+
+            'xScale': {type: 'ordinal', source: '$', dim: 'x'},
+            'yScale': {type: 'ordinal', source: '$', dim: 'y'},
+
+            "x_car":{"type":"ordinal","source":"/","dim":"car","autoScale":true,"dimType":"category"},
+            "y_co2":{"type":"linear","source":"/","dim":"co2","autoScale":true,"dimType":"measure"},
+            "y_hp":{"type":"linear","source":"/","dim":"hp","autoScale":true,"dimType":"measure"},
+            "color_undefined":{"type":"color","source":"/"},
+            "color_undefined2":{"type":"color","source":"/", brewer: ['color20-2']},
+            "size_undefined":{"type":"size","source":"/","min":2,"max":10,"mid":5}
+        },
+
+        unit: {
+            type: "COORDS.RECT",
+            x: 'xScale',
+            y: 'yScale',
+            expression: {
+                source: '$',
+                inherit: false,
+                operator: false
+            },
+            guide: {
+                showGridLines: ""
+            },
+            frames: [
+                {
+                    key: {x: 1, y: 1, i:0},
+                    source: '$',
+                    pipe: [],
+                    units: [
+                        {
+                            x: "x_car",
                             y: "y_co2",
                             type: "COORDS.RECT",
                             expression: {
@@ -1258,16 +1395,11 @@
                             guide: {
                                 autoLayout: "",
                                 x: {
-                                    $maxTickTextH: 12,
-                                    $maxTickTextW: 100.34210526315789,
-                                    $minimalDomain: 9,
                                     autoScale: true,
                                     cssClass: "x axis",
-                                    density: 20,
                                     hide: false,
                                     label: {
                                         cssClass: "label",
-                                        dock: null,
                                         padding: 129,
                                         rotate: 0,
                                         size: 889.75,
@@ -1277,39 +1409,25 @@
                                     padding: 20,
                                     rotate: 90,
                                     scaleOrient: "bottom",
-                                    textAnchor: "start",
-                                    tickFontHeight: 12,
-                                    tickFormat: null,
-                                    tickFormatNullAlias: "No car",
-                                    tickFormatWordWrapLimit: 100,
-                                    tickPeriod: null
+                                    textAnchor: "start"
                                 },
                                 y: {
-                                    $maxTickTextH: 12,
-                                    $maxTickTextW: 41.25,
-                                    $minimalDomain: 2,
                                     autoScale: true,
                                     cssClass: "y axis",
-                                    density: 28,
                                     hide: false,
                                     label: {
                                         cssClass: "label",
-                                        dock: null,
                                         padding: 70.25,
                                         rotate: -90,
                                         size: 431,
-                                        text: "co2",
+                                        text: "co2, hp",
                                         textAnchor: "middle"
                                     },
                                     padding: 20,
                                     rotate: 0,
                                     scaleOrient: "left",
                                     textAnchor: "end",
-                                    tickFontHeight: 12,
-                                    tickFormat: "x-num-auto",
-                                    tickFormatNullAlias: "No co2",
-                                    tickFormatWordWrapLimit: 100,
-                                    tickPeriod: null
+                                    tickFormat: "x-num-auto"
                                 },
                                 padding: {
                                     b: 159,
@@ -1344,175 +1462,130 @@
                         }
                     ]
                 }
-            ]
-        }
-    });
-
-    composite.renderTo('#composite');
-</script>
-
-<script>
-
-
-    var composite1 = new tauCharts.Plot({
-
-        settings: {
-            fitModel: 'none'
-        },
-
-        sources: {
-            "?": {"dims": {}, "data": [{}]},
-            "/": {
-                "dims": {
-                    "car": {"type": "category"},
-                    "co2": {"type": "measure"},
-                    "hp": {"type": "measure"}
-                },
-                "data": [
-                    {"car": "BMV X5", "co2": 197, "hp": 306},
-                    {
-                        "car": "Bentley Continental",
-                        "co2": 246,
-                        "hp": 507
-                    },
-                    {"car": "Infinity FX", "co2": 238, "hp": 238},
-                    {
-                        "car": "Lexus RX",
-                        "co2": 233,
-                        "hp": 188
-                    },
-                    {"car": "Mercedes Vito", "co2": 203, "hp": 95},
-                    {
-                        "car": "Peugeot 3008",
-                        "co2": 155,
-                        "hp": 120
-                    },
-                    {"car": "Subaru Forester", "co2": 186, "hp": 150},
-                    {
-                        "car": "Toyota Prius+",
-                        "co2": 96,
-                        "hp": 99
-                    },
-                    {"car": "Volvo S60", "co2": 135, "hp": 150}
-                ]
-            }
-        },
-
-        scales: {
-            "x_null":{"type":"ordinal","source":"?"},
-            "y_null":{"type":"ordinal","source":"?"},
-            "size_null":{"type":"size","source":"?","mid":5},
-            "color_null":{"type":"color","source":"?","brewer":null},
-            "pos:default":{"type":"ordinal","source":"?"},
-            "size:default":{"type":"size","source":"?","mid":5},
-            "color:default":{"type":"color","source":"?","brewer":null},
-            "x_car":{"type":"ordinal","source":"/","dim":"car","autoScale":true,"dimType":"category"},
-            "y_co2":{"type":"linear","source":"/","dim":"co2","autoScale":true,"dimType":"measure"},
-            "color_undefined":{"type":"color","source":"/"},
-            "size_undefined":{"type":"size","source":"/","min":2,"max":10,"mid":5}
-        },
-
-        unit: {
-
-            x: "x_car",
-            y: "y_co2",
-            type: "COORDS.RECT",
-            expression: {
-                inherit: false,
-                operator: "none",
-                params: [],
-                source: "/"
-            },
-            guide: {
-                autoLayout: "",
-                x: {
-                    $maxTickTextH: 12,
-                    $maxTickTextW: 100.34210526315789,
-                    $minimalDomain: 9,
-                    autoScale: true,
-                    cssClass: "x axis",
-                    density: 20,
-                    hide: false,
-                    label: {
-                        cssClass: "label",
-                        dock: null,
-                        padding: 129,
-                        rotate: 0,
-                        size: 889.75,
-                        text: "car",
-                        textAnchor: "middle"
-                    },
-                    padding: 20,
-                    rotate: 90,
-                    scaleOrient: "bottom",
-                    textAnchor: "start",
-                    tickFontHeight: 12,
-                    tickFormat: null,
-                    tickFormatNullAlias: "No car",
-                    tickFormatWordWrapLimit: 100,
-                    tickPeriod: null
-                },
-                y: {
-                    $maxTickTextH: 12,
-                    $maxTickTextW: 41.25,
-                    $minimalDomain: 2,
-                    autoScale: true,
-                    cssClass: "y axis",
-                    density: 28,
-                    hide: false,
-                    label: {
-                        cssClass: "label",
-                        dock: null,
-                        padding: 70.25,
-                        rotate: -90,
-                        size: 431,
-                        text: "co2",
-                        textAnchor: "middle"
-                    },
-                    padding: 20,
-                    rotate: 0,
-                    scaleOrient: "left",
-                    textAnchor: "end",
-                    tickFontHeight: 12,
-                    tickFormat: "x-num-auto",
-                    tickFormatNullAlias: "No co2",
-                    tickFormatWordWrapLimit: 100,
-                    tickPeriod: null
-                },
-                padding: {
-                    b: 159,
-                    l: 100.25,
-                    r: 10,
-                    t: 10
-                },
-                showGridLines: "xy"
-            },
-
-            units: [
+                ,
                 {
-                    size: "size_undefined",
-                    type: "ELEMENT.LINE",
-                    x: "x_car",
-                    y: "y_co2",
-                    color: "color_undefined",
-                    expression: {
-                        inherit: false,
-                        operator: "none",
-                        params: [],
-                        source: "/"
-                    },
-                    guide: {
-                        anchors: false,
-                        cssClass: "i-role-datum",
-                        showGridLines: "xy",
-                        widthCssClass: ""
-                    }
+                    key: {x: 1, y: 1, i:1},
+                    source: '$',
+                    pipe: [],
+                    units: [
+                        {
+                            x: "x_car",
+                            y: "y_hp",
+                            type: "COORDS.RECT",
+                            expression: {
+                                inherit: false,
+                                operator: "none",
+                                params: [],
+                                source: "/"
+                            },
+                            guide: {
+                                autoLayout: "",
+                                x: {
+                                    autoScale: true,
+                                    cssClass: "x axis",
+                                    hide: true,
+                                    label: {
+                                        cssClass: "label",
+                                        padding: 129,
+                                        rotate: 0,
+                                        size: 889.75,
+                                        text: "car",
+                                        textAnchor: "middle"
+                                    },
+                                    padding: 20,
+                                    rotate: 90,
+                                    scaleOrient: "bottom",
+                                    textAnchor: "start"
+                                },
+                                y: {
+                                    autoScale: true,
+                                    cssClass: "y axis",
+                                    hide: false,
+                                    label: {
+                                        cssClass: "label",
+                                        // padding: 70.25,
+                                        padding: 0,
+                                        rotate: -90,
+                                        size: 431,
+                                        text: "",
+                                        textAnchor: "middle"
+                                    },
+                                    padding: 55,
+                                    rotate: 0,
+                                    scaleOrient: "left",
+                                    textAnchor: "end",
+                                    tickFormat: "x-num-auto"
+                                },
+                                padding: {
+                                    b: 159,
+                                    l: 100.25,
+                                    r: 10,
+                                    t: 10
+                                },
+                                showGridLines: ""
+                            },
+
+                            units: [
+                                {
+                                    size: "size_undefined",
+                                    type: "ELEMENT.LINE",
+                                    x: "x_car",
+                                    y: "y_hp",
+                                    color: "color_undefined2",
+                                    expression: {
+                                        inherit: false,
+                                        operator: "none",
+                                        params: [],
+                                        source: "/"
+                                    },
+                                    guide: {
+                                        anchors: false,
+                                        cssClass: "i-role-datum",
+                                        showGridLines: "xy",
+                                        widthCssClass: ""
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }
     });
 
-    composite1.renderTo('#composite1');
+    composite1place.renderTo('#composite1');
+</script>
+
+<script>
+    var composite2 = new tauCharts.Chart({
+
+        data: [
+            {car: "BMV X5", co2: 197, hp: 306},
+            {car: "Bentley Continental", co2: 246, hp: 507},
+            {car: "Infinity FX", co2: 238, hp: 238},
+            {car: "Toyota Prius+", co2: 96, hp: 99},
+            {car: "Mercedes Vito", co2: 203, hp: 95},
+            {car: "Peugeot 3008", co2: 155, hp: 120},
+            {car: "Volvo S60", co2: 135, hp: 150},
+            {car: "Subaru Forester", co2: 186, hp: 150},
+            {car: "Lexus RX", co2: 233, hp: 188}
+        ].reduce(function (memo, row) {
+                    var r1 = _.clone(row);
+                    r1['co2-hp-type'] = 'co2';
+                    r1['co2,hp'] = row['co2'];
+                    var r2 = _.clone(row);
+                    r1['co2-hp-type'] = 'hp';
+                    r2['co2,hp'] = row['hp'];
+                    return memo.concat([r1, r2]);
+                }, []),
+
+        "type": "line",
+        "x": ["car"],
+        "y": ["co2,hp"],
+        "color": "co2-hp-type"
+    });
+
+    composite2.renderTo('#composite2');
 </script>
 
 </body>
