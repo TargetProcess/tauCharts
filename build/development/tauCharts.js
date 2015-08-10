@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.0 - 2015-08-05
+/*! taucharts - v0.5.1 - 2015-08-10
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -2465,11 +2465,11 @@ define('data-frame',['exports', './utils/utils'], function (exports, _utilsUtils
             _classCallCheck(this, DataFrame);
 
             this.key = key;
-            this.pipe = pipe;
+            this.pipe = pipe || [];
             this.source = source;
             this.units = units;
 
-            this._frame = { key: key, source: source, pipe: pipe || [] };
+            this._frame = { key: key, source: source, pipe: this.pipe };
             this._data = dataSource;
             this._pipeReducer = function (data, pipeCfg) {
                 return transformations[pipeCfg.type](data, pipeCfg.args);
@@ -2613,7 +2613,12 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
 
                 var self = this;
 
-                if (root.expression.operator !== false) {
+                if (root.expression.operator === false) {
+
+                    root.frames = root.frames.map(function (f) {
+                        return self._datify(f);
+                    });
+                } else {
 
                     var expr = this._parseExpression(root.expression, parentPipe);
 
@@ -2671,12 +2676,15 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
 
                 var self = this;
 
+                // Rule to cancel parent frame inheritance
+                var passFrame = unitConfig.expression.inherit === false ? null : rootFrame;
+
                 var UnitClass = self.unitSet.get(unitConfig.type);
                 var unitNode = new UnitClass(unitConfig);
                 unitNode.parentUnit = rootUnit;
                 unitNode.createScales(function (type, alias, dynamicProps) {
                     var key = alias || '' + type + ':default';
-                    return self.scalesHub.createScaleInfo(self.scales[key], rootFrame).create(dynamicProps);
+                    return self.scalesHub.createScaleInfo(self.scales[key], passFrame).create(dynamicProps);
                 }).drawFrames(unitConfig.frames, (function (rootUnit) {
                     return function (rootConf, rootFrame) {
                         self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
@@ -5745,7 +5753,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 var reducer = function reducer(refSources, d) {
                     refSources[d.source].data = refSources[d.source].data.map(function (row) {
                         var val = row[d.dim];
-                        if (!isNullOrUndefined(val)) {
+                        if (!isNullOrUndefined(val) && d.period) {
                             row[d.dim] = tickPeriod.get(d.period).cast(val);
                         }
                         return row;
