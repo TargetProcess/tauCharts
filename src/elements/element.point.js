@@ -28,6 +28,8 @@ export class Point extends Element {
                 density: 20
             }
         );
+
+        this.on('highlight', (sender, e) => this.highlight(e));
     }
 
     createScales(fnCreateScale) {
@@ -138,5 +140,16 @@ export class Point extends Element {
             .call(updateGroups);
 
         return [];
+    }
+
+    highlight(filter) {
+        this.config
+            .options
+            .container
+            .selectAll('.dot')
+            .classed({
+                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
+                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
+            });
     }
 }

@@ -258,33 +258,30 @@
     /*  PLUGINS  */
 
     /*  Highlighter  */
-    &__highlighted_chart &__dot&__highlighted {
+    &__dot&__highlighted {
         stroke-width: 2;
         opacity: 1;
     }
 
-    &__highlighted_chart &__line&__highlighted {
+    &__dot&__dimmed {
+        opacity: 0.2;
+    }
+
+    &__line&__highlighted {
         stroke-opacity: 1;
         stroke-width: 3;
     }
 
-    &__highlighted_chart &__bar&__highlighted {
+    &__line&__dimmed {
+        stroke-opacity: 0.2;
+    }
+
+    &__bar&__highlighted {
         stroke-opacity: 1;
         opacity: 1;
     }
 
-    &__highlighted_chart &__line, {
-        stroke-opacity: 0.2;
-        
-    }
-
-    &__highlighted_chart &__bar{
-        opacity: 0.2;
-
-    }
-
-    &__highlighted_chart &__dot{
+    &__bar&__dimmed{
         opacity: 0.2;
     }
-
 }
