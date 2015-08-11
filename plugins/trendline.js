@@ -426,12 +426,11 @@
 
                 var self = this;
 
-                var periodGenerator = tauCharts.api.tickPeriod;
-
                 if (!settings.showTrend) {
                     return;
                 }
 
+                var periodGenerator = tauCharts.api.tickPeriod;
                 var createPeriodCaster = function (period) {
                     var gen = periodGenerator.get(period);
                     return function (x) {
