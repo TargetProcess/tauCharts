@@ -426,15 +426,35 @@
 
                 var self = this;
 
+                var periodGenerator = tauCharts.api.tickPeriod;
+
                 if (!settings.showTrend) {
                     return;
                 }
 
+                var createPeriodCaster = function (period) {
+                    var gen = periodGenerator.get(period);
+                    return function (x) {
+                        return gen.cast(new Date(x));
+                    };
+                };
+
                 specRef.transformations = specRef.transformations || {};
                 specRef.transformations.regression = function (data, props) {
 
-                    var x = props.x;
-                    var y = props.y;
+                    var x = props.x.dim;
+                    var y = props.y.dim;
+
+                    var isXPeriod = (props.x.type === 'period' && props.x.period);
+                    var isYPeriod = (props.y.type === 'period' && props.y.period);
+
+                    var xMapper = isXPeriod ?
+                        (createPeriodCaster(props.x.period)) :
+                        (_.identity);
+
+                    var yMapper = isYPeriod ?
+                        (createPeriodCaster(props.y.period)) :
+                        (_.identity);
 
                     var src = data.map(function (item) {
                         var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
@@ -453,11 +473,15 @@
                         })
                         .map(function (p) {
                             var item = {};
-                            item[x] = p[0];
-                            item[y] = p[1];
+                            item[x] = xMapper(p[0]);
+                            item[y] = yMapper(p[1]);
                             return item;
                         })
                         .value();
+
+                    if ((points.length > 1) && (isXPeriod || isYPeriod)) {
+                        points = [points[0], points[points.length - 1]];
+                    }
 
                     return points.length > 1 ? points : [];
                 };
@@ -481,8 +505,8 @@
                             type: 'regression',
                             args: {
                                 type: settings.type,
-                                x: xScale.dim,
-                                y: yScale.dim
+                                x: xScale,
+                                y: yScale
                             }
                         });
                         trend.guide = trend.guide || {};
