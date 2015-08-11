@@ -530,7 +530,7 @@
 
                 '<div>',
                 '<select class="i-role-change-model graphical-report__select graphical-report__trendlinepanel__control">',
-                '<%= models %> />',
+                '<%= models %>',
                 '</select>',
                 '</div>',
 
