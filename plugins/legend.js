@@ -25,6 +25,15 @@
             return (x === null) || (x === '') || (typeof x === 'undefined');
         };
 
+        var createIsRowMatchInterceptor = function (dim, val) {
+            return function (row) {
+                var d = row[dim];
+                var r = JSON.stringify(isEmpty(d) ? null : d);
+                // use non-strong equal
+                return (val === r);
+            }
+        };
+
         var _delegateEvent = function (element, eventName, selector, callback) {
             element.addEventListener(eventName, function (e) {
                 var target = e.target;
@@ -171,8 +180,9 @@
                         var noVal = ((guide.color || {}).tickFormatNullAlias || ('No ' + title));
 
                         var legendColorItems = domain.map(function (d) {
-                            var val = _.escape(d);
+                            var val = JSON.stringify(isEmpty(d) ? null : d);
                             var key = colorScale.dim + val;
+
                             return {
                                 scaleId: c,
                                 dim: colorScale.dim,
@@ -190,10 +200,10 @@
                                     .map(function (d) {
                                         return self._itemTemplate({
                                             scaleId: d.scaleId,
-                                            dim: d.dim,
+                                            dim: _.escape(d.dim),
                                             color: d.color,
                                             classDisabled: d.disabled ? 'disabled' : '',
-                                            label: _.escape(d.label || noVal),
+                                            label: _.escape(isEmpty(d.label) ? noVal : d.label),
                                             value: _.escape(d.value)
                                         });
                                     })
@@ -230,11 +240,11 @@
                     this._chart.removeFilter(filterId);
                 } else {
                     target.classList.add('disabled');
+                    var isRowMatch = createIsRowMatchInterceptor(dim, val);
                     state[key] = this._chart.addFilter({
                         tag: 'legend',
                         predicate: function (row) {
-                            var d = row[dim];
-                            return !((val === '') ? isEmpty(d) : (d == val));
+                            return !isRowMatch(row);
                         }
                     });
                 }
@@ -246,18 +256,16 @@
                 var dim = target.getAttribute('data-dim');
                 var val = target.getAttribute('data-value');
 
+                var isRowMatch = doHighlight ?
+                    (createIsRowMatchInterceptor(dim, val)) :
+                    (function (row) { return null; });
+
                 this._chart
                     .select(function (unit) {
                         return unit.config.color === scaleId;
                     })
                     .forEach(function (unit) {
-                        unit.fire('highlight', function (row) {
-                            var d = row[dim];
-                            // use non-strong equal
-                            return doHighlight ?
-                                ((val === '') ? isEmpty(d) : (d == val)) :
-                                null;
-                        });
+                        unit.fire('highlight', isRowMatch);
                     });
             },
 
