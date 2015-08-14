@@ -29,9 +29,8 @@
             return function (row) {
                 var d = row[dim];
                 var r = JSON.stringify(isEmpty(d) ? null : d);
-                // use non-strong equal
                 return (val === r);
-            }
+            };
         };
 
         var _delegateEvent = function (element, eventName, selector, callback) {
