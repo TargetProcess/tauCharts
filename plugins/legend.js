@@ -21,6 +21,15 @@
                 // add default settings here
             });
 
+        var log10 = function (x) {
+            return Math.log(x) / Math.LN10;
+        };
+
+        var doEven = function (n) {
+            n = Math.round(n);
+            return n % 2 ? n + 1 : n;
+        };
+
         var isEmpty = function (x) {
             return (x === null) || (x === '') || (typeof x === 'undefined');
         };
@@ -67,11 +76,13 @@
 
                 this._color = Object.keys(spec.scales).reduce(reducer('color'), []);
                 this._fill = Object.keys(spec.scales).reduce(reducer('fill'), []);
+                this._size = Object.keys(spec.scales).reduce(reducer('size'), []);
 
                 var hasColorScales = (this._color.length > 0);
                 var hasFillScales = (this._fill.length > 0);
+                var hasSizeScales = (this._size.length > 0);
 
-                if (hasColorScales || hasFillScales) {
+                if (hasColorScales || hasFillScales || hasSizeScales) {
 
                     this._container = this._chart.insertToRightSidebar(this._containerTemplate);
 
@@ -112,6 +123,7 @@
             onRender: function () {
                 this._clearPanel();
                 this._drawColorLegend();
+                this._drawSizeLegend();
             },
 
             // jscs:disable maximumLineLength
@@ -133,12 +145,79 @@
                 '</div>',
                 '</div>'
             ].join('')),
+            _itemSizeTemplate: _.template([
+                '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
+                '<div class="graphical-report__legend__guide__wrap">',
+                '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
+                '</div><%=value%>',
+                '</div>'
+            ].join('')),
             // jscs:enable maximumLineLength
 
             _clearPanel: function () {
                 if (this._container) {
                     this._container.innerHTML = '';
                 }
+            },
+
+            _drawSizeLegend: function () {
+                var self = this;
+
+                self._size.forEach(function (c) {
+                    var firstNode = self
+                        ._chart
+                        .select(function (unit) {
+                            return (unit.config.size === c);
+                        })
+                        [0];
+
+                    if (firstNode) {
+
+                        var guide = firstNode.config.guide || {};
+
+                        var sizeScale = firstNode.getScale('size');
+
+                        var domain = sizeScale.domain();
+
+                        var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
+
+                        var first = domain[0];
+                        var last = domain[domain.length - 1];
+
+                        var values = [first];
+                        if ((last - first)) {
+                            var count = log10(last - first);
+                            var xF = Math.round((4 - count));
+                            var base = Math.pow(10, xF);
+                            var step = (last - first) / 5;
+                            var steps = [first, first + step, first + step * 2, first + step * 3, last];
+                            values = _(steps)
+                                .chain()
+                                .map(function (x) {
+                                    return (x === last || x === first) ? x : Math.round(x * base) / base;
+                                })
+                                .unique()
+                                .value();
+                        }
+
+                        self._container
+                            .insertAdjacentHTML('beforeend', self._template({
+                                name: title,
+                                items: values
+                                    .map(function (value) {
+                                        var radius = sizeScale(value);
+                                        return self._itemSizeTemplate({
+                                            diameter: doEven(radius * 2 + 2),
+                                            radius: radius,
+                                            value: value,
+                                            className: firstNode.config.color ? 'color-definite' : 'color-default-size'
+                                        });
+                                    })
+                                    .reverse()
+                                    .join('')
+                            }));
+                    }
+                });
             },
 
             _drawColorLegend: function () {
@@ -195,6 +274,7 @@
                         self._legendColorByScaleId[c] = legendColorItems;
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
+                                name: title,
                                 items: legendColorItems
                                     .map(function (d) {
                                         return self._itemTemplate({
@@ -206,8 +286,7 @@
                                             value: _.escape(d.value)
                                         });
                                     })
-                                    .join(''),
-                                name: title
+                                    .join('')
                             }));
                     }
                 });

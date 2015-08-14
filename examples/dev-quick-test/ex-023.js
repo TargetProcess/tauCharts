@@ -5,6 +5,7 @@ window.samples.push({
     x: 'cycleTime',
     y: 'effort',
     color: 'team',
+    size: 'effort',
 
     dimensions: {
         project: {type: 'category', order: ['TP3', 'TP2']},

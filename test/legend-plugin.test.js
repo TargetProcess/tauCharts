@@ -306,16 +306,15 @@ define(function (require) {
                 var sidebar = context.chart._layout.rightSidebar;
                 var legendBlock = sidebar.querySelector('.graphical-report__legend');
                 var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                // color
                 expect(getText(nodeList[0])).to.equal('No color');
                 expect(getText(nodeList[1])).to.equal('color');
-
                 // size
-                // TODO: uncomment as soon as size is implemented
-                //expect(getText(nodeList[2])).to.equal('123');
-                //expect(getText(nodeList[3])).to.equal('77.8');
-                //expect(getText(nodeList[4])).to.equal('55.2');
-                //expect(getText(nodeList[5])).to.equal('32.6');
-                //expect(getText(nodeList[6])).to.equal('10');
+                expect(getText(nodeList[2])).to.equal('123');
+                expect(getText(nodeList[3])).to.equal('77.8');
+                expect(getText(nodeList[4])).to.equal('55.2');
+                expect(getText(nodeList[5])).to.equal('32.6');
+                expect(getText(nodeList[6])).to.equal('10');
             });
         },
         {
