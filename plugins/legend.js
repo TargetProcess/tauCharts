@@ -145,6 +145,9 @@
                         [0];
 
                     if (firstNode) {
+
+                        var guide = firstNode.config.guide || {};
+
                         var colorScale = firstNode.getScale('color');
                         var dataSource = self
                             ._chart
@@ -163,6 +166,9 @@
                                 domain
                             );
                         }
+
+                        var title = ((guide.color || {}).label || {}).text || colorScale.dim;
+                        var noVal = ((guide.color || {}).tickFormatNullAlias || ('No ' + title));
 
                         var legendColorItems = domain.map(function (d) {
                             var val = _.escape(d);
@@ -187,12 +193,12 @@
                                             dim: d.dim,
                                             color: d.color,
                                             classDisabled: d.disabled ? 'disabled' : '',
-                                            label: d.label,
-                                            value: d.value
+                                            label: _.escape(d.label || noVal),
+                                            value: _.escape(d.value)
                                         });
                                     })
                                     .join(''),
-                                name: ((((firstNode.guide || {}).color || {}).label || {}).text) || colorScale.dim
+                                name: title
                             }));
                     }
                 });
@@ -227,7 +233,8 @@
                     state[key] = this._chart.addFilter({
                         tag: 'legend',
                         predicate: function (row) {
-                            return row[dim] != val;
+                            var d = row[dim];
+                            return !((val === '') ? isEmpty(d) : (d == val));
                         }
                     });
                 }
