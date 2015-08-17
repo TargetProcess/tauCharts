@@ -1,7 +1,5 @@
 define(function (require) {
 
-    // return;
-
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var legend = require('plugins/legend');
@@ -279,42 +277,58 @@ define(function (require) {
         }
     );
     describeChart(
-        "legend for size should be present",
+        "legend for color",
         {
             type: 'scatterplot',
             x: 'x',
             y: 'y',
             color: 'color',
-            size: 'size',
-            plugins: [legend()]
+            plugins: [legend()],
+
+            dimensions: {
+                x: {type: 'measure'},
+                y: {type: 'measure'},
+                color: {
+                    type: 'category',
+                    order: ['A', 'B']
+                }
+            }
         },
-        [{
-            x: 2,
-            y: 2,
-            color: undefined,
-            size: 10
-
-        }, {
-            x: 4,
-            y: 5,
-            color: 'color',
-            size: 123
-
-        }],
+        [
+            {
+                x: 2,
+                y: 2,
+                color: undefined
+            },
+            {
+                x: 4,
+                y: 5,
+                color: 'B'
+            },
+            {
+                x: 1,
+                y: 1,
+                color: 'A'
+            },
+            {
+                x: 3,
+                y: 3,
+                color: 'C'
+            }
+        ],
         function (context) {
-            it("should No color", function () {
+            it("should respect order", function () {
                 var sidebar = context.chart._layout.rightSidebar;
                 var legendBlock = sidebar.querySelector('.graphical-report__legend');
                 var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+
+                expect(nodeList.length).to.equal(4);
+
                 // color
-                expect(getText(nodeList[0])).to.equal('No color');
-                expect(getText(nodeList[1])).to.equal('color');
-                // size
-                expect(getText(nodeList[2])).to.equal('123');
-                expect(getText(nodeList[3])).to.equal('77.8');
-                expect(getText(nodeList[4])).to.equal('55.2');
-                expect(getText(nodeList[5])).to.equal('32.6');
-                expect(getText(nodeList[6])).to.equal('10');
+                expect(getText(nodeList[0])).to.equal('A');
+                expect(getText(nodeList[1])).to.equal('B');
+                expect(getText(nodeList[2])).to.equal('No color');
+                expect(getText(nodeList[3])).to.equal('C');
             });
         },
         {
@@ -322,4 +336,44 @@ define(function (require) {
         }
     );
 
+    describeChart(
+        "legend for size",
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            size: 'size',
+            plugins: [legend()]
+        },
+        [
+            {
+                x: 2,
+                y: 2,
+                size: 10
+            },
+            {
+                x: 4,
+                y: 5,
+                size: 123
+            }
+        ],
+        function (context) {
+            it("should support size scale", function () {
+                var sidebar = context.chart._layout.rightSidebar;
+                var legendBlock = sidebar.querySelector('.graphical-report__legend');
+                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+
+                expect(nodeList.length).to.equal(5);
+
+                expect(getText(nodeList[0])).to.equal('123');
+                expect(getText(nodeList[1])).to.equal('77.8');
+                expect(getText(nodeList[2])).to.equal('55.2');
+                expect(getText(nodeList[3])).to.equal('32.6');
+                expect(getText(nodeList[4])).to.equal('10');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
