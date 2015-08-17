@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.1 - 2015-08-10
+/*! taucharts - v0.5.1 - 2015-08-17
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -650,14 +650,18 @@ define('event',['exports'], function (exports) {
             this.emit_destroy = createDispatcher('destroy');
         }
 
+        //
+        // export names
+        //
+
+        /**
+         * Adds new event handler to object.
+         * @param {object} callbacks Callback set.
+         * @param {object=} context Context object.
+         */
+
         _createClass(Emitter, [{
             key: 'addHandler',
-
-            /**
-             * Adds new event handler to object.
-             * @param {object} callbacks Callback set.
-             * @param {object=} context Context object.
-             */
             value: function addHandler(callbacks, context) {
                 context = context || this;
                 // add handler
@@ -680,8 +684,6 @@ define('event',['exports'], function (exports) {
             value: function fire(name, data) {
                 createDispatcher.call(this, name).call(this, data);
             }
-        }, {
-            key: 'removeHandler',
 
             /**
              * Removes event handler set from object. For this operation parameters
@@ -689,6 +691,8 @@ define('event',['exports'], function (exports) {
              * @param {object} callbacks Callback set.
              * @param {object=} context Context object.
              */
+        }, {
+            key: 'removeHandler',
             value: function removeHandler(callbacks, context) {
                 var cursor = this;
                 var prev;
@@ -709,12 +713,12 @@ define('event',['exports'], function (exports) {
                     }
                 }
             }
-        }, {
-            key: 'destroy',
 
             /**
              * @destructor
              */
+        }, {
+            key: 'destroy',
             value: function destroy() {
                 // fire object destroy event handlers
                 this.emit_destroy();
@@ -726,9 +730,6 @@ define('event',['exports'], function (exports) {
         return Emitter;
     })();
 
-    //
-    // export names
-    //
     exports.Emitter = Emitter;
 });
 define('elements/element',['exports', '../event'], function (exports, _event) {
@@ -740,13 +741,14 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Element = (function (_Emitter) {
+        _inherits(Element, _Emitter);
 
         // add base behaviour here
 
@@ -756,8 +758,6 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
             _get(Object.getPrototypeOf(Element.prototype), 'constructor', this).call(this, config);
             this._elementScalesHub = {};
         }
-
-        _inherits(Element, _Emitter);
 
         _createClass(Element, [{
             key: 'regScale',
@@ -786,14 +786,18 @@ define('elements/element.point',['exports', '../const', './element'], function (
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Point = (function (_Element) {
+        _inherits(Point, _Element);
+
         function Point(config) {
+            var _this = this;
+
             _classCallCheck(this, Point);
 
             _get(Object.getPrototypeOf(Point.prototype), 'constructor', this).call(this, config);
@@ -813,9 +817,11 @@ define('elements/element.point',['exports', '../const', './element'], function (
                 tickFontHeight: 0,
                 density: 20
             });
-        }
 
-        _inherits(Point, _Element);
+            this.on('highlight', function (sender, e) {
+                return _this.highlight(e);
+            });
+        }
 
         _createClass(Point, [{
             key: 'createScales',
@@ -858,7 +864,7 @@ define('elements/element.point',['exports', '../const', './element'], function (
 
                 var options = this.config.options;
 
-                var prefix = '' + _const.CSS_PREFIX + 'dot dot i-role-element i-role-datum';
+                var prefix = _const.CSS_PREFIX + 'dot dot i-role-element i-role-datum';
 
                 var xScale = this.xScale;
                 var yScale = this.yScale;
@@ -881,7 +887,7 @@ define('elements/element.point',['exports', '../const', './element'], function (
                         },
                         'class': function _class(_ref4) {
                             var d = _ref4.data;
-                            return '' + prefix + ' ' + cScale(d[cScale.dim]);
+                            return prefix + ' ' + cScale(d[cScale.dim]);
                         }
                     }).transition().duration(500).attr('r', function (_ref5) {
                         var d = _ref5.data;
@@ -905,7 +911,7 @@ define('elements/element.point',['exports', '../const', './element'], function (
                         },
                         'class': function _class(_ref9) {
                             var d = _ref9.data;
-                            return '' + prefix + ' ' + cScale(d[cScale.dim]);
+                            return prefix + ' ' + cScale(d[cScale.dim]);
                         }
                     });
                 };
@@ -938,6 +944,20 @@ define('elements/element.point',['exports', '../const', './element'], function (
                 frameGroups.enter().append('g').call(updateGroups);
 
                 return [];
+            }
+        }, {
+            key: 'highlight',
+            value: function highlight(filter) {
+                this.config.options.container.selectAll('.dot').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref10) {
+                        var d = _ref10.data;
+                        return filter(d) === true;
+                    },
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref11) {
+                        var d = _ref11.data;
+                        return filter(d) === false;
+                    }
+                });
             }
         }]);
 
@@ -988,14 +1008,18 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Line = (function (_Element) {
+        _inherits(Line, _Element);
+
         function Line(config) {
+            var _this = this;
+
             _classCallCheck(this, Line);
 
             _get(Object.getPrototypeOf(Line.prototype), 'constructor', this).call(this, config);
@@ -1007,9 +1031,11 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 widthCssClass: '',
                 anchors: false
             });
-        }
 
-        _inherits(Line, _Element);
+            this.on('highlight', function (sender, e) {
+                return _this.highlight(e);
+            });
+        }
 
         _createClass(Line, [{
             key: 'createScales',
@@ -1049,7 +1075,7 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                     d3Line.interpolate(guide.interpolate);
                 }
 
-                var linePref = '' + _const.CSS_PREFIX + 'line i-role-element line ' + widthCss + ' ' + countCss + ' ' + guide.cssClass;
+                var linePref = _const.CSS_PREFIX + 'line i-role-element line ' + widthCss + ' ' + countCss + ' ' + guide.cssClass;
                 var updateLines = function updateLines() {
                     var paths = this.selectAll('path').data(function (_ref) {
                         var frame = _ref.data;
@@ -1060,7 +1086,7 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                     paths.enter().append('path').attr('d', d3Line);
                 };
 
-                var pointPref = '' + _const.CSS_PREFIX + 'dot-line dot-line i-role-element ' + _const.CSS_PREFIX + 'dot ';
+                var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-element ' + _const.CSS_PREFIX + 'dot ';
                 var updatePoints = function updatePoints() {
 
                     var points = this.selectAll('circle').data(function (frame) {
@@ -1083,7 +1109,7 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                         },
                         'class': function _class(_ref5) {
                             var d = _ref5.data;
-                            return '' + pointPref + ' ' + colorScale(d[colorScale.dim]);
+                            return pointPref + ' ' + colorScale(d[colorScale.dim]);
                         }
                     };
                     points.exit().remove();
@@ -1097,7 +1123,7 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
 
                         this.attr('class', function (_ref6) {
                             var f = _ref6.data;
-                            return '' + linePref + ' ' + colorScale(f.tags[colorScale.dim]) + ' ' + x + ' frame-' + f.hash;
+                            return linePref + ' ' + colorScale(f.tags[colorScale.dim]) + ' ' + x + ' frame-' + f.hash;
                         }).call(function () {
 
                             if (drawPath) {
@@ -1138,6 +1164,34 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                     return f.data.length < 2;
                 });
             }
+        }, {
+            key: 'highlight',
+            value: function highlight(filter) {
+
+                var container = this.config.options.container;
+
+                container.selectAll('.line').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref10) {
+                        var d = _ref10.data;
+                        return filter(d.tags) === true;
+                    },
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref11) {
+                        var d = _ref11.data;
+                        return filter(d.tags) === false;
+                    }
+                });
+
+                container.selectAll('.dot-line').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref12) {
+                        var d = _ref12.data;
+                        return filter(d) === true;
+                    },
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref13) {
+                        var d = _ref13.data;
+                        return filter(d) === false;
+                    }
+                });
+            }
         }]);
 
         return Line;
@@ -1154,25 +1208,31 @@ define('elements/element.interval',['exports', '../const', './element'], functio
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Interval = (function (_Element) {
+        _inherits(Interval, _Element);
+
         function Interval(config) {
+            var _this = this;
+
             _classCallCheck(this, Interval);
 
             _get(Object.getPrototypeOf(Interval.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = _.defaults(this.config.guide || {}, { prettify: true });
-        }
 
-        _inherits(Interval, _Element);
+            this.on('highlight', function (sender, e) {
+                return _this.highlight(e);
+            });
+        }
 
         _createClass(Interval, [{
             key: 'createScales',
@@ -1189,7 +1249,7 @@ define('elements/element.interval',['exports', '../const', './element'], functio
         }, {
             key: 'drawFrames',
             value: function drawFrames(frames) {
-                var _this = this;
+                var _this2 = this;
 
                 var options = this.config.options;
                 var config = this.config;
@@ -1237,7 +1297,7 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                     bars.enter().append('rect').call(updateBar);
                 };
                 var elements = options.container.selectAll('.i-role-bar-group').data(frames.map(function (fr) {
-                    return { key: fr.key, values: fr.part(), uid: _this.config.options.uid };
+                    return { key: fr.key, values: fr.part(), uid: _this2.config.options.uid };
                 }));
                 elements.exit().remove();
                 elements.call(updateBarContainer);
@@ -1448,6 +1508,21 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                     calculateBarW: calculateBarW
                 };
             }
+        }, {
+            key: 'highlight',
+            value: function highlight(filter) {
+
+                this.config.options.container.selectAll('.bar').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref14) {
+                        var d = _ref14.data;
+                        return filter(d) === true;
+                    },
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref15) {
+                        var d = _ref15.data;
+                        return filter(d) === false;
+                    }
+                });
+            }
         }]);
 
         return Interval;
@@ -1462,13 +1537,15 @@ define('error',['exports'], function (exports) {
         value: true
     });
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var TauChartError = (function (_Error) {
+        _inherits(TauChartError, _Error);
+
         function TauChartError(message, errorCode) {
             _classCallCheck(this, TauChartError);
 
@@ -1477,8 +1554,6 @@ define('error',['exports'], function (exports) {
             this.message = message;
             this.errorCode = errorCode;
         }
-
-        _inherits(TauChartError, _Error);
 
         return TauChartError;
     })(Error);
@@ -1502,7 +1577,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -1510,21 +1585,75 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var _2 = _interopRequireDefault(_underscore);
 
     var StackedInterval = (function (_Element) {
+        _inherits(StackedInterval, _Element);
+
+        _createClass(StackedInterval, null, [{
+            key: 'embedUnitFrameToSpec',
+            value: function embedUnitFrameToSpec(cfg, spec) {
+
+                var isHorizontal = cfg.flip;
+
+                var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
+                var baseScaleName = isHorizontal ? cfg.y : cfg.x;
+                var stackScale = spec.scales[stackedScaleName];
+                var baseScale = spec.scales[baseScaleName];
+                var baseDim = baseScale.dim;
+
+                var prop = stackScale.dim;
+
+                var groupsSums = cfg.frames.reduce(function (groups, f) {
+                    var dataFrame = f.part();
+                    var hasErrors = dataFrame.some(function (d) {
+                        return typeof d[prop] !== 'number';
+                    });
+                    if (hasErrors) {
+                        throw new _error.TauChartError('Stacked field [' + prop + '] should be a number', _error.errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART);
+                    }
+
+                    dataFrame.reduce(function (hash, d) {
+                        var stackedVal = d[prop];
+                        var baseVal = d[baseDim];
+                        var ttl = stackedVal >= 0 ? hash.positive : hash.negative;
+                        ttl[baseVal] = ttl[baseVal] || 0;
+                        ttl[baseVal] += stackedVal;
+                        return hash;
+                    }, groups);
+
+                    return groups;
+                }, { negative: {}, positive: {} });
+
+                var negativeSum = Math.min.apply(Math, _toConsumableArray(_2['default'].values(groupsSums.negative).concat(0)));
+                var positiveSum = Math.max.apply(Math, _toConsumableArray(_2['default'].values(groupsSums.positive).concat(0)));
+
+                if (!stackScale.hasOwnProperty('max') || stackScale.max < positiveSum) {
+                    stackScale.max = positiveSum;
+                }
+
+                if (!stackScale.hasOwnProperty('min') || stackScale.min > negativeSum) {
+                    stackScale.min = negativeSum;
+                }
+            }
+        }]);
+
         function StackedInterval(config) {
+            var _this = this;
+
             _classCallCheck(this, StackedInterval);
 
             _get(Object.getPrototypeOf(StackedInterval.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = _2['default'].defaults(this.config.guide || {}, { prettify: true });
-        }
 
-        _inherits(StackedInterval, _Element);
+            this.on('highlight', function (sender, e) {
+                return _this.highlight(e);
+            });
+        }
 
         _createClass(StackedInterval, [{
             key: 'createScales',
@@ -1768,51 +1897,20 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                     }
                 };
             }
-        }], [{
-            key: 'embedUnitFrameToSpec',
-            value: function embedUnitFrameToSpec(cfg, spec) {
+        }, {
+            key: 'highlight',
+            value: function highlight(filter) {
 
-                var isHorizontal = cfg.flip;
-
-                var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
-                var baseScaleName = isHorizontal ? cfg.y : cfg.x;
-                var stackScale = spec.scales[stackedScaleName];
-                var baseScale = spec.scales[baseScaleName];
-                var baseDim = baseScale.dim;
-
-                var prop = stackScale.dim;
-
-                var groupsSums = cfg.frames.reduce(function (groups, f) {
-                    var dataFrame = f.part();
-                    var hasErrors = dataFrame.some(function (d) {
-                        return typeof d[prop] !== 'number';
-                    });
-                    if (hasErrors) {
-                        throw new _error.TauChartError('Stacked field [' + prop + '] should be a number', _error.errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART);
+                this.config.options.container.selectAll('.bar').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref7) {
+                        var d = _ref7.data;
+                        return filter(d) === true;
+                    },
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref8) {
+                        var d = _ref8.data;
+                        return filter(d) === false;
                     }
-
-                    dataFrame.reduce(function (hash, d) {
-                        var stackedVal = d[prop];
-                        var baseVal = d[baseDim];
-                        var ttl = stackedVal >= 0 ? hash.positive : hash.negative;
-                        ttl[baseVal] = ttl[baseVal] || 0;
-                        ttl[baseVal] += stackedVal;
-                        return hash;
-                    }, groups);
-
-                    return groups;
-                }, { negative: {}, positive: {} });
-
-                var negativeSum = Math.min.apply(Math, _toConsumableArray(_2['default'].values(groupsSums.negative).concat(0)));
-                var positiveSum = Math.max.apply(Math, _toConsumableArray(_2['default'].values(groupsSums.positive).concat(0)));
-
-                if (!stackScale.hasOwnProperty('max') || stackScale.max < positiveSum) {
-                    stackScale.max = positiveSum;
-                }
-
-                if (!stackScale.hasOwnProperty('min') || stackScale.min > negativeSum) {
-                    stackScale.min = negativeSum;
-                }
+                });
             }
         }]);
 
@@ -1840,7 +1938,7 @@ define('utils/utils',['exports', '../elements/element.point', '../elements/eleme
     };
 
     var traverseSpec = function traverseSpec(root, enterFn, exitFn) {
-        var level = arguments[3] === undefined ? 0 : arguments[3];
+        var level = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
 
         var shouldContinue = enterFn(root, level);
         if (shouldContinue) {
@@ -2115,7 +2213,7 @@ define('utils/utils',['exports', '../elements/element.point', '../elements/eleme
             var step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10));
             var err = m / span * step;
 
-            var correction = [[0.15, 10], [0.35, 5], [0.75, 2], [1, 1], [2, 1]];
+            var correction = [[0.15, 10], [0.35, 5], [0.75, 2], [1.00, 1], [2.00, 1]];
 
             var i = -1;
             // jscs:disable disallowEmptyBlocks
@@ -2185,7 +2283,7 @@ define('utils/utils',['exports', '../elements/element.point', '../elements/eleme
             }, function (data, keys) {
                 var seed = dataPrevRef === data ? dataNewSnap : ++dataNewSnap;
                 dataPrevRef = data;
-                return '' + keys.join('') + '-' + seed;
+                return keys.join('') + '-' + seed;
             });
 
             return function (key, size, varSet) {
@@ -2353,7 +2451,7 @@ define('algebra',['exports', 'underscore', './unit-domain-period-generator'], fu
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    function _defineProperty(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); }
+    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
     var _2 = _interopRequireDefault(_underscore);
 
@@ -2460,7 +2558,7 @@ define('data-frame',['exports', './utils/utils'], function (exports, _utilsUtils
             var pipe = _ref.pipe;
             var source = _ref.source;
             var units = _ref.units;
-            var transformations = arguments[2] === undefined ? {} : arguments[2];
+            var transformations = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
             _classCallCheck(this, DataFrame);
 
@@ -2491,7 +2589,7 @@ define('data-frame',['exports', './utils/utils'], function (exports, _utilsUtils
         }, {
             key: 'part',
             value: function part() {
-                var pipeMapper = arguments[0] === undefined ? function (x) {
+                var pipeMapper = arguments.length <= 0 || arguments[0] === undefined ? function (x) {
                     return x;
                 } : arguments[0];
 
@@ -2513,17 +2611,19 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var cast = function cast(v) {
         return _.isDate(v) ? v.getTime() : v;
     };
 
     var GPL = (function (_Emitter) {
+        _inherits(GPL, _Emitter);
+
         function GPL(config, scalesRegistryInstance, unitsRegistry) {
             _classCallCheck(this, GPL);
 
@@ -2560,8 +2660,6 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
             };
         }
 
-        _inherits(GPL, _Emitter);
-
         _createClass(GPL, [{
             key: 'renderTo',
             value: function renderTo(target, xSize) {
@@ -2581,14 +2679,14 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                 var size = this.config.settings.size;
 
                 var attr = {
-                    'class': '' + _const.CSS_PREFIX + 'svg',
+                    'class': _const.CSS_PREFIX + 'svg',
                     width: size.width,
                     height: size.height
                 };
 
                 xSvg.attr(attr);
 
-                xSvg.enter().append('svg').attr(attr).append('g').attr('class', '' + _const.CSS_PREFIX + 'cell cell frame-root');
+                xSvg.enter().append('svg').attr(attr).append('g').attr('class', _const.CSS_PREFIX + 'cell cell frame-root');
 
                 this.root.options = {
                     container: d3Target.select('.frame-root'),
@@ -2609,7 +2707,7 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
             value: function _expandUnitsStructure(root) {
                 var _this = this;
 
-                var parentPipe = arguments[1] === undefined ? [] : arguments[1];
+                var parentPipe = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
                 var self = this;
 
@@ -2672,7 +2770,7 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
         }, {
             key: '_drawUnitsStructure',
             value: function _drawUnitsStructure(unitConfig, rootFrame) {
-                var rootUnit = arguments[2] === undefined ? null : arguments[2];
+                var rootUnit = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
 
                 var self = this;
 
@@ -2683,7 +2781,7 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                 var unitNode = new UnitClass(unitConfig);
                 unitNode.parentUnit = rootUnit;
                 unitNode.createScales(function (type, alias, dynamicProps) {
-                    var key = alias || '' + type + ':default';
+                    var key = alias || type + ':default';
                     return self.scalesHub.createScaleInfo(self.scales[key], passFrame).create(dynamicProps);
                 }).drawFrames(unitConfig.frames, (function (rootUnit) {
                     return function (rootConf, rootFrame) {
@@ -2724,7 +2822,7 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                 var func = _algebra.FramesAlgebra[funcName];
 
                 if (!func) {
-                    throw new Error('' + funcName + ' operator is not supported');
+                    throw new Error(funcName + ' operator is not supported');
                 }
 
                 return {
@@ -3415,6 +3513,8 @@ define('plugins',['exports', 'd3', './utils/utils'], function (exports, _d3, _ut
 
     var _d32 = _interopRequireDefault(_d3);
 
+    /* jshint ignore:end */
+
     var elementEvents = ['click', 'mouseover', 'mouseout', 'mousemove'];
 
     var Plugins = (function () {
@@ -3485,8 +3585,6 @@ define('plugins',['exports', 'd3', './utils/utils'], function (exports, _d3, _ut
 
     exports.Plugins = Plugins;
 });
-
-/* jshint ignore:end */;
 define('units-registry',['exports', './error'], function (exports, _error) {
     'use strict';
 
@@ -3560,7 +3658,7 @@ define('scales-factory',['exports', './data-frame'], function (exports, _dataFra
         _createClass(ScalesFactory, [{
             key: 'createScaleInfo',
             value: function createScaleInfo(scaleConfig) {
-                var dataFrame = arguments[1] === undefined ? null : arguments[1];
+                var dataFrame = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
                 var ScaleClass = this.registry.get(scaleConfig.type);
 
@@ -3579,7 +3677,7 @@ define('scales-factory',['exports', './data-frame'], function (exports, _dataFra
         }, {
             key: 'createScaleInfoByName',
             value: function createScaleInfoByName(name) {
-                var dataFrame = arguments[1] === undefined ? null : arguments[1];
+                var dataFrame = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
                 return this.createScaleInfo(this.scales[name], dataFrame);
             }
@@ -3973,9 +4071,9 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
                 }
 
                 if (guide.hasOwnProperty('tickLabel')) {
-                    r = '' + dimName + '.' + guide.tickLabel;
+                    r = dimName + '.' + guide.tickLabel;
                 } else if (dims[dimName].value) {
-                    r = '' + dimName + '.' + dims[dimName].value;
+                    r = dimName + '.' + dims[dimName].value;
                 }
 
                 var myDims = this.dist.sources['/'].dims;
@@ -3989,7 +4087,7 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
             key: 'scalesPool',
             value: function scalesPool(scaleType, dimName, guide) {
 
-                var k = '' + scaleType + '_' + dimName;
+                var k = scaleType + '_' + dimName;
 
                 if (this.dist.scales.hasOwnProperty(k)) {
                     return k;
@@ -4007,6 +4105,10 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
 
                     if (guide.hasOwnProperty('brewer')) {
                         item.brewer = guide.brewer;
+                    }
+
+                    if (dims[dimName] && dims[dimName].hasOwnProperty('order')) {
+                        item.order = dims[dimName].order;
                     }
                 }
 
@@ -4893,7 +4995,7 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
                 });
 
                 return SpecEngineFactory.get(rule.name, spec.settings, spec, function (type, alias) {
-                    return chart.getScaleInfo(alias || '' + type + ':default');
+                    return chart.getScaleInfo(alias || type + ':default');
                 });
             }
         }]);
@@ -5057,7 +5159,7 @@ define('spec-transform-calc-size',['exports', './scales-factory', './utils/utils
                 };
 
                 var calcSizeRecursively = function calcSizeRecursively(prop, root, takeStepSizeStrategy) {
-                    var frame = arguments[3] === undefined ? null : arguments[3];
+                    var frame = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
 
                     var xCfg = prop === 'x' ? root.x : root.y;
                     var yCfg = prop === 'x' ? root.y : root.x;
@@ -5185,7 +5287,7 @@ define('spec-transform-apply-ratio',['exports', 'underscore', './utils/utils'], 
                 };
 
                 var traverse = function traverse(root, enterFn, exitFn) {
-                    var level = arguments[3] === undefined ? 0 : arguments[3];
+                    var level = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
 
                     var shouldContinue = enterFn(root, level);
 
@@ -5412,13 +5514,15 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x8, _x9, _x10) { var _again = true; _function: while (_again) { var object = _x8, property = _x9, receiver = _x10; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x8 = parent; _x9 = property; _x10 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x8, _x9, _x10) { var _again = true; _function: while (_again) { var object = _x8, property = _x9, receiver = _x10; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x8 = parent; _x9 = property; _x10 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Plot = (function (_Emitter) {
+        _inherits(Plot, _Emitter);
+
         function Plot(config) {
             _classCallCheck(this, Plot);
 
@@ -5456,8 +5560,6 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             this._plugins = new _plugins.Plugins(this.config.plugins, this);
         }
 
-        _inherits(Plot, _Emitter);
-
         _createClass(Plot, [{
             key: 'setupConfig',
             value: function setupConfig(config) {
@@ -5493,10 +5595,10 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
                 return this.config;
             }
-        }, {
-            key: 'getConfig',
 
             // fixme after all migrate
+        }, {
+            key: 'getConfig',
             value: function getConfig(isOld) {
                 // this.configGPL
                 return isOld ? this.config : this.configGPL || this.config;
@@ -5580,20 +5682,20 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 var svgXElement = d3.select(content).select('svg');
 
                 this._svg = svgXElement.node();
-                this._layout.rightSidebar.style.maxHeight = '' + this._liveSpec.settings.size.height + 'px';
+                this._layout.rightSidebar.style.maxHeight = this._liveSpec.settings.size.height + 'px';
                 this.fire('render', this._svg);
             }
         }, {
             key: 'getScaleFactory',
             value: function getScaleFactory() {
-                var dataSources = arguments[0] === undefined ? null : arguments[0];
+                var dataSources = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
                 return new _scalesFactory.ScalesFactory(_scalesRegistry.scalesRegistry, dataSources || this._liveSpec.sources, this._liveSpec.scales);
             }
         }, {
             key: 'getScaleInfo',
             value: function getScaleInfo(name) {
-                var dataFrame = arguments[1] === undefined ? null : arguments[1];
+                var dataFrame = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
                 return this.getScaleFactory().createScaleInfoByName(name, dataFrame);
             }
@@ -5616,7 +5718,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             value: function getDataSources() {
                 var _this2 = this;
 
-                var param = arguments[0] === undefined ? {} : arguments[0];
+                var param = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
                 var excludeFiltersByTagAndSource = function excludeFiltersByTagAndSource(k) {
                     return function (f) {
@@ -5651,8 +5753,8 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
         }, {
             key: 'getData',
             value: function getData() {
-                var param = arguments[0] === undefined ? {} : arguments[0];
-                var src = arguments[1] === undefined ? '/' : arguments[1];
+                var param = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+                var src = arguments.length <= 1 || arguments[1] === undefined ? '/' : arguments[1];
 
                 var sources = this.getDataSources(param);
                 return sources[src].data;
@@ -5660,7 +5762,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
         }, {
             key: 'setData',
             value: function setData(data) {
-                var src = arguments[1] === undefined ? '/' : arguments[1];
+                var src = arguments.length <= 1 || arguments[1] === undefined ? '/' : arguments[1];
 
                 this.config.data = data;
                 this.configGPL.sources[src].data = data;
@@ -5705,7 +5807,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
         }, {
             key: 'resize',
             value: function resize() {
-                var sizes = arguments[0] === undefined ? {} : arguments[0];
+                var sizes = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
                 this.renderTo(this._target, sizes);
             }
@@ -5727,10 +5829,10 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
                 traverse(spec.unit, iterator, null);
             }
-        }, {
-            key: 'getSpec',
 
             // use from plugins to get the most actual chart config
+        }, {
+            key: 'getSpec',
             value: function getSpec() {
                 return this._liveSpec;
             }
@@ -5842,7 +5944,7 @@ define('chart-alias-registry',['exports', 'd3', './utils/utils', './data-process
         },
 
         add: function add(alias, converter) {
-            var rules = arguments[2] === undefined ? [] : arguments[2];
+            var rules = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 
             chartTypes[alias] = converter;
             chartRules[alias] = rules;
@@ -5864,13 +5966,15 @@ define('charts/tau.chart',['exports', './tau.plot', '../chart-alias-registry'], 
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Chart = (function (_Plot) {
+        _inherits(Chart, _Plot);
+
         function Chart(config) {
             _classCallCheck(this, Chart);
 
@@ -5892,8 +5996,6 @@ define('charts/tau.chart',['exports', './tau.plot', '../chart-alias-registry'], 
                 Chart.winAware.push(this);
             }
         }
-
-        _inherits(Chart, _Plot);
 
         _createClass(Chart, [{
             key: 'destroy',
@@ -6166,7 +6268,7 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
 
         if (angle === 90) {
             var dy = parseFloat(ticks.attr('dy')) / 2;
-            ticks.attr('x', 9).attr('y', 0).attr('dy', '' + dy + 'em');
+            ticks.attr('x', 9).attr('y', 0).attr('dy', dy + 'em');
         }
 
         if (guide.tickFormatWordWrap) {
@@ -6283,7 +6385,7 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -6291,13 +6393,15 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var _d32 = _interopRequireDefault(_d3);
 
     var _2 = _interopRequireDefault(_underscore);
 
     var Cartesian = (function (_Element) {
+        _inherits(Cartesian, _Element);
+
         function Cartesian(config) {
             _classCallCheck(this, Cartesian);
 
@@ -6372,8 +6476,6 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
             }
         }
 
-        _inherits(Cartesian, _Element);
-
         _createClass(Cartesian, [{
             key: 'createScales',
             value: function createScales(fnCreateScale) {
@@ -6428,11 +6530,11 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
                 var hashY = node.y.getHash() + innerWidth;
 
                 if (!node.x.guide.hide) {
-                    this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, '' + options.frameId + 'x', hashX);
+                    this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x', hashX);
                 }
 
                 if (!node.y.guide.hide) {
-                    this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, '' + options.frameId + 'y', hashY);
+                    this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, options.frameId + 'y', hashY);
                 }
 
                 var updateCellLayers = function updateCellLayers(cellId, cell, frame) {
@@ -6504,7 +6606,7 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
                 cells.exit().remove();
                 cells.each(cellFrameIterator);
                 cells.enter().append('g').attr('class', function (d) {
-                    return '' + _const.CSS_PREFIX + 'cell cell parent-frame-' + options.frameId + ' frame-' + d.hash();
+                    return _const.CSS_PREFIX + 'cell cell parent-frame-' + options.frameId + ' frame-' + d.hash();
                 }).each(cellFrameIterator);
             }
         }, {
@@ -6642,7 +6744,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -6650,13 +6752,15 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var _d32 = _interopRequireDefault(_d3);
 
     var _2 = _interopRequireDefault(_underscore);
 
     var Parallel = (function (_Element) {
+        _inherits(Parallel, _Element);
+
         function Parallel(config) {
             var _this = this;
 
@@ -6677,8 +6781,6 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
                 return _this._forceBrushing(e);
             });
         }
-
-        _inherits(Parallel, _Element);
 
         _createClass(Parallel, [{
             key: 'createScales',
@@ -6770,7 +6872,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
                 frms.exit().remove();
                 frms.each(cellFrameIterator);
                 frms.enter().append('g').attr('class', function (d) {
-                    return '' + _const.CSS_PREFIX + 'cell cell parent-frame-' + options.frameId + ' frame-' + d.hash();
+                    return _const.CSS_PREFIX + 'cell cell parent-frame-' + options.frameId + ' frame-' + d.hash();
                 }).each(cellFrameIterator);
 
                 var cols = this._fnDrawColumns(grid, cfg);
@@ -6878,7 +6980,7 @@ define('elements/coords.parallel',['exports', 'd3', 'underscore', './element', '
         }, {
             key: '_forceBrushing',
             value: function _forceBrushing() {
-                var colsBrushSettings = arguments[0] === undefined ? {} : arguments[0];
+                var colsBrushSettings = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
                 var columnsBrushes = this.columnsBrushes;
                 var columnsScalesMap = this.columnsScalesMap;
@@ -7460,7 +7562,7 @@ define('utils/d3-labeler',["exports"], function (exports) {
             // box width
         labeler = {};
 
-        var max_move = 5,
+        var max_move = 5.0,
             max_angle = 0.5,
             acc = 0,
             rej = 0;
@@ -7468,13 +7570,13 @@ define('utils/d3-labeler',["exports"], function (exports) {
         // weights
         var w_len = 0.2,
             // leader line length
-        w_inter = 1,
+        w_inter = 1.0,
             // leader line intersenpm testction
-        w_lab2 = 30,
+        w_lab2 = 30.0,
             // label-label overlap
-        w_lab_anc = 30,
+        w_lab_anc = 30.0,
             // label-anchor overlap
-        w_orient = 3; // orientation bias
+        w_orient = 3.0; // orientation bias
 
         // booleans for user defined functions
         var user_energy = false,
@@ -7513,9 +7615,9 @@ define('utils/d3-labeler',["exports"], function (exports) {
             }
 
             var x21 = lab[index].x,
-                y21 = lab[index].y - lab[index].height + 2,
+                y21 = lab[index].y - lab[index].height + 2.0,
                 x22 = lab[index].x + lab[index].width,
-                y22 = lab[index].y + 2;
+                y22 = lab[index].y + 2.0;
             var x11, x12, y11, y12, x_overlap, y_overlap, overlap_area;
 
             for (var i = 0; i < m; i++) {
@@ -7529,9 +7631,9 @@ define('utils/d3-labeler',["exports"], function (exports) {
 
                     // penalty for label-label overlap
                     x11 = lab[i].x;
-                    y11 = lab[i].y - lab[i].height + 2;
+                    y11 = lab[i].y - lab[i].height + 2.0;
                     x12 = lab[i].x + lab[i].width;
-                    y12 = lab[i].y + 2;
+                    y12 = lab[i].y + 2.0;
                     x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
                     y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
                     overlap_area = x_overlap * y_overlap;
@@ -7707,8 +7809,8 @@ define('utils/d3-labeler',["exports"], function (exports) {
         labeler.start = function (nsweeps) {
             // main simulated annealing function
             var m = lab.length,
-                currT = 1,
-                initialT = 1;
+                currT = 1.0,
+                initialT = 1.0;
 
             for (var i = 0; i < nsweeps; i++) {
                 for (var j = 0; j < m; j++) {
@@ -7792,13 +7894,13 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var _d32 = _interopRequireDefault(_d3);
 
@@ -7815,6 +7917,8 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
     var hierarchy = ['land', 'continents', 'georegions', 'countries', 'regions', 'subunits', 'states', 'counties'];
 
     var GeoMap = (function (_Element) {
+        _inherits(GeoMap, _Element);
+
         function GeoMap(config) {
             var _this = this;
 
@@ -7840,8 +7944,6 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                 return _this._highlightPoint(e);
             });
         }
-
-        _inherits(GeoMap, _Element);
 
         _createClass(GeoMap, [{
             key: 'createScales',
@@ -7929,7 +8031,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                         var r = isRef ? innerW - sx - 3 * avgCharSize : 0;
 
                         return {
-                            id: '' + c + '-' + d.id,
+                            id: c + '-' + d.id,
                             sx: sx,
                             sy: sy,
                             x: sx + r,
@@ -8037,7 +8139,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
 
                 var path = _d32['default'].geo.path().projection(d3Projection);
 
-                var xmap = node.selectAll('.map-container').data(['' + innerW + '' + innerH + '' + center + '' + contours.join('-')], _2['default'].identity);
+                var xmap = node.selectAll('.map-container').data(['' + innerW + innerH + center + contours.join('-')], _2['default'].identity);
                 xmap.exit().remove();
                 xmap.enter().append('g').call(function () {
 
@@ -8057,7 +8159,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                     reverseContours.forEach(function (c, i) {
 
                         var getInfo = function getInfo(d) {
-                            return labelsHash['' + c + '-' + d.id];
+                            return labelsHash[c + '-' + d.id];
                         };
 
                         node.selectAll('.map-contour-' + c).data(_topojson2['default'].feature(topoJSONData, topoJSONData.objects[c]).features || []).enter().append('g').call(function () {
@@ -8125,7 +8227,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
                         node.selectAll('.place').data(anchors).enter().append('circle').attr('class', 'place').attr('transform', function (d) {
                             return 'translate(' + d.x + ',' + d.y + ')';
                         }).attr('r', function (d) {
-                            return '' + d.r + 'px';
+                            return d.r + 'px';
                         });
 
                         node.selectAll('.place-label').data(labels).enter().append('text').attr('class', 'place-label').attr('transform', function (d) {
@@ -8337,13 +8439,15 @@ define('elements/element.pie',['exports', '../const', './element', '../utils/css
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var Pie = (function (_Element) {
+        _inherits(Pie, _Element);
+
         function Pie(config) {
             _classCallCheck(this, Pie);
 
@@ -8355,8 +8459,6 @@ define('elements/element.pie',['exports', '../const', './element', '../utils/css
                 cssClass: ''
             });
         }
-
-        _inherits(Pie, _Element);
 
         _createClass(Pie, [{
             key: 'createScales',
@@ -8433,13 +8535,15 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     var ParallelLine = (function (_Element) {
+        _inherits(ParallelLine, _Element);
+
         function ParallelLine(config) {
             var _this = this;
 
@@ -8448,14 +8552,14 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
             _get(Object.getPrototypeOf(ParallelLine.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
-            this.config.guide = _.defaults(this.config.guide || {}, {});
+            this.config.guide = _.defaults(this.config.guide || {}, {
+                // params here
+            });
 
             this.on('highlight', function (sender, e) {
                 return _this.highlight(e);
             });
         }
-
-        _inherits(ParallelLine, _Element);
 
         _createClass(ParallelLine, [{
             key: 'createScales',
@@ -8506,7 +8610,7 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
 
                 var markPath = function markPath() {
                     this.attr('class', function (row) {
-                        return '' + _const.CSS_PREFIX + '__line line ' + color(row[color.dim]) + ' foreground';
+                        return _const.CSS_PREFIX + '__line line ' + color(row[color.dim]) + ' foreground';
                     });
                 };
 
@@ -8561,8 +8665,6 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
 
     exports.ParallelLine = ParallelLine;
 });
-
-// params here;
 define('scales/base',['exports', '../utils/utils', 'underscore'], function (exports, _utilsUtils, _underscore) {
     'use strict';
 
@@ -8663,7 +8765,7 @@ define('scales/base',['exports', '../utils/utils', 'underscore'], function (expo
             value: function toBaseScale(func) {
                 var _this2 = this;
 
-                var dynamicProps = arguments[1] === undefined ? null : arguments[1];
+                var dynamicProps = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
                 var scaleFn = Object.keys(this._fields).reduce(function (memo, k) {
                     memo[k] = _this2._fields[k];
@@ -8697,13 +8799,13 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -8714,6 +8816,8 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
     /* jshint ignore:end */
 
     var ColorScale = (function (_BaseScale) {
+        _inherits(ColorScale, _BaseScale);
+
         function ColorScale(xSource, scaleConfig) {
             _classCallCheck(this, ColorScale);
 
@@ -8726,8 +8830,6 @@ define('scales/color',['exports', './base', 'underscore', 'd3'], function (expor
 
             this.addField('scaleType', 'color').addField('brewer', scaleBrewer);
         }
-
-        _inherits(ColorScale, _BaseScale);
 
         _createClass(ColorScale, [{
             key: 'create',
@@ -8802,7 +8904,7 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -8810,7 +8912,7 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -8830,6 +8932,8 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
     };
 
     var SizeScale = (function (_BaseScale) {
+        _inherits(SizeScale, _BaseScale);
+
         function SizeScale(xSource, scaleConfig) {
             _classCallCheck(this, SizeScale);
 
@@ -8838,12 +8942,10 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
             this.addField('scaleType', 'size');
         }
 
-        _inherits(SizeScale, _BaseScale);
-
         _createClass(SizeScale, [{
             key: 'create',
             value: function create() {
-                var localProps = arguments[0] === undefined ? {} : arguments[0];
+                var localProps = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
                 var props = this.scaleConfig;
                 var varSet = this.vars;
@@ -8916,7 +9018,7 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -8924,7 +9026,7 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -8935,6 +9037,8 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
     /* jshint ignore:end */
 
     var OrdinalScale = (function (_BaseScale) {
+        _inherits(OrdinalScale, _BaseScale);
+
         function OrdinalScale(xSource, scaleConfig) {
             _classCallCheck(this, OrdinalScale);
 
@@ -8942,8 +9046,6 @@ define('scales/ordinal',['exports', './base', 'underscore', 'd3'], function (exp
 
             this.addField('scaleType', 'ordinal').addField('discrete', true);
         }
-
-        _inherits(OrdinalScale, _BaseScale);
 
         _createClass(OrdinalScale, [{
             key: 'create',
@@ -9012,7 +9114,7 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -9020,7 +9122,7 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -9031,6 +9133,8 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
     /* jshint ignore:end */
 
     var PeriodScale = (function (_BaseScale) {
+        _inherits(PeriodScale, _BaseScale);
+
         function PeriodScale(xSource, scaleConfig) {
             _classCallCheck(this, PeriodScale);
 
@@ -9059,8 +9163,6 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
 
             this.addField('scaleType', 'period').addField('discrete', true);
         }
-
-        _inherits(PeriodScale, _BaseScale);
 
         _createClass(PeriodScale, [{
             key: 'create',
@@ -9137,13 +9239,13 @@ define('scales/time',['exports', './base', 'underscore', 'd3'], function (export
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -9154,6 +9256,8 @@ define('scales/time',['exports', './base', 'underscore', 'd3'], function (export
     /* jshint ignore:end */
 
     var TimeScale = (function (_BaseScale) {
+        _inherits(TimeScale, _BaseScale);
+
         function TimeScale(xSource, scaleConfig) {
             _classCallCheck(this, TimeScale);
 
@@ -9173,8 +9277,6 @@ define('scales/time',['exports', './base', 'underscore', 'd3'], function (export
 
             this.addField('scaleType', 'time');
         }
-
-        _inherits(TimeScale, _BaseScale);
 
         _createClass(TimeScale, [{
             key: 'create',
@@ -9226,13 +9328,13 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -9243,6 +9345,8 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
     /* jshint ignore:end */
 
     var LinearScale = (function (_BaseScale) {
+        _inherits(LinearScale, _BaseScale);
+
         function LinearScale(xSource, scaleConfig) {
             _classCallCheck(this, LinearScale);
 
@@ -9260,8 +9364,6 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
 
             this.addField('scaleType', 'linear').addField('discrete', false);
         }
-
-        _inherits(LinearScale, _BaseScale);
 
         _createClass(LinearScale, [{
             key: 'create',
@@ -9313,13 +9415,13 @@ define('scales/value',['exports', './base', 'underscore', 'd3'], function (expor
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -9330,6 +9432,8 @@ define('scales/value',['exports', './base', 'underscore', 'd3'], function (expor
     /* jshint ignore:end */
 
     var ValueScale = (function (_BaseScale) {
+        _inherits(ValueScale, _BaseScale);
+
         function ValueScale(xSource, scaleConfig) {
             _classCallCheck(this, ValueScale);
 
@@ -9337,8 +9441,6 @@ define('scales/value',['exports', './base', 'underscore', 'd3'], function (expor
 
             this.addField('scaleType', 'value').addField('georole', scaleConfig.georole);
         }
-
-        _inherits(ValueScale, _BaseScale);
 
         _createClass(ValueScale, [{
             key: 'create',
@@ -9363,13 +9465,13 @@ define('scales/fill',['exports', './base', '../utils/utils', 'underscore', 'd3']
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
     /* jshint ignore:start */
 
@@ -9380,6 +9482,8 @@ define('scales/fill',['exports', './base', '../utils/utils', 'underscore', 'd3']
     /* jshint ignore:end */
 
     var FillScale = (function (_BaseScale) {
+        _inherits(FillScale, _BaseScale);
+
         function FillScale(xSource, scaleConfig) {
             _classCallCheck(this, FillScale);
 
@@ -9404,8 +9508,6 @@ define('scales/fill',['exports', './base', '../utils/utils', 'underscore', 'd3']
 
             this.addField('scaleType', 'fill').addField('brewer', brewer);
         }
-
-        _inherits(FillScale, _BaseScale);
 
         _createClass(FillScale, [{
             key: 'create',
@@ -9456,16 +9558,16 @@ define('api/chart-map',['exports'], function (exports) {
         var scales = {};
 
         var scalesPool = function scalesPool(type, prop) {
-            var guide = arguments[2] === undefined ? {} : arguments[2];
+            var guide = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
             var key;
             var dim = prop;
             var src;
             if (!prop) {
-                key = '' + type + ':default';
+                key = type + ':default';
                 src = '?';
             } else {
-                key = '' + type + '_' + prop;
+                key = type + '_' + prop;
                 src = '/';
             }
 
@@ -9526,7 +9628,7 @@ define('api/converter-helpers',['exports', 'd3', '../utils/utils'], function (ex
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    function _defineProperty(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); }
+    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
     var _d32 = _interopRequireDefault(_d3);
 
@@ -9535,7 +9637,7 @@ define('api/converter-helpers',['exports', 'd3', '../utils/utils'], function (ex
     };
 
     var normalizeSettings = function normalizeSettings(axis) {
-        var defaultValue = arguments[1] === undefined ? null : arguments[1];
+        var defaultValue = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
         return !_utilsUtils.utils.isArray(axis) ? [axis] : axis.length === 0 ? [defaultValue] : axis;
     };
@@ -9837,16 +9939,16 @@ define('api/chart-parallel',['exports'], function (exports) {
         var scales = {};
 
         var scalesPool = function scalesPool(type, prop) {
-            var guide = arguments[2] === undefined ? {} : arguments[2];
+            var guide = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
             var key;
             var dim = prop;
             var src;
             if (!prop) {
-                key = '' + type + ':default';
+                key = type + ':default';
                 src = '?';
             } else {
-                key = '' + type + '_' + prop;
+                key = type + '_' + prop;
                 src = '/';
             }
 
@@ -9940,7 +10042,7 @@ define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/
             },
             get: function get(name) {
                 return plugins[name] || function (x) {
-                    throw new Error('' + x + ' plugin is not defined');
+                    throw new Error(x + ' plugin is not defined');
                 };
             }
         },

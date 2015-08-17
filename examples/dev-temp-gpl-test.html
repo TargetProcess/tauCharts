@@ -23,6 +23,23 @@
 
     <!--<script src="../build/development/tauCharts.js"></script>-->
     <script src="http://localhost:9000/tauCharts.js"></script>
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../plugins/export.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/trendline.js"></script>
+    <script src="../plugins/settings.js"></script>
+    <script src="../plugins/parallel-brushing.js"></script>
+    <script src="../plugins/parallel-tooltip.js"></script>
+    <script src="../plugins/geomap-tooltip.js"></script>
+    <script src="../plugins/geomap-legend.js"></script>
+    <!-- css -->
+    <link href="../css/layout.css" rel="stylesheet"/>
+    <link href="../css/base.css" rel="stylesheet"/>
+    <link href="../css/legend.css" rel="stylesheet"/>
+    <link href="../css/tauCharts.css" rel="stylesheet"/>
+    <link href="../css/tooltip.css" rel="stylesheet"/>
+    <link href="../css/trendline.css" rel="stylesheet"/>
     <script>
         var regressionsHub = (function () {
 
@@ -363,6 +380,8 @@
 <div id="composite1" class="cc"></div>
 
 <div id="composite2" class="cc"></div>
+
+<div id="composite3" class="cc"></div>
 
 <script>
     var c = new tauCharts.Chart({
@@ -1586,6 +1605,965 @@
     });
 
     composite2.renderTo('#composite2');
+</script>
+
+<script>
+    var composite3 = new tauCharts.Chart({
+
+        plugins: [
+            tauCharts.api.plugins.get('trendline')({showPanel:true})
+        ],
+
+        "type": "scatterplot",
+        "color": "color",
+        "size": "size",
+        "x": [
+            "x1"
+        ],
+        "y": [
+            "y1",
+            "y2"
+        ],
+        "guide": [
+            {
+                "y": {
+                    "label": "Team",
+                    "tickLabel": "name"
+                }
+            },
+            {
+                "x": {
+                    "label": "Average(CycleTime)"
+                },
+                "y": {
+                    "label": "End Date By Month",
+                    "tickPeriod": "month"
+                },
+                "color": {
+                    "label": "Feature Epic",
+                    "tickLabel": "name"
+                },
+                "size": {
+                    "label": "Count"
+                }
+            }
+        ],
+        "dimensions": {
+            "x1": {
+                "type": "measure",
+                "scale": "linear"
+            },
+            "y1": {
+                "type": "category",
+                "scale": "ordinal",
+                "value": "id"
+            },
+            "y2": {
+                "type": "order",
+                "scale": "period"
+            },
+            "size": {
+                "type": "measure",
+                "scale": "linear"
+            },
+            "color": {
+                "type": "category",
+                "scale": "ordinal",
+                "value": "id"
+            }
+        },
+        data: [
+            {
+                "x1": 37.6573688271605,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1393653600000-0600)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 18.63890842013889,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1393653600000-0600)\/",
+                "size": 16,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 15.825466820987653,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1393653600000-0600)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 88830, "name": "Timelines"},
+                "dataItem": null
+            }, {
+                "x1": 20.841944444444444,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1396328400000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 13.105758101851851,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1396328400000-0500)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 10.592920524691358,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1396328400000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 88830, "name": "Timelines"},
+                "dataItem": null
+            }, {
+                "x1": 26.190420524691358,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1398920400000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 88830, "name": "Timelines"},
+                "dataItem": null
+            }, {
+                "x1": 22.197160493827159,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1398920400000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 6.1053356481481478,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1398920400000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 97575, "name": "Views menu"},
+                "dataItem": null
+            }, {
+                "x1": 1.9408217592592591,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1398920400000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 70.087199074074078,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1401598800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 12.932194444444443,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1401598800000-0500)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 88830, "name": "Timelines"},
+                "dataItem": null
+            }, {
+                "x1": 10.890868055555554,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1401598800000-0500)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 97575, "name": "Views menu"},
+                "dataItem": null
+            }, {
+                "x1": 8.180489417989417,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1401598800000-0500)\/",
+                "size": 7,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 0.0497337962962963,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1401598800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88835, "name": "Portfolio / Allocation Management"},
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 53851, "name": "Multi-Teams"},
+                "y2": "\/Date(1401598800000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 49.254259259259257,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1404190800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88833, "name": "Getting Started"},
+                "dataItem": null
+            }, {
+                "x1": 41.997442129629633,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1404190800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 16.003865740740739,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1404190800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88835, "name": "Portfolio / Allocation Management"},
+                "dataItem": null
+            }, {
+                "x1": 10.637938924501423,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1404190800000-0500)\/",
+                "size": 13,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 7.1633564814814816,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1404190800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 5.7236531986531984,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1404190800000-0500)\/",
+                "size": 11,
+                "color": {"resourceType": "Epic", "id": 97575, "name": "Views menu"},
+                "dataItem": null
+            }, {
+                "x1": 111.72964120370371,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 57.946712962962962,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88833, "name": "Getting Started"},
+                "dataItem": null
+            }, {
+                "x1": 29.759340277777778,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 17.173686985596706,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 9,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 14.538090277777778,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 88835, "name": "Portfolio / Allocation Management"},
+                "dataItem": null
+            }, {
+                "x1": 12.9303125,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88830, "name": "Timelines"},
+                "dataItem": null
+            }, {
+                "x1": 12.895069444444445,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 97575, "name": "Views menu"},
+                "dataItem": null
+            }, {
+                "x1": 12.563123346560845,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 7,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 6.0269675925925927,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90680, "name": "Follow Entity"},
+                "dataItem": null
+            }, {
+                "x1": 5.0384529320987657,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 88835, "name": "Portfolio / Allocation Management"},
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1406869200000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 19.769232253086418,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1409547600000-0500)\/",
+                "size": 3,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 17.262719907407408,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1409547600000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88835, "name": "Portfolio / Allocation Management"},
+                "dataItem": null
+            }, {
+                "x1": 9.5084871031746019,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1409547600000-0500)\/",
+                "size": 14,
+                "color": {"resourceType": "Epic", "id": 90680, "name": "Follow Entity"},
+                "dataItem": null
+            }, {
+                "x1": 8.5356685729847523,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1409547600000-0500)\/",
+                "size": 17,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 4.1507870370370368,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1409547600000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 3.7484490740740743,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1409547600000-0500)\/",
+                "size": 29,
+                "color": {"resourceType": "Epic", "id": 89476, "name": "Epics"},
+                "dataItem": null
+            }, {
+                "x1": 12.503796296296297,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 89476, "name": "Epics"},
+                "dataItem": null
+            }, {
+                "x1": 11.962769820601849,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 16,
+                "color": {"resourceType": "Epic", "id": 90677, "name": "Cross-Project Releases"},
+                "dataItem": null
+            }, {
+                "x1": 9.4425115740740733,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 14,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 8.6983611111111117,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 10,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 8.6911747685185183,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 90680, "name": "Follow Entity"},
+                "dataItem": null
+            }, {
+                "x1": 8.38274112654321,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 90678, "name": "Dashboards"},
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 70097, "name": "Product Specialists"},
+                "y2": "\/Date(1412139600000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 15.666881944444443,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1414818000000-0500)\/",
+                "size": 15,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 5.8683007812500021,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1414818000000-0500)\/",
+                "size": 16,
+                "color": {"resourceType": "Epic", "id": 90678, "name": "Dashboards"},
+                "dataItem": null
+            }, {
+                "x1": 4.385011574074074,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1414818000000-0500)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 17.176230008417509,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1417413600000-0600)\/",
+                "size": 11,
+                "color": {"resourceType": "Epic", "id": 90679, "name": "Custom Rules"},
+                "dataItem": null
+            }, {
+                "x1": 13.261506139291466,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1417413600000-0600)\/",
+                "size": 23,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 11.778417438271607,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1417413600000-0600)\/",
+                "size": 15,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 8.8755989583333328,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1417413600000-0600)\/",
+                "size": 8,
+                "color": {"resourceType": "Epic", "id": 90677, "name": "Cross-Project Releases"},
+                "dataItem": null
+            }, {
+                "x1": 8.2113324652777777,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1417413600000-0600)\/",
+                "size": 8,
+                "color": {"resourceType": "Epic", "id": 90678, "name": "Dashboards"},
+                "dataItem": null
+            }, {
+                "x1": 28.88835648148148,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 90677, "name": "Cross-Project Releases"},
+                "dataItem": null
+            }, {
+                "x1": 23.99299382716049,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 21.711800595238095,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 7,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 20.47615162037037,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 90679, "name": "Custom Rules"},
+                "dataItem": null
+            }, {
+                "x1": 12.976377314814815,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 8,
+                "color": {"resourceType": "Epic", "id": 90678, "name": "Dashboards"},
+                "dataItem": null
+            }, {
+                "x1": 9.7901504629629628,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90682, "name": "Help Desk"},
+                "dataItem": null
+            }, {
+                "x1": 0.929537037037037,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1420092000000-0600)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 44.220740740740737,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90678, "name": "Dashboards"},
+                "dataItem": null
+            }, {
+                "x1": 16.88019675925926,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 12.271935185185185,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 90682, "name": "Help Desk"},
+                "dataItem": null
+            }, {
+                "x1": 6.7260995370370367,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 6.3752006172839506,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 6.0189602623456793,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 6,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 4.78218287037037,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1422770400000-0600)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 97575, "name": "Views menu"},
+                "dataItem": null
+            }, {
+                "x1": 21.974155092592593,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 17.77939236111111,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 16.130408950617284,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 97575, "name": "Views menu"},
+                "dataItem": null
+            }, {
+                "x1": 14.338096707818929,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 90682, "name": "Help Desk"},
+                "dataItem": null
+            }, {
+                "x1": 12.541251929012345,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 12.132423611111109,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 9.396875,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 5.7315335648148151,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 4.1816782407407409,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 3.069212962962963,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 89476, "name": "Epics"},
+                "dataItem": null
+            }, {
+                "x1": 2.9794791666666671,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 1.0894907407407408,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90677, "name": "Cross-Project Releases"},
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1425189600000-0600)\/",
+                "size": 2,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 35.982719907407407,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 24.661392746913577,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 19.493339763374486,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 90682, "name": "Help Desk"},
+                "dataItem": null
+            }, {
+                "x1": 15.432199074074074,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 13.510111400462963,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 8,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 10.996223958333333,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 10.613428240740742,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 10.088530092592592,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 8.3265558862433853,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 14,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 6.4662139917695463,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 70097, "name": "Product Specialists"},
+                "y2": "\/Date(1427864400000-0500)\/",
+                "size": 2,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 38.199328703703706,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90682, "name": "Help Desk"},
+                "dataItem": null
+            }, {
+                "x1": 20.367702546296297,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 2,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 18.968015046296298,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 97782, "name": "People Management"},
+                "dataItem": null
+            }, {
+                "x1": 15.727478505291005,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 7,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 15.490767746913582,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 14.764131944444445,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 11.743402777777778,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 11.27656635802469,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 10.832719907407407,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 4.8867708333333333,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 1.1454282407407408,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1430456400000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 118.9417824074074,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 18,
+                "color": {"resourceType": "Epic", "id": 96597, "name": "SSO"},
+                "dataItem": null
+            }, {
+                "x1": 55.954846230158729,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 7,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 26.277758487654321,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 24.216338734567902,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 97782, "name": "People Management"},
+                "dataItem": null
+            }, {
+                "x1": 22.96745949074074,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 4,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 17.703138888888891,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 5,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 6.8875694444444449,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88831, "name": "Lists"},
+                "dataItem": null
+            }, {
+                "x1": 5.9613753858024694,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 89476, "name": "Epics"},
+                "dataItem": null
+            }, {
+                "x1": 3.1137615740740743,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 2.3995023148148147,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1433134800000-0500)\/",
+                "size": 2,
+                "color": {"resourceType": "Epic", "id": 97783, "name": "Portfolio Management"},
+                "dataItem": null
+            }, {
+                "x1": 37.464841820987651,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 3,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 28.217282986111108,
+                "y1": {"resourceType": "Team", "id": 54991, "name": "cluster6"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 8,
+                "color": {"resourceType": "Epic", "id": 97782, "name": "People Management"},
+                "dataItem": null
+            }, {
+                "x1": 23.343622685185185,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 2,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 19.376707175925926,
+                "y1": {"resourceType": "Team", "id": 79982, "name": "NEW TEAM"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 4,
+                "color": {"resourceType": "Epic", "id": 88834, "name": "Performance"},
+                "dataItem": null
+            }, {
+                "x1": 11.622384259259258,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 6,
+                "color": {"resourceType": "Epic", "id": 89484, "name": "Custom Reports"},
+                "dataItem": null
+            }, {
+                "x1": 9.9253001543209862,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 15,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 6.3520679012345669,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 9,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 0.82335648148148144,
+                "y1": {"resourceType": "Team", "id": 59754, "name": "Alaska"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 0.0,
+                "y1": {"resourceType": "Team", "id": 70097, "name": "Product Specialists"},
+                "y2": "\/Date(1435726800000-0500)\/",
+                "size": 1,
+                "color": null,
+                "dataItem": null
+            }, {
+                "x1": 17.057233796296295,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1438405200000-0500)\/",
+                "size": 1,
+                "color": {"resourceType": "Epic", "id": 88825, "name": "Process Workflow"},
+                "dataItem": null
+            }, {
+                "x1": 6.7246412037037047,
+                "y1": {"resourceType": "Team", "id": 63263, "name": "?"},
+                "y2": "\/Date(1438405200000-0500)\/",
+                "size": 3,
+                "color": {"resourceType": "Epic", "id": 90684, "name": "GUI filters"},
+                "dataItem": null
+            }, {
+                "x1": 2.7576273148148145,
+                "y1": {"resourceType": "Team", "id": 56073, "name": "Exploited"},
+                "y2": "\/Date(1438405200000-0500)\/",
+                "size": 2,
+                "color": null,
+                "dataItem": null
+            }
+        ].map(function (row) {
+                    delete row.dataItem;
+                    row.y2 = new Date(parseInt(row.y2.replace('\/Date(', '')));
+                    return row;
+                })
+    });
+
+    composite3.renderTo('#composite3');
 </script>
 
 </body>

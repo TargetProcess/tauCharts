@@ -436,24 +436,24 @@
   shape-rendering: crispEdges;
   transition: opacity 0.2s ease;
 }
-.graphical-report__highlighted_chart .graphical-report__dot.graphical-report__highlighted {
+.graphical-report__dot.graphical-report__highlighted {
   stroke-width: 2;
   opacity: 1;
 }
-.graphical-report__highlighted_chart .graphical-report__line.graphical-report__highlighted {
+.graphical-report__dot.graphical-report__dimmed {
+  opacity: 0.2;
+}
+.graphical-report__line.graphical-report__highlighted {
   stroke-opacity: 1;
   stroke-width: 3;
 }
-.graphical-report__highlighted_chart .graphical-report__bar.graphical-report__highlighted {
+.graphical-report__line.graphical-report__dimmed {
+  stroke-opacity: 0.2;
+}
+.graphical-report__bar.graphical-report__highlighted {
   stroke-opacity: 1;
   opacity: 1;
 }
-.graphical-report__highlighted_chart .graphical-report__line {
-  stroke-opacity: 0.2;
-}
-.graphical-report__highlighted_chart .graphical-report__bar {
-  opacity: 0.2;
-}
-.graphical-report__highlighted_chart .graphical-report__dot {
+.graphical-report__bar.graphical-report__dimmed {
   opacity: 0.2;
 }
