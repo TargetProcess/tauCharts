@@ -330,6 +330,11 @@
             },
 
             _highlightToggle: function (target, doHighlight) {
+
+                if (target.classList.contains('disabled')) {
+                    return;
+                }
+
                 var scaleId = target.getAttribute('data-scale-id');
                 var dim = target.getAttribute('data-dim');
                 var val = target.getAttribute('data-value');
