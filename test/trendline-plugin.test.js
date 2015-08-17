@@ -73,7 +73,8 @@ define(function (require) {
                 var svg0 = chart.getSVG();
                 var svgTrendlines0 = svg0.querySelectorAll(marker);
                 expect(svgTrendlines0.length).to.equal(1);
-                expect(svgTrendlines0[0].innerHTML.indexOf('NaN')).to.equal(-1);
+                var path = svgTrendlines0[0].querySelectorAll('path')[0];
+                expect(path.getAttribute('d').indexOf('NaN')).to.equal(-1);
 
                 var selector = '.i-role-show-trend';
                 var checkbox = chart._layout.rightSidebar.querySelectorAll(selector)[0];
@@ -131,7 +132,8 @@ define(function (require) {
                 var svg0 = chart.getSVG();
                 var svgTrendlines0 = svg0.querySelectorAll(marker);
                 expect(svgTrendlines0.length).to.equal(1);
-                expect(svgTrendlines0[0].innerHTML.indexOf('NaN')).to.equal(-1);
+                var path = svgTrendlines0[0].querySelectorAll('path')[0];
+                expect(path.getAttribute('d').indexOf('NaN')).to.equal(-1);
 
                 var selector = '.i-role-show-trend';
                 var checkbox = chart._layout.rightSidebar.querySelectorAll(selector)[0];
@@ -189,8 +191,12 @@ define(function (require) {
                 var svg0 = chart.getSVG();
                 var svgTrendlines0 = svg0.querySelectorAll(marker);
                 expect(svgTrendlines0.length).to.equal(2);
-                expect(svgTrendlines0[0].innerHTML.indexOf('NaN')).to.equal(-1);
-                expect(svgTrendlines0[1].innerHTML.indexOf('NaN')).to.equal(-1);
+
+                var path0 = svgTrendlines0[0].querySelectorAll('path')[0];
+                expect(path0.getAttribute('d').indexOf('NaN')).to.equal(-1);
+
+                var path1 = svgTrendlines0[1].querySelectorAll('path')[0];
+                expect(path1.getAttribute('d').indexOf('NaN')).to.equal(-1);
 
                 var selector = '.i-role-show-trend';
                 var checkbox = chart._layout.rightSidebar.querySelectorAll(selector)[0];
