@@ -60,6 +60,8 @@ export class StackedInterval extends Element {
 
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
+
+        this.on('highlight', (sender, e) => this.highlight(e));
     }
 
     createScales(fnCreateScale) {
@@ -292,5 +294,17 @@ export class StackedInterval extends Element {
             width: (({view:d}) => calculateW(d)),
             class: (({view:d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d.c)}`)
         };
+    }
+
+    highlight(filter) {
+
+        this.config
+            .options
+            .container
+            .selectAll('.bar')
+            .classed({
+                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
+                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
+            });
     }
 }

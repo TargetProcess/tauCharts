@@ -18,6 +18,8 @@ export class Line extends Element {
                 anchors: false
             }
         );
+
+        this.on('highlight', (sender, e) => this.highlight(e));
     }
 
     createScales(fnCreateScale) {
@@ -141,5 +143,24 @@ export class Line extends Element {
 
         drawFrame('line', 'line-' + options.uid, ({data: f}) => f.data.length > 1);
         drawFrame('anch', 'anch-' + options.uid, ({data: f}) => f.data.length < 2);
+    }
+
+    highlight(filter) {
+
+        var container = this.config.options.container;
+
+        container
+            .selectAll('.line')
+            .classed({
+                'graphical-report__highlighted': (({data: d}) => filter(d.tags) === true),
+                'graphical-report__dimmed': (({data: d}) => filter(d.tags) === false)
+            });
+
+        container
+            .selectAll('.dot-line')
+            .classed({
+                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
+                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
+            });
     }
 }

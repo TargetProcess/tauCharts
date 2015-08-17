@@ -1,7 +1,20 @@
 window.samples.push({
 
     data: rawData,
-    spec: {
+    type: 'scatterplot',
+    x: 'cycleTime',
+    y: 'effort',
+    color: 'team',
+    size: 'effort',
+
+    dimensions: {
+        project: {type: 'category', order: ['TP3', 'TP2']},
+        team: {type: 'category', order: ['CAT', 'Comet']},
+        cycleTime: {type: 'measure'},
+        effort: {type: 'measure'}
+    },
+
+    ignore_spec: {
         dimensions: {
             project: {type: 'category'},
             team: {type: 'category'},

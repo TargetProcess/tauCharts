@@ -190,6 +190,10 @@ export class SpecConverter {
             if (guide.hasOwnProperty('brewer')) {
                 item.brewer = guide.brewer;
             }
+
+            if (dims[dimName] && dims[dimName].hasOwnProperty('order')) {
+                item.order = dims[dimName].order;
+            }
         }
 
         if (scaleType === 'size' && dimName !== null) {
