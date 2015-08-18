@@ -19,6 +19,7 @@
             xSettings || {},
             {
                 // add default settings here
+                fields: null
             });
 
         var plugin = {
@@ -27,7 +28,8 @@
 
                 this._cursor = null;
                 this._chart = chart;
-                this._tooltip = chart.addBalloon(
+
+                this._tooltip = this._chart.addBalloon(
                     {
                         spacing: 3,
                         auto: true,
@@ -111,7 +113,10 @@
                 this._chart.refresh();
             },
 
-            onRender: function (chart) {
+            onRender: function () {
+
+                this._formats = this._getFormatters();
+
                 this._subscribeToHover();
             },
 
@@ -148,6 +153,54 @@
                             self.showTooltip(e);
                         });
                     });
+            },
+
+            _getFormatters: function () {
+                var spec = this._chart.getSpec();
+                var specScales = spec.scales;
+
+                var isEmptyScale = function (key) {
+                    return !specScales[key].dim;
+                };
+
+                var fillSlot = function (memoRef, config, key) {
+                    var GUIDE = config.guide;
+                    var scale = specScales[config[key]];
+                    var guide = GUIDE[key] || {};
+                    memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[]};
+                    memoRef[scale.dim].label.push((guide.label || {}).text);
+                    memoRef[scale.dim].format.push(guide.tickFormat);
+                    memoRef[scale.dim].nullAlias.push(guide.tickFormatNullAlias);
+                };
+
+                return this._chart
+                    .select(function () {
+                        return true;
+                    })
+                    .map(function (node) {
+                        return node.config;
+                    })
+                    .reduce(function (memo, config) {
+
+                        if (config.type === 'COORDS.RECT' && config.hasOwnProperty('x') && !isEmptyScale(config.x)) {
+                            fillSlot(memo, config, 'x');
+                        }
+
+                        if (config.type === 'COORDS.RECT' && config.hasOwnProperty('y') && !isEmptyScale(config.y)) {
+                            fillSlot(memo, config, 'y');
+                        }
+
+                        if (config.hasOwnProperty('color') && !isEmptyScale(config.color)) {
+                            fillSlot(memo, config, 'color');
+                        }
+
+                        if (config.hasOwnProperty('size') && !isEmptyScale(config.size)) {
+                            fillSlot(memo, config, 'size');
+                        }
+
+                        return memo;
+
+                    }, {});
             }
         };
 
