@@ -107,6 +107,9 @@ export class StackedInterval extends Element {
     }
 
     drawFrames(frames) {
+
+        var self = this;
+
         var config = this.config;
         var options = config.options;
         var xScale = this.xScale;
@@ -210,6 +213,10 @@ export class StackedInterval extends Element {
                         .enter()
                         .append('rect')
                         .call(updateBar);
+
+                    bars.on('mouseover', ({data:d}) => self.fire('mouseover', {data: d, event: d3.event}))
+                        .on('mouseout', ({data:d}) => self.fire('mouseout', {data: d, event: d3.event}))
+                        .on('click', ({data:d}) => self.fire('click', {data: d, event: d3.event}));
                 });
         };
 

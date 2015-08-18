@@ -1,6 +1,6 @@
 import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
-import {Plugins, propagateDatumEvents} from '../plugins';
+import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {DataFrame} from '../data-frame';

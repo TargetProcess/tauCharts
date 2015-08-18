@@ -73,6 +73,8 @@ export class Point extends Element {
 
     drawFrames(frames) {
 
+        var self = this;
+
         var options = this.config.options;
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
@@ -121,6 +123,11 @@ export class Point extends Element {
                         .enter()
                         .append('circle')
                         .call(enter);
+
+                    points
+                        .on('mouseover', ({data:d}) => self.fire('mouseover', {data: d, event: d3.event}))
+                        .on('mouseout', ({data:d}) => self.fire('mouseout', {data: d, event: d3.event}))
+                        .on('click', ({data:d}) => self.fire('click', {data: d, event: d3.event}));
                 });
         };
 
