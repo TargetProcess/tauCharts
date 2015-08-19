@@ -68,8 +68,14 @@
                     if (content[0]) {
                         content[0].innerHTML = Object
                             .keys(e.data)
+                            .filter(function (k) {
+                                return self._metaInfo[k];
+                            })
                             .map(function (k) {
-                                return self.itemTemplate({label: k, value: e.data[k]});
+                                return self.itemTemplate({
+                                    label: self._metaInfo[k].label,
+                                    value: self._metaInfo[k].format(e.data[k])
+                                });
                             })
                             .join('');
                     }
@@ -115,9 +121,10 @@
 
             onRender: function () {
 
-                this._formats = this._getFormatters();
+                this._metaInfo = this._getFormatters();
 
                 this._subscribeToHover();
+
             },
 
             template: [
@@ -173,7 +180,8 @@
                     memoRef[scale.dim].nullAlias.push(guide.tickFormatNullAlias);
                 };
 
-                return this._chart
+                var summary = this
+                    ._chart
                     .select(function () {
                         return true;
                     })
@@ -201,6 +209,32 @@
                         return memo;
 
                     }, {});
+
+                var choiceRule = function (arr, defaultValue) {
+
+                    var val = _(arr)
+                        .chain()
+                        .filter(_.identity)
+                        .uniq()
+                        .first()
+                        .value();
+
+                    return val || defaultValue;
+                };
+
+                return Object
+                    .keys(summary)
+                    .reduce(function (memo, k) {
+                        memo[k].label = choiceRule(memo[k].label, k);
+                        memo[k].format = choiceRule(memo[k].format, null);
+                        memo[k].nullAlias = choiceRule(memo[k].nullAlias, ('No ' + memo[k].label));
+
+                        // very special case for dates
+                        var format = (memo[k].format === 'x-time-auto') ? 'day' : memo[k].format;
+                        memo[k].format = tauCharts.api.tickFormat.get(format, memo[k].nullAlias);
+
+                        return memo;
+                    }, summary);
             }
         };
 
