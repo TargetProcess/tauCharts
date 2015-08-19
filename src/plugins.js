@@ -15,9 +15,11 @@ class Plugins {
             plugin.init(this.chart);
         }
 
+        // jscs:disable disallowEmptyBlocks
         var empty = () => {
             // do nothing
         };
+        // jscs:enable disallowEmptyBlocks
 
         this.chart
             .on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || (empty));
