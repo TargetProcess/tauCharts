@@ -29,6 +29,8 @@
                 this._cursor = null;
                 this._chart = chart;
 
+                this._metaInfo = this._getFormatters();
+
                 this._tooltip = this._chart.addBalloon(
                     {
                         spacing: 3,
@@ -66,8 +68,16 @@
 
                     var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
                     if (content[0]) {
-                        content[0].innerHTML = Object
-                            .keys(e.data)
+
+                        var fields = (
+                            settings.fields
+                            ||
+                            (_.isFunction(settings.getFields) && settings.getFields(self._chart))
+                            ||
+                            Object.keys(e.data)
+                        );
+
+                        content[0].innerHTML = fields
                             .filter(function (k) {
                                 return self._metaInfo[k];
                             })
@@ -90,7 +100,7 @@
                         function () {
                             self._tooltip.hide();
                         },
-                        1000);
+                        300);
                 };
 
                 this._tooltip
@@ -104,6 +114,13 @@
                     .addEventListener('mouseleave', function (e) {
                         self._tooltip.hide();
                     }, false);
+            },
+
+            destroy: function () {
+                if (this.circle) {
+                    this.circle.remove();
+                }
+                this._tooltip.destroy();
             },
 
             _exclude: function () {
@@ -120,11 +137,7 @@
             },
 
             onRender: function () {
-
-                this._metaInfo = this._getFormatters();
-
                 this._subscribeToHover();
-
             },
 
             template: [
@@ -174,41 +187,47 @@
                     var GUIDE = config.guide;
                     var scale = specScales[config[key]];
                     var guide = GUIDE[key] || {};
-                    memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[]};
-                    memoRef[scale.dim].label.push((guide.label || {}).text);
-                    memoRef[scale.dim].format.push(guide.tickFormat);
+                    memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[], tickLabel:[]};
+
+                    var label = guide.label;
+                    memoRef[scale.dim].label.push(_.isString(label) ? label : ((guide.label || {}).text));
+
+                    var format = guide.tickFormat || guide.tickPeriod;
+                    memoRef[scale.dim].format.push(format);
+
                     memoRef[scale.dim].nullAlias.push(guide.tickFormatNullAlias);
+
+                    // TODO: workaround for #complex-objects
+                    memoRef[scale.dim].tickLabel.push(guide.tickLabel);
                 };
 
-                var summary = this
-                    ._chart
-                    .select(function () {
-                        return true;
-                    })
-                    .map(function (node) {
-                        return node.config;
-                    })
-                    .reduce(function (memo, config) {
+                var configs = [];
+                this._chart
+                    .traverseSpec(spec, function (node) {
+                        configs.push(node);
+                    });
 
-                        if (config.type === 'COORDS.RECT' && config.hasOwnProperty('x') && !isEmptyScale(config.x)) {
-                            fillSlot(memo, config, 'x');
-                        }
+                var summary = configs.reduce(function (memo, config) {
 
-                        if (config.type === 'COORDS.RECT' && config.hasOwnProperty('y') && !isEmptyScale(config.y)) {
-                            fillSlot(memo, config, 'y');
-                        }
+                    if (config.type === 'COORDS.RECT' && config.hasOwnProperty('x') && !isEmptyScale(config.x)) {
+                        fillSlot(memo, config, 'x');
+                    }
 
-                        if (config.hasOwnProperty('color') && !isEmptyScale(config.color)) {
-                            fillSlot(memo, config, 'color');
-                        }
+                    if (config.type === 'COORDS.RECT' && config.hasOwnProperty('y') && !isEmptyScale(config.y)) {
+                        fillSlot(memo, config, 'y');
+                    }
 
-                        if (config.hasOwnProperty('size') && !isEmptyScale(config.size)) {
-                            fillSlot(memo, config, 'size');
-                        }
+                    if (config.hasOwnProperty('color') && !isEmptyScale(config.color)) {
+                        fillSlot(memo, config, 'color');
+                    }
 
-                        return memo;
+                    if (config.hasOwnProperty('size') && !isEmptyScale(config.size)) {
+                        fillSlot(memo, config, 'size');
+                    }
 
-                    }, {});
+                    return memo;
+
+                }, {});
 
                 var choiceRule = function (arr, defaultValue) {
 
@@ -228,10 +247,24 @@
                         memo[k].label = choiceRule(memo[k].label, k);
                         memo[k].format = choiceRule(memo[k].format, null);
                         memo[k].nullAlias = choiceRule(memo[k].nullAlias, ('No ' + memo[k].label));
+                        memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
 
                         // very special case for dates
                         var format = (memo[k].format === 'x-time-auto') ? 'day' : memo[k].format;
-                        memo[k].format = tauCharts.api.tickFormat.get(format, memo[k].nullAlias);
+                        var fnForm = tauCharts.api.tickFormat.get(format, memo[k].nullAlias);
+
+                        memo[k].format = fnForm;
+
+                        // TODO: workaround for #complex-objects
+                        if (memo[k].tickLabel) {
+                            var kc = k.replace(('.' + memo[k].tickLabel), '');
+                            memo[kc] = memo[k];
+                            memo[kc].format = function (obj) {
+                                return fnForm(obj && obj[memo[kc].tickLabel]);
+                            };
+
+                            delete memo[k];
+                        }
 
                         return memo;
                     }, summary);

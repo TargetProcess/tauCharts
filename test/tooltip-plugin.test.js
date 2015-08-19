@@ -29,7 +29,9 @@ var hideTooltip = function (expect, chart, index) {
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
 };
 
-var chartType = ['scatterplot', 'line', 'bar', 'horizontalBar'];
+var chartType = [
+    // 'line',
+    'scatterplot', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
 
 chartType.forEach(function (item) {
     var tooltipEl = null;
@@ -40,36 +42,39 @@ chartType.forEach(function (item) {
             x: 'x',
             y: 'y',
             color: 'color',
-            plugins: [tooltip({
-                afterInit: el => tooltipEl = el
-            })]
+            plugins: [
+                tooltip({
+                    afterInit: el => tooltipEl = el
+                })
+            ]
         },
-        [{
-            x: 2,
-            y: 2,
-            color: 'yellow'
-
-        }, {
-            x: 4,
-            y: 2,
-            color: 'yellow'
-
-        }, {
-            x: 5,
-            y: 2,
-            color: 'yellow'
-
-        }, {
-            x: 2,
-            y: 1,
-            color: 'green'
-
-        }, {
-            x: 6,
-            y: 1,
-            color: 'green'
-
-        }],
+        [
+            {
+                x: 2,
+                y: 2,
+                color: 'yellow'
+            },
+            {
+                x: 4,
+                y: 2,
+                color: 'yellow'
+            },
+            {
+                x: 5,
+                y: 2,
+                color: 'yellow'
+            },
+            {
+                x: 2,
+                y: 1,
+                color: 'green'
+            },
+            {
+                x: 6,
+                y: 1,
+                color: 'green'
+            }
+        ],
         function (context) {
             it("should work", function (done) {
                 var originTimeout = stubTimeout();
@@ -86,54 +91,55 @@ chartType.forEach(function (item) {
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
-                        expect(content.length).not.be.ok;
+                        expect(content.length).to.equal(0);
                         return showTooltip(expect, context.chart);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
-                        expect(content.length).to.be.ok;
+                        expect(content.length).to.be.above(0);
                         var excluder = document.querySelectorAll('.i-role-exclude')[0];
                         testUtils.simulateEvent('click', excluder);
                         var d = testUtils.Deferred();
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
-                        expect(content.length).not.be.ok;
+                        expect(content.length).to.equal(0);
                         var data = context.chart.getData();
                         var expected = tauCharts.api._.sortBy(data, function (a) {
                             return a.x;
                         });
-                        expect(expected).to.be.eql(
-                            [{
+                        expect(expected).to.be.eql([
+                            {
                                 x: 2,
                                 y: 1,
                                 color: 'green'
-
-                            }, {
+                            },
+                            {
                                 x: 4,
                                 y: 2,
                                 color: 'yellow'
-
-                            }, {
+                            },
+                            {
                                 x: 5,
                                 y: 2,
                                 color: 'yellow'
-
-                            }, {
+                            },
+                            {
                                 x: 6,
                                 y: 1,
                                 color: 'green'
-
-                            }]
-                        );
+                            }
+                        ]);
 
                         return d.resolve();
-                    }).then(function () {
+                    })
+                    .then(function () {
                         return showTooltip(expect, context.chart);
-                    }).then(function () {
+                    })
+                    .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
-                        expect(content.length).to.be.ok;
+                        expect(content.length).to.be.above(0);
                         context.chart.destroy();
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
-                        expect(content.length).not.be.ok;
+                        expect(content.length).to.equal(0);
                         window.setTimeout = originTimeout;
                         return hideTooltip(expect, context.chart);
                     })
@@ -148,6 +154,9 @@ chartType.forEach(function (item) {
         }
     );
 });
+
+/*
+
 describeChart(
     "tooltip for line chart without",
     {
@@ -197,6 +206,8 @@ describeChart(
     }
 );
 
+*/
+
 chartType.forEach(function (item) {
     describeChart(
         "tooltip getFields for " + item,
@@ -206,7 +217,9 @@ chartType.forEach(function (item) {
             y: 'y',
             color: 'color',
             plugins: [tooltip({
+
                 getFields: function (chart) {
+
                     expect(chart).to.be.ok;
 
                     if (chart.getData()[0].x === 2) {
@@ -227,7 +240,7 @@ chartType.forEach(function (item) {
                 var originTimeout = stubTimeout();
                 showTooltip(expect, context.chart)
                     .then(function (content) {
-                        expect(content.length).to.be.ok;
+                        expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
                         var texts = _.pluck(tooltipElements, 'textContent');
                         expect(texts).to.be.eql(['x', '2', 'color', 'yellow']);
@@ -244,7 +257,7 @@ chartType.forEach(function (item) {
                         return showTooltip(expect, context.chart);
                     })
                     .then(function (content) {
-                        expect(content.length).to.be.ok;
+                        expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
                         var texts = _.pluck(tooltipElements, 'textContent');
                         expect(texts).to.be.eql(['y', '3']);
@@ -341,7 +354,9 @@ describeChart("tooltip formatting",
         }
     ],
     function (context) {
+
         it('should format labels', function (done) {
+
             var originTimeout = stubTimeout();
 
             var validateLabel = function ($content, label, value) {
@@ -350,8 +365,8 @@ describeChart("tooltip formatting",
 
                 expect($label.length).to.be.eql(1, 'Label ' + label + ' present');
                 expect($label.children()[1].innerText).to.be.eql(value, 'Label value is correct');
-
             };
+
             showTooltip(expect, context.chart, 1)
                 .then(function (content) {
                     var $content = $(content);
