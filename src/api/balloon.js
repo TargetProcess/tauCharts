@@ -383,7 +383,7 @@ Tooltip.prototype.position = function (x, y) {
         x = this._p[0];
         y = this._p[1];
     } else {
-        this._p = arguments;
+        this._p = [x, y];
     }
     var target = typeof x === 'number' ? {
         left: 0 | x,
