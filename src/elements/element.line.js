@@ -40,6 +40,8 @@ export class Line extends Element {
 
     drawFrames(frames) {
 
+        var self = this;
+
         var guide = this.config.guide;
         var options = this.config.options;
 
@@ -60,20 +62,33 @@ export class Line extends Element {
             d3Line.interpolate(guide.interpolate);
         }
 
+        var createEventHandler = (eventName) => {
+            return function (d) {
+                var e = d3.event;
+                var m = d3.mouse(this);
+                var x = xScale.invert(m[0]);
+                var y = yScale.invert(m[1]);
+                // find nearest record
+                // console.log(d, e, 'X:', x, 'Y:', y);
+                // self.fire(eventName, {data: d, event: d3.event});
+            }
+        };
+
         var linePref = `${CSS_PREFIX}line i-role-element line ${widthCss} ${countCss} ${guide.cssClass}`;
         var updateLines = function () {
-            var paths = this
+            var path = this
                 .selectAll('path')
                 .data(({data: frame}) => [frame.data]);
-            paths
-                .exit()
+            path.exit()
                 .remove();
-            paths
-                .attr('d', d3Line);
-            paths
-                .enter()
+            path.attr('d', d3Line);
+            path.enter()
                 .append('path')
                 .attr('d', d3Line);
+
+            path.on('mouseover', createEventHandler('mouseover'))
+                .on('mouseout', createEventHandler('mouseout'))
+                .on('click', createEventHandler('click'));
         };
 
         var pointPref = `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot `;

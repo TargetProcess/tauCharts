@@ -184,7 +184,7 @@
                 };
 
                 var fillSlot = function (memoRef, config, key) {
-                    var GUIDE = config.guide;
+                    var GUIDE = config.guide || {};
                     var scale = specScales[config[key]];
                     var guide = GUIDE[key] || {};
                     memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[], tickLabel:[]};
