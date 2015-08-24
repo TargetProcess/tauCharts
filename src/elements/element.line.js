@@ -98,7 +98,7 @@ export class Line extends Element {
                     [0];
 
                 self.fire(eventName, {data: near.data, event: e});
-            }
+            };
         };
 
         var updateLines = function () {
