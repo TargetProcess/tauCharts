@@ -29,9 +29,7 @@ var hideTooltip = function (expect, chart, index) {
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
 };
 
-var chartType = [
-    // 'line',
-    'scatterplot', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
+var chartType = ['line', 'scatterplot', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
 
 chartType.forEach(function (item) {
     var tooltipEl = null;
@@ -155,24 +153,18 @@ chartType.forEach(function (item) {
     );
 });
 
-/*
-
 describeChart(
-    "tooltip for line chart without",
+    "tooltip for line chart",
     {
         type: 'line',
         x: 'x',
         y: 'y',
-        color: 'color',
         plugins: [tooltip()]
     },
-    [{
-        x: 2,
-        y: 2
-    }, {
-        x: 4,
-        y: 5
-    }],
+    [
+        {x: 2, y: 2},
+        {x: 4, y: 5}
+    ],
     function (context) {
         it("should work tooltip", function (done) {
             var originTimeout = stubTimeout();
@@ -186,27 +178,24 @@ describeChart(
                     var expected = tauCharts.api._.sortBy(data, function (a) {
                         return a.x;
                     });
-                    expect(expected).to.be.eql(
-                        [{
+                    expect(expected).to.be.eql([
+                        {
                             x: 4,
                             y: 5
-                        }]
-                    );
+                        }
+                    ]);
                     return d.resolve();
                 })
                 .then(function () {
                     return hideTooltip(expect, context.chart);
                 })
                 .always(function () {
-
                     window.setTimeout = originTimeout;
                     done();
                 });
         });
     }
 );
-
-*/
 
 chartType.forEach(function (item) {
     describeChart(
@@ -217,15 +206,11 @@ chartType.forEach(function (item) {
             y: 'y',
             color: 'color',
             plugins: [tooltip({
-
                 getFields: function (chart) {
-
                     expect(chart).to.be.ok;
-
                     if (chart.getData()[0].x === 2) {
                         return ['x', 'color'];
                     }
-
                     return ['y'];
                 }
             })]
@@ -306,7 +291,6 @@ describeChart("tooltip formatting",
                 "size": {
                     "label": "Effort"
                 }
-
             }
         ],
         "dimensions": {
