@@ -15,18 +15,21 @@ export class Line extends Element {
             {
                 cssClass: '',
                 widthCssClass: '',
-                anchors: false
+                showAnchors: true
             }
         );
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
-        this.on('mouseover', ((sender, e) =>
-            sender.fire('highlight-data-points', (row) => (row === e.data))));
+        if (this.config.guide.showAnchors) {
 
-        this.on('mouseout', ((sender, e) =>
-            sender.fire('highlight-data-points', (row) => false)));
+            this.on('mouseover', ((sender, e) =>
+                sender.fire('highlight-data-points', (row) => (row === e.data))));
+
+            this.on('mouseout', ((sender, e) =>
+                sender.fire('highlight-data-points', (row) => (false))));
+        }
     }
 
     createScales(fnCreateScale) {
@@ -117,7 +120,7 @@ export class Line extends Element {
                 .on('mouseout', createEventHandler('mouseout'))
                 .on('click', createEventHandler('click'));
 
-            if (!this.empty()) {
+            if (guide.showAnchors && !this.empty()) {
                 var stroke = this.style('stroke');
                 var anchUpdate = function () {
                     return this
@@ -167,19 +170,16 @@ export class Line extends Element {
                 .on('click', ({data:d}) => self.fire('click', {data: d, event: d3.event}));
         };
 
-        var updateGroups = (x, drawPath, drawPoints) => {
+        var updateGroups = (x, isLine) => {
 
             return function () {
 
                 this.attr('class', ({data: f}) =>
                     `${linePref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
                     .call(function () {
-
-                        if (drawPath) {
+                        if (isLine) {
                             updateLines.call(this);
-                        }
-
-                        if (drawPoints) {
+                        } else {
                             updatePoints.call(this);
                         }
                     });
@@ -193,7 +193,6 @@ export class Line extends Element {
         var drawFrame = (tag, id, filter) => {
 
             var isDrawLine = tag === 'line';
-            var isDrawAnchor = !isDrawLine || guide.anchors;
 
             var frameGroups = options.container
                 .selectAll(`.frame-${id}`)
@@ -202,11 +201,11 @@ export class Line extends Element {
                 .exit()
                 .remove();
             frameGroups
-                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
+                .call(updateGroups((`frame-${id}`), isDrawLine));
             frameGroups
                 .enter()
                 .append('g')
-                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
+                .call(updateGroups((`frame-${id}`), isDrawLine));
         };
 
         drawFrame('line', 'line-' + options.uid, ({data: f}) => f.data.length > 1);

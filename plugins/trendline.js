@@ -509,6 +509,7 @@
                             }
                         });
                         trend.guide = trend.guide || {};
+                        trend.guide.showAnchors   = false;
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';
 
