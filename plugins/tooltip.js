@@ -22,6 +22,28 @@
                 fields: null
             });
 
+        function getOffsetRect(elem) {
+
+            var box = elem.getBoundingClientRect();
+
+            var body = document.body;
+            var docElem = document.documentElement;
+
+            var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+            var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+
+            var clientTop = docElem.clientTop || body.clientTop || 0;
+            var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+
+            var top  = box.top +  scrollTop - clientTop;
+            var left = box.left + scrollLeft - clientLeft;
+
+            return {
+                top: Math.round(top),
+                left: Math.round(left)
+            };
+        }
+
         var plugin = {
 
             init: function (chart) {
@@ -60,11 +82,11 @@
 
                 var self = this;
                 var timeoutHide;
-                this.showTooltip = function (e) {
+                this.showTooltip = function (data, pos) {
 
                     clearTimeout(timeoutHide);
 
-                    self._cursor = e.data;
+                    self._cursor = data;
 
                     var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
                     if (content[0]) {
@@ -74,7 +96,7 @@
                             ||
                             (_.isFunction(settings.getFields) && settings.getFields(self._chart))
                             ||
-                            Object.keys(e.data)
+                            Object.keys(data)
                         );
 
                         content[0].innerHTML = fields
@@ -84,14 +106,14 @@
                             .map(function (k) {
                                 return self.itemTemplate({
                                     label: self._metaInfo[k].label,
-                                    value: self._metaInfo[k].format(e.data[k])
+                                    value: self._metaInfo[k].format(data[k])
                                 });
                             })
                             .join('');
                     }
 
                     self._tooltip
-                        .show(e.event.pageX, e.event.pageY)
+                        .show(pos.x, pos.y)
                         .updateSize();
                 };
 
@@ -99,6 +121,7 @@
                     timeoutHide = setTimeout(
                         function () {
                             self._tooltip.hide();
+                            self._removeFocus();
                         },
                         300);
                 };
@@ -107,20 +130,49 @@
                     .getElement()
                     .addEventListener('mouseover', function (e) {
                         clearTimeout(timeoutHide);
+                        self._accentFocus();
                     }, false);
 
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
                         self._tooltip.hide();
+                        self._removeFocus();
                     }, false);
             },
 
             destroy: function () {
+                this._removeFocus();
+                this._tooltip.destroy();
+            },
+
+            _appendFocus: function (g, x, y) {
+                this.circle = d3
+                    .select(g)
+                    .append('circle')
+                    .attr({
+                        r: 0,
+                        cx: x,
+                        cy: y
+                    });
+
+                return this.circle;
+            },
+
+            _removeFocus: function () {
                 if (this.circle) {
                     this.circle.remove();
                 }
-                this._tooltip.destroy();
+
+                return this;
+            },
+
+            _accentFocus: function () {
+                this.circle && this.circle.attr({
+                    r: 3
+                });
+
+                return this.circle;
             },
 
             _exclude: function () {
@@ -159,6 +211,7 @@
 
             _subscribeToHover: function () {
                 var self = this;
+
                 this._chart
                     .select(function (node) {
                         return true;
@@ -170,7 +223,22 @@
                         });
 
                         node.on('mouseover', function (sender, e) {
-                            self.showTooltip(e);
+
+                            var xScale = sender.getScale('x');
+                            var yScale = sender.getScale('y');
+
+                            var d = e.data;
+                            var xLocal = xScale(d[xScale.dim]);
+                            var yLocal = yScale(d[yScale.dim]);
+
+                            var g = e.event.target.parentNode;
+                            var c = self
+                                ._removeFocus()
+                                ._appendFocus(g, xLocal, yLocal);
+
+                            var p = getOffsetRect(c.node());
+
+                            self.showTooltip(d, {x: p.left, y: p.top});
                         });
                     });
             },
