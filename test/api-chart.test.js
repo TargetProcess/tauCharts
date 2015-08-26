@@ -215,22 +215,17 @@ define(function (require) {
 
         it('api test element events', function (done) {
 
-            // ignore
-            // TODO: fix consistency or remove
-            done();
-            return;
-
             var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
             var simulateEvent = utils.simulateEvent;
-            var event = ['elementclick', 'elementmouseover', 'elementmouseout', 'elementmousemove'];
+            var event = ['elementclick', 'elementmouseover', 'elementmouseout'];
             event.forEach(function (e) {
-                plot.on(e, function (chart, data) {
-                    expect(e).to.be.ok;
-                    expect(data.element).to.be.ok;
-                    expect(data.elementData).to.be.ok;
-                    expect(data.cellData).to.be.ok;
-                    if (e === 'elementmousemove') {
+                plot.on(e, function (chart, ev) {
+                    expect(ev).to.be.ok;
+                    expect(ev.element).to.be.ok;
+                    expect(ev.data).to.be.ok;
+                    expect(ev.element).to.be.ok;
+                    if (e === 'elementmouseout') {
                         done();
                     }
 
@@ -240,14 +235,9 @@ define(function (require) {
             simulateEvent('click', $('circle')[0]);
             simulateEvent('mouseover', $('circle')[0]);
             simulateEvent('mouseout', $('circle')[0]);
-            simulateEvent('mousemove', $('circle')[0]);
         });
 
         it('api plugins', function () {
-
-            // ignore
-            // TODO: fix consistency or remove
-            return;
 
             var initPlugin = null;
             var autoSubscribePlugin = null;

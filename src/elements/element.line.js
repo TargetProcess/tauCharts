@@ -15,7 +15,8 @@ export class Line extends Element {
             {
                 cssClass: '',
                 widthCssClass: '',
-                showAnchors: true
+                showAnchors: true,
+                anchorSize: 0.1
             }
         );
 
@@ -125,7 +126,7 @@ export class Line extends Element {
                 var anchUpdate = function () {
                     return this
                         .attr({
-                            r: 0.1,
+                            r: guide.anchorSize,
                             cx: (d) => xScale(d[xScale.dim]),
                             cy: (d) => yScale(d[yScale.dim]),
                             class: 'i-data-anchor',
@@ -236,6 +237,6 @@ export class Line extends Element {
             .options
             .container
             .selectAll('.i-data-anchor')
-            .attr('r', (d) => (filter(d) ? 3 : 0.1));
+            .attr('r', (d) => (filter(d) ? 3 : this.config.guide.anchorSize));
     }
 }

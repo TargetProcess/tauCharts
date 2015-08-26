@@ -208,6 +208,19 @@ export class Plot extends Emitter {
         this._liveSpec.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
+            ['click', 'mouseover', 'mouseout']
+                .forEach((eventName) => unitNode.on(
+                    (eventName),
+                    (sender, e) => {
+                        this.fire(
+                            `element${eventName}`,
+                            {
+                                element: sender,
+                                data: e.data,
+                                event: e.event
+                            }
+                        );
+                    }));
         };
 
         this._liveSpec.onUnitsStructureExpanded = (specRef) => {
