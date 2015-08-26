@@ -77,17 +77,27 @@ export class Line extends Element {
             d3Line.interpolate(guide.interpolate);
         }
 
-        var createEventHandler = (eventName) => {
+        var updateLines = function () {
+            var path = this
+                .selectAll('path')
+                .data(({data: frame}) => [frame.data]);
+            path.exit()
+                .remove();
+            path.attr('d', d3Line)
+                .attr('class', datumClass);
+            path.enter()
+                .append('path')
+                .attr('d', d3Line)
+                .attr('class', datumClass);
 
-            return function (rows) {
+            self.subscribe(path, function (rows) {
 
-                var e = d3.event;
                 var m = d3.mouse(this);
                 var mx = m[0];
                 var my = m[1];
 
                 // d3.invert doesn't work for ordinal axes
-                var near = rows
+                var nearest = rows
                     .map((row) => {
                         var rx = xScale(row[xScale.dim]);
                         var ry = yScale(row[yScale.dim]);
@@ -101,25 +111,8 @@ export class Line extends Element {
                     .sort((a, b) => (a.dist - b.dist)) // asc
                     [0];
 
-                self.fire(eventName, {data: near.data, event: e});
-            };
-        };
-
-        var updateLines = function () {
-            var path = this
-                .selectAll('path')
-                .data(({data: frame}) => [frame.data]);
-            path.exit()
-                .remove();
-            path.attr('d', d3Line)
-                .attr('class', datumClass);
-            path.enter()
-                .append('path')
-                .attr('d', d3Line)
-                .attr('class', datumClass);
-            path.on('mouseover', createEventHandler('mouseover'))
-                .on('mouseout', createEventHandler('mouseout'))
-                .on('click', createEventHandler('click'));
+                return nearest.data;
+            });
 
             if (guide.showAnchors && !this.empty()) {
                 var stroke = this.style('stroke');
@@ -143,9 +136,8 @@ export class Line extends Element {
                 anch.enter()
                     .append('circle')
                     .call(anchUpdate);
-                anch.on('mouseover', (d) => self.fire('mouseover', {data: d, event: d3.event}))
-                    .on('mouseout', (d) => self.fire('mouseout', {data: d, event: d3.event}))
-                    .on('click', (d) => self.fire('click', {data: d, event: d3.event}));
+
+                self.subscribe(anch);
             }
         };
 
@@ -166,9 +158,8 @@ export class Line extends Element {
             dots.enter()
                 .append('circle')
                 .attr(attr);
-            dots.on('mouseover', ({data:d}) => self.fire('mouseover', {data: d, event: d3.event}))
-                .on('mouseout', ({data:d}) => self.fire('mouseout', {data: d, event: d3.event}))
-                .on('click', ({data:d}) => self.fire('click', {data: d, event: d3.event}));
+
+            self.subscribe(dots, ({data:d}) => d);
         };
 
         var updateGroups = (x, isLine) => {

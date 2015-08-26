@@ -78,9 +78,7 @@ export class Interval extends Element {
                 .append('rect')
                 .call(updateBar);
 
-            bars.on('mouseover', ({data:d}) => self.fire('mouseover', {data: d, event: d3.event}))
-                .on('mouseout', ({data:d}) => self.fire('mouseout', {data: d, event: d3.event}))
-                .on('click', ({data:d}) => self.fire('click', {data: d, event: d3.event}));
+            self.subscribe(bars, ({data:d}) => d);
         };
 
         var elements = options

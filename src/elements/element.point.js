@@ -111,23 +111,17 @@ export class Point extends Element {
 
             this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
                 .call(function () {
-                    var points = this
+                    var dots = this
                         .selectAll('circle')
                         .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
-                    points
-                        .exit()
+                    dots.exit()
                         .remove();
-                    points
-                        .call(update);
-                    points
-                        .enter()
+                    dots.call(update);
+                    dots.enter()
                         .append('circle')
                         .call(enter);
 
-                    points
-                        .on('mouseover', ({data:d}) => self.fire('mouseover', {data: d, event: d3.event}))
-                        .on('mouseout', ({data:d}) => self.fire('mouseout', {data: d, event: d3.event}))
-                        .on('click', ({data:d}) => self.fire('click', {data: d, event: d3.event}));
+                    self.subscribe(dots, ({data:d}) => d);
                 });
         };
 
