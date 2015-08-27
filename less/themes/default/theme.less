@@ -16,7 +16,7 @@
 @checkbox-bg-color: linear-gradient(to bottom, @bg-color 0%, #dbdbde 100%);
 @checkbox-checked-icon: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAFoTx1HAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MEQ4M0RDOTE4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MEQ4M0RDOTI4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowRDgzREM4Rjg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowRDgzREM5MDg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pn2UjdoAAAEGSURBVHjaYvz//z8DGIAYSUlJdwECiBEukpiY/BDEAQggBrgIVBkLjAEDAAHEiMyBywBNOwDmJCYm/cdQBhBAqHrQAUgSojV5P8QtSY+A+D7cPTDdMAUwTQABhNdYJgZ8AF1nRkaGAgjDvQzi/AOCP3+YWX7+/HmXiYlRAcXY37//AEPs511OTg65uXPnPkQxNi0tTTklJUWGaNcCBBj+EMIDmBjIBCwo1jMyYigAul/x79//B4CulwOqODBv3hxHDKcmJycfAHLtgfrvMTExJf/7938xUF4GaOB9FhZmh1mzZj2CqUdNEkAdSUmZSsAgBNrAIAsUAQYlu+O0adMeo0cS/QMHAGJZps83N5ZDAAAAAElFTkSuQmCC');
 
-@axis-color: #BDC3CD;
+@axis-color: fade(#BDC3CD, 40%);
 
 @gray-stroke: #eee;
 
@@ -27,12 +27,16 @@
 /* endregion */
 
 /* region map variables*/
-@map-contour-stroke-color0: #fbfbfb;
-@map-contour-stroke-color1: #fffefe;
-@map-contour-stroke-color2: #fdfdff;
-@map-contour-stroke-color3: #fdfdfd;
-@map-contour-stroke-color4: #ffffff;
-@map-contour-stroke-color-highlighted: #FFBF00;
+@map-contour-stroke-color0: #fff;
+@map-contour-stroke-color1: #fff;
+@map-contour-stroke-color2: #fff;
+@map-contour-stroke-color3: #fff;
+@map-contour-stroke-color4: #fff;
+
+@map-contour-stroke-color-highlighted: #fff;
+@map-fill-color-highlighted: #FFBF00;
+@map-text-color-highlighted: #000;
+
 /* endregion */
 
 @category-colors: #6FA1D9, #DF2B59, #66DA26, #4C3862, #E5B011, #3A3226, #CB461A, #C7CE23, #7FCDC2, #CCA1C8, #C84CCE, #54762E, #746BC9, #953441, #5C7A76, #C8BF87, #BFC1C3, #8E5C31, #71CE7B, #BE478B;
@@ -40,6 +44,9 @@
 @list_category-colors: length(@category-colors);
 @color-definite: #cacaca;
 
+@dot-opacity: 0.7;
+
+@parallel-background-line-color: darken(@bg-color, 5%);
 
 /* region variables for plugins */
 
