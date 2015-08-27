@@ -741,7 +741,7 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -773,16 +773,19 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
         }, {
             key: 'subscribe',
             value: function subscribe(sel) {
-                var interceptor = arguments.length <= 1 || arguments[1] === undefined ? function (x) {
+                var dataInterceptor = arguments.length <= 1 || arguments[1] === undefined ? function (x) {
                     return x;
                 } : arguments[1];
+                var eventInterceptor = arguments.length <= 2 || arguments[2] === undefined ? function (x) {
+                    return x;
+                } : arguments[2];
 
                 var self = this;
                 ['mouseover', 'mouseout', 'click'].forEach(function (eventName) {
                     sel.on(eventName, function (d) {
                         self.fire(eventName, {
-                            data: interceptor.call(this, d),
-                            event: d3.event
+                            data: dataInterceptor.call(this, d),
+                            event: eventInterceptor.call(this, d3.event, d)
                         });
                     });
                 });
@@ -1885,9 +1888,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                 });
 
                 var updateBar = function updateBar() {
-                    return this.attr(d3Attrs)
-                    // TODO: move to CSS styles
-                    .style('stroke-width', 1).style('stroke', '#fff').style('stroke-opacity', '0.5');
+                    return this.attr(d3Attrs);
                 };
 
                 var uid = options.uid;
@@ -1899,7 +1900,7 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                     this.attr('class', function (f) {
                         return 'frame-id-' + uid + ' frame-' + f.hash + ' i-role-bar-group';
                     }).call(function () {
-                        var bars = this.selectAll('.bar').data(function (frame) {
+                        var bars = this.selectAll('.bar-stack').data(function (frame) {
                             // var totals = {}; // if 1-only frame support is required
                             return frame.data.map(function (d) {
                                 return { uid: uid, data: d, view: viewMapper(totals, d) };
@@ -1912,6 +1913,11 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                         self.subscribe(bars, function (_ref) {
                             var d = _ref.data;
                             return d;
+                        }, function (d3Event, _ref2) {
+                            var v = _ref2.view;
+
+                            d3Event.chartElementViewModel = v;
+                            return d3Event;
                         });
                     });
                 };
@@ -1930,12 +1936,12 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
             }
         }, {
             key: '_buildDrawModel',
-            value: function _buildDrawModel(isHorizontal, _ref2) {
-                var xScale = _ref2.xScale;
-                var yScale = _ref2.yScale;
-                var sizeScale = _ref2.sizeScale;
-                var colorScale = _ref2.colorScale;
-                var prettify = _ref2.prettify;
+            value: function _buildDrawModel(isHorizontal, _ref3) {
+                var xScale = _ref3.xScale;
+                var yScale = _ref3.yScale;
+                var sizeScale = _ref3.sizeScale;
+                var colorScale = _ref3.colorScale;
+                var prettify = _ref3.prettify;
 
                 // show at least 1px gap for bar to make it clickable
                 var minH = 1;
@@ -1999,25 +2005,25 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                 }
 
                 return {
-                    x: function x(_ref3) {
-                        var d = _ref3.view;
+                    x: function x(_ref4) {
+                        var d = _ref4.view;
                         return calculateX(d);
                     },
-                    y: function y(_ref4) {
-                        var d = _ref4.view;
+                    y: function y(_ref5) {
+                        var d = _ref5.view;
                         return calculateY(d);
                     },
-                    height: function height(_ref5) {
-                        var d = _ref5.view;
+                    height: function height(_ref6) {
+                        var d = _ref6.view;
                         return calculateH(d);
                     },
-                    width: function width(_ref6) {
-                        var d = _ref6.view;
+                    width: function width(_ref7) {
+                        var d = _ref7.view;
                         return calculateW(d);
                     },
-                    'class': function _class(_ref7) {
-                        var d = _ref7.view;
-                        return 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar ' + colorScale(d.c);
+                    'class': function _class(_ref8) {
+                        var d = _ref8.view;
+                        return 'i-role-element i-role-datum bar-stack ' + _const.CSS_PREFIX + 'bar-stacked ' + colorScale(d.c);
                     }
                 };
             }
@@ -2025,13 +2031,13 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
             key: 'highlight',
             value: function highlight(filter) {
 
-                this.config.options.container.selectAll('.bar').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref8) {
-                        var d = _ref8.data;
+                this.config.options.container.selectAll('.bar-stack').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref9) {
+                        var d = _ref9.data;
                         return filter(d) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref9) {
-                        var d = _ref9.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref10) {
+                        var d = _ref10.data;
                         return filter(d) === false;
                     }
                 });

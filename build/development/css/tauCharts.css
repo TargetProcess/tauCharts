@@ -272,6 +272,9 @@
   /* Scatterplot  */
   /* Linechart  */
   /*  Bar  */
+  /*  Bar  */
+  /* TODO: fix to avoid conflict on "stroke" with color brewer */
+  /* TODO: remove this when CSS for color brewer is fixed */
   /*  PLUGINS  */
   /*  Highlighter  */
 }
@@ -436,6 +439,16 @@
   shape-rendering: crispEdges;
   transition: opacity 0.2s ease;
 }
+.graphical-report__bar-stacked {
+  shape-rendering: crispEdges;
+  transition: opacity 0.2s ease;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+  stroke: #fff;
+}
+.graphical-report__svg .graphical-report__bar-stacked {
+  stroke: #fff;
+}
 .graphical-report__dot.graphical-report__highlighted {
   stroke-width: 2;
   opacity: 1;
@@ -450,10 +463,12 @@
 .graphical-report__line.graphical-report__dimmed {
   stroke-opacity: 0.2;
 }
-.graphical-report__bar.graphical-report__highlighted {
+.graphical-report__bar.graphical-report__highlighted,
+.graphical-report__bar-stacked.graphical-report__highlighted {
   stroke-opacity: 1;
   opacity: 1;
 }
-.graphical-report__bar.graphical-report__dimmed {
+.graphical-report__bar.graphical-report__dimmed,
+.graphical-report__bar-stacked.graphical-report__dimmed {
   opacity: 0.2;
 }
