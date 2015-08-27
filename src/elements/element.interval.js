@@ -29,6 +29,9 @@ export class Interval extends Element {
     }
 
     drawFrames(frames) {
+
+        var self = this;
+
         var options = this.config.options;
         var config = this.config;
         var xScale = this.xScale;
@@ -74,7 +77,10 @@ export class Interval extends Element {
             bars.enter()
                 .append('rect')
                 .call(updateBar);
+
+            self.subscribe(bars, ({data:d}) => d);
         };
+
         var elements = options
             .container
             .selectAll(`.i-role-bar-group`)

@@ -107,6 +107,9 @@ export class StackedInterval extends Element {
     }
 
     drawFrames(frames) {
+
+        var self = this;
+
         var config = this.config;
         var options = config.options;
         var xScale = this.xScale;
@@ -201,15 +204,14 @@ export class StackedInterval extends Element {
                             // var totals = {}; // if 1-only frame support is required
                             return frame.data.map((d) => ({uid: uid, data: d, view: viewMapper(totals, d)}));
                         });
-                    bars
-                        .exit()
+                    bars.exit()
                         .remove();
-                    bars
-                        .call(updateBar);
-                    bars
-                        .enter()
+                    bars.call(updateBar);
+                    bars.enter()
                         .append('rect')
                         .call(updateBar);
+
+                    self.subscribe(bars, ({data:d}) => d);
                 });
         };
 

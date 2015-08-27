@@ -110,12 +110,7 @@ export class ParallelLine extends Element {
             .attr('class', 'lines-frame')
             .call(updateFrame);
 
-        options
-            .container
-            .selectAll('.lines-frame .foreground')
-            .on('mouseover', (d) => this.fire('mouseover', {data: d, event: d3.event}))
-            .on('mouseout', (d) => this.fire('mouseout', {data: d, event: d3.event}))
-            .on('click', (d) => this.fire('click', {data: d, event: d3.event}));
+        this.subscribe(options.container.selectAll('.lines-frame .foreground'));
     }
 
     highlight(filter) {

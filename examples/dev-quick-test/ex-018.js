@@ -37,8 +37,6 @@ window.samples.push({
             x: 'xdate',
             y: 'count',
             unit: [
-                { type: 'ELEMENT.INTERVAL' },
-                { type: 'ELEMENT.POINT' },
                 { type: 'ELEMENT.LINE' }
             ]
         }

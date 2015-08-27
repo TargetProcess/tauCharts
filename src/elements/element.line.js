@@ -13,13 +13,24 @@ export class Line extends Element {
         this.config.guide = _.defaults(
             this.config.guide,
             {
-                cssClass: 'i-role-datum',
+                cssClass: '',
                 widthCssClass: '',
-                anchors: false
+                showAnchors: true,
+                anchorSize: 0.1
             }
         );
 
         this.on('highlight', (sender, e) => this.highlight(e));
+        this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
+
+        if (this.config.guide.showAnchors) {
+
+            this.on('mouseover', ((sender, e) =>
+                sender.fire('highlight-data-points', (row) => (row === e.data))));
+
+            this.on('mouseout', ((sender, e) =>
+                sender.fire('highlight-data-points', (row) => (false))));
+        }
     }
 
     createScales(fnCreateScale) {
@@ -40,6 +51,8 @@ export class Line extends Element {
 
     drawFrames(frames) {
 
+        var self = this;
+
         var guide = this.config.guide;
         var options = this.config.options;
 
@@ -51,6 +64,10 @@ export class Line extends Element {
         var widthCss = guide.widthCssClass || getLineClassesByWidth(options.width);
         var countCss = getLineClassesByCount(frames.length);
 
+        const datumClass = `i-role-datum`;
+        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-element ${datumClass} ${CSS_PREFIX}dot `;
+        const linePref = `${CSS_PREFIX}line i-role-element line ${widthCss} ${countCss} ${guide.cssClass} `;
+
         var d3Line = d3.svg
             .line()
             .x((d) => xScale(d[xScale.dim]))
@@ -60,26 +77,73 @@ export class Line extends Element {
             d3Line.interpolate(guide.interpolate);
         }
 
-        var linePref = `${CSS_PREFIX}line i-role-element line ${widthCss} ${countCss} ${guide.cssClass}`;
         var updateLines = function () {
-            var paths = this
+            var path = this
                 .selectAll('path')
                 .data(({data: frame}) => [frame.data]);
-            paths
-                .exit()
+            path.exit()
                 .remove();
-            paths
-                .attr('d', d3Line);
-            paths
-                .enter()
+            path.attr('d', d3Line)
+                .attr('class', datumClass);
+            path.enter()
                 .append('path')
-                .attr('d', d3Line);
+                .attr('d', d3Line)
+                .attr('class', datumClass);
+
+            self.subscribe(path, function (rows) {
+
+                var m = d3.mouse(this);
+                var mx = m[0];
+                var my = m[1];
+
+                // d3.invert doesn't work for ordinal axes
+                var nearest = rows
+                    .map((row) => {
+                        var rx = xScale(row[xScale.dim]);
+                        var ry = yScale(row[yScale.dim]);
+                        return {
+                            x: rx,
+                            y: ry,
+                            dist: Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2)),
+                            data: row
+                        };
+                    })
+                    .sort((a, b) => (a.dist - b.dist)) // asc
+                    [0];
+
+                return nearest.data;
+            });
+
+            if (guide.showAnchors && !this.empty()) {
+                var stroke = this.style('stroke');
+                var anchUpdate = function () {
+                    return this
+                        .attr({
+                            r: guide.anchorSize,
+                            cx: (d) => xScale(d[xScale.dim]),
+                            cy: (d) => yScale(d[yScale.dim]),
+                            class: 'i-data-anchor',
+                            stroke: stroke
+                        });
+                };
+
+                var anch = this
+                    .selectAll('circle')
+                    .data(({data: frame}) => frame.data);
+                anch.exit()
+                    .remove();
+                anch.call(anchUpdate);
+                anch.enter()
+                    .append('circle')
+                    .call(anchUpdate);
+
+                self.subscribe(anch);
+            }
         };
 
-        var pointPref = `${CSS_PREFIX}dot-line dot-line i-role-element ${CSS_PREFIX}dot `;
         var updatePoints = function () {
 
-            var points = this
+            var dots = this
                 .selectAll('circle')
                 .data(frame => frame.data.data.map(item => ({data: item, uid: options.uid})));
             var attr = {
@@ -88,30 +152,26 @@ export class Line extends Element {
                 cy: ({data:d}) => yScale(d[yScale.dim]),
                 class: ({data:d}) => (`${pointPref} ${colorScale(d[colorScale.dim])}`)
             };
-            points
-                .exit()
+            dots.exit()
                 .remove();
-            points
-                .attr(attr);
-            points
-                .enter()
+            dots.attr(attr);
+            dots.enter()
                 .append('circle')
                 .attr(attr);
+
+            self.subscribe(dots, ({data:d}) => d);
         };
 
-        var updateGroups = (x, drawPath, drawPoints) => {
+        var updateGroups = (x, isLine) => {
 
             return function () {
 
                 this.attr('class', ({data: f}) =>
                     `${linePref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
                     .call(function () {
-
-                        if (drawPath) {
+                        if (isLine) {
                             updateLines.call(this);
-                        }
-
-                        if (drawPoints) {
+                        } else {
                             updatePoints.call(this);
                         }
                     });
@@ -125,7 +185,6 @@ export class Line extends Element {
         var drawFrame = (tag, id, filter) => {
 
             var isDrawLine = tag === 'line';
-            var isDrawAnchor = !isDrawLine || guide.anchors;
 
             var frameGroups = options.container
                 .selectAll(`.frame-${id}`)
@@ -134,11 +193,11 @@ export class Line extends Element {
                 .exit()
                 .remove();
             frameGroups
-                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
+                .call(updateGroups((`frame-${id}`), isDrawLine));
             frameGroups
                 .enter()
                 .append('g')
-                .call(updateGroups((`frame-${id}`), isDrawLine, isDrawAnchor));
+                .call(updateGroups((`frame-${id}`), isDrawLine));
         };
 
         drawFrame('line', 'line-' + options.uid, ({data: f}) => f.data.length > 1);
@@ -162,5 +221,13 @@ export class Line extends Element {
                 'graphical-report__highlighted': (({data: d}) => filter(d) === true),
                 'graphical-report__dimmed': (({data: d}) => filter(d) === false)
             });
+    }
+
+    highlightDataPoints(filter) {
+        this.config
+            .options
+            .container
+            .selectAll('.i-data-anchor')
+            .attr('r', (d) => (filter(d) ? 3 : this.config.guide.anchorSize));
     }
 }

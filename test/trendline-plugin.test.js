@@ -198,6 +198,9 @@ define(function (require) {
                 var path1 = svgTrendlines0[1].querySelectorAll('path')[0];
                 expect(path1.getAttribute('d').indexOf('NaN')).to.equal(-1);
 
+                var trendLineArchPoints = svg0.querySelectorAll('.i-data-anchor');
+                expect(trendLineArchPoints.length).to.be.equal(0, 'trendline should not have anchor points');
+
                 var selector = '.i-role-show-trend';
                 var checkbox = chart._layout.rightSidebar.querySelectorAll(selector)[0];
 

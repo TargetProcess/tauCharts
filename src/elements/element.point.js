@@ -73,6 +73,8 @@ export class Point extends Element {
 
     drawFrames(frames) {
 
+        var self = this;
+
         var options = this.config.options;
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
@@ -109,18 +111,17 @@ export class Point extends Element {
 
             this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
                 .call(function () {
-                    var points = this
+                    var dots = this
                         .selectAll('circle')
                         .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
-                    points
-                        .exit()
+                    dots.exit()
                         .remove();
-                    points
-                        .call(update);
-                    points
-                        .enter()
+                    dots.call(update);
+                    dots.enter()
                         .append('circle')
                         .call(enter);
+
+                    self.subscribe(dots, ({data:d}) => d);
                 });
         };
 

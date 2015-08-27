@@ -1,6 +1,6 @@
 import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
-import {Plugins, propagateDatumEvents} from '../plugins';
+import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {DataFrame} from '../data-frame';
@@ -208,6 +208,19 @@ export class Plot extends Emitter {
         this._liveSpec.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);
             this.fire('unitdraw', unitNode);
+            ['click', 'mouseover', 'mouseout']
+                .forEach((eventName) => unitNode.on(
+                    (eventName),
+                    (sender, e) => {
+                        this.fire(
+                            `element${eventName}`,
+                            {
+                                element: sender,
+                                data: e.data,
+                                event: e.event
+                            }
+                        );
+                    }));
         };
 
         this._liveSpec.onUnitsStructureExpanded = (specRef) => {

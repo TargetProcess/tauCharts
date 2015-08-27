@@ -16,4 +16,18 @@ export class Element extends Emitter {
     getScale(paramId) {
         return this._elementScalesHub[paramId] || null;
     }
+
+    subscribe(sel, interceptor = (x => x)) {
+        var self = this;
+        ['mouseover', 'mouseout', 'click'].forEach((eventName) => {
+            sel.on(eventName, function (d) {
+                self.fire(
+                    eventName,
+                    {
+                        data: interceptor.call(this, d),
+                        event: d3.event
+                    });
+            });
+        });
+    }
 }
