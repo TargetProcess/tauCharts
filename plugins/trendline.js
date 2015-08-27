@@ -512,6 +512,7 @@
                         trend.guide.showAnchors   = false;
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';
+                        trend.guide.__plugins_disable_tooltip = true;
 
                         parentUnit.units.push(trend);
                     });

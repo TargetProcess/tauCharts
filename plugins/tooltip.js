@@ -224,7 +224,8 @@
 
                 this._chart
                     .select(function (node) {
-                        return true;
+                        var guide = node.config.guide || {};
+                        return !guide.__plugins_disable_tooltip;
                     })
                     .forEach(function (node) {
 
