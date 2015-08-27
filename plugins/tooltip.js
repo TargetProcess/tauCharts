@@ -48,7 +48,8 @@
 
             init: function (chart) {
 
-                this._cursor = null;
+                this._currentData = null;
+                this._currentUnit = null;
                 this._chart = chart;
 
                 this._metaInfo = this._getFormatters();
@@ -86,7 +87,7 @@
 
                     clearTimeout(timeoutHide);
 
-                    self._cursor = data;
+                    self._currentData = data;
 
                     var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
                     if (content[0]) {
@@ -164,15 +165,24 @@
                     this.circle.remove();
                 }
 
+                if (this._currentUnit) {
+                    this._currentUnit.fire('highlight-data-points', function (row) {
+                        return false;
+                    });
+                }
+
                 return this;
             },
 
             _accentFocus: function () {
-                this.circle && this.circle.attr({
-                    r: 3
-                });
+                var self = this;
+                if (self._currentUnit && self._currentData) {
+                    self._currentUnit.fire('highlight-data-points', function (row) {
+                        return row === self._currentData;
+                    });
+                }
 
-                return this.circle;
+                return this;
             },
 
             _exclude: function () {
@@ -183,7 +193,7 @@
                             return function (row) {
                                 return JSON.stringify(row) !== JSON.stringify(element);
                             };
-                        }(this._cursor))
+                        }(this._currentData))
                     });
                 this._chart.refresh();
             },
@@ -237,6 +247,8 @@
                                 ._appendFocus(g, xLocal, yLocal);
 
                             var p = getOffsetRect(c.node());
+
+                            self._currentUnit = sender;
 
                             self.showTooltip(d, {x: p.left, y: p.top});
                         });
