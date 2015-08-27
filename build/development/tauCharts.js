@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.1 - 2015-08-17
+/*! taucharts - v0.5.1 - 2015-08-27
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -741,7 +741,7 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -769,6 +769,23 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
             key: 'getScale',
             value: function getScale(paramId) {
                 return this._elementScalesHub[paramId] || null;
+            }
+        }, {
+            key: 'subscribe',
+            value: function subscribe(sel) {
+                var interceptor = arguments.length <= 1 || arguments[1] === undefined ? function (x) {
+                    return x;
+                } : arguments[1];
+
+                var self = this;
+                ['mouseover', 'mouseout', 'click'].forEach(function (eventName) {
+                    sel.on(eventName, function (d) {
+                        self.fire(eventName, {
+                            data: interceptor.call(this, d),
+                            event: d3.event
+                        });
+                    });
+                });
             }
         }]);
 
@@ -862,6 +879,8 @@ define('elements/element.point',['exports', '../const', './element'], function (
             key: 'drawFrames',
             value: function drawFrames(frames) {
 
+                var self = this;
+
                 var options = this.config.options;
 
                 var prefix = _const.CSS_PREFIX + 'dot dot i-role-element i-role-datum';
@@ -921,14 +940,19 @@ define('elements/element.point',['exports', '../const', './element'], function (
                     this.attr('class', function (f) {
                         return 'frame-id-' + options.uid + ' frame-' + f.hash;
                     }).call(function () {
-                        var points = this.selectAll('circle').data(function (frame) {
+                        var dots = this.selectAll('circle').data(function (frame) {
                             return frame.data.map(function (item) {
                                 return { data: item, uid: options.uid };
                             });
                         });
-                        points.exit().remove();
-                        points.call(update);
-                        points.enter().append('circle').call(enter);
+                        dots.exit().remove();
+                        dots.call(update);
+                        dots.enter().append('circle').call(enter);
+
+                        self.subscribe(dots, function (_ref10) {
+                            var d = _ref10.data;
+                            return d;
+                        });
                     });
                 };
 
@@ -949,12 +973,12 @@ define('elements/element.point',['exports', '../const', './element'], function (
             key: 'highlight',
             value: function highlight(filter) {
                 this.config.options.container.selectAll('.dot').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref10) {
-                        var d = _ref10.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref11) {
+                        var d = _ref11.data;
                         return filter(d) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref11) {
-                        var d = _ref11.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref12) {
+                        var d = _ref12.data;
                         return filter(d) === false;
                     }
                 });
@@ -1027,14 +1051,33 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
             this.config = config;
             this.config.guide = this.config.guide || {};
             this.config.guide = _.defaults(this.config.guide, {
-                cssClass: 'i-role-datum',
+                cssClass: '',
                 widthCssClass: '',
-                anchors: false
+                showAnchors: true,
+                anchorSize: 0.1
             });
 
             this.on('highlight', function (sender, e) {
                 return _this.highlight(e);
             });
+            this.on('highlight-data-points', function (sender, e) {
+                return _this.highlightDataPoints(e);
+            });
+
+            if (this.config.guide.showAnchors) {
+
+                this.on('mouseover', function (sender, e) {
+                    return sender.fire('highlight-data-points', function (row) {
+                        return row === e.data;
+                    });
+                });
+
+                this.on('mouseout', function (sender, e) {
+                    return sender.fire('highlight-data-points', function (row) {
+                        return false;
+                    });
+                });
+            }
         }
 
         _createClass(Line, [{
@@ -1054,6 +1097,8 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
             key: 'drawFrames',
             value: function drawFrames(frames) {
 
+                var self = this;
+
                 var guide = this.config.guide;
                 var options = this.config.options;
 
@@ -1065,6 +1110,10 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 var widthCss = guide.widthCssClass || (0, _utilsCssClassMap.getLineClassesByWidth)(options.width);
                 var countCss = (0, _utilsCssClassMap.getLineClassesByCount)(frames.length);
 
+                var datumClass = 'i-role-datum';
+                var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-element ' + datumClass + ' ' + _const.CSS_PREFIX + 'dot ';
+                var linePref = _const.CSS_PREFIX + 'line i-role-element line ' + widthCss + ' ' + countCss + ' ' + guide.cssClass + ' ';
+
                 var d3Line = d3.svg.line().x(function (d) {
                     return xScale(d[xScale.dim]);
                 }).y(function (d) {
@@ -1075,62 +1124,113 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                     d3Line.interpolate(guide.interpolate);
                 }
 
-                var linePref = _const.CSS_PREFIX + 'line i-role-element line ' + widthCss + ' ' + countCss + ' ' + guide.cssClass;
                 var updateLines = function updateLines() {
-                    var paths = this.selectAll('path').data(function (_ref) {
+                    var path = this.selectAll('path').data(function (_ref) {
                         var frame = _ref.data;
                         return [frame.data];
                     });
-                    paths.exit().remove();
-                    paths.attr('d', d3Line);
-                    paths.enter().append('path').attr('d', d3Line);
+                    path.exit().remove();
+                    path.attr('d', d3Line).attr('class', datumClass);
+                    path.enter().append('path').attr('d', d3Line).attr('class', datumClass);
+
+                    self.subscribe(path, function (rows) {
+
+                        var m = d3.mouse(this);
+                        var mx = m[0];
+                        var my = m[1];
+
+                        // d3.invert doesn't work for ordinal axes
+                        var nearest = rows.map(function (row) {
+                            var rx = xScale(row[xScale.dim]);
+                            var ry = yScale(row[yScale.dim]);
+                            return {
+                                x: rx,
+                                y: ry,
+                                dist: Math.sqrt(Math.pow(mx - rx, 2) + Math.pow(my - ry, 2)),
+                                data: row
+                            };
+                        }).sort(function (a, b) {
+                            return a.dist - b.dist;
+                        }) // asc
+                        [0];
+
+                        return nearest.data;
+                    });
+
+                    if (guide.showAnchors && !this.empty()) {
+                        var stroke = this.style('stroke');
+                        var anchUpdate = function anchUpdate() {
+                            return this.attr({
+                                r: guide.anchorSize,
+                                cx: function cx(d) {
+                                    return xScale(d[xScale.dim]);
+                                },
+                                cy: function cy(d) {
+                                    return yScale(d[yScale.dim]);
+                                },
+                                'class': 'i-data-anchor',
+                                stroke: stroke
+                            });
+                        };
+
+                        var anch = this.selectAll('circle').data(function (_ref2) {
+                            var frame = _ref2.data;
+                            return frame.data;
+                        });
+                        anch.exit().remove();
+                        anch.call(anchUpdate);
+                        anch.enter().append('circle').call(anchUpdate);
+
+                        self.subscribe(anch);
+                    }
                 };
 
-                var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-element ' + _const.CSS_PREFIX + 'dot ';
                 var updatePoints = function updatePoints() {
 
-                    var points = this.selectAll('circle').data(function (frame) {
+                    var dots = this.selectAll('circle').data(function (frame) {
                         return frame.data.data.map(function (item) {
                             return { data: item, uid: options.uid };
                         });
                     });
                     var attr = {
-                        r: function r(_ref2) {
-                            var d = _ref2.data;
+                        r: function r(_ref3) {
+                            var d = _ref3.data;
                             return sizeScale(d[sizeScale.dim]);
                         },
-                        cx: function cx(_ref3) {
-                            var d = _ref3.data;
+                        cx: function cx(_ref4) {
+                            var d = _ref4.data;
                             return xScale(d[xScale.dim]);
                         },
-                        cy: function cy(_ref4) {
-                            var d = _ref4.data;
+                        cy: function cy(_ref5) {
+                            var d = _ref5.data;
                             return yScale(d[yScale.dim]);
                         },
-                        'class': function _class(_ref5) {
-                            var d = _ref5.data;
+                        'class': function _class(_ref6) {
+                            var d = _ref6.data;
                             return pointPref + ' ' + colorScale(d[colorScale.dim]);
                         }
                     };
-                    points.exit().remove();
-                    points.attr(attr);
-                    points.enter().append('circle').attr(attr);
+                    dots.exit().remove();
+                    dots.attr(attr);
+                    dots.enter().append('circle').attr(attr);
+
+                    self.subscribe(dots, function (_ref7) {
+                        var d = _ref7.data;
+                        return d;
+                    });
                 };
 
-                var updateGroups = function updateGroups(x, drawPath, drawPoints) {
+                var updateGroups = function updateGroups(x, isLine) {
 
                     return function () {
 
-                        this.attr('class', function (_ref6) {
-                            var f = _ref6.data;
+                        this.attr('class', function (_ref8) {
+                            var f = _ref8.data;
                             return linePref + ' ' + colorScale(f.tags[colorScale.dim]) + ' ' + x + ' frame-' + f.hash;
                         }).call(function () {
-
-                            if (drawPath) {
+                            if (isLine) {
                                 updateLines.call(this);
-                            }
-
-                            if (drawPoints) {
+                            } else {
                                 updatePoints.call(this);
                             }
                         });
@@ -1144,23 +1244,22 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 var drawFrame = function drawFrame(tag, id, filter) {
 
                     var isDrawLine = tag === 'line';
-                    var isDrawAnchor = !isDrawLine || guide.anchors;
 
-                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper).filter(filter), function (_ref7) {
-                        var f = _ref7.data;
+                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper).filter(filter), function (_ref9) {
+                        var f = _ref9.data;
                         return f.hash;
                     });
                     frameGroups.exit().remove();
-                    frameGroups.call(updateGroups('frame-' + id, isDrawLine, isDrawAnchor));
-                    frameGroups.enter().append('g').call(updateGroups('frame-' + id, isDrawLine, isDrawAnchor));
+                    frameGroups.call(updateGroups('frame-' + id, isDrawLine));
+                    frameGroups.enter().append('g').call(updateGroups('frame-' + id, isDrawLine));
                 };
 
-                drawFrame('line', 'line-' + options.uid, function (_ref8) {
-                    var f = _ref8.data;
+                drawFrame('line', 'line-' + options.uid, function (_ref10) {
+                    var f = _ref10.data;
                     return f.data.length > 1;
                 });
-                drawFrame('anch', 'anch-' + options.uid, function (_ref9) {
-                    var f = _ref9.data;
+                drawFrame('anch', 'anch-' + options.uid, function (_ref11) {
+                    var f = _ref11.data;
                     return f.data.length < 2;
                 });
             }
@@ -1171,25 +1270,34 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 var container = this.config.options.container;
 
                 container.selectAll('.line').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref10) {
-                        var d = _ref10.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref12) {
+                        var d = _ref12.data;
                         return filter(d.tags) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref11) {
-                        var d = _ref11.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref13) {
+                        var d = _ref13.data;
                         return filter(d.tags) === false;
                     }
                 });
 
                 container.selectAll('.dot-line').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref12) {
-                        var d = _ref12.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref14) {
+                        var d = _ref14.data;
                         return filter(d) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref13) {
-                        var d = _ref13.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref15) {
+                        var d = _ref15.data;
                         return filter(d) === false;
                     }
+                });
+            }
+        }, {
+            key: 'highlightDataPoints',
+            value: function highlightDataPoints(filter) {
+                var _this2 = this;
+
+                this.config.options.container.selectAll('.i-data-anchor').attr('r', function (d) {
+                    return filter(d) ? 3 : _this2.config.guide.anchorSize;
                 });
             }
         }]);
@@ -1251,6 +1359,8 @@ define('elements/element.interval',['exports', '../const', './element'], functio
             value: function drawFrames(frames) {
                 var _this2 = this;
 
+                var self = this;
+
                 var options = this.config.options;
                 var config = this.config;
                 var xScale = this.xScale;
@@ -1295,7 +1405,13 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                     bars.exit().remove();
                     bars.call(updateBar);
                     bars.enter().append('rect').call(updateBar);
+
+                    self.subscribe(bars, function (_ref) {
+                        var d = _ref.data;
+                        return d;
+                    });
                 };
+
                 var elements = options.container.selectAll('.i-role-bar-group').data(frames.map(function (fr) {
                     return { key: fr.key, values: fr.part(), uid: _this2.config.options.uid };
                 }));
@@ -1305,14 +1421,14 @@ define('elements/element.interval',['exports', '../const', './element'], functio
             }
         }, {
             key: '_buildVerticalDrawMethod',
-            value: function _buildVerticalDrawMethod(_ref) {
-                var colorScale = _ref.colorScale;
-                var xScale = _ref.xScale;
-                var yScale = _ref.yScale;
-                var colorIndexScale = _ref.colorIndexScale;
-                var width = _ref.width;
-                var height = _ref.height;
-                var prettify = _ref.prettify;
+            value: function _buildVerticalDrawMethod(_ref2) {
+                var colorScale = _ref2.colorScale;
+                var xScale = _ref2.xScale;
+                var yScale = _ref2.yScale;
+                var colorIndexScale = _ref2.colorIndexScale;
+                var width = _ref2.width;
+                var height = _ref2.height;
+                var prettify = _ref2.prettify;
 
                 var _buildDrawMethod2 = this._buildDrawMethod({
                     baseScale: xScale,
@@ -1329,12 +1445,12 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                 var minBarH = 1;
 
                 return {
-                    x: function x(_ref2) {
-                        var d = _ref2.data;
+                    x: function x(_ref3) {
+                        var d = _ref3.data;
                         return calculateBarX(d);
                     },
-                    y: function y(_ref3) {
-                        var d = _ref3.data;
+                    y: function y(_ref4) {
+                        var d = _ref4.data;
 
                         var y = calculateBarY(d);
 
@@ -1347,8 +1463,8 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                             return y;
                         }
                     },
-                    height: function height(_ref4) {
-                        var d = _ref4.data;
+                    height: function height(_ref5) {
+                        var d = _ref5.data;
 
                         var h = calculateBarH(d);
                         if (prettify) {
@@ -1359,26 +1475,26 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                             return h;
                         }
                     },
-                    width: function width(_ref5) {
-                        var d = _ref5.data;
+                    width: function width(_ref6) {
+                        var d = _ref6.data;
                         return calculateBarW(d);
                     },
-                    'class': function _class(_ref6) {
-                        var d = _ref6.data;
+                    'class': function _class(_ref7) {
+                        var d = _ref7.data;
                         return 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar ' + colorScale(d[colorScale.dim]);
                     }
                 };
             }
         }, {
             key: '_buildHorizontalDrawMethod',
-            value: function _buildHorizontalDrawMethod(_ref7) {
-                var colorScale = _ref7.colorScale;
-                var xScale = _ref7.xScale;
-                var yScale = _ref7.yScale;
-                var colorIndexScale = _ref7.colorIndexScale;
-                var width = _ref7.width;
-                var height = _ref7.height;
-                var prettify = _ref7.prettify;
+            value: function _buildHorizontalDrawMethod(_ref8) {
+                var colorScale = _ref8.colorScale;
+                var xScale = _ref8.xScale;
+                var yScale = _ref8.yScale;
+                var colorIndexScale = _ref8.colorIndexScale;
+                var width = _ref8.width;
+                var height = _ref8.height;
+                var prettify = _ref8.prettify;
 
                 var _buildDrawMethod3 = this._buildDrawMethod({
                     baseScale: yScale,
@@ -1395,12 +1511,12 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                 var minBarH = 1;
 
                 return {
-                    y: function y(_ref8) {
-                        var d = _ref8.data;
+                    y: function y(_ref9) {
+                        var d = _ref9.data;
                         return calculateBarX(d);
                     },
-                    x: function x(_ref9) {
-                        var d = _ref9.data;
+                    x: function x(_ref10) {
+                        var d = _ref10.data;
 
                         var x = calculateBarY(d);
 
@@ -1426,12 +1542,12 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                             return x;
                         }
                     },
-                    height: function height(_ref10) {
-                        var d = _ref10.data;
+                    height: function height(_ref11) {
+                        var d = _ref11.data;
                         return calculateBarW(d);
                     },
-                    width: function width(_ref11) {
-                        var d = _ref11.data;
+                    width: function width(_ref12) {
+                        var d = _ref12.data;
 
                         var w = calculateBarH(d);
 
@@ -1443,19 +1559,19 @@ define('elements/element.interval',['exports', '../const', './element'], functio
                             return w;
                         }
                     },
-                    'class': function _class(_ref12) {
-                        var d = _ref12.data;
+                    'class': function _class(_ref13) {
+                        var d = _ref13.data;
                         return 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar ' + colorScale(d[colorScale.dim]);
                     }
                 };
             }
         }, {
             key: '_buildDrawMethod',
-            value: function _buildDrawMethod(_ref13) {
-                var valsScale = _ref13.valsScale;
-                var baseScale = _ref13.baseScale;
-                var colorIndexScale = _ref13.colorIndexScale;
-                var defaultBaseAbsPosition = _ref13.defaultBaseAbsPosition;
+            value: function _buildDrawMethod(_ref14) {
+                var valsScale = _ref14.valsScale;
+                var baseScale = _ref14.baseScale;
+                var colorIndexScale = _ref14.colorIndexScale;
+                var defaultBaseAbsPosition = _ref14.defaultBaseAbsPosition;
 
                 var minBarW = 5;
                 var barsGap = 1;
@@ -1513,12 +1629,12 @@ define('elements/element.interval',['exports', '../const', './element'], functio
             value: function highlight(filter) {
 
                 this.config.options.container.selectAll('.bar').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref14) {
-                        var d = _ref14.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref15) {
+                        var d = _ref15.data;
                         return filter(d) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref15) {
-                        var d = _ref15.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref16) {
+                        var d = _ref16.data;
                         return filter(d) === false;
                     }
                 });
@@ -1696,6 +1812,9 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
         }, {
             key: 'drawFrames',
             value: function drawFrames(frames) {
+
+                var self = this;
+
                 var config = this.config;
                 var options = config.options;
                 var xScale = this.xScale;
@@ -1789,6 +1908,11 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                         bars.exit().remove();
                         bars.call(updateBar);
                         bars.enter().append('rect').call(updateBar);
+
+                        self.subscribe(bars, function (_ref) {
+                            var d = _ref.data;
+                            return d;
+                        });
                     });
                 };
 
@@ -1806,12 +1930,12 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
             }
         }, {
             key: '_buildDrawModel',
-            value: function _buildDrawModel(isHorizontal, _ref) {
-                var xScale = _ref.xScale;
-                var yScale = _ref.yScale;
-                var sizeScale = _ref.sizeScale;
-                var colorScale = _ref.colorScale;
-                var prettify = _ref.prettify;
+            value: function _buildDrawModel(isHorizontal, _ref2) {
+                var xScale = _ref2.xScale;
+                var yScale = _ref2.yScale;
+                var sizeScale = _ref2.sizeScale;
+                var colorScale = _ref2.colorScale;
+                var prettify = _ref2.prettify;
 
                 // show at least 1px gap for bar to make it clickable
                 var minH = 1;
@@ -1875,24 +1999,24 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
                 }
 
                 return {
-                    x: function x(_ref2) {
-                        var d = _ref2.view;
+                    x: function x(_ref3) {
+                        var d = _ref3.view;
                         return calculateX(d);
                     },
-                    y: function y(_ref3) {
-                        var d = _ref3.view;
+                    y: function y(_ref4) {
+                        var d = _ref4.view;
                         return calculateY(d);
                     },
-                    height: function height(_ref4) {
-                        var d = _ref4.view;
+                    height: function height(_ref5) {
+                        var d = _ref5.view;
                         return calculateH(d);
                     },
-                    width: function width(_ref5) {
-                        var d = _ref5.view;
+                    width: function width(_ref6) {
+                        var d = _ref6.view;
                         return calculateW(d);
                     },
-                    'class': function _class(_ref6) {
-                        var d = _ref6.view;
+                    'class': function _class(_ref7) {
+                        var d = _ref7.view;
                         return 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar ' + colorScale(d.c);
                     }
                 };
@@ -1902,12 +2026,12 @@ define('elements/element.interval.stacked',['exports', 'underscore', './../const
             value: function highlight(filter) {
 
                 this.config.options.container.selectAll('.bar').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref7) {
-                        var d = _ref7.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref8) {
+                        var d = _ref8.data;
                         return filter(d) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref8) {
-                        var d = _ref8.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref9) {
+                        var d = _ref9.data;
                         return filter(d) === false;
                     }
                 });
@@ -3234,7 +3358,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
             x = this._p[0];
             y = this._p[1];
         } else {
-            this._p = arguments;
+            this._p = [x, y];
         }
         var target = typeof x === 'number' ? {
             left: 0 | x,
@@ -3497,7 +3621,7 @@ define('api/balloon',['exports', '../const'], function (exports, _const) {
 
     exports.Tooltip = Tooltip;
 });
-define('plugins',['exports', 'd3', './utils/utils'], function (exports, _d3, _utilsUtils) {
+define('plugins',['exports', 'd3'], function (exports, _d3) {
     /* jshint ignore:start */
     'use strict';
 
@@ -3515,68 +3639,37 @@ define('plugins',['exports', 'd3', './utils/utils'], function (exports, _d3, _ut
 
     /* jshint ignore:end */
 
-    var elementEvents = ['click', 'mouseover', 'mouseout', 'mousemove'];
-
     var Plugins = (function () {
         function Plugins(plugins, chart) {
-            var _this = this;
-
             _classCallCheck(this, Plugins);
 
             this.chart = chart;
-            this._unitMap = {};
             this._plugins = plugins.map(this.initPlugin, this);
-            chart.on('render', function (el, svg) {
-                _d32['default'].select(svg).selectAll('.i-role-datum').call(this._propagateDatumEvents(chart));
-            }, this);
-            chart.on('unitdraw', function (chart, element) {
-                _this._unitMap[element.config.options.uid] = element;
-            }, this);
         }
 
         _createClass(Plugins, [{
             key: 'initPlugin',
             value: function initPlugin(plugin) {
-                var _this2 = this;
+                var _this = this;
 
                 if (plugin.init) {
                     plugin.init(this.chart);
                 }
+
                 // jscs:disable disallowEmptyBlocks
-                var empty = function empty() {};
+                var empty = function empty() {
+                    // do nothing
+                };
                 // jscs:enable disallowEmptyBlocks
+
                 this.chart.on('destroy', plugin.destroy && plugin.destroy.bind(plugin) || empty);
+
                 Object.keys(plugin).forEach(function (name) {
                     if (name.indexOf('on') === 0) {
                         var event = name.substr(2);
-                        _this2.chart.on(event.toLowerCase(), plugin[name].bind(plugin));
+                        _this.chart.on(event.toLowerCase(), plugin[name].bind(plugin));
                     }
                 });
-            }
-        }, {
-            key: '_getUnitByHash',
-            value: function _getUnitByHash(id) {
-                return this._unitMap[id];
-            }
-        }, {
-            key: '_propagateDatumEvents',
-            value: function _propagateDatumEvents(chart) {
-                var self = this;
-                return function () {
-                    elementEvents.forEach(function (name) {
-                        this.on(name, function (d) {
-                            var cellData = _d32['default'].select(this.parentNode.parentNode).datum();
-                            var unit = self._getUnitByHash(d.uid);
-                            var data = d.data;
-                            chart.fire('element' + name, {
-                                elementData: data,
-                                element: this,
-                                cellData: cellData,
-                                unit: unit
-                            });
-                        });
-                    }, this);
-                };
             }
         }]);
 
@@ -5666,6 +5759,15 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 this._liveSpec.onUnitDraw = function (unitNode) {
                     _this._nodes.push(unitNode);
                     _this.fire('unitdraw', unitNode);
+                    ['click', 'mouseover', 'mouseout'].forEach(function (eventName) {
+                        return unitNode.on(eventName, function (sender, e) {
+                            _this.fire('element' + eventName, {
+                                element: sender,
+                                data: e.data,
+                                event: e.event
+                            });
+                        });
+                    });
                 };
 
                 this._liveSpec.onUnitsStructureExpanded = function (specRef) {
@@ -8589,7 +8691,6 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
         }, {
             key: 'drawFrames',
             value: function drawFrames(frames) {
-                var _this2 = this;
 
                 var node = this.config;
                 var options = this.config.options;
@@ -8643,13 +8744,7 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
                 part.call(updateFrame);
                 part.enter().append('g').attr('class', 'lines-frame').call(updateFrame);
 
-                options.container.selectAll('.lines-frame .foreground').on('mouseover', function (d) {
-                    return _this2.fire('mouseover', { data: d, event: d3.event });
-                }).on('mouseout', function (d) {
-                    return _this2.fire('mouseout', { data: d, event: d3.event });
-                }).on('click', function (d) {
-                    return _this2.fire('click', { data: d, event: d3.event });
-                });
+                this.subscribe(options.container.selectAll('.lines-frame .foreground'));
             }
         }, {
             key: 'highlight',

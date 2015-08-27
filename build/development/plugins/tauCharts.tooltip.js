@@ -10,405 +10,352 @@
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
-    /** @class Tooltip
-     * @extends Plugin */
-    /* Usage
-     .plugins(tau.plugins.tooltip('effort', 'priority'))
-     accepts a list of data fields names as properties
-     */
+
     var _ = tauCharts.api._;
-    var d3 = tauCharts.api.d3;
-    var dim = function (x0, x1, y0, y1) {
-        return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
-    };
 
-    var dfs = function (node, predicate) {
-        if (predicate(node)) {
-            return node;
-        }
-        var i, children = node.units || [], child, found;
-        for (i = 0; i < children.length; i += 1) {
-            child = children[i];
-            found = dfs(child, predicate);
-            if (found) {
-                return found;
-            }
-        }
-    };
+    function Tooltip(xSettings) {
 
-    function tooltip(settings) {
-        settings = settings || {};
-        return {
+        var settings = _.defaults(
+            xSettings || {},
+            {
+                // add default settings here
+                fields: null
+            });
+
+        function getOffsetRect(elem) {
+
+            var box = elem.getBoundingClientRect();
+
+            var body = document.body;
+            var docElem = document.documentElement;
+
+            var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+            var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+
+            var clientTop = docElem.clientTop || body.clientTop || 0;
+            var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+
+            var top  = box.top +  scrollTop - clientTop;
+            var left = box.left + scrollLeft - clientLeft;
+
+            return {
+                top: Math.round(top),
+                left: Math.round(left)
+            };
+        }
+
+        var plugin = {
+
+            init: function (chart) {
+
+                this._currentData = null;
+                this._currentUnit = null;
+                this._chart = chart;
+
+                this._metaInfo = this._getFormatters();
+
+                this._tooltip = this._chart.addBalloon(
+                    {
+                        spacing: 3,
+                        auto: true,
+                        effectClass: 'fade'
+                    });
+
+                this._tooltip
+                    .content(this.template);
+
+                this._tooltip
+                    .getElement()
+                    .addEventListener('click', function (e) {
+
+                        var target = e.target;
+
+                        while (target !== e.currentTarget && target !== null) {
+                            if (target.classList.contains('i-role-exclude')) {
+                                self._exclude();
+                            }
+                            target = target.parentNode;
+                        }
+
+                        self._tooltip.hide();
+
+                    }, false);
+
+                var self = this;
+                var timeoutHide;
+                this.showTooltip = function (data, pos) {
+
+                    clearTimeout(timeoutHide);
+
+                    self._currentData = data;
+
+                    var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
+                    if (content[0]) {
+
+                        var fields = (
+                            settings.fields
+                            ||
+                            (_.isFunction(settings.getFields) && settings.getFields(self._chart))
+                            ||
+                            Object.keys(data)
+                        );
+
+                        content[0].innerHTML = fields
+                            .filter(function (k) {
+                                return self._metaInfo[k];
+                            })
+                            .map(function (k) {
+                                return self.itemTemplate({
+                                    label: self._metaInfo[k].label,
+                                    value: self._metaInfo[k].format(data[k])
+                                });
+                            })
+                            .join('');
+                    }
+
+                    self._tooltip
+                        .show(pos.x, pos.y)
+                        .updateSize();
+                };
+
+                this.hideTooltip = function (e) {
+                    timeoutHide = setTimeout(
+                        function () {
+                            self._tooltip.hide();
+                            self._removeFocus();
+                        },
+                        300);
+                };
+
+                this._tooltip
+                    .getElement()
+                    .addEventListener('mouseover', function (e) {
+                        clearTimeout(timeoutHide);
+                        self._accentFocus();
+                    }, false);
+
+                this._tooltip
+                    .getElement()
+                    .addEventListener('mouseleave', function (e) {
+                        self._tooltip.hide();
+                        self._removeFocus();
+                    }, false);
+            },
+
+            destroy: function () {
+                this._removeFocus();
+                this._tooltip.destroy();
+            },
+
+            _appendFocus: function (g, x, y) {
+                this.circle = d3
+                    .select(g)
+                    .append('circle')
+                    .attr({
+                        r: 0,
+                        cx: x,
+                        cy: y
+                    });
+
+                return this.circle;
+            },
+
+            _removeFocus: function () {
+                if (this.circle) {
+                    this.circle.remove();
+                }
+
+                if (this._currentUnit) {
+                    this._currentUnit.fire('highlight-data-points', function (row) {
+                        return false;
+                    });
+                }
+
+                return this;
+            },
+
+            _accentFocus: function () {
+                var self = this;
+                if (self._currentUnit && self._currentData) {
+                    self._currentUnit.fire('highlight-data-points', function (row) {
+                        return row === self._currentData;
+                    });
+                }
+
+                return this;
+            },
+
+            _exclude: function () {
+                this._chart
+                    .addFilter({
+                        tag: 'exclude',
+                        predicate: (function (element) {
+                            return function (row) {
+                                return JSON.stringify(row) !== JSON.stringify(element);
+                            };
+                        }(this._currentData))
+                    });
+                this._chart.refresh();
+            },
+
+            onRender: function () {
+                this._subscribeToHover();
+            },
+
             template: [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
                 '<div class="i-role-exclude graphical-report__tooltip__exclude">',
                 '<div class="graphical-report__tooltip__exclude__wrap">',
-                '<span class="tau-icon-close-gray"></span>Exclude',
+                '<span class="tau-icon-close-gray"></span>',
+                'Exclude',
                 '</div>',
                 '</div>'
             ].join(''),
-            itemTemplate: [
+
+            itemTemplate: _.template([
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
                 '</div>'
-            ].join(''),
-            onExcludeData: function () {
+            ].join('')),
 
-            },
-            _drawPoint: function (container, x, y, color) {
-                if (this.circle) {
-                    this.circle.remove();
-                }
-                this.circle = container
-                    .append('circle')
-                    .attr('cx', x)
-                    .attr('cy', y)
-                    .attr('class', color)
-                    .attr('r', 4);
-                this.circle.node().addEventListener('mouseover', function () {
-                    clearTimeout(this._timeoutHideId);
-                }.bind(this), false);
-                this.circle.node().addEventListener('mouseleave', function () {
-                    this._hide();
-                }.bind(this), false);
-            },
-            formatters: {},
-            labels: {},
+            _subscribeToHover: function () {
+                var self = this;
 
-            init: function (chart) {
-                this._chart = chart;
-                this._dataFields = settings.fields;
-                this._getDataFields = settings.getFields;
+                this._chart
+                    .select(function (node) {
+                        var guide = node.config.guide || {};
+                        return !guide.__plugins_disable_tooltip;
+                    })
+                    .forEach(function (node) {
 
-                _.extend(this, _.omit(settings, 'fields', 'getFields'));
-                this._timeoutHideId = null;
-                this._dataWithCoords = {};
-                this._unitMeta = {};
-                this._templateItem = _.template(this.itemTemplate);
-                this._tooltip = chart.addBalloon({spacing: 3, auto: true, effectClass: 'fade'});
-                this._elementTooltip = this._tooltip.getElement();
+                        node.on('mouseout', function (sender, e) {
+                            self.hideTooltip(e);
+                        });
 
-                var spec = chart.getConfig(); // .spec;
+                        node.on('mouseover', function (sender, e) {
 
-                var dimensionGuides = this._findDimensionGuides(spec);
+                            var xScale = sender.getScale('x');
+                            var yScale = sender.getScale('y');
 
-                var lastGuides = _.reduce(dimensionGuides, function (memo, guides, key) {
-                    memo[key] = _.last(guides);
-                    return memo;
-                }, {});
-                var formatters = this._generateDefaultFormatters(lastGuides, spec.scales);
-                _.extend(this.formatters, formatters);
+                            var d = e.data;
+                            var xLocal = xScale(d[xScale.dim]);
+                            var yLocal = yScale(d[yScale.dim]);
 
-                var labels = this._generateDefaultLabels(lastGuides);
-                _.extend(this.labels, labels);
+                            var g = e.event.target.parentNode;
+                            var c = self
+                                ._removeFocus()
+                                ._appendFocus(g, xLocal, yLocal);
 
-                var elementTooltip = this._elementTooltip;
-                elementTooltip.addEventListener('mouseover', function () {
-                    clearTimeout(this._timeoutHideId);
-                }.bind(this), false);
-                elementTooltip.addEventListener('mouseleave', function () {
-                    this._hide();
-                }.bind(this), false);
-                elementTooltip.addEventListener('click', function (e) {
-                    var target = e.target;
-                    while (target !== e.currentTarget && target !== null) {
-                        if (target.classList.contains('i-role-exclude')) {
-                            this._exclude();
-                            this._hide();
-                        }
-                        target = target.parentNode;
-                    }
-                }.bind(this), false);
-                elementTooltip.insertAdjacentHTML('afterbegin', this.template);
-                this.afterInit(this._elementTooltip);
+                            var p = getOffsetRect(c.node());
+
+                            self._currentUnit = sender;
+
+                            self.showTooltip(d, {x: p.left, y: p.top});
+                        });
+                    });
             },
 
-            afterInit: function (elementTooltip) {
+            _getFormatters: function () {
+                var spec = this._chart.getSpec();
+                var specScales = spec.scales;
 
-            },
-
-            onUnitDraw: function (chart, unitMeta) {
-                if (tauCharts.api.isChartElement(unitMeta)) {
-                    var key = this._generateKey(unitMeta.config.options.uid);
-                    this._unitMeta[key] = unitMeta;
-                    var values = unitMeta.config.frames.reduce(function (data, item) {
-                        return data.concat(item.part());
-                    }, []);
-                    this._dataWithCoords[key] = values.map(function (item) {
-                        return {
-                            x: unitMeta.xScale(item[unitMeta.xScale.dim]),
-                            y: unitMeta.yScale(item[unitMeta.yScale.dim]),
-                            item: item
-                        };
-                    }, this);
-
-                }
-            },
-
-            renderItem: function (label, formattedValue, field, rawValue) {
-                return this._templateItem({
-                    label: label,
-                    value: formattedValue
-                });
-            },
-
-            render: function (data, fields) {
-                fields = _.unique(fields);
-                return fields.map(function (field) {
-                    var rawValue = data[field];
-                    var formattedValue = this._getFormatter(field)(rawValue);
-                    var label = this._getLabel(field);
-
-                    return this.renderItem(label, formattedValue, field, rawValue);
-                }, this).join('');
-            },
-            afterRender: function (toolteipElement) {
-
-            },
-
-            onRender: function (chart) {
-                if (_.isFunction(this._getDataFields)) {
-                    this._dataFields = this._getDataFields(chart);
-                }
-                this._hide();
-            },
-
-            _getFormatter: function (field) {
-                return this.formatters[field] || _.identity;
-            },
-            _getLabel: function (field) {
-                return this.labels[field] || field;
-            },
-
-            _generateDefaultLabels: function (lastGuides) {
-                return _.reduce(lastGuides, function (memo, lastGuide, key) {
-                    if (lastGuide.label) {
-                        memo[key] = lastGuide.label;
-                        if (lastGuide.label.hasOwnProperty('text')) {
-                            memo[key] = lastGuide.label.text;
-                        }
-                    } else {
-                        memo[key] = key;
-                    }
-                    return memo;
-                }, {});
-            },
-
-            _generateDefaultFormatters: function (lastGuides, dimensions) {
-                return _.reduce(lastGuides, function (memo, lastGuide, key) {
-                    var getValue = function (rawValue) {
-                        if (rawValue == null) {
-                            return null;
-                        } else {
-                            var format = lastGuide.tickPeriod || lastGuide.tickFormat;
-                            if (format) {
-                                // very special case for dates
-                                var xFormat = (format === 'x-time-auto') ? 'day' : format;
-                                return tauCharts.api.tickFormat.get(xFormat)(rawValue);
-                            } else if (lastGuide.tickLabel) {
-                                return rawValue[lastGuide.tickLabel];
-                            } else {
-                                return rawValue;
-                            }
-                        }
-                    };
-
-                    memo[key] = function (rawValue) {
-                        var value = getValue(rawValue);
-                        return value == null ? 'No ' + lastGuide.label : value;
-                    };
-
-                    return memo;
-                }, {});
-            },
-
-            _findDimensionGuides: function (spec) {
-                var dimensionGuideMap = {};
-                var scales = spec.scales;
-                var collect = function (field, unit) {
-                    var property = unit[field];
-                    if (property) {
-                        var guide = (unit.guide || {})[field];
-                        var dim = scales[property].dim;
-                        if (dim && guide) {
-                            var name = guide.tickLabel ? dim.replace(new RegExp('\\.' + guide.tickLabel), '') : dim;
-                            if (!dimensionGuideMap[name]) {
-                                dimensionGuideMap[name] = [];
-                            }
-
-                            dimensionGuideMap[name].push(guide);
-                        }
-                    }
+                var isEmptyScale = function (key) {
+                    return !specScales[key].dim;
                 };
 
-                dfs(spec.unit, function (unit) {
-                    collect('x', unit);
-                    collect('y', unit);
-                    collect('color', unit);
-                    collect('size', unit);
+                var fillSlot = function (memoRef, config, key) {
+                    var GUIDE = config.guide || {};
+                    var scale = specScales[config[key]];
+                    var guide = GUIDE[key] || {};
+                    memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[], tickLabel:[]};
 
-                    return false;
-                });
+                    var label = guide.label;
+                    memoRef[scale.dim].label.push(_.isString(label) ? label : ((guide.label || {}).text));
 
-                return dimensionGuideMap;
+                    var format = guide.tickFormat || guide.tickPeriod;
+                    memoRef[scale.dim].format.push(format);
 
-            },
+                    memoRef[scale.dim].nullAlias.push(guide.tickFormatNullAlias);
 
-            _exclude: function () {
-                this._chart.addFilter({
-                    tag: 'exclude',
-                    predicate: (function (element) {
-                        return function (item) {
-                            return JSON.stringify(item) !== JSON.stringify(element);
-                        };
-                    }(this._currentElement))
-                });
-                this._chart.refresh();
-                this.onExcludeData(this._currentElement);
-            },
-            _calculateLength: function (x1, y1, x2, y2) {
-                return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-            },
-            _calculateLengthToLine: function (x0, y0, x1, y1, x2, y2) {
-                var a1 = {x: (x1 - x0), y: (y1 - y0)};
-                var b1 = {x: (x2 - x0), y: (y2 - y0)};
-                var a1b1 = a1.x * b1.x + a1.y * b1.y;
-                if (a1b1 < 0) {
-                    return dim(x0, x2, y0, y2);
-                }
+                    // TODO: workaround for #complex-objects
+                    memoRef[scale.dim].tickLabel.push(guide.tickLabel);
+                };
 
-                var a2 = {x: (x0 - x1), y: (y0 - y1)};
-                var b2 = {x: (x2 - x1), y: (y2 - y1)};
-                var a2b2 = a2.x * b2.x + a2.y * b2.y;
-                if (a2b2 < 0) {
-                    return dim(x1, x2, y1, y2);
-                }
+                var configs = [];
+                this._chart
+                    .traverseSpec(spec, function (node) {
+                        configs.push(node);
+                    });
 
-                return Math.abs(((x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)) / dim(x0, x1, y0, y1));
-            },
-            _generateKey: function (data) {
-                return JSON.stringify(data);
-            },
-            _getFields: function (unit) {
-                if (this._dataFields) {
-                    return this._dataFields;
-                }
+                var summary = configs.reduce(function (memo, config) {
 
-                var fields = [unit.size && unit.size.dim, unit.color && unit.color.dim];
-                var x = [];
-                var y = [];
-                while (unit = unit.parentUnit) {
-                    x.push(unit.xScale.dim);
-                    y.push(unit.yScale.dim);
-                }
-
-                return _.compact(fields.concat(y, x).reverse());
-
-            },
-            _handleLineElement: function (data, key, mouseCoord) {
-                var elementData = data.elementData;
-                var dataWithCoord = this._dataWithCoords[key];
-                var filteredData = dataWithCoord.filter(function (value) {
-                    return _.contains(elementData.data, value.item);
-                });
-                if (filteredData.length === 1) {
-                    return filteredData[0].item;
-                }
-                var nearLine = _.reduce(filteredData, function (memo, point, index, data) {
-                    var secondPoint;
-                    if ((index + 1) === data.length) {
-                        var temp = point;
-                        point = data[index - 1];
-                        secondPoint = temp;
-                    } else {
-                        secondPoint = data[index + 1];
+                    if (config.type === 'COORDS.RECT' && config.hasOwnProperty('x') && !isEmptyScale(config.x)) {
+                        fillSlot(memo, config, 'x');
                     }
-                    var h = this._calculateLengthToLine(
-                        point.x,
-                        point.y,
-                        secondPoint.x,
-                        secondPoint.y,
-                        mouseCoord[0],
-                        mouseCoord[1]
-                    );
-                    if (h < memo.h) {
-                        memo.h = h;
-                        memo.points = {
-                            point1: point,
-                            point2: secondPoint
-                        };
+
+                    if (config.type === 'COORDS.RECT' && config.hasOwnProperty('y') && !isEmptyScale(config.y)) {
+                        fillSlot(memo, config, 'y');
                     }
+
+                    if (config.hasOwnProperty('color') && !isEmptyScale(config.color)) {
+                        fillSlot(memo, config, 'color');
+                    }
+
+                    if (config.hasOwnProperty('size') && !isEmptyScale(config.size)) {
+                        fillSlot(memo, config, 'size');
+                    }
+
                     return memo;
-                }.bind(this), {h: Infinity, points: {}});
 
-                var itemWithCoord = _.min(nearLine.points, function (a) {
-                    return this._calculateLength(a.x, a.y, mouseCoord[0], mouseCoord[1]);
-                }, this);
-                this._drawPoint(
-                    d3.select(data.element.parentNode),
-                    itemWithCoord.x,
-                    itemWithCoord.y,
-                    this._unitMeta[key].color(data.elementData.tags[this._unitMeta[key].color.dim])
-                );
-                return itemWithCoord.item;
-            },
-            _onElementMouseOver: function (chart, data, mouseCoord, placeCoord) {
-                clearTimeout(this._timeoutHideId);
-                var key = this._generateKey(data.unit && data.unit.config.options.uid);
-                var item = data.elementData;
-                if (tauCharts.api.isLineElement(data.unit)) {
-                    item = this._handleLineElement(data, key, mouseCoord);
-                }
-                if (this._currentElement === item) {
-                    return;
-                }
-                var content = this._elementTooltip.querySelectorAll('.i-role-content');
-                if (content[0]) {
-                    var fields = this._getFields(this._unitMeta[key]);
-                    content[0].innerHTML = this.render(item, fields);
-                } else {
-                    console.log('template should contain i-role-content class');
-                }
+                }, {});
 
-                this._show(placeCoord);
-                this._currentElement = item;
-            },
-            onElementMouseOver: function (chart, data) {
-                var placeCoord = d3.mouse(document.body);
-                var coord = d3.mouse(data.element);
-                clearTimeout(this._timeoutShowId);
-                this._timeoutShowId = _.delay(this._onElementMouseOver.bind(this), 200, chart, data, coord, placeCoord);
-            },
-            onElementMouseOut: function (mouseСoord, placeCoord) {
-                this._hide();
-            },
-            _show: function (placeCoord) {
-                this._tooltip.show(placeCoord[0], placeCoord[1]).updateSize();
-            },
-            _hide: function () {
-                clearTimeout(this._timeoutShowId);
-                this._timeoutHideId = setTimeout(function () {
-                    this._currentElement = null;
-                    this._tooltip.hide();
-                    if (this.circle) {
-                        this.circle.remove();
-                    }
-                }.bind(this), 300);
-            },
-            _destroyTooltip: function () {
-                if (this.circle) {
-                    this.circle.remove();
-                }
-                this._tooltip.destroy();
-            },
-            destroy: function () {
-                this._destroyTooltip();
+                var choiceRule = function (arr, defaultValue) {
+
+                    var val = _(arr)
+                        .chain()
+                        .filter(_.identity)
+                        .uniq()
+                        .first()
+                        .value();
+
+                    return val || defaultValue;
+                };
+
+                return Object
+                    .keys(summary)
+                    .reduce(function (memo, k) {
+                        memo[k].label = choiceRule(memo[k].label, k);
+                        memo[k].format = choiceRule(memo[k].format, null);
+                        memo[k].nullAlias = choiceRule(memo[k].nullAlias, ('No ' + memo[k].label));
+                        memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
+
+                        // very special case for dates
+                        var format = (memo[k].format === 'x-time-auto') ? 'day' : memo[k].format;
+                        var fnForm = tauCharts.api.tickFormat.get(format, memo[k].nullAlias);
+
+                        memo[k].format = fnForm;
+
+                        // TODO: workaround for #complex-objects
+                        if (memo[k].tickLabel) {
+                            var kc = k.replace(('.' + memo[k].tickLabel), '');
+                            memo[kc] = memo[k];
+                            memo[kc].format = function (obj) {
+                                return fnForm(obj && obj[memo[kc].tickLabel]);
+                            };
+
+                            delete memo[k];
+                        }
+
+                        return memo;
+                    }, summary);
             }
         };
 
+        return plugin;
     }
 
-    tauCharts.api.plugins.add('tooltip', tooltip);
-    return tooltip;
+    tauCharts.api.plugins.add('tooltip', Tooltip);
+
+    return Tooltip;
 });
