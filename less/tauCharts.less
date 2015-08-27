@@ -4,7 +4,7 @@
 @link-color: #3962FF;
 @link-hover-color: #E17152;
 
-@axis-color: #BDC3CD;
+//@axis-color: #BDC3CD;
 
 /* region Generate .color@{n}-@{i}  function  */
 
@@ -28,9 +28,9 @@
 
 /* endregion */
 
-/* region Generate .line-params-@{n}  function  */
+/* region Generate .line-params-@{n}  function  */ 
 
-.generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) {
+.generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) { 
 
     .graphical-report__line-@{params}-@{i} {
         stroke-@{params}: @default-size;
@@ -46,6 +46,7 @@
 .generate-line-params(@params: opacity; @default-size: 1; @step: -0.05; @n: 5);
 
 /* endregion */
+
 
 /* endregion */
 
@@ -94,10 +95,10 @@
         .place-label-states {
             text-anchor: middle;
             font-size: 10px;
-            fill: rgba(51, 36, 0, 0.65);
-            letter-spacing: 0.5px;
+            fill: fade(@font-color, 50%);
+            //letter-spacing: 0.5px;
             line-height: 10px;
-            text-transform: uppercase;
+            //text-transform: uppercase;
         }
 
         .map-contour-level path {
@@ -105,25 +106,36 @@
             stroke-linejoin: 'round';
         }
         .map-contour-level-0 path {
-            stroke: #fbfbfb;
+            stroke: @map-contour-stroke-color0;
         }
         .map-contour-level-1 path {
-            stroke: #fffefe;
+            stroke: @map-contour-stroke-color1;
         }
         .map-contour-level-2 path {
-            stroke: #fdfdff;
+            stroke: @map-contour-stroke-color2;
         }
         .map-contour-level-3 path {
-            stroke: #fdfdfd;
+            stroke: @map-contour-stroke-color3;
         }
         .map-contour-level-4 path {
-            stroke: #ffffff;
+            stroke: @map-contour-stroke-color4;
         }
+
 
         .map-contour-highlighted,
         .map-contour:hover {
-            fill: rgba(255,191,0,0.50);
+            fill: fade(@map-contour-stroke-color-highlighted, 15%);
+        
+            path {
+                stroke: @map-contour-stroke-color-highlighted;
+            }
+
+            text {
+                fill: @map-contour-stroke-color-highlighted;
+            }
         }
+
+
 
         .axis {
             line,
@@ -181,7 +193,7 @@
             }
             line {
                 fill: none;
-                stroke: fade(@axis-color, 50%);
+                stroke: @axis-color;
                 stroke-width: 1px;
                 shape-rendering: crispEdges;
             }
@@ -228,7 +240,7 @@
             shape-rendering: crispEdges;
         }
         .background {
-            stroke: #eee;
+            stroke: lighten(@bg-color, 15%);
         }
     }
 
