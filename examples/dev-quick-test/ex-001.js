@@ -36,6 +36,8 @@ window.samples.push({
     },
 
     plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')(),
         tauCharts.api.plugins.get('settings')()
     ]
 

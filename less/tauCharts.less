@@ -255,6 +255,21 @@
         //fill: steelblue;
     }
 
+    /*  Bar  */
+    &__bar-stacked {
+        shape-rendering: crispEdges;
+        transition: opacity 0.2s ease;
+        stroke-opacity: 0.5;
+        stroke-width: 1;
+        stroke: #fff;
+    }
+
+    /* TODO: fix to avoid conflict on "stroke" with color brewer */
+    /* TODO: remove this when CSS for color brewer is fixed */
+    .graphical-report__svg &__bar-stacked {
+        stroke: #fff;
+    }
+
     /*  PLUGINS  */
 
     /*  Highlighter  */
@@ -276,12 +291,14 @@
         stroke-opacity: 0.2;
     }
 
-    &__bar&__highlighted {
+    &__bar&__highlighted,
+    &__bar-stacked&__highlighted {
         stroke-opacity: 1;
         opacity: 1;
     }
 
-    &__bar&__dimmed{
+    &__bar&__dimmed,
+    &__bar-stacked&__dimmed {
         opacity: 0.2;
     }
 }

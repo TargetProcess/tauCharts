@@ -17,15 +17,15 @@ export class Element extends Emitter {
         return this._elementScalesHub[paramId] || null;
     }
 
-    subscribe(sel, interceptor = (x => x)) {
+    subscribe(sel, dataInterceptor = (x => x), eventInterceptor = (x => x)) {
         var self = this;
         ['mouseover', 'mouseout', 'click'].forEach((eventName) => {
             sel.on(eventName, function (d) {
                 self.fire(
                     eventName,
                     {
-                        data: interceptor.call(this, d),
-                        event: d3.event
+                        data: dataInterceptor.call(this, d),
+                        event: eventInterceptor.call(this, d3.event, d)
                     });
             });
         });

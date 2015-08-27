@@ -182,12 +182,7 @@ export class StackedInterval extends Element {
             });
 
         var updateBar = function () {
-            return this
-                .attr(d3Attrs)
-                // TODO: move to CSS styles
-                .style('stroke-width', 1)
-                .style('stroke', '#fff')
-                .style('stroke-opacity', '0.5');
+            return this.attr(d3Attrs);
         };
 
         var uid = options.uid;
@@ -199,7 +194,7 @@ export class StackedInterval extends Element {
             this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`)
                 .call(function () {
                     var bars = this
-                        .selectAll('.bar')
+                        .selectAll('.bar-stack')
                         .data((frame) => {
                             // var totals = {}; // if 1-only frame support is required
                             return frame.data.map((d) => ({uid: uid, data: d, view: viewMapper(totals, d)}));
@@ -211,7 +206,13 @@ export class StackedInterval extends Element {
                         .append('rect')
                         .call(updateBar);
 
-                    self.subscribe(bars, ({data:d}) => d);
+                    self.subscribe(
+                        bars,
+                        (({data:d}) => d),
+                        ((d3Event, {view:v}) => {
+                            d3Event.chartElementViewModel = v;
+                            return d3Event;
+                        }));
                 });
         };
 
@@ -294,7 +295,7 @@ export class StackedInterval extends Element {
             y: (({view:d}) => calculateY(d)),
             height: (({view:d}) => calculateH(d)),
             width: (({view:d}) => calculateW(d)),
-            class: (({view:d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d.c)}`)
+            class: (({view:d}) => `i-role-element i-role-datum bar-stack ${CSS_PREFIX}bar-stacked ${colorScale(d.c)}`)
         };
     }
 
@@ -303,7 +304,7 @@ export class StackedInterval extends Element {
         this.config
             .options
             .container
-            .selectAll('.bar')
+            .selectAll('.bar-stack')
             .classed({
                 'graphical-report__highlighted': (({data: d}) => filter(d) === true),
                 'graphical-report__dimmed': (({data: d}) => filter(d) === false)
