@@ -1,7 +1,7 @@
 var generateThemes = function () {
     var themes = ['default', 'dark'];
     var generatePath = function (key) {
-        return '.' + key;
+        return (key === 'default') ? '' : ('.' + key);
     };
     var minCss = [
         {
