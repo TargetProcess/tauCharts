@@ -115,15 +115,14 @@ export class Line extends Element {
             });
 
             if (guide.showAnchors && !this.empty()) {
-                var stroke = this.style('stroke');
+
                 var anchUpdate = function () {
                     return this
                         .attr({
                             r: guide.anchorSize,
                             cx: (d) => xScale(d[xScale.dim]),
                             cy: (d) => yScale(d[yScale.dim]),
-                            class: 'i-data-anchor',
-                            stroke: stroke
+                            class: (d) => (`i-data-anchor ${colorScale(d[colorScale.dim])}`)
                         });
                 };
 
