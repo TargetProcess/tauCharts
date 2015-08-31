@@ -29,8 +29,8 @@
     <link href="../css/tauCharts.css" rel="stylesheet"/>
     <!--<link href="../css/layout.css" rel="stylesheet"/>-->
     <!--<link href="../css/base.css" rel="stylesheet"/>-->
+    <!--<link href="../css/tauCharts.css" rel="stylesheet"/>-->
     <link href="../css/legend.css" rel="stylesheet"/>
-    <!--<link href="../css/tauCharts.css" rel="stylesheet"/>--> 
     <link href="../css/tooltip.css" rel="stylesheet"/>
     <link href="../css/trendline.css" rel="stylesheet"/>
     <style>
@@ -101,6 +101,7 @@
     <script src="dev-quick-test/ex-026.js"></script>
     <script src="dev-quick-test/ex-027.js"></script>
     <script src="dev-quick-test/ex-028.js"></script>
+    <script src="dev-quick-test/ex-029.js"></script>
 
 </head>
 <body>
@@ -110,7 +111,7 @@
         $('body').append('<div class="cc" id="div' + i + '"></div>');
 
         cfg.settings = cfg.settings || {};
-        cfg.settings.fitModel = 'normal'; // 'entire-view'
+        cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
         var chart = (cfg.hasOwnProperty('type')) ?
                 (new tauCharts.Chart(cfg)) :
