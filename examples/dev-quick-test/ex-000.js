@@ -1,5 +1,44 @@
 window.samples.push({
 
+        type: 'area',
+        x: ['x'],
+        y: ['y'],
+        color: 'type',
+
+        guide: [
+            // {},
+            {
+                x: {autoScale: false},
+                y: {autoScale: false, min: -1.5, max: 1.5},
+                interpolate: 'basis'
+            }
+        ],
+
+        data: _.times(100, _.identity).reduce(function (memo, i) {
+            var x = i * (Math.PI / 100);
+            return memo.concat([
+                {
+                    x: x,
+                    y: Math.sin(x),
+                    type: 'sin'
+                },
+                {
+                    x: x,
+                    y: Math.cos(x),
+                    type: 'cos'
+                }
+            ]);
+        }, []),
+
+        plugins: [
+            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('tooltip')(),
+            tauCharts.api.plugins.get('trendline')({showPanel:false})
+        ]
+});
+
+window.samples.push({
+
     sources: {
         '?': {
             dims: {},

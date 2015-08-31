@@ -2,7 +2,7 @@ import {utils} from '../utils/utils';
 import {DataProcessor} from '../data-processor';
 import {normalizeConfig, transformConfig} from './converter-helpers';
 
-var ChartLine = (rawConfig) => {
+var ChartLine = (rawConfig, useElement = 'ELEMENT.LINE') => {
     var config = normalizeConfig(rawConfig);
 
     var data = config.data;
@@ -82,7 +82,7 @@ var ChartLine = (rawConfig) => {
         config.data = _(data).sortBy(propSortBy);
     }
 
-    return transformConfig('ELEMENT.LINE', config);
+    return transformConfig(useElement, config);
 };
 
 export {ChartLine};

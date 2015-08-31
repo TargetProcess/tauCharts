@@ -12,6 +12,7 @@ import {Cartesian}  from './elements/coords.cartesian';
 import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
+import {Area}       from './elements/element.area';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
@@ -153,6 +154,7 @@ api.unitsRegistry
 
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
+    .reg('ELEMENT.AREA', Area)
     .reg('ELEMENT.INTERVAL', Interval)
     .reg('ELEMENT.INTERVAL.STACKED', StackedInterval)
 
@@ -181,6 +183,7 @@ var commonRules = [
 api.chartTypesRegistry = chartTypesRegistry
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', ChartLine, commonRules)
+    .add('area', (cfg) => ChartLine(cfg, 'ELEMENT.AREA'), commonRules)
     .add('bar', (cfg) => ChartInterval(_.defaults({flip: false}, cfg)), commonRules)
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
