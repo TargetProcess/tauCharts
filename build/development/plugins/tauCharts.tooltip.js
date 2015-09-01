@@ -19,7 +19,8 @@
             xSettings || {},
             {
                 // add default settings here
-                fields: null
+                fields: null,
+                dockToData: false
             });
 
         function getOffsetRect(elem) {
@@ -51,6 +52,9 @@
                 this._currentData = null;
                 this._currentUnit = null;
                 this._chart = chart;
+
+                // TODO: for compatibility with old TargetProcess implementation
+                _.extend(this, _.omit(settings, 'fields', 'getFields'));
 
                 this._metaInfo = this._getFormatters();
 
@@ -140,11 +144,17 @@
                         self._tooltip.hide();
                         self._removeFocus();
                     }, false);
+
+                this.afterInit(this._tooltip.getElement());
             },
 
             destroy: function () {
                 this._removeFocus();
                 this._tooltip.destroy();
+            },
+
+            afterInit: function (tooltipNode) {
+                // for override
             },
 
             _appendFocus: function (g, x, y) {
@@ -234,35 +244,51 @@
                         });
 
                         node.on('mouseover', function (sender, e) {
-
                             var data = e.data;
-                            var xLocal;
-                            var yLocal;
-
-                            var xScale = sender.getScale('x');
-                            var yScale = sender.getScale('y');
-
-                            if (sender.config.type === 'ELEMENT.INTERVAL.STACKED') {
-                                var view = e.event.chartElementViewModel;
-                                xLocal = xScale(view.x);
-                                yLocal = yScale(view.y);
-                            } else {
-                                xLocal = xScale(data[xScale.dim]);
-                                yLocal = yScale(data[yScale.dim]);
-                            }
-
-                            var g = e.event.target.parentNode;
-                            var c = self
-                                ._removeFocus()
-                                ._appendFocus(g, xLocal, yLocal);
-
-                            var p = getOffsetRect(c.node());
+                            var coords = (settings.dockToData ?
+                                self._getNearestDataCoordinates(sender, e) :
+                                self._getMouseCoordinates(sender, e));
 
                             self._currentUnit = sender;
-
-                            self.showTooltip(data, {x: p.left, y: p.top});
+                            self.showTooltip(data, {x: coords.left, y: coords.top});
                         });
                     });
+            },
+
+            _getNearestDataCoordinates: function (sender, e) {
+
+                var data = e.data;
+                var xLocal;
+                var yLocal;
+
+                var xScale = sender.getScale('x');
+                var yScale = sender.getScale('y');
+
+                if (sender.config.type === 'ELEMENT.INTERVAL.STACKED') {
+                    var view = e.event.chartElementViewModel;
+                    xLocal = xScale(view.x);
+                    yLocal = yScale(view.y);
+                } else {
+                    xLocal = xScale(data[xScale.dim]);
+                    yLocal = yScale(data[yScale.dim]);
+                }
+
+                var g = e.event.target.parentNode;
+                var c = this
+                    ._removeFocus()
+                    ._appendFocus(g, xLocal, yLocal);
+
+                return getOffsetRect(c.node());
+            },
+
+            _getMouseCoordinates: function (sender, e) {
+
+                var xLocal = e.event.pageX;
+                var yLocal = e.event.pageY;
+
+                this._removeFocus();
+
+                return {left: xLocal, top: yLocal};
             },
 
             _getFormatters: function () {
