@@ -2,7 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 
-export class Area extends Element {
+export class Path extends Element {
 
     constructor(config) {
 
@@ -38,12 +38,23 @@ export class Area extends Element {
 
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
+
+        this.x0Scale = config.x0 ?
+            fnCreateScale('pos', config.x0, [0, config.options.width]) :
+            null;
+
+        this.y0Scale = config.y0 ?
+            fnCreateScale('pos', config.y0, [config.options.height, 0]) :
+            null;
+
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
 
         return this
             .regScale('x', this.xScale)
+            .regScale('x0', this.x0Scale)
             .regScale('y', this.yScale)
+            .regScale('y0', this.y0Scale)
             .regScale('size', this.size)
             .regScale('color', this.color);
     }
@@ -64,13 +75,20 @@ export class Area extends Element {
         const datumClass = `i-role-datum`;
         const areaPref = `${CSS_PREFIX}area i-role-element area ${countCss} ${guide.cssClass} `;
 
-        var yDomain = yScale.domain();
-        var y0 = yScale(yDomain[0]);
-        var d3Area = d3.svg
-            .area()
-            .x((d) => xScale(d[xScale.dim]))
-            .y0(y0)
-            .y1((d) => yScale(d[yScale.dim]));
+        var d3Area = d3.svg.area();
+        if (guide.flip) {
+            var x0Scale = this.x0Scale || this._createDefaultPositionScale(xScale);
+            d3Area = d3Area
+                .y((d) => yScale(d[yScale.dim]))
+                .x1((d) => xScale(d[xScale.dim]))
+                .x0((d) => x0Scale(d[x0Scale.dim]));
+        } else {
+            var y0Scale = this.y0Scale || this._createDefaultPositionScale(yScale);
+            d3Area = d3Area
+                .x((d) => xScale(d[xScale.dim]))
+                .y0((d) => y0Scale(d[y0Scale.dim]))
+                .y1((d) => yScale(d[yScale.dim]));
+        }
 
         if (guide.interpolate) {
             d3Area.interpolate(guide.interpolate);
@@ -136,6 +154,10 @@ export class Area extends Element {
                     .call(anchUpdate);
 
                 self.subscribe(anch);
+
+                if (this.x0Scale) {
+
+                }
             }
         };
 
@@ -172,6 +194,12 @@ export class Area extends Element {
         };
 
         drawFrame('area-' + options.uid);
+    }
+
+    _createDefaultPositionScale(scale) {
+        var domain = scale.domain();
+        var minVal = domain[0];
+        return ((v) => scale(minVal));
     }
 
     highlight(filter) {
