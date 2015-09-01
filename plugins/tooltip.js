@@ -56,7 +56,9 @@
                 // TODO: for compatibility with old TargetProcess implementation
                 _.extend(this, _.omit(settings, 'fields', 'getFields'));
 
-                this._metaInfo = this._getFormatters();
+                var info = this._getFormatters();
+                this._metaInfo = info.meta;
+                this._skipInfo = info.skip;
 
                 this._tooltip = this._chart.addBalloon(
                     {
@@ -104,17 +106,7 @@
                             Object.keys(data)
                         );
 
-                        content[0].innerHTML = fields
-                            .filter(function (k) {
-                                return self._metaInfo[k];
-                            })
-                            .map(function (k) {
-                                return self.itemTemplate({
-                                    label: self._metaInfo[k].label,
-                                    value: self._metaInfo[k].format(data[k])
-                                });
-                            })
-                            .join('');
+                        content[0].innerHTML = this.render(data, fields);
                     }
 
                     self._tooltip
@@ -155,6 +147,39 @@
 
             afterInit: function (tooltipNode) {
                 // for override
+            },
+
+            render: function (data, fields) {
+                var self = this;
+                return fields
+                    .filter(function (k) {
+                        var tokens = k.split('.');
+                        var matchX = ((tokens.length === 2) && self._skipInfo[tokens[0]]);
+                        return !matchX;
+                    })
+                    .map(function (k) {
+                        var key = k;
+                        var val = data[k];
+                        return self.renderItem(self._getLabel(key), self._getFormat(key)(val), key, val);
+                    })
+                    .join('');
+            },
+
+            renderItem: function (label, formattedValue, fieldKey, fieldVal) {
+                return this.itemTemplate({
+                    label: label,
+                    value: formattedValue
+                });
+            },
+
+            _getFormat: function (k) {
+                var meta = this._metaInfo[k] || {format: _.identity};
+                return meta.format;
+            },
+
+            _getLabel: function (k) {
+                var meta = this._metaInfo[k] || {label: k};
+                return meta.label;
             },
 
             _appendFocus: function (g, x, y) {
@@ -357,7 +382,8 @@
                     return val || defaultValue;
                 };
 
-                return Object
+                var skipInfo = {};
+                var metaInfo = Object
                     .keys(summary)
                     .reduce(function (memo, k) {
                         memo[k].label = choiceRule(memo[k].label, k);
@@ -379,11 +405,17 @@
                                 return fnForm(obj && obj[memo[kc].tickLabel]);
                             };
 
+                            skipInfo[kc] = true;
                             delete memo[k];
                         }
 
                         return memo;
                     }, summary);
+
+                return {
+                    meta: metaInfo,
+                    skip: skipInfo
+                };
             }
         };
 
