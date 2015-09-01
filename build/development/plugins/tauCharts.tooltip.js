@@ -393,7 +393,12 @@
 
                         // very special case for dates
                         var format = (memo[k].format === 'x-time-auto') ? 'day' : memo[k].format;
-                        var fnForm = tauCharts.api.tickFormat.get(format, memo[k].nullAlias);
+                        var nonVal = memo[k].nullAlias;
+                        var fnForm = format ?
+                            (tauCharts.api.tickFormat.get(format, nonVal)) :
+                            (function (raw) {
+                                return (raw == null) ? nonVal : raw;
+                            });
 
                         memo[k].format = fnForm;
 
