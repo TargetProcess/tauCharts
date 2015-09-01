@@ -122,7 +122,7 @@ export class Line extends Element {
                             r: guide.anchorSize,
                             cx: (d) => xScale(d[xScale.dim]),
                             cy: (d) => yScale(d[yScale.dim]),
-                            class: (d) => (`i-data-anchor ${colorScale(d[colorScale.dim])}`)
+                            class: 'i-data-anchor'
                         });
                 };
 
@@ -223,10 +223,15 @@ export class Line extends Element {
     }
 
     highlightDataPoints(filter) {
+        var colorScale = this.color;
+        const cssClass = 'i-data-anchor';
         this.config
             .options
             .container
-            .selectAll('.i-data-anchor')
-            .attr('r', (d) => (filter(d) ? 3 : this.config.guide.anchorSize));
+            .selectAll(`.${cssClass}`)
+            .attr({
+                r: (d) => (filter(d) ? 3 : this.config.guide.anchorSize),
+                class: (d) => (`${cssClass} ${colorScale(d[colorScale.dim])}`)
+            });
     }
 }
