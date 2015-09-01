@@ -147,7 +147,7 @@ export class Area extends Element {
                 this.attr('class', ({data: f}) =>
                     `${areaPref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
                     .call(function () {
-                         updateArea.call(this);
+                        updateArea.call(this);
                     });
             };
         };
