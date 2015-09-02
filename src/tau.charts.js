@@ -13,6 +13,7 @@ import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
 import {Area}       from './elements/element.area';
+import {Path}       from './elements/element.path';
 import {Line}       from './elements/element.line';
 import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
@@ -154,6 +155,7 @@ api.unitsRegistry
 
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
+    .reg('ELEMENT.PATH', Path)
     .reg('ELEMENT.AREA', Area)
     .reg('ELEMENT.INTERVAL', Interval)
     .reg('ELEMENT.INTERVAL.STACKED', StackedInterval)

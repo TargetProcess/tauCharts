@@ -38,25 +38,22 @@ export class Path extends Element {
 
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-
-        this.x0Scale = config.x0 ?
-            fnCreateScale('pos', config.x0, [0, config.options.width]) :
-            null;
-
-        this.y0Scale = config.y0 ?
-            fnCreateScale('pos', config.y0, [config.options.height, 0]) :
-            null;
-
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
 
         return this
             .regScale('x', this.xScale)
-            .regScale('x0', this.x0Scale)
             .regScale('y', this.yScale)
-            .regScale('y0', this.y0Scale)
             .regScale('size', this.size)
             .regScale('color', this.color);
+    }
+
+    packFrameData(rows) {
+        return rows;
+    }
+
+    unpackFrameData(rows) {
+        return rows;
     }
 
     drawFrames(frames) {
@@ -72,40 +69,23 @@ export class Path extends Element {
 
         var countCss = getLineClassesByCount(frames.length);
 
-        const datumClass = `i-role-datum`;
         const areaPref = `${CSS_PREFIX}area i-role-element area ${countCss} ${guide.cssClass} `;
 
-        var d3Area = d3.svg.area();
-        if (guide.flip) {
-            var x0Scale = this.x0Scale || this._createDefaultPositionScale(xScale);
-            d3Area = d3Area
-                .y((d) => yScale(d[yScale.dim]))
-                .x1((d) => xScale(d[xScale.dim]))
-                .x0((d) => x0Scale(d[x0Scale.dim]));
-        } else {
-            var y0Scale = this.y0Scale || this._createDefaultPositionScale(yScale);
-            d3Area = d3Area
-                .x((d) => xScale(d[xScale.dim]))
-                .y0((d) => y0Scale(d[y0Scale.dim]))
-                .y1((d) => yScale(d[yScale.dim]));
-        }
-
-        if (guide.interpolate) {
-            d3Area.interpolate(guide.interpolate);
-        }
+        var polygonPointsMapper = ((rows) => (rows
+            .map((d) => [xScale(d[xScale.dim]), yScale(d[yScale.dim])].join(','))
+            .join(' ')));
 
         var updateArea = function () {
+
             var path = this
-                .selectAll('path')
-                .data(({data: frame}) => [frame.data]);
+                .selectAll('polygon')
+                .data(({data: frame}) => [self.packFrameData(frame.data)]);
             path.exit()
                 .remove();
-            path.attr('d', d3Area)
-                .attr('class', datumClass);
+            path.attr('points', polygonPointsMapper);
             path.enter()
-                .append('path')
-                .attr('d', d3Area)
-                .attr('class', datumClass);
+                .append('polygon')
+                .attr('points', polygonPointsMapper);
 
             self.subscribe(path, function (rows) {
 
@@ -114,7 +94,8 @@ export class Path extends Element {
                 var my = m[1];
 
                 // d3.invert doesn't work for ordinal axes
-                var nearest = rows
+                var nearest = self
+                    .unpackFrameData(rows)
                     .map((row) => {
                         var rx = xScale(row[xScale.dim]);
                         var ry = yScale(row[yScale.dim]);
@@ -154,10 +135,6 @@ export class Path extends Element {
                     .call(anchUpdate);
 
                 self.subscribe(anch);
-
-                if (this.x0Scale) {
-
-                }
             }
         };
 
@@ -174,7 +151,14 @@ export class Path extends Element {
         };
 
         var mapper = (f) => {
-            return {data: {tags: f.key || {}, hash: f.hash(), data: f.part()}, uid: options.uid};
+            return {
+                data: {
+                    tags: f.key || {},
+                    hash: f.hash(),
+                    data: f.part()
+                },
+                uid: options.uid
+            };
         };
 
         var drawFrame = (id) => {
@@ -194,12 +178,6 @@ export class Path extends Element {
         };
 
         drawFrame('area-' + options.uid);
-    }
-
-    _createDefaultPositionScale(scale) {
-        var domain = scale.domain();
-        var minVal = domain[0];
-        return ((v) => scale(minVal));
     }
 
     highlight(filter) {
