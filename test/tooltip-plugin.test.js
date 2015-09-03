@@ -32,10 +32,10 @@ var hideTooltip = function (expect, chart, index, selectorClass) {
 };
 
 var getSelectorByChartType = function (type) {
-    return (type === 'line') ? '.i-data-anchor': null;
+    return ((type === 'line') || (type === 'area')) ? '.i-data-anchor': null;
 };
 
-var chartType = ['line', 'scatterplot', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
+var chartType = ['area', 'line', 'scatterplot', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
 
 chartType.forEach(function (item) {
     var tooltipEl = null;
@@ -204,6 +204,9 @@ describeChart(
 );
 
 chartType.forEach(function (item) {
+
+    var elementSelector = (item === 'area') ? getSelectorByChartType(item) : null;
+
     describeChart(
         "tooltip getFields for " + item,
         {
@@ -229,14 +232,14 @@ chartType.forEach(function (item) {
         function (context) {
             it('should support getFields parameter', function (done) {
                 var originTimeout = stubTimeout();
-                showTooltip(expect, context.chart)
+                showTooltip(expect, context.chart, 0, elementSelector)
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
                         var texts = _.pluck(tooltipElements, 'textContent');
                         expect(texts).to.be.eql(['x', '2', 'color', 'yellow']);
 
-                        return hideTooltip(expect, context.chart);
+                        return hideTooltip(expect, context.chart, 0, elementSelector);
                     })
                     .then(function () {
                         context.chart.setData([{
@@ -245,14 +248,14 @@ chartType.forEach(function (item) {
                             color: 'red'
                         }]);
 
-                        return showTooltip(expect, context.chart);
+                        return showTooltip(expect, context.chart, 0, elementSelector);
                     })
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
                         var texts = _.pluck(tooltipElements, 'textContent');
                         expect(texts).to.be.eql(['y', '3']);
-                        return hideTooltip(expect, context.chart);
+                        return hideTooltip(expect, context.chart, 0, elementSelector);
                     })
                     .always(function () {
                         window.setTimeout = originTimeout;
