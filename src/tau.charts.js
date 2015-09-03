@@ -15,7 +15,6 @@ import {Point}      from './elements/element.point';
 import {Area}       from './elements/element.area';
 import {Path}       from './elements/element.path';
 import {Line}       from './elements/element.line';
-import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
 import {StackedInterval}   from './elements/element.interval.stacked';
 import {ParallelLine}      from './elements/element.parallel.line';
@@ -165,8 +164,7 @@ api.unitsRegistry
     .reg('INTERVAL', Interval)
     .reg('LINE', Line)
 
-    .reg('PARALLEL/ELEMENT.LINE', ParallelLine)
-    .reg('PIE', Pie);
+    .reg('PARALLEL/ELEMENT.LINE', ParallelLine);
 
 api.scalesRegistry
     .reg('color', ColorScale)
