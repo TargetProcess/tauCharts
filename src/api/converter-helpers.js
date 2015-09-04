@@ -17,7 +17,8 @@ var createElement = (type, config) => {
         color: config.color,
         guide: {
             color: config.colorGuide,
-            size: config.sizeGuide
+            size: config.sizeGuide,
+            flip: config.flip
         },
         flip: config.flip,
         size: config.size

@@ -1,8 +1,7 @@
-import {utils} from '../utils/utils';
 import {DataProcessor} from '../data-processor';
 import {normalizeConfig, transformConfig} from './converter-helpers';
 
-var ChartLine = (rawConfig, useElement = 'ELEMENT.LINE') => {
+var ChartLine = (rawConfig, elementName) => {
     var config = normalizeConfig(rawConfig);
 
     var data = config.data;
@@ -14,18 +13,16 @@ var ChartLine = (rawConfig, useElement = 'ELEMENT.LINE') => {
         none: (config) => null,
 
         horizontal: (config) => {
-            var xs = utils.isArray(config.x) ? config.x : [config.x];
-            return xs[xs.length - 1];
+            return config.x[config.x.length - 1];
         },
 
         vertical: (config) => {
-            var ys = utils.isArray(config.y) ? config.y : [config.y];
-            return ys[ys.length - 1];
+            return config.y[config.y.length - 1];
         },
 
         auto: (config) => {
-            var xs = utils.isArray(config.x) ? config.x : [config.x];
-            var ys = utils.isArray(config.y) ? config.y : [config.y];
+            var xs = config.x;
+            var ys = config.y;
             var primaryX = xs[xs.length - 1];
             var secondaryX = xs.slice(0, xs.length - 1);
             var primaryY = ys[ys.length - 1];
@@ -72,7 +69,7 @@ var ChartLine = (rawConfig, useElement = 'ELEMENT.LINE') => {
         }
     };
 
-    var orient = (config.lineOrientation || 'auto').toLowerCase();
+    var orient = (config.lineOrientation || '').toLowerCase();
     var strategy = lineOrientationStrategies.hasOwnProperty(orient) ?
         lineOrientationStrategies[orient] :
         lineOrientationStrategies.auto;
@@ -82,7 +79,7 @@ var ChartLine = (rawConfig, useElement = 'ELEMENT.LINE') => {
         config.data = _(data).sortBy(propSortBy);
     }
 
-    return transformConfig(useElement, config);
+    return transformConfig(elementName, config);
 };
 
 export {ChartLine};
