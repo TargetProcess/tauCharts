@@ -411,11 +411,11 @@ var SpecEngineTypeMap = {
             });
 
         if (xUnit) {
-            xUnit.guide.x.label.text = xLabels.join(' > ');
+            xUnit.guide.x.label.text = xLabels.join(' → ');
         }
 
         if (yUnit) {
-            yUnit.guide.y.label.text = yLabels.join(' > ');
+            yUnit.guide.y.label.text = yLabels.join(' → ');
         }
 
         return spec;
