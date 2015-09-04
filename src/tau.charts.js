@@ -33,6 +33,7 @@ import {ChartMap}               from './api/chart-map';
 import {ChartInterval}          from './api/chart-interval';
 import {ChartScatterplot}       from './api/chart-scatterplot';
 import {ChartLine}              from './api/chart-line';
+import {ChartArea}              from './api/chart-area';
 import {ChartIntervalStacked}   from './api/chart-interval-stacked';
 import {ChartParallel}          from './api/chart-parallel';
 
@@ -183,7 +184,7 @@ var commonRules = [
 api.chartTypesRegistry = chartTypesRegistry
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', (cfg) => ChartLine(cfg, 'ELEMENT.LINE'), commonRules)
-    .add('area', (cfg) => ChartLine(cfg, 'ELEMENT.AREA'), commonRules)
+    .add('area', (cfg) => ChartArea(cfg, 'ELEMENT.AREA'), commonRules)
     .add('bar', (cfg) => ChartInterval(_.defaults({flip: false}, cfg)), commonRules)
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
