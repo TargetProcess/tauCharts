@@ -290,7 +290,7 @@ define(function (require) {
             expect(x.tickFormat).to.equal(null);
 
             expect(x.tickFormatNullAlias).to.equal('No team');
-            expect(x.label.text).to.equal('team > date');
+            expect(x.label.text).to.equal('team \u2192 date');
             expect(x.tickFontHeight).to.equal(10);
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
@@ -456,7 +456,7 @@ define(function (require) {
             expect(x.textAnchor).to.equal('middle');
             expect(x.tickFormat).to.equal(null);
             expect(x.tickFormatNullAlias).to.equal('No team');
-            expect(x.label.text).to.equal('team > date');
+            expect(x.label.text).to.equal('team \u2192 date');
             expect(x.label.cssClass).to.equal('label');
             expect(x.label.dock).to.equal(null);
             expect(x.tickFontHeight).to.equal(10);

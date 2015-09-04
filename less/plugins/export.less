@@ -1,5 +1,5 @@
-@bgColor: rgba(255, 255, 255, 0.9);
-@bg-item-hover: #EAF2FC;
+@import "../variable";
+
 .graphical-report {
     &__print-block {
         display: none;
@@ -43,7 +43,7 @@
 
                 &:hover,
                 &:focus {
-                    background: @bg-item-hover;
+                    background: @export-items-bg-hover;
                     outline: none;
                     box-shadow: none;
                 }

@@ -1,10 +1,11 @@
 @import "variable";
+@import "fonts";
 @import "layout";
 @import "forms";
 @link-color: #3962FF;
 @link-hover-color: #E17152;
 
-@axis-color: #BDC3CD;
+//@axis-color: #BDC3CD;
 
 /* region Generate .color@{n}-@{i}  function  */
 
@@ -84,7 +85,6 @@
             opacity: 0.7;
             font-size: 11px;
             color: #000000;
-            letter-spacing: 0.2px;
             line-height: 13px;
             text-anchor: start;
         }
@@ -94,10 +94,9 @@
         .place-label-states {
             text-anchor: middle;
             font-size: 10px;
-            fill: rgba(51, 36, 0, 0.65);
-            letter-spacing: 0.5px;
+            fill: fade(@font-color, 50%);
             line-height: 10px;
-            text-transform: uppercase;
+            text-transform: capitalize;
         }
 
         .map-contour-level path {
@@ -105,25 +104,36 @@
             stroke-linejoin: 'round';
         }
         .map-contour-level-0 path {
-            stroke: #fbfbfb;
+            stroke: @map-contour-stroke-color0;
         }
         .map-contour-level-1 path {
-            stroke: #fffefe;
+            stroke: @map-contour-stroke-color1;
         }
         .map-contour-level-2 path {
-            stroke: #fdfdff;
+            stroke: @map-contour-stroke-color2;
         }
         .map-contour-level-3 path {
-            stroke: #fdfdfd;
+            stroke: @map-contour-stroke-color3;
         }
         .map-contour-level-4 path {
-            stroke: #ffffff;
+            stroke: @map-contour-stroke-color4;
         }
+
 
         .map-contour-highlighted,
         .map-contour:hover {
-            fill: rgba(255,191,0,0.50);
+            fill: @map-fill-color-highlighted;
+        
+            path {
+                stroke: @map-contour-stroke-color-highlighted; 
+            }
+
+            text {
+                fill: @map-text-color-highlighted;
+            }
         }
+
+
 
         .axis {
             line,
@@ -181,7 +191,7 @@
             }
             line {
                 fill: none;
-                stroke: fade(@axis-color, 50%);
+                stroke: @axis-color;
                 stroke-width: 1px;
                 shape-rendering: crispEdges;
             }
@@ -196,8 +206,7 @@
             .label-token {
                 font-size: 11px;
                 font-weight: bold;
-                letter-spacing: 1px;
-                text-transform: uppercase;
+                text-transform: capitalize;
             }
 
             .label-token-1,
@@ -219,7 +228,6 @@
                 font-weight: normal;
                 fill: gray;
                 text-transform: none;
-                letter-spacing: 0px;
             }
         }
         .brush .extent {
@@ -228,13 +236,13 @@
             shape-rendering: crispEdges;
         }
         .background {
-            stroke: #eee;
+            stroke: @parallel-background-line-color;
         }
     }
 
     /* Scatterplot  */
     &__dot {
-        opacity: 0.6;
+        opacity: @dot-opacity;
         transition: stroke-width 0.1s ease, opacity 0.1s ease;
         stroke-width: 0;
     }

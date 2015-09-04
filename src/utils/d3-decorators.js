@@ -197,7 +197,7 @@ var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
         .attr('y', koeff * guide.padding)
         .style('text-anchor', guide.textAnchor);
 
-    var delimiter = ' > ';
+    var delimiter = ' → ';
     var tags = guide.text.split(delimiter);
     var tLen = tags.length;
     tags.forEach((token, i) => {
