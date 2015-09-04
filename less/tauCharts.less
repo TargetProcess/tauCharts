@@ -84,7 +84,6 @@
             opacity: 0.7;
             font-size: 11px;
             color: #000000;
-            letter-spacing: 0.2px;
             line-height: 13px;
             text-anchor: start;
         }
@@ -95,9 +94,8 @@
             text-anchor: middle;
             font-size: 10px;
             fill: fade(@font-color, 50%);
-            //letter-spacing: 0.5px;
             line-height: 10px;
-            //text-transform: uppercase;
+            text-transform: capitalize;
         }
 
         .map-contour-level path {
@@ -207,8 +205,7 @@
             .label-token {
                 font-size: 11px;
                 font-weight: bold;
-                letter-spacing: 1px;
-                text-transform: uppercase;
+                text-transform: capitalize;
             }
 
             .label-token-1,
@@ -230,7 +227,6 @@
                 font-weight: normal;
                 fill: gray;
                 text-transform: none;
-                letter-spacing: 0px;
             }
         }
         .brush .extent {
