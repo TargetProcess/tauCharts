@@ -28,9 +28,9 @@
 
 /* endregion */
 
-/* region Generate .line-params-@{n}  function  */ 
+/* region Generate .line-params-@{n}  function  */
 
-.generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) { 
+.generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) {
 
     .graphical-report__line-@{params}-@{i} {
         stroke-@{params}: @default-size;
@@ -43,10 +43,9 @@
 .generate-line-params(@params: width; @default-size: 1px; @step: 0.5px; @n: 5);
 
 /* Generate .line-opacity-@{n} */
-.generate-line-params(@params: opacity; @default-size: 1; @step: -0.05; @n: 5); 
+.generate-line-params(@params: opacity; @default-size: 1; @step: -0.05; @n: 5);
 
 /* endregion */
-
 
 /* endregion */
 
@@ -254,7 +253,7 @@
     /* Linechart  */
     &__line {
         fill: none;
-        transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease; 
+        transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
     }
     &__dot-line {
         opacity: 1;
