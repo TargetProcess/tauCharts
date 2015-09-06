@@ -17,6 +17,7 @@ var generateConf = function (postLoader) {
             ],
             alias: {
                 schemes: 'test/utils/schemes.js',
+                'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js',
                 testUtils: 'test/utils/utils.js',
                 brewer: 'src/addons/color-brewer.js',
                 tauCharts: 'src/tau.charts.js',

@@ -54,8 +54,14 @@ module.exports = function (grunt) {
                 paths: {
                     topojson: '../node_modules/topojson/topojson',
                     underscore: '../node_modules/underscore/underscore',
-                    d3: '../node_modules/d3/d3'
+                    d3: '../node_modules/d3/d3',
+                    'tau-tooltip': '../node_modules/tau-tooltip/tooltip'
                 },
+               /* map: {
+                    '*': {
+                        'tau-tooltip': 'Tooltip'
+                    }
+                },*/
                 optimize: 'none',
                 done: function (done, response) {
                     var bowerConfig = grunt.file.readJSON('bower.json');
@@ -82,7 +88,8 @@ module.exports = function (grunt) {
                 paths: {
                     topojson: '../node_modules/topojson/topojson',
                     underscore: '../node_modules/underscore/underscore',
-                    d3: '../node_modules/d3/d3'
+                    d3: '../node_modules/d3/d3',
+                    'tau-tooltip': '../node_modules/tau-tooltip/tooltip'
                 },
                 map: {
                     '*': {
