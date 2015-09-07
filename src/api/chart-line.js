@@ -1,7 +1,7 @@
 import {DataProcessor} from '../data-processor';
 import {normalizeConfig, transformConfig} from './converter-helpers';
 
-var ChartLine = (rawConfig, elementName) => {
+var ChartLine = (rawConfig) => {
     var config = normalizeConfig(rawConfig);
 
     var data = config.data;
@@ -76,10 +76,10 @@ var ChartLine = (rawConfig, elementName) => {
 
     var propSortBy = strategy(config);
     if (propSortBy !== null) {
-        config.data = _(data).sortBy(propSortBy);
+        config.data = DataProcessor.sortByDim(data, propSortBy, config.dimensions[propSortBy]);
     }
 
-    return transformConfig(elementName, config);
+    return transformConfig('ELEMENT.LINE', config);
 };
 
 export {ChartLine};

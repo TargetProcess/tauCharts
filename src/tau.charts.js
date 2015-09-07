@@ -183,8 +183,8 @@ var commonRules = [
 
 api.chartTypesRegistry = chartTypesRegistry
     .add('scatterplot', ChartScatterplot, commonRules)
-    .add('line', (cfg) => ChartLine(cfg, 'ELEMENT.LINE'), commonRules)
-    .add('area', (cfg) => ChartArea(cfg, 'ELEMENT.AREA'), commonRules)
+    .add('line', ChartLine, commonRules)
+    .add('area', ChartArea, commonRules)
     .add('bar', (cfg) => ChartInterval(_.defaults({flip: false}, cfg)), commonRules)
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)

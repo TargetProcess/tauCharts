@@ -153,6 +153,35 @@ var DataProcessor = {
         };
 
         return _.reduce(data, reducer, {});
+    },
+
+    sortByDim: function (data, dimName, dimInfo) {
+        var rows = data;
+        if ((dimInfo.type === 'measure') || (dimInfo.scale === 'period')) {
+            rows = _(data).sortBy(dimName);
+        } else if (dimInfo.order) {
+            var hashOrder = dimInfo.order.reduce(
+                (memo, x, i) => {
+                    memo[x] = i;
+                    return memo;
+                },
+                {});
+            var defaultN = dimInfo.order.length;
+            var k = `(___${dimName}___)`;
+            rows = data
+                .map((row) => {
+                    var orderN = hashOrder[row[dimName]];
+                    orderN = (orderN >= 0) ? orderN : defaultN;
+                    row[k] = orderN;
+                    return row;
+                })
+                .sort((a, b) => (a[k] - b[k]))
+                .map((row) => {
+                    delete row[k];
+                    return row;
+                });
+        }
+        return rows;
     }
 };
 

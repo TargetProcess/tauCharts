@@ -164,5 +164,197 @@ define(function (require) {
                 .deep
                 .equal(['A0', 'A1', 'A2', 'B0', 'B1', 'B2']);
         });
+
+        it('should NOT sort data if [category] variable is used for X', function () {
+            var line = new tauChart.Chart({
+                type: 'line',
+                x: 'date',
+                y: 'count',
+                color: 'type',
+                data: [
+                    {i: 0, type: 'us', count: 5, date: 'C'},
+                    {i: 1, type: 'us', count: 8, date: 'A'},
+                    {i: 2, type: 'us', count: 5, date: 'B'}
+                ]
+            });
+
+            var spec = line.getSpec();
+            expect(spec.sources['/'].data.map((r) => r.i))
+                .to
+                .deep
+                .equal([0, 1, 2]);
+        });
+
+        it('should NOT sort data if [category] variable is used for Y', function () {
+            var line = new tauChart.Chart({
+                type: 'line',
+                x: 'count',
+                y: 'date',
+                color: 'type',
+                data: [
+                    {i: 0, type: 'us', count: 5, date: 'C'},
+                    {i: 1, type: 'us', count: 8, date: 'A'},
+                    {i: 2, type: 'us', count: 5, date: 'B'}
+                ]
+            });
+
+            var spec = line.getSpec();
+            expect(spec.sources['/'].data.map((r) => r.i))
+                .to
+                .deep
+                .equal([0, 1, 2]);
+        });
+
+        it('should sort data if [ordered] variable is used for X', function () {
+            var line = new tauChart.Chart({
+                type: 'line',
+                x: 'date',
+                y: 'count',
+                color: 'type',
+                data: [
+                    {i: 0, type: 'us', count: 5, date: 'C'},
+                    {i: 1, type: 'us', count: 8, date: 'A'},
+                    {i: 2, type: 'us', count: 5, date: 'B'},
+                    {i: 3, type: 'us', count: 8, date: 'D'}
+                ],
+                dimensions: {
+                    "type": {
+                        "type": "category",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "order",
+                        "order": ['A', 'B'],
+                        "scale": "ordinal"
+                    }
+                }
+            });
+
+            var spec = line.getSpec();
+            expect(spec.sources['/'].data.map((r) => r.i))
+                .to
+                .deep
+                .equal([1, 2, 0, 3]);
+        });
+
+        it('should sort data if [ordered] variable is used for Y', function () {
+            var line = new tauChart.Chart({
+                type: 'line',
+                x: 'count',
+                y: 'date',
+                color: 'type',
+                data: [
+                    {i: 0, type: 'us', count: 5, date: 'C'},
+                    {i: 1, type: 'us', count: 8, date: 'A'},
+                    {i: 2, type: 'us', count: 5, date: 'B'},
+                    {i: 3, type: 'us', count: 8, date: 'D'}
+                ],
+                dimensions: {
+                    "type": {
+                        "type": "category",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "order",
+                        "order": ['A', 'B'],
+                        "scale": "ordinal"
+                    }
+                }
+            });
+
+            var spec = line.getSpec();
+            expect(spec.sources['/'].data.map((r) => r.i))
+                .to
+                .deep
+                .equal([1, 2, 0, 3]);
+        });
+
+        it('should sort data if [period] scale is used for X', function () {
+            var line = new tauChart.Chart({
+                type: 'line',
+                x: 'date',
+                y: 'count',
+                color: 'type',
+                guide: {
+                    x: {
+                        tickPeriod: 'month'
+                    }
+                },
+                data: [
+                    {i: 0, type: 'us', count: 5, date: '2015-03-01'},
+                    {i: 1, type: 'us', count: 8, date: '2015-01-01'},
+                    {i: 2, type: 'us', count: 5, date: '2015-02-01'},
+                    {i: 3, type: 'us', count: 8, date: '2015-04-01'}
+                ],
+                dimensions: {
+                    "type": {
+                        "type": "category",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "order",
+                        "scale": "period"
+                    }
+                }
+            });
+
+            var spec = line.getSpec();
+            expect(spec.sources['/'].data.map((r) => r.i))
+                .to
+                .deep
+                .equal([1, 2, 0, 3]);
+        });
+
+        it('should sort data if [period] scale is used for X', function () {
+            var line = new tauChart.Chart({
+                type: 'line',
+                y: 'date',
+                x: 'count',
+                color: 'type',
+                guide: {
+                    y: {
+                        tickPeriod: 'month'
+                    }
+                },
+                data: [
+                    {i: 0, type: 'us', count: 5, date: '2015-03-01'},
+                    {i: 1, type: 'us', count: 8, date: '2015-01-01'},
+                    {i: 2, type: 'us', count: 5, date: '2015-02-01'},
+                    {i: 3, type: 'us', count: 8, date: '2015-04-01'}
+                ],
+                dimensions: {
+                    "type": {
+                        "type": "category",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "order",
+                        "scale": "period"
+                    }
+                }
+            });
+
+            var spec = line.getSpec();
+            expect(spec.sources['/'].data.map((r) => r.i))
+                .to
+                .deep
+                .equal([1, 2, 0, 3]);
+        });
     });
 });
