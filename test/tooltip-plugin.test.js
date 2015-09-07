@@ -388,3 +388,38 @@ describeChart("tooltip formatting",
                 });
         });
     });
+
+describeChart(
+    'tooltip for area chart',
+    {
+        type: 'area',
+        x: 'x',
+        y: 'y',
+        plugins: [tooltip()]
+    },
+    [
+        {x: 2, y: 2},
+        {x: 4, y: 5}
+    ],
+    function (context) {
+        it('should work on mousemove', function (done) {
+            var originTimeout = stubTimeout();
+            this.timeout(5000);
+
+            var selectorCssClass = getSelectorByChartType('area');
+            var datum = context.chart.getSVG().querySelectorAll(selectorCssClass)[0];
+            testUtils.simulateEvent('mousemove', datum);
+
+            var content = document.querySelectorAll('.graphical-report__tooltip');
+
+            var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
+            var texts = _.pluck(tooltipElements, 'textContent');
+            expect(texts).to.be.eql(['x', '2', 'y', '2']);
+
+            testUtils.simulateEvent('mouseout', datum);
+
+            window.setTimeout = originTimeout;
+            done();
+        });
+    }
+);

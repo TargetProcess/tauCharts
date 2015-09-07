@@ -40,6 +40,6 @@ export class Area extends Path {
 
     getDistance(mx, my, rx, ry) {
         var guide = this.config.guide;
-        return (guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx))
+        return (guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx));
     }
 }

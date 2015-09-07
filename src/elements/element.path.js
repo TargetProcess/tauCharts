@@ -61,7 +61,7 @@ export class Path extends Element {
     }
 
     getDistance(mx, my, rx, ry) {
-        return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2))
+        return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2));
     }
 
     drawFrames(frames) {
