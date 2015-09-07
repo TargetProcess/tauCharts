@@ -19,7 +19,7 @@ export class Element extends Emitter {
 
     subscribe(sel, dataInterceptor = (x => x), eventInterceptor = (x => x)) {
         var self = this;
-        ['mouseover', 'mouseout', 'click'].forEach((eventName) => {
+        ['mouseover', 'mouseout', 'click', 'mousemove'].forEach((eventName) => {
             sel.on(eventName, function (d) {
                 self.fire(
                     eventName,

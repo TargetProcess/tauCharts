@@ -27,8 +27,12 @@ export class Path extends Element {
             this.on('mouseover', ((sender, e) =>
                 sender.fire('highlight-data-points', (row) => (row === e.data))));
 
-            this.on('mouseout', ((sender, e) =>
-                sender.fire('highlight-data-points', (row) => (false))));
+            this.on('mousemove', ((sender, e) =>
+                sender.fire('highlight-data-points', (row) => (row === e.data))));
+
+            this.on('mouseout', ((sender, e) => {
+                sender.fire('highlight-data-points', (row) => (false));
+            }));
         }
     }
 
@@ -54,6 +58,10 @@ export class Path extends Element {
 
     unpackFrameData(rows) {
         return rows;
+    }
+
+    getDistance(mx, my, rx, ry) {
+        return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2))
     }
 
     drawFrames(frames) {
@@ -102,7 +110,7 @@ export class Path extends Element {
                         return {
                             x: rx,
                             y: ry,
-                            dist: Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2)),
+                            dist: self.getDistance(mx, my, rx, ry),
                             data: row
                         };
                     })

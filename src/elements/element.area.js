@@ -37,4 +37,9 @@ export class Area extends Path {
         var last = rows.length - 1;
         return rows.filter((r, i) => ((i > 0) && (i < last)));
     }
+
+    getDistance(mx, my, rx, ry) {
+        var guide = this.config.guide;
+        return (guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx))
+    }
 }
