@@ -67,6 +67,10 @@ define(function (require) {
         return d3.selectAll('.line')[0];
     }
 
+    function getArea() {
+        return d3.selectAll('.area')[0];
+    }
+
     function getGroupBar() {
         return d3.selectAll('.i-role-bar-group')[0];
     }
@@ -176,6 +180,7 @@ define(function (require) {
         describeChart: describeChart,
         getDots: getDots,
         getLine: getLine,
+        getArea: getArea,
         attrib: attrib,
         hasClass: hasClass,
         position: position,

@@ -183,6 +183,11 @@
             },
 
             _appendFocus: function (g, x, y) {
+
+                if (this.circle) {
+                    this.circle.remove();
+                }
+
                 this.circle = d3
                     .select(g)
                     .append('circle')
@@ -268,7 +273,7 @@
                             self.hideTooltip(e);
                         });
 
-                        node.on('mouseover', function (sender, e) {
+                        var mouseOverHandler = function (sender, e) {
                             var data = e.data;
                             var coords = (settings.dockToData ?
                                 self._getNearestDataCoordinates(sender, e) :
@@ -276,7 +281,13 @@
 
                             self._currentUnit = sender;
                             self.showTooltip(data, {x: coords.left, y: coords.top});
-                        });
+                        };
+
+                        node.on('mouseover', mouseOverHandler);
+
+                        if ((node.config.type === 'ELEMENT.AREA') || (node.config.type === 'ELEMENT.PATH')) {
+                            node.on('mousemove', mouseOverHandler);
+                        }
                     });
             },
 
@@ -299,9 +310,7 @@
                 }
 
                 var g = e.event.target.parentNode;
-                var c = this
-                    ._removeFocus()
-                    ._appendFocus(g, xLocal, yLocal);
+                var c = this._appendFocus(g, xLocal, yLocal);
 
                 return getOffsetRect(c.node());
             },
@@ -310,8 +319,6 @@
 
                 var xLocal = e.event.pageX;
                 var yLocal = e.event.pageY;
-
-                this._removeFocus();
 
                 return {left: xLocal, top: yLocal};
             },

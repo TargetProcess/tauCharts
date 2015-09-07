@@ -186,7 +186,9 @@
                     shape-rendering: crispEdges;
                 }
             }
-            path {
+            .line path,
+            path.line,
+            path.domain {
                 fill: none;
             }
             line {
@@ -271,6 +273,10 @@
         stroke-width: 1;
         stroke: #fff;
     }
+    &__area {
+        opacity: 0.55;
+        transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+    }
 
     /* TODO: fix to avoid conflict on "stroke" with color brewer */
     /* TODO: remove this when CSS for color brewer is fixed */
@@ -299,12 +305,14 @@
         stroke-opacity: 0.2;
     }
 
+    &__area&__highlighted,
     &__bar&__highlighted,
     &__bar-stacked&__highlighted {
         stroke-opacity: 1;
         opacity: 1;
     }
 
+    &__area&__dimmed,
     &__bar&__dimmed,
     &__bar-stacked&__dimmed {
         opacity: 0.2;

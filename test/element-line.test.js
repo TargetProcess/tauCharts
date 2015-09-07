@@ -99,7 +99,7 @@ define(function (require) {
             assert.equal(dotLines.length, 1, 'should draw point');
         });
     });
-    var assertByCountClass
+
     describe("ELEMENT.LINE generates class in depend on size and count line", function(){
         var assertClassByCount = function(value,index){
             expect(value).to.equal('graphical-report__line-opacity-' + index);

@@ -343,6 +343,7 @@
                 this._applicableElements = [
                     'ELEMENT.POINT',
                     'ELEMENT.LINE',
+                    'ELEMENT.AREA',
                     'ELEMENT.INTERVAL'
                 ];
 

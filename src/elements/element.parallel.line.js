@@ -76,7 +76,7 @@ export class ParallelLine extends Element {
             backgroundPath
                 .enter()
                 .append('path')
-                .attr('class', 'background')
+                .attr('class', 'background line')
                 .call(drawPath);
 
             var foregroundPath = this

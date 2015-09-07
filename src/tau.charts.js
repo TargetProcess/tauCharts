@@ -12,8 +12,9 @@ import {Cartesian}  from './elements/coords.cartesian';
 import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
 import {Point}      from './elements/element.point';
+import {Area}       from './elements/element.area';
+import {Path}       from './elements/element.path';
 import {Line}       from './elements/element.line';
-import {Pie}        from './elements/element.pie';
 import {Interval}   from './elements/element.interval';
 import {StackedInterval}   from './elements/element.interval.stacked';
 import {ParallelLine}      from './elements/element.parallel.line';
@@ -32,6 +33,7 @@ import {ChartMap}               from './api/chart-map';
 import {ChartInterval}          from './api/chart-interval';
 import {ChartScatterplot}       from './api/chart-scatterplot';
 import {ChartLine}              from './api/chart-line';
+import {ChartArea}              from './api/chart-area';
 import {ChartIntervalStacked}   from './api/chart-interval-stacked';
 import {ChartParallel}          from './api/chart-parallel';
 
@@ -153,6 +155,8 @@ api.unitsRegistry
 
     .reg('ELEMENT.POINT', Point)
     .reg('ELEMENT.LINE', Line)
+    .reg('ELEMENT.PATH', Path)
+    .reg('ELEMENT.AREA', Area)
     .reg('ELEMENT.INTERVAL', Interval)
     .reg('ELEMENT.INTERVAL.STACKED', StackedInterval)
 
@@ -161,8 +165,7 @@ api.unitsRegistry
     .reg('INTERVAL', Interval)
     .reg('LINE', Line)
 
-    .reg('PARALLEL/ELEMENT.LINE', ParallelLine)
-    .reg('PIE', Pie);
+    .reg('PARALLEL/ELEMENT.LINE', ParallelLine);
 
 api.scalesRegistry
     .reg('color', ColorScale)
@@ -181,6 +184,7 @@ var commonRules = [
 api.chartTypesRegistry = chartTypesRegistry
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', ChartLine, commonRules)
+    .add('area', ChartArea, commonRules)
     .add('bar', (cfg) => ChartInterval(_.defaults({flip: false}, cfg)), commonRules)
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
