@@ -19,7 +19,7 @@ export class Area extends Path {
         // NOTE: max also can be below 0
         var base = scale.discrete ?
             (min) :
-            ((min < 0) ? (Math.min(...[0, max])) : (min));
+            ((min < 0) ? (Math.min(0, max)) : (min));
 
         head[dim] = base;
         last[dim] = base;

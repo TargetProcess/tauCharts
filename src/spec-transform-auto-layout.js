@@ -410,12 +410,14 @@ var SpecEngineTypeMap = {
                 return unit;
             });
 
+        const rightArrow = ' \u2192 ';
+
         if (xUnit) {
-            xUnit.guide.x.label.text = xLabels.join(' → ');
+            xUnit.guide.x.label.text = xLabels.join(rightArrow);
         }
 
         if (yUnit) {
-            yUnit.guide.y.label.text = yLabels.join(' → ');
+            yUnit.guide.y.label.text = yLabels.join(rightArrow);
         }
 
         return spec;

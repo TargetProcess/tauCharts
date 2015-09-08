@@ -148,34 +148,29 @@ var api = {
 Plot.__api__ = api;
 Plot.globalSettings = api.globalSettings;
 
-api.unitsRegistry
-    .reg('COORDS.RECT', Cartesian)
-    .reg('COORDS.MAP', GeoMap)
-    .reg('COORDS.PARALLEL', Parallel)
+[
+    ['COORDS.RECT', Cartesian],
+    ['COORDS.MAP', GeoMap],
+    ['COORDS.PARALLEL', Parallel],
+    ['ELEMENT.POINT', Point],
+    ['ELEMENT.LINE', Line],
+    ['ELEMENT.PATH', Path],
+    ['ELEMENT.AREA', Area],
+    ['ELEMENT.INTERVAL', Interval],
+    ['ELEMENT.INTERVAL.STACKED', StackedInterval],
+    ['PARALLEL/ELEMENT.LINE', ParallelLine]
+].reduce((memo, nv) => (memo.reg(nv[0], nv[1])), api.unitsRegistry);
 
-    .reg('ELEMENT.POINT', Point)
-    .reg('ELEMENT.LINE', Line)
-    .reg('ELEMENT.PATH', Path)
-    .reg('ELEMENT.AREA', Area)
-    .reg('ELEMENT.INTERVAL', Interval)
-    .reg('ELEMENT.INTERVAL.STACKED', StackedInterval)
-
-    .reg('RECT', Cartesian)
-    .reg('POINT', Point)
-    .reg('INTERVAL', Interval)
-    .reg('LINE', Line)
-
-    .reg('PARALLEL/ELEMENT.LINE', ParallelLine);
-
-api.scalesRegistry
-    .reg('color', ColorScale)
-    .reg('fill', FillScale)
-    .reg('size', SizeScale)
-    .reg('ordinal', OrdinalScale)
-    .reg('period', PeriodScale)
-    .reg('time', TimeScale)
-    .reg('linear', LinearScale)
-    .reg('value', ValueScale);
+[
+    ['color', ColorScale],
+    ['fill', FillScale],
+    ['size', SizeScale],
+    ['ordinal', OrdinalScale],
+    ['period', PeriodScale],
+    ['time', TimeScale],
+    ['linear', LinearScale],
+    ['value', ValueScale]
+].reduce((memo, nv) => (memo.reg(nv[0], nv[1])), api.scalesRegistry);
 
 var commonRules = [
     ((config) => (!config.data) ? ['[data] must be specified'] : [])

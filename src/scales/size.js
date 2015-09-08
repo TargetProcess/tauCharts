@@ -48,7 +48,7 @@ export class SizeScale extends BaseScale {
             var min = Math.min(...values);
             var max = Math.max(...values);
 
-            var len = f(Math.max(...[Math.abs(min), Math.abs(max), max - min]));
+            var len = f(Math.max(Math.abs(min), Math.abs(max), (max - min)));
 
             xMin = (min < 0) ? min : 0;
             k = (len === 0) ? 1 : ((maxSize - minSize) / len);

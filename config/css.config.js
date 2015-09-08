@@ -76,6 +76,6 @@ var generateThemes = function () {
             });
             return memo;
         }, minCss)
-    }
+    };
 };
 module.exports = generateThemes();
