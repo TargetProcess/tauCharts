@@ -6749,11 +6749,14 @@ define("../bower_components/fetch/fetch", function(){});
                 }
 
                 settings = _.defaults(settings, {
+                    visible: true,
                     fontSize: 13,
                     paddingTop: 30
                 });
 
-                this._container = chart.insertToHeader('<a class="graphical-report__export">Export</a>>');
+                var menuStyle = settings.visible ? '' : 'display:none';
+                this._container = chart
+                    .insertToHeader('<a class="graphical-report__export" style="' + menuStyle + '">Export</a>');
                 var popup = chart.addBalloon({
                     place: 'bottom-left'
                 });

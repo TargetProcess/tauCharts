@@ -17,8 +17,8 @@
       -ms-flex-align: stretch;
           align-items: stretch;
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.005);
+  background: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 1px 4px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.005);
   overflow: hidden;
   font-family: Helvetica, Arial, sans-serif;
   /* Fade */
@@ -43,7 +43,7 @@
   min-height: 86px;
   width: 26px;
   position: relative;
-  box-shadow: inset 2px 0 2px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 2px 0 2px -2px rgba(255, 255, 255, 0.2);
 }
 .graphical-report__tooltip__exclude__wrap {
   line-height: 26px;
@@ -87,8 +87,8 @@
   padding-left: 15px;
 }
 .graphical-report__tooltip__list__elem:first-child {
-  color: #8e8e8e;
+  color: #cccccc;
 }
 .graphical-report__tooltip__gray-text {
-  color: #8e8e8e;
+  color: #cccccc;
 }

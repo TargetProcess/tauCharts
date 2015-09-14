@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.2 - 2015-09-02
+/*! taucharts - v0.5.2 - 2015-09-14
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -781,7 +781,7 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
                 } : arguments[2];
 
                 var self = this;
-                ['mouseover', 'mouseout', 'click'].forEach(function (eventName) {
+                ['mouseover', 'mouseout', 'click', 'mousemove'].forEach(function (eventName) {
                     sel.on(eventName, function (d) {
                         self.fire(eventName, {
                             data: dataInterceptor.call(this, d),
@@ -2978,660 +2978,727 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
 
     exports.GPL = GPL;
 });
-define('api/balloon',['exports', '../const'], function (exports, _const) {
-    'use strict';
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define('tau-tooltip',[], factory);
+	else if(typeof exports === 'object')
+		exports["Tooltip"] = factory();
+	else
+		root["Tooltip"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
 
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
 
-    // jshint ignore: start
-    var classes = function classes(el) {
-        return {
-            add: function add(name) {
-                el.classList.add(name);
-            },
-            remove: function remove(name) {
-                el.classList.remove(name);
-            }
-        };
-    };
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
 
-    var indexOf = function indexOf(arr, obj) {
-        return arr.indexOf(obj);
-    };
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
 
-    /**
-     * Globals.
-     */
-    var win = window;
-    var doc = win.document;
-    var docEl = doc.documentElement;
-    var verticalPlaces = ['top', 'bottom'];
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 
-    /**
-     * Poor man's shallow object extend.
-     *
-     * @param {Object} a
-     * @param {Object} b
-     *
-     * @return {Object}
-     */
-    function extend(a, b) {
-        for (var key in b) {
-            // jshint ignore:line
-            a[key] = b[key];
-        }
-        return a;
-    }
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
 
-    /**
-     * Checks whether object is window.
-     *
-     * @param {Object} obj
-     *
-     * @return {Boolean}
-     */
-    function isWin(obj) {
-        return obj && obj.setInterval != null;
-    }
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
 
-    /**
-     * Returns element's object with `left`, `top`, `bottom`, `right`, `width`, and `height`
-     * properties indicating the position and dimensions of element on a page.
-     *
-     * @param {Element} element
-     *
-     * @return {Object}
-     */
-    function position(element) {
-        var winTop = win.pageYOffset || docEl.scrollTop;
-        var winLeft = win.pageXOffset || docEl.scrollLeft;
-        var box = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
 
-        if (isWin(element)) {
-            box.width = win.innerWidth || docEl.clientWidth;
-            box.height = win.innerHeight || docEl.clientHeight;
-        } else if (docEl.contains(element) && element.getBoundingClientRect != null) {
-            extend(box, element.getBoundingClientRect());
-            // width & height don't exist in <IE9
-            box.width = box.right - box.left;
-            box.height = box.bottom - box.top;
-        } else {
-            return box;
-        }
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
 
-        box.top = box.top + winTop - docEl.clientTop;
-        box.left = box.left + winLeft - docEl.clientLeft;
-        box.right = box.left + box.width;
-        box.bottom = box.top + box.height;
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
 
-        return box;
-    }
-    /**
-     * Parse integer from strings like '-50px'.
-     *
-     * @param {Mixed} value
-     *
-     * @return {Integer}
-     */
-    function parsePx(value) {
-        return 0 | Math.round(String(value).replace(/[^\-0-9.]/g, ''));
-    }
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
 
-    /**
-     * Get computed style of element.
-     *
-     * @param {Element} element
-     *
-     * @type {String}
-     */
-    var style = win.getComputedStyle;
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports) {
 
-    /**
-     * Returns transition duration of element in ms.
-     *
-     * @param {Element} element
-     *
-     * @return {Integer}
-     */
-    function transitionDuration(element) {
-        var duration = String(style(element, transitionDuration.propName));
-        var match = duration.match(/([0-9.]+)([ms]{1,2})/);
-        if (match) {
-            duration = Number(match[1]);
-            if (match[2] === 's') {
-                duration *= 1000;
-            }
-        }
-        return 0 | duration;
-    }
-    transitionDuration.propName = (function () {
-        var element = doc.createElement('div');
-        var names = ['transitionDuration', 'webkitTransitionDuration'];
-        var value = '1s';
-        for (var i = 0; i < names.length; i++) {
-            element.style[names[i]] = value;
-            if (element.style[names[i]] === value) {
-                return names[i];
-            }
-        }
-    })();
-    var objectCreate = Object.create;
-    /**
-     * Tooltip construnctor.
-     *
-     * @param {String|Element} content
-     * @param {Object}         options
-     *
-     * @return {Tooltip}
-     */
-    function Tooltip(content, options) {
-        if (!(this instanceof Tooltip)) {
-            return new Tooltip(content, options);
-        }
-        this.hidden = 1;
-        this.options = extend(objectCreate(Tooltip.defaults), options);
-        this._createElement();
-        if (content) {
-            this.content(content);
-        }
-    }
+	'use strict';
 
-    /**
-     * Creates a tooltip element.
-     *
-     * @return {Void}
-     */
-    Tooltip.prototype._createElement = function () {
-        this.element = doc.createElement('div');
-        this.classes = classes(this.element);
-        this.classes.add(this.options.baseClass);
-        var propName;
-        for (var i = 0; i < Tooltip.classTypes.length; i++) {
-            propName = Tooltip.classTypes[i] + 'Class';
-            if (this.options[propName]) {
-                this.classes.add(this.options[propName]);
-            }
-        }
-    };
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	var classes = function classes(el) {
+	    return {
+	        add: function add(name) {
+	            el.classList.add(name);
+	        },
+	        remove: function remove(name) {
+	            el.classList.remove(name);
+	        }
+	    };
+	};
 
-    /**
-     * Changes tooltip's type class type.
-     *
-     * @param {String} name
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.type = function (name) {
-        return this.changeClassType('type', name);
-    };
+	var indexOf = function indexOf(arr, obj) {
+	    return arr.indexOf(obj);
+	};
 
-    /**
-     * Changes tooltip's effect class type.
-     *
-     * @param {String} name
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.effect = function (name) {
-        return this.changeClassType('effect', name);
-    };
+	/**
+	 * Globals.
+	 */
+	var win = window;
+	var doc = win.document;
+	var docEl = doc.documentElement;
+	var verticalPlaces = ['top', 'bottom'];
 
-    /**
-     * Changes class type.
-     *
-     * @param {String} propName
-     * @param {String} newClass
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.changeClassType = function (propName, newClass) {
-        propName += 'Class';
-        if (this.options[propName]) {
-            this.classes.remove(this.options[propName]);
-        }
-        this.options[propName] = newClass;
-        if (newClass) {
-            this.classes.add(newClass);
-        }
-        return this;
-    };
+	/**
+	 * Poor man's shallow object extend.
+	 *
+	 * @param {Object} a
+	 * @param {Object} b
+	 *
+	 * @return {Object}
+	 */
+	function extend(a, b) {
+	    for (var key in b) {
+	        // jshint ignore:line
+	        a[key] = b[key];
+	    }
+	    return a;
+	}
 
-    /**
-     * Updates tooltip's dimensions.
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.updateSize = function () {
-        if (this.hidden) {
-            this.element.style.visibility = 'hidden';
-            doc.body.appendChild(this.element);
-        }
-        this.width = this.element.offsetWidth;
-        this.height = this.element.offsetHeight;
-        if (this.spacing == null) {
-            this.spacing = this.options.spacing != null ? this.options.spacing : parsePx(style(this.element, 'top'));
-        }
-        if (this.hidden) {
-            doc.body.removeChild(this.element);
-            this.element.style.visibility = '';
-        } else {
-            this.position();
-        }
-        return this;
-    };
+	/**
+	 * Checks whether object is window.
+	 *
+	 * @param {Object} obj
+	 *
+	 * @return {Boolean}
+	 */
+	function isWin(obj) {
+	    return obj && obj.setInterval != null;
+	}
 
-    /**
-     * Change tooltip content.
-     *
-     * When tooltip is visible, its size is automatically
-     * synced and tooltip correctly repositioned.
-     *
-     * @param {String|Element} content
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.content = function (content) {
-        if (typeof content === 'object') {
-            this.element.innerHTML = '';
-            this.element.appendChild(content);
-        } else {
-            this.element.innerHTML = content;
-        }
-        this.updateSize();
-        return this;
-    };
+	/**
+	 * Returns element's object with `left`, `top`, `bottom`, `right`, `width`, and `height`
+	 * properties indicating the position and dimensions of element on a page.
+	 *
+	 * @param {Element} element
+	 *
+	 * @return {Object}
+	 */
+	function position(element) {
+	    var winTop = win.pageYOffset || docEl.scrollTop;
+	    var winLeft = win.pageXOffset || docEl.scrollLeft;
+	    var box = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
 
-    /**
-     * Pick new place tooltip should be displayed at.
-     *
-     * When the tooltip is visible, it is automatically positioned there.
-     *
-     * @param {String} place
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.place = function (place) {
-        this.options.place = place;
-        if (!this.hidden) {
-            this.position();
-        }
-        return this;
-    };
+	    if (isWin(element)) {
+	        box.width = win.innerWidth || docEl.clientWidth;
+	        box.height = win.innerHeight || docEl.clientHeight;
+	    } else if (docEl.contains(element) && element.getBoundingClientRect != null) {
+	        extend(box, element.getBoundingClientRect());
+	        // width & height don't exist in <IE9
+	        box.width = box.right - box.left;
+	        box.height = box.bottom - box.top;
+	    } else {
+	        return box;
+	    }
 
-    /**
-     * Attach tooltip to an element.
-     *
-     * @param {Element} element
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.attach = function (element) {
-        this.attachedTo = element;
-        if (!this.hidden) {
-            this.position();
-        }
-        return this;
-    };
+	    box.top = box.top + winTop - docEl.clientTop;
+	    box.left = box.left + winLeft - docEl.clientLeft;
+	    box.right = box.left + box.width;
+	    box.bottom = box.top + box.height;
 
-    /**
-     * Detach tooltip from element.
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.detach = function () {
-        this.hide();
-        this.attachedTo = null;
-        return this;
-    };
+	    return box;
+	}
+	/**
+	 * Parse integer from strings like '-50px'.
+	 *
+	 * @param {Mixed} value
+	 *
+	 * @return {Integer}
+	 */
+	function parsePx(value) {
+	    return 0 | Math.round(String(value).replace(/[^\-0-9.]/g, ''));
+	}
 
-    /**
-     * Pick the most reasonable place for target position.
-     *
-     * @param {Object} target
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype._pickPlace = function (target) {
-        if (!this.options.auto) {
-            return this.options.place;
-        }
-        var winPos = position(win);
-        var place = this.options.place.split('-');
-        var spacing = this.spacing;
+	/**
+	 * Get computed style of element.
+	 *
+	 * @param {Element} element
+	 *
+	 * @type {String}
+	 */
+	var style = win.getComputedStyle;
 
-        if (indexOf(verticalPlaces, place[0]) !== -1) {
-            if (target.top - this.height - spacing <= winPos.top) {
-                place[0] = 'bottom';
-            } else if (target.bottom + this.height + spacing >= winPos.bottom) {
-                place[0] = 'top';
-            }
-            switch (place[1]) {
-                case 'left':
-                    if (target.right - this.width <= winPos.left) {
-                        place[1] = 'right';
-                    }
-                    break;
-                case 'right':
-                    if (target.left + this.width >= winPos.right) {
-                        place[1] = 'left';
-                    }
-                    break;
-                default:
-                    if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
-                        place[1] = 'left';
-                    } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
-                        place[1] = 'right';
-                    }
-            }
-        } else {
-            if (target.left - this.width - spacing <= winPos.left) {
-                place[0] = 'right';
-            } else if (target.right + this.width + spacing >= winPos.right) {
-                place[0] = 'left';
-            }
-            switch (place[1]) {
-                case 'top':
-                    if (target.bottom - this.height <= winPos.top) {
-                        place[1] = 'bottom';
-                    }
-                    break;
-                case 'bottom':
-                    if (target.top + this.height >= winPos.bottom) {
-                        place[1] = 'top';
-                    }
-                    break;
-                default:
-                    if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
-                        place[1] = 'top';
-                    } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
-                        place[1] = 'bottom';
-                    }
-            }
-        }
+	/**
+	 * Returns transition duration of element in ms.
+	 *
+	 * @param {Element} element
+	 *
+	 * @return {Integer}
+	 */
+	function transitionDuration(element) {
+	    var duration = String(style(element, transitionDuration.propName));
+	    var match = duration.match(/([0-9.]+)([ms]{1,2})/);
+	    if (match) {
+	        duration = Number(match[1]);
+	        if (match[2] === 's') {
+	            duration *= 1000;
+	        }
+	    }
+	    return 0 | duration;
+	}
+	transitionDuration.propName = (function () {
+	    var element = doc.createElement('div');
+	    var names = ['transitionDuration', 'webkitTransitionDuration'];
+	    var value = '1s';
+	    for (var i = 0; i < names.length; i++) {
+	        element.style[names[i]] = value;
+	        if (element.style[names[i]] === value) {
+	            return names[i];
+	        }
+	    }
+	})();
+	var objectCreate = Object.create;
+	/**
+	 * Tooltip construnctor.
+	 *
+	 * @param {String|Element} content
+	 * @param {Object}         options
+	 *
+	 * @return {Tooltip}
+	 */
+	function Tooltip(content, options) {
+	    if (!(this instanceof Tooltip)) {
+	        return new Tooltip(content, options);
+	    }
+	    this.hidden = 1;
+	    this.options = extend(objectCreate(Tooltip.defaults), options);
+	    this._createElement();
+	    if (content) {
+	        this.content(content);
+	    }
+	}
 
-        return place.join('-');
-    };
+	/**
+	 * Creates a tooltip element.
+	 *
+	 * @return {Void}
+	 */
+	Tooltip.prototype._createElement = function () {
+	    this.element = doc.createElement('div');
+	    this.classes = classes(this.element);
+	    this.classes.add(this.options.baseClass);
+	    var propName;
+	    for (var i = 0; i < Tooltip.classTypes.length; i++) {
+	        propName = Tooltip.classTypes[i] + 'Class';
+	        if (this.options[propName]) {
+	            this.classes.add(this.options[propName]);
+	        }
+	    }
+	};
 
-    /**
-     * Position the element to an element or a specific coordinates.
-     *
-     * @param {Integer|Element} x
-     * @param {Integer}         y
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.position = function (x, y) {
-        if (this.attachedTo) {
-            x = this.attachedTo;
-        }
-        if (x == null && this._p) {
-            x = this._p[0];
-            y = this._p[1];
-        } else {
-            this._p = [x, y];
-        }
-        var target = typeof x === 'number' ? {
-            left: 0 | x,
-            right: 0 | x,
-            top: 0 | y,
-            bottom: 0 | y,
-            width: 0,
-            height: 0
-        } : position(x);
-        var spacing = this.spacing;
-        var newPlace = this._pickPlace(target);
+	/**
+	 * Changes tooltip's type class type.
+	 *
+	 * @param {String} name
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.type = function (name) {
+	    return this.changeClassType('type', name);
+	};
 
-        // Add/Change place class when necessary
-        if (newPlace !== this.curPlace) {
-            if (this.curPlace) {
-                this.classes.remove(this.curPlace);
-            }
-            this.classes.add(newPlace);
-            this.curPlace = newPlace;
-        }
+	/**
+	 * Changes tooltip's effect class type.
+	 *
+	 * @param {String} name
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.effect = function (name) {
+	    return this.changeClassType('effect', name);
+	};
 
-        // Position the tip
-        var top, left;
-        switch (this.curPlace) {
-            case 'top':
-                top = target.top - this.height - spacing;
-                left = target.left + target.width / 2 - this.width / 2;
-                break;
-            case 'top-left':
-                top = target.top - this.height - spacing;
-                left = target.right - this.width;
-                break;
-            case 'top-right':
-                top = target.top - this.height - spacing;
-                left = target.left;
-                break;
+	/**
+	 * Changes class type.
+	 *
+	 * @param {String} propName
+	 * @param {String} newClass
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.changeClassType = function (propName, newClass) {
+	    propName += 'Class';
+	    if (this.options[propName]) {
+	        this.classes.remove(this.options[propName]);
+	    }
+	    this.options[propName] = newClass;
+	    if (newClass) {
+	        this.classes.add(newClass);
+	    }
+	    return this;
+	};
 
-            case 'bottom':
-                top = target.bottom + spacing;
-                left = target.left + target.width / 2 - this.width / 2;
-                break;
-            case 'bottom-left':
-                top = target.bottom + spacing;
-                left = target.right - this.width;
-                break;
-            case 'bottom-right':
-                top = target.bottom + spacing;
-                left = target.left;
-                break;
+	/**
+	 * Updates tooltip's dimensions.
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.updateSize = function () {
+	    if (this.hidden) {
+	        this.element.style.visibility = 'hidden';
+	        doc.body.appendChild(this.element);
+	    }
+	    this.width = this.element.offsetWidth;
+	    this.height = this.element.offsetHeight;
+	    if (this.spacing == null) {
+	        this.spacing = this.options.spacing != null ? this.options.spacing : parsePx(style(this.element, 'top'));
+	    }
+	    if (this.hidden) {
+	        doc.body.removeChild(this.element);
+	        this.element.style.visibility = '';
+	    } else {
+	        this.position();
+	    }
+	    return this;
+	};
 
-            case 'left':
-                top = target.top + target.height / 2 - this.height / 2;
-                left = target.left - this.width - spacing;
-                break;
-            case 'left-top':
-                top = target.bottom - this.height;
-                left = target.left - this.width - spacing;
-                break;
-            case 'left-bottom':
-                top = target.top;
-                left = target.left - this.width - spacing;
-                break;
+	/**
+	 * Change tooltip content.
+	 *
+	 * When tooltip is visible, its size is automatically
+	 * synced and tooltip correctly repositioned.
+	 *
+	 * @param {String|Element} content
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.content = function (content) {
+	    if (typeof content === 'object') {
+	        this.element.innerHTML = '';
+	        this.element.appendChild(content);
+	    } else {
+	        this.element.innerHTML = content;
+	    }
+	    this.updateSize();
+	    return this;
+	};
 
-            case 'right':
-                top = target.top + target.height / 2 - this.height / 2;
-                left = target.right + spacing;
-                break;
-            case 'right-top':
-                top = target.bottom - this.height;
-                left = target.right + spacing;
-                break;
-            case 'right-bottom':
-                top = target.top;
-                left = target.right + spacing;
-                break;
-        }
+	/**
+	 * Pick new place tooltip should be displayed at.
+	 *
+	 * When the tooltip is visible, it is automatically positioned there.
+	 *
+	 * @param {String} place
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.place = function (place) {
+	    this.options.place = place;
+	    if (!this.hidden) {
+	        this.position();
+	    }
+	    return this;
+	};
 
-        // Set tip position & class
-        this.element.style.top = Math.round(top) + 'px';
-        this.element.style.left = Math.round(left) + 'px';
+	/**
+	 * Attach tooltip to an element.
+	 *
+	 * @param {Element} element
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.attach = function (element) {
+	    this.attachedTo = element;
+	    if (!this.hidden) {
+	        this.position();
+	    }
+	    return this;
+	};
 
-        return this;
-    };
+	/**
+	 * Detach tooltip from element.
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.detach = function () {
+	    this.hide();
+	    this.attachedTo = null;
+	    return this;
+	};
 
-    /**
-     * Show the tooltip.
-     *
-     * @param {Integer|Element} x
-     * @param {Integer}         y
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.show = function (x, y) {
-        x = this.attachedTo ? this.attachedTo : x;
+	/**
+	 * Pick the most reasonable place for target position.
+	 *
+	 * @param {Object} target
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype._pickPlace = function (target) {
+	    if (!this.options.auto) {
+	        return this.options.place;
+	    }
+	    var winPos = position(win);
+	    var place = this.options.place.split('-');
+	    var spacing = this.spacing;
 
-        // Clear potential ongoing animation
-        clearTimeout(this.aIndex);
+	    if (indexOf(verticalPlaces, place[0]) !== -1) {
+	        if (target.top - this.height - spacing <= winPos.top) {
+	            place[0] = 'bottom';
+	        } else if (target.bottom + this.height + spacing >= winPos.bottom) {
+	            place[0] = 'top';
+	        }
+	        switch (place[1]) {
+	            case 'left':
+	                if (target.right - this.width <= winPos.left) {
+	                    place[1] = 'right';
+	                }
+	                break;
+	            case 'right':
+	                if (target.left + this.width >= winPos.right) {
+	                    place[1] = 'left';
+	                }
+	                break;
+	            default:
+	                if (target.left + target.width / 2 + this.width / 2 >= winPos.right) {
+	                    place[1] = 'left';
+	                } else if (target.right - target.width / 2 - this.width / 2 <= winPos.left) {
+	                    place[1] = 'right';
+	                }
+	        }
+	    } else {
+	        if (target.left - this.width - spacing <= winPos.left) {
+	            place[0] = 'right';
+	        } else if (target.right + this.width + spacing >= winPos.right) {
+	            place[0] = 'left';
+	        }
+	        switch (place[1]) {
+	            case 'top':
+	                if (target.bottom - this.height <= winPos.top) {
+	                    place[1] = 'bottom';
+	                }
+	                break;
+	            case 'bottom':
+	                if (target.top + this.height >= winPos.bottom) {
+	                    place[1] = 'top';
+	                }
+	                break;
+	            default:
+	                if (target.top + target.height / 2 + this.height / 2 >= winPos.bottom) {
+	                    place[1] = 'top';
+	                } else if (target.bottom - target.height / 2 - this.height / 2 <= winPos.top) {
+	                    place[1] = 'bottom';
+	                }
+	        }
+	    }
 
-        // Position the element when requested
-        if (x != null) {
-            this.position(x, y);
-        }
+	    return place.join('-');
+	};
 
-        // Stop here if tip is already visible
-        if (this.hidden) {
-            this.hidden = 0;
-            doc.body.appendChild(this.element);
-        }
+	/**
+	 * Position the element to an element or a specific coordinates.
+	 *
+	 * @param {Integer|Element} x
+	 * @param {Integer}         y
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.position = function (x, y) {
+	    if (this.attachedTo) {
+	        x = this.attachedTo;
+	    }
+	    if (x == null && this._p) {
+	        x = this._p[0];
+	        y = this._p[1];
+	    } else {
+	        this._p = arguments;
+	    }
+	    var target = typeof x === 'number' ? {
+	        left: 0 | x,
+	        right: 0 | x,
+	        top: 0 | y,
+	        bottom: 0 | y,
+	        width: 0,
+	        height: 0
+	    } : position(x);
+	    var spacing = this.spacing;
+	    var newPlace = this._pickPlace(target);
 
-        // Make tooltip aware of window resize
-        if (this.attachedTo) {
-            this._aware();
-        }
+	    // Add/Change place class when necessary
+	    if (newPlace !== this.curPlace) {
+	        if (this.curPlace) {
+	            this.classes.remove(this.curPlace);
+	        }
+	        this.classes.add(newPlace);
+	        this.curPlace = newPlace;
+	    }
 
-        // Trigger layout and kick in the transition
-        if (this.options.inClass) {
-            if (this.options.effectClass) {
-                void this.element.clientHeight;
-            }
-            this.classes.add(this.options.inClass);
-        }
+	    // Position the tip
+	    var top, left;
+	    switch (this.curPlace) {
+	        case 'top':
+	            top = target.top - this.height - spacing;
+	            left = target.left + target.width / 2 - this.width / 2;
+	            break;
+	        case 'top-left':
+	            top = target.top - this.height - spacing;
+	            left = target.right - this.width;
+	            break;
+	        case 'top-right':
+	            top = target.top - this.height - spacing;
+	            left = target.left;
+	            break;
 
-        return this;
-    };
-    Tooltip.prototype.getElement = function (x, y) {
-        return this.element;
-    };
+	        case 'bottom':
+	            top = target.bottom + spacing;
+	            left = target.left + target.width / 2 - this.width / 2;
+	            break;
+	        case 'bottom-left':
+	            top = target.bottom + spacing;
+	            left = target.right - this.width;
+	            break;
+	        case 'bottom-right':
+	            top = target.bottom + spacing;
+	            left = target.left;
+	            break;
 
-    /**
-     * Hide the tooltip.
-     *
-     * @return {Tooltip}
-     */
-    Tooltip.prototype.hide = function () {
-        if (this.hidden) {
-            return;
-        }
+	        case 'left':
+	            top = target.top + target.height / 2 - this.height / 2;
+	            left = target.left - this.width - spacing;
+	            break;
+	        case 'left-top':
+	            top = target.bottom - this.height;
+	            left = target.left - this.width - spacing;
+	            break;
+	        case 'left-bottom':
+	            top = target.top;
+	            left = target.left - this.width - spacing;
+	            break;
 
-        var self = this;
-        var duration = 0;
+	        case 'right':
+	            top = target.top + target.height / 2 - this.height / 2;
+	            left = target.right + spacing;
+	            break;
+	        case 'right-top':
+	            top = target.bottom - this.height;
+	            left = target.right + spacing;
+	            break;
+	        case 'right-bottom':
+	            top = target.top;
+	            left = target.right + spacing;
+	            break;
+	    }
 
-        // Remove .in class and calculate transition duration if any
-        if (this.options.inClass) {
-            this.classes.remove(this.options.inClass);
-            if (this.options.effectClass) {
-                duration = transitionDuration(this.element);
-            }
-        }
+	    // Set tip position & class
+	    this.element.style.top = Math.round(top) + 'px';
+	    this.element.style.left = Math.round(left) + 'px';
 
-        // Remove tip from window resize awareness
-        if (this.attachedTo) {
-            this._unaware();
-        }
+	    return this;
+	};
 
-        // Remove the tip from the DOM when transition is done
-        clearTimeout(this.aIndex);
-        this.aIndex = setTimeout(function () {
-            self.aIndex = 0;
-            doc.body.removeChild(self.element);
-            self.hidden = 1;
-        }, duration);
+	/**
+	 * Show the tooltip.
+	 *
+	 * @param {Integer|Element} x
+	 * @param {Integer}         y
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.show = function (x, y) {
+	    x = this.attachedTo ? this.attachedTo : x;
 
-        return this;
-    };
+	    // Clear potential ongoing animation
+	    clearTimeout(this.aIndex);
 
-    Tooltip.prototype.toggle = function (x, y) {
-        return this[this.hidden ? 'show' : 'hide'](x, y);
-    };
+	    // Position the element when requested
+	    if (x != null) {
+	        this.position(x, y);
+	    }
 
-    Tooltip.prototype.destroy = function () {
-        clearTimeout(this.aIndex);
-        this._unaware();
-        if (!this.hidden) {
-            doc.body.removeChild(this.element);
-        }
-        this.element = this.options = null;
-    };
+	    // Stop here if tip is already visible
+	    if (this.hidden) {
+	        this.hidden = 0;
+	        doc.body.appendChild(this.element);
+	    }
 
-    /**
-     * Make the tip window resize aware.
-     *
-     * @return {Void}
-     */
-    Tooltip.prototype._aware = function () {
-        var index = indexOf(Tooltip.winAware, this);
-        if (index === -1) {
-            Tooltip.winAware.push(this);
-        }
-    };
+	    // Make tooltip aware of window resize
+	    if (this.attachedTo) {
+	        this._aware();
+	    }
 
-    /**
-     * Remove the window resize awareness.
-     *
-     * @return {Void}
-     */
-    Tooltip.prototype._unaware = function () {
-        var index = indexOf(Tooltip.winAware, this);
-        if (index !== -1) {
-            Tooltip.winAware.splice(index, 1);
-        }
-    };
+	    // Trigger layout and kick in the transition
+	    if (this.options.inClass) {
+	        if (this.options.effectClass) {
+	            void this.element.clientHeight;
+	        }
+	        this.classes.add(this.options.inClass);
+	    }
 
-    /**
-     * Handles repositioning of tooltips on window resize.
-     *
-     * @return {Void}
-     */
-    Tooltip.reposition = (function () {
+	    return this;
+	};
+	Tooltip.prototype.getElement = function () {
+	    return this.element;
+	};
 
-        var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
-            return setTimeout(fn, 17);
-        };
-        var rIndex;
+	/**
+	 * Hide the tooltip.
+	 *
+	 * @return {Tooltip}
+	 */
+	Tooltip.prototype.hide = function () {
+	    if (this.hidden) {
+	        return;
+	    }
 
-        function requestReposition() {
-            if (rIndex || !Tooltip.winAware.length) {
-                return;
-            }
-            rIndex = rAF(reposition);
-        }
+	    var self = this;
+	    var duration = 0;
 
-        function reposition() {
-            rIndex = 0;
-            var tip;
-            for (var i = 0, l = Tooltip.winAware.length; i < l; i++) {
-                tip = Tooltip.winAware[i];
-                tip.position();
-            }
-        }
+	    // Remove .in class and calculate transition duration if any
+	    if (this.options.inClass) {
+	        this.classes.remove(this.options.inClass);
+	        if (this.options.effectClass) {
+	            duration = transitionDuration(this.element);
+	        }
+	    }
 
-        return requestReposition;
-    })();
-    Tooltip.winAware = [];
+	    // Remove tip from window resize awareness
+	    if (this.attachedTo) {
+	        this._unaware();
+	    }
 
-    // Bind winAware repositioning to window resize event
-    window.addEventListener('resize', Tooltip.reposition);
-    window.addEventListener('scroll', Tooltip.reposition);
+	    // Remove the tip from the DOM when transition is done
+	    clearTimeout(this.aIndex);
+	    this.aIndex = setTimeout(function () {
+	        self.aIndex = 0;
+	        doc.body.removeChild(self.element);
+	        self.hidden = 1;
+	    }, duration);
 
-    /**
-     * Array with dynamic class types.
-     *
-     * @type {Array}
-     */
-    Tooltip.classTypes = ['type', 'effect'];
+	    return this;
+	};
 
-    /**
-     * Default options for Tooltip constructor.
-     *
-     * @type {Object}
-     */
-    Tooltip.defaults = {
-        baseClass: _const.CSS_PREFIX + 'tooltip', // Base tooltip class name.
-        typeClass: null, // Type tooltip class name.
-        effectClass: null, // Effect tooltip class name.
-        inClass: 'in', // Class used to transition stuff in.
-        place: 'top', // Default place.
-        spacing: null, // Gap between target and tooltip.
-        auto: 0 // Whether to automatically adjust place to fit into window.
-    };
+	Tooltip.prototype.toggle = function (x, y) {
+	    return this[this.hidden ? 'show' : 'hide'](x, y);
+	};
 
-    exports.Tooltip = Tooltip;
+	Tooltip.prototype.destroy = function () {
+	    clearTimeout(this.aIndex);
+	    this._unaware();
+	    if (!this.hidden) {
+	        doc.body.removeChild(this.element);
+	    }
+	    this.element = this.options = null;
+	};
+
+	/**
+	 * git remote add origin https://github.com/TargetProcess/tau-tooltip.git.
+	 *
+	 * @return {Void}
+	 */
+	Tooltip.prototype._aware = function () {
+	    var index = indexOf(Tooltip.winAware, this);
+	    if (index === -1) {
+	        Tooltip.winAware.push(this);
+	    }
+	};
+
+	/**
+	 * Remove the window resize awareness.
+	 *
+	 * @return {Void}
+	 */
+	Tooltip.prototype._unaware = function () {
+	    var index = indexOf(Tooltip.winAware, this);
+	    if (index !== -1) {
+	        Tooltip.winAware.splice(index, 1);
+	    }
+	};
+
+	/**
+	 * Handles repositioning of tooltips on window resize.
+	 *
+	 * @return {Void}
+	 */
+	Tooltip.reposition = (function () {
+
+	    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+	        return setTimeout(fn, 17);
+	    };
+	    var rIndex;
+
+	    function requestReposition() {
+	        if (rIndex || !Tooltip.winAware.length) {
+	            return;
+	        }
+	        rIndex = rAF(reposition);
+	    }
+
+	    function reposition() {
+	        rIndex = 0;
+	        var tip;
+	        for (var i = 0, l = Tooltip.winAware.length; i < l; i++) {
+	            tip = Tooltip.winAware[i];
+	            tip.position();
+	        }
+	    }
+
+	    return requestReposition;
+	})();
+	Tooltip.winAware = [];
+
+	// Bind winAware repositioning to window resize event
+	window.addEventListener('resize', Tooltip.reposition);
+	window.addEventListener('scroll', Tooltip.reposition);
+
+	/**
+	 * Array with dynamic class types.
+	 *
+	 * @type {Array}
+	 */
+	Tooltip.classTypes = ['type', 'effect'];
+
+	/**
+	 * Default options for Tooltip constructor.
+	 *
+	 * @type {Object}
+	 */
+	Tooltip.defaults = {
+	    baseClass: 'tooltip', // Base tooltip class name.
+	    typeClass: null, // Type tooltip class name.
+	    effectClass: null, // Effect tooltip class name.
+	    inClass: 'in', // Class used to transition stuff in.
+	    place: 'top', // Default place.
+	    spacing: null, // Gap between target and tooltip.
+	    auto: 0 // Whether to automatically adjust place to fit into window.
+	};
+
+	exports.Tooltip = Tooltip;
+
+/***/ }
+/******/ ])
+});
+;
+define('api/balloon',['exports', '../const', 'tau-tooltip'], function (exports, _const, _tauTooltip) {
+  'use strict';
+
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
+
+  _tauTooltip.Tooltip.defaults.baseClass = _const.CSS_PREFIX + 'tooltip';
+  exports.Tooltip = _tauTooltip.Tooltip;
 });
 define('plugins',['exports', 'd3'], function (exports, _d3) {
     /* jshint ignore:start */
@@ -3952,6 +4019,32 @@ define('data-processor',['exports', './utils/utils'], function (exports, _utilsU
             };
 
             return _.reduce(data, reducer, {});
+        },
+
+        sortByDim: function sortByDim(data, dimName, dimInfo) {
+            var rows = data;
+            if (dimInfo.type === 'measure' || dimInfo.scale === 'period') {
+                rows = _(data).sortBy(dimName);
+            } else if (dimInfo.order) {
+                var hashOrder = dimInfo.order.reduce(function (memo, x, i) {
+                    memo[x] = i;
+                    return memo;
+                }, {});
+                var defaultN = dimInfo.order.length;
+                var k = '(___' + dimName + '___)';
+                rows = data.map(function (row) {
+                    var orderN = hashOrder[row[dimName]];
+                    orderN = orderN >= 0 ? orderN : defaultN;
+                    row[k] = orderN;
+                    return row;
+                }).sort(function (a, b) {
+                    return a[k] - b[k];
+                }).map(function (row) {
+                    delete row[k];
+                    return row;
+                });
+            }
+            return rows;
         }
     };
 
@@ -4840,12 +4933,14 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
                 return unit;
             });
 
+            var rightArrow = ' → ';
+
             if (xUnit) {
-                xUnit.guide.x.label.text = xLabels.join(' > ');
+                xUnit.guide.x.label.text = xLabels.join(rightArrow);
             }
 
             if (yUnit) {
-                yUnit.guide.y.label.text = yLabels.join(' > ');
+                yUnit.guide.y.label.text = yLabels.join(rightArrow);
             }
 
             return spec;
@@ -6352,7 +6447,7 @@ define('utils/d3-decorators',['exports', '../utils/utils-draw', 'underscore', 'd
         var koeff = isHorizontal ? 1 : -1;
         var labelTextNode = axisNode.append('text').attr('transform', _utilsUtilsDraw.utilsDraw.rotate(guide.rotate)).attr('class', guide.cssClass).attr('x', koeff * guide.size * 0.5).attr('y', koeff * guide.padding).style('text-anchor', guide.textAnchor);
 
-        var delimiter = ' > ';
+        var delimiter = ' → ';
         var tags = guide.text.split(delimiter);
         var tLen = tags.length;
         tags.forEach(function (token, i) {
@@ -8544,7 +8639,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
 
     exports.GeoMap = GeoMap;
 });
-define('elements/element.pie',['exports', '../const', './element', '../utils/css-class-map'], function (exports, _const, _element, _utilsCssClassMap) {
+define('elements/element.path',['exports', '../const', './element', '../utils/css-class-map'], function (exports, _const, _element, _utilsCssClassMap) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -8559,86 +8654,310 @@ define('elements/element.pie',['exports', '../const', './element', '../utils/css
 
     function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-    var Pie = (function (_Element) {
-        _inherits(Pie, _Element);
+    var Path = (function (_Element) {
+        _inherits(Path, _Element);
 
-        function Pie(config) {
-            _classCallCheck(this, Pie);
+        function Path(config) {
+            var _this = this;
 
-            _get(Object.getPrototypeOf(Pie.prototype), 'constructor', this).call(this, config);
+            _classCallCheck(this, Path);
+
+            _get(Object.getPrototypeOf(Path.prototype), 'constructor', this).call(this, config);
 
             this.config = config;
             this.config.guide = this.config.guide || {};
             this.config.guide = _.defaults(this.config.guide, {
-                cssClass: ''
+                cssClass: '',
+                showAnchors: true,
+                anchorSize: 0.1
             });
+
+            this.on('highlight', function (sender, e) {
+                return _this.highlight(e);
+            });
+            this.on('highlight-data-points', function (sender, e) {
+                return _this.highlightDataPoints(e);
+            });
+
+            if (this.config.guide.showAnchors) {
+
+                this.on('mouseover', function (sender, e) {
+                    return sender.fire('highlight-data-points', function (row) {
+                        return row === e.data;
+                    });
+                });
+
+                this.on('mousemove', function (sender, e) {
+                    return sender.fire('highlight-data-points', function (row) {
+                        return row === e.data;
+                    });
+                });
+
+                this.on('mouseout', function (sender, e) {
+                    sender.fire('highlight-data-points', function (row) {
+                        return false;
+                    });
+                });
+            }
         }
 
-        _createClass(Pie, [{
+        _createClass(Path, [{
             key: 'createScales',
             value: function createScales(fnCreateScale) {
 
                 var config = this.config;
 
-                this.proportionScale = fnCreateScale('value', config.proportion);
-                this.labelScale = fnCreateScale('value', config.label);
-                this.colorScale = fnCreateScale('color', config.color, {});
+                this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
+                this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
+                this.color = fnCreateScale('color', config.color, {});
+                this.size = fnCreateScale('size', config.size, {});
 
-                return this.regScale('proportion', this.proportionScale).regScale('label', this.labelScale).regScale('color', this.colorScale);
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
+            }
+        }, {
+            key: 'packFrameData',
+            value: function packFrameData(rows) {
+                return rows;
+            }
+        }, {
+            key: 'unpackFrameData',
+            value: function unpackFrameData(rows) {
+                return rows;
+            }
+        }, {
+            key: 'getDistance',
+            value: function getDistance(mx, my, rx, ry) {
+                return Math.sqrt(Math.pow(mx - rx, 2) + Math.pow(my - ry, 2));
             }
         }, {
             key: 'drawFrames',
             value: function drawFrames(frames) {
 
-                var config = this.config;
+                var self = this;
 
-                var options = config.options;
+                var guide = this.config.guide;
+                var options = this.config.options;
 
-                var proportion = this.proportionScale;
-                var label = this.labelScale;
-                var color = this.colorScale;
+                var xScale = this.xScale;
+                var yScale = this.yScale;
+                var colorScale = this.color;
 
-                var w = options.width;
-                var h = options.height;
-                var r = h / 2;
+                var countCss = (0, _utilsCssClassMap.getLineClassesByCount)(frames.length);
 
-                var data = frames[0].part();
+                var areaPref = _const.CSS_PREFIX + 'area i-role-element area ' + countCss + ' ' + guide.cssClass + ' ';
 
-                var vis = options.container.append('svg:svg').data([data]).attr('width', w).attr('height', h).append('svg:g').attr('transform', 'translate(' + r + ',' + r + ')');
+                var polygonPointsMapper = function polygonPointsMapper(rows) {
+                    return rows.map(function (d) {
+                        return [xScale(d[xScale.dim]), yScale(d[yScale.dim])].join(',');
+                    }).join(' ');
+                };
 
-                var pie = d3.layout.pie().value(function (d) {
-                    return d[proportion.dim];
+                var updateArea = function updateArea() {
+
+                    var path = this.selectAll('polygon').data(function (_ref) {
+                        var frame = _ref.data;
+                        return [self.packFrameData(frame.data)];
+                    });
+                    path.exit().remove();
+                    path.attr('points', polygonPointsMapper);
+                    path.enter().append('polygon').attr('points', polygonPointsMapper);
+
+                    self.subscribe(path, function (rows) {
+
+                        var m = d3.mouse(this);
+                        var mx = m[0];
+                        var my = m[1];
+
+                        // d3.invert doesn't work for ordinal axes
+                        var nearest = self.unpackFrameData(rows).map(function (row) {
+                            var rx = xScale(row[xScale.dim]);
+                            var ry = yScale(row[yScale.dim]);
+                            return {
+                                x: rx,
+                                y: ry,
+                                dist: self.getDistance(mx, my, rx, ry),
+                                data: row
+                            };
+                        }).sort(function (a, b) {
+                            return a.dist - b.dist;
+                        }) // asc
+                        [0];
+
+                        return nearest.data;
+                    });
+
+                    if (guide.showAnchors && !this.empty()) {
+
+                        var anchUpdate = function anchUpdate() {
+                            return this.attr({
+                                r: guide.anchorSize,
+                                cx: function cx(d) {
+                                    return xScale(d[xScale.dim]);
+                                },
+                                cy: function cy(d) {
+                                    return yScale(d[yScale.dim]);
+                                },
+                                'class': 'i-data-anchor'
+                            });
+                        };
+
+                        var anch = this.selectAll('circle').data(function (_ref2) {
+                            var frame = _ref2.data;
+                            return frame.data;
+                        });
+                        anch.exit().remove();
+                        anch.call(anchUpdate);
+                        anch.enter().append('circle').call(anchUpdate);
+
+                        self.subscribe(anch);
+                    }
+                };
+
+                var updateGroups = function updateGroups(x) {
+
+                    return function () {
+
+                        this.attr('class', function (_ref3) {
+                            var f = _ref3.data;
+                            return areaPref + ' ' + colorScale(f.tags[colorScale.dim]) + ' ' + x + ' frame-' + f.hash;
+                        }).call(function () {
+                            updateArea.call(this);
+                        });
+                    };
+                };
+
+                var mapper = function mapper(f) {
+                    return {
+                        data: {
+                            tags: f.key || {},
+                            hash: f.hash(),
+                            data: f.part()
+                        },
+                        uid: options.uid
+                    };
+                };
+
+                var drawFrame = function drawFrame(id) {
+
+                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper), function (_ref4) {
+                        var f = _ref4.data;
+                        return f.hash;
+                    });
+                    frameGroups.exit().remove();
+                    frameGroups.call(updateGroups('frame-' + id));
+                    frameGroups.enter().append('g').call(updateGroups('frame-' + id));
+                };
+
+                drawFrame('area-' + options.uid);
+            }
+        }, {
+            key: 'highlight',
+            value: function highlight(filter) {
+
+                this.config.options.container.selectAll('.area').classed({
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref5) {
+                        var d = _ref5.data;
+                        return filter(d.tags) === true;
+                    },
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref6) {
+                        var d = _ref6.data;
+                        return filter(d.tags) === false;
+                    }
                 });
+            }
+        }, {
+            key: 'highlightDataPoints',
+            value: function highlightDataPoints(filter) {
+                var _this2 = this;
 
-                // declare an arc generator function
-                var arc = d3.svg.arc().outerRadius(r);
-
-                // select paths, use arc generator to draw
-                var arcs = vis.selectAll('.slice').data(pie).enter().append('g').attr('class', 'slice');
-
-                arcs.append('path').attr('class', function (d) {
-                    var dm = d.data || {};
-                    return color(dm[color.dim]);
-                }).attr('d', function (d) {
-                    return arc(d);
-                });
-
-                // add the text
-                arcs.append('text').attr('transform', function (d) {
-                    d.innerRadius = 0;
-                    d.outerRadius = r;
-                    return 'translate(' + arc.centroid(d) + ')';
-                }).attr('text-anchor', 'middle').text(function (d) {
-                    var dm = d.data || {};
-                    return label(dm[label.dim]);
+                var colorScale = this.color;
+                var cssClass = 'i-data-anchor';
+                this.config.options.container.selectAll('.' + cssClass).attr({
+                    r: function r(d) {
+                        return filter(d) ? 3 : _this2.config.guide.anchorSize;
+                    },
+                    'class': function _class(d) {
+                        return cssClass + ' ' + colorScale(d[colorScale.dim]);
+                    }
                 });
             }
         }]);
 
-        return Pie;
+        return Path;
     })(_element.Element);
 
-    exports.Pie = Pie;
+    exports.Path = Path;
+});
+define('elements/element.area',['exports', './element.path', '../utils/utils'], function (exports, _elementPath, _utilsUtils) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+    var Area = (function (_Path) {
+        _inherits(Area, _Path);
+
+        function Area(config) {
+            _classCallCheck(this, Area);
+
+            _get(Object.getPrototypeOf(Area.prototype), 'constructor', this).call(this, config);
+        }
+
+        _createClass(Area, [{
+            key: '_assignBase',
+            value: function _assignBase(scale, rows) {
+                var domain = scale.domain();
+                var dim = scale.dim;
+                var min = domain[0];
+                var max = domain[domain.length - 1];
+
+                var head = _utilsUtils.utils.clone(rows[0]);
+                var last = _utilsUtils.utils.clone(rows[rows.length - 1]);
+
+                // NOTE: max also can be below 0
+                var base = scale.discrete ? min : min < 0 ? Math.min(0, max) : min;
+
+                head[dim] = base;
+                last[dim] = base;
+
+                return [head].concat(rows).concat(last);
+            }
+        }, {
+            key: 'packFrameData',
+            value: function packFrameData(rows) {
+                var guide = this.config.guide;
+                var scale = guide.flip ? this.xScale : this.yScale;
+                return this._assignBase(scale, rows);
+            }
+        }, {
+            key: 'unpackFrameData',
+            value: function unpackFrameData(rows) {
+                var last = rows.length - 1;
+                return rows.filter(function (r, i) {
+                    return i > 0 && i < last;
+                });
+            }
+        }, {
+            key: 'getDistance',
+            value: function getDistance(mx, my, rx, ry) {
+                var guide = this.config.guide;
+                return guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx);
+            }
+        }]);
+
+        return Area;
+    })(_elementPath.Path);
+
+    exports.Area = Area;
 });
 define('elements/element.parallel.line',['exports', '../const', './element'], function (exports, _const, _element) {
     'use strict';
@@ -8733,7 +9052,7 @@ define('elements/element.parallel.line',['exports', '../const', './element'], fu
                     });
                     backgroundPath.exit().remove();
                     backgroundPath.call(drawPath);
-                    backgroundPath.enter().append('path').attr('class', 'background').call(drawPath);
+                    backgroundPath.enter().append('path').attr('class', 'background line').call(drawPath);
 
                     var foregroundPath = this.selectAll('.foreground').data(function (f) {
                         return f.part();
@@ -9088,7 +9407,7 @@ define('scales/size',['exports', './base', 'underscore', 'd3'], function (export
                     var min = Math.min.apply(Math, _toConsumableArray(values));
                     var max = Math.max.apply(Math, _toConsumableArray(values));
 
-                    var len = f(Math.max.apply(Math, [Math.abs(min), Math.abs(max), max - min]));
+                    var len = f(Math.max(Math.abs(min), Math.abs(max), max - min));
 
                     xMin = min < 0 ? min : 0;
                     k = len === 0 ? 1 : (maxSize - minSize) / len;
@@ -9757,7 +10076,8 @@ define('api/converter-helpers',['exports', 'd3', '../utils/utils'], function (ex
             color: config.color,
             guide: {
                 color: config.colorGuide,
-                size: config.sizeGuide
+                size: config.sizeGuide,
+                flip: config.flip
             },
             flip: config.flip,
             size: config.size
@@ -9935,7 +10255,7 @@ define('api/chart-scatterplot',['exports', './converter-helpers'], function (exp
 
     exports.ChartScatterplot = ChartScatterplot;
 });
-define('api/chart-line',['exports', '../utils/utils', '../data-processor', './converter-helpers'], function (exports, _utilsUtils, _dataProcessor, _converterHelpers) {
+define('api/chart-line',['exports', '../data-processor', './converter-helpers'], function (exports, _dataProcessor, _converterHelpers) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -9956,18 +10276,16 @@ define('api/chart-line',['exports', '../utils/utils', '../data-processor', './co
             },
 
             horizontal: function horizontal(config) {
-                var xs = _utilsUtils.utils.isArray(config.x) ? config.x : [config.x];
-                return xs[xs.length - 1];
+                return config.x[config.x.length - 1];
             },
 
             vertical: function vertical(config) {
-                var ys = _utilsUtils.utils.isArray(config.y) ? config.y : [config.y];
-                return ys[ys.length - 1];
+                return config.y[config.y.length - 1];
             },
 
             auto: function auto(config) {
-                var xs = _utilsUtils.utils.isArray(config.x) ? config.x : [config.x];
-                var ys = _utilsUtils.utils.isArray(config.y) ? config.y : [config.y];
+                var xs = config.x;
+                var ys = config.y;
                 var primaryX = xs[xs.length - 1];
                 var secondaryX = xs.slice(0, xs.length - 1);
                 var primaryY = ys[ys.length - 1];
@@ -10004,18 +10322,111 @@ define('api/chart-line',['exports', '../utils/utils', '../data-processor', './co
             }
         };
 
-        var orient = (config.lineOrientation || 'auto').toLowerCase();
+        var orient = (config.lineOrientation || '').toLowerCase();
         var strategy = lineOrientationStrategies.hasOwnProperty(orient) ? lineOrientationStrategies[orient] : lineOrientationStrategies.auto;
 
         var propSortBy = strategy(config);
         if (propSortBy !== null) {
-            config.data = _(data).sortBy(propSortBy);
+            config.data = _dataProcessor.DataProcessor.sortByDim(data, propSortBy, config.dimensions[propSortBy]);
         }
 
         return (0, _converterHelpers.transformConfig)('ELEMENT.LINE', config);
     };
 
     exports.ChartLine = ChartLine;
+});
+define('api/chart-area',['exports', '../data-processor', './converter-helpers'], function (exports, _dataProcessor, _converterHelpers) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var ChartArea = function ChartArea(rawConfig) {
+
+        var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
+
+        var data = config.data;
+
+        var log = config.settings.log;
+
+        var orientStrategies = {
+
+            horizontal: function horizontal(config) {
+                return {
+                    prop: config.x[config.x.length - 1],
+                    flip: false
+                };
+            },
+
+            vertical: function vertical(config) {
+                return {
+                    prop: config.y[config.y.length - 1],
+                    flip: true
+                };
+            },
+
+            auto: function auto(config) {
+                var xs = config.x;
+                var ys = config.y;
+                var primaryX = xs[xs.length - 1];
+                var secondaryX = xs.slice(0, xs.length - 1);
+                var primaryY = ys[ys.length - 1];
+                var secondaryY = ys.slice(0, ys.length - 1);
+                var colorProp = config.color;
+
+                var rest = secondaryX.concat(secondaryY).concat([colorProp]).filter(function (x) {
+                    return x !== null;
+                });
+
+                var variantIndex = -1;
+                var variations = [[[primaryX].concat(rest), primaryY], [[primaryY].concat(rest), primaryX]];
+                var isMatchAny = variations.some(function (item, i) {
+                    var domainFields = item[0];
+                    var rangeProperty = item[1];
+                    var r = _dataProcessor.DataProcessor.isYFunctionOfX(data, domainFields, [rangeProperty]);
+                    if (r.result) {
+                        variantIndex = i;
+                    } else {
+                        log(['Attempt to find a functional relation between', item[0] + ' and ' + item[1] + ' is failed.', 'There are several ' + r.error.keyY + ' values (e.g. ' + r.error.errY.join(',') + ')', 'for (' + r.error.keyX + ' = ' + r.error.valX + ').'].join(' '));
+                    }
+                    return r.result;
+                });
+
+                var propSortBy;
+                var flip = null;
+                if (isMatchAny) {
+                    propSortBy = variations[variantIndex][0][0];
+                    flip = variantIndex !== 0;
+                } else {
+                    log('All attempts are failed. Gonna transform AREA to general PATH.');
+                    propSortBy = null;
+                }
+
+                return {
+                    prop: propSortBy,
+                    flip: flip
+                };
+            }
+        };
+
+        var orient = typeof config.flip !== 'boolean' ? 'auto' : config.flip ? 'vertical' : 'horizontal';
+
+        var strategy = orientStrategies[orient];
+
+        var propSortBy = strategy(config);
+        var elementName = 'ELEMENT.AREA';
+        if (propSortBy.prop !== null) {
+            config.data = _dataProcessor.DataProcessor.sortByDim(data, propSortBy.prop, config.dimensions[propSortBy.prop]);
+            config.flip = propSortBy.flip;
+        } else {
+            elementName = 'ELEMENT.PATH';
+        }
+
+        return (0, _converterHelpers.transformConfig)(elementName, config);
+    };
+
+    exports.ChartArea = ChartArea;
 });
 define('api/chart-interval-stacked',['exports', './converter-helpers'], function (exports, _converterHelpers) {
     'use strict';
@@ -10106,7 +10517,7 @@ define('api/chart-parallel',['exports'], function (exports) {
 
     exports.ChartParallel = ChartParallel;
 });
-define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/tau.gpl', './charts/tau.plot', './charts/tau.chart', './unit-domain-period-generator', './formatter-registry', './units-registry', './scales-registry', './elements/coords.cartesian', './elements/coords.parallel', './elements/coords.geomap', './elements/element.point', './elements/element.line', './elements/element.pie', './elements/element.interval', './elements/element.interval.stacked', './elements/element.parallel.line', './scales/color', './scales/size', './scales/ordinal', './scales/period', './scales/time', './scales/linear', './scales/value', './scales/fill', './chart-alias-registry', './api/chart-map', './api/chart-interval', './api/chart-scatterplot', './api/chart-line', './api/chart-interval-stacked', './api/chart-parallel', './error'], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementLine, _elementsElementPie, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartIntervalStacked, _apiChartParallel, _error) {
+define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/tau.gpl', './charts/tau.plot', './charts/tau.chart', './unit-domain-period-generator', './formatter-registry', './units-registry', './scales-registry', './elements/coords.cartesian', './elements/coords.parallel', './elements/coords.geomap', './elements/element.point', './elements/element.area', './elements/element.path', './elements/element.line', './elements/element.interval', './elements/element.interval.stacked', './elements/element.parallel.line', './scales/color', './scales/size', './scales/ordinal', './scales/period', './scales/time', './scales/linear', './scales/value', './scales/fill', './chart-alias-registry', './api/chart-map', './api/chart-interval', './api/chart-scatterplot', './api/chart-line', './api/chart-area', './api/chart-interval-stacked', './api/chart-parallel', './error'], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementArea, _elementsElementPath, _elementsElementLine, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartArea, _apiChartIntervalStacked, _apiChartParallel, _error) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -10217,15 +10628,19 @@ define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/
     _chartsTauPlot.Plot.__api__ = api;
     _chartsTauPlot.Plot.globalSettings = api.globalSettings;
 
-    api.unitsRegistry.reg('COORDS.RECT', _elementsCoordsCartesian.Cartesian).reg('COORDS.MAP', _elementsCoordsGeomap.GeoMap).reg('COORDS.PARALLEL', _elementsCoordsParallel.Parallel).reg('ELEMENT.POINT', _elementsElementPoint.Point).reg('ELEMENT.LINE', _elementsElementLine.Line).reg('ELEMENT.INTERVAL', _elementsElementInterval.Interval).reg('ELEMENT.INTERVAL.STACKED', _elementsElementIntervalStacked.StackedInterval).reg('RECT', _elementsCoordsCartesian.Cartesian).reg('POINT', _elementsElementPoint.Point).reg('INTERVAL', _elementsElementInterval.Interval).reg('LINE', _elementsElementLine.Line).reg('PARALLEL/ELEMENT.LINE', _elementsElementParallelLine.ParallelLine).reg('PIE', _elementsElementPie.Pie);
+    [['COORDS.RECT', _elementsCoordsCartesian.Cartesian], ['COORDS.MAP', _elementsCoordsGeomap.GeoMap], ['COORDS.PARALLEL', _elementsCoordsParallel.Parallel], ['ELEMENT.POINT', _elementsElementPoint.Point], ['ELEMENT.LINE', _elementsElementLine.Line], ['ELEMENT.PATH', _elementsElementPath.Path], ['ELEMENT.AREA', _elementsElementArea.Area], ['ELEMENT.INTERVAL', _elementsElementInterval.Interval], ['ELEMENT.INTERVAL.STACKED', _elementsElementIntervalStacked.StackedInterval], ['PARALLEL/ELEMENT.LINE', _elementsElementParallelLine.ParallelLine]].reduce(function (memo, nv) {
+        return memo.reg(nv[0], nv[1]);
+    }, api.unitsRegistry);
 
-    api.scalesRegistry.reg('color', _scalesColor.ColorScale).reg('fill', _scalesFill.FillScale).reg('size', _scalesSize.SizeScale).reg('ordinal', _scalesOrdinal.OrdinalScale).reg('period', _scalesPeriod.PeriodScale).reg('time', _scalesTime.TimeScale).reg('linear', _scalesLinear.LinearScale).reg('value', _scalesValue.ValueScale);
+    [['color', _scalesColor.ColorScale], ['fill', _scalesFill.FillScale], ['size', _scalesSize.SizeScale], ['ordinal', _scalesOrdinal.OrdinalScale], ['period', _scalesPeriod.PeriodScale], ['time', _scalesTime.TimeScale], ['linear', _scalesLinear.LinearScale], ['value', _scalesValue.ValueScale]].reduce(function (memo, nv) {
+        return memo.reg(nv[0], nv[1]);
+    }, api.scalesRegistry);
 
     var commonRules = [function (config) {
         return !config.data ? ['[data] must be specified'] : [];
     }];
 
-    api.chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry.add('scatterplot', _apiChartScatterplot.ChartScatterplot, commonRules).add('line', _apiChartLine.ChartLine, commonRules).add('bar', function (cfg) {
+    api.chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry.add('scatterplot', _apiChartScatterplot.ChartScatterplot, commonRules).add('line', _apiChartLine.ChartLine, commonRules).add('area', _apiChartArea.ChartArea, commonRules).add('bar', function (cfg) {
         return (0, _apiChartInterval.ChartInterval)(_.defaults({ flip: false }, cfg));
     }, commonRules).add('horizontalBar', function (cfg) {
         return (0, _apiChartInterval.ChartInterval)(_.defaults({ flip: true }, cfg));

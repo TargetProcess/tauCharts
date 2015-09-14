@@ -32,8 +32,8 @@
   height: 100%;
   width: 100%;
   overflow: auto;
-  background: #ffffff;
-  color: #333333;
+  background: #000000;
+  color: #ffffff;
 }
 .graphical-report__layout__header {
   -ms-flex: 0 0.1 auto;
@@ -79,7 +79,7 @@
   box-sizing: border-box;
 }
 .graphical-report__layout text {
-  fill: #333333;
+  fill: #ffffff;
 }
 .graphical-report {
   /* region Select --------------------------------------------------*/
@@ -99,14 +99,14 @@
   height: 14px;
   top: 3px;
   display: inline-block;
-  border: 1px solid #c3c3c3;
+  border: 1px solid #999999;
   border-radius: 2px;
-  background: linear-gradient(to bottom, #ffffff 0%, #dbdbde 100%);
+  background: #777777;
 }
 .graphical-report__checkbox__icon:before {
   display: none;
   content: '';
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAFoTx1HAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MEQ4M0RDOTE4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MEQ4M0RDOTI4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowRDgzREM4Rjg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowRDgzREM5MDg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pn2UjdoAAAEGSURBVHjaYvz//z8DGIAYSUlJdwECiBEukpiY/BDEAQggBrgIVBkLjAEDAAHEiMyBywBNOwDmJCYm/cdQBhBAqHrQAUgSojV5P8QtSY+A+D7cPTDdMAUwTQABhNdYJgZ8AF1nRkaGAgjDvQzi/AOCP3+YWX7+/HmXiYlRAcXY37//AEPs511OTg65uXPnPkQxNi0tTTklJUWGaNcCBBj+EMIDmBjIBCwo1jMyYigAul/x79//B4CulwOqODBv3hxHDKcmJycfAHLtgfrvMTExJf/7938xUF4GaOB9FhZmh1mzZj2CqUdNEkAdSUmZSsAgBNrAIAsUAQYlu+O0adMeo0cS/QMHAGJZps83N5ZDAAAAAElFTkSuQmCC');
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAMAAAAolt3jAAAAPFBMVEX///////////////////////////////////////////////////////////////////////////////8gsV51AAAAE3RSTlMAHB0eHyAhIiNAv8Dc3d7f4eLjyWil2QAAAD1JREFUeAFjoApg5WZF4rEJCHNBxbmYGdgFhflZIFxuYV5OIWE+ZpguAWFhYV4mmDaQSh4mJHM4uBjJcAsAoZwBrNc0BKUAAAAASUVORK5CYII=);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -124,14 +124,14 @@
   opacity: 0.3;
 }
 .graphical-report__checkbox__input:not(:disabled):focus + .graphical-report__checkbox__icon {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 0 7px 0 #52a8ec;
   outline: none;
 }
 .graphical-report__checkbox:hover .graphical-report__checkbox__input:not(:disabled) ~ .graphical-report__checkbox__icon {
-  border-color: #999999;
+  border-color: #c3c3c3;
 }
 .graphical-report__checkbox__input:checked + .graphical-report__checkbox__icon {
-  background: linear-gradient(to bottom, #ffffff 0%, #dbdbde 100%);
+  background: #777777;
 }
 .graphical-report__checkbox__input:checked + .graphical-report__checkbox__icon:before {
   display: block;
@@ -144,13 +144,13 @@
   line-height: 24px;
   vertical-align: middle;
   padding: 2px;
-  background-color: #ffffff;
-  border: 1px solid #c3c3c3;
+  background-color: #777777;
+  border: 1px solid #999999;
   border-radius: 2px;
-  color: #333333;
+  color: #ffffff;
 }
 .graphical-report__select:focus {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 0 7px 0 #52a8ec;
   outline: none;
 }
 .graphical-report__select[disabled] {
@@ -177,16 +177,16 @@
   fill: #66da26;
 }
 .graphical-report__svg .color20-4 {
-  stroke: #4c3862;
-  fill: #4c3862;
+  stroke: #755797;
+  fill: #755797;
 }
 .graphical-report__svg .color20-5 {
   stroke: #e5b011;
   fill: #e5b011;
 }
 .graphical-report__svg .color20-6 {
-  stroke: #3a3226;
-  fill: #3a3226;
+  stroke: #746650;
+  fill: #746650;
 }
 .graphical-report__svg .color20-7 {
   stroke: #cb461a;
@@ -217,8 +217,8 @@
   fill: #746bc9;
 }
 .graphical-report__svg .color20-14 {
-  stroke: #953441;
-  fill: #953441;
+  stroke: #a43b49;
+  fill: #a43b49;
 }
 .graphical-report__svg .color20-15 {
   stroke: #5c7a76;
@@ -233,8 +233,8 @@
   fill: #bfc1c3;
 }
 .graphical-report__svg .color20-18 {
-  stroke: #8e5c31;
-  fill: #8e5c31;
+  stroke: #aa7243;
+  fill: #aa7243;
 }
 .graphical-report__svg .color20-19 {
   stroke: #71ce7b;
@@ -330,7 +330,7 @@
 .graphical-report__svg .place-label-states {
   text-anchor: middle;
   font-size: 10px;
-  fill: rgba(51, 51, 51, 0.5);
+  fill: rgba(255, 255, 255, 0.5);
   line-height: 10px;
   text-transform: capitalize;
 }
@@ -339,37 +339,37 @@
   stroke-linejoin: 'round';
 }
 .graphical-report__svg .map-contour-level-0 path {
-  stroke: #ffffff;
+  stroke: rgba(255, 255, 255, 0.2);
 }
 .graphical-report__svg .map-contour-level-1 path {
-  stroke: #ffffff;
+  stroke: rgba(255, 255, 255, 0.15);
 }
 .graphical-report__svg .map-contour-level-2 path {
-  stroke: #ffffff;
+  stroke: rgba(255, 255, 255, 0.09);
 }
 .graphical-report__svg .map-contour-level-3 path {
-  stroke: #ffffff;
+  stroke: rgba(255, 255, 255, 0.06);
 }
 .graphical-report__svg .map-contour-level-4 path {
-  stroke: #ffffff;
+  stroke: rgba(255, 255, 255, 0.03);
 }
 .graphical-report__svg .map-contour-highlighted,
 .graphical-report__svg .map-contour:hover {
-  fill: #ffbf00;
+  fill: rgba(255, 191, 0, 0.15);
 }
 .graphical-report__svg .map-contour-highlighted path,
 .graphical-report__svg .map-contour:hover path {
-  stroke: #ffffff;
+  stroke: #ffbf00;
 }
 .graphical-report__svg .map-contour-highlighted text,
 .graphical-report__svg .map-contour:hover text {
-  fill: #000000;
+  fill: #ffbf00;
 }
 .graphical-report__svg .axis line,
 .graphical-report__svg .axis path {
   stroke-width: 1;
   fill: none;
-  stroke: rgba(189, 195, 205, 0.4);
+  stroke: rgba(255, 255, 255, 0.2);
   shape-rendering: crispEdges;
 }
 .graphical-report__svg .axis.facet-axis .tick line {
@@ -406,7 +406,7 @@
 }
 .graphical-report__svg .grid line {
   fill: none;
-  stroke: rgba(189, 195, 205, 0.4);
+  stroke: rgba(255, 255, 255, 0.2);
   stroke-width: 1px;
   shape-rendering: crispEdges;
 }
@@ -444,10 +444,10 @@
   shape-rendering: crispEdges;
 }
 .graphical-report__svg .background {
-  stroke: #f2f2f2;
+  stroke: #262626;
 }
 .graphical-report__dot {
-  opacity: 0.7;
+  opacity: 0.9;
   transition: stroke-width 0.1s ease, opacity 0.1s ease;
   stroke-width: 0;
 }

@@ -465,7 +465,7 @@
         },
 
         unit: {
-            type: 'RECT',
+            type: 'COORDS.RECT',
             x: 'proj',
             y: 'team',
             expression: {
@@ -482,7 +482,7 @@
             },
             units: [
                 {
-                    type: 'RECT',
+                    type: 'COORDS.RECT',
                     x: 'story',
                     y: 'count',
                     expression: {
@@ -497,7 +497,7 @@
                     },
                     units: [
                         {
-                            type: 'INTERVAL',
+                            type: 'ELEMENT.INTERVAL',
                             x: 'story',
                             y: 'count',
                             color: 'colorDim',
@@ -629,7 +629,7 @@
         },
 
         unit: {
-            type: 'RECT',
+            type: 'COORDS.RECT',
             x: 'xdate',
             y: 'count',
             expression: {
@@ -642,7 +642,7 @@
             },
             units: [
                 {
-                    type: 'POINT',
+                    type: 'ELEMENT.POINT',
                     x: 'xdate',
                     y: 'count',
                     expression: {
@@ -651,7 +651,7 @@
                     }
                 },
                 {
-                    type: 'LINE',
+                    type: 'ELEMENT.LINE',
                     x: 'xdate',
                     y: 'count',
                     expression: {
@@ -665,7 +665,7 @@
                     }
                 },
                 {
-                    type: 'LINE',
+                    type: 'ELEMENT.LINE',
                     x: 'xdate',
                     y: 'count',
                     color: 'annotation1',
@@ -676,7 +676,7 @@
                     transformation: [{type: 'x-limit', args: {x: 'xdate', y: 'count', limit: 10}}]
                 },
                 {
-                    type: 'LINE',
+                    type: 'ELEMENT.LINE',
                     x: 'xdate',
                     y: 'count',
                     color: 'annotation2',
@@ -895,7 +895,7 @@
         },
 
         unit: {
-            type: 'RECT',
+            type: 'COORDS.RECT',
             x: 'xScale',
             y: 'yScale',
             expression: {
@@ -910,7 +910,7 @@
                     pipe: [],
                     units: [
                         {
-                            type: 'RECT',
+                            type: 'COORDS.RECT',
                             x: 'xScale',
                             y: 'yScale',
                             expr: ['none', 'o', false],
@@ -924,16 +924,16 @@
                                 y: {hide: true}
                             },
                             units: [
-                                {
-                                    type: 'PIE',
-                                    proportion: 'piePortion',
-                                    label: 'label',
-                                    color: 'label_color',
-                                    expression: {
-                                        source: 'o',
-                                        inherit: true
-                                    }
-                                }
+//                                {
+//                                    type: 'PIE',
+//                                    proportion: 'piePortion',
+//                                    label: 'label',
+//                                    color: 'label_color',
+//                                    expression: {
+//                                        source: 'o',
+//                                        inherit: true
+//                                    }
+//                                }
                             ]
                         }
                     ]
@@ -944,7 +944,7 @@
                     pipe: [],
                     units: [
                         {
-                            type: 'RECT',
+                            type: 'COORDS.RECT',
                             x: 'proj',
                             y: 'team',
                             expression: {
@@ -959,7 +959,7 @@
                             },
                             units: [
                                 {
-                                    type: 'RECT',
+                                    type: 'COORDS.RECT',
                                     x: 'count',
                                     y: 'story',
                                     expression: {
@@ -972,7 +972,7 @@
                                     },
                                     units: [
                                         {
-                                            type: 'POINT',
+                                            type: 'ELEMENT.POINT',
                                             x: 'count',
                                             y: 'story',
                                             expression: {
@@ -992,7 +992,7 @@
                     pipe: [],
                     units: [
                         {
-                            type: 'RECT',
+                            type: 'COORDS.RECT',
                             x: 'xdate',
                             y: 'counz',
                             expression: {source: '@', inherit: false},
@@ -1002,7 +1002,7 @@
                             },
                             units: [
                                 {
-                                    type: 'POINT',
+                                    type: 'ELEMENT.POINT',
                                     x: 'xdate',
                                     y: 'counz',
                                     expression: {
@@ -1011,7 +1011,7 @@
                                     }
                                 },
                                 {
-                                    type: 'LINE',
+                                    type: 'ELEMENT.LINE',
                                     x: 'xdate',
                                     y: 'counz',
                                     expression: {
@@ -1028,7 +1028,7 @@
                                     }
                                 },
                                 {
-                                    type: 'LINE',
+                                    type: 'ELEMENT.LINE',
                                     x: 'xdate',
                                     y: 'counz',
                                     color: 'annotation1',
@@ -1045,7 +1045,7 @@
                                     ]
                                 },
                                 {
-                                    type: 'LINE',
+                                    type: 'ELEMENT.LINE',
                                     x: 'xdate',
                                     y: 'counz',
                                     color: 'annotation2',
