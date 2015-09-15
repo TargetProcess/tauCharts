@@ -396,6 +396,7 @@ var SpecEngineTypeMap = {
                         unit.guide.x.tickFormatNullAlias :
                     'No ' + x;
                     unit.guide.x.label.text = '';
+                    unit.guide.x.label._original_text = x;
                 }
 
                 var y = unit.guide.y.label.text;
@@ -405,6 +406,7 @@ var SpecEngineTypeMap = {
                         unit.guide.y.tickFormatNullAlias :
                     'No ' + y;
                     unit.guide.y.label.text = '';
+                    unit.guide.y.label._original_text = y;
                 }
 
                 return unit;

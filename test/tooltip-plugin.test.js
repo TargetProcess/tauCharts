@@ -364,7 +364,7 @@ describeChart("tooltip formatting",
                 .then(function (content) {
                     var $content = $(content);
                     validateLabel($content, 'Project', 'No Project');
-                    validateLabel($content, 'Create Date By Day', '09-Jan-2015');
+                    validateLabel($content, 'Create Date By Day', '09-Jan');
                     validateLabel($content, 'Progress', '90%');
                     validateLabel($content, 'Entity Type', 'Bug');
                     validateLabel($content, 'Effort', '20');
@@ -376,7 +376,7 @@ describeChart("tooltip formatting",
                 .then(function (content) {
                     var $content = $(content);
                     validateLabel($content, 'Project', 'TP3');
-                    validateLabel($content, 'Create Date By Day', '08-Jan-2015');
+                    validateLabel($content, 'Create Date By Day', '08-Jan');
                     validateLabel($content, 'Effort', '10');
                     validateLabel($content, 'Entity Type', 'UserStory');
                     validateLabel($content, 'Progress', '10%');
