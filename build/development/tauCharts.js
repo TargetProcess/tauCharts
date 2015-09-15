@@ -4921,6 +4921,7 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
                     xLabels.push(x);
                     unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ? unit.guide.x.tickFormatNullAlias : 'No ' + x;
                     unit.guide.x.label.text = '';
+                    unit.guide.x.label._original_text = x;
                 }
 
                 var y = unit.guide.y.label.text;
@@ -4928,6 +4929,7 @@ define('spec-transform-auto-layout',['exports', 'underscore', './utils/utils', '
                     yLabels.push(y);
                     unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ? unit.guide.y.tickFormatNullAlias : 'No ' + y;
                     unit.guide.y.label.text = '';
+                    unit.guide.y.label._original_text = y;
                 }
 
                 return unit;

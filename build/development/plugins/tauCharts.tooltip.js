@@ -53,12 +53,11 @@
                 this._currentUnit = null;
                 this._chart = chart;
 
+                this._metaInfo = {};
+                this._skipInfo = {};
+
                 // TODO: for compatibility with old TargetProcess implementation
                 _.extend(this, _.omit(settings, 'fields', 'getFields'));
-
-                var info = this._getFormatters();
-                this._metaInfo = info.meta;
-                this._skipInfo = info.skip;
 
                 this._tooltip = this._chart.addBalloon(
                     {
@@ -239,6 +238,11 @@
             },
 
             onRender: function () {
+
+                var info = this._getFormatters();
+                this._metaInfo = info.meta;
+                this._skipInfo = info.skip;
+
                 this._subscribeToHover();
             },
 
@@ -338,7 +342,11 @@
                     memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[], tickLabel:[]};
 
                     var label = guide.label;
-                    memoRef[scale.dim].label.push(_.isString(label) ? label : ((guide.label || {}).text));
+                    var guideLabel = (guide.label || {});
+                    memoRef[scale.dim].label.push(_.isString(label) ?
+                            (label) :
+                            (guideLabel._original_text || guideLabel.text)
+                    );
 
                     var format = guide.tickFormat || guide.tickPeriod;
                     memoRef[scale.dim].format.push(format);
