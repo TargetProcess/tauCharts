@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.2 - 2015-09-14
+/*! taucharts - v0.5.2 - 2015-09-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -2979,10 +2979,10 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
     exports.GPL = GPL;
 });
 (function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
+    if(typeof define === 'function' && define.amd)
+        define('tau-tooltip',[], factory);
+    else if(typeof module === "object" && module.exports)
 		module.exports = factory();
-	else if(typeof define === 'function' && define.amd)
-		define('tau-tooltip',[], factory);
 	else if(typeof exports === 'object')
 		exports["Tooltip"] = factory();
 	else
