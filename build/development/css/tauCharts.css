@@ -32,7 +32,7 @@
   height: 100%;
   width: 100%;
   overflow: auto;
-  background: #ffffff;
+  background: transparent;
   color: #333333;
 }
 .graphical-report__layout__header {
@@ -414,11 +414,11 @@
   shape-rendering: auto;
 }
 .graphical-report__svg .label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
 }
 .graphical-report__svg .label .label-token {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
   text-transform: capitalize;
 }
