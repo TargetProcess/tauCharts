@@ -209,7 +209,7 @@ define(function (require) {
                             "date": {"type": "measure"},
                             "week": {"type": "order"},
                             "team": {"type": "category"},
-                            "proj": {"type": "category"},
+                            // "proj": {"type": "category"},
                             "count": {"type": "measure"},
                             "proj.name": {"type": "category"}
                         },

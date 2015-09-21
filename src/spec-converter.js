@@ -164,6 +164,7 @@ export class SpecConverter {
         var myDims = this.dist.sources['/'].dims;
         if (!myDims.hasOwnProperty(r)) {
             myDims[r] = {type:myDims[dimName].type};
+            delete myDims[dimName];
         }
 
         return r;

@@ -10,7 +10,7 @@
     <script src="http://localhost:9000/tauCharts.js"></script>
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
-    <script src="../plugins/export.js"></script>
+    <script src="../build/development/plugins/tauCharts.export.js"></script>
     <script src="../plugins/legend.js"></script>
     <script src="../plugins/trendline.js"></script>
     <script src="../plugins/settings.js"></script>
@@ -107,6 +107,7 @@
 <body>
 
 <script>
+    window.charts = [];
     window.samples.filter(_.identity).forEach(function (cfg, i) {
         $('body').append('<div class="cc" id="div' + i + '"></div>');
 
@@ -117,6 +118,8 @@
                 (new tauCharts.Chart(cfg)) :
                 (new tauCharts.Plot(cfg));
         chart.renderTo('#div' + i);
+
+        window.charts.push(chart);
     });
 </script>
 

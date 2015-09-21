@@ -11,6 +11,12 @@
 })(function (tauCharts, canvg, saveAs, Promise, printCss) {
     var d3 = tauCharts.api.d3;
     var _ = tauCharts.api._;
+
+    var trimChar = function(str, char) {
+        // return str.replace(/^\s+|\s+$/g, '');
+        return str.replace(new RegExp('^' + char + '+|' + char + '+$', 'g'), '');
+    };
+
     var dfs = function (node, predicate) {
         if (predicate(node)) {
             return node;
@@ -188,6 +194,66 @@
                             window.print();
                         };
                     });
+            },
+            _toJson: function (chart) {
+                var fldMapper = this._fieldsMapper;
+                var spec = chart.getSpec();
+                var xSource = spec.sources['/'];
+                var srcDims = Object.keys(xSource.dims);
+                var srcData = xSource.data.map(function (row) {
+                    return srcDims.reduce(function (memo, k) {
+                        var f = fldMapper[k] || k;
+                        memo[f] = row[k];
+                        return memo;
+                    }, {});
+                });
+
+                var data = JSON.stringify(srcData);
+                var asArray = new Uint8Array(data.length);
+
+                for (var i = 0, len = data.length; i < len; ++i) {
+                    asArray[i] = data.charCodeAt(i);
+                }
+
+                var blob = new Blob([asArray.buffer], {type: 'application/json'});
+                saveAs(blob, (this._fileName || 'export') + '.json');
+            },
+            _toCsv: function (chart) {
+                var separator = this._csvSeparator;
+                var fldMapper = this._fieldsMapper;
+                var spec = chart.getSpec();
+                var xSource = spec.sources['/'];
+                var srcData = xSource.data;
+                var srcDims = xSource.dims;
+
+                var dims = Object.keys(srcDims);
+
+                var csv = srcData
+                    .reduce(function (csvRows, row) {
+                        return csvRows.concat(
+                            dims.reduce(function (csvRow, k) {
+                                    var val = trimChar(JSON.stringify(row[k]), '"');
+                                    return csvRow.concat(val);
+                                },
+                                [])
+                                .join(separator)
+                        );
+                    },
+                    [
+                        dims.map(function (k) {
+                            return fldMapper[k] || k;
+                        }).join(separator)
+                    ])
+                    .join('\r\n');
+
+                var asArray = new Uint8Array(csv.length);
+
+                for (var i = 0, len = csv.length; i < len; ++i) {
+                    asArray[i] = csv.charCodeAt(i);
+                }
+
+                var blob = new Blob([asArray.buffer], {type: 'text/csv'});
+                saveAs(blob, (this._fileName || 'export') + '.csv');
             },
             _renderColorLegend: function (configUnit, svg, chart, width) {
                 var colorScale = this._unit.color;
@@ -473,6 +539,10 @@
                 settings = settings || {};
                 this._cssPaths = settings.cssPaths;
                 this._fileName = settings.fileName;
+
+                this._csvSeparator = settings.csvSeparator || ',';
+                this._fieldsMapper = settings.fieldsMapper || {};
+
                 if (!this._cssPaths) {
                     this._cssPaths = [];
                     tauCharts.api.globalSettings.log(
@@ -499,6 +569,8 @@
                     '<ul class="graphical-report__export__list">',
                     '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
                     '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="csv" tabindex="2">Export to CSV</a></li>',
+                    '<li class="graphical-report__export__item"><a href="#" data-value="json" tabindex="2">Export to JSON</a></li>',
                     '</ul>'
                 ].join(''));
                 // jscs:enable maximumLineLength
