@@ -12,7 +12,7 @@
     var d3 = tauCharts.api.d3;
     var _ = tauCharts.api._;
 
-    var trimChar = function(str, char) {
+    var trimChar = function (str, char) {
         // return str.replace(/^\s+|\s+$/g, '');
         return str.replace(new RegExp('^' + char + '+|' + char + '+$', 'g'), '');
     };
