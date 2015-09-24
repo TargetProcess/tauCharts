@@ -38,6 +38,7 @@ import {ChartIntervalStacked}   from './api/chart-interval-stacked';
 import {ChartParallel}          from './api/chart-parallel';
 
 import {errorCodes} from './error';
+import {PluginsSDK} from './plugins-sdk';
 
 var colorBrewers = {};
 var plugins = {};
@@ -65,6 +66,7 @@ var api = {
             return colorBrewers[name];
         }
     },
+    pluginsSDK: PluginsSDK,
     plugins: {
         add: function (name, brewer) {
             if (!(name in plugins)) {
