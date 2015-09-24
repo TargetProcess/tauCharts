@@ -20,7 +20,13 @@
             {
                 // add default settings here
                 fields: null,
-                dockToData: false
+                dockToData: false,
+                aggregationGroupFields: [],
+                onRevealAggregation: function (filters, row) {
+                    console.log(
+                        'Setup [onRevealAggregation] callback and filter original data by the following criteria: ',
+                        JSON.stringify(filters, null, 2));
+                }
             });
 
         function getOffsetRect(elem) {
@@ -66,8 +72,18 @@
                         effectClass: 'fade'
                     });
 
+                var revealAggregationBtn = ((settings.aggregationGroupFields.length > 0) ?
+                        (this.templateRevealAggregation) :
+                        ('')
+                );
+
+                var template = _.template(this.template);
+
                 this._tooltip
-                    .content(this.template);
+                    .content(template({
+                        revealTemplate: revealAggregationBtn,
+                        excludeTemplate: this.templateExclude
+                    }));
 
                 this._tooltip
                     .getElement()
@@ -79,6 +95,11 @@
                             if (target.classList.contains('i-role-exclude')) {
                                 self._exclude();
                             }
+
+                            if (target.classList.contains('i-role-reveal')) {
+                                self._reveal();
+                            }
+
                             target = target.parentNode;
                         }
 
@@ -224,6 +245,19 @@
                 return this;
             },
 
+            _reveal: function () {
+                var aggregatedRow = this._currentData;
+                var groupFields = (settings.aggregationGroupFields || []);
+                var descFilters = groupFields.reduce(function (memo, k) {
+                    if (aggregatedRow.hasOwnProperty(k)) {
+                        memo[k] = aggregatedRow[k];
+                    }
+                    return memo;
+                }, {});
+
+                settings.onRevealAggregation(descFilters, aggregatedRow);
+            },
+
             _exclude: function () {
                 this._chart
                     .addFilter({
@@ -246,14 +280,27 @@
                 this._subscribeToHover();
             },
 
+            templateRevealAggregation: [
+                '<div class="i-role-reveal graphical-report__tooltip__vertical">',
+                '   <div class="graphical-report__tooltip__vertical__wrap">',
+                '       Reveal',
+                '   </div>',
+                '</div>'
+            ].join(''),
+
+            templateExclude: [
+                '<div class="i-role-exclude graphical-report__tooltip__exclude">',
+                '   <div class="graphical-report__tooltip__exclude__wrap">',
+                '       <span class="tau-icon-close-gray"></span>',
+                '       Exclude',
+                '   </div>',
+                '</div>'
+            ].join(''),
+
             template: [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
-                '<div class="i-role-exclude graphical-report__tooltip__exclude">',
-                '<div class="graphical-report__tooltip__exclude__wrap">',
-                '<span class="tau-icon-close-gray"></span>',
-                'Exclude',
-                '</div>',
-                '</div>'
+                '<%= revealTemplate %>',
+                '<%= excludeTemplate %>'
             ].join(''),
 
             itemTemplate: _.template([
