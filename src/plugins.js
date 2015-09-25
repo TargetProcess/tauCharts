@@ -1,7 +1,3 @@
-/* jshint ignore:start */
-import {default as d3} from 'd3';
-/* jshint ignore:end */
-
 class Plugins {
 
     constructor(plugins, chart) {

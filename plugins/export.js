@@ -11,25 +11,13 @@
 })(function (tauCharts, canvg, saveAs, Promise, printCss) {
     var d3 = tauCharts.api.d3;
     var _ = tauCharts.api._;
+    var pluginsSDK = tauCharts.api.pluginsSDK;
 
     var trimChar = function (str, char) {
         // return str.replace(/^\s+|\s+$/g, '');
         return str.replace(new RegExp('^' + char + '+|' + char + '+$', 'g'), '');
     };
 
-    var dfs = function (node, predicate) {
-        if (predicate(node)) {
-            return node;
-        }
-        var i, children = node.units || [], child, found;
-        for (i = 0; i < children.length; i += 1) {
-            child = children[i];
-            found = dfs(child, predicate);
-            if (found) {
-                return found;
-            }
-        }
-    };
     var doEven = function (n) {
         n = Math.round(n);
         return n % 2 ? n + 1 : n;
@@ -116,6 +104,34 @@
 
     function exportTo(settings) {
         return {
+
+            onRender: function () {
+                this._info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
+            },
+
+            _normalizeExportFields: function (fields) {
+                var info = this._info;
+                return fields.map(function (token) {
+
+                    var r = token;
+
+                    if (_.isString(token)) {
+                        r = {
+                            field: token,
+                            title: info[token].label
+                        };
+                    }
+
+                    if (!_.isFunction(r.value)) {
+                        r.value = function (row) {
+                            return row[this.field];
+                        };
+                    }
+
+                    return r;
+                });
+            },
+
             _createDataUrl: function (chart) {
                 var cssPromises = this._cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
@@ -155,7 +171,7 @@
                     spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
                     );
                 };
-                return dfs(conf.unit, function (node) {
+                return pluginsSDK.depthFirstSearch(conf.unit, function (node) {
 
                     if (checkNotEmpty(node.color)) {
                         return true;
@@ -196,19 +212,20 @@
                     });
             },
             _toJson: function (chart) {
-                var fldMapper = this._fieldsMapper;
+                var exportFields = this._exportFields;
                 var spec = chart.getSpec();
                 var xSource = spec.sources['/'];
-                var srcDims = Object.keys(xSource.dims);
+                var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
+                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields));
+
                 var srcData = xSource.data.map(function (row) {
-                    return srcDims.reduce(function (memo, k) {
-                        var f = fldMapper[k] || k;
-                        memo[f] = row[k];
+                    return fields.reduce(function (memo, f) {
+                        memo[f.title] = f.value(row);
                         return memo;
                     }, {});
                 });
 
-                var data = JSON.stringify(srcData);
+                var data = JSON.stringify(srcData, null, 2);
                 var asArray = new Uint8Array(data.length);
 
                 for (var i = 0, len = data.length; i < len; ++i) {
@@ -220,19 +237,19 @@
             },
             _toCsv: function (chart) {
                 var separator = this._csvSeparator;
-                var fldMapper = this._fieldsMapper;
+                var exportFields = this._exportFields;
                 var spec = chart.getSpec();
                 var xSource = spec.sources['/'];
                 var srcData = xSource.data;
-                var srcDims = xSource.dims;
 
-                var dims = Object.keys(srcDims);
+                var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
+                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields));
 
                 var csv = srcData
                     .reduce(function (csvRows, row) {
                         return csvRows.concat(
-                            dims.reduce(function (csvRow, k) {
-                                    var val = trimChar(JSON.stringify(row[k]), '"');
+                            fields.reduce(function (csvRow, f) {
+                                    var val = trimChar(JSON.stringify(f.value(row)), '"');
                                     return csvRow.concat(val);
                                 },
                                 [])
@@ -240,8 +257,8 @@
                         );
                     },
                     [
-                        dims.map(function (k) {
-                            return fldMapper[k] || k;
+                        fields.map(function (f) {
+                            return f.title;
                         }).join(separator)
                     ])
                     .join('\r\n');
@@ -537,11 +554,14 @@
             },
             init: function (chart) {
                 settings = settings || {};
+                this._chart = chart;
+                this._info = {};
                 this._cssPaths = settings.cssPaths;
                 this._fileName = settings.fileName;
 
                 this._csvSeparator = settings.csvSeparator || ',';
-                this._fieldsMapper = settings.fieldsMapper || {};
+                this._exportFields = settings.exportFields || [];
+                this._appendFields = settings.appendFields || [];
 
                 if (!this._cssPaths) {
                     this._cssPaths = [];

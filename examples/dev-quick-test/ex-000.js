@@ -526,7 +526,7 @@ window.samples.push({
         }
     }
     ].map(function (row) {
-            row.x1 = parseInt(row.x1.substr(6, 13))
+            row.x1 = parseInt(row.x1.substr(6, 13));
             return row;
         }),
 
@@ -537,7 +537,15 @@ window.samples.push({
         }),
         tauCharts.api.plugins.get('trendline')({showPanel: false}),
         tauCharts.api.plugins.get('exportTo')({
-            fieldsMapper: {x:'ordinate'}
+            appendFields: [
+                {
+                    field: 'name',
+                    title: 'name',
+                    value: function (row) {
+                        return row.dataItem.data.name;
+                    }
+                }
+            ]
         })
     ]
 });
