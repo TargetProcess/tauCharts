@@ -1,25 +1,25 @@
 var generateThemes = function () {
     var themes = ['default', 'dark'];
-    var generatePath = function (key) {
-        return (key === 'default') ? '' : ('.' + key);
+    var plugins = ['tooltip', 'export', 'legend', 'trendline'];
+
+    var generateCompatibleSuffixes = function (key) {
+        return {
+            key: (key || 'default'),
+            src: (key ? ('.' + key) : ('.default')),
+            dst: (key ? ('.' + key) : (''))
+        };
     };
-    var minCss = [
-        {
-            src: 'css/base.css',
-            dest: 'build/production/tauCharts.normalize.min.css'
-        }
-    ];
 
     return {
+
         less: themes.reduce(function (memo, key) {
-            var plugins = ['tooltip', 'export', 'legend', 'trendline'];
-            var prefix = generatePath(key);
+            var suffix = generateCompatibleSuffixes(key);
             var files = plugins.reduce(function (files, plugin) {
-                var t = 'css/' + plugin + prefix + '.css';
+                var t = 'css/' + plugin + suffix.src + '.css';
                 files[t] = 'less/plugins/' + plugin + '.less';
                 return files;
             }, {});
-            var tauCss = 'css/tauCharts' + prefix + '.css';
+            var tauCss = 'css/tauCharts' + suffix.src + '.css';
             files[tauCss] = 'less/tauCharts.less';
             files['css/base.css'] = 'less/base.less';
             files['css/layout.css'] = 'less/layout.less';
@@ -28,54 +28,56 @@ var generateThemes = function () {
                 options: {
                     paths: ['less'],
                     modifyVars: {
-                        theme: key
+                        theme: suffix.key
                     }
                 },
                 files: files
             };
             return memo;
         }, {}),
-        css: themes.map(function (key) {
-            var prefix = generatePath(key);
+
+        css: [null].concat(themes).map(function (key) {
+            var suffix = generateCompatibleSuffixes(key);
             return [
                 {
-                    src: 'css/tauCharts' + prefix + '.css',
-                    dest: 'build/development/css/tauCharts' + prefix + '.css'
+                    src: 'css/tauCharts' + suffix.src + '.css',
+                    dest: 'build/development/css/tauCharts' + suffix.dst + '.css'
                 },
                 {
                     src: 'css/colorbrewer.css',
-                    dest: 'build/development/css/tauCharts.colorbrewer' + prefix + '.css'
-                },
-                {
-                    src: 'css/tooltip' + prefix + '.css',
-                    dest: 'build/development/plugins/tauCharts.tooltip' + prefix + '.css'
-                },
-                {
-                    src: 'css/legend.css',
-                    dest: 'build/development/plugins/tauCharts.legend' + prefix + '.css'
-                },
-                {
-                    src: 'css/trendline.css',
-                    dest: 'build/development/plugins/tauCharts.trendline' + prefix + '.css'
-                },
-                {
-                    src: 'css/export.css',
-                    dest: 'build/development/plugins/tauCharts.export' + prefix + '.css'
-                }];
+                    dest: 'build/development/css/tauCharts.colorbrewer' + suffix.dst + '.css'
+                }
+            ].concat(plugins.map(function (pluginName) {
+                    return {
+                        src: 'css/' + pluginName + suffix.src + '.css',
+                        dest: 'build/development/plugins/tauCharts.' + pluginName + suffix.dst + '.css'
+                    };
+                }));
         }),
-        prodCss: themes.reduce(function (memo, key) {
-            var prefix = generatePath(key);
-            memo['build/production/tauCharts' + prefix + '.min.css'] = ['build/development/**/*' + prefix + '.css'];
-            return memo;
-        }, {}),
-        cssMin: themes.reduce(function (memo, key) {
-            var prefix = generatePath(key);
-            memo.push({
-                src: 'build/production/tauCharts' + prefix + '.min.css',
-                dest: 'build/production/tauCharts' + prefix + '.min.css'
-            });
-            return memo;
-        }, minCss)
+
+        prodCss: [null].concat(themes).reduce(
+            function (memo, key) {
+                var suffix = generateCompatibleSuffixes(key);
+                memo['build/production/tauCharts' + suffix.dst + '.min.css'] = ['build/development/**/*' + suffix.src + '.css'];
+                return memo;
+            },
+            {}),
+
+        cssMin: [null].concat(themes).reduce(
+            function (memo, key) {
+                var suffix = generateCompatibleSuffixes(key);
+                memo.push({
+                    src: 'build/production/tauCharts' + suffix.dst + '.min.css',
+                    dest: 'build/production/tauCharts' + suffix.dst + '.min.css'
+                });
+                return memo;
+            },
+            [
+                {
+                    src: 'css/base.css',
+                    dest: 'build/production/tauCharts.normalize.min.css'
+                }
+            ])
     };
 };
 module.exports = generateThemes();
