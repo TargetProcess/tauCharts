@@ -33,7 +33,7 @@
             padding: 10px 20px 8px 40px;
             position: relative;
             font-size: @font-size-m;
-            line-height: 16px;
+            line-height: 1.2em;
             cursor: pointer;
 
             &:hover {
@@ -77,7 +77,7 @@
 
             &__wrap {
                 position: absolute;
-                top: 9px;
+                top: ~'calc((10px - 8px) + 0.6em)'; // (padding-top - legend__guide height) + 0.5 of items line-height
                 left: 10px;
                 width: 16px;
                 height: 16px;
