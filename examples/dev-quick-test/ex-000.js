@@ -589,9 +589,7 @@ window.samples.push({
         tauCharts.api.plugins.get('legend')(),
         tauCharts.api.plugins.get('tooltip')(),
         tauCharts.api.plugins.get('trendline')({showPanel: false}),
-        tauCharts.api.plugins.get('exportTo')({
-            fieldsMapper: {x:'ordinate'}
-        })
+        tauCharts.api.plugins.get('exportTo')()
     ]
 });
 

@@ -10,8 +10,8 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            {pattern: 'css/tooltip.css', included: true},
-            {pattern: 'css/tauCharts.css', included: true},
+            {pattern: 'css/tooltip.default.css', included: true},
+            {pattern: 'css/tauCharts.default.css', included: true},
             {pattern: 'test/utils/test.css', included: true},
             {pattern: 'css/base.css', included: true},
             'test/tests-main.js'
