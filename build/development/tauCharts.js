@@ -1,4 +1,4 @@
-/*! taucharts - v0.5.2 - 2015-09-17
+/*! taucharts - v0.6.0 - 2015-09-28
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -3700,8 +3700,7 @@ define('api/balloon',['exports', '../const', 'tau-tooltip'], function (exports, 
   _tauTooltip.Tooltip.defaults.baseClass = _const.CSS_PREFIX + 'tooltip';
   exports.Tooltip = _tauTooltip.Tooltip;
 });
-define('plugins',['exports', 'd3'], function (exports, _d3) {
-    /* jshint ignore:start */
+define('plugins',['exports'], function (exports) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -3710,13 +3709,7 @@ define('plugins',['exports', 'd3'], function (exports, _d3) {
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-    var _d32 = _interopRequireDefault(_d3);
-
-    /* jshint ignore:end */
 
     var Plugins = (function () {
         function Plugins(plugins, chart) {
@@ -4277,6 +4270,7 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
                 var myDims = this.dist.sources['/'].dims;
                 if (!myDims.hasOwnProperty(r)) {
                     myDims[r] = { type: myDims[dimName].type };
+                    delete myDims[dimName];
                 }
 
                 return r;
@@ -10519,7 +10513,161 @@ define('api/chart-parallel',['exports'], function (exports) {
 
     exports.ChartParallel = ChartParallel;
 });
-define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/tau.gpl', './charts/tau.plot', './charts/tau.chart', './unit-domain-period-generator', './formatter-registry', './units-registry', './scales-registry', './elements/coords.cartesian', './elements/coords.parallel', './elements/coords.geomap', './elements/element.point', './elements/element.area', './elements/element.path', './elements/element.line', './elements/element.interval', './elements/element.interval.stacked', './elements/element.parallel.line', './scales/color', './scales/size', './scales/ordinal', './scales/period', './scales/time', './scales/linear', './scales/value', './scales/fill', './chart-alias-registry', './api/chart-map', './api/chart-interval', './api/chart-scatterplot', './api/chart-line', './api/chart-area', './api/chart-interval-stacked', './api/chart-parallel', './error'], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementArea, _elementsElementPath, _elementsElementLine, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartArea, _apiChartIntervalStacked, _apiChartParallel, _error) {
+define('plugins-sdk',['exports', 'underscore', './formatter-registry'], function (exports, _underscore, _formatterRegistry) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    var _2 = _interopRequireDefault(_underscore);
+
+    var PluginsSDK = (function () {
+        function PluginsSDK() {
+            _classCallCheck(this, PluginsSDK);
+        }
+
+        _createClass(PluginsSDK, null, [{
+            key: 'depthFirstSearch',
+            value: function depthFirstSearch(node, predicate) {
+                if (predicate(node)) {
+                    return node;
+                }
+                var i,
+                    children = node.units || [],
+                    child,
+                    found;
+                for (i = 0; i < children.length; i += 1) {
+                    child = children[i];
+                    found = PluginsSDK.depthFirstSearch(child, predicate);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+        }, {
+            key: 'traverseSpec',
+            value: function traverseSpec(spec, iterator) {
+
+                var traverse = function traverse(node, fnIterator, parentNode) {
+                    fnIterator(node, parentNode);
+                    (node.units || []).map(function (x) {
+                        return traverse(x, fnIterator, node);
+                    });
+                };
+
+                traverse(spec.unit, iterator, null);
+            }
+        }, {
+            key: 'extractFieldsFormatInfo',
+            value: function extractFieldsFormatInfo(spec) {
+
+                var specScales = spec.scales;
+
+                var isEmptyScale = function isEmptyScale(key) {
+                    return !specScales[key].dim;
+                };
+
+                var fillSlot = function fillSlot(memoRef, config, key) {
+                    var GUIDE = config.guide || {};
+                    var scale = specScales[config[key]];
+                    var guide = GUIDE[key] || {};
+                    memoRef[scale.dim] = memoRef[scale.dim] || { label: [], format: [], nullAlias: [], tickLabel: [] };
+
+                    var label = guide.label;
+                    var guideLabel = guide.label || {};
+                    memoRef[scale.dim].label.push(_2['default'].isString(label) ? label : guideLabel._original_text || guideLabel.text);
+
+                    var format = guide.tickFormat || guide.tickPeriod;
+                    memoRef[scale.dim].format.push(format);
+
+                    memoRef[scale.dim].nullAlias.push(guide.tickFormatNullAlias);
+
+                    // TODO: workaround for #complex-objects
+                    memoRef[scale.dim].tickLabel.push(guide.tickLabel);
+                };
+
+                var configs = [];
+                PluginsSDK.traverseSpec(spec, function (node) {
+                    configs.push(node);
+                });
+
+                var summary = configs.reduce(function (memo, config) {
+
+                    if (config.type === 'COORDS.RECT' && config.hasOwnProperty('x') && !isEmptyScale(config.x)) {
+                        fillSlot(memo, config, 'x');
+                    }
+
+                    if (config.type === 'COORDS.RECT' && config.hasOwnProperty('y') && !isEmptyScale(config.y)) {
+                        fillSlot(memo, config, 'y');
+                    }
+
+                    if (config.hasOwnProperty('color') && !isEmptyScale(config.color)) {
+                        fillSlot(memo, config, 'color');
+                    }
+
+                    if (config.hasOwnProperty('size') && !isEmptyScale(config.size)) {
+                        fillSlot(memo, config, 'size');
+                    }
+
+                    return memo;
+                }, {});
+
+                var choiceRule = function choiceRule(arr, defaultValue) {
+
+                    var val = (0, _2['default'])(arr).chain().filter(_2['default'].identity).uniq().first().value();
+
+                    return val || defaultValue;
+                };
+
+                return Object.keys(summary).reduce(function (memo, k) {
+                    memo[k].label = choiceRule(memo[k].label, k);
+                    memo[k].format = choiceRule(memo[k].format, null);
+                    memo[k].nullAlias = choiceRule(memo[k].nullAlias, 'No ' + memo[k].label);
+                    memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
+
+                    // very special case for dates
+                    var format = memo[k].format === 'x-time-auto' ? 'day' : memo[k].format;
+                    var nonVal = memo[k].nullAlias;
+                    var fnForm = format ? _formatterRegistry.FormatterRegistry.get(format, nonVal) : function (raw) {
+                        return raw === null ? nonVal : raw;
+                    };
+
+                    memo[k].format = fnForm;
+
+                    // TODO: workaround for #complex-objects
+                    if (memo[k].tickLabel) {
+                        var kc = k.replace('.' + memo[k].tickLabel, '');
+                        memo[kc] = {
+                            label: memo[k].label,
+                            nullAlias: memo[k].nullAlias,
+                            tickLabel: memo[k].tickLabel,
+                            format: function format(obj) {
+                                return fnForm(obj && obj[memo[kc].tickLabel]);
+                            },
+                            isComplexField: true
+                        };
+
+                        memo[k].parentField = kc;
+                    }
+
+                    return memo;
+                }, summary);
+            }
+        }]);
+
+        return PluginsSDK;
+    })();
+
+    exports.PluginsSDK = PluginsSDK;
+});
+define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/tau.gpl', './charts/tau.plot', './charts/tau.chart', './unit-domain-period-generator', './formatter-registry', './units-registry', './scales-registry', './elements/coords.cartesian', './elements/coords.parallel', './elements/coords.geomap', './elements/element.point', './elements/element.area', './elements/element.path', './elements/element.line', './elements/element.interval', './elements/element.interval.stacked', './elements/element.parallel.line', './scales/color', './scales/size', './scales/ordinal', './scales/period', './scales/time', './scales/linear', './scales/value', './scales/fill', './chart-alias-registry', './api/chart-map', './api/chart-interval', './api/chart-scatterplot', './api/chart-line', './api/chart-area', './api/chart-interval-stacked', './api/chart-parallel', './error', './plugins-sdk'], function (exports, _utilsUtilsDom, _utilsUtils, _chartsTauGpl, _chartsTauPlot, _chartsTauChart, _unitDomainPeriodGenerator, _formatterRegistry, _unitsRegistry, _scalesRegistry, _elementsCoordsCartesian, _elementsCoordsParallel, _elementsCoordsGeomap, _elementsElementPoint, _elementsElementArea, _elementsElementPath, _elementsElementLine, _elementsElementInterval, _elementsElementIntervalStacked, _elementsElementParallelLine, _scalesColor, _scalesSize, _scalesOrdinal, _scalesPeriod, _scalesTime, _scalesLinear, _scalesValue, _scalesFill, _chartAliasRegistry, _apiChartMap, _apiChartInterval, _apiChartScatterplot, _apiChartLine, _apiChartArea, _apiChartIntervalStacked, _apiChartParallel, _error, _pluginsSdk) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -10552,6 +10700,7 @@ define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/
                 return colorBrewers[name];
             }
         },
+        pluginsSDK: _pluginsSdk.PluginsSDK,
         plugins: {
             add: function add(name, brewer) {
                 if (!(name in plugins)) {

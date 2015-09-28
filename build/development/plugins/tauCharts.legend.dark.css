@@ -20,11 +20,11 @@
   padding: 10px 20px 8px 40px;
   position: relative;
   font-size: 13px;
-  line-height: 16px;
+  line-height: 1.2em;
   cursor: pointer;
 }
 .graphical-report__legend__item:hover {
-  background-color: rgba(189, 195, 205, 0.2);
+  background-color: rgba(37, 39, 46, 0.2);
 }
 .graphical-report__legend__item--size {
   cursor: default;
@@ -38,7 +38,7 @@
 }
 .graphical-report__legend__item:disabled,
 .graphical-report__legend__item.disabled {
-  color: #cccccc;
+  color: #8e8e8e;
 }
 .graphical-report__legend__item.disabled .graphical-report__legend__guide {
   background: transparent;
@@ -57,7 +57,7 @@
 }
 .graphical-report__legend__guide__wrap {
   position: absolute;
-  top: 9px;
+  top: calc((10px - 8px) + 0.6em);
   left: 10px;
   width: 16px;
   height: 16px;
@@ -96,8 +96,8 @@
   background-color: transparent;
 }
 .graphical-report__legend__item .color20-4 {
-  background: #4c3862;
-  border: 1px solid #4c3862;
+  background: #755797;
+  border: 1px solid #755797;
 }
 .graphical-report__legend__item.disabled .color20-4 {
   background-color: transparent;
@@ -110,8 +110,8 @@
   background-color: transparent;
 }
 .graphical-report__legend__item .color20-6 {
-  background: #3a3226;
-  border: 1px solid #3a3226;
+  background: #746650;
+  border: 1px solid #746650;
 }
 .graphical-report__legend__item.disabled .color20-6 {
   background-color: transparent;
@@ -166,8 +166,8 @@
   background-color: transparent;
 }
 .graphical-report__legend__item .color20-14 {
-  background: #953441;
-  border: 1px solid #953441;
+  background: #a43b49;
+  border: 1px solid #a43b49;
 }
 .graphical-report__legend__item.disabled .color20-14 {
   background-color: transparent;
@@ -194,8 +194,8 @@
   background-color: transparent;
 }
 .graphical-report__legend__item .color20-18 {
-  background: #8e5c31;
-  border: 1px solid #8e5c31;
+  background: #aa7243;
+  border: 1px solid #aa7243;
 }
 .graphical-report__legend__item.disabled .color20-18 {
   background-color: transparent;
