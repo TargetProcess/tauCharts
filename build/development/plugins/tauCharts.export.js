@@ -449,289 +449,290 @@ define("../node_modules/almond/almond", function(){});
  * @link   http://www.phpied.com/rgb-color-parser-in-javascript/
  * @license Use it if you like it
  */
+ 
 (function ( global ) {
+ 
+	function RGBColor(color_string)
+	{
+		this.ok = false;
 
-    function RGBColor(color_string)
-    {
-        this.ok = false;
+		// strip any leading #
+		if (color_string.charAt(0) == '#') { // remove # if any
+			color_string = color_string.substr(1,6);
+		}
 
-        // strip any leading #
-        if (color_string.charAt(0) == '#') { // remove # if any
-            color_string = color_string.substr(1,6);
-        }
+		color_string = color_string.replace(/ /g,'');
+		color_string = color_string.toLowerCase();
 
-        color_string = color_string.replace(/ /g,'');
-        color_string = color_string.toLowerCase();
+		// before getting into regexps, try simple matches
+		// and overwrite the input
+		var simple_colors = {
+			aliceblue: 'f0f8ff',
+			antiquewhite: 'faebd7',
+			aqua: '00ffff',
+			aquamarine: '7fffd4',
+			azure: 'f0ffff',
+			beige: 'f5f5dc',
+			bisque: 'ffe4c4',
+			black: '000000',
+			blanchedalmond: 'ffebcd',
+			blue: '0000ff',
+			blueviolet: '8a2be2',
+			brown: 'a52a2a',
+			burlywood: 'deb887',
+			cadetblue: '5f9ea0',
+			chartreuse: '7fff00',
+			chocolate: 'd2691e',
+			coral: 'ff7f50',
+			cornflowerblue: '6495ed',
+			cornsilk: 'fff8dc',
+			crimson: 'dc143c',
+			cyan: '00ffff',
+			darkblue: '00008b',
+			darkcyan: '008b8b',
+			darkgoldenrod: 'b8860b',
+			darkgray: 'a9a9a9',
+			darkgreen: '006400',
+			darkkhaki: 'bdb76b',
+			darkmagenta: '8b008b',
+			darkolivegreen: '556b2f',
+			darkorange: 'ff8c00',
+			darkorchid: '9932cc',
+			darkred: '8b0000',
+			darksalmon: 'e9967a',
+			darkseagreen: '8fbc8f',
+			darkslateblue: '483d8b',
+			darkslategray: '2f4f4f',
+			darkturquoise: '00ced1',
+			darkviolet: '9400d3',
+			deeppink: 'ff1493',
+			deepskyblue: '00bfff',
+			dimgray: '696969',
+			dodgerblue: '1e90ff',
+			feldspar: 'd19275',
+			firebrick: 'b22222',
+			floralwhite: 'fffaf0',
+			forestgreen: '228b22',
+			fuchsia: 'ff00ff',
+			gainsboro: 'dcdcdc',
+			ghostwhite: 'f8f8ff',
+			gold: 'ffd700',
+			goldenrod: 'daa520',
+			gray: '808080',
+			green: '008000',
+			greenyellow: 'adff2f',
+			honeydew: 'f0fff0',
+			hotpink: 'ff69b4',
+			indianred : 'cd5c5c',
+			indigo : '4b0082',
+			ivory: 'fffff0',
+			khaki: 'f0e68c',
+			lavender: 'e6e6fa',
+			lavenderblush: 'fff0f5',
+			lawngreen: '7cfc00',
+			lemonchiffon: 'fffacd',
+			lightblue: 'add8e6',
+			lightcoral: 'f08080',
+			lightcyan: 'e0ffff',
+			lightgoldenrodyellow: 'fafad2',
+			lightgrey: 'd3d3d3',
+			lightgreen: '90ee90',
+			lightpink: 'ffb6c1',
+			lightsalmon: 'ffa07a',
+			lightseagreen: '20b2aa',
+			lightskyblue: '87cefa',
+			lightslateblue: '8470ff',
+			lightslategray: '778899',
+			lightsteelblue: 'b0c4de',
+			lightyellow: 'ffffe0',
+			lime: '00ff00',
+			limegreen: '32cd32',
+			linen: 'faf0e6',
+			magenta: 'ff00ff',
+			maroon: '800000',
+			mediumaquamarine: '66cdaa',
+			mediumblue: '0000cd',
+			mediumorchid: 'ba55d3',
+			mediumpurple: '9370d8',
+			mediumseagreen: '3cb371',
+			mediumslateblue: '7b68ee',
+			mediumspringgreen: '00fa9a',
+			mediumturquoise: '48d1cc',
+			mediumvioletred: 'c71585',
+			midnightblue: '191970',
+			mintcream: 'f5fffa',
+			mistyrose: 'ffe4e1',
+			moccasin: 'ffe4b5',
+			navajowhite: 'ffdead',
+			navy: '000080',
+			oldlace: 'fdf5e6',
+			olive: '808000',
+			olivedrab: '6b8e23',
+			orange: 'ffa500',
+			orangered: 'ff4500',
+			orchid: 'da70d6',
+			palegoldenrod: 'eee8aa',
+			palegreen: '98fb98',
+			paleturquoise: 'afeeee',
+			palevioletred: 'd87093',
+			papayawhip: 'ffefd5',
+			peachpuff: 'ffdab9',
+			peru: 'cd853f',
+			pink: 'ffc0cb',
+			plum: 'dda0dd',
+			powderblue: 'b0e0e6',
+			purple: '800080',
+			red: 'ff0000',
+			rosybrown: 'bc8f8f',
+			royalblue: '4169e1',
+			saddlebrown: '8b4513',
+			salmon: 'fa8072',
+			sandybrown: 'f4a460',
+			seagreen: '2e8b57',
+			seashell: 'fff5ee',
+			sienna: 'a0522d',
+			silver: 'c0c0c0',
+			skyblue: '87ceeb',
+			slateblue: '6a5acd',
+			slategray: '708090',
+			snow: 'fffafa',
+			springgreen: '00ff7f',
+			steelblue: '4682b4',
+			tan: 'd2b48c',
+			teal: '008080',
+			thistle: 'd8bfd8',
+			tomato: 'ff6347',
+			turquoise: '40e0d0',
+			violet: 'ee82ee',
+			violetred: 'd02090',
+			wheat: 'f5deb3',
+			white: 'ffffff',
+			whitesmoke: 'f5f5f5',
+			yellow: 'ffff00',
+			yellowgreen: '9acd32'
+		};
+		for (var key in simple_colors) {
+			if (color_string == key) {
+				color_string = simple_colors[key];
+			}
+		}
+		// emd of simple type-in colors
 
-        // before getting into regexps, try simple matches
-        // and overwrite the input
-        var simple_colors = {
-            aliceblue: 'f0f8ff',
-            antiquewhite: 'faebd7',
-            aqua: '00ffff',
-            aquamarine: '7fffd4',
-            azure: 'f0ffff',
-            beige: 'f5f5dc',
-            bisque: 'ffe4c4',
-            black: '000000',
-            blanchedalmond: 'ffebcd',
-            blue: '0000ff',
-            blueviolet: '8a2be2',
-            brown: 'a52a2a',
-            burlywood: 'deb887',
-            cadetblue: '5f9ea0',
-            chartreuse: '7fff00',
-            chocolate: 'd2691e',
-            coral: 'ff7f50',
-            cornflowerblue: '6495ed',
-            cornsilk: 'fff8dc',
-            crimson: 'dc143c',
-            cyan: '00ffff',
-            darkblue: '00008b',
-            darkcyan: '008b8b',
-            darkgoldenrod: 'b8860b',
-            darkgray: 'a9a9a9',
-            darkgreen: '006400',
-            darkkhaki: 'bdb76b',
-            darkmagenta: '8b008b',
-            darkolivegreen: '556b2f',
-            darkorange: 'ff8c00',
-            darkorchid: '9932cc',
-            darkred: '8b0000',
-            darksalmon: 'e9967a',
-            darkseagreen: '8fbc8f',
-            darkslateblue: '483d8b',
-            darkslategray: '2f4f4f',
-            darkturquoise: '00ced1',
-            darkviolet: '9400d3',
-            deeppink: 'ff1493',
-            deepskyblue: '00bfff',
-            dimgray: '696969',
-            dodgerblue: '1e90ff',
-            feldspar: 'd19275',
-            firebrick: 'b22222',
-            floralwhite: 'fffaf0',
-            forestgreen: '228b22',
-            fuchsia: 'ff00ff',
-            gainsboro: 'dcdcdc',
-            ghostwhite: 'f8f8ff',
-            gold: 'ffd700',
-            goldenrod: 'daa520',
-            gray: '808080',
-            green: '008000',
-            greenyellow: 'adff2f',
-            honeydew: 'f0fff0',
-            hotpink: 'ff69b4',
-            indianred : 'cd5c5c',
-            indigo : '4b0082',
-            ivory: 'fffff0',
-            khaki: 'f0e68c',
-            lavender: 'e6e6fa',
-            lavenderblush: 'fff0f5',
-            lawngreen: '7cfc00',
-            lemonchiffon: 'fffacd',
-            lightblue: 'add8e6',
-            lightcoral: 'f08080',
-            lightcyan: 'e0ffff',
-            lightgoldenrodyellow: 'fafad2',
-            lightgrey: 'd3d3d3',
-            lightgreen: '90ee90',
-            lightpink: 'ffb6c1',
-            lightsalmon: 'ffa07a',
-            lightseagreen: '20b2aa',
-            lightskyblue: '87cefa',
-            lightslateblue: '8470ff',
-            lightslategray: '778899',
-            lightsteelblue: 'b0c4de',
-            lightyellow: 'ffffe0',
-            lime: '00ff00',
-            limegreen: '32cd32',
-            linen: 'faf0e6',
-            magenta: 'ff00ff',
-            maroon: '800000',
-            mediumaquamarine: '66cdaa',
-            mediumblue: '0000cd',
-            mediumorchid: 'ba55d3',
-            mediumpurple: '9370d8',
-            mediumseagreen: '3cb371',
-            mediumslateblue: '7b68ee',
-            mediumspringgreen: '00fa9a',
-            mediumturquoise: '48d1cc',
-            mediumvioletred: 'c71585',
-            midnightblue: '191970',
-            mintcream: 'f5fffa',
-            mistyrose: 'ffe4e1',
-            moccasin: 'ffe4b5',
-            navajowhite: 'ffdead',
-            navy: '000080',
-            oldlace: 'fdf5e6',
-            olive: '808000',
-            olivedrab: '6b8e23',
-            orange: 'ffa500',
-            orangered: 'ff4500',
-            orchid: 'da70d6',
-            palegoldenrod: 'eee8aa',
-            palegreen: '98fb98',
-            paleturquoise: 'afeeee',
-            palevioletred: 'd87093',
-            papayawhip: 'ffefd5',
-            peachpuff: 'ffdab9',
-            peru: 'cd853f',
-            pink: 'ffc0cb',
-            plum: 'dda0dd',
-            powderblue: 'b0e0e6',
-            purple: '800080',
-            red: 'ff0000',
-            rosybrown: 'bc8f8f',
-            royalblue: '4169e1',
-            saddlebrown: '8b4513',
-            salmon: 'fa8072',
-            sandybrown: 'f4a460',
-            seagreen: '2e8b57',
-            seashell: 'fff5ee',
-            sienna: 'a0522d',
-            silver: 'c0c0c0',
-            skyblue: '87ceeb',
-            slateblue: '6a5acd',
-            slategray: '708090',
-            snow: 'fffafa',
-            springgreen: '00ff7f',
-            steelblue: '4682b4',
-            tan: 'd2b48c',
-            teal: '008080',
-            thistle: 'd8bfd8',
-            tomato: 'ff6347',
-            turquoise: '40e0d0',
-            violet: 'ee82ee',
-            violetred: 'd02090',
-            wheat: 'f5deb3',
-            white: 'ffffff',
-            whitesmoke: 'f5f5f5',
-            yellow: 'ffff00',
-            yellowgreen: '9acd32'
-        };
-        for (var key in simple_colors) {
-            if (color_string == key) {
-                color_string = simple_colors[key];
-            }
-        }
-        // emd of simple type-in colors
+		// array of color definition objects
+		var color_defs = [
+			{
+				re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+				example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
+				process: function (bits){
+					return [
+						parseInt(bits[1]),
+						parseInt(bits[2]),
+						parseInt(bits[3])
+					];
+				}
+			},
+			{
+				re: /^(\w{2})(\w{2})(\w{2})$/,
+				example: ['#00ff00', '336699'],
+				process: function (bits){
+					return [
+						parseInt(bits[1], 16),
+						parseInt(bits[2], 16),
+						parseInt(bits[3], 16)
+					];
+				}
+			},
+			{
+				re: /^(\w{1})(\w{1})(\w{1})$/,
+				example: ['#fb0', 'f0f'],
+				process: function (bits){
+					return [
+						parseInt(bits[1] + bits[1], 16),
+						parseInt(bits[2] + bits[2], 16),
+						parseInt(bits[3] + bits[3], 16)
+					];
+				}
+			}
+		];
 
-        // array of color definition objects
-        var color_defs = [
-            {
-                re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
-                example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
-                process: function (bits){
-                    return [
-                        parseInt(bits[1]),
-                        parseInt(bits[2]),
-                        parseInt(bits[3])
-                    ];
-                }
-            },
-            {
-                re: /^(\w{2})(\w{2})(\w{2})$/,
-                example: ['#00ff00', '336699'],
-                process: function (bits){
-                    return [
-                        parseInt(bits[1], 16),
-                        parseInt(bits[2], 16),
-                        parseInt(bits[3], 16)
-                    ];
-                }
-            },
-            {
-                re: /^(\w{1})(\w{1})(\w{1})$/,
-                example: ['#fb0', 'f0f'],
-                process: function (bits){
-                    return [
-                        parseInt(bits[1] + bits[1], 16),
-                        parseInt(bits[2] + bits[2], 16),
-                        parseInt(bits[3] + bits[3], 16)
-                    ];
-                }
-            }
-        ];
+		// search through the definitions to find a match
+		for (var i = 0; i < color_defs.length; i++) {
+			var re = color_defs[i].re;
+			var processor = color_defs[i].process;
+			var bits = re.exec(color_string);
+			if (bits) {
+				channels = processor(bits);
+				this.r = channels[0];
+				this.g = channels[1];
+				this.b = channels[2];
+				this.ok = true;
+			}
 
-        // search through the definitions to find a match
-        for (var i = 0; i < color_defs.length; i++) {
-            var re = color_defs[i].re;
-            var processor = color_defs[i].process;
-            var bits = re.exec(color_string);
-            if (bits) {
-                channels = processor(bits);
-                this.r = channels[0];
-                this.g = channels[1];
-                this.b = channels[2];
-                this.ok = true;
-            }
+		}
 
-        }
+		// validate/cleanup values
+		this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
+		this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
+		this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
 
-        // validate/cleanup values
-        this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
-        this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
-        this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
+		// some getters
+		this.toRGB = function () {
+			return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
+		}
+		this.toHex = function () {
+			var r = this.r.toString(16);
+			var g = this.g.toString(16);
+			var b = this.b.toString(16);
+			if (r.length == 1) r = '0' + r;
+			if (g.length == 1) g = '0' + g;
+			if (b.length == 1) b = '0' + b;
+			return '#' + r + g + b;
+		}
 
-        // some getters
-        this.toRGB = function () {
-            return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
-        }
-        this.toHex = function () {
-            var r = this.r.toString(16);
-            var g = this.g.toString(16);
-            var b = this.b.toString(16);
-            if (r.length == 1) r = '0' + r;
-            if (g.length == 1) g = '0' + g;
-            if (b.length == 1) b = '0' + b;
-            return '#' + r + g + b;
-        }
+		// help
+		this.getHelpXML = function () {
 
-        // help
-        this.getHelpXML = function () {
+			var examples = new Array();
+			// add regexps
+			for (var i = 0; i < color_defs.length; i++) {
+				var example = color_defs[i].example;
+				for (var j = 0; j < example.length; j++) {
+					examples[examples.length] = example[j];
+				}
+			}
+			// add type-in colors
+			for (var sc in simple_colors) {
+				examples[examples.length] = sc;
+			}
 
-            var examples = new Array();
-            // add regexps
-            for (var i = 0; i < color_defs.length; i++) {
-                var example = color_defs[i].example;
-                for (var j = 0; j < example.length; j++) {
-                    examples[examples.length] = example[j];
-                }
-            }
-            // add type-in colors
-            for (var sc in simple_colors) {
-                examples[examples.length] = sc;
-            }
+			var xml = document.createElement('ul');
+			xml.setAttribute('id', 'rgbcolor-examples');
+			for (var i = 0; i < examples.length; i++) {
+				try {
+					var list_item = document.createElement('li');
+					var list_color = new RGBColor(examples[i]);
+					var example_div = document.createElement('div');
+					example_div.style.cssText =
+							'margin: 3px; '
+							+ 'border: 1px solid black; '
+							+ 'background:' + list_color.toHex() + '; '
+							+ 'color:' + list_color.toHex()
+					;
+					example_div.appendChild(document.createTextNode('test'));
+					var list_item_value = document.createTextNode(
+						' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
+					);
+					list_item.appendChild(example_div);
+					list_item.appendChild(list_item_value);
+					xml.appendChild(list_item);
 
-            var xml = document.createElement('ul');
-            xml.setAttribute('id', 'rgbcolor-examples');
-            for (var i = 0; i < examples.length; i++) {
-                try {
-                    var list_item = document.createElement('li');
-                    var list_color = new RGBColor(examples[i]);
-                    var example_div = document.createElement('div');
-                    example_div.style.cssText =
-                            'margin: 3px; '
-                            + 'border: 1px solid black; '
-                            + 'background:' + list_color.toHex() + '; '
-                            + 'color:' + list_color.toHex()
-                    ;
-                    example_div.appendChild(document.createTextNode('test'));
-                    var list_item_value = document.createTextNode(
-                        ' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
-                    );
-                    list_item.appendChild(example_div);
-                    list_item.appendChild(list_item_value);
-                    xml.appendChild(list_item);
+				} catch(e){}
+			}
+			return xml;
 
-                } catch(e){}
-            }
-            return xml;
+		}
 
-        }
-
-    }
+	}
 
     // export as AMD...
     if ( typeof define !== 'undefined' && define.amd ) {
@@ -760,7 +761,7 @@ In case you find this class useful - especially in commercial projects -
 I am not totally unhappy for a small donation to my PayPal account
 mario@quasimondo.de
 
-Or support me on flattr:
+Or support me on flattr: 
 https://flattr.com/thing/72791/StackBlur-a-fast-almost-Gaussian-Blur-Effect-for-CanvasJavascript
 
 Copyright (c) 2010 Mario Klingemann
@@ -790,65 +791,97 @@ OTHER DEALINGS IN THE SOFTWARE.
 (function ( global ) {
 
 	var mul_table = [
-	        512,512,456,512,328,456,335,512,405,328,271,456,388,335,292,512,
-	        454,405,364,328,298,271,496,456,420,388,360,335,312,292,273,512,
-	        482,454,428,405,383,364,345,328,312,298,284,271,259,496,475,456,
-	        437,420,404,388,374,360,347,335,323,312,302,292,282,273,265,512,
-	        497,482,468,454,441,428,417,405,394,383,373,364,354,345,337,328,
-	        320,312,305,298,291,284,278,271,265,259,507,496,485,475,465,456,
-	        446,437,428,420,412,404,396,388,381,374,367,360,354,347,341,335,
-	        329,323,318,312,307,302,297,292,287,282,278,273,269,265,261,512,
-	        505,497,489,482,475,468,461,454,447,441,435,428,422,417,411,405,
-	        399,394,389,383,378,373,368,364,359,354,350,345,341,337,332,328,
-	        324,320,316,312,309,305,301,298,294,291,287,284,281,278,274,271,
-	        268,265,262,259,257,507,501,496,491,485,480,475,470,465,460,456,
-	        451,446,442,437,433,428,424,420,416,412,408,404,400,396,392,388,
-	        385,381,377,374,370,367,363,360,357,354,350,347,344,341,338,335,
-	        332,329,326,323,320,318,315,312,310,307,304,302,299,297,294,292,
-	        289,287,285,282,280,278,275,273,271,269,267,265,263,261,259];
-
-
+			512,512,456,512,328,456,335,512,405,328,271,456,388,335,292,512,
+			454,405,364,328,298,271,496,456,420,388,360,335,312,292,273,512,
+			482,454,428,405,383,364,345,328,312,298,284,271,259,496,475,456,
+			437,420,404,388,374,360,347,335,323,312,302,292,282,273,265,512,
+			497,482,468,454,441,428,417,405,394,383,373,364,354,345,337,328,
+			320,312,305,298,291,284,278,271,265,259,507,496,485,475,465,456,
+			446,437,428,420,412,404,396,388,381,374,367,360,354,347,341,335,
+			329,323,318,312,307,302,297,292,287,282,278,273,269,265,261,512,
+			505,497,489,482,475,468,461,454,447,441,435,428,422,417,411,405,
+			399,394,389,383,378,373,368,364,359,354,350,345,341,337,332,328,
+			324,320,316,312,309,305,301,298,294,291,287,284,281,278,274,271,
+			268,265,262,259,257,507,501,496,491,485,480,475,470,465,460,456,
+			451,446,442,437,433,428,424,420,416,412,408,404,400,396,392,388,
+			385,381,377,374,370,367,363,360,357,354,350,347,344,341,338,335,
+			332,329,326,323,320,318,315,312,310,307,304,302,299,297,294,292,
+			289,287,285,282,280,278,275,273,271,269,267,265,263,261,259];
+			
+	   
 	var shg_table = [
-		     9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17,
-			17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19,
+			 9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 
+			17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 
 			19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20,
 			20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21,
 			21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-			21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22,
+			21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 
 			22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
-			22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23,
+			22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 
 			23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
 			23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-			23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-			23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+			23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 
+			23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 
 			24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 			24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 			24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 			24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24 ];
 
+	function premultiplyAlpha(imageData)
+	{
+		var pixels = imageData.data;
+		var size = imageData.width * imageData.height * 4;
+		
+		for (var i=0; i<size; i+=4)
+		{
+			var a = pixels[i+3] / 255;
+			pixels[i  ] *= a;
+			pixels[i+1] *= a;
+			pixels[i+2] *= a;
+		}
+	}
+
+	function unpremultiplyAlpha(imageData)
+	{
+		var pixels = imageData.data;
+		var size = imageData.width * imageData.height * 4;
+		
+		for (var i=0; i<size; i+=4)
+		{
+			var a = pixels[i+3];
+			if (a != 0)
+			{
+				a = 255 / a;
+				pixels[i  ] *= a;
+				pixels[i+1] *= a;
+				pixels[i+2] *= a;
+			}
+		}
+	}
+
 	function stackBlurImage( imageID, canvasID, radius, blurAlphaChannel )
 	{
-
-	 	var img = document.getElementById( imageID );
+				
+		var img = document.getElementById( imageID );
 		var w = img.naturalWidth;
-	    var h = img.naturalHeight;
-
+		var h = img.naturalHeight;
+		   
 		var canvas = document.getElementById( canvasID );
-
-	    canvas.style.width  = w + "px";
-	    canvas.style.height = h + "px";
-	    canvas.width = w;
-	    canvas.height = h;
-
-	    var context = canvas.getContext("2d");
-	    context.clearRect( 0, 0, w, h );
-	    context.drawImage( img, 0, 0 );
+		  
+		canvas.style.width  = w + "px";
+		canvas.style.height = h + "px";
+		canvas.width = w;
+		canvas.height = h;
+		
+		var context = canvas.getContext("2d");
+		context.clearRect( 0, 0, w, h );
+		context.drawImage( img, 0, 0 );
 
 		if ( isNaN(radius) || radius < 1 ) return;
-
+		
 		if ( blurAlphaChannel )
 			stackBlurCanvasRGBA( canvasID, 0, 0, w, h, radius );
-		else
+		else 
 			stackBlurCanvasRGB( canvasID, 0, 0, w, h, radius );
 	}
 
@@ -857,16 +890,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 	{
 		if ( isNaN(radius) || radius < 1 ) return;
 		radius |= 0;
-
+		
 		var canvas  = document.getElementById( id );
 		var context = canvas.getContext("2d");
 		var imageData;
-
+		
 		try {
 		  try {
 			imageData = context.getImageData( top_x, top_y, width, height );
 		  } catch(e) {
-
+		  
 			// NOTE: this part is supposedly only needed if you want to work with local files
 			// so it might be okay to remove the whole try/catch block and just use
 			// imageData = context.getImageData( top_x, top_y, width, height );
@@ -883,21 +916,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 		  alert("Cannot access image");
 		  throw new Error("unable to access image data: " + e);
 		}
-
+		
+		premultiplyAlpha(imageData);
+		
 		var pixels = imageData.data;
-
-		var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum, a_sum,
+				
+		var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum, a_sum, 
 		r_out_sum, g_out_sum, b_out_sum, a_out_sum,
-		r_in_sum, g_in_sum, b_in_sum, a_in_sum,
+		r_in_sum, g_in_sum, b_in_sum, a_in_sum, 
 		pr, pg, pb, pa, rbs;
-
+				
 		var div = radius + radius + 1;
 		var w4 = width << 2;
 		var widthMinus1  = width - 1;
 		var heightMinus1 = height - 1;
 		var radiusPlus1  = radius + 1;
 		var sumFactor = radiusPlus1 * ( radiusPlus1 + 1 ) / 2;
-
+		
 		var stackStart = new BlurStack();
 		var stack = stackStart;
 		for ( i = 1; i < div; i++ )
@@ -908,28 +943,28 @@ OTHER DEALINGS IN THE SOFTWARE.
 		stack.next = stackStart;
 		var stackIn = null;
 		var stackOut = null;
-
+		
 		yw = yi = 0;
-
+		
 		var mul_sum = mul_table[radius];
 		var shg_sum = shg_table[radius];
-
+		
 		for ( y = 0; y < height; y++ )
 		{
 			r_in_sum = g_in_sum = b_in_sum = a_in_sum = r_sum = g_sum = b_sum = a_sum = 0;
-
+			
 			r_out_sum = radiusPlus1 * ( pr = pixels[yi] );
 			g_out_sum = radiusPlus1 * ( pg = pixels[yi+1] );
 			b_out_sum = radiusPlus1 * ( pb = pixels[yi+2] );
 			a_out_sum = radiusPlus1 * ( pa = pixels[yi+3] );
-
+			
 			r_sum += sumFactor * pr;
 			g_sum += sumFactor * pg;
 			b_sum += sumFactor * pb;
 			a_sum += sumFactor * pa;
-
+			
 			stack = stackStart;
-
+			
 			for( i = 0; i < radiusPlus1; i++ )
 			{
 				stack.r = pr;
@@ -938,7 +973,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 				stack.a = pa;
 				stack = stack.next;
 			}
-
+			
 			for( i = 1; i < radiusPlus1; i++ )
 			{
 				p = yi + (( widthMinus1 < i ? widthMinus1 : i ) << 2 );
@@ -946,65 +981,58 @@ OTHER DEALINGS IN THE SOFTWARE.
 				g_sum += ( stack.g = ( pg = pixels[p+1])) * rbs;
 				b_sum += ( stack.b = ( pb = pixels[p+2])) * rbs;
 				a_sum += ( stack.a = ( pa = pixels[p+3])) * rbs;
-
+				
 				r_in_sum += pr;
 				g_in_sum += pg;
 				b_in_sum += pb;
 				a_in_sum += pa;
-
+				
 				stack = stack.next;
 			}
-
-
+			
 			stackIn = stackStart;
 			stackOut = stackEnd;
 			for ( x = 0; x < width; x++ )
 			{
-				pixels[yi+3] = pa = (a_sum * mul_sum) >> shg_sum;
-				if ( pa != 0 )
-				{
-					pa = 255 / pa;
-					pixels[yi]   = ((r_sum * mul_sum) >> shg_sum) * pa;
-					pixels[yi+1] = ((g_sum * mul_sum) >> shg_sum) * pa;
-					pixels[yi+2] = ((b_sum * mul_sum) >> shg_sum) * pa;
-				} else {
-					pixels[yi] = pixels[yi+1] = pixels[yi+2] = 0;
-				}
-
+				pixels[yi]   = (r_sum * mul_sum) >> shg_sum;
+				pixels[yi+1] = (g_sum * mul_sum) >> shg_sum;
+				pixels[yi+2] = (b_sum * mul_sum) >> shg_sum;
+				pixels[yi+3] = (a_sum * mul_sum) >> shg_sum;
+				
 				r_sum -= r_out_sum;
 				g_sum -= g_out_sum;
 				b_sum -= b_out_sum;
 				a_sum -= a_out_sum;
-
+				
 				r_out_sum -= stackIn.r;
 				g_out_sum -= stackIn.g;
 				b_out_sum -= stackIn.b;
 				a_out_sum -= stackIn.a;
-
+				
 				p =  ( yw + ( ( p = x + radius + 1 ) < widthMinus1 ? p : widthMinus1 ) ) << 2;
-
+				
 				r_in_sum += ( stackIn.r = pixels[p]);
 				g_in_sum += ( stackIn.g = pixels[p+1]);
 				b_in_sum += ( stackIn.b = pixels[p+2]);
 				a_in_sum += ( stackIn.a = pixels[p+3]);
-
+				
 				r_sum += r_in_sum;
 				g_sum += g_in_sum;
 				b_sum += b_in_sum;
 				a_sum += a_in_sum;
-
+				
 				stackIn = stackIn.next;
-
+				
 				r_out_sum += ( pr = stackOut.r );
 				g_out_sum += ( pg = stackOut.g );
 				b_out_sum += ( pb = stackOut.b );
 				a_out_sum += ( pa = stackOut.a );
-
+				
 				r_in_sum -= pr;
 				g_in_sum -= pg;
 				b_in_sum -= pb;
 				a_in_sum -= pa;
-
+				
 				stackOut = stackOut.next;
 
 				yi += 4;
@@ -1012,24 +1040,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 			yw += width;
 		}
 
-
+		
 		for ( x = 0; x < width; x++ )
 		{
 			g_in_sum = b_in_sum = a_in_sum = r_in_sum = g_sum = b_sum = a_sum = r_sum = 0;
-
+			
 			yi = x << 2;
 			r_out_sum = radiusPlus1 * ( pr = pixels[yi]);
 			g_out_sum = radiusPlus1 * ( pg = pixels[yi+1]);
 			b_out_sum = radiusPlus1 * ( pb = pixels[yi+2]);
 			a_out_sum = radiusPlus1 * ( pa = pixels[yi+3]);
-
+			
 			r_sum += sumFactor * pr;
 			g_sum += sumFactor * pg;
 			b_sum += sumFactor * pb;
 			a_sum += sumFactor * pa;
-
+			
 			stack = stackStart;
-
+			
 			for( i = 0; i < radiusPlus1; i++ )
 			{
 				stack.r = pr;
@@ -1038,275 +1066,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 				stack.a = pa;
 				stack = stack.next;
 			}
-
+			
 			yp = width;
-
+			
 			for( i = 1; i <= radius; i++ )
 			{
 				yi = ( yp + x ) << 2;
-
+				
 				r_sum += ( stack.r = ( pr = pixels[yi])) * ( rbs = radiusPlus1 - i );
 				g_sum += ( stack.g = ( pg = pixels[yi+1])) * rbs;
 				b_sum += ( stack.b = ( pb = pixels[yi+2])) * rbs;
 				a_sum += ( stack.a = ( pa = pixels[yi+3])) * rbs;
-
+			   
 				r_in_sum += pr;
 				g_in_sum += pg;
 				b_in_sum += pb;
 				a_in_sum += pa;
-
+				
 				stack = stack.next;
-
+			
 				if( i < heightMinus1 )
 				{
 					yp += width;
 				}
 			}
-
-			yi = x;
-			stackIn = stackStart;
-			stackOut = stackEnd;
-			for ( y = 0; y < height; y++ )
-			{
-				p = yi << 2;
-				pixels[p+3] = pa = (a_sum * mul_sum) >> shg_sum;
-				if ( pa > 0 )
-				{
-					pa = 255 / pa;
-					pixels[p]   = ((r_sum * mul_sum) >> shg_sum ) * pa;
-					pixels[p+1] = ((g_sum * mul_sum) >> shg_sum ) * pa;
-					pixels[p+2] = ((b_sum * mul_sum) >> shg_sum ) * pa;
-				} else {
-					pixels[p] = pixels[p+1] = pixels[p+2] = 0;
-				}
-
-				r_sum -= r_out_sum;
-				g_sum -= g_out_sum;
-				b_sum -= b_out_sum;
-				a_sum -= a_out_sum;
-
-				r_out_sum -= stackIn.r;
-				g_out_sum -= stackIn.g;
-				b_out_sum -= stackIn.b;
-				a_out_sum -= stackIn.a;
-
-				p = ( x + (( ( p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1 ) * width )) << 2;
-
-				r_sum += ( r_in_sum += ( stackIn.r = pixels[p]));
-				g_sum += ( g_in_sum += ( stackIn.g = pixels[p+1]));
-				b_sum += ( b_in_sum += ( stackIn.b = pixels[p+2]));
-				a_sum += ( a_in_sum += ( stackIn.a = pixels[p+3]));
-
-				stackIn = stackIn.next;
-
-				r_out_sum += ( pr = stackOut.r );
-				g_out_sum += ( pg = stackOut.g );
-				b_out_sum += ( pb = stackOut.b );
-				a_out_sum += ( pa = stackOut.a );
-
-				r_in_sum -= pr;
-				g_in_sum -= pg;
-				b_in_sum -= pb;
-				a_in_sum -= pa;
-
-				stackOut = stackOut.next;
-
-				yi += width;
-			}
-		}
-
-		context.putImageData( imageData, top_x, top_y );
-
-	}
-
-
-	function stackBlurCanvasRGB( id, top_x, top_y, width, height, radius )
-	{
-		if ( isNaN(radius) || radius < 1 ) return;
-		radius |= 0;
-
-		var canvas  = document.getElementById( id );
-		var context = canvas.getContext("2d");
-		var imageData;
-
-		try {
-		  try {
-			imageData = context.getImageData( top_x, top_y, width, height );
-		  } catch(e) {
-
-			// NOTE: this part is supposedly only needed if you want to work with local files
-			// so it might be okay to remove the whole try/catch block and just use
-			// imageData = context.getImageData( top_x, top_y, width, height );
-			try {
-				netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-				imageData = context.getImageData( top_x, top_y, width, height );
-			} catch(e) {
-				alert("Cannot access local image");
-				throw new Error("unable to access local image data: " + e);
-				return;
-			}
-		  }
-		} catch(e) {
-		  alert("Cannot access image");
-		  throw new Error("unable to access image data: " + e);
-		}
-
-		var pixels = imageData.data;
-
-		var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum,
-		r_out_sum, g_out_sum, b_out_sum,
-		r_in_sum, g_in_sum, b_in_sum,
-		pr, pg, pb, rbs;
-
-		var div = radius + radius + 1;
-		var w4 = width << 2;
-		var widthMinus1  = width - 1;
-		var heightMinus1 = height - 1;
-		var radiusPlus1  = radius + 1;
-		var sumFactor = radiusPlus1 * ( radiusPlus1 + 1 ) / 2;
-
-		var stackStart = new BlurStack();
-		var stack = stackStart;
-		for ( i = 1; i < div; i++ )
-		{
-			stack = stack.next = new BlurStack();
-			if ( i == radiusPlus1 ) var stackEnd = stack;
-		}
-		stack.next = stackStart;
-		var stackIn = null;
-		var stackOut = null;
-
-		yw = yi = 0;
-
-		var mul_sum = mul_table[radius];
-		var shg_sum = shg_table[radius];
-
-		for ( y = 0; y < height; y++ )
-		{
-			r_in_sum = g_in_sum = b_in_sum = r_sum = g_sum = b_sum = 0;
-
-			r_out_sum = radiusPlus1 * ( pr = pixels[yi] );
-			g_out_sum = radiusPlus1 * ( pg = pixels[yi+1] );
-			b_out_sum = radiusPlus1 * ( pb = pixels[yi+2] );
-
-			r_sum += sumFactor * pr;
-			g_sum += sumFactor * pg;
-			b_sum += sumFactor * pb;
-
-			stack = stackStart;
-
-			for( i = 0; i < radiusPlus1; i++ )
-			{
-				stack.r = pr;
-				stack.g = pg;
-				stack.b = pb;
-				stack = stack.next;
-			}
-
-			for( i = 1; i < radiusPlus1; i++ )
-			{
-				p = yi + (( widthMinus1 < i ? widthMinus1 : i ) << 2 );
-				r_sum += ( stack.r = ( pr = pixels[p])) * ( rbs = radiusPlus1 - i );
-				g_sum += ( stack.g = ( pg = pixels[p+1])) * rbs;
-				b_sum += ( stack.b = ( pb = pixels[p+2])) * rbs;
-
-				r_in_sum += pr;
-				g_in_sum += pg;
-				b_in_sum += pb;
-
-				stack = stack.next;
-			}
-
-
-			stackIn = stackStart;
-			stackOut = stackEnd;
-			for ( x = 0; x < width; x++ )
-			{
-				pixels[yi]   = (r_sum * mul_sum) >> shg_sum;
-				pixels[yi+1] = (g_sum * mul_sum) >> shg_sum;
-				pixels[yi+2] = (b_sum * mul_sum) >> shg_sum;
-
-				r_sum -= r_out_sum;
-				g_sum -= g_out_sum;
-				b_sum -= b_out_sum;
-
-				r_out_sum -= stackIn.r;
-				g_out_sum -= stackIn.g;
-				b_out_sum -= stackIn.b;
-
-				p =  ( yw + ( ( p = x + radius + 1 ) < widthMinus1 ? p : widthMinus1 ) ) << 2;
-
-				r_in_sum += ( stackIn.r = pixels[p]);
-				g_in_sum += ( stackIn.g = pixels[p+1]);
-				b_in_sum += ( stackIn.b = pixels[p+2]);
-
-				r_sum += r_in_sum;
-				g_sum += g_in_sum;
-				b_sum += b_in_sum;
-
-				stackIn = stackIn.next;
-
-				r_out_sum += ( pr = stackOut.r );
-				g_out_sum += ( pg = stackOut.g );
-				b_out_sum += ( pb = stackOut.b );
-
-				r_in_sum -= pr;
-				g_in_sum -= pg;
-				b_in_sum -= pb;
-
-				stackOut = stackOut.next;
-
-				yi += 4;
-			}
-			yw += width;
-		}
-
-
-		for ( x = 0; x < width; x++ )
-		{
-			g_in_sum = b_in_sum = r_in_sum = g_sum = b_sum = r_sum = 0;
-
-			yi = x << 2;
-			r_out_sum = radiusPlus1 * ( pr = pixels[yi]);
-			g_out_sum = radiusPlus1 * ( pg = pixels[yi+1]);
-			b_out_sum = radiusPlus1 * ( pb = pixels[yi+2]);
-
-			r_sum += sumFactor * pr;
-			g_sum += sumFactor * pg;
-			b_sum += sumFactor * pb;
-
-			stack = stackStart;
-
-			for( i = 0; i < radiusPlus1; i++ )
-			{
-				stack.r = pr;
-				stack.g = pg;
-				stack.b = pb;
-				stack = stack.next;
-			}
-
-			yp = width;
-
-			for( i = 1; i <= radius; i++ )
-			{
-				yi = ( yp + x ) << 2;
-
-				r_sum += ( stack.r = ( pr = pixels[yi])) * ( rbs = radiusPlus1 - i );
-				g_sum += ( stack.g = ( pg = pixels[yi+1])) * rbs;
-				b_sum += ( stack.b = ( pb = pixels[yi+2])) * rbs;
-
-				r_in_sum += pr;
-				g_in_sum += pg;
-				b_in_sum += pb;
-
-				stack = stack.next;
-
-				if( i < heightMinus1 )
-				{
-					yp += width;
-				}
-			}
-
+			
 			yi = x;
 			stackIn = stackStart;
 			stackOut = stackEnd;
@@ -1316,39 +1100,278 @@ OTHER DEALINGS IN THE SOFTWARE.
 				pixels[p]   = (r_sum * mul_sum) >> shg_sum;
 				pixels[p+1] = (g_sum * mul_sum) >> shg_sum;
 				pixels[p+2] = (b_sum * mul_sum) >> shg_sum;
-
+				pixels[p+3] = (a_sum * mul_sum) >> shg_sum;
+				
 				r_sum -= r_out_sum;
 				g_sum -= g_out_sum;
 				b_sum -= b_out_sum;
-
+				a_sum -= a_out_sum;
+			   
 				r_out_sum -= stackIn.r;
 				g_out_sum -= stackIn.g;
 				b_out_sum -= stackIn.b;
-
+				a_out_sum -= stackIn.a;
+				
 				p = ( x + (( ( p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1 ) * width )) << 2;
-
+				
 				r_sum += ( r_in_sum += ( stackIn.r = pixels[p]));
 				g_sum += ( g_in_sum += ( stackIn.g = pixels[p+1]));
 				b_sum += ( b_in_sum += ( stackIn.b = pixels[p+2]));
-
+				a_sum += ( a_in_sum += ( stackIn.a = pixels[p+3]));
+			   
 				stackIn = stackIn.next;
-
+				
 				r_out_sum += ( pr = stackOut.r );
 				g_out_sum += ( pg = stackOut.g );
 				b_out_sum += ( pb = stackOut.b );
-
+				a_out_sum += ( pa = stackOut.a );
+				
 				r_in_sum -= pr;
 				g_in_sum -= pg;
 				b_in_sum -= pb;
-
+				a_in_sum -= pa;
+				
 				stackOut = stackOut.next;
-
+				
 				yi += width;
 			}
 		}
-
+		
+		unpremultiplyAlpha(imageData);
+		
 		context.putImageData( imageData, top_x, top_y );
+	}
 
+
+	function stackBlurCanvasRGB( id, top_x, top_y, width, height, radius )
+	{
+		if ( isNaN(radius) || radius < 1 ) return;
+		radius |= 0;
+		
+		var canvas  = document.getElementById( id );
+		var context = canvas.getContext("2d");
+		var imageData;
+		
+		try {
+		  try {
+			imageData = context.getImageData( top_x, top_y, width, height );
+		  } catch(e) {
+		  
+			// NOTE: this part is supposedly only needed if you want to work with local files
+			// so it might be okay to remove the whole try/catch block and just use
+			// imageData = context.getImageData( top_x, top_y, width, height );
+			try {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+				imageData = context.getImageData( top_x, top_y, width, height );
+			} catch(e) {
+				alert("Cannot access local image");
+				throw new Error("unable to access local image data: " + e);
+				return;
+			}
+		  }
+		} catch(e) {
+		  alert("Cannot access image");
+		  throw new Error("unable to access image data: " + e);
+		}
+				
+		var pixels = imageData.data;
+				
+		var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum,
+		r_out_sum, g_out_sum, b_out_sum,
+		r_in_sum, g_in_sum, b_in_sum,
+		pr, pg, pb, rbs;
+				
+		var div = radius + radius + 1;
+		var w4 = width << 2;
+		var widthMinus1  = width - 1;
+		var heightMinus1 = height - 1;
+		var radiusPlus1  = radius + 1;
+		var sumFactor = radiusPlus1 * ( radiusPlus1 + 1 ) / 2;
+		
+		var stackStart = new BlurStack();
+		var stack = stackStart;
+		for ( i = 1; i < div; i++ )
+		{
+			stack = stack.next = new BlurStack();
+			if ( i == radiusPlus1 ) var stackEnd = stack;
+		}
+		stack.next = stackStart;
+		var stackIn = null;
+		var stackOut = null;
+		
+		yw = yi = 0;
+		
+		var mul_sum = mul_table[radius];
+		var shg_sum = shg_table[radius];
+		
+		for ( y = 0; y < height; y++ )
+		{
+			r_in_sum = g_in_sum = b_in_sum = r_sum = g_sum = b_sum = 0;
+			
+			r_out_sum = radiusPlus1 * ( pr = pixels[yi] );
+			g_out_sum = radiusPlus1 * ( pg = pixels[yi+1] );
+			b_out_sum = radiusPlus1 * ( pb = pixels[yi+2] );
+			
+			r_sum += sumFactor * pr;
+			g_sum += sumFactor * pg;
+			b_sum += sumFactor * pb;
+			
+			stack = stackStart;
+			
+			for( i = 0; i < radiusPlus1; i++ )
+			{
+				stack.r = pr;
+				stack.g = pg;
+				stack.b = pb;
+				stack = stack.next;
+			}
+			
+			for( i = 1; i < radiusPlus1; i++ )
+			{
+				p = yi + (( widthMinus1 < i ? widthMinus1 : i ) << 2 );
+				r_sum += ( stack.r = ( pr = pixels[p])) * ( rbs = radiusPlus1 - i );
+				g_sum += ( stack.g = ( pg = pixels[p+1])) * rbs;
+				b_sum += ( stack.b = ( pb = pixels[p+2])) * rbs;
+				
+				r_in_sum += pr;
+				g_in_sum += pg;
+				b_in_sum += pb;
+				
+				stack = stack.next;
+			}
+			
+			
+			stackIn = stackStart;
+			stackOut = stackEnd;
+			for ( x = 0; x < width; x++ )
+			{
+				pixels[yi]   = (r_sum * mul_sum) >> shg_sum;
+				pixels[yi+1] = (g_sum * mul_sum) >> shg_sum;
+				pixels[yi+2] = (b_sum * mul_sum) >> shg_sum;
+				
+				r_sum -= r_out_sum;
+				g_sum -= g_out_sum;
+				b_sum -= b_out_sum;
+				
+				r_out_sum -= stackIn.r;
+				g_out_sum -= stackIn.g;
+				b_out_sum -= stackIn.b;
+				
+				p =  ( yw + ( ( p = x + radius + 1 ) < widthMinus1 ? p : widthMinus1 ) ) << 2;
+				
+				r_in_sum += ( stackIn.r = pixels[p]);
+				g_in_sum += ( stackIn.g = pixels[p+1]);
+				b_in_sum += ( stackIn.b = pixels[p+2]);
+				
+				r_sum += r_in_sum;
+				g_sum += g_in_sum;
+				b_sum += b_in_sum;
+				
+				stackIn = stackIn.next;
+				
+				r_out_sum += ( pr = stackOut.r );
+				g_out_sum += ( pg = stackOut.g );
+				b_out_sum += ( pb = stackOut.b );
+				
+				r_in_sum -= pr;
+				g_in_sum -= pg;
+				b_in_sum -= pb;
+				
+				stackOut = stackOut.next;
+
+				yi += 4;
+			}
+			yw += width;
+		}
+
+		
+		for ( x = 0; x < width; x++ )
+		{
+			g_in_sum = b_in_sum = r_in_sum = g_sum = b_sum = r_sum = 0;
+			
+			yi = x << 2;
+			r_out_sum = radiusPlus1 * ( pr = pixels[yi]);
+			g_out_sum = radiusPlus1 * ( pg = pixels[yi+1]);
+			b_out_sum = radiusPlus1 * ( pb = pixels[yi+2]);
+			
+			r_sum += sumFactor * pr;
+			g_sum += sumFactor * pg;
+			b_sum += sumFactor * pb;
+			
+			stack = stackStart;
+			
+			for( i = 0; i < radiusPlus1; i++ )
+			{
+				stack.r = pr;
+				stack.g = pg;
+				stack.b = pb;
+				stack = stack.next;
+			}
+			
+			yp = width;
+			
+			for( i = 1; i <= radius; i++ )
+			{
+				yi = ( yp + x ) << 2;
+				
+				r_sum += ( stack.r = ( pr = pixels[yi])) * ( rbs = radiusPlus1 - i );
+				g_sum += ( stack.g = ( pg = pixels[yi+1])) * rbs;
+				b_sum += ( stack.b = ( pb = pixels[yi+2])) * rbs;
+				
+				r_in_sum += pr;
+				g_in_sum += pg;
+				b_in_sum += pb;
+				
+				stack = stack.next;
+			
+				if( i < heightMinus1 )
+				{
+					yp += width;
+				}
+			}
+			
+			yi = x;
+			stackIn = stackStart;
+			stackOut = stackEnd;
+			for ( y = 0; y < height; y++ )
+			{
+				p = yi << 2;
+				pixels[p]   = (r_sum * mul_sum) >> shg_sum;
+				pixels[p+1] = (g_sum * mul_sum) >> shg_sum;
+				pixels[p+2] = (b_sum * mul_sum) >> shg_sum;
+				
+				r_sum -= r_out_sum;
+				g_sum -= g_out_sum;
+				b_sum -= b_out_sum;
+				
+				r_out_sum -= stackIn.r;
+				g_out_sum -= stackIn.g;
+				b_out_sum -= stackIn.b;
+				
+				p = ( x + (( ( p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1 ) * width )) << 2;
+				
+				r_sum += ( r_in_sum += ( stackIn.r = pixels[p]));
+				g_sum += ( g_in_sum += ( stackIn.g = pixels[p+1]));
+				b_sum += ( b_in_sum += ( stackIn.b = pixels[p+2]));
+				
+				stackIn = stackIn.next;
+				
+				r_out_sum += ( pr = stackOut.r );
+				g_out_sum += ( pg = stackOut.g );
+				b_out_sum += ( pb = stackOut.b );
+				
+				r_in_sum -= pr;
+				g_in_sum -= pg;
+				b_in_sum -= pb;
+				
+				stackOut = stackOut.next;
+				
+				yi += width;
+			}
+		}
+		
+		context.putImageData( imageData, top_x, top_y );
+		
 	}
 
 	function BlurStack()
@@ -1387,13 +1410,13 @@ OTHER DEALINGS IN THE SOFTWARE.
  *
  * Requires: rgbcolor.js - http://www.phpied.com/rgb-color-parser-in-javascript/
  */
-(function ( global, factory ) {
+ (function ( global, factory ) {
 
 	'use strict';
 
 	// export as AMD...
 	if ( typeof define !== 'undefined' && define.amd ) {
-		define('../bower_components/canvg/canvg',[ 'rgbcolor', 'stackblur' ], factory );
+		define('canvgModule', [ 'rgbcolor', 'stackblur' ], factory );
 	}
 
 	// ...or as browserify
@@ -1404,7 +1427,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 	global.canvg = factory( global.RGBColor, global.stackBlur );
 
 }( typeof window !== 'undefined' ? window : this, function ( RGBColor, stackBlur ) {
-
+ 
 	// canvg(target, s)
 	// empty parameters: replace all 'svg' elements on page with 'canvas' elements
 	// target: canvas element or the id of a canvas element
@@ -1487,8 +1510,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 		};
 	} else {
 		// requires Sizzle: https://github.com/jquery/sizzle/wiki/Sizzle-Documentation
-		// without Sizzle, this is a ReferenceError
-		matchesSelector = Sizzle.matchesSelector;
+		// or jQuery: http://jquery.com/download/
+		// or Zepto: http://zeptojs.com/#
+		// without it, this is a ReferenceError
+
+		if (typeof jQuery === 'function' || typeof Zepto === 'function') {
+			matchesSelector = function (node, selector) {
+				return $(node).is(selector);
+			};
+		}
+
+		if (typeof matchesSelector === 'undefined') {
+			matchesSelector = Sizzle.matchesSelector;
+		}
 	}
 
 	// slightly modified version of https://github.com/keeganstreet/specificity/blob/master/specificity.js
@@ -2138,7 +2172,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 			this.getHrefAttribute = function() {
 				for (var a in this.attributes) {
-					if (a.match(/:href$/)) {
+					if (a == 'href' || a.match(/:href$/)) {
 						return this.attributes[a];
 					}
 				}
@@ -2179,8 +2213,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 				if (this.style('visibility').value == 'hidden') return;
 
 				ctx.save();
-				if (this.attribute('mask').hasValue()) { // mask
-					var mask = this.attribute('mask').getDefinition();
+				if (this.style('mask').hasValue()) { // mask
+					var mask = this.style('mask').getDefinition();
 					if (mask != null) mask.apply(ctx, this);
 				}
 				else if (this.style('filter').hasValue()) { // filter
@@ -2218,17 +2252,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 				child.parent = this;
 				if (child.type != 'title') { this.children.push(child);	}
 			}
-
-			if (node != null && node.nodeType == 1) { //ELEMENT_NODE
-				// add attributes
-				for (var i=0; i<node.attributes.length; i++) {
-					var attribute = node.attributes[i];
-					this.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.nodeValue);
-				}
-
+			
+			this.addStylesFromStyleDefinition = function () {
 				// add styles
 				for (var selector in svg.Styles) {
-					if (matchesSelector(node, selector)) {
+					if (selector[0] != '@' && matchesSelector(node, selector)) {
 						var styles = svg.Styles[selector];
 						var specificity = svg.StylesSpecificity[selector];
 						if (styles != null) {
@@ -2245,6 +2273,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 						}
 					}
 				}
+			};
+
+			if (node != null && node.nodeType == 1) { //ELEMENT_NODE
+				// add attributes
+				for (var i=0; i<node.attributes.length; i++) {
+					var attribute = node.attributes[i];
+					this.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.value);
+				}
+				
+				this.addStylesFromStyleDefinition();
 
 				// add inline styles
 				if (this.attribute('style').hasValue()) {
@@ -2271,8 +2309,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 					var childNode = node.childNodes[i];
 					if (childNode.nodeType == 1) this.addChild(childNode, true); //ELEMENT_NODE
 					if (this.captureTextNodes && (childNode.nodeType == 3 || childNode.nodeType == 4)) {
-						var text = childNode.nodeValue || childNode.text || '';
-						if (svg.trim(svg.compressSpaces(text)) != '') {
+						var text = childNode.value || childNode.text || childNode.textContent || '';
+						if (svg.compressSpaces(text) != '') {
 							this.addChild(new svg.Element.tspan(childNode), false); // TEXT_NODE
 						}
 					}
@@ -2346,8 +2384,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 				}
 
 				// transform
-				if (this.attribute('transform').hasValue()) {
-					var transform = new svg.Transform(this.attribute('transform').value);
+				if (this.style('transform', false, true).hasValue()) {
+					var transform = new svg.Transform(this.style('transform', false, true).value);
 					transform.apply(ctx);
 				}
 
@@ -2664,12 +2702,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 			var d = this.attribute('d').value;
 			// TODO: convert to real lexer based on http://www.w3.org/TR/SVG11/paths.html#PathDataBNF
 			d = d.replace(/,/gm,' '); // get rid of all commas
-			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from commands
-			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from commands
-			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([^\s])/gm,'$1 $2'); // separate commands from points
-			d = d.replace(/([^\s])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from points
-			d = d.replace(/([0-9])([+\-])/gm,'$1 $2'); // separate digits when no comma
-			d = d.replace(/(\.[0-9]*)(\.)/gm,'$1 $2'); // separate digits when no comma
+			// As the end of a match can also be the start of the next match, we need to run this replace twice.
+			for(var i=0; i<2; i++)
+				d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([^\s])/gm,'$1 $2'); // suffix commands with spaces
+			d = d.replace(/([^\s])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // prefix commands with spaces
+			d = d.replace(/([0-9])([+\-])/gm,'$1 $2'); // separate digits on +- signs
+			// Again, we need to run this twice to find all occurances
+			for(var i=0; i<2; i++)
+				d = d.replace(/(\.[0-9]*)(\.)/gm,'$1 $2'); // separate digits when they start with a comma
 			d = d.replace(/([Aa](\s+[0-9]+){3})\s+([01])\s*([01])/gm,'$1 $3 $4 '); // shorthand elliptical arc path syntax
 			d = svg.compressSpaces(d); // compress multiple spaces
 			d = svg.trim(d);
@@ -3024,7 +3064,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 				for (var x=-1; x<=1; x++) {
 					for (var y=-1; y<=1; y++) {
 						cctx.save();
-						cctx.translate(x * c.width, y * c.height);
+						tempSvg.attributes['x'] = new svg.Property('x', x * c.width);
+						tempSvg.attributes['y'] = new svg.Property('y', y * c.height);
 						tempSvg.render(cctx);
 						cctx.restore();
 					}
@@ -3083,8 +3124,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 			this.base = svg.Element.ElementBase;
 			this.base(node);
 
-			this.gradientUnits = this.attribute('gradientUnits').valueOrDefault('objectBoundingBox');
-
 			this.stops = [];
 			for (var i=0; i<this.children.length; i++) {
 				var child = this.children[i];
@@ -3094,11 +3133,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 			this.getGradient = function() {
 				// OVERRIDE ME!
 			}
+			
+			this.gradientUnits = function () {
+				return this.attribute('gradientUnits').valueOrDefault('objectBoundingBox');
+			}
+			
+			this.attributesToInherit = ['gradientUnits'];
+			
+			this.inheritStopContainer = function (stopsContainer) {
+				for (var i=0; i<this.attributesToInherit.length; i++) {
+					var attributeToInherit = this.attributesToInherit[i];
+					if (!this.attribute(attributeToInherit).hasValue() && stopsContainer.attribute(attributeToInherit).hasValue()) {
+						this.attribute(attributeToInherit, true).value = stopsContainer.attribute(attributeToInherit).value;
+					}
+				}
+			}
 
 			this.createGradient = function(ctx, element, parentOpacityProp) {
 				var stopsContainer = this;
 				if (this.getHrefAttribute().hasValue()) {
 					stopsContainer = this.getHrefAttribute().getDefinition();
+					this.inheritStopContainer(stopsContainer);
 				}
 
 				var addParentOpacity = function (color) {
@@ -3154,9 +3209,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 		svg.Element.linearGradient = function(node) {
 			this.base = svg.Element.GradientBase;
 			this.base(node);
+			
+			this.attributesToInherit.push('x1');
+			this.attributesToInherit.push('y1');
+			this.attributesToInherit.push('x2');
+			this.attributesToInherit.push('y2');
 
 			this.getGradient = function(ctx, element) {
-				var bb = this.gradientUnits == 'objectBoundingBox' ? element.getBoundingBox() : null;
+				var bb = this.gradientUnits() == 'objectBoundingBox' ? element.getBoundingBox() : null;
 
 				if (!this.attribute('x1').hasValue()
 				 && !this.attribute('y1').hasValue()
@@ -3168,16 +3228,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 					this.attribute('y2', true).value = 0;
 				 }
 
-				var x1 = (this.gradientUnits == 'objectBoundingBox'
+				var x1 = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.x() + bb.width() * this.attribute('x1').numValue()
 					: this.attribute('x1').toPixels('x'));
-				var y1 = (this.gradientUnits == 'objectBoundingBox'
+				var y1 = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.y() + bb.height() * this.attribute('y1').numValue()
 					: this.attribute('y1').toPixels('y'));
-				var x2 = (this.gradientUnits == 'objectBoundingBox'
+				var x2 = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.x() + bb.width() * this.attribute('x2').numValue()
 					: this.attribute('x2').toPixels('x'));
-				var y2 = (this.gradientUnits == 'objectBoundingBox'
+				var y2 = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.y() + bb.height() * this.attribute('y2').numValue()
 					: this.attribute('y2').toPixels('y'));
 
@@ -3191,6 +3251,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 		svg.Element.radialGradient = function(node) {
 			this.base = svg.Element.GradientBase;
 			this.base(node);
+			
+			this.attributesToInherit.push('cx');
+			this.attributesToInherit.push('cy');
+			this.attributesToInherit.push('r');
+			this.attributesToInherit.push('fx');
+			this.attributesToInherit.push('fy');
 
 			this.getGradient = function(ctx, element) {
 				var bb = element.getBoundingBox();
@@ -3199,27 +3265,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 				if (!this.attribute('cy').hasValue()) this.attribute('cy', true).value = '50%';
 				if (!this.attribute('r').hasValue()) this.attribute('r', true).value = '50%';
 
-				var cx = (this.gradientUnits == 'objectBoundingBox'
+				var cx = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.x() + bb.width() * this.attribute('cx').numValue()
 					: this.attribute('cx').toPixels('x'));
-				var cy = (this.gradientUnits == 'objectBoundingBox'
+				var cy = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.y() + bb.height() * this.attribute('cy').numValue()
 					: this.attribute('cy').toPixels('y'));
 
 				var fx = cx;
 				var fy = cy;
 				if (this.attribute('fx').hasValue()) {
-					fx = (this.gradientUnits == 'objectBoundingBox'
+					fx = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.x() + bb.width() * this.attribute('fx').numValue()
 					: this.attribute('fx').toPixels('x'));
 				}
 				if (this.attribute('fy').hasValue()) {
-					fy = (this.gradientUnits == 'objectBoundingBox'
+					fy = (this.gradientUnits() == 'objectBoundingBox'
 					? bb.y() + bb.height() * this.attribute('fy').numValue()
 					: this.attribute('fy').toPixels('y'));
 				}
 
-				var r = (this.gradientUnits == 'objectBoundingBox'
+				var r = (this.gradientUnits() == 'objectBoundingBox'
 					? (bb.width() + bb.height()) / 2.0 * this.attribute('r').numValue()
 					: this.attribute('r').toPixels());
 
@@ -3237,7 +3303,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 			if (this.offset < 0) this.offset = 0;
 			if (this.offset > 1) this.offset = 1;
 
-			var stopColor = this.style('stop-color');
+			var stopColor = this.style('stop-color', true);
+			if (stopColor.value === '') stopColor.value = '#000';
 			if (this.style('stop-opacity').hasValue()) stopColor = stopColor.addOpacity(this.style('stop-opacity'));
 			this.color = stopColor.value;
 		}
@@ -3492,6 +3559,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 			this.renderChildren = function(ctx) {
 				this.x = this.attribute('x').toPixels('x');
 				this.y = this.attribute('y').toPixels('y');
+				if (this.attribute('dx').hasValue()) this.x += this.attribute('dx').toPixels('x');
+				if (this.attribute('dy').hasValue()) this.y += this.attribute('dy').toPixels('y');
 				this.x += this.getAnchorDelta(ctx, this, 0);
 				for (var i=0; i<this.children.length; i++) {
 					this.renderChild(ctx, this, i);
@@ -3515,31 +3584,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 			this.renderChild = function(ctx, parent, i) {
 				var child = parent.children[i];
 				if (child.attribute('x').hasValue()) {
-					child.x = child.attribute('x').toPixels('x') + this.getAnchorDelta(ctx, parent, i);
+					child.x = child.attribute('x').toPixels('x') + parent.getAnchorDelta(ctx, parent, i);
 					if (child.attribute('dx').hasValue()) child.x += child.attribute('dx').toPixels('x');
 				}
 				else {
-					if (this.attribute('dx').hasValue()) this.x += this.attribute('dx').toPixels('x');
-					if (child.attribute('dx').hasValue()) this.x += child.attribute('dx').toPixels('x');
-					child.x = this.x;
+					if (child.attribute('dx').hasValue()) parent.x += child.attribute('dx').toPixels('x');
+					child.x = parent.x;
 				}
-				this.x = child.x + child.measureText(ctx);
+				parent.x = child.x + child.measureText(ctx);
 
 				if (child.attribute('y').hasValue()) {
 					child.y = child.attribute('y').toPixels('y');
 					if (child.attribute('dy').hasValue()) child.y += child.attribute('dy').toPixels('y');
 				}
 				else {
-					if (this.attribute('dy').hasValue()) this.y += this.attribute('dy').toPixels('y');
-					if (child.attribute('dy').hasValue()) this.y += child.attribute('dy').toPixels('y');
-					child.y = this.y;
+					if (child.attribute('dy').hasValue()) parent.y += child.attribute('dy').toPixels('y');
+					child.y = parent.y;
 				}
-				this.y = child.y;
+				parent.y = child.y;
 
 				child.render(ctx);
 
 				for (var i=0; i<child.children.length; i++) {
-					this.renderChild(ctx, child, i);
+					parent.renderChild(ctx, child, i);
 				}
 			}
 		}
@@ -3653,8 +3720,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 			this.base = svg.Element.TextElementBase;
 			this.base(node);
 
-			this.text = node.nodeValue || node.text || '';
+			this.text = svg.compressSpaces(node.value || node.text || node.textContent || '');
 			this.getText = function() {
+				// if this node has children, then they own the text
+				if (this.children.length > 0) { return ''; }
 				return this.text;
 			}
 		}
@@ -3683,7 +3752,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 			}
 
 			// this might contain text
-			this.text = this.hasText ? node.childNodes[0].nodeValue : '';
+			this.text = this.hasText ? node.childNodes[0].value : '';
 			this.getText = function() {
 				return this.text;
 			}
@@ -3810,7 +3879,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 			// text, or spaces then CDATA
 			var css = ''
 			for (var i=0; i<node.childNodes.length; i++) {
-			  css += node.childNodes[i].nodeValue;
+			  css += node.childNodes[i].data;
 			}
 			css = css.replace(/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(^[\s]*\/\/.*)/gm, ''); // remove comments
 			css = svg.compressSpaces(css); // replace whitespace
@@ -3823,7 +3892,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 					for (var j=0; j<cssClasses.length; j++) {
 						var cssClass = svg.trim(cssClasses[j]);
 						if (cssClass != '') {
-							var props = {};
+							var props = svg.Styles[cssClass] || {};
 							for (var k=0; k<cssProps.length; k++) {
 								var prop = cssProps[k].indexOf(':');
 								var name = cssProps[k].substr(0, prop);
@@ -3978,8 +4047,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 					var child = this.children[i];
 					if (typeof(child.path) != 'undefined') {
 						var transform = null;
-						if (child.attribute('transform').hasValue()) {
-							transform = new svg.Transform(child.attribute('transform').value);
+						if (child.style('transform', false, true).hasValue()) {
+							transform = new svg.Transform(child.style('transform', false, true).value);
 							transform.apply(ctx);
 						}
 						child.path(ctx);
@@ -4033,7 +4102,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 				// apply filters
 				for (var i=0; i<this.children.length; i++) {
-					this.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
+					if (typeof(this.children[i].apply) === 'function') {
+						this.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
+					}
 				}
 
 				// render on me
@@ -4228,6 +4299,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 			var e = svg.CreateElement(dom.documentElement);
 			e.root = true;
+			e.addStylesFromStyleDefinition();
 
 			// render loop
 			var isFirstRender = true;
@@ -4274,7 +4346,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 					e.attribute('width', true).value = svg.opts['scaleWidth'];
 					e.attribute('height', true).value = svg.opts['scaleHeight'];
-					e.attribute('transform', true).value += ' scale('+(1.0/xRatio)+','+(1.0/yRatio)+')';
+					e.style('transform', true, true).value += ' scale('+(1.0/xRatio)+','+(1.0/yRatio)+')';
 				}
 
 				// clear and render
@@ -4383,26 +4455,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 		});
 
 		return svg;
-	}
+	};
 
-if (typeof(CanvasRenderingContext2D) != 'undefined') {
-	CanvasRenderingContext2D.prototype.drawSvg = function(s, dx, dy, dw, dh) {
-		canvg(this.canvas, s, {
-			ignoreMouse: true,
-			ignoreAnimation: true,
-			ignoreDimensions: true,
-			ignoreClear: true,
-			offsetX: dx,
-			offsetY: dy,
-			scaleWidth: dw,
-			scaleHeight: dh
-		});
+	if (typeof(CanvasRenderingContext2D) != 'undefined') {
+		CanvasRenderingContext2D.prototype.drawSvg = function(s, dx, dy, dw, dh) {
+			canvg(this.canvas, s, {
+				ignoreMouse: true,
+				ignoreAnimation: true,
+				ignoreDimensions: true,
+				ignoreClear: true,
+				offsetX: dx,
+				offsetY: dy,
+				scaleWidth: dw,
+				scaleHeight: dh
+			});
+		}
 	}
-}
 
 	return canvg;
 
 }));
+
 define('../bower_components/FileSaver.js/FileSaver',[], function() {
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
@@ -6267,7 +6340,7 @@ define("../bower_components/fetch/fetch", function(){});
 
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define('export',['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
+        define('export',['tauCharts', 'canvgModule', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
             function (tauPlugins, canvg, saveAs, Promise, printCss) {
                 window.Promise = window.Promise || Promise.Promise;
                 return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
@@ -6886,9 +6959,11 @@ define("../bower_components/fetch/fetch", function(){});
    return tauCharts;
  });
  require.config({
+    paths:{
+        'canvgModule': '../bower_components/canvg/canvg'
+    },
     map:{
         '*':{
-            'canvg':'../bower_components/canvg/canvg',
              'FileSaver':'../bower_components/FileSaver.js/FileSaver',
              'rgbcolor': '../bower_components/canvg/rgbcolor',
              'stackblur': '../bower_components/canvg/StackBlur',

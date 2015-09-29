@@ -1,6 +1,6 @@
 window.samples.push({
 
-    "type": "scatterplot",
+    "type": "line",
     "color": "color",
     "size": "size",
     "x": [
@@ -537,6 +537,12 @@ window.samples.push({
         }),
         tauCharts.api.plugins.get('trendline')({showPanel: false}),
         tauCharts.api.plugins.get('exportTo')({
+
+            cssPaths: [
+                '../build/development/css/tauCharts.default.css',
+                '../build/development/plugins/tauCharts.trendline.css'
+            ],
+
             appendFields: [
                 {
                     field: 'name',
