@@ -24,7 +24,7 @@ var generateConf = function (postLoader) {
                 'print.style.css': 'plugins/print.style.css',
                 rgbcolor: 'bower_components/canvg/rgbcolor.js',
                 stackblur: 'bower_components/canvg/StackBlur.js',
-                canvg: 'bower_components/canvg/canvg.js',
+                canvgModule: 'bower_components/canvg/canvg.js',
                 FileSaver: 'test/utils/saveAs.js',
                 fetch: 'bower_components/fetch/fetch.js',
                 promise: 'bower_components/es6-promise/promise.js'

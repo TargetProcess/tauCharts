@@ -2,9 +2,11 @@
    return tauCharts;
  });
  require.config({
+    paths:{
+        'canvgModule': '../bower_components/canvg/canvg'
+    },
     map:{
         '*':{
-            'canvg':'../bower_components/canvg/canvg',
              'FileSaver':'../bower_components/FileSaver.js/FileSaver',
              'rgbcolor': '../bower_components/canvg/rgbcolor',
              'stackblur': '../bower_components/canvg/StackBlur',

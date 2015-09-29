@@ -89,6 +89,7 @@ module.exports = function (grunt) {
                     topojson: '../node_modules/topojson/topojson',
                     underscore: '../node_modules/underscore/underscore',
                     d3: '../node_modules/d3/d3',
+                    'canvgModule': '../bower_components/canvg/canvg',
                     'tau-tooltip': '../node_modules/tau-tooltip/tooltip'
                 },
                 map: {
