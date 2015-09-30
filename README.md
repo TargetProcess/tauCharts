@@ -24,12 +24,12 @@ Here are the popular usage scenarios. See also experimental [sample page](http:/
 ####Scatter plot
 ```javascript
 var chart = new tauCharts.Chart({
-    type : 'scatterplot',
-    x    : 'cycleTime',
-    y    : 'effort',
-    color: 'team',
-    size : 'count',
-    data : data
+    "type": "scatterplot",
+    "x": "eccentricity",
+    "y": "period",
+    "color": "name",
+    "size": "mass",
+    "data": [{"eccentricity": 0, "period": 4.95, "jupiter mass": 0.12, "name": "exoplanet", "mass": 38.0952}, ...]
 });
 ```
 ![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)
@@ -38,13 +38,14 @@ http://api.taucharts.com/basic/scatterplot.html
 ####Line chart
 ```javascript
 var chart = new tauCharts.Chart({
-    type : 'line',
-    x    : 'date',
-    y    : 'count',
-    color: 'type'
-    data : data
+    "type" : "line",
+    "y"    : "SUM(Total Medals)",
+    "x"    : "Age",
+    "color": "Sport",
+    "data" : [{ "Sport": "Swimming", "Age": 23, "SUM(Total Medals)": 72 }, ...]
 });
 ```
+![Line Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/line-chart.png)
 http://api.taucharts.com/basic/line.html
 
 ####Bar chart
