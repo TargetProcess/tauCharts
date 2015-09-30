@@ -24,16 +24,17 @@ Here are the popular usage scenarios. See also experimental [sample page](http:/
 ####Scatter plot
 ```javascript
 var chart = new tauCharts.Chart({
-    "type": "scatterplot",
-    "x": "eccentricity",
-    "y": "period",
+    "type" : "scatterplot",
+    "x"    : "eccentricity",
+    "y"    : "period",
     "color": "name",
-    "size": "mass",
-    "data": [{"eccentricity": 0, "period": 4.95, "name": "exoplanet", "mass": 38.0952}, ...]
+    "size" : "mass",
+    "data" : [{"eccentricity": 0, "period": 4.95, "name": "exoplanet", "mass": 38.0952}, ...]
 });
 ```
-![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)
-http://api.taucharts.com/basic/scatterplot.html
+[![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)](http://api.taucharts.com/basic/scatterplot.html)
+
+=========
 
 ####Line chart
 ```javascript
@@ -45,8 +46,9 @@ var chart = new tauCharts.Chart({
     "data" : [{ "Sport": "Swimming", "Age": 23, "SUM(Total Medals)": 72 }, ...]
 });
 ```
-![Line Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/line-chart.png)
-http://api.taucharts.com/basic/line.html
+[![Line Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/line-chart.png)](http://api.taucharts.com/basic/line.html)
+
+=========
 
 ####Bar chart
 ```javascript
@@ -58,8 +60,9 @@ var chart = new tauCharts.Chart({
     data : [{"team": "d", "cycleTime": 1, "effort": 1, "count": 1, "priority": "low"}, ...]
 });
 ```
-![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/bar-chart.png)
-http://api.taucharts.com/basic/bar.html
+[![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/bar-chart.png)](http://api.taucharts.com/basic/bar.html)
+
+=========
 
 ####Horizontal bar chart
 ```javascript
@@ -70,8 +73,9 @@ var chart = new tauCharts.Chart({
     data : [{"team": "alpha", "count": 8}, ...]
 });
 ```
-![Horizontal Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)
-http://api.taucharts.com/basic/horizontal-bar.html
+[![Horizontal Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)](http://api.taucharts.com/basic/horizontal-bar.html)
+
+=========
 
 ####Stacked bar chart
 ```javascript
@@ -83,8 +87,9 @@ var chart = new tauCharts.Chart({
     data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
-![Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/stacked-bar-chart.png)
-http://api.taucharts.com/basic/stacked-bar.html
+[![Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/stacked-bar-chart.png)](http://api.taucharts.com/basic/stacked-bar.html)
+
+=========
 
 ####Horizontal stacked bar chart
 ```javascript
@@ -96,8 +101,9 @@ var chart = new tauCharts.Chart({
     data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
-![Horizontal Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-stacked-bar-chart.png)
-http://api.taucharts.com/basic/horizontal-stacked-bar.html
+[![Horizontal Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-stacked-bar-chart.png)](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
+
+=========
 
 ####Facet chart
 ```javascript
@@ -109,8 +115,9 @@ var chart1 = new tauCharts.Chart({
   data : [{class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius1", year: 1997}, ...]
 });
 ```
-![Facet scatterplot chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)
-http://api.taucharts.com/basic/facet.html
+[![Facet scatterplot chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)](http://api.taucharts.com/basic/facet.html)
+
+=========
 
 ####Data Streaming
 ```javascript
@@ -122,54 +129,23 @@ var chart1 = new tauCharts.Chart({
     ...
 });
 ```
-![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.png)
+[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.png)](http://jsfiddle.net/4o4z6fqn/5/)
 Sample uses [setData(..)] method to refresh chart data source.
-http://jsfiddle.net/4o4z6fqn/5/
+
+=========
 
 ####Complex Composable charts
-![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)
-http://jsfiddle.net/6LzefLo4/4/
+[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)](http://jsfiddle.net/6LzefLo4/4/)
 
-##Who use Taucharts?
+=========
+
+##Taucharts examples / usage reviews
+http://taucharts.com/taulab/index.html
 http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts
+https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/
 
-#License
+##License
 
 Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Have a questions? [Contact us](mailto:michael@targetprocess.com)
-
-#Change Log
-## [0.4.5] - 2015-06-13
-### Added
-- fix flex scales
-
-
-## [0.4.4] - 2015-06-11
-### Added
-- fix legend plugin for stacked bar charts
-- add support [parallel coordinates](http://en.wikipedia.org/wiki/Parallel_coordinates) 
-
-## [0.4.3] - 2015-05-18
-### Added
-- stacked bar charts
-
-
-## [0.4.2] - 2015-04-30
-### Added
-- geo charts (alpha)
-
-
-## [0.4.1] - 2015-04-22
-### Added
-- Flex scales (ratio parameter for ordinal scales)
-- Auto calculate ratio for 2-level facet
-- "Settings" plugin. Allow to control fit to view-port
-
-
-## [0.4.0] - 2015-04-17
-### Added
-- New core (extended GPL syntax)
-- Adapter for compatibility with previous definitions (except guide.split parameter)
-
-
