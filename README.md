@@ -141,11 +141,15 @@ Sample uses [setData(..)] method to refresh chart data source.
 
 ##Taucharts examples / usage reviews
 
-http://taucharts.com/taulab/index.html
+[R Wrapper](http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts)
 
-http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts
+[Taucharts samples](http://taucharts.com/taulab/index.html)
 
-https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/
+[Targetprocess Graphical Reports](https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/)
+
+[Vizydrop project](http://vizydrop.com/)
+
+[Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
 
 ##License
 
