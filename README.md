@@ -29,7 +29,7 @@ var chart = new tauCharts.Chart({
     "y": "period",
     "color": "name",
     "size": "mass",
-    "data": [{"eccentricity": 0, "period": 4.95, "jupiter mass": 0.12, "name": "exoplanet", "mass": 38.0952}, ...]
+    "data": [{"eccentricity": 0, "period": 4.95, "name": "exoplanet", "mass": 38.0952}, ...]
 });
 ```
 ![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)
@@ -67,11 +67,10 @@ var chart = new tauCharts.Chart({
     type : 'horizontal-bar',
     x    : 'count',
     y    : 'team',
-    color:'priority',
     data : [{"team": "alpha", "count": 8}, ...]
 });
 ```
-![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)
+![Horizontal Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)
 http://api.taucharts.com/basic/horizontal-bar.html
 
 ####Stacked bar chart
@@ -81,9 +80,10 @@ var chart = new tauCharts.Chart({
     x    : 'process',
     y    : 'count',
     color: 'stage',
-    data : data
+    data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
+![Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/stacked-bar-chart.png)
 http://api.taucharts.com/basic/stacked-bar.html
 
 ####Horizontal stacked bar chart
@@ -93,75 +93,42 @@ var chart = new tauCharts.Chart({
     y    : 'process',
     x    : 'count',
     color: 'stage',
-    data : data
+    data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
+![Horizontal Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-stacked-bar-chart.png)
 http://api.taucharts.com/basic/horizontal-stacked-bar.html
 
 ####Facet chart
-####Composable chart
-####Data Streaming
-
 ```javascript
 var chart1 = new tauCharts.Chart({
-  type: 'scatterplot',
-  x: 'milespergallon',
-  y: 'price',
-
-  data: [
-    {class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius (1st Gen)", year: 1997},
-    ...
-    {class: "C", milespergallon: 37   , price: 39145   , vehicle: "Chevrolet Volt" , year: 2013}
-  ],
-
-  plugins: [
-    tauCharts.api.plugins.get('trendline')()
-  ]
-});
-chart1.renderTo('#target');
-```
-![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatterplot.png)
-
-##Simple horizontal bar chart
-
-```javascript
-var chart1 = new tauCharts.Chart({
-  type: 'horizontal-bar',
-  y: 'vehicle',
-  x: 'price',
-  data: [
-    {price: 84000 , vehicle: "ActiveHybrid 7L"},
-    ...
-    {price: 118000, vehicle: "Lexus LS600h/hL"}
-  ]
-});
-chart1.renderTo('#target');
-```
-![Horizontal BarChart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar.png)
-
-##Facets
-
-```javascript
-var chart1 = new tauCharts.Chart({
-  type: 'scatterplot',
-  x: ['milespergallon'],
-  y: ['class', 'price'],
+  type : 'scatterplot',
+  x    : ['milespergallon'],
+  y    : ['class', 'price'],
   color: 'class',
-
-  data: [
-    {class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius (1st Gen)", year: 1997},
-    ...
-    {class: "C", milespergallon: 37   , price: 39145   , vehicle: "Chevrolet Volt" , year: 2013}
-  ],
-
-  plugins: [
-    tauCharts.api.plugins.get('legend')(),
-    tauCharts.api.plugins.get('trendline')()
-  ]
+  data : [{class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius1", year: 1997}, ...]
 });
-chart1.renderTo('#target');
 ```
-![Facet](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)
+![Facet scatterplot chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)
+http://api.taucharts.com/basic/facet.html
+
+####Data Streaming
+```javascript
+var chart1 = new tauCharts.Chart({
+    type : 'bar',
+    x    : ['x'],
+    y    : ['type', 'y'],
+    color: 'type',
+    ...
+});
+```
+![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.png)
+Sample uses [setData(..)] method to refresh chart data source.
+http://jsfiddle.net/4o4z6fqn/5/
+
+####Complex Composable charts
+![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)
+http://jsfiddle.net/6LzefLo4/4/
 
 ##Who use Taucharts?
 http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts
