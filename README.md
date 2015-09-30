@@ -1,11 +1,11 @@
-TauCharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
+Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
 =========
 
-TauCharts is a Javascript charting library based on D3. Designed with passion.
+Taucharts is a [data-focused javascript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3. Designed with passion.
 
-Official website: [www.taucharts.com](http://www.taucharts.com)
-Documentation: [api.taucharts.com](http://api.taucharts.com)
-Project blog: [blog.taucharts.com](http://blog.taucharts.com)
+#####Official website: [www.taucharts.com](http://www.taucharts.com)
+#####Documentation: [api.taucharts.com](http://api.taucharts.com)
+#####Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
 =========
 
