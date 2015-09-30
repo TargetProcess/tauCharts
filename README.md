@@ -55,21 +55,23 @@ var chart = new tauCharts.Chart({
     x    : 'team',
     y    : 'effort',
     color:'priority',
-    data : data
+    data : [{"team": "d", "cycleTime": 1, "effort": 1, "count": 1, "priority": "low"}, ...]
 });
 ```
+![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/bar-chart.png)
 http://api.taucharts.com/basic/bar.html
 
 ####Horizontal bar chart
 ```javascript
 var chart = new tauCharts.Chart({
-    type : 'horizontalBar',
-    x    : 'effort',
+    type : 'horizontal-bar',
+    x    : 'count',
     y    : 'team',
     color:'priority',
-    data : data
+    data : [{"team": "alpha", "count": 8}, ...]
 });
 ```
+![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)
 http://api.taucharts.com/basic/horizontal-bar.html
 
 ####Stacked bar chart
