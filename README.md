@@ -7,12 +7,96 @@ Taucharts is a [data-focused javascript charting library](http://blog.taucharts.
 #####Documentation: [api.taucharts.com](http://api.taucharts.com)
 #####Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
-##Why?
-Data plays a key role in Taucharts. The library provides declarative interface for mapping data fields to visual properties. The libary's architecture allows to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins. Read more in [Taucharts blog](http://blog.taucharts.com/taucharts-data-focused-charting-library/).
+##Why to use?
+####Simplicity
+Data plays a key role in Taucharts. The library provides declarative interface for fast mapping of data fields to visual properties.
+####Flexibility
+The library's architecture allows to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
+####Design
+Taucharts team is passionate about beautiful design.
+####...
+Dive into high-level [Taucharts concept](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and usage reviews.
 
 ##How to use?
 
-##Scatter plot
+Here are the popular usage scenarios.
+
+####Scatter plot
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'scatterplot',
+    x    : 'cycleTime',
+    y    : 'effort',
+    color: 'team',
+    size : 'count',
+    data : data
+});
+```
+http://api.taucharts.com/basic/scatterplot.html
+
+####Line chart
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'line',
+    x    : 'date',
+    y    : 'count',
+    color: 'type'
+    data : data
+});
+```
+http://api.taucharts.com/basic/line.html
+
+####Bar chart
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'bar',
+    x    : 'team',
+    y    : 'effort',
+    color:'priority',
+    data : data
+});
+```
+http://api.taucharts.com/basic/bar.html
+
+####Horizontal bar chart
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'horizontalBar',
+    x    : 'effort',
+    y    : 'team',
+    color:'priority',
+    data : data
+});
+```
+http://api.taucharts.com/basic/horizontal-bar.html
+
+####Stacked bar chart
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'stacked-bar',
+    x    : 'process',
+    y    : 'count',
+    color: 'stage',
+    data : data
+});
+```
+http://api.taucharts.com/basic/stacked-bar.html
+
+####Horizontal stacked bar chart
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'horizontal-stacked-bar',
+    y    : 'process',
+    x    : 'count',
+    color: 'stage',
+    data : data
+});
+```
+http://api.taucharts.com/basic/horizontal-stacked-bar.html
+
+####Facet chart
+####Composable chart
+####Data Streaming
 
 ```javascript
 var chart1 = new tauCharts.Chart({
@@ -74,6 +158,9 @@ var chart1 = new tauCharts.Chart({
 chart1.renderTo('#target');
 ```
 ![Facet](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)
+
+##Who use Taucharts?
+http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts
 
 #License
 
