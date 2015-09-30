@@ -19,7 +19,7 @@ Dive into high-level [Taucharts concept](http://blog.taucharts.com/taucharts-dat
 
 ##How to use?
 
-Here are the popular usage scenarios.
+Here are the popular usage scenarios. See also experimental [sample page](http://taucharts.com/taulab/index.html).
 
 ####Scatter plot
 ```javascript
@@ -32,6 +32,7 @@ var chart = new tauCharts.Chart({
     data : data
 });
 ```
+![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)
 http://api.taucharts.com/basic/scatterplot.html
 
 ####Line chart
