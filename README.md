@@ -7,9 +7,10 @@ Taucharts is a [data-focused javascript charting library](http://blog.taucharts.
 #####Documentation: [api.taucharts.com](http://api.taucharts.com)
 #####Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
-=========
+##Why?
+Data plays a key role in Taucharts. The library provides declarative interface for mapping data fields to visual properties. The libary's architecture allows to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins. Read more in [Taucharts blog](http://blog.taucharts.com/taucharts-data-focused-charting-library/).
 
-#Usage
+##How to use?
 
 ##Scatter plot
 
