@@ -15,7 +15,7 @@ The library's architecture allows to build [facets](http://api.taucharts.com/bas
 ####Design
 Taucharts team is passionate about beautiful design.
 ####...
-Dive into high-level [Taucharts concept](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and usage reviews.
+Dive into high-level [Taucharts concept](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
 
 ##How to use?
 
@@ -140,8 +140,11 @@ Sample uses [setData(..)] method to refresh chart data source.
 =========
 
 ##Taucharts examples / usage reviews
+
 http://taucharts.com/taulab/index.html
+
 http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts
+
 https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/
 
 ##License
