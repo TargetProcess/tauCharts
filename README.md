@@ -4,14 +4,10 @@ TauCharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?bra
 TauCharts is a Javascript charting library based on D3. Designed with passion.
 
 Official website: [www.taucharts.com](http://www.taucharts.com)
+Documentation: [api.taucharts.com](http://api.taucharts.com)
+Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
 =========
-
-#Documentation
-
-Read the documentation here. There are some tutorials, basic and advanced topics.
-
-http://api.taucharts.com/
 
 #Usage
 
