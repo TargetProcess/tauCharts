@@ -1,23 +1,23 @@
 Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
 =========
 
-Taucharts is a [data-focused javascript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3. Designed with passion.
+Taucharts is a [data-focused javascript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
 #####Official website: [www.taucharts.com](http://www.taucharts.com)
 #####Documentation: [api.taucharts.com](http://api.taucharts.com)
 #####Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
-##Why use?
+##Why use Taucharts?
 ####Simplicity
-Data plays a key role in Taucharts. The library provides declarative interface for the fast mapping of data fields to visual properties.
+Data plays a key role in Taucharts. The library provides a declarative interface for fast mapping of data fields to visual properties.
 ####Flexibility
-The library's architecture allows to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
+The library's architecture allows you to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
 ####Design
-Taucharts team is passionate about beautiful design.
+The Taucharts team is passionate about beautiful design.
 ####...
-Dive into the high-level [Taucharts concept](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
+Dive into the high-level [Taucharts concepts](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
 
-##How to use?
+##How to use Taucharts
 
 ####Using Taucharts with a CDN
 
@@ -29,7 +29,7 @@ Load javascript dependencies
 <script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js" type="text/javascript"></script>
 ```
 
-Include CSS file as well
+Include a CSS file, as well
 
 ```html
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css">
@@ -48,7 +48,7 @@ npm install taucharts
 ```
 =========
 
-Here are the popular usage scenarios. For more examples, see experimental [sample page](http://taucharts.com/taulab/index.html).
+Below are some popular usage scenarios. For more examples, see our experimental [sample page](http://taucharts.com/taulab/index.html).
 
 ####Scatter plot
 ```javascript
@@ -174,7 +174,7 @@ var chart1 = new tauCharts.Chart({
 ```
 [![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](http://jsfiddle.net/4o4z6fqn/6/)
 
-Sample uses [setData(..)] method to refresh chart data source.
+This sample uses the [setData(..)] method to refresh the chart's data source.
 
 See [streaming sample online](http://jsfiddle.net/4o4z6fqn/6/)
 
@@ -203,4 +203,4 @@ See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-Have a questions? [Contact us](mailto:michael@targetprocess.com)
+Have questions? [Contact us](mailto:michael@targetprocess.com)
