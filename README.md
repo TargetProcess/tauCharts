@@ -166,16 +166,16 @@ See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
 ```javascript
 var chart1 = new tauCharts.Chart({
     type : 'bar',
-    x    : ['x'],
-    y    : ['type', 'y'],
+    x    : 'x',
+    y    : 'y',
     color: 'type',
     ...
 });
 ```
-[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.png)](http://jsfiddle.net/4o4z6fqn/5/)
+[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](http://jsfiddle.net/4o4z6fqn/6/)
 Sample uses [setData(..)] method to refresh chart data source.
 
-See [streaming sample online](http://jsfiddle.net/4o4z6fqn/5/)
+See [streaming sample online](http://jsfiddle.net/4o4z6fqn/6/)
 
 =========
 
