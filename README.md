@@ -34,6 +34,8 @@ var chart = new tauCharts.Chart({
 ```
 [![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)](http://api.taucharts.com/basic/scatterplot.html)
 
+See [scatter plot documentation](http://api.taucharts.com/basic/scatterplot.html)
+
 =========
 
 ####Line chart
@@ -47,6 +49,8 @@ var chart = new tauCharts.Chart({
 });
 ```
 [![Line Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/line-chart.png)](http://api.taucharts.com/basic/line.html)
+
+See [line chart documentation](http://api.taucharts.com/basic/line.html)
 
 =========
 
@@ -62,6 +66,8 @@ var chart = new tauCharts.Chart({
 ```
 [![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/bar-chart.png)](http://api.taucharts.com/basic/bar.html)
 
+See [bar chart documentation](http://api.taucharts.com/basic/bar.html)
+
 =========
 
 ####Horizontal bar chart
@@ -74,6 +80,8 @@ var chart = new tauCharts.Chart({
 });
 ```
 [![Horizontal Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)](http://api.taucharts.com/basic/horizontal-bar.html)
+
+See [horizontal bar chart documentation](http://api.taucharts.com/basic/horizontal-bar.html)
 
 =========
 
@@ -89,6 +97,8 @@ var chart = new tauCharts.Chart({
 ```
 [![Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/stacked-bar-chart.png)](http://api.taucharts.com/basic/stacked-bar.html)
 
+See [stacked bar chart documentation](http://api.taucharts.com/basic/stacked-bar.html)
+
 =========
 
 ####Horizontal stacked bar chart
@@ -103,6 +113,8 @@ var chart = new tauCharts.Chart({
 ```
 [![Horizontal Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-stacked-bar-chart.png)](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
+See [horizontal stacked bar chart documentation](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
+
 =========
 
 ####Facet chart
@@ -116,6 +128,8 @@ var chart1 = new tauCharts.Chart({
 });
 ```
 [![Facet scatterplot chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)](http://api.taucharts.com/basic/facet.html)
+
+See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
 
 =========
 
@@ -132,10 +146,14 @@ var chart1 = new tauCharts.Chart({
 [![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.png)](http://jsfiddle.net/4o4z6fqn/5/)
 Sample uses [setData(..)] method to refresh chart data source.
 
+See [streaming sample online](http://jsfiddle.net/4o4z6fqn/5/)
+
 =========
 
 ####Complex Composable charts
-[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)](http://jsfiddle.net/6LzefLo4/4/)
+[![Composable Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)](http://jsfiddle.net/6LzefLo4/4/)
+
+See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 =========
 
