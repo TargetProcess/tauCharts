@@ -19,6 +19,35 @@ Dive into the high-level [Taucharts concept](http://blog.taucharts.com/taucharts
 
 ##How to use?
 
+####Using TauCharts with a CDN
+
+Load javascript dependencies
+
+```html
+<script src="//cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
+<script src="//cdn.jsdelivr.net/underscorejs/latest/underscore-min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js" type="text/javascript"></script>
+```
+
+Include CSS file as well
+
+```html
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css">
+```
+
+####Downloading TauCharts using Bower
+
+```bash
+bower install taucharts
+```
+
+####Downloading TauCharts using npm
+
+```bash
+npm install taucharts
+```
+=========
+
 Here are the popular usage scenarios. For more examples, see experimental [sample page](http://taucharts.com/taulab/index.html).
 
 ####Scatter plot
