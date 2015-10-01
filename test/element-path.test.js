@@ -130,4 +130,73 @@ define(function (require) {
             expect(actualData.color).to.equal('up');
         });
     });
+
+    describe("ELEMENT.PATH with text assigned", function () {
+
+        var testData = [
+            {x: -1, y: 0, color: 'red', letter: 'a'},
+            {x: 0, y: 1, color: 'red', letter: 'b'},
+            {x: 1, y: 0, color: 'green', letter: 'c'},
+            {x: 0, y: -1, color: 'green', letter: 'd'}
+        ];
+
+        var element;
+        var chart;
+
+        beforeEach(function () {
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Plot({
+                spec: {
+                    unit: {
+                        type: 'COORDS.RECT',
+                        x: 'x',
+                        y: 'y',
+                        guide: {
+                            x: {autoScale: false},
+                            y: {autoScale: false}
+                        },
+                        unit: [
+                            {
+                                type: 'ELEMENT.PATH',
+                                x: 'x',
+                                y: 'y',
+                                text: 'letter',
+                                guide: {
+                                    color: {
+                                        fill: '#abcdef' // rgb(171, 205, 239)
+                                    },
+                                    text: {
+                                        fontColor: '#fedcba'
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                data: testData
+            });
+            chart.renderTo(element, {width: 800, height: 800});
+        });
+        afterEach(function () {
+            element.parentNode.removeChild(element);
+        });
+
+        var str = ((obj) => JSON.stringify(obj));
+
+        it("should render polygon with text on each angle", function () {
+            var area = d3.selectAll('.area');
+            expect(area[0].length).to.be.equal(1);
+            expect(str(d3.rgb(area.style('fill'))))
+                .to
+                .be
+                .equal(str(d3.rgb('rgb(171, 205, 239)')));
+            var labels = d3.selectAll('.caption');
+            expect(labels[0].length).to.be.equal(4);
+            expect(str(d3.rgb(labels.style('fill'))))
+                .to
+                .be
+                .equal(str(d3.rgb('#fedcba')));
+        });
+    });
 });

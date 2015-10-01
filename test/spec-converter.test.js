@@ -90,6 +90,7 @@ define(function (require) {
 
                     "pos:default"   : {"type": "ordinal", "source": "?"},
                     "size:default"  : {"type": "size", "source": "?", "mid": 5},
+                    "text:default"  : {"type": "value", source: "?"},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
 
                     "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", order: ['alpha', 'beta'], "autoScale": true},
@@ -127,6 +128,7 @@ define(function (require) {
                                         "operator": "none",
                                         "params": []
                                     },
+                                    "namespace": "chart",
                                     "x": "x_date",
                                     "y": "y_count",
                                     "guide": {
@@ -134,9 +136,11 @@ define(function (require) {
                                         "y": {}
                                     }
                                 }
-                            ]
+                            ],
+                            "namespace": "chart"
                         }
-                    ]
+                    ],
+                    "namespace": "chart"
                 }
             };
 
@@ -243,6 +247,7 @@ define(function (require) {
 
                     "pos:default": {"type": "ordinal", "source": "?"},
                     "size:default": {"type": "size", "source": "?", "mid": 5},
+                    "text:default": {"type": "value", source: "?"},
                     "color:default": {"type": "color", "source": "?", "brewer": null},
 
                     "x_week": {"type": "period", "source": "/", "dim": "week", "autoScale": true, "period": "week"},
@@ -285,6 +290,7 @@ define(function (require) {
                                         "operator": "none",
                                         "params": []
                                     },
+                                    "namespace": "chart",
                                     "x": "x_date",
                                     "y": "y_count",
                                     "guide": {
@@ -292,9 +298,11 @@ define(function (require) {
                                         "y": {}
                                     }
                                 }
-                            ]
+                            ],
+                            "namespace": "chart"
                         }
-                    ]
+                    ],
+                    "namespace": "chart"
                 }
             };
 
