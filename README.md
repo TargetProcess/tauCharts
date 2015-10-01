@@ -165,7 +165,7 @@ See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
 ####Data Streaming
 ```javascript
 var chart1 = new tauCharts.Chart({
-    type : 'bar',
+    type : 'line',
     x    : 'x',
     y    : 'y',
     color: 'type',
@@ -173,6 +173,7 @@ var chart1 = new tauCharts.Chart({
 });
 ```
 [![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](http://jsfiddle.net/4o4z6fqn/6/)
+
 Sample uses [setData(..)] method to refresh chart data source.
 
 See [streaming sample online](http://jsfiddle.net/4o4z6fqn/6/)
