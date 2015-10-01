@@ -19,7 +19,7 @@ Dive into the high-level [Taucharts concept](http://blog.taucharts.com/taucharts
 
 ##How to use?
 
-####Using TauCharts with a CDN
+####Using Taucharts with a CDN
 
 Load javascript dependencies
 
@@ -35,13 +35,13 @@ Include CSS file as well
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css">
 ```
 
-####Downloading TauCharts using Bower
+####Downloading Taucharts using Bower
 
 ```bash
 bower install taucharts
 ```
 
-####Downloading TauCharts using npm
+####Downloading Taucharts using npm
 
 ```bash
 npm install taucharts
