@@ -7,19 +7,19 @@ Taucharts is a [data-focused javascript charting library](http://blog.taucharts.
 #####Documentation: [api.taucharts.com](http://api.taucharts.com)
 #####Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
-##Why to use?
+##Why use?
 ####Simplicity
-Data plays a key role in Taucharts. The library provides declarative interface for fast mapping of data fields to visual properties.
+Data plays a key role in Taucharts. The library provides declarative interface for the fast mapping of data fields to visual properties.
 ####Flexibility
 The library's architecture allows to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
 ####Design
 Taucharts team is passionate about beautiful design.
 ####...
-Dive into high-level [Taucharts concept](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
+Dive into the high-level [Taucharts concept](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
 
 ##How to use?
 
-Here are the popular usage scenarios. See also experimental [sample page](http://taucharts.com/taulab/index.html).
+Here are the popular usage scenarios. For more examples, see experimental [sample page](http://taucharts.com/taulab/index.html).
 
 ####Scatter plot
 ```javascript
@@ -112,7 +112,7 @@ var chart1 = new tauCharts.Chart({
   x    : ['milespergallon'],
   y    : ['class', 'price'],
   color: 'class',
-  data : [{class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius1", year: 1997}, ...]
+  data : [{class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius1"}, ...]
 });
 ```
 [![Facet scatterplot chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)](http://api.taucharts.com/basic/facet.html)
@@ -145,11 +145,11 @@ Sample uses [setData(..)] method to refresh chart data source.
 
 [Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
 
-[Taucharts samples](http://taucharts.com/taulab/index.html)
-
 [Targetprocess Graphical Reports](https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/)
 
 [Vizydrop project](http://vizydrop.com/)
+
+[Taucharts samples](http://taucharts.com/taulab/index.html)
 
 ##License
 
