@@ -359,4 +359,8 @@ export class Plot extends Emitter {
     getSpec() {
         return this._liveSpec;
     }
+
+    getLayout() {
+        return this._layout;
+    }
 }

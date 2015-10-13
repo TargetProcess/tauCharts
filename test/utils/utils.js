@@ -56,6 +56,14 @@ define(function (require) {
             'measure:time:min': 'x-time-auto',
             'measure:time:sec': 'x-time-auto',
             'measure:time:ms': 'x-time-auto'
+        },
+
+        log: (msg, type) => {
+            type = type || 'INFO';
+            if (!Array.isArray(msg)) {
+                msg = [msg];
+            }
+            console[type.toLowerCase()].apply(console, msg);
         }
     };
 

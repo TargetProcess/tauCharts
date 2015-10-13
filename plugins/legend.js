@@ -54,13 +54,14 @@
             });
         };
 
-        var plugin = {
+        return {
 
             init: function (chart) {
 
                 this._chart = chart;
                 this._currentFilters = {};
                 this._legendColorByScaleId = {};
+                this._legendOrderState = {};
 
                 var spec = this._chart.getSpec();
 
@@ -81,6 +82,8 @@
                 var hasColorScales = (this._color.length > 0);
                 var hasFillScales = (this._fill.length > 0);
                 var hasSizeScales = (this._size.length > 0);
+
+                this._assignStaticBrewersOrEx();
 
                 if (hasColorScales || hasFillScales || hasSizeScales) {
 
@@ -116,10 +119,6 @@
                 }
             },
 
-            onSpecReady: function () {
-                this._assignStaticBrewersOrEx();
-            },
-
             onRender: function () {
                 this._clearPanel();
                 this._drawColorLegend();
@@ -128,7 +127,7 @@
 
             // jscs:disable maximumLineLength
             _containerTemplate: '<div class="graphical-report__legend"></div>',
-            _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
+            _template: _.template('<div class="graphical-report__legend__wrap"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '<div class="graphical-report__legend__guide__wrap">',
@@ -248,10 +247,13 @@
 
                         var colorScaleConfig = self._chart.getSpec().scales[c];
                         if (colorScaleConfig.order) {
-                            domain = _.union(
-                                _.intersection(colorScaleConfig.order, domain),
-                                domain
-                            );
+                            domain = _.union(_.intersection(colorScaleConfig.order, domain), domain);
+                        } else {
+                            var orderState = self._legendOrderState[c];
+                            domain = domain.sort(function (a, b) {
+                                var diff = orderState[a] - orderState[b];
+                                return (diff && (diff / Math.abs(diff)));
+                            });
                         }
 
                         var title = ((guide.color || {}).label || {}).text || colorScale.dim;
@@ -388,11 +390,14 @@
                     if (!scaleConfig.brewer) {
                         scaleConfig.brewer = self._generateColorMap(fullLegendDomain);
                     }
+
+                    self._legendOrderState[c] = fullLegendDomain.reduce(function (memo, x, i) {
+                        memo[x] = i;
+                        return memo;
+                    }, {});
                 });
             }
         };
-
-        return plugin;
     }
 
     tauCharts.api.plugins.add('legend', ChartLegend);
