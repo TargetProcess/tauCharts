@@ -26,6 +26,7 @@ export class SpecConverter {
 
                 'pos:default': {type: 'ordinal', source: '?'},
                 'size:default': {type: 'size', source: '?', mid: 5},
+                'text:default': {type: 'value', source: '?'},
                 'color:default': {type: 'color', source: '?', brewer: null}
                 // jscs:enable disallowQuotedKeysInObjects
             },
@@ -45,12 +46,15 @@ export class SpecConverter {
     }
 
     ruleApplyDefaults(spec) {
+
         var traverse = (node, iterator, parentNode) => {
             iterator(node, parentNode);
             (node.units || []).map((x) => traverse(x, iterator, node));
         };
 
         var iterator = (childUnit, root) => {
+
+            childUnit.namespace = 'chart';
 
             // leaf elements should inherit coordinates properties
             if (root && !childUnit.hasOwnProperty('units')) {
@@ -138,7 +142,7 @@ export class SpecConverter {
     ruleCreateScales(srcUnit, gplRoot) {
 
         var guide = srcUnit.guide || {};
-        ['color', 'size', 'x', 'y'].forEach((p) => {
+        ['color', 'size', 'text', 'x', 'y'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
             }
@@ -205,6 +209,14 @@ export class SpecConverter {
                 min: 2,
                 max: 10,
                 mid: 5
+            };
+        }
+
+        if (scaleType === 'text' && dimName !== null) {
+            item = {
+                type: 'value',
+                source: '/',
+                dim: this.ruleInferDim(dimName, guide)
             };
         }
 
