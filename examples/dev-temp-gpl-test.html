@@ -446,6 +446,7 @@
         },
 
         scales: {
+            'text:default': {type: 'value', source: '?'},
             'size:default': {type: 'size', source: '?', mid: 5},
             'color:default': {type: 'color', source: '?', brewer: null},
             'colorDim': {type: 'color', source: '/', dim: 'team'},
@@ -453,7 +454,8 @@
             'bug': {type: 'ordinal', source: '/', dim: 'bug'},
             'count': {type: 'linear', source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
             'proj': {type: 'ordinal', source: '/', dim: 'project'},
-            'team': {type: 'ordinal', source: '/', dim: 'team'}
+            'team': {type: 'ordinal', source: '/', dim: 'team'},
+            'text_team': {type: 'value', source: '/', dim: 'team'}
         },
 
         unit: {
@@ -489,10 +491,11 @@
                     },
                     units: [
                         {
-                            type: 'ELEMENT.INTERVAL',
+                            type: 'ELEMENT.POINT',
                             x: 'story',
                             y: 'count',
                             color: 'colorDim',
+                            text: 'text_team',
                             expression: {
                                 source: '/',
                                 operator:'groupBy',

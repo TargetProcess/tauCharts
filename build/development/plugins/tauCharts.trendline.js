@@ -500,6 +500,7 @@
                         var trend = JSON.parse(JSON.stringify(unit));
 
                         trend.type = 'ELEMENT.LINE';
+                        trend.namespace = 'trendline';
                         trend.transformation = trend.transformation || [];
                         trend.transformation.push({
                             type: 'regression',
@@ -513,7 +514,6 @@
                         trend.guide.showAnchors   = false;
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';
-                        trend.guide.__plugins_disable_tooltip = true;
 
                         parentUnit.units.push(trend);
                     });

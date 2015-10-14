@@ -1,3 +1,106 @@
+var now = new Date();
+window.samples.push({
+
+    type: 'line',
+    x: ['x'],
+    y: ['y'],
+
+    data: _.times(100, _.identity)
+        .reduce(function (memo, i) {
+            var x = i * (Math.PI / 100);
+            return memo.concat([
+                {
+                    x: new Date(now - i * 1000 * 60 * 60 * 24),
+                    y: Math.random(x) * 10
+                }
+            ]);
+        }, []),
+
+    plugins: [
+        tauCharts.api.plugins.get('tooltip')(),
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'x',
+                    val: [now - 12 * 24 * 60 * 60 * 1000, now - 2 * 24 * 60 * 60 * 1000],
+                    text: 'Milestone 1'
+                },
+                {
+                    dim: 'x',
+                    val: [now - 22 * 24 * 60 * 60 * 1000, now - 14 * 24 * 60 * 60 * 1000],
+                    text: 'Milestone 2',
+                    color: '#4300FF'
+                },
+                {
+                    dim: 'y',
+                    val: 2,
+                    text: 'Bottom line',
+                    color: '#FFAB00'
+                },
+                {
+                    dim: 'x',
+                    val: now - 35 * 24 * 60 * 60 * 1000,
+                    text: 'Build 33',
+                    color: 'green'
+                }
+            ]
+        })
+    ]
+});
+
+window.samples.push({
+
+    type: 'line',
+    x: ['x'],
+    y: ['y'],
+
+    data: _.times(100, _.identity)
+        .reduce(function (memo, i) {
+            var x = i * (Math.PI / 100);
+            return memo.concat([
+                {
+                    x: x * 10,
+                    y: Math.sin(x) * 10,
+                    type: 'sin'
+                }
+            ]);
+        }, [])
+        .filter(function (row) {
+            //return row.y >= 0;
+            return true;
+        }),
+
+    plugins: [
+        tauCharts.api.plugins.get('tooltip')(),
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'x',
+                    val: [15, 25],
+                    text: '[15-25]'
+                },
+                {
+                    dim: 'x',
+                    val: [23, 75],
+                    text: '{55-75}',
+                    color: '#4300FF'
+                },
+                {
+                    dim: 'y',
+                    val: 2,
+                    text: 'Super text (1:2)',
+                    color: '#FFAB00'
+                },
+                {
+                    dim: 'x',
+                    val: 6,
+                    text: 'Build number(1:2)'
+                }
+            ]
+        })
+    ]
+});
+
 window.samples.push({
 
     "type": "line",

@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.0 - 2015-09-29
+/*! taucharts - v0.6.0 - 2015-10-14
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -756,6 +756,7 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
             _classCallCheck(this, Element);
 
             _get(Object.getPrototypeOf(Element.prototype), 'constructor', this).call(this, config);
+            this._elementNameSpace = config.namespace || 'default';
             this._elementScalesHub = {};
         }
 
@@ -771,6 +772,12 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
                 return this._elementScalesHub[paramId] || null;
             }
         }, {
+            key: 'fireNameSpaceEvent',
+            value: function fireNameSpaceEvent(eventName, eventData) {
+                var namespace = this._elementNameSpace;
+                this.fire(eventName + '.' + namespace, eventData);
+            }
+        }, {
             key: 'subscribe',
             value: function subscribe(sel) {
                 var dataInterceptor = arguments.length <= 1 || arguments[1] === undefined ? function (x) {
@@ -783,10 +790,12 @@ define('elements/element',['exports', '../event'], function (exports, _event) {
                 var self = this;
                 ['mouseover', 'mouseout', 'click', 'mousemove'].forEach(function (eventName) {
                     sel.on(eventName, function (d) {
-                        self.fire(eventName, {
+                        var eventData = {
                             data: dataInterceptor.call(this, d),
                             event: eventInterceptor.call(this, d3.event, d)
-                        });
+                        };
+                        self.fire(eventName, eventData);
+                        self.fireNameSpaceEvent(eventName, eventData);
                     });
                 });
             }
@@ -993,6 +1002,137 @@ define('elements/element.point',['exports', '../const', './element'], function (
 
     exports.Point = Point;
 });
+define('elements/decorators/show-text',['exports'], function (exports) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+    exports.elementDecoratorShowText = elementDecoratorShowText;
+
+    function elementDecoratorShowText(_ref) {
+        var container = _ref.container;
+        var guide = _ref.guide;
+        var xScale = _ref.xScale;
+        var yScale = _ref.yScale;
+        var textScale = _ref.textScale;
+
+        var xDomain = xScale.domain();
+        var yDomain = yScale.domain();
+
+        var isMostLeft = function isMostLeft(d) {
+            return xScale(d[xScale.dim]) === xScale(xDomain[0]);
+        };
+        var isMostRight = function isMostRight(d) {
+            return xScale(d[xScale.dim]) === xScale(xDomain[xDomain.length - 1]);
+        };
+        var isMostTop = function isMostTop(d) {
+            return yScale(d[yScale.dim]) === yScale(yDomain[yDomain.length - 1]);
+        };
+        var isMostBottom = function isMostBottom(d) {
+            return yScale(d[yScale.dim]) === yScale(yDomain[0]);
+        };
+
+        var fnAnchor = function fnAnchor(d) {
+
+            if (isMostLeft(d)) {
+                return 'caption-left-edge';
+            }
+
+            if (isMostRight(d)) {
+                return 'caption-right-edge';
+            }
+
+            if (isMostBottom(d)) {
+                return 'caption-bottom-edge';
+            }
+
+            if (isMostTop(d)) {
+                return 'caption-top-edge';
+            }
+
+            return '';
+        };
+
+        var fontSize = guide.text.fontSize;
+
+        var captionUpdate = function captionUpdate() {
+
+            if (guide.text.fontColor) {
+                this.style('fill', guide.text.fontColor);
+            }
+
+            this.attr('class', function (d) {
+                return 'caption ' + fnAnchor(d);
+            }).attr('transform', function (d) {
+
+                var t = isMostTop(d);
+                var r = isMostRight(d);
+                var b = isMostBottom(d);
+
+                var offsetY = t ? fontSize : 0;
+                var offsetX = !r && (t || b) ? 2 : 0;
+
+                var cx = xScale(d[xScale.dim]) + offsetX + guide.text.paddingX;
+                var cy = yScale(d[yScale.dim]) + offsetY + guide.text.paddingY;
+
+                return 'translate(' + [cx, cy] + ')';
+            }).text(function (d) {
+                return textScale(d[textScale.dim]);
+            });
+        };
+
+        var text = container.selectAll('.caption').data(function (_ref2) {
+            var frame = _ref2.data;
+            return frame.data.filter(function (d) {
+                return d[textScale.dim];
+            });
+        });
+        text.exit().remove();
+        text.call(captionUpdate);
+        text.enter().append('text').call(captionUpdate);
+
+        return text;
+    }
+});
+define('elements/decorators/show-anchors',['exports'], function (exports) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+    exports.elementDecoratorShowAnchors = elementDecoratorShowAnchors;
+
+    function elementDecoratorShowAnchors(_ref) {
+        var container = _ref.container;
+        var guide = _ref.guide;
+        var xScale = _ref.xScale;
+        var yScale = _ref.yScale;
+
+        var anchorUpdate = function anchorUpdate() {
+            return this.attr({
+                r: guide.anchorSize,
+                cx: function cx(d) {
+                    return xScale(d[xScale.dim]);
+                },
+                cy: function cy(d) {
+                    return yScale(d[yScale.dim]);
+                },
+                'class': 'i-data-anchor'
+            });
+        };
+
+        var dots = container.selectAll('circle').data(function (_ref2) {
+            var frame = _ref2.data;
+            return frame.data;
+        });
+        dots.exit().remove();
+        dots.call(anchorUpdate);
+        dots.enter().append('circle').call(anchorUpdate);
+
+        return dots;
+    }
+});
 define('utils/css-class-map',['exports', '../const'], function (exports, _const) {
     'use strict';
 
@@ -1026,7 +1166,7 @@ define('utils/css-class-map',['exports', '../const'], function (exports, _const)
     exports.getLineClassesByWidth = getLineClassesByWidth;
     exports.getLineClassesByCount = getLineClassesByCount;
 });
-define('elements/element.line',['exports', '../const', './element', '../utils/css-class-map'], function (exports, _const, _element, _utilsCssClassMap) {
+define('elements/element.line',['exports', '../const', './element', './decorators/show-text', './decorators/show-anchors', '../utils/css-class-map'], function (exports, _const, _element, _decoratorsShowText, _decoratorsShowAnchors, _utilsCssClassMap) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -1057,8 +1197,16 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 cssClass: '',
                 widthCssClass: '',
                 showAnchors: true,
-                anchorSize: 0.1
+                anchorSize: 0.1,
+                text: {}
             });
+
+            this.config.guide.text = _.defaults(this.config.guide.text, {
+                fontSize: 11,
+                paddingX: 0,
+                paddingY: 0
+            });
+            this.config.guide.color = _.defaults(this.config.guide.color, { fill: null });
 
             this.on('highlight', function (sender, e) {
                 return _this.highlight(e);
@@ -1093,8 +1241,9 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
                 this.color = fnCreateScale('color', config.color, {});
                 this.size = fnCreateScale('size', config.size, {});
+                this.text = fnCreateScale('text', config.text, {});
 
-                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('text', this.text);
             }
         }, {
             key: 'drawFrames',
@@ -1109,6 +1258,7 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 var yScale = this.yScale;
                 var colorScale = this.color;
                 var sizeScale = this.size;
+                var textScale = this.text;
 
                 var widthCss = guide.widthCssClass || (0, _utilsCssClassMap.getLineClassesByWidth)(options.width);
                 var countCss = (0, _utilsCssClassMap.getLineClassesByCount)(frames.length);
@@ -1162,28 +1312,24 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
 
                     if (guide.showAnchors && !this.empty()) {
 
-                        var anchUpdate = function anchUpdate() {
-                            return this.attr({
-                                r: guide.anchorSize,
-                                cx: function cx(d) {
-                                    return xScale(d[xScale.dim]);
-                                },
-                                cy: function cy(d) {
-                                    return yScale(d[yScale.dim]);
-                                },
-                                'class': 'i-data-anchor'
-                            });
-                        };
-
-                        var anch = this.selectAll('circle').data(function (_ref2) {
-                            var frame = _ref2.data;
-                            return frame.data;
+                        var anch = (0, _decoratorsShowAnchors.elementDecoratorShowAnchors)({
+                            xScale: xScale,
+                            yScale: yScale,
+                            guide: guide,
+                            container: this
                         });
-                        anch.exit().remove();
-                        anch.call(anchUpdate);
-                        anch.enter().append('circle').call(anchUpdate);
 
                         self.subscribe(anch);
+                    }
+
+                    if (textScale.dim && !this.empty()) {
+                        (0, _decoratorsShowText.elementDecoratorShowText)({
+                            guide: guide,
+                            xScale: xScale,
+                            yScale: yScale,
+                            textScale: textScale,
+                            container: this
+                        });
                     }
                 };
 
@@ -1195,20 +1341,20 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                         });
                     });
                     var attr = {
-                        r: function r(_ref3) {
-                            var d = _ref3.data;
+                        r: function r(_ref2) {
+                            var d = _ref2.data;
                             return sizeScale(d[sizeScale.dim]);
                         },
-                        cx: function cx(_ref4) {
-                            var d = _ref4.data;
+                        cx: function cx(_ref3) {
+                            var d = _ref3.data;
                             return xScale(d[xScale.dim]);
                         },
-                        cy: function cy(_ref5) {
-                            var d = _ref5.data;
+                        cy: function cy(_ref4) {
+                            var d = _ref4.data;
                             return yScale(d[yScale.dim]);
                         },
-                        'class': function _class(_ref6) {
-                            var d = _ref6.data;
+                        'class': function _class(_ref5) {
+                            var d = _ref5.data;
                             return pointPref + ' ' + colorScale(d[colorScale.dim]);
                         }
                     };
@@ -1216,8 +1362,8 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                     dots.attr(attr);
                     dots.enter().append('circle').attr(attr);
 
-                    self.subscribe(dots, function (_ref7) {
-                        var d = _ref7.data;
+                    self.subscribe(dots, function (_ref6) {
+                        var d = _ref6.data;
                         return d;
                     });
                 };
@@ -1226,11 +1372,19 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
 
                     return function () {
 
-                        this.attr('class', function (_ref8) {
-                            var f = _ref8.data;
+                        this.attr('class', function (_ref7) {
+                            var f = _ref7.data;
                             return linePref + ' ' + colorScale(f.tags[colorScale.dim]) + ' ' + x + ' frame-' + f.hash;
                         }).call(function () {
                             if (isLine) {
+
+                                if (guide.color.fill && !colorScale.dim) {
+                                    this.style({
+                                        fill: guide.color.fill,
+                                        stroke: guide.color.fill
+                                    });
+                                }
+
                                 updateLines.call(this);
                             } else {
                                 updatePoints.call(this);
@@ -1247,8 +1401,8 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
 
                     var isDrawLine = tag === 'line';
 
-                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper).filter(filter), function (_ref9) {
-                        var f = _ref9.data;
+                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper).filter(filter), function (_ref8) {
+                        var f = _ref8.data;
                         return f.hash;
                     });
                     frameGroups.exit().remove();
@@ -1256,12 +1410,12 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                     frameGroups.enter().append('g').call(updateGroups('frame-' + id, isDrawLine));
                 };
 
-                drawFrame('line', 'line-' + options.uid, function (_ref10) {
-                    var f = _ref10.data;
+                drawFrame('line', 'line-' + options.uid, function (_ref9) {
+                    var f = _ref9.data;
                     return f.data.length > 1;
                 });
-                drawFrame('anch', 'anch-' + options.uid, function (_ref11) {
-                    var f = _ref11.data;
+                drawFrame('anch', 'anch-' + options.uid, function (_ref10) {
+                    var f = _ref10.data;
                     return f.data.length < 2;
                 });
             }
@@ -1272,23 +1426,23 @@ define('elements/element.line',['exports', '../const', './element', '../utils/cs
                 var container = this.config.options.container;
 
                 container.selectAll('.line').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref12) {
-                        var d = _ref12.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref11) {
+                        var d = _ref11.data;
                         return filter(d.tags) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref13) {
-                        var d = _ref13.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref12) {
+                        var d = _ref12.data;
                         return filter(d.tags) === false;
                     }
                 });
 
                 container.selectAll('.dot-line').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref14) {
-                        var d = _ref14.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref13) {
+                        var d = _ref13.data;
                         return filter(d) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref15) {
-                        var d = _ref15.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref14) {
+                        var d = _ref14.data;
                         return filter(d) === false;
                     }
                 });
@@ -4124,6 +4278,7 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
 
                     'pos:default': { type: 'ordinal', source: '?' },
                     'size:default': { type: 'size', source: '?', mid: 5 },
+                    'text:default': { type: 'value', source: '?' },
                     'color:default': { type: 'color', source: '?', brewer: null }
                     // jscs:enable disallowQuotedKeysInObjects
                 },
@@ -4146,6 +4301,7 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
         }, {
             key: 'ruleApplyDefaults',
             value: function ruleApplyDefaults(spec) {
+
                 var traverse = function traverse(node, iterator, parentNode) {
                     iterator(node, parentNode);
                     (node.units || []).map(function (x) {
@@ -4154,6 +4310,8 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
                 };
 
                 var iterator = function iterator(childUnit, root) {
+
+                    childUnit.namespace = 'chart';
 
                     // leaf elements should inherit coordinates properties
                     if (root && !childUnit.hasOwnProperty('units')) {
@@ -4243,7 +4401,7 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
                 var _this2 = this;
 
                 var guide = srcUnit.guide || {};
-                ['color', 'size', 'x', 'y'].forEach(function (p) {
+                ['color', 'size', 'text', 'x', 'y'].forEach(function (p) {
                     if (srcUnit.hasOwnProperty(p)) {
                         gplRoot[p] = _this2.scalesPool(p, srcUnit[p], guide[p] || {});
                     }
@@ -4312,6 +4470,14 @@ define('spec-converter',['exports', 'underscore', './utils/utils'], function (ex
                         min: 2,
                         max: 10,
                         mid: 5
+                    };
+                }
+
+                if (scaleType === 'text' && dimName !== null) {
+                    item = {
+                        type: 'value',
+                        source: '/',
+                        dim: this.ruleInferDim(dimName, guide)
                     };
                 }
 
@@ -8635,7 +8801,7 @@ define('elements/coords.geomap',['exports', 'd3', 'underscore', 'topojson', '../
 
     exports.GeoMap = GeoMap;
 });
-define('elements/element.path',['exports', '../const', './element', '../utils/css-class-map'], function (exports, _const, _element, _utilsCssClassMap) {
+define('elements/element.path',['exports', '../const', './element', './decorators/show-text', './decorators/show-anchors', '../utils/css-class-map'], function (exports, _const, _element, _decoratorsShowText, _decoratorsShowAnchors, _utilsCssClassMap) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -8665,8 +8831,17 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
             this.config.guide = _.defaults(this.config.guide, {
                 cssClass: '',
                 showAnchors: true,
-                anchorSize: 0.1
+                anchorSize: 0.1,
+                color: {},
+                text: {}
             });
+
+            this.config.guide.text = _.defaults(this.config.guide.text, {
+                fontSize: 11,
+                paddingX: 0,
+                paddingY: 0
+            });
+            this.config.guide.color = _.defaults(this.config.guide.color, { fill: null });
 
             this.on('highlight', function (sender, e) {
                 return _this.highlight(e);
@@ -8707,8 +8882,9 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
                 this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
                 this.color = fnCreateScale('color', config.color, {});
                 this.size = fnCreateScale('size', config.size, {});
+                this.text = fnCreateScale('text', config.text, {});
 
-                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
+                return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('text', this.text);
             }
         }, {
             key: 'packFrameData',
@@ -8737,6 +8913,7 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
                 var xScale = this.xScale;
                 var yScale = this.yScale;
                 var colorScale = this.color;
+                var textScale = this.text;
 
                 var countCss = (0, _utilsCssClassMap.getLineClassesByCount)(frames.length);
 
@@ -8784,28 +8961,24 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
 
                     if (guide.showAnchors && !this.empty()) {
 
-                        var anchUpdate = function anchUpdate() {
-                            return this.attr({
-                                r: guide.anchorSize,
-                                cx: function cx(d) {
-                                    return xScale(d[xScale.dim]);
-                                },
-                                cy: function cy(d) {
-                                    return yScale(d[yScale.dim]);
-                                },
-                                'class': 'i-data-anchor'
-                            });
-                        };
-
-                        var anch = this.selectAll('circle').data(function (_ref2) {
-                            var frame = _ref2.data;
-                            return frame.data;
+                        var anch = (0, _decoratorsShowAnchors.elementDecoratorShowAnchors)({
+                            xScale: xScale,
+                            yScale: yScale,
+                            guide: guide,
+                            container: this
                         });
-                        anch.exit().remove();
-                        anch.call(anchUpdate);
-                        anch.enter().append('circle').call(anchUpdate);
 
                         self.subscribe(anch);
+                    }
+
+                    if (textScale.dim && !this.empty()) {
+                        (0, _decoratorsShowText.elementDecoratorShowText)({
+                            guide: guide,
+                            xScale: xScale,
+                            yScale: yScale,
+                            textScale: textScale,
+                            container: this
+                        });
                     }
                 };
 
@@ -8813,10 +8986,18 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
 
                     return function () {
 
-                        this.attr('class', function (_ref3) {
-                            var f = _ref3.data;
+                        this.attr('class', function (_ref2) {
+                            var f = _ref2.data;
                             return areaPref + ' ' + colorScale(f.tags[colorScale.dim]) + ' ' + x + ' frame-' + f.hash;
                         }).call(function () {
+
+                            if (guide.color.fill && !colorScale.dim) {
+                                this.style({
+                                    fill: guide.color.fill,
+                                    stroke: guide.color.fill
+                                });
+                            }
+
                             updateArea.call(this);
                         });
                     };
@@ -8835,8 +9016,8 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
 
                 var drawFrame = function drawFrame(id) {
 
-                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper), function (_ref4) {
-                        var f = _ref4.data;
+                    var frameGroups = options.container.selectAll('.frame-' + id).data(frames.map(mapper), function (_ref3) {
+                        var f = _ref3.data;
                         return f.hash;
                     });
                     frameGroups.exit().remove();
@@ -8851,12 +9032,12 @@ define('elements/element.path',['exports', '../const', './element', '../utils/cs
             value: function highlight(filter) {
 
                 this.config.options.container.selectAll('.area').classed({
-                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref5) {
-                        var d = _ref5.data;
+                    'graphical-report__highlighted': function graphicalReport__highlighted(_ref4) {
+                        var d = _ref4.data;
                         return filter(d.tags) === true;
                     },
-                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref6) {
-                        var d = _ref6.data;
+                    'graphical-report__dimmed': function graphicalReport__dimmed(_ref5) {
+                        var d = _ref5.data;
                         return filter(d.tags) === false;
                     }
                 });

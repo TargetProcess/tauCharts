@@ -446,6 +446,19 @@
 .graphical-report__svg .background {
   stroke: #262626;
 }
+.graphical-report__svg .caption {
+  stroke-width: 0.1;
+  font-size: 11px;
+  text-anchor: middle;
+}
+.graphical-report__svg .caption.caption-left-edge,
+.graphical-report__svg .caption.caption-top-edge,
+.graphical-report__svg .caption.caption-bottom-edge {
+  text-anchor: start;
+}
+.graphical-report__svg .caption.caption-right-edge {
+  text-anchor: end;
+}
 .graphical-report__dot {
   opacity: 0.9;
   transition: stroke-width 0.1s ease, opacity 0.1s ease;
@@ -470,7 +483,7 @@
   stroke-width: 1;
   stroke: #fff;
 }
-.graphical-report__area {
+.graphical-report__area polygon {
   opacity: 0.55;
   transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
 }

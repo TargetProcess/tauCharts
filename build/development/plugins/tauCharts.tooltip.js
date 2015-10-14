@@ -316,12 +316,11 @@
 
                 this._chart
                     .select(function (node) {
-                        var guide = node.config.guide || {};
-                        return !guide.__plugins_disable_tooltip;
+                        return true;
                     })
                     .forEach(function (node) {
 
-                        node.on('mouseout', function (sender, e) {
+                        node.on('mouseout.chart', function (sender, e) {
                             self.hideTooltip(e);
                         });
 
@@ -335,10 +334,10 @@
                             self.showTooltip(data, {x: coords.left, y: coords.top});
                         };
 
-                        node.on('mouseover', mouseOverHandler);
+                        node.on('mouseover.chart', mouseOverHandler);
 
                         if ((node.config.type === 'ELEMENT.AREA') || (node.config.type === 'ELEMENT.PATH')) {
-                            node.on('mousemove', mouseOverHandler);
+                            node.on('mousemove.chart', mouseOverHandler);
                         }
                     });
             },
