@@ -57,7 +57,7 @@
                     namespace: 'annotations',
                     x: coordsUnit.x,
                     y: coordsUnit.y,
-                    color: 'color_undefined',
+                    color: 'color:default',
                     text: textScaleName,
                     expression: {
                         inherit: false,
@@ -128,7 +128,7 @@
                     x: coordsUnit.x,
                     y: coordsUnit.y,
                     text: textScaleName,
-                    color: 'color_undefined',
+                    color: 'color:default',
                     expression: {
                         inherit: false,
                         operator: 'none',
