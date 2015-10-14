@@ -118,7 +118,7 @@
                     if (_.isString(token)) {
                         r = {
                             field: token,
-                            title: info[token].label
+                            title: ((info[token] && info[token].label) || token)
                         };
                     }
 
