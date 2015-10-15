@@ -6458,7 +6458,7 @@ define("../bower_components/fetch/fetch", function(){});
                     if (_.isString(token)) {
                         r = {
                             field: token,
-                            title: info[token].label
+                            title: ((info[token] && info[token].label) || token)
                         };
                     }
 
