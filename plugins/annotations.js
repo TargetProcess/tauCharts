@@ -86,8 +86,8 @@
                         },
                         text: {
                             fontColor: noteItem.color,
-                            paddingX: 5,
-                            paddingY: 5
+                            paddingX: ((axis === 'x') ? 5 : -5),
+                            paddingY: ((axis === 'x') ? 5 : 15)
                         }
                     }
                 };
@@ -185,13 +185,18 @@
 
                     leftTop[a] = metaInfo.from;
                     leftTop[b] = (Infinity);
-                    leftTop.text = metaInfo.text;
 
                     rghtTop[a] = metaInfo.to;
                     rghtTop[b] = (Infinity);
 
                     rghtBtm[a] = metaInfo.to;
                     rghtBtm[b] = (-Infinity);
+
+                    if (metaInfo.axis === 'x') {
+                        leftTop.text = metaInfo.text;
+                    } else {
+                        rghtTop.text = metaInfo.text;
+                    }
 
                     return [leftBtm, leftTop, rghtTop, rghtBtm];
                 };
