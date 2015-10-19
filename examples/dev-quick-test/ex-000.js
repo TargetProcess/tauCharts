@@ -80,9 +80,9 @@ window.samples.push({
                     text: '[15-25]'
                 },
                 {
-                    dim: 'x',
-                    val: [23, 75],
-                    text: '{55-75}',
+                    dim: 'y',
+                    val: [3, 7],
+                    text: 'Horizontal annotation',
                     color: '#4300FF'
                 },
                 {
