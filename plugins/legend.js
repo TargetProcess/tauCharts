@@ -177,7 +177,7 @@
 
                         var sizeScale = firstNode.getScale('size');
 
-                        var domain = sizeScale.domain();
+                        var domain = _(sizeScale.domain()).sortBy();
 
                         var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
 
