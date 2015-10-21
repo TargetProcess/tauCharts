@@ -11,15 +11,17 @@ export class LinearScale extends BaseScale {
 
         super(xSource, scaleConfig);
 
+        var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
+
         var props = this.scaleConfig;
         var vars = d3.extent(this.vars);
 
-        var min = _.isNumber(props.min) ? props.min : vars[0];
-        var max = _.isNumber(props.max) ? props.max : vars[1];
+        var min = isNum(props.min) ? props.min : vars[0];
+        var max = isNum(props.max) ? props.max : vars[1];
 
         vars = [
-            Math.min(min, vars[0]),
-            Math.max(max, vars[1])
+            Math.min(...[min, vars[0]].filter(isNum)),
+            Math.max(...[max, vars[1]].filter(isNum))
         ];
 
         this.vars = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);

@@ -380,15 +380,37 @@ define(function (require) {
             plot.on('unitsstructureexpanded', function (x) {
                 expected = true;
                 liveSpec = plot.getSpec();
-                plot.traverseSpec(liveSpec, (node, parentNode) => {
-                    expectedPath.push(node.type);
+                plot.traverseSpec(liveSpec, (node, parentNode, parentFrame) => {
+                    expectedPath.push(node.type + '(' + JSON.stringify((parentFrame || {}).key) + ')');
                 });
             });
 
             plot.renderTo(testDiv);
 
             expect(expected).to.equal(true);
-            expect(expectedPath).to.deep.equal(['COORDS.RECT', 'COORDS.RECT', 'ELEMENT.POINT']);
+            expect(expectedPath).to.deep.equal(
+                [
+                    'COORDS.RECT(undefined)',
+                    'COORDS.RECT({"a":"ABCD0","b":"TICK0"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD1","b":"TICK0"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD2","b":"TICK0"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD0","b":"TICK1"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD1","b":"TICK1"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD2","b":"TICK1"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD0","b":"TICK2"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD1","b":"TICK2"})',
+                    'ELEMENT.POINT(null)',
+                    'COORDS.RECT({"a":"ABCD2","b":"TICK2"})',
+                    'ELEMENT.POINT(null)'
+                ]
+            );
         });
 
         it('should throw exception on invalid spec', function () {
@@ -458,6 +480,76 @@ define(function (require) {
                     }
                 }).renderTo(testDiv);
             }).to.throw('blahblah operator is not supported');
+        });
+
+        it('should allow spec with raw frames', function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var spec = {
+
+                settings: {fitModel: 'none'},
+
+                sources: {
+                    '?': {
+                        dims: {},
+                        data: []
+                    },
+
+                    '$': {
+                        dims: {
+                            x: {type: 'category'},
+                            y: {type: 'category'}
+                        },
+                        data: [
+                            {x: 1, y: 1}
+                        ]
+                    }
+                },
+
+                scales: {
+                    'xScale': {type: 'ordinal', source: '$', dim: 'x'},
+                    'yScale': {type: 'ordinal', source: '$', dim: 'y'}
+                },
+
+                unit: {
+                    type: "COORDS.RECT",
+                    x: 'xScale',
+                    y: 'yScale',
+                    expression: {
+                        source: '$',
+                        inherit: false,
+                        operator: false
+                    },
+                    guide: {
+                        showGridLines: ""
+                    },
+                    frames: [
+                        {
+                            key: {x: 1, y: 1, i:0},
+                            source: '$',
+                            pipe: [],
+                            units: []
+                        }
+                        ,
+                        {
+                            key: {x: 1, y: 1, i:1},
+                            source: '$',
+                            pipe: [],
+                            units: []
+                        }
+                    ]
+                }
+            };
+
+            var renderEvent = 0;
+            var c = new tauChart.Plot(spec);
+            c.on('render', function () {
+                renderEvent++;
+            });
+            c.renderTo(testDiv);
+
+            expect(renderEvent).to.equal(1);
         });
     });
 });

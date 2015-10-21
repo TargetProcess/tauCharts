@@ -1,5 +1,6 @@
 define(function (require) {
     var expect = require('chai').expect;
+    var testUtils = require('testUtils');
     var Converter = require('src/spec-converter').SpecConverter;
 
     describe('spec-converter', function () {
@@ -70,13 +71,13 @@ define(function (require) {
                             {
                                 team: 'beta',
                                 proj: 'TP2',
-                                date: '2015-01-01T00:00:00.000Z',
+                                date: testUtils.toLocalDate('2015-01-01').toISOString(),
                                 count: 30
                             },
                             {
                                 "team": "alpha",
                                 "proj": "TP2",
-                                "date": "2015-01-01T00:00:00.000Z",
+                                "date": testUtils.toLocalDate('2015-01-01').toISOString(),
                                 "count": 10
                             }
                         ]
@@ -221,8 +222,8 @@ define(function (require) {
                             {
                                 "team": "alpha",
                                 "proj": {"id": 13, "name": "TP2"},
-                                "date": "2015-01-01T00:00:00.000Z",
-                                "week": "2015-01-04T00:00:00.000Z",
+                                "date": testUtils.toLocalDate("2015-01-01").toISOString(),
+                                "week": testUtils.toLocalDate("2015-01-04").toISOString(),
                                 "count": 10,
                                 "proj.id": 13,
                                 "proj.name": "TP2"
@@ -230,8 +231,8 @@ define(function (require) {
                             {
                                 "team": "alpha",
                                 "proj": {"id": 13, "name": "TP2"},
-                                "date": "2015-01-01T00:00:00.000Z",
-                                "week": "2015-01-04T00:00:00.000Z",
+                                "date": testUtils.toLocalDate("2015-01-01").toISOString(),
+                                "week": testUtils.toLocalDate("2015-01-04").toISOString(),
                                 "count": 10,
                                 "proj.id": 13,
                                 "proj.name": "TP2"

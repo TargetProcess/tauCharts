@@ -180,6 +180,10 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/annotations.js',
                         dest: 'build/development/plugins/tauCharts.annotations.js'
+                    },
+                    {
+                        src: 'plugins/layers.js',
+                        dest: 'build/development/plugins/tauCharts.layers.js'
                     }
                 ].concat(cssConfig.css)
             }

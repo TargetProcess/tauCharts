@@ -55,8 +55,13 @@ export class Plot extends Emitter {
         ];
 
         this._originData = _.clone(this.configGPL.sources);
+        this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
         this._plugins = new Plugins(this.config.plugins, this);
+    }
+
+    setupChartSourceModel(fnModelTransformation) {
+        this._chartDataModel = fnModelTransformation;
     }
 
     setupConfig(config) {
@@ -272,11 +277,13 @@ export class Plot extends Emitter {
 
         var excludeFiltersByTagAndSource = (k) => ((f) => ((_.contains(param.excludeFilter, f.tag)) || f.src !== k));
 
+        var chartDataModel = this._chartDataModel(this._originData);
+
         return Object
-            .keys(this._originData)
+            .keys(chartDataModel)
             .filter((k) => k !== '?')
             .reduce((memo, k) => {
-                var item = this._originData[k];
+                var item = chartDataModel[k];
                 var filterIterator = this.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
                 memo[k] = {
                     dims: item.dims,
@@ -285,7 +292,7 @@ export class Plot extends Emitter {
                 return memo;
             },
             {
-                '?': this._originData['?']
+                '?': chartDataModel['?']
             });
     }
 
@@ -305,8 +312,7 @@ export class Plot extends Emitter {
 
     setData(data, src = '/') {
         this.config.data = data;
-        this.configGPL.sources[src].data = data;
-        this._originData = _.clone(this.configGPL.sources);
+        this._originData[src].data = data;
         this.refresh();
     }
 
@@ -347,12 +353,20 @@ export class Plot extends Emitter {
 
     traverseSpec(spec, iterator) {
 
-        var traverse = (node, iterator, parentNode) => {
-            iterator(node, parentNode);
-            (node.units || []).map((x) => traverse(x, iterator, node));
+        var traverse = (node, iterator, parentNode, parentFrame) => {
+
+            iterator(node, parentNode, parentFrame);
+
+            if (node.frames) {
+                node.frames.forEach((frame) => {
+                    (frame.units || []).map((x) => traverse(x, iterator, node, frame));
+                });
+            } else {
+                (node.units || []).map((x) => traverse(x, iterator, node, null));
+            }
         };
 
-        traverse(spec.unit, iterator, null);
+        traverse(spec.unit, iterator, null, null);
     }
 
     // use from plugins to get the most actual chart config

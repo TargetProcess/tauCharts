@@ -8,6 +8,11 @@ export class Area extends Path {
     }
 
     _assignBase(scale, rows) {
+
+        if (rows.length === 0) {
+            return [];
+        }
+
         var domain = scale.domain();
         var dim = scale.dim;
         var min = domain[0];

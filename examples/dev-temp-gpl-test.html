@@ -614,6 +614,7 @@
         },
 
         scales: {
+            'text:default': {type: 'value', source: '?'},
             'size:default': {type: 'size', name: 'DefSize', source: '?', mid: 5},
             'color:default': {type: 'color', name: 'DefColor', source: '?', brewer: null},
             'count': {type: 'linear', source: '/', dim: 'count', autoScale: true},
@@ -858,6 +859,7 @@
         },
 
         scales: {
+            'text:default': {type: 'value', source: '?'},
             'size:default': {type: 'size', name: 'DefSize', fitToFrame: false, source: '?', mid: 5},
             'color:default': {type: 'color', name: 'DefColor', fitToFrame: false, source: '?', brewer: null},
             'story': {type: 'ordinal', name: 'S', fitToFrame: false, source: '/', dim: 'story'},
@@ -1116,7 +1118,7 @@
         },
 
         scales: {
-
+            'text:default': {type: 'value', source: '?'},
             'xScale': {type: 'ordinal', source: '$', dim: 'x'},
             'yScale': {type: 'ordinal', source: '$', dim: 'y', ratio: {1: 0.4, 2: 0.6}},
 
@@ -1366,7 +1368,7 @@
         },
 
         scales: {
-
+            'text:default': {type: 'value', source: '?'},
             'xScale': {type: 'ordinal', source: '$', dim: 'x'},
             'yScale': {type: 'ordinal', source: '$', dim: 'y'},
 
@@ -1597,6 +1599,11 @@
         "x": ["car"],
         "y": ["co2,hp"],
         "color": "co2-hp-type"
+    });
+
+    composite2.on('specready', function (chart, e) {
+        var spec = chart.getSpec();
+        console.log(spec);
     });
 
     composite2.renderTo('#composite2');
