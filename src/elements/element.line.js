@@ -30,7 +30,7 @@ export class Line extends Element {
                 paddingX: 0,
                 paddingY: 0
             });
-        this.config.guide.color = _.defaults(this.config.guide.color, {fill: null});
+        this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
