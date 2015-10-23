@@ -1,6 +1,6 @@
 var generateThemes = function () {
     var themes = ['default', 'dark'];
-    var plugins = ['tooltip', 'export', 'legend', 'trendline', 'annotations'];
+    var plugins = ['tooltip', 'export', 'legend', 'trendline', 'annotations', 'quick-filter'];
 
     var generateCompatibleSuffixes = function (key) {
         return {

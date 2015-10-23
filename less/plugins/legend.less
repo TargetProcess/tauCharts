@@ -17,10 +17,18 @@
 .graphical-report {
 
     &__legend {
-        padding: 20px 0 20px 10px;
+        padding: 20px 0 10px 10px;
         margin-right: 30px;
         width: 160px;
         box-sizing: border-box;
+
+        &__wrap {
+          margin-bottom: 30px;
+
+          &:last-child {
+            margin-bottom: 0px
+          }
+        }
 
         &__title {
             margin: 0 0 10px 10px;

@@ -1,0 +1,60 @@
+@import "../variable";
+
+
+.graphical-report {
+
+  &__filter {
+    padding: 20px 0 10px 10px;
+    margin-right: 10px;
+    width: 160px;
+    box-sizing: border-box;
+
+    &__title {
+      margin: 0 0 10px 10px;
+      text-transform: capitalize;
+      font-weight: 600;
+      font-size: @font-size-m;
+    }
+
+    & rect {
+      fill: rgba(0, 0, 0, 0.2);
+    }
+
+    & .brush .extent {
+      shape-rendering: crispEdges;
+      fill-opacity: 0.4;
+      fill: #0074FF;
+    }
+
+    & text.date-label {
+      text-anchor: middle;
+      font-size: 12px;
+
+      & .common {
+        font-weight: bold;
+      }
+    }
+
+    & .resize {
+
+      & line {
+        stroke: #000;
+        stroke-width: 1px;
+        shape-rendering: crispEdges;
+      }
+
+      &.e text {
+        text-anchor: middle;
+        font-size: 12px;
+      }
+
+      &.w text {
+         text-anchor: middle;
+         font-size: 12px;
+      }
+
+    }
+
+  }
+
+}
