@@ -48,6 +48,9 @@
 
                 var chartData = self._chart.getChartModelData();
 
+                this._filtersContainer = self._chart.insertToRightSidebar(self._filtersContainer);
+                this._filtersContainer.style.display = 'none';
+
                 self._fields
                     .filter(function (dim) {
                         var isMeasure = (sources.dims[dim].type === 'measure');
@@ -62,15 +65,20 @@
                         self._bounds[dim] = d3.extent(self._data[dim]);
                         self._filter[dim] = self._bounds[dim];
 
-                        self._container[dim] = self._chart.insertToRightSidebar(self._containerTemplate);
-                        self._container[dim].insertAdjacentHTML('beforeend', self._template({name: dim}));
+                        self._filtersContainer.insertAdjacentHTML('beforeend', self._filterWrapper({name: dim}));
+                        self._container[dim] = self._filtersContainer.lastChild;
 
                         self._drawFilter(dim);
                     });
             },
 
-            _containerTemplate: '<div class="graphical-report__filter"></div>',
-            _template: _.template('<div class="graphical-report__legend__title"><%=name%></div>'),
+            onRender: function () {
+                this._filtersContainer.style.display = 'block';
+            },
+
+            _filtersContainer: '<div class="graphical-report__filter"></div>',
+            _filterWrapper: _.template('<div class="graphical-report__filter__wrap"><div class="graphical-report__legend__title"><%=name%></div></div>'),
+
 
             _drawFilter: function (dim) {
 
