@@ -49,7 +49,7 @@
                 var chartData = self._chart.getChartModelData();
 
                 this._filtersContainer = self._chart.insertToRightSidebar(self._filtersContainer);
-                this._filtersContainer.style.display = 'none';
+                this._filtersContainer.style.maxHeight = '0px';
 
                 self._fields
                     .filter(function (dim) {
@@ -73,7 +73,7 @@
             },
 
             onRender: function () {
-                this._filtersContainer.style.display = 'block';
+                this._filtersContainer.style.maxHeight = 'none';
             },
 
             _filtersContainer: '<div class="graphical-report__filter"></div>',
