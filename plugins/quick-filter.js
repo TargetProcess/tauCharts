@@ -77,8 +77,11 @@
             },
 
             _filtersContainer: '<div class="graphical-report__filter"></div>',
-            _filterWrapper: _.template('<div class="graphical-report__filter__wrap"><div class="graphical-report__legend__title"><%=name%></div></div>'),
-
+            _filterWrapper: _.template(
+                '<div class="graphical-report__filter__wrap">' +
+                    '<div class="graphical-report__legend__title"><%=name%></div>' +
+                '</div>'
+            ),
 
             _drawFilter: function (dim) {
 
