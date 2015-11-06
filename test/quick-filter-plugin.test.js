@@ -25,7 +25,7 @@ define(function (require) {
                 var filters = chart
                     ._layout
                     .rightSidebar
-                    .querySelectorAll('.graphical-report__filter');
+                    .querySelectorAll('.graphical-report__filter__wrap');
 
                 expect(filters.length).to.equal(1);
                 expect(filters[0].querySelectorAll('.graphical-report__legend__title')[0].innerText)
@@ -59,7 +59,7 @@ define(function (require) {
                 var filters = chart
                     ._layout
                     .rightSidebar
-                    .querySelectorAll('.graphical-report__filter');
+                    .querySelectorAll('.graphical-report__filter__wrap');
 
                 expect(filters.length).to.equal(2);
                 expect(filters[0].querySelectorAll('.graphical-report__legend__title')[0].innerText)
