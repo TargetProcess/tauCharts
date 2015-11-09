@@ -114,17 +114,21 @@
                 return fields.map(function (token) {
 
                     var r = token;
+                    var fieldInfo = info[token] || {};
 
                     if (_.isString(token)) {
                         r = {
                             field: token,
-                            title: ((info[token] && info[token].label) || token)
+                            title: (fieldInfo.label || token)
                         };
                     }
 
                     if (!_.isFunction(r.value)) {
                         r.value = function (row) {
-                            return row[this.field];
+                            var fieldValue = row[this.field];
+                            return (fieldInfo.isComplexField ?
+                                ((fieldValue || {})[fieldInfo.tickLabel]) :
+                                (fieldValue));
                         };
                     }
 
@@ -250,7 +254,15 @@
                         return csvRows.concat(
                             fields.reduce(function (csvRow, f) {
                                     var val = trimChar(JSON.stringify(f.value(row)), '"');
-                                    return csvRow.concat(val);
+                                    var needEncoding = _.any(
+                                        ['"', ',', ';', '\n', '\r'],
+                                        function (sym) {
+                                            return (val.indexOf(sym) >= 0);
+                                        });
+                                    var finalVal = (needEncoding ?
+                                        (['"', val, '"'].join('')) :
+                                        (val));
+                                    return csvRow.concat(finalVal);
                                 },
                                 [])
                                 .join(separator)
