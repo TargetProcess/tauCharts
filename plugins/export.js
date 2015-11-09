@@ -102,6 +102,21 @@
         return hasIt;
     };
 
+    // http://jsfiddle.net/kimiliini/HM4rW/show/light/
+    function downloadExportFile(fileName, type, strContent) {
+        var utf8BOM = '%ef%bb%bf';
+        var content = 'data:' + type + ';charset=UTF-8,' + utf8BOM + encodeURIComponent(strContent);
+
+        var link = document.createElement('a');
+        link.setAttribute('href', content);
+        link.setAttribute('download', fileName);
+        link.setAttribute('target', '_new');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        link = null;
+    }
+
     function exportTo(settings) {
         return {
 
@@ -229,15 +244,9 @@
                     }, {});
                 });
 
-                var data = JSON.stringify(srcData, null, 2);
-                var asArray = new Uint8Array(data.length);
-
-                for (var i = 0, len = data.length; i < len; ++i) {
-                    asArray[i] = data.charCodeAt(i);
-                }
-
-                var blob = new Blob([asArray.buffer], {type: 'application/json'});
-                saveAs(blob, (this._fileName || 'export') + '.json');
+                var jsonString = JSON.stringify(srcData, null, 2);
+                var fileName = (this._fileName || 'export') + '.json';
+                downloadExportFile(fileName, 'application/json', jsonString);
             },
             _toCsv: function (chart) {
                 var separator = this._csvSeparator;
@@ -253,16 +262,21 @@
                     .reduce(function (csvRows, row) {
                         return csvRows.concat(
                             fields.reduce(function (csvRow, f) {
-                                    var val = trimChar(JSON.stringify(f.value(row)), '"');
-                                    var needEncoding = _.any(
-                                        ['"', ',', ';', '\n', '\r'],
-                                        function (sym) {
-                                            return (val.indexOf(sym) >= 0);
-                                        });
-                                    var finalVal = (needEncoding ?
-                                        (['"', val, '"'].join('')) :
-                                        (val));
-                                    return csvRow.concat(finalVal);
+                                    var origVal = f.value(row);
+                                    var origStr = JSON.stringify(origVal);
+                                    if ((origVal !== null) && (typeof (origVal) === 'object')) {
+                                        origStr = ('"' + origStr.replace(/"/g, '""') + '"');
+                                    } else {
+                                        var trimStr = trimChar(origStr, '"').replace(/"/g, '""');
+                                        var needEncoding = _.any(
+                                            ['"', ',', ';', '\n', '\r'],
+                                            function (sym) {
+                                                return (trimStr.indexOf(sym) >= 0);
+                                            });
+                                        origStr = (needEncoding ? ('"' + trimStr + '"') : trimStr);
+                                    }
+
+                                    return csvRow.concat(origStr);
                                 },
                                 [])
                                 .join(separator)
@@ -275,15 +289,11 @@
                     ])
                     .join('\r\n');
 
-                var asArray = new Uint8Array(csv.length);
+                var fileName = (this._fileName || 'export') + '.csv';
 
-                for (var i = 0, len = csv.length; i < len; ++i) {
-                    asArray[i] = csv.charCodeAt(i);
-                }
-
-                var blob = new Blob([asArray.buffer], {type: 'text/csv'});
-                saveAs(blob, (this._fileName || 'export') + '.csv');
+                downloadExportFile(fileName, 'text/csv', csv);
             },
+
             _renderColorLegend: function (configUnit, svg, chart, width) {
                 var colorScale = this._unit.color;
                 var colorDimension = this._unit.color.dim;
