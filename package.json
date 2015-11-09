@@ -77,6 +77,11 @@
     "webpack-dev-server": "1.9.0"
   },
   "scripts": {
+    "devserver": "grunt webpack-dev-server:start",
+    "less2css": "grunt less",
+    "watch-less": "grunt watch:less",
+    "build": "grunt build",
+
     "test": "npm run bower && npm run travis && karma start config/karma.conf.js",
     "travis": "grunt travis",
     "bower": "bower install",
