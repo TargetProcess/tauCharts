@@ -191,11 +191,13 @@ See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 [R Wrapper](http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts)
 
-[Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
+[SqlPad Project](http://rickbergfalk.github.io/sqlpad/chart-tutorials/)
 
 [Targetprocess Graphical Reports](https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/)
 
 [Vizydrop project](http://vizydrop.com/)
+
+[Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
 
 [Taucharts samples](http://taucharts.com/taulab/index.html)
 

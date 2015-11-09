@@ -5,10 +5,16 @@
 /* region variables for plugins */
 /* endregion */
 .graphical-report__legend {
-  padding: 20px 0 20px 10px;
+  padding: 20px 0 10px 10px;
   margin-right: 30px;
   width: 160px;
   box-sizing: border-box;
+}
+.graphical-report__legend__wrap {
+  margin-bottom: 30px;
+}
+.graphical-report__legend__wrap:last-child {
+  margin-bottom: 0px;
 }
 .graphical-report__legend__title {
   margin: 0 0 10px 10px;

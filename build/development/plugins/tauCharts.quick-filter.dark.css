@@ -1,0 +1,46 @@
+/* region place variables*/
+/* endregion */
+/* region map variables*/
+/* endregion */
+/* region variables for plugins */
+/* endregion */
+.graphical-report__filter {
+  padding: 20px 0 10px 10px;
+  margin-right: 10px;
+  width: 160px;
+  box-sizing: border-box;
+}
+.graphical-report__filter__title {
+  margin: 0 0 10px 10px;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 13px;
+}
+.graphical-report__filter rect {
+  fill: rgba(0, 0, 0, 0.2);
+}
+.graphical-report__filter .brush .extent {
+  shape-rendering: crispEdges;
+  fill-opacity: 0.4;
+  fill: #0074FF;
+}
+.graphical-report__filter text.date-label {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.graphical-report__filter text.date-label .common {
+  font-weight: bold;
+}
+.graphical-report__filter .resize line {
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.graphical-report__filter .resize.e text {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.graphical-report__filter .resize.w text {
+  text-anchor: middle;
+  font-size: 12px;
+}

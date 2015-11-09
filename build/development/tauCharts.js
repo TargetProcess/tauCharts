@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.2 - 2015-10-15
+/*! taucharts - v0.6.2 - 2015-11-09
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -1206,7 +1206,7 @@ define('elements/element.line',['exports', '../const', './element', './decorator
                 paddingX: 0,
                 paddingY: 0
             });
-            this.config.guide.color = _.defaults(this.config.guide.color, { fill: null });
+            this.config.guide.color = _.defaults(this.config.guide.color || {}, { fill: null });
 
             this.on('highlight', function (sender, e) {
                 return _this.highlight(e);
@@ -6207,6 +6207,11 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             value: function getSpec() {
                 return this._liveSpec;
             }
+        }, {
+            key: 'getLayout',
+            value: function getLayout() {
+                return this._layout;
+            }
         }], [{
             key: 'setupPeriodData',
             value: function setupPeriodData(spec) {
@@ -8841,7 +8846,7 @@ define('elements/element.path',['exports', '../const', './element', './decorator
                 paddingX: 0,
                 paddingY: 0
             });
-            this.config.guide.color = _.defaults(this.config.guide.color, { fill: null });
+            this.config.guide.color = _.defaults(this.config.guide.color || {}, { fill: null });
 
             this.on('highlight', function (sender, e) {
                 return _this.highlight(e);
