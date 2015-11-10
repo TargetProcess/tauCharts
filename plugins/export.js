@@ -124,31 +124,38 @@
                 this._info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
             },
 
-            _normalizeExportFields: function (fields) {
+            _normalizeExportFields: function (fields, excludeFields) {
                 var info = this._info;
-                return fields.map(function (token) {
 
-                    var r = token;
-                    var fieldInfo = info[token] || {};
+                return (fields
+                    .map(function (token) {
 
-                    if (_.isString(token)) {
-                        r = {
-                            field: token,
-                            title: (fieldInfo.label || token)
-                        };
-                    }
+                        var r = token;
+                        var fieldInfo = info[token] || {};
 
-                    if (!_.isFunction(r.value)) {
-                        r.value = function (row) {
-                            var fieldValue = row[this.field];
-                            return (fieldInfo.isComplexField ?
-                                ((fieldValue || {})[fieldInfo.tickLabel]) :
-                                (fieldValue));
-                        };
-                    }
+                        if (_.isString(token)) {
+                            r = {
+                                field: token,
+                                title: (fieldInfo.label || token)
+                            };
+                        }
 
-                    return r;
-                });
+                        if (!_.isFunction(r.value)) {
+                            r.value = function (row) {
+                                var fieldValue = row[this.field];
+                                return (fieldInfo.isComplexField ?
+                                    ((fieldValue || {})[fieldInfo.tickLabel]) :
+                                    (fieldValue));
+                            };
+                        }
+
+                        return r;
+                    })
+                    .filter(function (item) {
+                        return !_.any(excludeFields, function (exFieldName) {
+                            return item.field === exFieldName;
+                        });
+                    }));
             },
 
             _createDataUrl: function (chart) {
@@ -247,7 +254,7 @@
                 var spec = chart.getSpec();
                 var xSource = spec.sources['/'];
                 var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
-                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields));
+                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields), this._excludeFields);
 
                 var srcData = xSource.data.map(function (row) {
                     return fields.reduce(function (memo, f) {
@@ -268,7 +275,7 @@
                 var srcData = xSource.data;
 
                 var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
-                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields));
+                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields), this._excludeFields);
 
                 var csv = srcData
                     .reduce(function (csvRows, row) {
@@ -596,6 +603,7 @@
                 this._csvSeparator = settings.csvSeparator || ',';
                 this._exportFields = settings.exportFields || [];
                 this._appendFields = settings.appendFields || [];
+                this._excludeFields = settings.excludeFields || [];
 
                 if (!this._cssPaths) {
                     this._cssPaths = [];
