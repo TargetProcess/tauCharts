@@ -6464,31 +6464,38 @@ define("../bower_components/fetch/fetch", function(){});
                 this._info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
             },
 
-            _normalizeExportFields: function (fields) {
+            _normalizeExportFields: function (fields, excludeFields) {
                 var info = this._info;
-                return fields.map(function (token) {
 
-                    var r = token;
-                    var fieldInfo = info[token] || {};
+                return (fields
+                    .map(function (token) {
 
-                    if (_.isString(token)) {
-                        r = {
-                            field: token,
-                            title: (fieldInfo.label || token)
-                        };
-                    }
+                        var r = token;
+                        var fieldInfo = info[token] || {};
 
-                    if (!_.isFunction(r.value)) {
-                        r.value = function (row) {
-                            var fieldValue = row[this.field];
-                            return (fieldInfo.isComplexField ?
-                                ((fieldValue || {})[fieldInfo.tickLabel]) :
-                                (fieldValue));
-                        };
-                    }
+                        if (_.isString(token)) {
+                            r = {
+                                field: token,
+                                title: (fieldInfo.label || token)
+                            };
+                        }
 
-                    return r;
-                });
+                        if (!_.isFunction(r.value)) {
+                            r.value = function (row) {
+                                var fieldValue = row[this.field];
+                                return (fieldInfo.isComplexField ?
+                                    ((fieldValue || {})[fieldInfo.tickLabel]) :
+                                    (fieldValue));
+                            };
+                        }
+
+                        return r;
+                    })
+                    .filter(function (item) {
+                        return !_.any(excludeFields, function (exFieldName) {
+                            return item.field === exFieldName;
+                        });
+                    }));
             },
 
             _createDataUrl: function (chart) {
@@ -6500,7 +6507,7 @@ define("../bower_components/fetch/fetch", function(){});
                 return Promise
                     .all(cssPromises)
                     .then(function (res) {
-                        return res.join(' ');
+                        return res.join(' ').replace(/&/g, '');
                     })
                     .then(function (res) {
                         var style = createStyleElement(res);
@@ -6514,7 +6521,19 @@ define("../bower_components/fetch/fetch", function(){});
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
-                        canvg(canvas, svg.parentNode.innerHTML);
+                        canvg(
+                            canvas,
+                            svg.parentNode.innerHTML,
+                            {
+                                renderCallback: function (dom) {
+                                    var domStr = (new XMLSerializer()).serializeToString(dom);
+                                    var isError = (domStr.substring(0, 5).toLowerCase() === '<html');
+                                    if (isError) {
+                                        tauCharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
+                                        tauCharts.api.globalSettings.log(domStr, 'error');
+                                    }
+                                }
+                            });
                         return canvas.toDataURL('image/png');
                     }.bind(this));
             },
@@ -6575,7 +6594,7 @@ define("../bower_components/fetch/fetch", function(){});
                 var spec = chart.getSpec();
                 var xSource = spec.sources['/'];
                 var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
-                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields));
+                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields), this._excludeFields);
 
                 var srcData = xSource.data.map(function (row) {
                     return fields.reduce(function (memo, f) {
@@ -6596,7 +6615,7 @@ define("../bower_components/fetch/fetch", function(){});
                 var srcData = xSource.data;
 
                 var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
-                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields));
+                var fields = this._normalizeExportFields(srcDims.concat(this._appendFields), this._excludeFields);
 
                 var csv = srcData
                     .reduce(function (csvRows, row) {
@@ -6924,6 +6943,7 @@ define("../bower_components/fetch/fetch", function(){});
                 this._csvSeparator = settings.csvSeparator || ',';
                 this._exportFields = settings.exportFields || [];
                 this._appendFields = settings.appendFields || [];
+                this._excludeFields = settings.excludeFields || [];
 
                 if (!this._cssPaths) {
                     this._cssPaths = [];
