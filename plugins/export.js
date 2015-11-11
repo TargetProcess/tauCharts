@@ -12,6 +12,7 @@
     var d3 = tauCharts.api.d3;
     var _ = tauCharts.api._;
     var pluginsSDK = tauCharts.api.pluginsSDK;
+    var tokens = pluginsSDK.tokens();
 
     var trimChar = function (str, char) {
         // return str.replace(/^\s+|\s+$/g, '');
@@ -648,10 +649,18 @@
                 // jscs:disable maximumLineLength
                 popup.content([
                     '<ul class="graphical-report__export__list">',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="csv" tabindex="2">Export to CSV</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="json" tabindex="2">Export to JSON</a></li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
+                    '</li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
+                    '</li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="csv" tabindex="2">' + tokens.get('Export to CSV') + '</a>',
+                    '</li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="json" tabindex="2">' + tokens.get('Export to JSON') + '</a>',
+                    '</li>',
                     '</ul>'
                 ].join(''));
                 // jscs:enable maximumLineLength

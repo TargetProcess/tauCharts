@@ -1,6 +1,8 @@
 import {default as _} from 'underscore';
 import {FormatterRegistry} from './formatter-registry';
 
+var customTokens = {};
+
 class PluginsSDK {
 
     static depthFirstSearch(node, predicate) {
@@ -133,6 +135,19 @@ class PluginsSDK {
 
                 return memo;
             }, summary);
+    }
+
+    static tokens () {
+        return {
+            reg: function (key, val) {
+                customTokens[key] = val;
+                return this;
+            },
+
+            get: function (key) {
+                return customTokens[key] || key;
+            }
+        };
     }
 }
 
