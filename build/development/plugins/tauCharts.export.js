@@ -6352,6 +6352,7 @@ define("../bower_components/fetch/fetch", function(){});
     var d3 = tauCharts.api.d3;
     var _ = tauCharts.api._;
     var pluginsSDK = tauCharts.api.pluginsSDK;
+    var tokens = pluginsSDK.tokens();
 
     var trimChar = function (str, char) {
         // return str.replace(/^\s+|\s+$/g, '');
@@ -6443,7 +6444,7 @@ define("../bower_components/fetch/fetch", function(){});
     };
 
     // http://jsfiddle.net/kimiliini/HM4rW/show/light/
-    function downloadExportFile(fileName, type, strContent) {
+    var downloadExportFile = function (fileName, type, strContent) {
         var utf8BOM = '%ef%bb%bf';
         var content = 'data:' + type + ';charset=UTF-8,' + utf8BOM + encodeURIComponent(strContent);
 
@@ -6455,7 +6456,25 @@ define("../bower_components/fetch/fetch", function(){});
         link.click();
         document.body.removeChild(link);
         link = null;
-    }
+    };
+
+    var fixSVGForCanvgCompatibility = function (svg) {
+        []
+            .slice
+            .call(svg.querySelectorAll('text.label'))
+            .forEach(function (textNode) {
+                textNode.innerHTML = []
+                    .slice
+                    .call(textNode.querySelectorAll('tspan'))
+                    .reduce(function (memo, node) {
+                        var partText = (node.value || node.text || node.textContent || '');
+                        partText = partText.charAt(0).toUpperCase() + partText.substr(1);
+                        return (memo + partText);
+                    }, '');
+            });
+
+        return svg;
+    };
 
     function exportTo(settings) {
         return {
@@ -6513,7 +6532,7 @@ define("../bower_components/fetch/fetch", function(){});
                         var style = createStyleElement(res);
                         var div = document.createElement('div');
                         var svg = chart.getSVG().cloneNode(true);
-                        div.appendChild(svg);
+                        div.appendChild(fixSVGForCanvgCompatibility(svg));
                         d3.select(svg).attr('version', 1.1)
                             .attr('xmlns', 'http://www.w3.org/2000/svg');
                         svg.insertBefore(style, svg.firstChild);
@@ -6521,6 +6540,7 @@ define("../bower_components/fetch/fetch", function(){});
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
+
                         canvg(
                             canvas,
                             svg.parentNode.innerHTML,
@@ -6969,10 +6989,18 @@ define("../bower_components/fetch/fetch", function(){});
                 // jscs:disable maximumLineLength
                 popup.content([
                     '<ul class="graphical-report__export__list">',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="print" tabindex="1">Print</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="png" tabindex="2">Export to png</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="csv" tabindex="2">Export to CSV</a></li>',
-                    '<li class="graphical-report__export__item"><a href="#" data-value="json" tabindex="2">Export to JSON</a></li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
+                    '</li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
+                    '</li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="csv" tabindex="2">' + tokens.get('Export to CSV') + '</a>',
+                    '</li>',
+                    '<li class="graphical-report__export__item">',
+                    '   <a href="#" data-value="json" tabindex="2">' + tokens.get('Export to JSON') + '</a>',
+                    '</li>',
                     '</ul>'
                 ].join(''));
                 // jscs:enable maximumLineLength

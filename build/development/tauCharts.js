@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.2 - 2015-11-10
+/*! taucharts - v0.6.2 - 2015-11-11
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -10714,6 +10714,8 @@ define('plugins-sdk',['exports', 'underscore', './formatter-registry'], function
 
     var _2 = _interopRequireDefault(_underscore);
 
+    var customTokens = {};
+
     var PluginsSDK = (function () {
         function PluginsSDK() {
             _classCallCheck(this, PluginsSDK);
@@ -10845,6 +10847,20 @@ define('plugins-sdk',['exports', 'underscore', './formatter-registry'], function
 
                     return memo;
                 }, summary);
+            }
+        }, {
+            key: 'tokens',
+            value: function tokens() {
+                return {
+                    reg: function reg(key, val) {
+                        customTokens[key] = val;
+                        return this;
+                    },
+
+                    get: function get(key) {
+                        return customTokens[key] || key;
+                    }
+                };
             }
         }]);
 
