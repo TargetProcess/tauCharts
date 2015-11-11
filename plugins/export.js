@@ -103,7 +103,7 @@
     };
 
     // http://jsfiddle.net/kimiliini/HM4rW/show/light/
-    function downloadExportFile(fileName, type, strContent) {
+    var downloadExportFile = function (fileName, type, strContent) {
         var utf8BOM = '%ef%bb%bf';
         var content = 'data:' + type + ';charset=UTF-8,' + utf8BOM + encodeURIComponent(strContent);
 
@@ -115,7 +115,25 @@
         link.click();
         document.body.removeChild(link);
         link = null;
-    }
+    };
+
+    var fixSVGForCanvgCompatibility = function (svg) {
+        []
+            .slice
+            .call(svg.querySelectorAll('text.label'))
+            .forEach(function (textNode) {
+                textNode.innerHTML = []
+                    .slice
+                    .call(textNode.querySelectorAll('tspan'))
+                    .reduce(function (memo, node) {
+                        var partText = (node.value || node.text || node.textContent || '');
+                        partText = partText.charAt(0).toUpperCase() + partText.substr(1);
+                        return (memo + partText);
+                    }, '');
+            });
+
+        return svg;
+    };
 
     function exportTo(settings) {
         return {
@@ -173,7 +191,7 @@
                         var style = createStyleElement(res);
                         var div = document.createElement('div');
                         var svg = chart.getSVG().cloneNode(true);
-                        div.appendChild(svg);
+                        div.appendChild(fixSVGForCanvgCompatibility(svg));
                         d3.select(svg).attr('version', 1.1)
                             .attr('xmlns', 'http://www.w3.org/2000/svg');
                         svg.insertBefore(style, svg.firstChild);
@@ -181,6 +199,7 @@
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
+
                         canvg(
                             canvas,
                             svg.parentNode.innerHTML,
