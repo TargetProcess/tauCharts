@@ -11,7 +11,9 @@ window.samples.push({
         size: 'mass',
 
         plugins: [
-            tauCharts.api.plugins.get('legend')(),
+            tauCharts.api.plugins.get('legend')({
+                position: 'bottom'
+            }),
             tauCharts.api.plugins.get('tooltip')()
         ],
 
