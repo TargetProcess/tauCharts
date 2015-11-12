@@ -6495,8 +6495,7 @@ define("../bower_components/fetch/fetch", function(){});
                         if (_.isString(token)) {
                             r = {
                                 field: token,
-                                title: (fieldInfo.label || token),
-                                format: (fieldInfo.format)
+                                title: (fieldInfo.label || token)
                             };
                         }
 
@@ -6644,10 +6643,8 @@ define("../bower_components/fetch/fetch", function(){});
                             fields.reduce(function (csvRow, f) {
                                     var origVal = f.value(row);
                                     var origStr = JSON.stringify(origVal);
-                                    if (_.isDate(origVal)) {
-                                        // dates (format or ISO)
-                                        origStr = (f.format ? f.format(origVal) : origStr);
-                                    } else if (_.isObject(origVal)) {
+
+                                    if (!_.isDate(origVal) && _.isObject(origVal)) {
                                         // complex objects if any
                                         origStr = ('"' + origStr.replace(/"/g, '""') + '"');
                                     } else {
