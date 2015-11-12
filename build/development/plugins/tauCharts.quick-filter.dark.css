@@ -29,7 +29,7 @@
   font-size: 12px;
 }
 .graphical-report__filter text.date-label .common {
-  font-weight: bold;
+  font-weight: 600;
 }
 .graphical-report__filter .resize line {
   stroke: #000;

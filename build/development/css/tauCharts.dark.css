@@ -379,7 +379,7 @@
   opacity: 1;
 }
 .graphical-report__svg .axis.facet-axis .tick text {
-  font-weight: bold;
+  font-weight: 600;
 }
 .graphical-report__svg .axis.facet-axis path.domain {
   opacity: 0;
@@ -415,11 +415,11 @@
 }
 .graphical-report__svg .label {
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
 }
 .graphical-report__svg .label .label-token {
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
   text-transform: capitalize;
 }
 .graphical-report__svg .label .label-token-1,
