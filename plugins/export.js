@@ -155,7 +155,8 @@
                         if (_.isString(token)) {
                             r = {
                                 field: token,
-                                title: (fieldInfo.label || token)
+                                title: (fieldInfo.label || token),
+                                format: (fieldInfo.format)
                             };
                         }
 
@@ -303,9 +304,14 @@
                             fields.reduce(function (csvRow, f) {
                                     var origVal = f.value(row);
                                     var origStr = JSON.stringify(origVal);
-                                    if ((origVal !== null) && (typeof (origVal) === 'object')) {
+                                    if (_.isDate(origVal)) {
+                                        // dates (format or ISO)
+                                        origStr = (f.format ? f.format(origVal) : origStr);
+                                    } else if (_.isObject(origVal)) {
+                                        // complex objects if any
                                         origStr = ('"' + origStr.replace(/"/g, '""') + '"');
                                     } else {
+                                        // everything else
                                         var trimStr = trimChar(origStr, '"').replace(/"/g, '""');
                                         var needEncoding = _.any(
                                             ['"', ',', ';', '\n', '\r'],
