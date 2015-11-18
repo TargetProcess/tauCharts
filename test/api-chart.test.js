@@ -328,6 +328,24 @@ define(function (require) {
             });
         });
 
+        it('api test insertToLeftSidebar', function () {
+            var plot = new tauCharts.Plot(config);
+            plot.renderTo(div);
+            var $div = $('<div>test</div>>');
+            var divTest = $div.get(0);
+            var res = plot.insertToLeftSidebar(divTest);
+
+            describe('insert dom element', function () {
+                expect(divTest).to.eql(res);
+                $div.remove();
+            });
+
+            describe('insert string element', function () {
+                var res = plot.insertToLeftSidebar('<div><div class="my-selector">innerHtml</div></div>');
+                expect('<div class="my-selector">innerHtml</div>').to.eql(res.innerHTML);
+            });
+        });
+
         it('api test insertToHeader', function () {
             var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
@@ -343,6 +361,25 @@ define(function (require) {
 
             describe('insert string element', function () {
                 var res = plot.insertToHeader('<div><div class="my-selector">innerHtml</div></div>');
+                expect('<div class="my-selector">innerHtml</div>').to.eql(res.innerHTML);
+            });
+        });
+
+        it('api test insertToFooter', function () {
+            var plot = new tauCharts.Plot(config);
+            plot.renderTo(div);
+            var $div = $('<div>test</div>>');
+            var divTest = $div.get(0);
+            var res = plot.insertToFooter(divTest);
+
+            describe('insert dom element', function () {
+                expect(divTest).to.eql(res);
+                expect($.contains(div.querySelector('.graphical-report__layout__footer'), divTest)).to.be.ok;
+                $div.remove();
+            });
+
+            describe('insert string element', function () {
+                var res = plot.insertToFooter('<div><div class="my-selector">innerHtml</div></div>');
                 expect('<div class="my-selector">innerHtml</div>').to.eql(res.innerHTML);
             });
         });
