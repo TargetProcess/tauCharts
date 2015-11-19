@@ -87,7 +87,23 @@
 
                 if (hasColorScales || hasFillScales || hasSizeScales) {
 
-                    this._container = this._chart.insertToRightSidebar(this._containerTemplate);
+                    switch (settings.position) {
+                        case 'left':
+                            this._container = this._chart.insertToLeftSidebar(this._containerTemplate);
+                            break;
+                        case 'right':
+                            this._container = this._chart.insertToRightSidebar(this._containerTemplate);
+                            break;
+                        case 'top':
+                            this._container = this._chart.insertToHeader(this._containerTemplate);
+                            break;
+                        case 'bottom':
+                            this._container = this._chart.insertToFooter(this._containerTemplate);
+                            break;
+                        default:
+                            this._container = this._chart.insertToRightSidebar(this._containerTemplate);
+                            break;
+                    }
 
                     if (hasColorScales) {
                         _delegateEvent(

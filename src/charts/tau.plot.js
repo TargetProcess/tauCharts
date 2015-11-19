@@ -152,8 +152,16 @@ export class Plot extends Emitter {
         return r;
     }
 
+    insertToLeftSidebar(el) {
+        return utilsDom.appendTo(el, this._layout.leftSidebar);
+    }
+
     insertToRightSidebar(el) {
         return utilsDom.appendTo(el, this._layout.rightSidebar);
+    }
+
+    insertToFooter(el) {
+        return utilsDom.appendTo(el, this._layout.footer);
     }
 
     insertToHeader(el) {
