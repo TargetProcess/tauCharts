@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.3 - 2015-11-12
+/*! taucharts - v0.6.3 - 2015-11-19
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -588,6 +588,7 @@ define('event',['exports'], function (exports) {
                 var args;
                 var fn;
                 var i = 0;
+                var queue = [];
                 while (cursor = cursor.handler) {
                     // jshint ignore:line
                     // callback call
@@ -602,7 +603,11 @@ define('event',['exports'], function (exports) {
                             }
                         }
 
-                        fn.apply(cursor.context, args);
+                        queue.unshift({
+                            fn: fn,
+                            context: cursor.context,
+                            args: args
+                        });
                     }
 
                     // any event callback call
@@ -617,13 +622,21 @@ define('event',['exports'], function (exports) {
                             }
                         }
 
-                        fn.call(cursor.context, {
-                            sender: this,
-                            type: eventName,
-                            args: args
+                        queue.unshift({
+                            fn: fn,
+                            context: cursor.context,
+                            args: [{
+                                sender: this,
+                                type: eventName,
+                                args: args
+                            }]
                         });
                     }
                 }
+
+                queue.forEach(function (item) {
+                    return item.fn.apply(item.context, item.args);
+                });
             };
 
             events[eventName] = eventFunction;
@@ -5918,11 +5931,19 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             this.onUnitsStructureExpandedTransformers = [_specTransformCalcSize.SpecTransformCalcSize, _specTransformExtractAxes.SpecTransformExtractAxes];
 
             this._originData = _.clone(this.configGPL.sources);
+            this._chartDataModel = function (src) {
+                return src;
+            };
             this._liveSpec = this.configGPL;
             this._plugins = new _plugins.Plugins(this.config.plugins, this);
         }
 
         _createClass(Plot, [{
+            key: 'setupChartSourceModel',
+            value: function setupChartSourceModel(fnModelTransformation) {
+                this._chartDataModel = fnModelTransformation;
+            }
+        }, {
             key: 'setupConfig',
             value: function setupConfig(config) {
 
@@ -5966,9 +5987,19 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 return isOld ? this.config : this.configGPL || this.config;
             }
         }, {
+            key: 'insertToLeftSidebar',
+            value: function insertToLeftSidebar(el) {
+                return _utilsUtilsDom.utilsDom.appendTo(el, this._layout.leftSidebar);
+            }
+        }, {
             key: 'insertToRightSidebar',
             value: function insertToRightSidebar(el) {
                 return _utilsUtilsDom.utilsDom.appendTo(el, this._layout.rightSidebar);
+            }
+        }, {
+            key: 'insertToFooter',
+            value: function insertToFooter(el) {
+                return _utilsUtilsDom.utilsDom.appendTo(el, this._layout.footer);
             }
         }, {
             key: 'insertToHeader',
@@ -6097,10 +6128,12 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                     };
                 };
 
-                return Object.keys(this._originData).filter(function (k) {
+                var chartDataModel = this._chartDataModel(this._originData);
+
+                return Object.keys(chartDataModel).filter(function (k) {
                     return k !== '?';
                 }).reduce(function (memo, k) {
-                    var item = _this2._originData[k];
+                    var item = chartDataModel[k];
                     var filterIterator = _this2.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
                     memo[k] = {
                         dims: item.dims,
@@ -6108,7 +6141,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                     };
                     return memo;
                 }, {
-                    '?': this._originData['?']
+                    '?': chartDataModel['?']
                 });
             }
         }, {
@@ -6136,8 +6169,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 var src = arguments.length <= 1 || arguments[1] === undefined ? '/' : arguments[1];
 
                 this.config.data = data;
-                this.configGPL.sources[src].data = data;
-                this._originData = _.clone(this.configGPL.sources);
+                this._originData[src].data = data;
                 this.refresh();
             }
         }, {
@@ -6191,14 +6223,24 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             key: 'traverseSpec',
             value: function traverseSpec(spec, iterator) {
 
-                var traverse = function traverse(node, iterator, parentNode) {
-                    iterator(node, parentNode);
-                    (node.units || []).map(function (x) {
-                        return traverse(x, iterator, node);
-                    });
+                var traverse = function traverse(node, iterator, parentNode, parentFrame) {
+
+                    iterator(node, parentNode, parentFrame);
+
+                    if (node.frames) {
+                        node.frames.forEach(function (frame) {
+                            (frame.units || []).map(function (x) {
+                                return traverse(x, iterator, node, frame);
+                            });
+                        });
+                    } else {
+                        (node.units || []).map(function (x) {
+                            return traverse(x, iterator, node, null);
+                        });
+                    }
                 };
 
-                traverse(spec.unit, iterator, null);
+                traverse(spec.unit, iterator, null, null);
             }
 
             // use from plugins to get the most actual chart config
@@ -9097,6 +9139,11 @@ define('elements/element.area',['exports', './element.path', '../utils/utils'], 
         _createClass(Area, [{
             key: '_assignBase',
             value: function _assignBase(scale, rows) {
+
+                if (rows.length === 0) {
+                    return [];
+                }
+
                 var domain = scale.domain();
                 var dim = scale.dim;
                 var min = domain[0];
@@ -9940,6 +9987,8 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
 
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+    function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
     function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
@@ -9960,13 +10009,17 @@ define('scales/linear',['exports', './base', '../utils/utils', 'underscore', 'd3
 
             _get(Object.getPrototypeOf(LinearScale.prototype), 'constructor', this).call(this, xSource, scaleConfig);
 
+            var isNum = function isNum(num) {
+                return !isNaN(num) && _2['default'].isNumber(num);
+            };
+
             var props = this.scaleConfig;
             var vars = _d32['default'].extent(this.vars);
 
-            var min = _2['default'].isNumber(props.min) ? props.min : vars[0];
-            var max = _2['default'].isNumber(props.max) ? props.max : vars[1];
+            var min = isNum(props.min) ? props.min : vars[0];
+            var max = isNum(props.max) ? props.max : vars[1];
 
-            vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
+            vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(isNum)))];
 
             this.vars = props.autoScale ? _utilsUtils.utils.autoScale(vars) : _d32['default'].extent(vars);
 
@@ -10699,7 +10752,201 @@ define('api/chart-parallel',['exports'], function (exports) {
 
     exports.ChartParallel = ChartParallel;
 });
-define('plugins-sdk',['exports', 'underscore', './formatter-registry'], function (exports, _underscore, _formatterRegistry) {
+define('plugins-sdk/unit',['exports', 'underscore'], function (exports, _underscore) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    var _2 = _interopRequireDefault(_underscore);
+
+    var Unit = (function () {
+        function Unit(unitRef) {
+            _classCallCheck(this, Unit);
+
+            this.unitRef = unitRef;
+        }
+
+        _createClass(Unit, [{
+            key: 'value',
+            value: function value() {
+                return this.unitRef;
+            }
+        }, {
+            key: 'clone',
+            value: function clone() {
+                return JSON.parse(JSON.stringify(this.unitRef));
+            }
+        }, {
+            key: 'traverse',
+            value: function traverse(iterator) {
+
+                var fnTraverse = function fnTraverse(node, fnIterator, parentNode) {
+                    fnIterator(node, parentNode);
+                    (node.units || []).map(function (x) {
+                        return fnTraverse(x, fnIterator, node);
+                    });
+                };
+
+                fnTraverse(this.unitRef, iterator, null);
+                return this;
+            }
+        }, {
+            key: 'reduce',
+            value: function reduce(iterator, memo) {
+                var r = memo;
+                this.traverse(function (unit, parent) {
+                    return r = iterator(r, unit, parent);
+                });
+                return r;
+            }
+        }, {
+            key: 'addFrame',
+            value: function addFrame(frameConfig) {
+                this.unitRef.frames = this.unitRef.frames || [];
+
+                frameConfig.key.__layerid__ = ['L', new Date().getTime(), this.unitRef.frames.length].join('');
+                frameConfig.source = frameConfig.hasOwnProperty('source') ? frameConfig.source : this.unitRef.expression.source;
+
+                frameConfig.pipe = frameConfig.pipe || [];
+
+                this.unitRef.frames.push(frameConfig);
+                return this;
+            }
+        }, {
+            key: 'addTransformation',
+            value: function addTransformation(name, params) {
+                this.unitRef.transformation = this.unitRef.transformation || [];
+                this.unitRef.transformation.push({ type: name, args: params });
+                return this;
+            }
+        }, {
+            key: 'isCoordinates',
+            value: function isCoordinates() {
+                return (this.unitRef.type || '').toUpperCase().indexOf('COORDS.') === 0;
+            }
+        }, {
+            key: 'isElementOf',
+            value: function isElementOf(typeOfCoordinates) {
+
+                if (this.isCoordinates()) {
+                    return false;
+                }
+
+                var xType = this.unitRef.type || '';
+                var parts = xType.split('/');
+
+                if (parts.length === 1) {
+                    parts.unshift('RECT'); // by default
+                }
+
+                return parts[0].toUpperCase() === typeOfCoordinates.toUpperCase();
+            }
+        }]);
+
+        return Unit;
+    })();
+
+    exports.Unit = Unit;
+});
+define('plugins-sdk/spec',['exports', 'underscore', './unit'], function (exports, _underscore, _unit) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+    var _2 = _interopRequireDefault(_underscore);
+
+    var Spec = (function () {
+        function Spec(specRef) {
+            _classCallCheck(this, Spec);
+
+            this.specRef = specRef;
+        }
+
+        _createClass(Spec, [{
+            key: 'value',
+            value: function value() {
+                return this.specRef;
+            }
+        }, {
+            key: 'unit',
+            value: function unit(newUnit) {
+                if (newUnit) {
+                    this.specRef.unit = newUnit;
+                }
+                return new _unit.Unit(this.specRef.unit);
+            }
+        }, {
+            key: 'addTransformation',
+            value: function addTransformation(name, func) {
+                this.specRef.transformations = this.specRef.transformations || {};
+                this.specRef.transformations[name] = func;
+                return this;
+            }
+        }, {
+            key: 'getSettings',
+            value: function getSettings(name) {
+                return this.specRef.settings[name];
+            }
+        }, {
+            key: 'setSettings',
+            value: function setSettings(name, value) {
+                this.specRef.settings = this.specRef.settings || {};
+                this.specRef.settings[name] = value;
+                return this;
+            }
+        }, {
+            key: 'getScale',
+            value: function getScale(name) {
+                return this.specRef.scales[name];
+            }
+        }, {
+            key: 'addScale',
+            value: function addScale(name, props) {
+                this.specRef.scales[name] = props;
+                return this;
+            }
+        }, {
+            key: 'regSource',
+            value: function regSource(sourceName, sourceObject) {
+                this.specRef.sources[sourceName] = sourceObject;
+                return this;
+            }
+        }, {
+            key: 'getSourceData',
+            value: function getSourceData(sourceName) {
+                var srcData = this.specRef.sources[sourceName] || { data: [] };
+                return srcData.data;
+            }
+        }, {
+            key: 'getSourceDim',
+            value: function getSourceDim(sourceName, sourceDim) {
+                var srcDims = this.specRef.sources[sourceName] || { dims: {} };
+                return srcDims.dims[sourceDim] || {};
+            }
+        }]);
+
+        return Spec;
+    })();
+
+    exports.Spec = Spec;
+});
+define('plugins-sdk',['exports', 'underscore', './formatter-registry', './plugins-sdk/unit', './plugins-sdk/spec'], function (exports, _underscore, _formatterRegistry, _pluginsSdkUnit, _pluginsSdkSpec) {
     'use strict';
 
     Object.defineProperty(exports, '__esModule', {
@@ -10722,6 +10969,21 @@ define('plugins-sdk',['exports', 'underscore', './formatter-registry'], function
         }
 
         _createClass(PluginsSDK, null, [{
+            key: 'unit',
+            value: function unit(unitRef) {
+                return new _pluginsSdkUnit.Unit(unitRef);
+            }
+        }, {
+            key: 'spec',
+            value: function spec(specRef) {
+                return new _pluginsSdkSpec.Spec(specRef);
+            }
+        }, {
+            key: 'cloneObject',
+            value: function cloneObject(obj) {
+                return JSON.parse(JSON.stringify(obj));
+            }
+        }, {
             key: 'depthFirstSearch',
             value: function depthFirstSearch(node, predicate) {
                 if (predicate(node)) {
