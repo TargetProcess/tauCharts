@@ -413,6 +413,10 @@
                     return false;
                 }
 
+                if (parentUnit && !parentUnit.units) {
+                    return false;
+                }
+
                 if (this._applicableElements.indexOf(unit.type) === -1) {
                     return false;
                 }

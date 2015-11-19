@@ -15,6 +15,7 @@ function createDispatcher(eventName) {
             var args;
             var fn;
             var i = 0;
+            var queue = [];
             while (cursor = cursor.handler) { // jshint ignore:line
                 // callback call
                 fn = cursor.callbacks[eventName];
@@ -26,10 +27,13 @@ function createDispatcher(eventName) {
                         for (i = 0; i < arguments.length; i++) {
                             args.push(arguments[i]);
                         }
-
                     }
 
-                    fn.apply(cursor.context, args);
+                    queue.unshift({
+                        fn: fn,
+                        context: cursor.context,
+                        args:args
+                    });
                 }
 
                 // any event callback call
@@ -42,17 +46,23 @@ function createDispatcher(eventName) {
                         for (i = 0; i < arguments.length; i++) {
                             args.push(arguments[i]);
                         }
-
                     }
 
-                    fn.call(cursor.context, {
-                        sender: this,
-                        type: eventName,
-                        args: args
+                    queue.unshift({
+                        fn: fn,
+                        context: cursor.context,
+                        args: [
+                            {
+                                sender: this,
+                                type: eventName,
+                                args: args
+                            }
+                        ]
                     });
                 }
             }
 
+            queue.forEach((item) => item.fn.apply(item.context, item.args));
         };
 
         events[eventName] = eventFunction;

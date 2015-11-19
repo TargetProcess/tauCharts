@@ -1,9 +1,23 @@
 import {default as _} from 'underscore';
 import {FormatterRegistry} from './formatter-registry';
+import {Unit} from './plugins-sdk/unit';
+import {Spec} from './plugins-sdk/spec';
 
 var customTokens = {};
 
 class PluginsSDK {
+
+    static unit(unitRef) {
+        return new Unit(unitRef);
+    }
+
+    static spec(specRef) {
+        return new Spec(specRef);
+    }
+
+    static cloneObject(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
 
     static depthFirstSearch(node, predicate) {
         if (predicate(node)) {

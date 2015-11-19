@@ -47,7 +47,7 @@
                 var domain = scaleInfo.domain();
                 var min = domain[0];
                 var max = domain[1];
-                if ((from >= max) || (to <= min)) {
+                if (isNaN(min) || isNaN(max) || (from >= max) || (to <= min)) {
                     console.log('Annotation is out of domain');
                     return;
                 }
@@ -220,12 +220,13 @@
 
                 var units = [];
                 chart.traverseSpec(specRef, function (unit) {
-                    if (unit && (unit.type === 'COORDS.RECT')) {
+                    if (unit && (unit.type === 'COORDS.RECT') && (unit.units)) {
                         units.push(unit);
                     }
                 });
 
                 units.forEach(function (coordsUnit) {
+
                     settings.items.forEach(function (item) {
 
                         item.color = item.color || '#BD10E0'; // #4300FF / #FFAB00
