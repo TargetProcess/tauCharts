@@ -44,8 +44,10 @@ export class PeriodScale extends BaseScale {
         var props = this.scaleConfig;
 
         var d3Domain = d3.scale.ordinal().domain(varSet);
-
         var d3Scale = d3Domain.rangePoints(interval, 1);
+
+        var d3DomainTicks = d3.scale.ordinal().domain(varSetTicks.map(String));
+        var d3ScaleTicks = d3DomainTicks.rangePoints(interval, 1);
 
         var size = Math.max(...interval);
 
@@ -71,7 +73,7 @@ export class PeriodScale extends BaseScale {
             var tx = dx.getTime();
 
             if (!props.ratio) {
-                r = d3Scale(dx);
+                r = d3ScaleTicks(String(tx));
             } else {
                 r = size - varSetTicks.slice(varSetTicks.indexOf(tx) + 1).reduce(
                         (acc, v) => (acc + (size * fnRatio(v))),
