@@ -425,13 +425,14 @@
 
             extractLabel: function (layer) {
                 var g = layer.guide || {};
+                g.label = (_.isString(g.label) ? {text: g.label} : g.label);
                 var l = (g.label || {});
 
                 if (_.isArray(layer.y)) {
                     return layer.y.join(', ');
                 }
 
-                return (g.label || (l.text) || (l._original_text) || layer.y);
+                return ((l.text) || (l._original_text) || layer.y);
             },
 
             onSpecReady: function (chart, specRef) {
