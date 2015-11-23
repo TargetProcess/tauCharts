@@ -502,10 +502,14 @@
 
                 if (self._isApplicable && (settings.mode === 'merge')) {
 
+                    var fullSpec = pluginsSDK.spec(self._chart.getSpec());
                     var primaryY = self.primaryY.scaleName;
                     var scaleNames = _(settings.layers)
                         .map(function (layer) {
                             return self.getScaleName(layer.y);
+                        })
+                        .filter(function (name) {
+                            return fullSpec.getScale(name);
                         })
                         .concat(primaryY);
 
@@ -519,8 +523,6 @@
                         {});
 
                     var minMax = d3.extent(_(hashBounds).chain().values().flatten().value());
-                    var fullSpec = pluginsSDK.spec(self._chart.getSpec());
-
                     scaleNames.forEach(function (y) {
                         var yScale = fullSpec.getScale(y);
                         yScale.min = minMax[0];
