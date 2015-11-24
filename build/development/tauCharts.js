@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.3 - 2015-11-19
+/*! taucharts - v0.6.3 - 2015-11-24
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -9830,8 +9830,10 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
                 var props = this.scaleConfig;
 
                 var d3Domain = _d32['default'].scale.ordinal().domain(varSet);
-
                 var d3Scale = d3Domain.rangePoints(interval, 1);
+
+                var d3DomainTicks = _d32['default'].scale.ordinal().domain(varSetTicks.map(String));
+                var d3ScaleTicks = d3DomainTicks.rangePoints(interval, 1);
 
                 var size = Math.max.apply(Math, _toConsumableArray(interval));
 
@@ -9857,7 +9859,7 @@ define('scales/period',['exports', './base', '../unit-domain-period-generator', 
                     var tx = dx.getTime();
 
                     if (!props.ratio) {
-                        r = d3Scale(dx);
+                        r = d3ScaleTicks(String(tx));
                     } else {
                         r = size - varSetTicks.slice(varSetTicks.indexOf(tx) + 1).reduce(function (acc, v) {
                             return acc + size * fnRatio(v);
