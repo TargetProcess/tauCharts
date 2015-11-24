@@ -43,6 +43,15 @@ define(function (require) {
             div.parentNode.removeChild(div);
         });
 
+        it('should support destroy() method', function () {
+            var testDiv = document.getElementById('test-div');
+            var plot = new tauChart.Plot(spec);
+            plot.renderTo(testDiv);
+            expect(testDiv.innerHTML).to.be.not.equal('');
+            plot.destroy();
+            expect(testDiv.innerHTML).to.be.equal('');
+        });
+
         it('should render default content if no data provided', function () {
 
             var testDiv = document.getElementById('test-div');

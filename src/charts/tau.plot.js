@@ -60,6 +60,12 @@ export class Plot extends Emitter {
         this._plugins = new Plugins(this.config.plugins, this);
     }
 
+    destroy() {
+        d3.select(this._svg).remove();
+        d3.select(this._layout.layout).remove();
+        super.destroy();
+    }
+
     setupChartSourceModel(fnModelTransformation) {
         this._chartDataModel = fnModelTransformation;
     }
