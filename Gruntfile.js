@@ -3,7 +3,14 @@ var autoprefixer = require('autoprefixer-core');
 var webpack = require('webpack');
 var webpackConfig = require('./config/webpack.test.config');
 var cssConfig = require('./config/css.config');
+var path = require('path');
+var cachePath = path.join(require('os').tmpdir(), './webpackCache');
 
+var ensureDir = function (absolutePath) {
+    var fs = require('fs-extra');
+    fs.mkdirsSync(absolutePath);
+    return absolutePath;
+};
 module.exports = function (grunt) {
     // Project configuration.
     var src = [
@@ -20,14 +27,20 @@ module.exports = function (grunt) {
         },
         externals: {
             d3: 'd3',
-            _: 'underscore'
+            underscore: '_'
         },
         module: {
             loaders: [{
                 test: /\.js$/,
                 exclude: /node_modules/,
-                loader: 'babel-loader'
+                loader: 'babel-loader',
+                query: {
+                    cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+                }
             }]
+        },
+        stats: {
+            timings: true
         }
     };
     grunt.initConfig({
@@ -57,7 +70,7 @@ module.exports = function (grunt) {
                 dest: 'build/production/tauCharts.min.js'
             },
             prodCSS: {
-               files:cssConfig.prodCss
+                files: cssConfig.prodCss
             }
         },
         'gh-pages': {
@@ -239,6 +252,9 @@ module.exports = function (grunt) {
                 webpack: {
                     devtool: 'eval',
                     debug: true
+                },
+                stats: {
+                    timings: true
                 }
             }
         },
