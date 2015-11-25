@@ -58,18 +58,12 @@ var generateConf = function (postLoader) {
             postLoaders: postLoader
         },
         externals: {
-            underscore: '_',
-            d3:'d3'
+            d3: 'd3',
+            underscore: '_'
         },
         query: {
             cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
         },
-        plugins: [
-            new webpack.ProvidePlugin({
-                d3: 'd3',
-                _: 'underscore'
-            })
-        ],
         debug: false,
         stats: {
             colors: true,
