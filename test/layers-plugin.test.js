@@ -132,5 +132,33 @@ define(function (require) {
             ]);
             expect(chart.getSVG().querySelectorAll('.dot').length).to.equal(6);
         });
+
+        it('should allow stacked bar with missed values in data', function () {
+
+            chart = new tauCharts.Chart({
+                type: 'scatterplot',
+                x: 'x',
+                y: 'y',
+                data: [
+                    {x: 'A', y: 0,      r0: 1,      r1: 2   },
+                    {x: 'B', y: 10                          },
+                    {x: 'C', y: 100,    r0: 111             },
+                    {x: 'D', y: 1000,               r1: 1112},
+                    {x: 'E', y: 11                          }
+                ],
+                plugins: [layers({
+                    layers: [
+                        {
+                            type: 'stacked-bar',
+                            y: ['r0', 'r1']
+                        }
+                    ]
+                })]
+            });
+            chart.renderTo(element, {width: 800, height: 800});
+
+            expect(chart.getSVG().querySelectorAll('.dot').length).to.equal(5);
+            expect(chart.getSVG().querySelectorAll('.bar-stack').length).to.equal(4);
+        });
     });
 });

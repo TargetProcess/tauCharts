@@ -7,9 +7,9 @@ window.samples.push({
 
     data: [
         {z: 'Abc', x: days(7), reposts: 10, likes: 21, comments: 10, followers: 100},
-        {z: 'Bbc', x: days(6), reposts: 17, likes: 20, comments: 7 , followers: 110},
+        {z: 'Bbc', x: days(6),              likes: 20, comments: 7 , followers: 110},
         {z: 'Cbc', x: days(5), reposts: 21, likes: 12, comments: 21, followers: 120},
-        {z: 'Dbc', x: days(4), reposts: 14, likes: 22, comments: 31, followers: 140},
+        {z: 'Dbc', x: days(4), reposts: 14,            comments: 31, followers: 140},
         {z: 'Ebc', x: days(3), reposts: 11, likes: 42, comments: 10, followers: 170},
         {z: 'Fbc', x: days(2), reposts: 2 , likes: 10, comments: 11, followers: 177}
     ],
