@@ -61,6 +61,7 @@ export class Plot extends Emitter {
     }
 
     destroy() {
+        this._nodes = GPL.destroyNodes(this._nodes);
         d3.select(this._svg).remove();
         d3.select(this._layout.layout).remove();
         super.destroy();
@@ -222,7 +223,7 @@ export class Plot extends Emitter {
             .transformers
             .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), this._liveSpec);
 
-        this._nodes = [];
+        this._nodes = GPL.destroyNodes(this._nodes);
 
         this._liveSpec.onUnitDraw = (unitNode) => {
             this._nodes.push(unitNode);

@@ -40,6 +40,11 @@ export class GPL extends Emitter {
         this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
     }
 
+    static destroyNodes (nodes) {
+        nodes.forEach((node) => node.destroy());
+        return [];
+    }
+
     renderTo(target, xSize) {
 
         var d3Target = d3.select(target);
