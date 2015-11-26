@@ -1,5 +1,12 @@
 var webpack = require('webpack');
 var path = require('path');
+var cachePath = path.join(require('os').tmpdir(), './webpackCache');
+
+var ensureDir = function (absolutePath) {
+    var fs = require('fs-extra');
+    fs.mkdirsSync(absolutePath);
+    return absolutePath;
+};
 var coverage = [{
     test: /\.js$/,
     exclude: /test|addons|plugins|node_modules|bower_components|libs\//,
@@ -42,21 +49,21 @@ var generateConf = function (postLoader) {
                 {
                     test: /\.js$/,
                     exclude: /node_modules|libs|bower_components/,
-                    loader: 'babel-loader'
+                    loader: 'babel-loader',
+                    query: {
+                        cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+                    }
                 }
             ],
             postLoaders: postLoader
         },
         externals: {
-            _: 'underscore'
+            d3: 'd3',
+            underscore: '_'
         },
-
-        plugins: [
-            new webpack.ProvidePlugin({
-                d3: 'd3',
-                _: 'underscore'
-            })
-        ],
+        query: {
+            cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+        },
         debug: false,
         stats: {
             colors: true,
