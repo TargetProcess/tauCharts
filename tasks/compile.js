@@ -46,40 +46,6 @@ module.exports = function (grunt) {
                 }
             };
 
-            var config = {
-                include: ['../node_modules/almond/almond'],
-                baseUrl: tmpDir + '/',
-                name: 'tau.charts',
-                exclude: ['d3', 'underscore'],
-                paths: {
-                    topojson: '../node_modules/topojson/topojson',
-                    underscore: '../node_modules/underscore/underscore',
-                    d3: '../node_modules/d3/d3',
-                    'tau-tooltip': '../node_modules/tau-tooltip/tooltip'
-                },
-               /* map: {
-                    '*': {
-                        'tau-tooltip': 'Tooltip'
-                    }
-                },*/
-                optimize: 'none',
-                done: function (done, response) {
-                    var bowerConfig = grunt.file.readJSON('bower.json');
-                    var componentConfig = grunt.file.readJSON('component.json');
-                    var currentVersion = grunt.config.get('pkg').version;
-                    bowerConfig.version = currentVersion;
-                    componentConfig.version = currentVersion;
-                    grunt.file.write('bower.json', JSON.stringify(bowerConfig, null, 2));
-                    grunt.file.write('component.json', JSON.stringify(componentConfig, null, 2));
-                    done();
-                },
-
-                out: outputFile,
-                wrap: {
-                    startFile: 'tasks/start.frag',
-                    endFile: 'tasks/end.frag'
-                }
-            };
             var configExport = {
                 include: ['../node_modules/almond/almond'],
                 baseUrl: 'plugins' + '/',
@@ -123,8 +89,8 @@ module.exports = function (grunt) {
                 }
             };
             try {
-                requirejs.optimize(config, tryCatch.bind(null, config.done, done));
-                requirejs.optimize(configExport, tryCatch.bind(null, config.done, done));
+                //requirejs.optimize(config, tryCatch.bind(null, config.done, done));
+                requirejs.optimize(configExport, tryCatch.bind(null, configExport.done, done));
             } catch (e) {
                 grunt.fail.fatal(e);
             }

@@ -27,7 +27,7 @@ module.exports = function (grunt) {
         },
         externals: {
             d3: 'd3',
-            underscore: '_'
+            underscore: 'underscore'
         },
         module: {
             loaders: [{
@@ -304,6 +304,7 @@ module.exports = function (grunt) {
         'postcss',
         'copy:build',
         'compile:build',
+        'webpack:build',
         'concat:dist',
         'concat:prodJS',
         'concat:prodCSS',
