@@ -42,7 +42,7 @@ define(function(require) {
         testData,
         function (context) {
             it("should right spec", function () {
-                assert.ok(schemes.scatterplot(context.chart.config.spec), 'spec is right');
+                assert.ok(schemes.scatterplotGPL(context.chart.getSpec()), 'spec is right');
             });
             it("should render point with right cord", function() {
                 var dots = getDots();

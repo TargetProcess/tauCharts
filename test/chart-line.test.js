@@ -18,7 +18,7 @@ define(function (require) {
                     {x: 2, y: 2, color: 'green', size: 8}
                 ]
             });
-            assert.equal(schemes.line.errors(line.config.spec), false, 'spec right');
+            assert.equal(schemes.lineGPL.errors(line.getSpec()), false, 'spec right');
         });
 
         it('should sort data by X by default', function () {

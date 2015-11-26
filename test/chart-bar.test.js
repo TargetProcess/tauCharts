@@ -17,8 +17,8 @@ define(function(require){
                 color:'color',
                 size:'size'
             });
-            assert.equal(schemes.bar.errors(bar.config.spec), false,'spec right');
-            assert.equal(bar.config.spec.unit.unit[0].flip, false,'spec right');
+            assert.equal(schemes.barGPL.errors(bar.getSpec()), false, 'spec right');
+            assert.equal(bar.getSpec().unit.units[0].flip, false, 'spec right');
         });
     });
 

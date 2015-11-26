@@ -31,16 +31,14 @@ export class Plot extends Emitter {
         this._layout = getLayout();
 
         if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
-            this.config = config;
             this.configGPL = config;
         } else {
-            this.config = this.setupConfig(config);
-            this.configGPL = new SpecConverter(this.config).convert();
+            this.configGPL = new SpecConverter(this.setupConfig(config)).convert();
         }
 
         this.configGPL = Plot.setupPeriodData(this.configGPL);
 
-        this.config.plugins = this.config.plugins || [];
+        var plugins = (config.plugins || []);
 
         this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
@@ -57,7 +55,7 @@ export class Plot extends Emitter {
         this._originData = _.clone(this.configGPL.sources);
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
-        this._plugins = new Plugins(this.config.plugins, this);
+        this._plugins = new Plugins(plugins, this);
     }
 
     destroy() {
@@ -77,39 +75,40 @@ export class Plot extends Emitter {
             throw new Error('Provide spec for plot');
         }
 
-        this.config = _.defaults(config, {
-            spec: {},
-            data: [],
-            plugins: [],
-            settings: {}
-        });
+        var resConfig = _.defaults(
+            config,
+            {
+                spec: {},
+                data: [],
+                plugins: [],
+                settings: {}
+            });
+
         this._emptyContainer = config.emptyContainer || '';
         // TODO: remove this particular config cases
-        this.config.settings.specEngine   = config.specEngine || config.settings.specEngine;
-        this.config.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
-        this.config.settings = Plot.setupSettings(this.config.settings);
+        resConfig.settings.specEngine   = config.specEngine || config.settings.specEngine;
+        resConfig.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
+        resConfig.settings = Plot.setupSettings(resConfig.settings);
 
-        this.config.spec.dimensions = Plot.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+        resConfig.spec.dimensions = Plot.setupMetaInfo(resConfig.spec.dimensions, resConfig.data);
 
-        var log = this.config.settings.log;
-        if (this.config.settings.excludeNull) {
+        var log = resConfig.settings.log;
+        if (resConfig.settings.excludeNull) {
             this.addFilter({
                 tag: 'default',
                 src: '/',
                 predicate: DataProcessor.excludeNullValues(
-                    this.config.spec.dimensions,
+                    resConfig.spec.dimensions,
                     (item) => log([item, 'point was excluded, because it has undefined values.'], 'WARN')
                 )
             });
         }
 
-        return this.config;
+        return resConfig;
     }
 
-    // fixme after all migrate
-    getConfig(isOld) {
-        // this.configGPL
-        return isOld ? this.config : this.configGPL || this.config;
+    getConfig() {
+        return this.configGPL;
     }
 
     static setupPeriodData(spec) {
@@ -326,7 +325,6 @@ export class Plot extends Emitter {
     }
 
     setData(data, src = '/') {
-        this.config.data = data;
         this._originData[src].data = data;
         this.refresh();
     }
