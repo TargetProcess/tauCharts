@@ -78,12 +78,14 @@
                         var g = props.group;
                         if (g) {
                             return _(data).filter(function (row) {
+                                var groupKey = row[g];
+                                var groupVal = row[groupKey];
                                 return (
-                                    (row.hasOwnProperty(g))
+                                    (groupKey)
                                     &&
-                                    (row[g] !== null)
+                                    (groupVal !== null)
                                     &&
-                                    (typeof (row[g]) !== 'undefined')
+                                    (typeof (groupVal) !== 'undefined')
                                 );
                             });
                         } else {
