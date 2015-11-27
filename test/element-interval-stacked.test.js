@@ -841,4 +841,41 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ]
             ]);
     });
+
+    it('should support highlight event', function () {
+
+        var chart = new tauCharts.Chart({
+            type: 'horizontal-stacked-bar',
+            data: [
+                {y: 'A', x: 0.60, c: 'C1', s: 100},
+                {y: 'A', x: 0.40, c: 'C2', s: 50},
+                {y: 'B', x: -1.00, c: 'C3', s: 0}
+            ],
+            x: 'x',
+            y: 'y',
+            color: 'c',
+            size: 's'
+        });
+        chart.renderTo(div, size);
+
+        var svg0 = chart.getSVG();
+        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+        expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+        var intervalNode = chart.select((n) => n.config.type === 'ELEMENT.INTERVAL.STACKED')[0];
+        intervalNode.fire('highlight', ((row) => (row.s > 0)));
+
+        var svg1 = chart.getSVG();
+        expect(svg1.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg1.querySelectorAll('.graphical-report__highlighted').length).to.equals(2);
+        expect(svg1.querySelectorAll('.graphical-report__dimmed').length).to.equals(1);
+
+        intervalNode.fire('highlight', ((row) => (null)));
+
+        var svg2 = chart.getSVG();
+        expect(svg2.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg2.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+        expect(svg2.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+    });
 });
