@@ -30,7 +30,7 @@
                 }
 
                 chart.traverseSpec(
-                    chart.getConfig(),
+                    chart.getSpec(),
                     function (unit) {
                         if (unit && unit.type === 'COORDS.PARALLEL') {
                             unit.guide = unit.guide || {};
@@ -43,7 +43,7 @@
 
             onRender: function (chart) {
 
-                var scales = chart.getConfig().scales;
+                var scales = chart.getSpec().scales;
 
                 var toBrush = Object
                     .keys(scales)

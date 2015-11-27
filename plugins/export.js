@@ -218,8 +218,8 @@
                     }.bind(this));
             },
             _findUnit: function (chart) {
-                var conf = chart.getConfig();
-                var spec = chart.getConfig();
+                var conf = chart.getSpec();
+                var spec = chart.getSpec();
                 var checkNotEmpty = function (dimName) {
                     var sizeScaleCfg = spec.scales[dimName];
                     return (
@@ -500,7 +500,7 @@
                     return;
                 }
                 var offset = {h: 0, w: 0};
-                var spec = chart.getConfig();
+                var spec = chart.getSpec();
                 svg = d3.select(svg);
                 var width = parseInt(svg.attr('width'), 10);
                 var height = svg.attr('height');
@@ -519,7 +519,7 @@
                     offset.h = offsetColorLegend.h;
                     offset.w = offsetColorLegend.w;
                 }
-                var spec = chart.getConfig();
+                var spec = chart.getSpec();
                 var sizeScaleCfg = spec.scales[configUnit.size];
                 if (configUnit.size &&
                     sizeScaleCfg.dim &&

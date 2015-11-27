@@ -34,7 +34,7 @@
 
                 if (pluginSettings.show) {
 
-                    pluginSettings.selectedMode = chart.getConfig().settings.fitModel;
+                    pluginSettings.selectedMode = chart.getSpec().settings.fitModel;
 
                     var panel = chart.insertToHeader(this.template(
                         {
@@ -51,7 +51,7 @@
                             var target = e.target;
                             if (target.classList.contains('i-role-fit-model')) {
                                 pluginSettings.selectedMode = target.value;
-                                chart.getConfig().settings.fitModel = pluginSettings.selectedMode;
+                                chart.getSpec().settings.fitModel = pluginSettings.selectedMode;
                                 chart.refresh();
                             }
                         },
