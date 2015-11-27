@@ -17,7 +17,33 @@ module.exports = function (grunt) {
         '*.js',
         '**/*.js',
         '!addons/*.js'
-    ], webpackConf = {
+    ];
+    var webpackExportConf = {
+        entry: './plugins/export.js',
+        output: {
+            library: 'exportTo',
+            libraryTarget: 'umd',
+            path: 'build/development/plugins/',
+            filename: 'tauCharts.js'
+        },
+        externals: {
+            tauChart: 'tauChart'
+        },
+        module: {
+            loaders: [{
+                test: /\.js$/,
+                exclude: /node_modules/,
+                loader: 'babel-loader',
+                query: {
+                    cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+                }
+            }]
+        },
+        stats: {
+            timings: true
+        }
+    };
+    var webpackConf = {
         entry: './src/tau.charts.js',
         output: {
             library: 'tauCharts',
@@ -244,7 +270,10 @@ module.exports = function (grunt) {
                 tasks: ['less']
             }
         },
-        webpack: {build: webpackConf},
+        webpack: {
+            build: webpackConf,
+            buildExportTo: webpackExportConf
+        },
         'webpack-dev-server': {
             options: {
                 webpack: webpackConf,
@@ -305,6 +334,7 @@ module.exports = function (grunt) {
         'copy:build',
         'compile:build',
         'webpack:build',
+        'webpack:buildExportTo',
         'concat:dist',
         'concat:prodJS',
         'concat:prodCSS',
