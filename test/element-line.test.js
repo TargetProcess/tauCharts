@@ -50,7 +50,7 @@ define(function (require) {
 
         it("should render two line element", function () {
             var lines = getLine();
-            assert.ok(schemes.line(chart.config.spec), 'spec is right');
+            assert.ok(schemes.lineGPL(chart.getSpec()), 'spec is right');
             expect(lines.length).to.equal(2);
             assert.notEqual(attrib(lines[0], 'class'), attrib(lines[1], 'class'), 'should different class');
             assert.ok(testUtils.hasClass(lines[0],'graphical-report__line-width-5'), 'should different class');

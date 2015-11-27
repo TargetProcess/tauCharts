@@ -82,6 +82,28 @@ define(['js-schema'], function (schema) {
             })
         });
 
+        var scatterplotGPL = schema({
+            scales: scales,
+            unit: schema({
+                guide: undefined,
+                x: [null, String],
+                y: [null, String],
+                type: 'COORDS.RECT',
+                units: Array.of(point)
+            })
+        });
+
+        var lineGPL = schema({
+            scales: scales,
+            unit: schema({
+                guide: undefined,
+                x: [null, String],
+                y: [null, String],
+                type: 'COORDS.RECT',
+                units: Array.of(line)
+            })
+        });
+
         var lineSpec = schema({
             dimensions: dimensions,
             unit: schema({
@@ -90,20 +112,24 @@ define(['js-schema'], function (schema) {
                 y: [null, String],
                 type: 'COORDS.RECT',
                 unit: Array.of(line)
-
             })
         });
+
         var config = schema({
             data: Array,
             spec: Object
         });
+
+        schemes.scales = scales;
         schemes.dimensions = dimensions;
         schemes.point = point;
         schemes.interval = interval;
         schemes.bar = bar;
         schemes.barGPL = barGPL;
         schemes.line = lineSpec;
+        schemes.lineGPL = lineGPL;
         schemes.scatterplot = scatterplot;
+        schemes.scatterplotGPL = scatterplotGPL;
         schemes.config = config;
     }(schemes));
 

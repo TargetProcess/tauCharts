@@ -398,12 +398,6 @@ define(function (require) {
             expect(plot.setData(newData)).to.eql(config.data);
         });
 
-        it('api test getConfig', function () {
-            var plot = new tauCharts.Plot(config);
-            var configChart = plot.getConfig(true);
-            expect(schemes.config.errors(configChart)).to.not.be.ok;
-        });
-
         it('api test getSVG', function () {
             var plot = new tauCharts.Plot(config);
             var svg = plot.getSVG();

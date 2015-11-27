@@ -1067,4 +1067,64 @@ define(function (require) {
             autoWidth: false
         }
     );
+
+    describeChart("ELEMENT.INTERVAL event API",
+        {
+            type: 'bar',
+            x: 'y',
+            y: 'x',
+            color: 'color'
+        },
+        [
+            {
+                x: 1,
+                y: "1",
+                color: 'yellow'
+
+            },
+            {
+                x: 2,
+                y: "2",
+                color: 'yellow'
+
+            },
+            {
+                x: 3,
+                y: "3",
+                color: 'yellow'
+            },
+            {
+                x: 3,
+                y: "4",
+                color: 'green'
+            }
+        ],
+        function (context) {
+
+            it("should support highlight event", function () {
+                var svg0 = context.chart.getSVG();
+                expect(svg0.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+                var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
+                intervalNode.fire('highlight', ((row) => (row.color === 'green')));
+
+                var svg1 = context.chart.getSVG();
+                expect(svg1.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg1.querySelectorAll('.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.graphical-report__dimmed').length).to.equals(3);
+
+                intervalNode.fire('highlight', ((row) => null));
+
+                var svg2 = context.chart.getSVG();
+                expect(svg2.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg2.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });

@@ -82,7 +82,7 @@ define(function (require) {
                 settings: settings
             });
 
-            var cfg = chart.getConfig();
+            var cfg = chart.getSpec();
 
             expect(cfg.unit.type).to.equal('COORDS.MAP');
             expect(cfg.unit.guide.sourcemap).to.deep.equal(settings.defaultSourceMap);

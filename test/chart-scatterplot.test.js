@@ -17,8 +17,7 @@ define(function (require) {
                 color: 'color',
                 size: 'size'
             });
-            assert.equal(schemes.scatterplot.errors(scatter.config.spec), false, 'spec right');
-
+            assert.equal(schemes.scatterplotGPL.errors(scatter.getSpec()), false, 'spec right');
         })
     });
 });
