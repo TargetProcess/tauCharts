@@ -560,5 +560,65 @@ define(function (require) {
 
             expect(renderEvent).to.equal(1);
         });
+
+        it('should support right-oriented Y scale', function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: [
+                    {y: 1, x: 0},
+                    {y: 2, x: 10},
+                    {y: 3, x: 20}
+                ],
+                x: 'x',
+                y: 'y',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, autoScale: false, min: 0},
+                    y: {hide: false, scaleOrient: 'right'}
+                },
+                settings: {
+                    specEngine: 'none',
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(testDiv);
+
+            var svg = chart.getSVG();
+            var transform = d3.select(svg).select('.y.axis').attr('transform');
+            expect(transform).to.equals('translate(800,0)');
+        });
+
+        it('should support left-oriented Y scale', function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: [
+                    {y: 1, x: 0},
+                    {y: 2, x: 10},
+                    {y: 3, x: 20}
+                ],
+                x: 'x',
+                y: 'y',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, autoScale: false, min: 0},
+                    y: {hide: false, scaleOrient: 'left'}
+                },
+                settings: {
+                    specEngine: 'none',
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(testDiv);
+
+            var svg = chart.getSVG();
+            var transform = d3.select(svg).select('.y.axis').attr('transform');
+            expect(transform).to.equals('translate(0,0)');
+        });
     });
 });
