@@ -21,7 +21,6 @@
             xSettings || {},
             {
                 label: 'Layer Type',
-                hideError: false,
                 showPanel: true,
                 showLayers: true,
                 mode: 'merge'
@@ -140,11 +139,6 @@
 
                     this._container = chart.insertToRightSidebar(this.containerTemplate);
                     this._container.classList.add('applicable-true');
-                    if (settings.hideError) {
-                        this._container
-                            .classList
-                            .add('hide-trendline-error');
-                    }
 
                     this.uiChangeEventsDispatcher = function (e) {
 
@@ -551,9 +545,7 @@
                 '   <option <%= ((mode === "dock")  ? "selected" : "") %> value="dock">Dock</option>',
                 '   <option <%= ((mode === "merge") ? "selected" : "") %> value="merge">Merge</option>',
                 '</select>',
-                '</div>',
-
-                '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
+                '</div>'
             ].join('')),
             // jscs:enable maximumLineLength
 
@@ -563,7 +555,6 @@
                     this._container.innerHTML = this.template({
                         title: 'Layers',
                         mode: settings.mode,
-                        error: this._error,
                         showLayers: settings.showLayers
                     });
                 }
