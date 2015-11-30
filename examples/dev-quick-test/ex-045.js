@@ -13,43 +13,9 @@ window.samples.push({
         {z: 'B', x: days(3), reposts: 11, likes: 42, comments: 10, followers: 170},
         {z: 'B', x: days(2), reposts: 2 , likes: 10, comments: 11, followers: 177}
     ],
-    settings: {
-        specEngine: 'none'
-    },
-    guide: {
-        padding: {
-            l: 10,
-            t: 10,
-            r: 60,
-            b: 80
-        },
-        x: {
-            label: {
-                text: 'XXX',
-                padding: 50
-            },
-            textAnchor: 'start',
-            padding: 10,
-            rotate: 45,
-            tickFormat: 'x-time-auto'
-        },
-        y: {
-            label: {
-                text:'Followers',
-                padding: -45
-            },
-            padding: 20,
-            textAnchor: 'start',
-            rotate: 0,
-            tickFormat: 'x-num-auto',
-            scaleOrient: 'right'
-        },
-        showGridLines: 'xy'
-    },
     type: 'line',
     x: ['x'],
-    y: ['followers'],
-    color: 'z',
+    y: ['z', 'followers'],
     plugins: [
         tauCharts.api.plugins.get('layers')({
             mode: 'dock',
