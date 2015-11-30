@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.3 - 2015-11-27
+/*! taucharts - v0.6.3 - 2015-11-30
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -3138,6 +3138,14 @@ define('charts/tau.gpl',['exports', '../event', '../utils/utils', '../utils/util
                     }
                 };
             }
+        }], [{
+            key: 'destroyNodes',
+            value: function destroyNodes(nodes) {
+                nodes.forEach(function (node) {
+                    return node.destroy();
+                });
+                return [];
+            }
         }]);
 
         return GPL;
@@ -5913,16 +5921,14 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             if (['sources', 'scales'].filter(function (p) {
                 return config.hasOwnProperty(p);
             }).length === 2) {
-                this.config = config;
                 this.configGPL = config;
             } else {
-                this.config = this.setupConfig(config);
-                this.configGPL = new _specConverter.SpecConverter(this.config).convert();
+                this.configGPL = new _specConverter.SpecConverter(this.setupConfig(config)).convert();
             }
 
             this.configGPL = Plot.setupPeriodData(this.configGPL);
 
-            this.config.plugins = this.config.plugins || [];
+            var plugins = config.plugins || [];
 
             this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
@@ -5935,10 +5941,18 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 return src;
             };
             this._liveSpec = this.configGPL;
-            this._plugins = new _plugins.Plugins(this.config.plugins, this);
+            this._plugins = new _plugins.Plugins(plugins, this);
         }
 
         _createClass(Plot, [{
+            key: 'destroy',
+            value: function destroy() {
+                this._nodes = _tauGpl.GPL.destroyNodes(this._nodes);
+                d3.select(this._svg).remove();
+                d3.select(this._layout.layout).remove();
+                _get(Object.getPrototypeOf(Plot.prototype), 'destroy', this).call(this);
+            }
+        }, {
             key: 'setupChartSourceModel',
             value: function setupChartSourceModel(fnModelTransformation) {
                 this._chartDataModel = fnModelTransformation;
@@ -5951,40 +5965,38 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                     throw new Error('Provide spec for plot');
                 }
 
-                this.config = _.defaults(config, {
+                var resConfig = _.defaults(config, {
                     spec: {},
                     data: [],
                     plugins: [],
                     settings: {}
                 });
+
                 this._emptyContainer = config.emptyContainer || '';
                 // TODO: remove this particular config cases
-                this.config.settings.specEngine = config.specEngine || config.settings.specEngine;
-                this.config.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
-                this.config.settings = Plot.setupSettings(this.config.settings);
+                resConfig.settings.specEngine = config.specEngine || config.settings.specEngine;
+                resConfig.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
+                resConfig.settings = Plot.setupSettings(resConfig.settings);
 
-                this.config.spec.dimensions = Plot.setupMetaInfo(this.config.spec.dimensions, this.config.data);
+                resConfig.spec.dimensions = Plot.setupMetaInfo(resConfig.spec.dimensions, resConfig.data);
 
-                var log = this.config.settings.log;
-                if (this.config.settings.excludeNull) {
+                var log = resConfig.settings.log;
+                if (resConfig.settings.excludeNull) {
                     this.addFilter({
                         tag: 'default',
                         src: '/',
-                        predicate: _dataProcessor.DataProcessor.excludeNullValues(this.config.spec.dimensions, function (item) {
+                        predicate: _dataProcessor.DataProcessor.excludeNullValues(resConfig.spec.dimensions, function (item) {
                             return log([item, 'point was excluded, because it has undefined values.'], 'WARN');
                         })
                     });
                 }
 
-                return this.config;
+                return resConfig;
             }
-
-            // fixme after all migrate
         }, {
             key: 'getConfig',
-            value: function getConfig(isOld) {
-                // this.configGPL
-                return isOld ? this.config : this.configGPL || this.config;
+            value: function getConfig() {
+                return this.configGPL;
             }
         }, {
             key: 'insertToLeftSidebar',
@@ -6054,7 +6066,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                     return new TransformClass(memo).transform(_this);
                 }, this._liveSpec);
 
-                this._nodes = [];
+                this._nodes = _tauGpl.GPL.destroyNodes(this._nodes);
 
                 this._liveSpec.onUnitDraw = function (unitNode) {
                     _this._nodes.push(unitNode);
@@ -6168,7 +6180,6 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
             value: function setData(data) {
                 var src = arguments.length <= 1 || arguments[1] === undefined ? '/' : arguments[1];
 
-                this.config.data = data;
                 this._originData[src].data = data;
                 this.refresh();
             }
@@ -6952,7 +6963,15 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
                 }
 
                 if (!node.y.guide.hide) {
-                    this._fnDrawDimAxis(options.container, node.y, [0 - node.guide.y.padding, 0], innerHeight, options.frameId + 'y', hashY);
+                    var positionY;
+                    var orientY = node.y.guide.scaleOrient;
+                    if (orientY === 'left') {
+                        positionY = [0 - node.guide.y.padding, 0];
+                    } else if (orientY === 'right') {
+                        positionY = [innerWidth + node.guide.y.padding, 0];
+                    }
+
+                    this._fnDrawDimAxis(options.container, node.y, positionY, innerHeight, options.frameId + 'y', hashY);
                 }
 
                 var updateCellLayers = function updateCellLayers(cellId, cell, frame) {
@@ -7117,7 +7136,8 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
 
                         if (linesOptions.indexOf('y') > -1) {
                             var yScale = node.y;
-                            var yGridAxis = _d32['default'].svg.axis().scale(yScale.scaleObj).orient(yScale.guide.scaleOrient).tickSize(-width);
+                            var yOrientKoeff = yScale.guide.scaleOrient === 'right' ? 1 : -1;
+                            var yGridAxis = _d32['default'].svg.axis().scale(yScale.scaleObj).orient(yScale.guide.scaleOrient).tickSize(yOrientKoeff * width);
 
                             var formatter = _formatterRegistry.FormatterRegistry.get(yScale.guide.tickFormat);
                             if (formatter !== null) {

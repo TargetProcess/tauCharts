@@ -395,7 +395,7 @@
             checkIfApplicable: function (chart) {
 
                 var self = this;
-                var specRef = chart.getConfig();
+                var specRef = chart.getSpec();
                 var isApplicable = false;
 
                 chart.traverseSpec(specRef, function (unit, parentUnit) {
