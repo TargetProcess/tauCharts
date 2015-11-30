@@ -23,7 +23,8 @@
                 label: 'Layer Type',
                 showPanel: true,
                 showLayers: true,
-                mode: 'merge'
+                mode: 'merge',
+                axisWidth: 45
             });
 
         var ELEMENT_TYPE = {
@@ -333,11 +334,12 @@
                         unit.guide.y.label = (unit.guide.y.label || {});
                         var labelText = unit.guide.y.label.text || unit.guide.y.label._original_text;
 
+                        var orientY = unit.guide.y.scaleOrient;
                         if (settings.mode === 'dock') {
-                            unit.guide.padding.l += totalPad;
+                            unit.guide.padding.l = totalPad;
                             unit.guide.y.label.textAnchor = 'end';
                             unit.guide.y.label.dock = 'right';
-                            unit.guide.y.label.padding = -10;
+                            unit.guide.y.label.padding = ((orientY === 'right') ? 1 : (-10));
                             unit.guide.y.label.cssClass = 'label inline';
 
                             if (self.isFacet) {
@@ -391,18 +393,19 @@
                     var isFinalCoord = self.isFinalCoordNode(unit);
                     if (isFinalCoord) {
                         unit.y = self.getScaleName(xLayer.y);
+                        unit.guide.y = _.extend(unit.guide.y, (xLayer.guide || {}));
                         unit.guide.y.label = (unit.guide.y.label || {});
                         unit.guide.y.label.text = self.extractLabel(xLayer);
                         unit.guide.x.hide = true;
 
                         if (settings.mode === 'dock') {
                             unit.guide.showGridLines = '';
-                            unit.guide.padding.l += totalPad;
+                            unit.guide.padding.l = totalPad;
                             unit.guide.y.label.textAnchor = 'end';
                             unit.guide.y.label.dock = 'right';
                             unit.guide.y.label.padding = -10;
                             unit.guide.y.label.cssClass = 'label inline';
-                            unit.guide.y.padding += ((totalDif + 10) * (i + 1));
+                            unit.guide.y.padding += (totalDif * i);
                         }
 
                         if (settings.mode === 'merge') {
@@ -462,9 +465,11 @@
                 var currLayers = settings.layers;
                 var prevUnit = fullSpec.unit();
                 var cursor;
-                var totalDif = (30);
-                var correction = self.isFacet ? 0 : totalDif;
-                var totalPad = (currLayers.length * totalDif) - correction;
+                var totalDif = settings.axisWidth;
+                var isPrimaryRight = (this.primaryY.guide.scaleOrient === 'right');
+                var corrOffset = (isPrimaryRight ? 0 : 1);
+                var totalOffset = (isPrimaryRight ? (0) : (1));
+                var totalPad = ((totalOffset + currLayers.length) * totalDif);
 
                 var currUnit = self
                     .buildLayersLayout(fullSpec)
@@ -480,12 +485,13 @@
 
                 currLayers.reduce(function (specUnitObject, layer, i) {
 
+                    var j = (i + corrOffset);
                     return specUnitObject.addFrame({
                         key: {x: 1, y: 1},
                         units: [
                             (cursor = pluginsSDK
                                 .unit(prevUnit.clone()))
-                                .reduce(self.createSecondaryUnitReducer(fullSpec, layer, totalPad, totalDif, i), cursor)
+                                .reduce(self.createSecondaryUnitReducer(fullSpec, layer, totalPad, totalDif, j), cursor)
                                 .value()
                         ]
                     });
