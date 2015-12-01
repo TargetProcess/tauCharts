@@ -91,6 +91,7 @@ var api = {
             console[type.toLowerCase()].apply(console, msg);
         },
 
+        facetLabelDelimiter: ' \u2192 ',
         excludeNull: true,
         specEngine: [
             {

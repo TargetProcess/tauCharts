@@ -27,6 +27,15 @@
                 axisWidth: 45
             });
 
+        settings.layers.forEach(function (layer) {
+            layer.guide = _.defaults(
+                (layer.guide || {}),
+                {
+                    scaleOrient: 'left',
+                    textAnchor: 'end'
+                });
+        });
+
         var ELEMENT_TYPE = {
             line: 'ELEMENT.LINE',
             area: 'ELEMENT.AREA',
@@ -295,10 +304,10 @@
                         ([]));
                 }, []);
 
-                return resY[0];
+                return pluginsSDK.cloneObject(resY[0]);
             },
 
-            createPrimaryUnitReducer: function (fullSpec, currLayers, totalPad) {
+            createPrimaryUnitReducer: function (fullSpec, currLayers, lPad, rPad) {
 
                 var self = this;
 
@@ -306,10 +315,12 @@
 
                     if (self.isFacet && self.isFirstCoordNode(unit, parent)) {
                         unit.guide.y.label = (unit.guide.y.label || {});
-                        var labelOrigText = unit.guide.y.label.text || unit.guide.y.label._original_text;
-                        unit.guide.y.label.text = [labelOrigText]
-                            .concat(_(currLayers).map(self.extractLabel))
-                            .join(', ');
+                        var facetLabelSeed = unit.guide.y.label._original_text || unit.guide.y.label.text;
+                        unit.guide.y.label.text = [
+                            facetLabelSeed
+                            ,
+                            _(currLayers).map(self.extractLabel).join(', ')
+                        ].join(fullSpec.getSettings('facetLabelDelimiter'));
 
                         if (settings.mode === 'dock') {
                             unit.guide.y.label.padding -= 15;
@@ -321,47 +332,36 @@
 
                     if (self.isLeafElement(unit, parent)) {
 
-                        unit.color = self.fieldColorScale;
-                        unit.expression.operator = 'groupBy';
-                        unit.expression.params = [self.fieldColorScale];
-                        pluginsSDK
-                            .unit(unit)
-                            .addTransformation('slice-layer', {key: fullSpec.getScale(unit.y).dim});
+                        parent.units = parent.units.filter(function (pUnit) {
+                            return (pUnit !== unit);
+                        });
                     }
 
                     if (self.isFinalCoordNode(unit)) {
 
                         unit.guide.y.label = (unit.guide.y.label || {});
-                        var labelText = unit.guide.y.label.text || unit.guide.y.label._original_text;
 
-                        var orientY = unit.guide.y.scaleOrient;
                         if (settings.mode === 'dock') {
-                            unit.guide.padding.l = totalPad;
-                            unit.guide.y.label.textAnchor = 'end';
-                            unit.guide.y.label.dock = 'right';
-                            unit.guide.y.label.padding = ((orientY === 'right') ? 1 : (-10));
-                            unit.guide.y.label.cssClass = 'label inline';
-
-                            if (self.isFacet) {
-                                unit.guide.y.label.text = labelText;
-                            }
+                            unit.guide.padding.l = lPad;
+                            unit.guide.padding.r = rPad;
+                            unit.guide.y.hide = true;
                         }
 
                         if (settings.mode === 'merge') {
                             unit.guide.y.label.text = (self.isFacet ?
-                                '' :
-                                ([labelText]
-                                    .concat(_(currLayers).map(self.extractLabel))
-                                    .join(', ')));
+                                ('') :
+                                _(currLayers).map(self.extractLabel).join(', '));
                         }
                     }
                     return memo;
                 };
             },
 
-            createSecondaryUnitReducer: function (fullSpec, xLayer, totalPad, totalDif, i) {
+            createSecondaryUnitReducer: function (fullSpec, xLayer, lPad, rPad, totalDif, iLeft, iRight) {
 
                 var self = this;
+                var layerScaleName = self.getScaleName(xLayer.scaleName || xLayer.y);
+                var layerScaleOrient = xLayer.guide.scaleOrient;
 
                 return function (memo, unit, parent) {
 
@@ -372,8 +372,8 @@
                     }
 
                     if (self.isLeafElement(unit, parent)) {
-                        unit.type = ELEMENT_TYPE[xLayer.type];
-                        unit.y = self.getScaleName(xLayer.y);
+                        unit.type = xLayer.type ? ELEMENT_TYPE[xLayer.type] : unit.type;
+                        unit.y = layerScaleName;
                         unit.color = self.fieldColorScale;
                         unit.expression.operator = 'groupBy';
                         var params;
@@ -392,7 +392,7 @@
 
                     var isFinalCoord = self.isFinalCoordNode(unit);
                     if (isFinalCoord) {
-                        unit.y = self.getScaleName(xLayer.y);
+                        unit.y = layerScaleName;
                         unit.guide.y = _.extend(unit.guide.y, (xLayer.guide || {}));
                         unit.guide.y.label = (unit.guide.y.label || {});
                         unit.guide.y.label.text = self.extractLabel(xLayer);
@@ -400,12 +400,14 @@
 
                         if (settings.mode === 'dock') {
                             unit.guide.showGridLines = '';
-                            unit.guide.padding.l = totalPad;
+                            unit.guide.padding.l = lPad;
+                            unit.guide.padding.r = rPad;
                             unit.guide.y.label.textAnchor = 'end';
                             unit.guide.y.label.dock = 'right';
-                            unit.guide.y.label.padding = -10;
+                            unit.guide.y.label.padding = ((layerScaleOrient === 'right') ? 1 : (-10));
                             unit.guide.y.label.cssClass = 'label inline';
-                            unit.guide.y.padding += (totalDif * i);
+                            var iKoeff = ((layerScaleOrient === 'right') ? iRight : iLeft);
+                            unit.guide.y.padding += (totalDif * iKoeff);
                         }
 
                         if (settings.mode === 'merge') {
@@ -462,37 +464,54 @@
                                 (_.pick(layer.guide || {}, 'min', 'max', 'autoScale'))));
                     }, fullSpec);
 
-                var currLayers = settings.layers;
+                var currLayers = [this.primaryY].concat(settings.layers).sort(function (a, b) {
+                    var zIndexA = a.guide.zIndex || 0;
+                    var zIndexB = b.guide.zIndex || 0;
+                    return (zIndexA - zIndexB);
+                });
+
                 var prevUnit = fullSpec.unit();
                 var cursor;
-                var totalDif = settings.axisWidth;
-                var isPrimaryRight = (this.primaryY.guide.scaleOrient === 'right');
-                var corrOffset = (isPrimaryRight ? 0 : 1);
-                var totalOffset = (isPrimaryRight ? (0) : (1));
-                var totalPad = ((totalOffset + currLayers.length) * totalDif);
+                var gap = settings.axisWidth;
+
+                var checkOrient = function (expectedOrient) {
+                    return function (layer) {
+                        var layerOrient = layer.guide.scaleOrient || 'left';
+                        return (layerOrient === expectedOrient);
+                    };
+                };
+
+                var lCheck = checkOrient('left');
+                var rCheck = checkOrient('right');
+
+                var lPad = (currLayers.filter(lCheck).length * gap);
+                var rPad = (currLayers.filter(rCheck).length * gap);
 
                 var currUnit = self
                     .buildLayersLayout(fullSpec)
                     .addFrame({
                         key: {x: 1, y: 1},
-                        units: [
-                            (cursor = pluginsSDK
-                                .unit(prevUnit.clone()))
-                                .reduce(self.createPrimaryUnitReducer(fullSpec, currLayers, totalPad), cursor)
-                                .value()
+                        units: [(cursor = (pluginsSDK
+                            .unit(prevUnit.clone())))
+                            .reduce(self.createPrimaryUnitReducer(fullSpec, currLayers, lPad, rPad), cursor)
+                            .value()
                         ]
                     });
 
-                currLayers.reduce(function (specUnitObject, layer, i) {
+                var il = -1;
+                var ir = -1;
 
-                    var j = (i + corrOffset);
+                currLayers.reduce(function (specUnitObject, layer) {
+
+                    il = (lCheck(layer) ? (il + 1) : il);
+                    ir = (rCheck(layer) ? (ir + 1) : ir);
+
                     return specUnitObject.addFrame({
                         key: {x: 1, y: 1},
-                        units: [
-                            (cursor = pluginsSDK
-                                .unit(prevUnit.clone()))
-                                .reduce(self.createSecondaryUnitReducer(fullSpec, layer, totalPad, totalDif, j), cursor)
-                                .value()
+                        units: [(cursor = (pluginsSDK
+                            .unit(prevUnit.clone())))
+                            .reduce(self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir), cursor)
+                            .value()
                         ]
                     });
                 }, currUnit);

@@ -59,8 +59,7 @@ window.samples.push({
                     type: 'stacked-bar',
                     y: ['reposts', 'likes'],
                     guide: {
-                        scaleOrient: 'left',
-                        textAnchor: 'end'
+                        zIndex: -1
                     }
                 }
                 ,
@@ -68,8 +67,9 @@ window.samples.push({
                     type: 'line',
                     y: 'comments',
                     guide: {
-                        scaleOrient: 'left',
-                        textAnchor: 'end'
+                        scaleOrient: 'right',
+                        textAnchor: 'start',
+                        zIndex: 0
                     }
                 }
             ]
