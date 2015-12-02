@@ -10,7 +10,7 @@
     <script src="http://localhost:9000/tauCharts.js"></script>
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
-    <!--<script src="../build/development/plugins/tauCharts.export.js"></script>-->
+    <script src="../build/development/plugins/tauCharts.export.js"></script>
     <script src="../plugins/layers.js"></script>
     <script src="../plugins/legend.js"></script>
     <script src="../plugins/trendline.js"></script>
@@ -33,6 +33,7 @@
     <!--<link href="../css/layout.css" rel="stylesheet"/>-->
     <!--<link href="../css/base.css" rel="stylesheet"/>-->
     <!--<link href="../css/tauCharts.css" rel="stylesheet"/>-->
+    <link href="../css/export.default.css" rel="stylesheet"/>
     <link href="../css/legend.default.css" rel="stylesheet"/>
     <link href="../css/tooltip.default.css" rel="stylesheet"/>
     <link href="../css/trendline.default.css" rel="stylesheet"/>
@@ -127,6 +128,14 @@
 
         cfg.settings = cfg.settings || {};
         cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
+
+        cfg.plugins = cfg.plugins || [];
+        cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
+            cssPaths: [
+                "../css/test-taucharts.css",
+                "../css/test-entitycolors.css"
+            ]
+        }));
 
         var chart = (cfg.hasOwnProperty('type')) ?
                 (new tauCharts.Chart(cfg)) :

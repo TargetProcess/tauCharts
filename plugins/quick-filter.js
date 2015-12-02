@@ -46,7 +46,7 @@
                     (xSettings) :
                     (_(sources.dims).keys()));
 
-                var chartData = self._chart.getData();
+                var chartData = self._chart.getChartModelData();
 
                 self._fields
                     .filter(function (dim) {
