@@ -32,7 +32,8 @@
                 (layer.guide || {}),
                 {
                     scaleOrient: 'left',
-                    textAnchor: 'end'
+                    textAnchor: 'end',
+                    hide: false
                 });
         });
 
@@ -313,13 +314,17 @@
 
                 return function (memo, unit, parent) {
 
+                    var isVisibleAxis = function (layer) {
+                        return (layer.guide.hide !== true);
+                    };
+
                     if (self.isFacet && self.isFirstCoordNode(unit, parent)) {
                         unit.guide.y.label = (unit.guide.y.label || {});
                         var facetLabelSeed = unit.guide.y.label._original_text || unit.guide.y.label.text;
                         unit.guide.y.label.text = [
                             facetLabelSeed
                             ,
-                            _(currLayers).map(self.extractLabel).join(', ')
+                            _(currLayers).filter(isVisibleAxis).map(self.extractLabel).join(', ')
                         ].join(fullSpec.getSettings('facetLabelDelimiter'));
 
                         if (settings.mode === 'dock') {
@@ -350,7 +355,7 @@
                         if (settings.mode === 'merge') {
                             unit.guide.y.label.text = (self.isFacet ?
                                 ('') :
-                                _(currLayers).map(self.extractLabel).join(', '));
+                                _(currLayers).filter(isVisibleAxis).map(self.extractLabel).join(', '));
                         }
                     }
                     return memo;
@@ -477,7 +482,7 @@
                 var checkOrient = function (expectedOrient) {
                     return function (layer) {
                         var layerOrient = layer.guide.scaleOrient || 'left';
-                        return (layerOrient === expectedOrient);
+                        return ((layer.guide.hide !== true) && (layerOrient === expectedOrient));
                     };
                 };
 
