@@ -14,12 +14,14 @@
 
     var _ = tauCharts.api._;
     var pluginsSDK = tauCharts.api.pluginsSDK;
+    var tokens = pluginsSDK.tokens();
 
     function layers(xSettings) {
 
         var settings = _.defaults(
             xSettings || {},
             {
+                title: 'Layers',
                 label: 'Layer Type',
                 showPanel: true,
                 showLayers: true,
@@ -177,17 +179,11 @@
                 return ([this.primaryY]
                     .concat(settings.layers)
                     .reduce(function (memo, layer) {
-
-                        if (_.isArray(layer.y)) {
-                            memo = layer.y.reduce(function (state, y) {
-                                state[y] = y;
-                                return state;
-                            }, memo);
-                        } else {
-                            memo[layer.y] = this.extractLabel(layer);
-                        }
-
-                        return memo;
+                        var ys = (_.isArray(layer.y) ? layer.y : [layer.y]);
+                        return ys.reduce(function (state, y) {
+                            state[y] = this.extractLabelForKey(layer, y);
+                            return state;
+                        }.bind(this), memo);
 
                     }.bind(this), {}));
             },
@@ -324,7 +320,7 @@
                         unit.guide.y.label.text = [
                             facetLabelSeed
                             ,
-                            _(currLayers).filter(isVisibleAxis).map(self.extractLabel).join(', ')
+                            _(currLayers).filter(isVisibleAxis).map(self.extractLayerLabel.bind(self)).join(', ')
                         ].join(fullSpec.getSettings('facetLabelDelimiter'));
 
                         if (settings.mode === 'dock') {
@@ -355,7 +351,7 @@
                         if (settings.mode === 'merge') {
                             unit.guide.y.label.text = (self.isFacet ?
                                 ('') :
-                                _(currLayers).filter(isVisibleAxis).map(self.extractLabel).join(', '));
+                                _(currLayers).filter(isVisibleAxis).map(self.extractLayerLabel.bind(self)).join(', '));
                         }
                     }
                     return memo;
@@ -400,7 +396,7 @@
                         unit.y = layerScaleName;
                         unit.guide.y = _.extend(unit.guide.y, (xLayer.guide || {}));
                         unit.guide.y.label = (unit.guide.y.label || {});
-                        unit.guide.y.label.text = self.extractLabel(xLayer);
+                        unit.guide.y.label.text = self.extractLayerLabel(xLayer);
                         unit.guide.x.hide = true;
 
                         if (settings.mode === 'dock') {
@@ -429,16 +425,27 @@
                 return (_.isArray(layerY)) ? layerY.join(', ') : layerY;
             },
 
-            extractLabel: function (layer) {
+            extractLabelForKey: function (layer, yKey) {
                 var g = layer.guide || {};
                 g.label = (_.isString(g.label) ? {text: g.label} : g.label);
                 var l = (g.label || {});
+                var keys = l.byKeys || {};
 
                 if (_.isArray(layer.y)) {
-                    return layer.y.join(', ');
+                    return keys[yKey] || yKey;
                 }
 
                 return ((l.text) || (l._original_text) || layer.y);
+            },
+
+            extractLayerLabel: function (layer) {
+                var self = this;
+                var ys = (_.isArray(layer.y) ? layer.y : [layer.y]);
+                return ys
+                    .map(function (yKey) {
+                        return self.extractLabelForKey(layer, yKey);
+                    })
+                    .join(', ');
             },
 
             onSpecReady: function (chart, specRef) {
@@ -572,8 +579,8 @@
 
                 '<div>',
                 '<select class="i-role-change-mode graphical-report__select graphical-report__trendlinepanel__control">',
-                '   <option <%= ((mode === "dock")  ? "selected" : "") %> value="dock">Dock</option>',
-                '   <option <%= ((mode === "merge") ? "selected" : "") %> value="merge">Merge</option>',
+                '   <option <%= ((mode === "dock")  ? "selected" : "") %> value="dock">' + tokens.get('Dock') + '</option>',
+                '   <option <%= ((mode === "merge") ? "selected" : "") %> value="merge">' + tokens.get('Merge') + '</option>',
                 '</select>',
                 '</div>'
             ].join('')),
@@ -583,7 +590,7 @@
 
                 if (this._isApplicable && settings.showPanel) {
                     this._container.innerHTML = this.template({
-                        title: 'Layers',
+                        title: settings.title,
                         mode: settings.mode,
                         showLayers: settings.showLayers
                     });

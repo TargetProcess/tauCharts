@@ -59,7 +59,7 @@ window.samples.push({
         },
         y: {
             label: {
-                text:'Followers',
+                text:'FLWRS',
                 padding: -35
             },
             padding: 15,
@@ -91,7 +91,13 @@ window.samples.push({
                     y: ['likes', 'reposts', 'comments'],
                     guide: {
                         scaleOrient: 'left',
-                        textAnchor: 'end'
+                        textAnchor: 'end',
+                        label: {
+                            byKeys: {
+                                likes: "LKS",
+                                comments: "CMNTS"
+                            }
+                        }
                     }
                 },
                 {
