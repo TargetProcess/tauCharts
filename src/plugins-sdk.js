@@ -20,15 +20,19 @@ class PluginsSDK {
     }
 
     static depthFirstSearch(node, predicate) {
+
         if (predicate(node)) {
             return node;
         }
-        var i, children = node.units || [], child, found;
-        for (i = 0; i < children.length; i += 1) {
-            child = children[i];
-            found = PluginsSDK.depthFirstSearch(child, predicate);
-            if (found) {
-                return found;
+
+        var frames = node.hasOwnProperty('frames') ? node.frames : [{units:node.units}];
+        for (var f = 0; f < frames.length; f++) {
+            var children = frames[f].units || [];
+            for (var i = 0; i < children.length; i++) {
+                var found = PluginsSDK.depthFirstSearch(children[i], predicate);
+                if (found) {
+                    return found;
+                }
             }
         }
     }

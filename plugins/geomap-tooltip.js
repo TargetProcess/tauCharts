@@ -89,7 +89,7 @@
 
                     var exclude = self._tooltip.getElement().querySelectorAll('.i-role-exclude');
                     if (exclude[0]) {
-                        var allowExclude = e.data && (self._chart.getData().length > 1);
+                        var allowExclude = e.data && (self._chart.getChartModelData().length > 1);
                         exclude[0].style.visibility = allowExclude ? 'visible' : 'hidden';
                     }
 

@@ -388,11 +388,11 @@ define(function (require) {
             var plot = new tauCharts.Plot(config);
             plot.renderTo(div);
 
-            expect(plot.getData()).to.eql(config.data);
+            expect(plot.getChartModelData()).to.eql(config.data);
             var newData = [{x: 1, y: 2, z: 'category1'}];
             plot.on('render', function (plot, element) {
                 expect(element.querySelectorAll('circle').length).to.be.equals(1);
-                expect(plot.getData()).to.eql(newData);
+                expect(plot.getChartModelData()).to.eql(newData);
                 done();
             });
             expect(plot.setData(newData)).to.eql(config.data);
@@ -418,17 +418,17 @@ define(function (require) {
             });
             plot.refresh();
 
-            expect(plot.getData()).to.be.eql([newConfig.data[2]]);
+            expect(plot.getChartModelData()).to.be.eql([newConfig.data[2]]);
             var id2 = plot.addFilter({
                 tag: 'testFilter2', predicate: function (item) {
                     return item.z !== 'category2';
                 }
             });
             plot.refresh();
-            expect(plot.getData({excludeFilter: ['testFilter']})).to.be.eql([newConfig.data[0], newConfig.data[2]]);
+            expect(plot.getChartModelData({excludeFilter: ['testFilter']})).to.be.eql([newConfig.data[0], newConfig.data[2]]);
             plot.removeFilter(id);
             plot.refresh();
-            expect(plot.getData()).to.be.eql([newConfig.data[0], newConfig.data[2]]);
+            expect(plot.getChartModelData()).to.be.eql([newConfig.data[0], newConfig.data[2]]);
             plot.renderTo(div);
             var svg = plot.getSVG();
             expect(svg.querySelectorAll('.i-role-datum').length).to.be.equal(2);

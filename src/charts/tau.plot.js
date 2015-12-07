@@ -319,9 +319,17 @@ export class Plot extends Emitter {
             .length;
     }
 
-    getData(param = {}, src = '/') {
+    getChartModelData(param = {}, src = '/') {
         var sources = this.getDataSources(param);
         return sources[src].data;
+    }
+
+    getDataDims(src = '/') {
+        return this._originData[src].dims;
+    }
+
+    getData(src = '/') {
+        return this._originData[src].data;
     }
 
     setData(data, src = '/') {

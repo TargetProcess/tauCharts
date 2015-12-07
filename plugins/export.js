@@ -269,14 +269,17 @@
                         };
                     });
             },
+
             _toJson: function (chart) {
                 var exportFields = this._exportFields;
-                var spec = chart.getSpec();
-                var xSource = spec.sources['/'];
-                var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
+
+                var xSourceData = chart.getData();
+                var xSourceDims = chart.getDataDims();
+
+                var srcDims = exportFields.length ? exportFields : Object.keys(xSourceDims);
                 var fields = this._normalizeExportFields(srcDims.concat(this._appendFields), this._excludeFields);
 
-                var srcData = xSource.data.map(function (row) {
+                var srcData = xSourceData.map(function (row) {
                     return fields.reduce(function (memo, f) {
                         memo[f.title] = f.value(row);
                         return memo;
@@ -287,17 +290,18 @@
                 var fileName = (this._fileName || 'export') + '.json';
                 downloadExportFile(fileName, 'application/json', jsonString);
             },
+
             _toCsv: function (chart) {
                 var separator = this._csvSeparator;
                 var exportFields = this._exportFields;
-                var spec = chart.getSpec();
-                var xSource = spec.sources['/'];
-                var srcData = xSource.data;
 
-                var srcDims = exportFields.length ? exportFields : Object.keys(xSource.dims);
+                var xSourceData = chart.getData();
+                var xSourceDims = chart.getDataDims();
+
+                var srcDims = exportFields.length ? exportFields : Object.keys(xSourceDims);
                 var fields = this._normalizeExportFields(srcDims.concat(this._appendFields), this._excludeFields);
 
-                var csv = srcData
+                var csv = xSourceData
                     .reduce(function (csvRows, row) {
                         return csvRows.concat(
                             fields.reduce(function (csvRow, f) {
@@ -348,7 +352,7 @@
 
                 var colorScaleName = colorLabelText || colorScale.dim;
                 var data = this._getColorMap(
-                    chart.getData({excludeFilter: ['legend']}),
+                    chart.getChartModelData({excludeFilter: ['legend']}),
                     colorScale,
                     colorDimension
                 ).values;
@@ -399,7 +403,7 @@
                 configUnit.guide = configUnit.guide || {};
                 configUnit.guide.size = this._unit.config.guide.size;
                 var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
-                var chartData = _.sortBy(chart.getData(), function (el) {
+                var chartData = _.sortBy(chart.getChartModelData(), function (el) {
                     return sizeScale(el[sizeDimension]);
                 });
                 var chartDataLength = chartData.length;

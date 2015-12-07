@@ -106,7 +106,7 @@ chartType.forEach(function (item) {
                         var d = testUtils.Deferred();
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
-                        var data = context.chart.getData();
+                        var data = context.chart.getChartModelData();
                         var expected = tauCharts.api._.sortBy(data, function (a) {
                             return a.x;
                         });
@@ -180,7 +180,7 @@ describeChart(
                     var excluder = document.querySelectorAll('.i-role-exclude')[0];
                     testUtils.simulateEvent('click', excluder);
                     var d = testUtils.Deferred();
-                    var data = context.chart.getData();
+                    var data = context.chart.getChartModelData();
                     var expected = tauCharts.api._.sortBy(data, function (a) {
                         return a.x;
                     });
@@ -217,7 +217,7 @@ chartType.forEach(function (item) {
             plugins: [tooltip({
                 getFields: function (chart) {
                     expect(chart).to.be.ok;
-                    if (chart.getData()[0].x === 2) {
+                    if (chart.getChartModelData()[0].x === 2) {
                         return ['x', 'color'];
                     }
                     return ['y'];
