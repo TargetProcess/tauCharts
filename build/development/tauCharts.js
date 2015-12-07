@@ -1,4 +1,4 @@
-/*! taucharts - v0.6.3 - 2015-11-30
+/*! taucharts - v0.6.3 - 2015-12-07
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -5897,7 +5897,7 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
 
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-    var _get = function get(_x8, _x9, _x10) { var _again = true; _function: while (_again) { var object = _x8, property = _x9, receiver = _x10; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x8 = parent; _x9 = property; _x10 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+    var _get = function get(_x10, _x11, _x12) { var _again = true; _function: while (_again) { var object = _x10, property = _x11, receiver = _x12; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x10 = parent; _x11 = property; _x12 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -6167,13 +6167,27 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 }).length;
             }
         }, {
-            key: 'getData',
-            value: function getData() {
+            key: 'getChartModelData',
+            value: function getChartModelData() {
                 var param = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
                 var src = arguments.length <= 1 || arguments[1] === undefined ? '/' : arguments[1];
 
                 var sources = this.getDataSources(param);
                 return sources[src].data;
+            }
+        }, {
+            key: 'getDataDims',
+            value: function getDataDims() {
+                var src = arguments.length <= 0 || arguments[0] === undefined ? '/' : arguments[0];
+
+                return this._originData[src].dims;
+            }
+        }, {
+            key: 'getData',
+            value: function getData() {
+                var src = arguments.length <= 0 || arguments[0] === undefined ? '/' : arguments[0];
+
+                return this._originData[src].data;
             }
         }, {
             key: 'setData',
@@ -11008,18 +11022,19 @@ define('plugins-sdk',['exports', 'underscore', './formatter-registry', './plugin
         }, {
             key: 'depthFirstSearch',
             value: function depthFirstSearch(node, predicate) {
+
                 if (predicate(node)) {
                     return node;
                 }
-                var i,
-                    children = node.units || [],
-                    child,
-                    found;
-                for (i = 0; i < children.length; i += 1) {
-                    child = children[i];
-                    found = PluginsSDK.depthFirstSearch(child, predicate);
-                    if (found) {
-                        return found;
+
+                var frames = node.hasOwnProperty('frames') ? node.frames : [{ units: node.units }];
+                for (var f = 0; f < frames.length; f++) {
+                    var children = frames[f].units || [];
+                    for (var i = 0; i < children.length; i++) {
+                        var found = PluginsSDK.depthFirstSearch(children[i], predicate);
+                        if (found) {
+                            return found;
+                        }
                     }
                 }
             }
@@ -11211,6 +11226,7 @@ define('tau.charts',['exports', './utils/utils-dom', './utils/utils', './charts/
                 console[type.toLowerCase()].apply(console, msg);
             },
 
+            facetLabelDelimiter: ' → ',
             excludeNull: true,
             specEngine: [{
                 name: 'COMPACT',
