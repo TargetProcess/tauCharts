@@ -61,6 +61,8 @@ module.exports = function (grunt) {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 query: {
+                    plugins: ['transform-runtime'],
+                    presets: ['es2015'],
                     cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
                 }
             }]
@@ -297,6 +299,7 @@ module.exports = function (grunt) {
                 'src/**'
             ],
             options: {
+                "esnext":true,
                 config: '.jscsrc',
                 excludeFiles: ['src/addons/*.*']
             }

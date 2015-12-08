@@ -1,5 +1,5 @@
 var requirejs = require('requirejs');
-var to5 = require("babel");
+var to5 = require("babel-core");
 var LOG_LEVEL_TRACE = 0, LOG_LEVEL_WARN = 2;
 requirejs.define('node/print', [], function () {
     return function print(msg) {
