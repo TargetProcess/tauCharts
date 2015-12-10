@@ -353,7 +353,7 @@
                     return;
                 }
 
-                var scaleId = target.getAttribute('data-scale-id');
+                // var scaleId = target.getAttribute('data-scale-id');
                 var dim = target.getAttribute('data-dim');
                 var val = target.getAttribute('data-value');
 
@@ -363,7 +363,9 @@
 
                 this._chart
                     .select(function (unit) {
-                        return unit.config.color === scaleId;
+                        // return unit.config.color === scaleId;
+                        // use all found elements
+                        return true;
                     })
                     .forEach(function (unit) {
                         unit.fire('highlight', isRowMatch);

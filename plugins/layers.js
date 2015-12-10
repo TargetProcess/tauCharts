@@ -295,6 +295,7 @@
                     return memo.concat(self.isFinalCoordNode(unit) ?
                         ({
                             y: spec.getScale(unit.y).dim,
+                            isPrimary: true,
                             guide: unit.guide.y,
                             scaleName: unit.y
                         }) :
@@ -363,6 +364,8 @@
                 var self = this;
                 var layerScaleName = self.getScaleName(xLayer.scaleName || xLayer.y);
                 var layerScaleOrient = xLayer.guide.scaleOrient;
+                var isGroupedY = _.isArray(xLayer.y);
+                var isPrimaryLayer = (xLayer.isPrimary);
 
                 return function (memo, unit, parent) {
 
@@ -375,17 +378,18 @@
                     if (self.isLeafElement(unit, parent)) {
                         unit.type = xLayer.type ? ELEMENT_TYPE[xLayer.type] : unit.type;
                         unit.y = layerScaleName;
-                        unit.color = self.fieldColorScale;
-                        unit.expression.operator = 'groupBy';
-                        var params;
-                        if (_.isArray(xLayer.y)) {
-                            unit.expression.params = ['subLayer'];
-                            params = {group: 'subLayer'};
+
+                        var isFullScale = (fullSpec.getScale(unit.color).dim);
+                        if (isPrimaryLayer && isFullScale) {
+                            // leave original color scale
                         } else {
-                            unit.expression.params = [self.fieldColorScale];
-                            params = {key: xLayer.y};
+                            unit.color = self.fieldColorScale;
+                            unit.expression.operator = 'groupBy';
+                            unit.expression.params = (isGroupedY) ? ['subLayer'] : [self.fieldColorScale];
                         }
 
+                        // slice frame data
+                        var params = (isGroupedY) ? {group: 'subLayer'} : {key: xLayer.y};
                         pluginsSDK
                             .unit(unit)
                             .addTransformation('slice-layer', params);
