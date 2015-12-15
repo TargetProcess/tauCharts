@@ -1,58 +1,72 @@
 var PERIODS_MAP = {
 
     day: {
-        cast: function (date) {
+        cast: function (d) {
+            var date = new Date(d);
             return new Date(date.setHours(0, 0, 0, 0));
         },
-        next: function (prevDate) {
-            return new Date(prevDate.setDate(prevDate.getDate() + 1));
+        next: function (d) {
+            var prev = new Date(d);
+            var next = new Date(prev.setDate(prev.getDate() + 1));
+            return this.cast(next);
         }
     },
 
     week: {
-        cast: function (date) {
+        cast: function (d) {
+            var date = new Date(d);
             date = new Date(date.setHours(0, 0, 0, 0));
-            date = new Date(date.setDate(date.getDate() - date.getDay()));
-            return date;
+            return new Date(date.setDate(date.getDate() - date.getDay()));
         },
-        next: function (prevDate) {
-            return new Date(prevDate.setDate(prevDate.getDate() + 7));
+        next: function (d) {
+            var prev = new Date(d);
+            var next = (new Date(prev.setDate(prev.getDate() + 7)));
+            return this.cast(next);
         }
     },
 
     month: {
-        cast: function (date) {
+        cast: function (d) {
+            var date = new Date(d);
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(1));
             return date;
         },
-        next: function (prevDate) {
-            return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
+        next: function (d) {
+            var prev = new Date(d);
+            var next = new Date(prev.setMonth(prev.getMonth() + 1));
+            return this.cast(next);
         }
     },
 
     quarter: {
-        cast: function (date) {
+        cast: function (d) {
+            var date = new Date(d);
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(1));
             var currentMonth = date.getMonth();
             var firstQuarterMonth = currentMonth - (currentMonth % 3);
             return new Date(date.setMonth(firstQuarterMonth));
         },
-        next: function (prevDate) {
-            return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
+        next: function (d) {
+            var prev = new Date(d);
+            var next = new Date(prev.setMonth(prev.getMonth() + 3));
+            return this.cast(next);
         }
     },
 
     year: {
-        cast(date) {
+        cast(d) {
+            var date = new Date(d);
             date = new Date(date.setHours(0, 0, 0, 0));
             date = new Date(date.setDate(1));
             date = new Date(date.setMonth(0));
             return date;
         },
-        next: function (prevDate) {
-            return new Date(prevDate.setFullYear(prevDate.getFullYear() + 1));
+        next: function (d) {
+            var prev = new Date(d);
+            var next = new Date(prev.setFullYear(prev.getFullYear() + 1));
+            return this.cast(next);
         }
     }
 };
