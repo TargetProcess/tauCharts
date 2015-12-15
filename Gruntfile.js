@@ -197,6 +197,10 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/layers.js',
                         dest: 'build/development/plugins/tauCharts.layers.js'
+                    },
+                    {
+                        src: 'plugins/quick-filter.js',
+                        dest: 'build/development/plugins/tauCharts.quick-filter.js'
                     }
                 ].concat(cssConfig.css)
             }
