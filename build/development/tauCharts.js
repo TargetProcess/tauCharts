@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.0 - 2015-12-11
+/*! taucharts - v0.7.1 - 2015-12-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -2661,58 +2661,72 @@ define('unit-domain-period-generator',["exports"], function (exports) {
     var PERIODS_MAP = {
 
         day: {
-            cast: function cast(date) {
+            cast: function cast(d) {
+                var date = new Date(d);
                 return new Date(date.setHours(0, 0, 0, 0));
             },
-            next: function next(prevDate) {
-                return new Date(prevDate.setDate(prevDate.getDate() + 1));
+            next: function next(d) {
+                var prev = new Date(d);
+                var next = new Date(prev.setDate(prev.getDate() + 1));
+                return this.cast(next);
             }
         },
 
         week: {
-            cast: function cast(date) {
+            cast: function cast(d) {
+                var date = new Date(d);
                 date = new Date(date.setHours(0, 0, 0, 0));
-                date = new Date(date.setDate(date.getDate() - date.getDay()));
-                return date;
+                return new Date(date.setDate(date.getDate() - date.getDay()));
             },
-            next: function next(prevDate) {
-                return new Date(prevDate.setDate(prevDate.getDate() + 7));
+            next: function next(d) {
+                var prev = new Date(d);
+                var next = new Date(prev.setDate(prev.getDate() + 7));
+                return this.cast(next);
             }
         },
 
         month: {
-            cast: function cast(date) {
+            cast: function cast(d) {
+                var date = new Date(d);
                 date = new Date(date.setHours(0, 0, 0, 0));
                 date = new Date(date.setDate(1));
                 return date;
             },
-            next: function next(prevDate) {
-                return new Date(prevDate.setMonth(prevDate.getMonth() + 1));
+            next: function next(d) {
+                var prev = new Date(d);
+                var next = new Date(prev.setMonth(prev.getMonth() + 1));
+                return this.cast(next);
             }
         },
 
         quarter: {
-            cast: function cast(date) {
+            cast: function cast(d) {
+                var date = new Date(d);
                 date = new Date(date.setHours(0, 0, 0, 0));
                 date = new Date(date.setDate(1));
                 var currentMonth = date.getMonth();
                 var firstQuarterMonth = currentMonth - currentMonth % 3;
                 return new Date(date.setMonth(firstQuarterMonth));
             },
-            next: function next(prevDate) {
-                return new Date(prevDate.setMonth(prevDate.getMonth() + 3));
+            next: function next(d) {
+                var prev = new Date(d);
+                var next = new Date(prev.setMonth(prev.getMonth() + 3));
+                return this.cast(next);
             }
         },
 
         year: {
-            cast: function cast(date) {
+            cast: function cast(d) {
+                var date = new Date(d);
                 date = new Date(date.setHours(0, 0, 0, 0));
                 date = new Date(date.setDate(1));
                 date = new Date(date.setMonth(0));
                 return date;
             },
-            next: function next(prevDate) {
-                return new Date(prevDate.setFullYear(prevDate.getFullYear() + 1));
+            next: function next(d) {
+                var prev = new Date(d);
+                var next = new Date(prev.setFullYear(prev.getFullYear() + 1));
+                return this.cast(next);
             }
         }
     };
