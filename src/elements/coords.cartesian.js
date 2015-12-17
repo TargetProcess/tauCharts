@@ -156,10 +156,15 @@ export class Cartesian extends Element {
         var hashY = node.y.getHash() + innerWidth;
 
         if (!node.x.guide.hide) {
+            var orientX = node.x.guide.scaleOrient;
+            var positionX = ((orientX === 'top') ?
+                [0, 0 - node.guide.x.padding] :
+                [0, innerHeight + node.guide.x.padding]);
+
             this._fnDrawDimAxis(
                 options.container,
                 node.x,
-                [0, innerHeight + node.guide.x.padding],
+                positionX,
                 innerWidth,
                 (`${options.frameId}x`),
                 hashX
@@ -345,11 +350,12 @@ export class Cartesian extends Element {
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
+                        let xOrientKoeff = ((xScale.guide.scaleOrient === 'bottom') ? (1) : (-1));
                         var xGridAxis = d3.svg
                             .axis()
                             .scale(xScale.scaleObj)
                             .orient(xScale.guide.scaleOrient)
-                            .tickSize(height);
+                            .tickSize(xOrientKoeff * height);
 
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
                         if (formatter !== null) {
