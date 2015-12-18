@@ -172,13 +172,10 @@ export class Cartesian extends Element {
         }
 
         if (!node.y.guide.hide) {
-            var positionY;
             var orientY = node.y.guide.scaleOrient;
-            if (orientY === 'left') {
-                positionY = [0 - node.guide.y.padding, 0];
-            } else if (orientY === 'right') {
-                positionY = [innerWidth + node.guide.y.padding, 0];
-            }
+            var positionY = ((orientY === 'left') ?
+                [0 - node.guide.y.padding, 0] :
+                [innerWidth + node.guide.y.padding, 0]);
 
             this._fnDrawDimAxis(
                 options.container,
