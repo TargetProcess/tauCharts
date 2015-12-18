@@ -620,5 +620,65 @@ define(function (require) {
             var transform = d3.select(svg).select('.y.axis').attr('transform');
             expect(transform).to.equals('translate(0,0)');
         });
+
+        it('should support top-oriented X scale', function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: [
+                    {y: 1, x: 0},
+                    {y: 2, x: 10},
+                    {y: 3, x: 20}
+                ],
+                x: 'x',
+                y: 'y',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: false, autoScale: false, min: 0, scaleOrient: 'top'},
+                    y: {hide: true}
+                },
+                settings: {
+                    specEngine: 'none',
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(testDiv);
+
+            var svg = chart.getSVG();
+            var transform = d3.select(svg).select('.x.axis').attr('transform');
+            expect(transform).to.equals('translate(0,0)');
+        });
+
+        it('should support bottom-oriented X scale', function () {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: [
+                    {y: 1, x: 0},
+                    {y: 2, x: 10},
+                    {y: 3, x: 20}
+                ],
+                x: 'x',
+                y: 'y',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: false, autoScale: false, min: 0, scaleOrient: 'bottom'},
+                    y: {hide: true}
+                },
+                settings: {
+                    specEngine: 'none',
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(testDiv);
+
+            var svg = chart.getSVG();
+            var transform = d3.select(svg).select('.x.axis').attr('transform');
+            expect(transform).to.equals('translate(0,600)');
+        });
     });
 });
