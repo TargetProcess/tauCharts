@@ -107,10 +107,6 @@ export class Plot extends Emitter {
         return resConfig;
     }
 
-    getConfig() {
-        return this.configGPL;
-    }
-
     static setupPeriodData(spec) {
         var tickPeriod = Plot.__api__.tickPeriod;
         var dims = Object
