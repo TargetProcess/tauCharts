@@ -21,6 +21,7 @@
             {
                 // add default settings here
                 fields: null,
+                formatters: {},
                 dockToData: false,
                 aggregationGroupFields: [],
                 onRevealAggregation: function (filters, row) {
@@ -387,6 +388,15 @@
                     if (info[k].parentField) {
                         delete info[k];
                     }
+                });
+
+                Object.keys(settings.formatters).forEach(function (k) {
+                    var fmt = settings.formatters[k];
+                    info[k] = info[k] || {label: k, nullAlias: ('No ' + k)};
+                    info[k].format = (_.isFunction(fmt) ?
+                            (fmt) :
+                            (tauCharts.api.tickFormat.get(fmt, info[k].nullAlias))
+                    );
                 });
 
                 return {

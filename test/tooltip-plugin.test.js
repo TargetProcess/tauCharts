@@ -325,7 +325,17 @@ describeChart("tooltip formatting",
                 "scale": "linear"
             }
         },
-        plugins: [tooltip({fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue']})]
+        plugins: [
+            tooltip({
+                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue'],
+                formatters: {
+                    colorValue: function (srcVal) {
+                        return ['(', srcVal, ')'].join('');
+                    },
+                    sizeValue: '%'
+                }
+            })
+        ]
     },
     [
         {
@@ -366,8 +376,8 @@ describeChart("tooltip formatting",
                     validateLabel($content, 'Project', 'No Project');
                     validateLabel($content, 'Create Date By Day', '09-Jan');
                     validateLabel($content, 'Progress', '90%');
-                    validateLabel($content, 'Entity Type', 'Bug');
-                    validateLabel($content, 'Effort', '20');
+                    validateLabel($content, 'Entity Type', '(Bug)');
+                    validateLabel($content, 'Effort', '2000%');
                     return hideTooltip(expect, context.chart, 0);
                 })
                 .then(function () {
@@ -377,8 +387,8 @@ describeChart("tooltip formatting",
                     var $content = $(content);
                     validateLabel($content, 'Project', 'TP3');
                     validateLabel($content, 'Create Date By Day', '08-Jan');
-                    validateLabel($content, 'Effort', '10');
-                    validateLabel($content, 'Entity Type', 'UserStory');
+                    validateLabel($content, 'Effort', '1000%');
+                    validateLabel($content, 'Entity Type', '(UserStory)');
                     validateLabel($content, 'Progress', '10%');
                     return hideTooltip(expect, context.chart, 1);
                 })
