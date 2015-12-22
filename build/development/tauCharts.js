@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.1 - 2015-12-15
+/*! taucharts - v0.7.1 - 2015-12-22
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2015 Taucraft Limited; Licensed Apache License 2.0 */
 (function (root, factory) {
@@ -6008,11 +6008,6 @@ define('charts/tau.plot',['exports', '../api/balloon', '../event', '../plugins',
                 return resConfig;
             }
         }, {
-            key: 'getConfig',
-            value: function getConfig() {
-                return this.configGPL;
-            }
-        }, {
             key: 'insertToLeftSidebar',
             value: function insertToLeftSidebar(el) {
                 return _utilsUtilsDom.utilsDom.appendTo(el, this._layout.leftSidebar);
@@ -6987,17 +6982,15 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
                 var hashY = node.y.getHash() + innerWidth;
 
                 if (!node.x.guide.hide) {
-                    this._fnDrawDimAxis(options.container, node.x, [0, innerHeight + node.guide.x.padding], innerWidth, options.frameId + 'x', hashX);
+                    var orientX = node.x.guide.scaleOrient;
+                    var positionX = orientX === 'top' ? [0, 0 - node.guide.x.padding] : [0, innerHeight + node.guide.x.padding];
+
+                    this._fnDrawDimAxis(options.container, node.x, positionX, innerWidth, options.frameId + 'x', hashX);
                 }
 
                 if (!node.y.guide.hide) {
-                    var positionY;
                     var orientY = node.y.guide.scaleOrient;
-                    if (orientY === 'left') {
-                        positionY = [0 - node.guide.y.padding, 0];
-                    } else if (orientY === 'right') {
-                        positionY = [innerWidth + node.guide.y.padding, 0];
-                    }
+                    var positionY = orientY === 'right' ? [innerWidth + node.guide.y.padding, 0] : [0 - node.guide.y.padding, 0];
 
                     this._fnDrawDimAxis(options.container, node.y, positionY, innerHeight, options.frameId + 'y', hashY);
                 }
@@ -7138,7 +7131,8 @@ define('elements/coords.cartesian',['exports', 'd3', 'underscore', './element', 
 
                         if (linesOptions.indexOf('x') > -1) {
                             var xScale = node.x;
-                            var xGridAxis = _d32['default'].svg.axis().scale(xScale.scaleObj).orient(xScale.guide.scaleOrient).tickSize(height);
+                            var xOrientKoeff = xScale.guide.scaleOrient === 'top' ? -1 : 1;
+                            var xGridAxis = _d32['default'].svg.axis().scale(xScale.scaleObj).orient(xScale.guide.scaleOrient).tickSize(xOrientKoeff * height);
 
                             var formatter = _formatterRegistry.FormatterRegistry.get(xScale.guide.tickFormat);
                             if (formatter !== null) {

@@ -101,6 +101,14 @@ window.samples.push({
 
         tauCharts.api.plugins.get('legend')()
         ,
-        tauCharts.api.plugins.get('tooltip')()
+        tauCharts.api.plugins.get('tooltip')({
+            formatters: {
+                //'x': '(%Y-%d-%b)',
+                'x': 'month',
+                fc: function (srcVal) {
+                    return '(' + srcVal + ')';
+                }
+            }
+        })
     ]
 });
