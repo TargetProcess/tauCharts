@@ -51,9 +51,10 @@ module.exports = function (grunt) {
             path: 'build/development',
             filename: 'tauCharts.js'
         },
+        devtool:'eval',
         externals: {
             d3: 'd3',
-            underscore: 'underscore'
+            underscore: '_'
         },
         module: {
             loaders: [{
@@ -61,7 +62,6 @@ module.exports = function (grunt) {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 query: {
-                    plugins: ['transform-runtime'],
                     presets: ['es2015'],
                     cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
                 }
