@@ -29,12 +29,14 @@ window.samples.push({
                     dim: 'x',
                     val: [now - 22 * 24 * 60 * 60 * 1000, now - 14 * 24 * 60 * 60 * 1000],
                     text: 'Milestone 2',
+                    position: 'front',
                     color: '#4300FF'
                 },
                 {
                     dim: 'y',
                     val: 2,
                     text: 'Bottom line',
+                    position: 'front',
                     color: '#FFAB00'
                 },
                 {
