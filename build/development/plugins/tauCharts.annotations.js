@@ -14,6 +14,15 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
+    var addToUnits = function (units, newUnit, position) {
+        if (position === 'front') {
+            units.push(newUnit);
+        } else {
+            // behind by default
+            units.unshift(newUnit);
+        }
+    };
+
     function annotations(xSettings) {
 
         var settings = _.defaults(xSettings || {}, {});
@@ -92,7 +101,7 @@
                     }
                 };
 
-                coordsUnit.units.unshift(annotatedArea);
+                addToUnits(coordsUnit.units, annotatedArea, noteItem.position);
             },
 
             addLineNote: function (specRef, coordsUnit, noteItem) {
@@ -162,7 +171,7 @@
                     }
                 };
 
-                coordsUnit.units.unshift(annotatedLine);
+                addToUnits(coordsUnit.units, annotatedLine, noteItem.position);
             },
 
             onSpecReady: function (chart, specRef) {
