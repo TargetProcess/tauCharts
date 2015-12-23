@@ -37,11 +37,15 @@ export class Line extends Element {
 
         if (this.config.guide.showAnchors) {
 
-            this.on('mouseover', ((sender, e) =>
-                sender.fire('highlight-data-points', (row) => (row === e.data))));
+            let activator = _.throttle(
+                ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data))),
+                250);
 
-            this.on('mouseout', ((sender, e) =>
-                sender.fire('highlight-data-points', (row) => (false))));
+            this.on('mouseover', activator);
+
+            this.on('mousemove', activator);
+
+            this.on('mouseout', ((sender, e) => sender.fire('highlight-data-points', (row) => (false))));
         }
     }
 
