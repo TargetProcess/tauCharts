@@ -325,7 +325,7 @@
                             self.hideTooltip(e);
                         });
 
-                        var mouseOverHandler = function (sender, e) {
+                        var mouseOverHandler = _.throttle(function (sender, e) {
                             var data = e.data;
                             var coords = (settings.dockToData ?
                                 self._getNearestDataCoordinates(sender, e) :
@@ -333,11 +333,19 @@
 
                             self._currentUnit = sender;
                             self.showTooltip(data, {x: coords.left, y: coords.top});
-                        };
+                        }, 250);
 
                         node.on('mouseover.chart', mouseOverHandler);
 
-                        if ((node.config.type === 'ELEMENT.AREA') || (node.config.type === 'ELEMENT.PATH')) {
+                        var elementsToMatch = [
+                            'ELEMENT.LINE',
+                            'ELEMENT.AREA',
+                            'ELEMENT.PATH',
+                            'ELEMENT.INTERVAL',
+                            'ELEMENT.INTERVAL.STACKED'
+                        ];
+
+                        if (elementsToMatch.indexOf(node.config.type) > -1) {
                             node.on('mousemove.chart', mouseOverHandler);
                         }
                     });
