@@ -433,6 +433,21 @@ var utils = {
         }
 
         return isApplicable;
+    },
+
+    throttleLastEvent: function (last, eventType, handler, limitFromPrev = 0) {
+
+        return function (sender, e) {
+            var curr = {e: eventType, ts: (new Date())};
+            var diff = ((last.e && (last.e === curr.e)) ? (curr.ts - last.ts) : (limitFromPrev));
+
+            if (diff >= limitFromPrev) {
+                handler(sender, e);
+            }
+
+            last.e = curr.e;
+            last.ts = curr.ts;
+        };
     }
 };
 

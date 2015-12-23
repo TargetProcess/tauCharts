@@ -315,38 +315,43 @@
             _subscribeToHover: function () {
                 var self = this;
 
+                var elementsToMatch = [
+                    'ELEMENT.LINE',
+                    'ELEMENT.AREA',
+                    'ELEMENT.PATH',
+                    'ELEMENT.INTERVAL',
+                    'ELEMENT.INTERVAL.STACKED'
+                ];
+
+                var mouseOverHandler = function (sender, e) {
+                    var data = e.data;
+                    var coords = (settings.dockToData ?
+                        self._getNearestDataCoordinates(sender, e) :
+                        self._getMouseCoordinates(sender, e));
+
+                    self._currentUnit = sender;
+                    self.showTooltip(data, {x: coords.left, y: coords.top});
+                };
+
+                var prev = {};
+                var limit = 100;
+
                 this._chart
                     .select(function (node) {
                         return true;
                     })
                     .forEach(function (node) {
 
-                        node.on('mouseout.chart', function (sender, e) {
+                        node.on('mouseout.chart', pluginsSDK.throttleLastEvent(prev, 'mouseout', function (sender, e) {
                             self.hideTooltip(e);
-                        });
+                        }));
 
-                        var mouseOverHandler = _.throttle(function (sender, e) {
-                            var data = e.data;
-                            var coords = (settings.dockToData ?
-                                self._getNearestDataCoordinates(sender, e) :
-                                self._getMouseCoordinates(sender, e));
-
-                            self._currentUnit = sender;
-                            self.showTooltip(data, {x: coords.left, y: coords.top});
-                        }, 250);
-
-                        node.on('mouseover.chart', mouseOverHandler);
-
-                        var elementsToMatch = [
-                            'ELEMENT.LINE',
-                            'ELEMENT.AREA',
-                            'ELEMENT.PATH',
-                            'ELEMENT.INTERVAL',
-                            'ELEMENT.INTERVAL.STACKED'
-                        ];
+                        node.on('mouseover.chart', pluginsSDK.throttleLastEvent(prev, 'mouseover', mouseOverHandler));
 
                         if (elementsToMatch.indexOf(node.config.type) > -1) {
-                            node.on('mousemove.chart', mouseOverHandler);
+                            node.on(
+                                'mousemove.chart',
+                                pluginsSDK.throttleLastEvent(prev, 'mousemove', mouseOverHandler, limit));
                         }
                     });
             },

@@ -2,6 +2,7 @@ import {default as _} from 'underscore';
 import {FormatterRegistry} from './formatter-registry';
 import {Unit} from './plugins-sdk/unit';
 import {Spec} from './plugins-sdk/spec';
+import {utils} from './utils/utils';
 
 var customTokens = {};
 
@@ -166,6 +167,10 @@ class PluginsSDK {
                 return customTokens[key] || key;
             }
         };
+    }
+
+    static throttleLastEvent (last, eventType, handler, limitFromPrev = 0) {
+        return utils.throttleLastEvent(last, eventType, handler, limitFromPrev);
     }
 }
 
