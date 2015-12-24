@@ -41,7 +41,7 @@ export class Line extends Element {
             var deactivate = ((sender, e) => sender.fire('highlight-data-points', (row) => (false)));
             var last = {};
             this.on('mouseover', utils.throttleLastEvent(last, 'mouseover', activate));
-            this.on('mousemove', utils.throttleLastEvent(last, 'mousemove', activate, 100));
+            this.on('mousemove', utils.throttleLastEvent(last, 'mousemove', activate));
             this.on('mouseout', utils.throttleLastEvent(last, 'mouseout', deactivate));
         }
     }

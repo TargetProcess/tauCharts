@@ -334,7 +334,7 @@
                 };
 
                 var prev = {};
-                var limit = 100;
+                var limit = 0;
 
                 this._chart
                     .select(function (node) {
