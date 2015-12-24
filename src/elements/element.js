@@ -59,20 +59,19 @@ export class Element extends Emitter {
                 limit: 25
             }
         ].forEach((item) => {
+            var eventName = item.event;
+            var limit = item.limit;
 
-                var eventName = item.event;
-                var limit = item.limit;
-
-                var callback = function (d) {
-                    var eventData = {
-                        data: dataInterceptor.call(this, d),
-                        event: eventInterceptor.call(this, d3.event, d)
-                    };
-                    self.fire(eventName, eventData);
-                    self.fireNameSpaceEvent(eventName, eventData);
+            var callback = function (d) {
+                var eventData = {
+                    data: dataInterceptor.call(this, d),
+                    event: eventInterceptor.call(this, d3.event, d)
                 };
+                self.fire(eventName, eventData);
+                self.fireNameSpaceEvent(eventName, eventData);
+            };
 
-                sel.on(eventName, throttleLastEvent(last, eventName, callback, limit));
-            });
+            sel.on(eventName, throttleLastEvent(last, eventName, callback, limit));
+        });
     }
 }
