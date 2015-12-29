@@ -1,6 +1,5 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {utils} from '../utils/utils';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
@@ -39,10 +38,9 @@ export class Line extends Element {
         if (this.config.guide.showAnchors) {
             var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
             var deactivate = ((sender, e) => sender.fire('highlight-data-points', (row) => (false)));
-            var last = {};
-            this.on('mouseover', utils.throttleLastEvent(last, 'mouseover', activate));
-            this.on('mousemove', utils.throttleLastEvent(last, 'mousemove', activate));
-            this.on('mouseout', utils.throttleLastEvent(last, 'mouseout', deactivate));
+            this.on('mouseover', activate);
+            this.on('mousemove', activate);
+            this.on('mouseout', deactivate);
         }
     }
 

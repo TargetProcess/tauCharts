@@ -333,25 +333,20 @@
                     self.showTooltip(data, {x: coords.left, y: coords.top});
                 };
 
-                var prev = {};
-                var limit = 0;
-
                 this._chart
                     .select(function (node) {
                         return true;
                     })
                     .forEach(function (node) {
 
-                        node.on('mouseout.chart', pluginsSDK.throttleLastEvent(prev, 'mouseout', function (sender, e) {
+                        node.on('mouseout.chart', function (sender, e) {
                             self.hideTooltip(e);
-                        }));
+                        });
 
-                        node.on('mouseover.chart', pluginsSDK.throttleLastEvent(prev, 'mouseover', mouseOverHandler));
+                        node.on('mouseover.chart', mouseOverHandler);
 
                         if (elementsToMatch.indexOf(node.config.type) > -1) {
-                            node.on(
-                                'mousemove.chart',
-                                pluginsSDK.throttleLastEvent(prev, 'mousemove', mouseOverHandler, limit));
+                            node.on('mousemove.chart', mouseOverHandler);
                         }
                     });
             },

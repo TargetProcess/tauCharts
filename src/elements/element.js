@@ -1,19 +1,5 @@
 import {Emitter} from '../event';
-
-var throttleLastEvent = function (last, eventType, handler, limitFromPrev = 0) {
-
-    return function (eventData) {
-        var curr = {e: eventType, ts: (new Date())};
-        var diff = ((last.e && (last.e === curr.e)) ? (curr.ts - last.ts) : (limitFromPrev));
-
-        if (diff >= limitFromPrev) {
-            handler.call(this, eventData);
-        }
-
-        last.e = curr.e;
-        last.ts = curr.ts;
-    };
-};
+import {utils} from '../utils/utils';
 
 export class Element extends Emitter {
 
@@ -71,7 +57,7 @@ export class Element extends Emitter {
                 self.fireNameSpaceEvent(eventName, eventData);
             };
 
-            sel.on(eventName, throttleLastEvent(last, eventName, callback, limit));
+            sel.on(eventName, utils.throttleLastEvent(last, eventName, callback, limit));
         });
     }
 }
