@@ -1,4 +1,5 @@
 import {Emitter} from '../event';
+import {utils} from '../utils/utils';
 
 export class Element extends Emitter {
 
@@ -25,15 +26,38 @@ export class Element extends Emitter {
 
     subscribe(sel, dataInterceptor = (x => x), eventInterceptor = (x => x)) {
         var self = this;
-        ['mouseover', 'mouseout', 'click', 'mousemove'].forEach((eventName) => {
-            sel.on(eventName, function (d) {
+        var last = {};
+        [
+            {
+                event: 'mouseover',
+                limit: 0
+            },
+            {
+                event: 'mouseout',
+                limit: 0
+            },
+            {
+                event: 'click',
+                limit: 0
+            },
+            {
+                event: 'mousemove',
+                limit: 25
+            }
+        ].forEach((item) => {
+            var eventName = item.event;
+            var limit = item.limit;
+
+            var callback = function (d) {
                 var eventData = {
                     data: dataInterceptor.call(this, d),
                     event: eventInterceptor.call(this, d3.event, d)
                 };
                 self.fire(eventName, eventData);
                 self.fireNameSpaceEvent(eventName, eventData);
-            });
+            };
+
+            sel.on(eventName, utils.throttleLastEvent(last, eventName, callback, limit));
         });
     }
 }
