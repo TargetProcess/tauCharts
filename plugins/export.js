@@ -1,6 +1,6 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts', 'canvgModule', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
+        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
             function (tauPlugins, canvg, saveAs, Promise, printCss) {
                 window.Promise = window.Promise || Promise.Promise;
                 return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);

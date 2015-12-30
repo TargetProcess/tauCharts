@@ -51,7 +51,6 @@ var generateConf = function (postLoader) {
                     exclude: /node_modules|libs|bower_components/,
                     loader: 'babel-loader',
                     query: {
-                        plugins: ['transform-runtime'],
                         presets: ['es2015'],
                         cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
                     }

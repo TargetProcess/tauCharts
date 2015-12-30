@@ -5,7 +5,9 @@ var webpackConfig = require('./config/webpack.test.config');
 var cssConfig = require('./config/css.config');
 var path = require('path');
 var cachePath = path.join(require('os').tmpdir(), './webpackCache');
-
+var toAbsolute = function(relativePath) {
+    return path.join(__dirname, relativePath);
+};
 var ensureDir = function (absolutePath) {
     var fs = require('fs-extra');
     fs.mkdirsSync(absolutePath);
@@ -26,8 +28,20 @@ module.exports = function (grunt) {
             path: 'build/development/plugins/',
             filename: 'tauCharts.js'
         },
+        resolve:{
+            alias: {
+                tauCharts: '../src/tau.charts.js',
+                'print.style.css': '../plugins/print.style.css',
+                rgbcolor: toAbsolute('bower_components/canvg/rgbcolor.js'),
+                stackblur: toAbsolute('bower_components/canvg/StackBlur.js'),
+                canvg: toAbsolute('bower_components/canvg/canvg.js'),
+                FileSaver: '../test/utils/saveAs.js',
+                fetch: '../bower_components/fetch/fetch.js',
+                promise: '../bower_components/es6-promise/promise.js'
+            }
+        },
         externals: {
-            tauChart: 'tauChart'
+            tauCharts: 'tauCharts'
         },
         module: {
             loaders: [{
@@ -35,8 +49,12 @@ module.exports = function (grunt) {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 query: {
+                    presets: ['es2015'],
                     cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
                 }
+            },{
+                test: /\.css$/,
+                loader: 'raw-loader'
             }]
         },
         stats: {
@@ -51,7 +69,6 @@ module.exports = function (grunt) {
             path: 'build/development',
             filename: 'tauCharts.js'
         },
-        devtool:'eval',
         externals: {
             d3: 'd3',
             underscore: '_'
@@ -122,7 +139,7 @@ module.exports = function (grunt) {
         karma: {
             options: {configFile: 'config/karma.conf.js'},
             dev: {
-                reporters: ['dots'],
+                reporters: ['spec'],
                 browsers: ['Chrome'],
                 singleRun: false,
                 webpack: webpackConfig.default
@@ -131,7 +148,7 @@ module.exports = function (grunt) {
                 webpack: webpackConfig.coverage,
                 reporters: [
                     'coverage',
-                    'dots'
+                    'spec'
                 ],
                 coverageReporter: {
                     type: 'html',
@@ -299,7 +316,7 @@ module.exports = function (grunt) {
                 'src/**'
             ],
             options: {
-                "esnext":true,
+                esnext: true,
                 config: '.jscsrc',
                 excludeFiles: ['src/addons/*.*']
             }
@@ -335,7 +352,7 @@ module.exports = function (grunt) {
         'less',
         'postcss',
         'copy:build',
-        'compile:build',
+        /*'compile:build',*/
         'webpack:build',
         'webpack:buildExportTo',
         'concat:dist',

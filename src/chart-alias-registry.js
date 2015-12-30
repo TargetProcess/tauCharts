@@ -14,7 +14,7 @@ var throwNotSupported = (alias) => {
 
 var chartTypesRegistry = {
 
-    validate (alias, config) {
+    validate(alias, config) {
 
         if (!chartRules.hasOwnProperty(alias)) {
             throwNotSupported(alias);
@@ -23,7 +23,7 @@ var chartTypesRegistry = {
         return chartRules[alias].reduce((e, rule) => e.concat(rule(config) || []), []);
     },
 
-    get (alias) {
+    get(alias) {
 
         var chartFactory = chartTypes[alias];
 
@@ -34,7 +34,7 @@ var chartTypesRegistry = {
         return chartFactory;
     },
 
-    add (alias, converter, rules = []) {
+    add(alias, converter, rules = []) {
         chartTypes[alias] = converter;
         chartRules[alias] = rules;
         return this;

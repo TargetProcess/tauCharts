@@ -28,7 +28,7 @@ var byDensity = ((gx) => gx.density);
 
 var fitModelStrategies = {
 
-    'entire-view' (srcSize, calcSize, specRef) {
+    'entire-view'(srcSize, calcSize, specRef) {
 
         var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
         if (widthByMaxText <= srcSize.width) {
@@ -41,13 +41,13 @@ var fitModelStrategies = {
         return {newW, newH};
     },
 
-    minimal (srcSize, calcSize, specRef) {
+    minimal(srcSize, calcSize, specRef) {
         var newW = calcSize('x', specRef.unit, byDensity);
         var newH = calcSize('y', specRef.unit, byDensity);
         return {newW, newH};
     },
 
-    normal (srcSize, calcSize, specRef) {
+    normal(srcSize, calcSize, specRef) {
 
         var newW;
 
@@ -66,7 +66,7 @@ var fitModelStrategies = {
         return {newW, newH};
     },
 
-    'fit-width' (srcSize, calcSize, specRef) {
+    'fit-width'(srcSize, calcSize, specRef) {
         var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
         if (widthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
@@ -77,7 +77,7 @@ var fitModelStrategies = {
         return {newW, newH};
     },
 
-    'fit-height' (srcSize, calcSize, specRef) {
+    'fit-height'(srcSize, calcSize, specRef) {
         var newW = calcSize('x', specRef.unit, byDensity);
         var newH = srcSize.height;
         return {newW, newH};
