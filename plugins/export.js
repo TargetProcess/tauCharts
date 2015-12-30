@@ -81,28 +81,6 @@
         }
     }
 
-    var focusinDetected;
-    var isSupportFocusin = function isSupportFocusin() {
-        if (focusinDetected) {
-            return focusinDetected;
-        }
-        var hasIt = false;
-
-        function swap() {
-            hasIt = true;
-        }
-
-        var a = document.createElement('a');
-        a.href = '#';
-        a.addEventListener('focusin', swap, false);
-
-        document.body.appendChild(a);
-        a.focus();
-        document.body.removeChild(a);
-        focusinDetected = hasIt;
-        return hasIt;
-    };
-
     // http://jsfiddle.net/kimiliini/HM4rW/show/light/
     var downloadExportFile = function (fileName, type, strContent) {
         var utf8BOM = '%ef%bb%bf';
@@ -602,18 +580,15 @@
                     e.preventDefault();
                 }.bind(this));
                 var timeoutID = null;
-                var iSF = isSupportFocusin();
-                var focusin = iSF ? 'focusin' : 'focus';
-                var focusout = iSF ? 'focusout' : 'blur';
-                popupElement.addEventListener(focusout, function () {
+
+                popupElement.addEventListener('blur', function () {
                     timeoutID = setTimeout(function () {
                         popup.hide();
                     }, 100);
-
-                }, !iSF);
-                popupElement.addEventListener(focusin, function () {
+                }, true);
+                popupElement.addEventListener('focus', function () {
                     clearTimeout(timeoutID);
-                }, !iSF);
+                }, true);
                 this._container.addEventListener('click', function () {
                     popup.toggle();
                     if (!popup.hidden) {
@@ -658,16 +633,16 @@
                 popup.content([
                     '<ul class="graphical-report__export__list">',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
+                    '   <a data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
                     '</li>',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
+                    '   <a data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
                     '</li>',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="csv" tabindex="2">' + tokens.get('Export to CSV') + '</a>',
+                    '   <a data-value="csv" tabindex="3">' + tokens.get('Export to CSV') + '</a>',
                     '</li>',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="json" tabindex="2">' + tokens.get('Export to JSON') + '</a>',
+                    '   <a data-value="json" tabindex="4">' + tokens.get('Export to JSON') + '</a>',
                     '</li>',
                     '</ul>'
                 ].join(''));
