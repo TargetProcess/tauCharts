@@ -200,21 +200,22 @@
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
-
-                        canvg(
-                            canvas,
-                            svg.parentNode.innerHTML,
-                            {
-                                renderCallback: function (dom) {
-                                    var domStr = (new XMLSerializer()).serializeToString(dom);
-                                    var isError = (domStr.substring(0, 5).toLowerCase() === '<html');
-                                    if (isError) {
-                                        tauCharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
-                                        tauCharts.api.globalSettings.log(domStr, 'error');
+                        return new Promise(function(resolve){
+                            canvg(
+                                canvas,
+                                svg.parentNode.innerHTML,
+                                {
+                                    renderCallback: function (dom) {
+                                        var domStr = (new XMLSerializer()).serializeToString(dom);
+                                        var isError = (domStr.substring(0, 5).toLowerCase() === '<html');
+                                        if (isError) {
+                                            tauCharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
+                                            tauCharts.api.globalSettings.log(domStr, 'error');
+                                        }
+                                        resolve(canvas.toDataURL('image/png'));
                                     }
-                                }
-                            });
-                        return canvas.toDataURL('image/png');
+                                });
+                        });
                     }.bind(this));
             },
             _findUnit: function (chart) {

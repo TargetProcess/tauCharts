@@ -1,5 +1,5 @@
 /*global module:false*/
-var autoprefixer = require('autoprefixer-core');
+var autoprefixer = require('autoprefixer');
 var webpack = require('webpack');
 var webpackConfig = require('./config/webpack.test.config');
 var cssConfig = require('./config/css.config');
@@ -26,7 +26,7 @@ module.exports = function (grunt) {
             library: 'exportTo',
             libraryTarget: 'umd',
             path: 'build/development/plugins/',
-            filename: 'tauCharts.js'
+            filename: 'tauCharts.export.js'
         },
         resolve:{
             alias: {
@@ -35,7 +35,7 @@ module.exports = function (grunt) {
                 rgbcolor: toAbsolute('bower_components/canvg/rgbcolor.js'),
                 stackblur: toAbsolute('bower_components/canvg/StackBlur.js'),
                 canvg: toAbsolute('bower_components/canvg/canvg.js'),
-                FileSaver: '../test/utils/saveAs.js',
+                FileSaver: '../bower_components/FileSaver.js/FileSaver.js',
                 fetch: '../bower_components/fetch/fetch.js',
                 promise: '../bower_components/es6-promise/promise.js'
             }
@@ -124,17 +124,6 @@ module.exports = function (grunt) {
                 branch: 'release'
             },
             src: ['**/*']
-        },
-        compile: {
-            build: {
-                cwd: 'src/',
-                src: src,
-                dest: 'build/development/tauCharts.js'
-            },
-            dev: {
-                cwd: 'src/',
-                src: src
-            }
         },
         karma: {
             options: {configFile: 'config/karma.conf.js'},
@@ -280,7 +269,6 @@ module.exports = function (grunt) {
                 files: ['<%= jshint.all.src %>'],
                 tasks: [
                     'jshint',
-                    'compile:dev',
                     'less'
                 ]
             },
@@ -322,8 +310,7 @@ module.exports = function (grunt) {
             }
         }
     });
-    // load local tasks
-    grunt.loadTasks('tasks');
+
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -340,11 +327,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-webpack');
     grunt.loadNpmTasks('grunt-jscs');
-    // Default task.
-    // grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
+
     grunt.registerTask('default', [
         'less',
-        'compile:dev',
+        'webpack:build',
+        'webpack:buildExportTo',
         'jshint',
         'watch:js'
     ]);
@@ -352,7 +339,6 @@ module.exports = function (grunt) {
         'less',
         'postcss',
         'copy:build',
-        /*'compile:build',*/
         'webpack:build',
         'webpack:buildExportTo',
         'concat:dist',
