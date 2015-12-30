@@ -110,22 +110,45 @@ export class Line extends Element {
                 var mx = m[0];
                 var my = m[1];
 
+                var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
+                var dist = ((x0, x1, y0, y1) => Math.sqrt(Math.pow((x0 - x1), 2) + Math.pow((y0 - y1), 2)));
+
                 // d3.invert doesn't work for ordinal axes
-                var nearest = rows
-                    .map((row) => {
+                var nearestPoints = rows
+                    .map((row, i) => {
                         var rx = xScale(row[xScale.dim]);
                         var ry = yScale(row[yScale.dim]);
                         return {
+                            i: i,
                             x: rx,
                             y: ry,
-                            dist: Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2)),
+                            dist: dist(mx, rx, my, ry),
                             data: row
                         };
                     })
-                    .sort((a, b) => (a.dist - b.dist)) // asc
-                    [0];
+                    .sort(by('dist')) // asc
+                    .slice(0, 8) // there should be enough 4 for proper line, 8 for "hedgehog"
+                    .sort(by('i'));
 
-                return nearest.data;
+                var prev = nearestPoints[0];
+                var next = nearestPoints[1];
+                var pair = nearestPoints
+                    .slice(2)
+                    .reduce((memo, next) => memo.concat([[memo[memo.length - 1][1], next]]), [[prev, next]])
+                    .map((p) => {
+                        var prev = p[0];
+                        var next = p[1];
+                        var ab = dist(next.x, prev.x, next.y, prev.y);
+                        var ax = prev.dist;
+                        var bx = next.dist;
+                        var er = Math.abs(ab - (ax + bx));
+                        return [er, prev, next];
+                    })
+                    .sort(by('0')) // find minimal error
+                    [0]
+                    .slice(1);
+
+                return pair.sort(by('dist'))[0].data;
             });
 
             if (guide.showAnchors && !this.empty()) {
