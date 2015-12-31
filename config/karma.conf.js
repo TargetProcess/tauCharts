@@ -20,7 +20,7 @@ module.exports = function (config) {
         ],
         browsers: ['PhantomJS'],
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
-        reporters: ['coverage', 'dots', 'coveralls'],
+        reporters: ['coverage', 'spec', 'coveralls'],
         coverageReporter: {
             type: 'lcovonly',
             dir: 'coverage/'
