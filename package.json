@@ -89,9 +89,8 @@
     "watch-less": "grunt watch:less",
     "build": "grunt build",
     "webpackbuild": "grunt webpack:build",
-    "test": "npm run bower && npm run travis && karma start config/karma.conf.js",
+    "test": "npm run travis && karma start config/karma.conf.js",
     "travis": "grunt travis",
-    "bower": "bower install",
     "release": "npm run bower && grunt publish && grunt gh-pages",
     "devtest": "grunt karma:dev",
     "buildExporTo": "grunt webpack:buildExportTo"
