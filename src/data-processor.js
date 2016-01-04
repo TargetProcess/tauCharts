@@ -1,5 +1,5 @@
 import {utils} from './utils/utils';
-
+import {default as _} from 'underscore';
 var isObject = (obj) => obj === Object(obj);
 
 var DataProcessor = {

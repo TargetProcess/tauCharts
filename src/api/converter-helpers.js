@@ -1,6 +1,6 @@
 import {default as d3} from 'd3';
 import {utils} from '../utils/utils';
-
+import {default as _} from 'underscore';
 var convertAxis = (data) => (!data) ? null : data;
 
 var normalizeSettings = (axis, defaultValue = null) => {

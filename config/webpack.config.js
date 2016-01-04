@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 var path = require('path');
 var cachePath = path.join(require('os').tmpdir(), './webpackCache');
-
+var transformUMDExternal = require('webpack-umd-external');
 var ensureDir = function (absolutePath) {
     var fs = require('fs-extra');
     fs.mkdirsSync(absolutePath);
@@ -124,10 +124,10 @@ var webpackConf = {
         path: 'build/development',
         filename: 'tauCharts.js'
     },
-    externals: {
+    externals:  transformUMDExternal({
         d3: 'd3',
         underscore: '_'
-    },
+    }),
     module: {
         loaders: [babelConfig]
     },

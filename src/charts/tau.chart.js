@@ -1,6 +1,6 @@
 import {Plot} from './tau.plot';
 import {chartTypesRegistry} from '../chart-alias-registry';
-
+import {default as _} from 'underscore';
 class Chart extends Plot {
 
     constructor(config) {

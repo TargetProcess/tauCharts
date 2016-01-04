@@ -40,12 +40,15 @@ import {ChartParallel}          from './api/chart-parallel';
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
 
+import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 var colorBrewers = {};
 var plugins = {};
 
 var __api__ = {
     UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
 };
+
 var api = {
     errorCodes,
     unitsRegistry: unitsRegistry,
@@ -77,8 +80,8 @@ var api = {
         },
         get: function (name) {
             return plugins[name] || ((x) => {
-                throw new Error(`${x} plugin is not defined`);
-            });
+                    throw new Error(`${x} plugin is not defined`);
+                });
         }
     },
     globalSettings: {

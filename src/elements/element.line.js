@@ -3,7 +3,7 @@ import {Element} from './element';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
-
+import {default as _} from 'underscore';
 export class Line extends Element {
 
     constructor(config) {

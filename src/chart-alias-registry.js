@@ -2,6 +2,7 @@ import {default as d3} from 'd3';
 import {utils} from './utils/utils';
 import {DataProcessor} from './data-processor';
 import {TauChartError as Error, errorCodes} from './error';
+import {default as _} from 'underscore';
 var chartTypes = {};
 var chartRules = {};
 

@@ -18,7 +18,7 @@ import {SpecTransformApplyRatio} from '../spec-transform-apply-ratio';
 import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 
 import {GPL} from './tau.gpl';
-
+import {default as _} from 'underscore';
 export class Plot extends Emitter {
     constructor(config) {
         super();

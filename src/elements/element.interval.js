@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-
+import {default as _} from 'underscore';
 export class Interval extends Element {
 
     constructor(config) {

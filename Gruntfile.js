@@ -184,10 +184,19 @@ module.exports = function (grunt) {
             }
         },
         less: cssConfig.less,
-        clean: [
-            'build/production/',
-            'build/development/'
-        ],
+        clean: {
+            build: {
+                src: [
+                    'build/production/',
+                    'build/development/'
+                ]
+            },
+            npmpublish: {
+                src: [
+                    'build/'
+                ]
+            }
+        },
         watch: {
             js: {
                 files: ['<%= jshint.all.src %>'],
@@ -274,7 +283,7 @@ module.exports = function (grunt) {
     grunt.registerTask('build', buildWithoutPublish);
     grunt.registerTask('publish', buildWithoutPublish.concat([
         'copy:copybuild',
-        'clean'
+        'clean:build'
     ]));
     grunt.registerTask('travis', [
         'jshint',

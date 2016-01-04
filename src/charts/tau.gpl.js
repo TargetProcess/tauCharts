@@ -4,7 +4,7 @@ import {utilsDom} from '../utils/utils-dom';
 import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
-
+import {default as _} from 'underscore';
 var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {

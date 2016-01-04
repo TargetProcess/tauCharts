@@ -1,4 +1,5 @@
 import {CSS_PREFIX} from '../const';
+import {default as _} from 'underscore';
 import {Element} from './element';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
