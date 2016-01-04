@@ -85,16 +85,16 @@
     "webpack-umd-external": "^1.0.2"
   },
   "scripts": {
-    "devserver": "bower install && grunt webpack-dev-server:start",
+    "devserver": "grunt webpack-dev-server:start",
     "less2css": "grunt less",
     "eslint":"eslint src/**",
     "watch-less": "grunt watch:less",
     "build": "bower install && grunt build",
     "webpackbuild": "grunt webpack:build",
     "test": "npm run eslint && npm run travis && karma start config/karma.conf.js",
-    "travis": "bower install && grunt travis",
-    "release": "npm run bower && grunt publish && grunt gh-pages",
-    "devtest": "bower install && grunt karma:dev",
+    "travis": "grunt travis",
+    "release": "grunt publish && grunt gh-pages",
+    "devtest": "grunt karma:dev",
     "buildExporTo": "grunt webpack:buildExportTo",
     "prepublish": "grunt clean:npmpublish && npm run build"
   }

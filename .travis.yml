@@ -2,5 +2,13 @@ sudo: false
 notifications:
   slack: targetprocess:A8M6sVcJSfLnVOYtoMrPL7BA
 language: node_js
+env:
+  - CXX=g++-4.8
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
 node_js:
     - "5.2.0"
