@@ -90,14 +90,14 @@ var exportBuild = {
     },
     resolve: {
         alias: {
-            tauCharts: '../src/tau.charts.js',
-            'print.style.css': '../plugins/print.style.css',
-            rgbcolor: toAbsolute('bower_components/canvg/rgbcolor.js'),
-            stackblur: toAbsolute('bower_components/canvg/StackBlur.js'),
-            canvg: toAbsolute('bower_components/canvg/canvg.js'),
-            FileSaver: '../bower_components/FileSaver.js/FileSaver.js',
-            fetch: '../bower_components/fetch/fetch.js',
-            promise: '../bower_components/es6-promise/promise.js'
+            tauCharts: toAbsolute('../src/tau.charts.js'),
+            'print.style.css': toAbsolute('../plugins/print.style.css'),
+            rgbcolor: toAbsolute('../bower_components/canvg/rgbcolor.js'),
+            stackblur: toAbsolute('../bower_components/canvg/StackBlur.js'),
+            canvg: toAbsolute('../bower_components/canvg/canvg.js'),
+            FileSaver: toAbsolute('../bower_components/FileSaver.js/FileSaver.js'),
+            fetch: toAbsolute('../bower_components/fetch/fetch.js'),
+            promise: toAbsolute('../bower_components/es6-promise/promise.js')
         }
     },
     externals: {
