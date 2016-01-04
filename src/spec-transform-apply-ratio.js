@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 
 export class SpecTransformApplyRatio {
@@ -75,7 +74,7 @@ export class SpecTransformApplyRatio {
             return (rects.length === 1);
         };
 
-        traverse(spec.unit, enterIterator, ((unitRef, level) => 0));
+        traverse(spec.unit, enterIterator, (() => 0));
 
         var toScaleConfig = ((scaleName) => spec.scales[scaleName]);
         var isValidScale = ((scale) => ((scale.source === '/') && !scale.ratio && !scale.fitToFrameByDims));

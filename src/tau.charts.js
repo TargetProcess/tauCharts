@@ -91,7 +91,7 @@ var api = {
             if (!Array.isArray(msg)) {
                 msg = [msg];
             }
-            console[type.toLowerCase()].apply(console, msg);
+            console[type.toLowerCase()].apply(console, msg); // eslint-disable-line
         },
 
         facetLabelDelimiter: ' \u2192 ',

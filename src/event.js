@@ -16,7 +16,7 @@ function createDispatcher(eventName) {
             var fn;
             var i = 0;
             var queue = [];
-            while (cursor = cursor.handler) { // jshint ignore:line
+            while (cursor = cursor.handler) { // eslint-disable-line
                 // callback call
                 fn = cursor.callbacks[eventName];
                 if (typeof fn === 'function') {

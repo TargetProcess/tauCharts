@@ -260,9 +260,8 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     var layoutModel = [];
     nodeScale
         .selectAll('.tick')
-        .each(function (a, i) {
+        .each(function () {
             var tick = d3.select(this);
-            var text = tick.text();
 
             var translateXStr = tick
                 .attr('transform')

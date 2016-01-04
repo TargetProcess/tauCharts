@@ -207,7 +207,7 @@ export class Parallel extends Element {
 
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
-        var onBrushEventHandler = (e) => {
+        var onBrushEventHandler = () => {
             var eventBrush = Object
                 .keys(columnsBrushes)
                 .filter((k) => !columnsBrushes[k].empty())

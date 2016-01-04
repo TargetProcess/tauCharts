@@ -1,10 +1,7 @@
 import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {default as topojson} from 'topojson';
-import {utilsDraw} from '../utils/utils-draw';
 import {d3Labeler} from '../utils/d3-labeler';
-import {CSS_PREFIX} from '../const';
-import {FormatterRegistry} from '../formatter-registry';
 import {Element} from './element';
 
 d3.labeler = d3Labeler;
@@ -221,8 +218,8 @@ export class GeoMap extends Element {
         } else if (codeScale.georole) {
 
             if (contours.indexOf(codeScale.georole) === -1) {
-                console.log(`There is no contour for georole "${codeScale.georole}"`);
-                console.log(`Available contours are: ${contours.join(' | ')}`);
+                console.log(`There is no contour for georole "${codeScale.georole}"`); // eslint-disable-line
+                console.log(`Available contours are: ${contours.join(' | ')}`); // eslint-disable-line
 
                 throw new Error(`Invalid [georole]`);
             }
@@ -230,7 +227,7 @@ export class GeoMap extends Element {
             contourToFill = codeScale.georole;
 
         } else {
-            console.log('Specify [georole] for code scale');
+            console.log('Specify [georole] for code scale'); // eslint-disable-line
             throw new Error('[georole] is missing');
         }
 
@@ -540,8 +537,10 @@ export class GeoMap extends Element {
         var d3ProjectionMethod = d3.geo[projection];
 
         if (!d3ProjectionMethod) {
+            /*eslint-disable */
             console.log(`Unknown projection "${projection}"`);
             console.log(`See available projection types here: https://github.com/mbostock/d3/wiki/Geo-Projections`);
+            /*eslint-enable */
             throw new Error(`Invalid map: unknown projection "${projection}"`);
         }
 

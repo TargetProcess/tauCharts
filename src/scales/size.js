@@ -1,8 +1,5 @@
 import {BaseScale} from './base';
-/* jshint ignore:start */
 import {default as _} from 'underscore';
-import {default as d3} from 'd3';
-/* jshint ignore:end */
 
 let funcTypes = {
     sqrt: (x) => Math.sqrt(x),
@@ -40,7 +37,7 @@ export class SizeScale extends BaseScale {
 
         var func;
         if (values.length === 0) {
-            func = (x) => fnNorm(midSize, midSize);
+            func = () => fnNorm(midSize, midSize);
         } else {
             var k = 1;
             var xMin = 0;

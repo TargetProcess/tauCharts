@@ -1,6 +1,8 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {default as _} from 'underscore';
+import {default as d3} from 'd3';
+
 export class ParallelLine extends Element {
 
     constructor(config) {

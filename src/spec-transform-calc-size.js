@@ -1,4 +1,3 @@
-import {ScalesFactory} from './scales-factory';
 import {utils} from './utils/utils';
 
 var tryOptimizeSpec = (root, localSettings) => {

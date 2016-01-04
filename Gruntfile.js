@@ -172,17 +172,6 @@ module.exports = function (grunt) {
                 options: {stdout: true}
             }
         },
-        jshint: {
-            all: {
-                src: [
-                    'src/**/*.js',
-                    'Gruntfile.js'
-                ],
-                options: {
-                    jshintrc: true
-                }
-            }
-        },
         less: cssConfig.less,
         clean: {
             build: {
@@ -198,13 +187,6 @@ module.exports = function (grunt) {
             }
         },
         watch: {
-            js: {
-                files: ['<%= jshint.all.src %>'],
-                tasks: [
-                    'jshint',
-                    'less'
-                ]
-            },
             less: {
                 files: ['less/*.less', 'less/**/*.less'],
                 tasks: ['less']
@@ -247,7 +229,6 @@ module.exports = function (grunt) {
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-copy');
@@ -264,9 +245,7 @@ module.exports = function (grunt) {
     grunt.registerTask('default', [
         'less',
         'webpack:build',
-        'webpack:buildExportTo',
-        'jshint',
-        'watch:js'
+        'webpack:buildExportTo'
     ]);
     var buildWithoutPublish = [
         'less',
@@ -286,7 +265,6 @@ module.exports = function (grunt) {
         'clean:build'
     ]));
     grunt.registerTask('travis', [
-        'jshint',
         'jscs',
         'build'
     ]);

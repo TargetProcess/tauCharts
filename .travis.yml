@@ -3,4 +3,4 @@ notifications:
   slack: targetprocess:A8M6sVcJSfLnVOYtoMrPL7BA
 language: node_js
 node_js:
-    - "0.12"
+    - "5.2.0"
