@@ -1,18 +1,9 @@
 /*global module:false*/
 var autoprefixer = require('autoprefixer');
 var webpack = require('webpack');
-var webpackConfig = require('./config/webpack.test.config');
+var webpackConfig = require('./config/webpack.config');
 var cssConfig = require('./config/css.config');
-var path = require('path');
-var cachePath = path.join(require('os').tmpdir(), './webpackCache');
-var toAbsolute = function(relativePath) {
-    return path.join(__dirname, relativePath);
-};
-var ensureDir = function (absolutePath) {
-    var fs = require('fs-extra');
-    fs.mkdirsSync(absolutePath);
-    return absolutePath;
-};
+
 module.exports = function (grunt) {
     // Project configuration.
     var src = [
@@ -20,74 +11,7 @@ module.exports = function (grunt) {
         '**/*.js',
         '!addons/*.js'
     ];
-    var webpackExportConf = {
-        entry: './plugins/export.js',
-        output: {
-            library: 'exportTo',
-            libraryTarget: 'umd',
-            path: 'build/development/plugins/',
-            filename: 'tauCharts.export.js'
-        },
-        resolve:{
-            alias: {
-                tauCharts: '../src/tau.charts.js',
-                'print.style.css': '../plugins/print.style.css',
-                rgbcolor: toAbsolute('bower_components/canvg/rgbcolor.js'),
-                stackblur: toAbsolute('bower_components/canvg/StackBlur.js'),
-                canvg: toAbsolute('bower_components/canvg/canvg.js'),
-                FileSaver: '../bower_components/FileSaver.js/FileSaver.js',
-                fetch: '../bower_components/fetch/fetch.js',
-                promise: '../bower_components/es6-promise/promise.js'
-            }
-        },
-        externals: {
-            tauCharts: 'tauCharts'
-        },
-        module: {
-            loaders: [{
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                query: {
-                    presets: ['es2015'],
-                    cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
-                }
-            },{
-                test: /\.css$/,
-                loader: 'raw-loader'
-            }]
-        },
-        stats: {
-            timings: true
-        }
-    };
-    var webpackConf = {
-        entry: './src/tau.charts.js',
-        output: {
-            library: 'tauCharts',
-            libraryTarget: 'umd',
-            path: 'build/development',
-            filename: 'tauCharts.js'
-        },
-        externals: {
-            d3: 'd3',
-            underscore: '_'
-        },
-        module: {
-            loaders: [{
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                query: {
-                    presets: ['es2015'],
-                    cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
-                }
-            }]
-        },
-        stats: {
-            timings: true
-        }
-    };
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         banner: [
@@ -131,10 +55,10 @@ module.exports = function (grunt) {
                 reporters: ['spec'],
                 browsers: ['Chrome'],
                 singleRun: false,
-                webpack: webpackConfig.default
+                webpack: webpackConfig.testWithoutCoverage
             },
             unit: {
-                webpack: webpackConfig.coverage,
+                webpack: webpackConfig.testWithCoverage,
                 reporters: [
                     'coverage',
                     'spec'
@@ -278,12 +202,12 @@ module.exports = function (grunt) {
             }
         },
         webpack: {
-            build: webpackConf,
-            buildExportTo: webpackExportConf
+            build: webpackConfig.chartBuild,
+            buildExportTo: webpackConfig.exportBuild
         },
         'webpack-dev-server': {
             options: {
-                webpack: webpackConf,
+                webpack: webpackConfig.chartBuild,
                 publicPath: '/'
             },
             start: {

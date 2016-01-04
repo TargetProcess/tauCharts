@@ -1,5 +1,5 @@
 module.exports = function (config) {
-    var webpackConfig = require('./webpack.test.config');
+    var webpackConfig = require('./webpack.config');
     config.set({
 
         // base path, that will be used to resolve files and exclude
@@ -26,9 +26,9 @@ module.exports = function (config) {
             dir: 'coverage/'
         },
         webpackMiddleware: {
-           noInfo: true
+            noInfo: true
         },
-        webpack: webpackConfig.coverage,
+        webpack: webpackConfig.testWithCoverage,
         browserNoActivityTimeout: 100000,
         port: 9876,
 
