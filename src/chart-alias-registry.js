@@ -1,20 +1,18 @@
-import {default as d3} from 'd3';
-import {utils} from './utils/utils';
-import {DataProcessor} from './data-processor';
 import {TauChartError as Error, errorCodes} from './error';
+import {default as _} from 'underscore';
 var chartTypes = {};
 var chartRules = {};
 
 var throwNotSupported = (alias) => {
     let msg = `Chart type ${alias} is not supported.`;
-    console.log(msg);
-    console.log(`Use one of ${_.keys(chartTypes).join(', ')}.`);
+    console.log(msg); // eslint-disable-line
+    console.log(`Use one of ${_.keys(chartTypes).join(', ')}.`); // eslint-disable-line
     throw new Error(msg, errorCodes.NOT_SUPPORTED_TYPE_CHART);
 };
 
 var chartTypesRegistry = {
 
-    validate (alias, config) {
+    validate(alias, config) {
 
         if (!chartRules.hasOwnProperty(alias)) {
             throwNotSupported(alias);
@@ -23,7 +21,7 @@ var chartTypesRegistry = {
         return chartRules[alias].reduce((e, rule) => e.concat(rule(config) || []), []);
     },
 
-    get (alias) {
+    get(alias) {
 
         var chartFactory = chartTypes[alias];
 
@@ -34,7 +32,7 @@ var chartTypesRegistry = {
         return chartFactory;
     },
 
-    add (alias, converter, rules = []) {
+    add(alias, converter, rules = []) {
         chartTypes[alias] = converter;
         chartRules[alias] = rules;
         return this;

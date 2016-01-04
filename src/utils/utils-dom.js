@@ -1,8 +1,9 @@
 /**
  * Internal method to return CSS value for given element and property
  */
+import {default as d3} from 'd3';
 var tempDiv = document.createElement('div');
-
+import {default as _} from 'underscore';
 var utilsDom = {
     appendTo: function (el, container) {
         var node;

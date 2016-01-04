@@ -1,8 +1,6 @@
 import {default as _} from 'underscore';
 import {utils} from './utils/utils';
-import {utilsDraw} from './utils/utils-draw';
 import {FormatterRegistry} from './formatter-registry';
-import {utilsDom} from './utils/utils-dom';
 
 function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
@@ -346,7 +344,7 @@ var SpecEngineTypeMap = {
         return spec;
     },
 
-    'BUILD-LABELS': (srcSpec, meta, settings) => {
+    'BUILD-LABELS': (srcSpec, meta) => {
 
         var spec = utils.clone(srcSpec);
 

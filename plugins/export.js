@@ -1,6 +1,6 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts', 'canvgModule', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
+        define(['tauCharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
             function (tauPlugins, canvg, saveAs, Promise, printCss) {
                 window.Promise = window.Promise || Promise.Promise;
                 return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
@@ -80,28 +80,6 @@
             });
         }
     }
-
-    var focusinDetected;
-    var isSupportFocusin = function isSupportFocusin() {
-        if (focusinDetected) {
-            return focusinDetected;
-        }
-        var hasIt = false;
-
-        function swap() {
-            hasIt = true;
-        }
-
-        var a = document.createElement('a');
-        a.href = '#';
-        a.addEventListener('focusin', swap, false);
-
-        document.body.appendChild(a);
-        a.focus();
-        document.body.removeChild(a);
-        focusinDetected = hasIt;
-        return hasIt;
-    };
 
     // http://jsfiddle.net/kimiliini/HM4rW/show/light/
     var downloadExportFile = function (fileName, type, strContent) {
@@ -200,21 +178,22 @@
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
-
-                        canvg(
-                            canvas,
-                            svg.parentNode.innerHTML,
-                            {
-                                renderCallback: function (dom) {
-                                    var domStr = (new XMLSerializer()).serializeToString(dom);
-                                    var isError = (domStr.substring(0, 5).toLowerCase() === '<html');
-                                    if (isError) {
-                                        tauCharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
-                                        tauCharts.api.globalSettings.log(domStr, 'error');
+                        return new Promise(function(resolve){
+                            canvg(
+                                canvas,
+                                svg.parentNode.innerHTML,
+                                {
+                                    renderCallback: function (dom) {
+                                        var domStr = (new XMLSerializer()).serializeToString(dom);
+                                        var isError = (domStr.substring(0, 5).toLowerCase() === '<html');
+                                        if (isError) {
+                                            tauCharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
+                                            tauCharts.api.globalSettings.log(domStr, 'error');
+                                        }
+                                        resolve(canvas.toDataURL('image/png'));
                                     }
-                                }
-                            });
-                        return canvas.toDataURL('image/png');
+                                });
+                        });
                     }.bind(this));
             },
             _findUnit: function (chart) {
@@ -601,18 +580,15 @@
                     e.preventDefault();
                 }.bind(this));
                 var timeoutID = null;
-                var iSF = isSupportFocusin();
-                var focusin = iSF ? 'focusin' : 'focus';
-                var focusout = iSF ? 'focusout' : 'blur';
-                popupElement.addEventListener(focusout, function () {
+
+                popupElement.addEventListener('blur', function () {
                     timeoutID = setTimeout(function () {
                         popup.hide();
                     }, 100);
-
-                }, !iSF);
-                popupElement.addEventListener(focusin, function () {
+                }, true);
+                popupElement.addEventListener('focus', function () {
                     clearTimeout(timeoutID);
-                }, !iSF);
+                }, true);
                 this._container.addEventListener('click', function () {
                     popup.toggle();
                     if (!popup.hidden) {
@@ -657,16 +633,16 @@
                 popup.content([
                     '<ul class="graphical-report__export__list">',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
+                    '   <a data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
                     '</li>',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
+                    '   <a data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
                     '</li>',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="csv" tabindex="2">' + tokens.get('Export to CSV') + '</a>',
+                    '   <a data-value="csv" tabindex="3">' + tokens.get('Export to CSV') + '</a>',
                     '</li>',
                     '<li class="graphical-report__export__item">',
-                    '   <a href="#" data-value="json" tabindex="2">' + tokens.get('Export to JSON') + '</a>',
+                    '   <a data-value="json" tabindex="4">' + tokens.get('Export to JSON') + '</a>',
                     '</li>',
                     '</ul>'
                 ].join(''));

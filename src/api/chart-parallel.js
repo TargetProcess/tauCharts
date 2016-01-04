@@ -1,3 +1,4 @@
+import {default as _} from 'underscore';
 var ChartParallel = (config) => {
 
     var guide = _.extend(

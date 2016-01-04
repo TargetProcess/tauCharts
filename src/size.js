@@ -1,3 +1,4 @@
+import {default as _} from 'underscore';
 var f = (x) => Math.sqrt(x);
 
 var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
@@ -5,7 +6,7 @@ var sizeScale = function (srcValues, minSize, maxSize, normalSize) {
     var values = _.filter(srcValues, _.isFinite);
 
     if (values.length === 0) {
-        return (x) => normalSize;
+        return () => normalSize;
     }
 
     var k = 1;

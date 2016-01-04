@@ -1,48 +1,17 @@
 /*global module:false*/
-var autoprefixer = require('autoprefixer-core');
+var autoprefixer = require('autoprefixer');
 var webpack = require('webpack');
-var webpackConfig = require('./config/webpack.test.config');
+var webpackConfig = require('./config/webpack.config');
 var cssConfig = require('./config/css.config');
-var path = require('path');
-var cachePath = path.join(require('os').tmpdir(), './webpackCache');
 
-var ensureDir = function (absolutePath) {
-    var fs = require('fs-extra');
-    fs.mkdirsSync(absolutePath);
-    return absolutePath;
-};
 module.exports = function (grunt) {
     // Project configuration.
     var src = [
         '*.js',
         '**/*.js',
         '!addons/*.js'
-    ], webpackConf = {
-        entry: './src/tau.charts.js',
-        output: {
-            library: 'tauCharts',
-            libraryTarget: 'umd',
-            path: 'build/development',
-            filename: 'tauCharts.js'
-        },
-        externals: {
-            d3: 'd3',
-            underscore: '_'
-        },
-        module: {
-            loaders: [{
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                query: {
-                    cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
-                }
-            }]
-        },
-        stats: {
-            timings: true
-        }
-    };
+    ];
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         banner: [
@@ -80,30 +49,19 @@ module.exports = function (grunt) {
             },
             src: ['**/*']
         },
-        compile: {
-            build: {
-                cwd: 'src/',
-                src: src,
-                dest: 'build/development/tauCharts.js'
-            },
-            dev: {
-                cwd: 'src/',
-                src: src
-            }
-        },
         karma: {
             options: {configFile: 'config/karma.conf.js'},
             dev: {
-                reporters: ['dots'],
+                reporters: ['spec'],
                 browsers: ['Chrome'],
                 singleRun: false,
-                webpack: webpackConfig.default
+                webpack: webpackConfig.testWithoutCoverage
             },
             unit: {
-                webpack: webpackConfig.coverage,
+                webpack: webpackConfig.testWithCoverage,
                 reporters: [
                     'coverage',
-                    'dots'
+                    'spec'
                 ],
                 coverageReporter: {
                     type: 'html',
@@ -214,40 +172,33 @@ module.exports = function (grunt) {
                 options: {stdout: true}
             }
         },
-        jshint: {
-            all: {
-                src: [
-                    'src/**/*.js',
-                    'Gruntfile.js'
-                ],
-                options: {
-                    jshintrc: true
-                }
-            }
-        },
         less: cssConfig.less,
-        clean: [
-            'build/production/',
-            'build/development/'
-        ],
-        watch: {
-            js: {
-                files: ['<%= jshint.all.src %>'],
-                tasks: [
-                    'jshint',
-                    'compile:dev',
-                    'less'
+        clean: {
+            build: {
+                src: [
+                    'build/production/',
+                    'build/development/'
                 ]
             },
+            npmpublish: {
+                src: [
+                    'build/'
+                ]
+            }
+        },
+        watch: {
             less: {
                 files: ['less/*.less', 'less/**/*.less'],
                 tasks: ['less']
             }
         },
-        webpack: {build: webpackConf},
+        webpack: {
+            build: webpackConfig.chartBuild,
+            buildExportTo: webpackConfig.exportBuild
+        },
         'webpack-dev-server': {
             options: {
-                webpack: webpackConf,
+                webpack: webpackConfig.chartBuild,
                 publicPath: '/'
             },
             start: {
@@ -268,17 +219,16 @@ module.exports = function (grunt) {
                 'src/**'
             ],
             options: {
+                esnext: true,
                 config: '.jscsrc',
                 excludeFiles: ['src/addons/*.*']
             }
         }
     });
-    // load local tasks
-    grunt.loadTasks('tasks');
+
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-copy');
@@ -291,19 +241,18 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-webpack');
     grunt.loadNpmTasks('grunt-jscs');
-    // Default task.
-    // grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
+
     grunt.registerTask('default', [
         'less',
-        'compile:dev',
-        'jshint',
-        'watch:js'
+        'webpack:build',
+        'webpack:buildExportTo'
     ]);
     var buildWithoutPublish = [
         'less',
         'postcss',
         'copy:build',
-        'compile:build',
+        'webpack:build',
+        'webpack:buildExportTo',
         'concat:dist',
         'concat:prodJS',
         'concat:prodCSS',
@@ -313,10 +262,9 @@ module.exports = function (grunt) {
     grunt.registerTask('build', buildWithoutPublish);
     grunt.registerTask('publish', buildWithoutPublish.concat([
         'copy:copybuild',
-        'clean'
+        'clean:build'
     ]));
     grunt.registerTask('travis', [
-        'jshint',
         'jscs',
         'build'
     ]);

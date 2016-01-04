@@ -1,5 +1,6 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
+import {default as d3} from 'd3';
 
 export class Element extends Emitter {
 

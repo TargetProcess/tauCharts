@@ -1,9 +1,10 @@
 import {CSS_PREFIX} from '../const';
+import {default as _} from 'underscore';
 import {Element} from './element';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
-import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
-
+import {getLineClassesByCount} from '../utils/css-class-map';
+import {default as d3} from 'd3';
 export class Path extends Element {
 
     constructor(config) {
@@ -37,7 +38,7 @@ export class Path extends Element {
 
         if (this.config.guide.showAnchors) {
             var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-            var deactivate = ((sender, e) => sender.fire('highlight-data-points', (row) => (false)));
+            var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
             this.on('mouseover', activate);
             this.on('mousemove', activate);
             this.on('mouseout', deactivate);

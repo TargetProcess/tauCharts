@@ -3,8 +3,6 @@ import {Emitter} from '../event';
 import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {DataFrame} from '../data-frame';
-import {CSS_PREFIX} from '../const';
 import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
@@ -18,7 +16,8 @@ import {SpecTransformApplyRatio} from '../spec-transform-apply-ratio';
 import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 
 import {GPL} from './tau.gpl';
-
+import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 export class Plot extends Emitter {
     constructor(config) {
         super();

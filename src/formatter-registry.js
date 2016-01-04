@@ -1,5 +1,6 @@
 /* jshint ignore:start */
 import {default as d3} from 'd3';
+import {default as _} from 'underscore';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 

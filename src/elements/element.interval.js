@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-
+import {default as _} from 'underscore';
 export class Interval extends Element {
 
     constructor(config) {
@@ -96,7 +96,7 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, xScale, yScale, colorIndexScale, width, height, prettify}) {
+    _buildVerticalDrawMethod({colorScale, xScale, yScale, colorIndexScale, height, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
@@ -137,7 +137,7 @@ export class Interval extends Element {
         };
     }
 
-    _buildHorizontalDrawMethod({colorScale, xScale, yScale, colorIndexScale, width, height, prettify}) {
+    _buildHorizontalDrawMethod({colorScale, xScale, yScale, colorIndexScale, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {

@@ -10,7 +10,7 @@ var ChartLine = (rawConfig) => {
 
     var lineOrientationStrategies = {
 
-        none: (config) => null,
+        none: () => null,
 
         horizontal: (config) => {
             return config.x[config.x.length - 1];

@@ -1,5 +1,3 @@
-import {default as _} from 'underscore';
-
 class Unit {
 
     constructor(unitRef) {

@@ -2,7 +2,7 @@ import {Point}      from '../elements/element.point';
 import {Line}       from '../elements/element.line';
 import {Interval}   from '../elements/element.interval';
 import {StackedInterval} from '../elements/element.interval.stacked';
-
+import {default as _} from 'underscore';
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -52,14 +52,14 @@ var deepClone = (function () {
         constructor: DeepCopier,
 
         // determines if this DeepCopier can handle the given object.
-        canCopy: function (source) {
+        canCopy: function (source) { // eslint-disable-line
             return false;
         },
 
         // starts the deep copying process by creating the copy object.  You
         // can initialize any properties you want, but you can't call recursively
         // into the DeeopCopyAlgorithm.
-        create: function (source) {
+        create: function (source) { // eslint-disable-line
         },
 
         // Completes the deep copy of the source object by populating any properties
@@ -67,7 +67,7 @@ var deepClone = (function () {
         // provided deepCopyAlgorithm instance's deepCopy() method.  This will handle
         // cyclic references for objects already deepCopied, including the source object
         // itself.  The "result" passed in is the object returned from create().
-        populate: function (deepCopyAlgorithm, source, result) {
+        populate: function (deepCopyAlgorithm, source, result) { // eslint-disable-line
         }
     };
 
@@ -304,10 +304,10 @@ var utils = {
         ];
 
         var i = -1;
-        // jscs:disable disallowEmptyBlocks
+        /*eslint-disable */
         while (err > correction[++i][0]) {
-        }
-        // jscs:enable disallowEmptyBlocks
+        }// jscs:ignore disallowEmptyBlocks
+        /*eslint-enable */
 
         step *= correction[i][1];
 

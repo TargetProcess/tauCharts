@@ -5,6 +5,7 @@
     "src/addons/color-brewer.js"
   ],
   "requireLineFeedAtFileEnd":null,
+  "requireSpacesInAnonymousFunctionExpression": null,
   "disallowMultipleVarDecl":null,
   "disallowSpacesInsideParentheses":null
 }

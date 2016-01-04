@@ -40,12 +40,15 @@ import {ChartParallel}          from './api/chart-parallel';
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
 
+import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 var colorBrewers = {};
 var plugins = {};
 
 var __api__ = {
     UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
 };
+
 var api = {
     errorCodes,
     unitsRegistry: unitsRegistry,
@@ -88,7 +91,7 @@ var api = {
             if (!Array.isArray(msg)) {
                 msg = [msg];
             }
-            console[type.toLowerCase()].apply(console, msg);
+            console[type.toLowerCase()].apply(console, msg); // eslint-disable-line
         },
 
         facetLabelDelimiter: ' \u2192 ',

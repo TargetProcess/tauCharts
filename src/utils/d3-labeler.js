@@ -18,11 +18,9 @@ var d3Labeler = function () {
         w_orient = 3.0; // orientation bias
 
     // booleans for user defined functions
-    var user_energy = false,
-        user_schedule = false;
+    var user_energy = false;
 
-    var user_defined_energy,
-        user_defined_schedule;
+    var user_defined_energy;
 
     var energy = function (index) {
         // energy function, tailored for label placement
@@ -32,9 +30,7 @@ var d3Labeler = function () {
             dx = lab[index].x - anc[index].x,
             dy = anc[index].y - lab[index].y,
             dist = Math.sqrt(dx * dx + dy * dy),
-            overlap = true,
-            amount = 0,
-            theta = 0;
+            overlap = true;
 
         // penalty for length of leader line
         if (dist > 0) {
@@ -314,13 +310,11 @@ var d3Labeler = function () {
         return labeler;
     };
 
-    labeler.alt_schedule = function (x) {
+    labeler.alt_schedule = function () {
         // user defined cooling_schedule
         if (!arguments.length) {
             return cooling_schedule;
         }
-        user_defined_schedule = x;
-        user_schedule = true;
         return labeler;
     };
 

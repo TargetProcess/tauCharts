@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {Unit} from './unit';
 
 class Spec {

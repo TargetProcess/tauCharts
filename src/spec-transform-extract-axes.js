@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 
 export class SpecTransformExtractAxes {
@@ -20,7 +19,7 @@ export class SpecTransformExtractAxes {
             this.ruleExtractAxes(refSpec);
         } catch (ex) {
             if (ex.message === 'Not applicable') {
-                console.log(`[TauCharts]: can't extract axes for the given chart specification`, refSpec);
+                console.log(`[TauCharts]: can't extract axes for the given chart specification`); // eslint-disable-line
             } else {
                 throw ex;
             }

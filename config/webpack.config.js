@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 var path = require('path');
 var cachePath = path.join(require('os').tmpdir(), './webpackCache');
-
+var transformUMDExternal = require('webpack-umd-external');
 var ensureDir = function (absolutePath) {
     var fs = require('fs-extra');
     fs.mkdirsSync(absolutePath);
@@ -12,7 +12,21 @@ var coverage = [{
     exclude: /test|addons|plugins|node_modules|bower_components|libs\//,
     loader: 'istanbul-instrumenter'
 }];
-var generateConf = function (postLoader) {
+
+var toAbsolute = function (relativePath) {
+    return path.join(__dirname, relativePath);
+};
+
+var babelConfig = {
+    test: /\.js$/,
+    exclude: /node_modules|libs|bower_components/,
+    loader: 'babel-loader',
+    query: {
+        presets: ['es2015'],
+        cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+    }
+};
+var generateTestConf = function (postLoader) {
     return {
         resolve: {
             root: [
@@ -46,14 +60,7 @@ var generateConf = function (postLoader) {
                     test: /modernizer[\\\/]modernizr\.js$/,
                     loader: 'imports?this=>window!exports?window.Modernizr'
                 },
-                {
-                    test: /\.js$/,
-                    exclude: /node_modules|libs|bower_components/,
-                    loader: 'babel-loader',
-                    query: {
-                        cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
-                    }
-                }
+                babelConfig
             ],
             postLoaders: postLoader
         },
@@ -73,7 +80,65 @@ var generateConf = function (postLoader) {
     };
 };
 
+var exportBuild = {
+    entry: './plugins/export.js',
+    output: {
+        library: 'exportTo',
+        libraryTarget: 'umd',
+        path: 'build/development/plugins/',
+        filename: 'tauCharts.export.js'
+    },
+    resolve: {
+        alias: {
+            tauCharts: toAbsolute('../src/tau.charts.js'),
+            'print.style.css': toAbsolute('../plugins/print.style.css'),
+            rgbcolor: toAbsolute('../bower_components/canvg/rgbcolor.js'),
+            stackblur: toAbsolute('../bower_components/canvg/StackBlur.js'),
+            canvg: toAbsolute('../bower_components/canvg/canvg.js'),
+            FileSaver: toAbsolute('../bower_components/FileSaver.js/FileSaver.js'),
+            fetch: toAbsolute('../bower_components/fetch/fetch.js'),
+            promise: toAbsolute('../bower_components/es6-promise/promise.js')
+        }
+    },
+    externals: {
+        tauCharts: 'tauCharts'
+    },
+    module: {
+        loaders: [
+            babelConfig,
+            {
+                test: /\.css$/,
+                loader: 'raw-loader'
+            }
+        ]
+    },
+    stats: {
+        timings: true
+    }
+};
+var webpackConf = {
+    entry: './src/tau.charts.js',
+    output: {
+        library: 'tauCharts',
+        libraryTarget: 'umd',
+        path: 'build/development',
+        filename: 'tauCharts.js'
+    },
+    externals:  transformUMDExternal({
+        d3: 'd3',
+        underscore: '_'
+    }),
+    module: {
+        loaders: [babelConfig]
+    },
+    stats: {
+        timings: true
+    }
+};
+
 module.exports = {
-    coverage: generateConf(coverage),
-    default: generateConf([])
+    testWithCoverage: generateTestConf(coverage),
+    testWithoutCoverage: generateTestConf([]),
+    exportBuild: exportBuild,
+    chartBuild: webpackConf
 };
