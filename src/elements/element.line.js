@@ -110,22 +110,38 @@ export class Line extends Element {
                 var mx = m[0];
                 var my = m[1];
 
+                var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
+                var dist = ((x0, x1, y0, y1) => Math.sqrt(Math.pow((x0 - x1), 2) + Math.pow((y0 - y1), 2)));
+
                 // d3.invert doesn't work for ordinal axes
-                var nearest = rows
+                var vertices = rows
                     .map((row) => {
                         var rx = xScale(row[xScale.dim]);
                         var ry = yScale(row[yScale.dim]);
                         return {
                             x: rx,
                             y: ry,
-                            dist: Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2)),
+                            dist: dist(mx, rx, my, ry),
                             data: row
                         };
-                    })
-                    .sort((a, b) => (a.dist - b.dist)) // asc
-                    [0];
+                    });
 
-                return nearest.data;
+                var pair = d3
+                    .range(vertices.length - 1)
+                    .map((edge) => {
+                        var v0 = vertices[edge];
+                        var v1 = vertices[edge + 1];
+                        var ab = dist(v1.x, v0.x, v1.y, v0.y);
+                        var ax = v0.dist;
+                        var bx = v1.dist;
+                        var er = Math.abs(ab - (ax + bx));
+                        return [er, v0, v1];
+                    })
+                    .sort(by('0')) // find minimal distance to edge
+                    [0]
+                    .slice(1);
+
+                return pair.sort(by('dist'))[0].data;
             });
 
             if (guide.showAnchors && !this.empty()) {
