@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "0.7.3-alpha.1",
+  "version": "0.7.3-alpha.8",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "D3 based data-focused charting library",
   "author": {
@@ -10,7 +10,7 @@
     "d3",
     "charts"
   ],
-  "main": "build/devlopment/tauCharts.js",
+  "main": "build/development/tauCharts.js",
   "license": "Apache-2.0",
   "licenses": [
     {
@@ -38,6 +38,7 @@
     "chai": "3.4.1",
     "css-loader": "^0.23.0",
     "es5-shim": "^4.1.6",
+    "eslint": "^1.10.3",
     "exports-loader": "^0.6.2",
     "fs-extra": "^0.26.2",
     "grunt": "~0.4.5",
@@ -46,7 +47,6 @@
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-copy": "0.8.2",
     "grunt-contrib-cssmin": "0.14.0",
-    "grunt-contrib-jshint": "^0.11.2",
     "grunt-contrib-less": "^1.0.1",
     "grunt-contrib-rename": "0.0.3",
     "grunt-contrib-uglify": "^0.11.0",
@@ -81,19 +81,21 @@
     "requirejs-text": "^2.0.12",
     "tau-tooltip": "1.1.2",
     "webpack": "1.12.9",
-    "webpack-dev-server": "1.14.0"
+    "webpack-dev-server": "1.14.0",
+    "webpack-umd-external": "^1.0.2"
   },
   "scripts": {
-    "postinstall": "bower install",
     "devserver": "grunt webpack-dev-server:start",
     "less2css": "grunt less",
+    "eslint":"eslint src/**",
     "watch-less": "grunt watch:less",
-    "build": "grunt build",
+    "build": "bower install && grunt build",
     "webpackbuild": "grunt webpack:build",
-    "test": "npm run travis && karma start config/karma.conf.js",
+    "test": "npm run eslint && npm run travis && karma start config/karma.conf.js",
     "travis": "grunt travis",
     "release": "grunt publish && grunt gh-pages",
     "devtest": "grunt karma:dev",
-    "buildExporTo": "grunt webpack:buildExportTo"
+    "buildExporTo": "grunt webpack:buildExportTo",
+    "prepublish": "grunt clean:npmpublish && npm run build"
   }
 }

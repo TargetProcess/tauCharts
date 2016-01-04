@@ -101,18 +101,11 @@
         baseUrl: location.pathname.replace(/(.+)(examples\/\w+\.html)/, '$1'),
         paths: {
             'd3': '//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3',
-            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min',
-            'canvgModule': 'bower_components/canvg/canvg'
+            'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min'
         },
         map: {
             '*': {
-                'tauCharts': 'http://localhost:9000/tauCharts.js',
-                'print.style.css': 'node_modules/requirejs-text/text!plugins/print.style.css',
-                'rgbcolor': '../bower_components/canvg/rgbcolor.js',
-                'stackblur': '../bower_components/canvg/StackBlur.js',
-                'FileSaver': 'bower_components/FileSaver.js/FileSaver',
-                'fetch': 'bower_components/fetch/fetch',
-                'promise': 'bower_components/es6-promise/promise'
+                'tauCharts': 'http://localhost:9000/tauCharts.js'
             }
         }
     });
@@ -122,7 +115,7 @@
         'src/addons/color-brewer',
         'plugins/legend',
         'plugins/trendline',
-        'plugins/export',
+        'build/development/plugins/tauCharts.export',
         'plugins/tooltip',
         'underscore'], function (tauCharts, brewer, legend, trendline, exportTo, tooltip) {
         /** @class Tooltip
