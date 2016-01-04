@@ -114,37 +114,30 @@ export class Line extends Element {
                 var dist = ((x0, x1, y0, y1) => Math.sqrt(Math.pow((x0 - x1), 2) + Math.pow((y0 - y1), 2)));
 
                 // d3.invert doesn't work for ordinal axes
-                var nearestPoints = rows
-                    .map((row, i) => {
+                var vertices = rows
+                    .map((row) => {
                         var rx = xScale(row[xScale.dim]);
                         var ry = yScale(row[yScale.dim]);
                         return {
-                            i: i,
                             x: rx,
                             y: ry,
                             dist: dist(mx, rx, my, ry),
                             data: row
                         };
-                    })
-                    .sort(by('dist')) // asc
-                    .slice(0, 8) // there should be enough 4 for proper line, 8 for "hedgehog"
-                    .sort(by('i'));
+                    });
 
-                var prev = nearestPoints[0];
-                var next = nearestPoints[1];
-                var pair = nearestPoints
-                    .slice(2)
-                    .reduce((memo, next) => memo.concat([[memo[memo.length - 1][1], next]]), [[prev, next]])
-                    .map((p) => {
-                        var prev = p[0];
-                        var next = p[1];
-                        var ab = dist(next.x, prev.x, next.y, prev.y);
-                        var ax = prev.dist;
-                        var bx = next.dist;
+                var pair = d3
+                    .range(vertices.length - 1)
+                    .map((edge) => {
+                        var v0 = vertices[edge];
+                        var v1 = vertices[edge + 1];
+                        var ab = dist(v1.x, v0.x, v1.y, v0.y);
+                        var ax = v0.dist;
+                        var bx = v1.dist;
                         var er = Math.abs(ab - (ax + bx));
-                        return [er, prev, next];
+                        return [er, v0, v1];
                     })
-                    .sort(by('0')) // find minimal error
+                    .sort(by('0')) // find minimal distance to edge
                     [0]
                     .slice(1);
 
