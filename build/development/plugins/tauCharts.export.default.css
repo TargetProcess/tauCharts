@@ -41,10 +41,11 @@
   padding: 7px 15px;
   color: inherit;
   text-decoration: none;
+  cursor: pointer;
 }
 .graphical-report__export__item > a:hover,
 .graphical-report__export__item > a:focus {
-  background: #eaf2fc;
+  background: #EAF2FC;
   outline: none;
   box-shadow: none;
 }

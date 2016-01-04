@@ -130,12 +130,12 @@
         cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
         cfg.plugins = cfg.plugins || [];
-        cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
+       /* cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
             cssPaths: [
                 "../css/test-taucharts.css",
                 "../css/test-entitycolors.css"
             ]
-        }));
+        }));*/
 
         var chart = (cfg.hasOwnProperty('type')) ?
                 (new tauCharts.Chart(cfg)) :
