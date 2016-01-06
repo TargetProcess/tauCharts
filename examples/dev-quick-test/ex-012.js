@@ -13,6 +13,7 @@ window.samples.push({
             }
         },
         {
+            enableColorToBarPosition: false,
             "x": {
                 "label": "Count"
             },
@@ -197,6 +198,9 @@ window.samples.push({
             "color": {"id": 4, "name": "UserStory"},
             "dataItem": null
         }
-    ]
+    ].map((row) => {
+            row.x1 = Math.random();
+            return row;
+        })
 
 });

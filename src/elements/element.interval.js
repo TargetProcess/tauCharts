@@ -8,7 +8,7 @@ export class Interval extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(this.config.guide || {}, {prettify:true});
+        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -38,7 +38,7 @@ export class Interval extends Element {
         var yScale = this.yScale;
         var colorScale = this.color;
 
-        var domain = colorScale.domain();
+        var domain = (config.guide.enableColorToBarPosition === true) ? colorScale.domain() : [];
         var colorIndexScale = (d) => {
             var findIndex = domain.indexOf(d[colorScale.dim]);
             return findIndex === -1 ? 0 : findIndex;
