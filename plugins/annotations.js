@@ -52,14 +52,24 @@
 
                 var from = noteItem.val[0];
                 var to = noteItem.val[1];
-                var scaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
-                var domain = scaleInfo.domain();
+                var primaryScaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
+                var domain = primaryScaleInfo.domain();
                 var min = domain[0];
-                var max = domain[1];
-                if (isNaN(min) || isNaN(max) || (from > max) || (to < min)) {
+                var max = domain[domain.length - 1];
+
+                var isOutOfDomain = ((primaryScaleInfo.discrete) ?
+                    ((domain.indexOf(from) === -1) || (domain.indexOf(to) === -1)) :
+                    (isNaN(min) || isNaN(max) || (from > max) || (to < min)));
+
+                if (isOutOfDomain) {
                     console.log('Annotation is out of domain');
                     return;
                 }
+
+                var secAxis = ((axis === 'x') ? 'y' : 'x');
+                var secondaryScaleInfo = this._chart.getScaleInfo(coordsUnit[secAxis]);
+                var secDomain = secondaryScaleInfo.domain();
+                var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
                 var annotatedArea = {
                     type: 'ELEMENT.PATH',
@@ -83,7 +93,8 @@
                                 from: from,
                                 to: to,
                                 x: xScale.dim,
-                                y: yScale.dim
+                                y: yScale.dim,
+                                boundaries: boundaries
                             }
                         }
                     ],
@@ -122,14 +133,22 @@
 
                 var text = noteItem.text;
                 var from = noteItem.val;
-                var scaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
-                var domain = scaleInfo.domain();
-                var min = domain[0];
-                var max = domain[1];
-                if ((from > max) || (from < min)) {
+                var primaryScaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
+                var domain = primaryScaleInfo.domain();
+
+                var isOutOfDomain = ((primaryScaleInfo.discrete) ?
+                    (domain.indexOf(from) === -1) :
+                    ((from > domain[domain.length - 1]) || (from < domain[0])));
+
+                if (isOutOfDomain) {
                     console.log('Annotation is out of domain');
                     return;
                 }
+
+                var secAxis = ((axis === 'x') ? 'y' : 'x');
+                var secondaryScaleInfo = this._chart.getScaleInfo(coordsUnit[secAxis]);
+                var secDomain = secondaryScaleInfo.domain();
+                var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
                 var annotatedLine = {
                     type: 'ELEMENT.LINE',
@@ -152,7 +171,8 @@
                                 from: from,
                                 text: text,
                                 x: xScale.dim,
-                                y: yScale.dim
+                                y: yScale.dim,
+                                boundaries: boundaries
                             }
                         }
                     ],
@@ -190,16 +210,16 @@
                     var rghtBtm = {};
 
                     leftBtm[a] = metaInfo.from;
-                    leftBtm[b] = (-Infinity);
+                    leftBtm[b] = metaInfo.boundaries[0];
 
                     leftTop[a] = metaInfo.from;
-                    leftTop[b] = (Infinity);
+                    leftTop[b] = metaInfo.boundaries[1];
 
                     rghtTop[a] = metaInfo.to;
-                    rghtTop[b] = (Infinity);
+                    rghtTop[b] = metaInfo.boundaries[1];
 
                     rghtBtm[a] = metaInfo.to;
-                    rghtBtm[b] = (-Infinity);
+                    rghtBtm[b] = metaInfo.boundaries[0];
 
                     if (metaInfo.axis === 'x') {
                         leftTop.text = metaInfo.text;
@@ -218,10 +238,11 @@
                     var dst = {};
 
                     src[a] = metaInfo.from;
-                    src[b] = (-Infinity);
+                    src[b] = metaInfo.boundaries[0];
 
                     dst[a] = metaInfo.from;
-                    dst[b] = (Infinity);
+                    dst[b] = metaInfo.boundaries[1];
+
                     dst.text = metaInfo.text;
 
                     return [src, dst];
