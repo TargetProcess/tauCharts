@@ -33,7 +33,7 @@
   width: 100%;
   overflow: auto;
   background: transparent;
-  color: #333;
+  color: #333333;
 }
 .graphical-report__layout__header {
   -ms-flex: 0 0.1 auto;
@@ -79,7 +79,7 @@
   box-sizing: border-box;
 }
 .graphical-report__layout text {
-  fill: #333;
+  fill: #333333;
 }
 .graphical-report {
   /* region Select --------------------------------------------------*/
@@ -101,7 +101,7 @@
   display: inline-block;
   border: 1px solid #c3c3c3;
   border-radius: 2px;
-  background: linear-gradient(to bottom, #fff 0%, #dbdbde 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #dbdbde 100%);
 }
 .graphical-report__checkbox__icon:before {
   display: none;
@@ -128,10 +128,10 @@
   outline: none;
 }
 .graphical-report__checkbox:hover .graphical-report__checkbox__input:not(:disabled) ~ .graphical-report__checkbox__icon {
-  border-color: #999;
+  border-color: #999999;
 }
 .graphical-report__checkbox__input:checked + .graphical-report__checkbox__icon {
-  background: linear-gradient(to bottom, #fff 0%, #dbdbde 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #dbdbde 100%);
 }
 .graphical-report__checkbox__input:checked + .graphical-report__checkbox__icon:before {
   display: block;
@@ -144,10 +144,10 @@
   line-height: 24px;
   vertical-align: middle;
   padding: 2px;
-  background-color: #fff;
+  background-color: #ffffff;
   border: 1px solid #c3c3c3;
   border-radius: 2px;
-  color: #333;
+  color: #333333;
 }
 .graphical-report__select:focus {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
@@ -165,88 +165,88 @@
 }
 /* region Generate .color@{n}-@{i}  function  */
 .graphical-report__svg .color20-1 {
-  stroke: #6FA1D9;
-  fill: #6FA1D9;
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
 }
 .graphical-report__svg .color20-2 {
-  stroke: #DF2B59;
-  fill: #DF2B59;
+  stroke: #df2b59;
+  fill: #df2b59;
 }
 .graphical-report__svg .color20-3 {
-  stroke: #66DA26;
-  fill: #66DA26;
+  stroke: #66da26;
+  fill: #66da26;
 }
 .graphical-report__svg .color20-4 {
-  stroke: #4C3862;
-  fill: #4C3862;
+  stroke: #4c3862;
+  fill: #4c3862;
 }
 .graphical-report__svg .color20-5 {
-  stroke: #E5B011;
-  fill: #E5B011;
+  stroke: #e5b011;
+  fill: #e5b011;
 }
 .graphical-report__svg .color20-6 {
-  stroke: #3A3226;
-  fill: #3A3226;
+  stroke: #3a3226;
+  fill: #3a3226;
 }
 .graphical-report__svg .color20-7 {
-  stroke: #CB461A;
-  fill: #CB461A;
+  stroke: #cb461a;
+  fill: #cb461a;
 }
 .graphical-report__svg .color20-8 {
-  stroke: #C7CE23;
-  fill: #C7CE23;
+  stroke: #c7ce23;
+  fill: #c7ce23;
 }
 .graphical-report__svg .color20-9 {
-  stroke: #7FCDC2;
-  fill: #7FCDC2;
+  stroke: #7fcdc2;
+  fill: #7fcdc2;
 }
 .graphical-report__svg .color20-10 {
-  stroke: #CCA1C8;
-  fill: #CCA1C8;
+  stroke: #cca1c8;
+  fill: #cca1c8;
 }
 .graphical-report__svg .color20-11 {
-  stroke: #C84CCE;
-  fill: #C84CCE;
+  stroke: #c84cce;
+  fill: #c84cce;
 }
 .graphical-report__svg .color20-12 {
-  stroke: #54762E;
-  fill: #54762E;
+  stroke: #54762e;
+  fill: #54762e;
 }
 .graphical-report__svg .color20-13 {
-  stroke: #746BC9;
-  fill: #746BC9;
+  stroke: #746bc9;
+  fill: #746bc9;
 }
 .graphical-report__svg .color20-14 {
   stroke: #953441;
   fill: #953441;
 }
 .graphical-report__svg .color20-15 {
-  stroke: #5C7A76;
-  fill: #5C7A76;
+  stroke: #5c7a76;
+  fill: #5c7a76;
 }
 .graphical-report__svg .color20-16 {
-  stroke: #C8BF87;
-  fill: #C8BF87;
+  stroke: #c8bf87;
+  fill: #c8bf87;
 }
 .graphical-report__svg .color20-17 {
-  stroke: #BFC1C3;
-  fill: #BFC1C3;
+  stroke: #bfc1c3;
+  fill: #bfc1c3;
 }
 .graphical-report__svg .color20-18 {
-  stroke: #8E5C31;
-  fill: #8E5C31;
+  stroke: #8e5c31;
+  fill: #8e5c31;
 }
 .graphical-report__svg .color20-19 {
-  stroke: #71CE7B;
-  fill: #71CE7B;
+  stroke: #71ce7b;
+  fill: #71ce7b;
 }
 .graphical-report__svg .color20-20 {
-  stroke: #BE478B;
-  fill: #BE478B;
+  stroke: #be478b;
+  fill: #be478b;
 }
 .graphical-report__svg .color-default {
-  stroke: #6FA1D9;
-  fill: #6FA1D9;
+  stroke: #6fa1d9;
+  fill: #6fa1d9;
 }
 /* endregion */
 /* region Generate .line-params-@{n}  function  */
@@ -297,12 +297,12 @@
   /*  Highlighter  */
 }
 .graphical-report a {
-  color: #3962FF;
+  color: #3962ff;
   border-bottom: 1px solid rgba(57, 98, 255, 0.3);
   text-decoration: none;
 }
 .graphical-report a:hover {
-  color: #E17152;
+  color: #e17152;
   border-bottom: 1px solid rgba(225, 113, 82, 0.3);
 }
 .graphical-report__d3-time-overflown .tick:nth-child(even) {
@@ -339,31 +339,31 @@
   stroke-linejoin: 'round';
 }
 .graphical-report__svg .map-contour-level-0 path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 .graphical-report__svg .map-contour-level-1 path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 .graphical-report__svg .map-contour-level-2 path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 .graphical-report__svg .map-contour-level-3 path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 .graphical-report__svg .map-contour-level-4 path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 .graphical-report__svg .map-contour-highlighted,
 .graphical-report__svg .map-contour:hover {
-  fill: #FFBF00;
+  fill: #ffbf00;
 }
 .graphical-report__svg .map-contour-highlighted path,
 .graphical-report__svg .map-contour:hover path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 .graphical-report__svg .map-contour-highlighted text,
 .graphical-report__svg .map-contour:hover text {
-  fill: #000;
+  fill: #000000;
 }
 .graphical-report__svg .axis line,
 .graphical-report__svg .axis path {

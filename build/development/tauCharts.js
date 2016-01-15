@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.3-alpha.8 - 2016-01-04
+/*! taucharts - v0.7.4 - 2016-01-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -1977,7 +1977,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Interval).call(this, config));
 
 	        _this.config = config;
-	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, { prettify: true });
+	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, { prettify: true, enableColorToBarPosition: true });
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2010,7 +2010,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var yScale = this.yScale;
 	            var colorScale = this.color;
 
-	            var domain = colorScale.domain();
+	            var domain = config.guide.enableColorToBarPosition === true ? colorScale.domain() : [];
 	            var colorIndexScale = function colorIndexScale(d) {
 	                var findIndex = domain.indexOf(d[colorScale.dim]);
 	                return findIndex === -1 ? 0 : findIndex;

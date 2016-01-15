@@ -45,7 +45,7 @@
 }
 .graphical-report__export__item > a:hover,
 .graphical-report__export__item > a:focus {
-  background: #EAF2FC;
+  background: #eaf2fc;
   outline: none;
   box-shadow: none;
 }
