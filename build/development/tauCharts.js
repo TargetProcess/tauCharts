@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.4 - 2016-01-15
+/*! taucharts - v0.7.5 - 2016-01-16
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -9883,12 +9883,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.vars = vars;
 	        this.scaleConfig = scaleConfig;
 
-	        this.addField('dim', this.scaleConfig.dim).addField('scaleDim', this.scaleConfig.dim).addField('scaleType', this.scaleConfig.type).addField('source', this.scaleConfig.source).addField('domain', function () {
+	        this.addField('dim', this.scaleConfig.dim).addField('scaleDim', this.scaleConfig.dim).addField('scaleType', this.scaleConfig.type).addField('source', this.scaleConfig.source).addField('isContains', function (x) {
+	            return _this.isInDomain(x);
+	        }).addField('domain', function () {
 	            return _this.vars;
 	        });
 	    }
 
 	    _createClass(BaseScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(val) {
+	            return this.domain().indexOf(val) >= 0;
+	        }
+	    }, {
 	        key: 'domain',
 	        value: function domain() {
 	            return this.vars;
@@ -9984,6 +9991,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(SizeScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(x) {
+	            var domain = this.domain().sort();
+	            var min = domain[0];
+	            var max = domain[domain.length - 1];
+	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	        }
+	    }, {
 	        key: 'create',
 	        value: function create() {
 	            var localProps = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -10224,6 +10239,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(PeriodScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(aTime) {
+	            var gen = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(this.scaleConfig.period);
+	            var val = gen.cast(new Date(aTime)).getTime();
+	            return this.domain().map(function (x) {
+	                return x.getTime();
+	            }).indexOf(val) >= 0;
+	        }
+	    }, {
 	        key: 'create',
 	        value: function create(interval) {
 	            var _Math;
@@ -10349,6 +10373,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(TimeScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(aTime) {
+	            var x = new Date(aTime);
+	            var domain = this.domain();
+	            var min = domain[0];
+	            var max = domain[domain.length - 1];
+	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	        }
+	    }, {
 	        key: 'create',
 	        value: function create(interval) {
 
@@ -10454,6 +10487,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(LinearScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(x) {
+	            var domain = this.domain();
+	            var min = domain[0];
+	            var max = domain[domain.length - 1];
+	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	        }
+	    }, {
 	        key: 'create',
 	        value: function create(interval) {
 
@@ -10603,6 +10644,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(FillScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(x) {
+	            var domain = this.domain();
+	            var min = domain[0];
+	            var max = domain[domain.length - 1];
+	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	        }
+	    }, {
 	        key: 'create',
 	        value: function create() {
 
