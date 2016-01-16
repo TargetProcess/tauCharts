@@ -58,7 +58,12 @@ export class BaseScale {
             .addField('scaleDim', this.scaleConfig.dim)
             .addField('scaleType', this.scaleConfig.type)
             .addField('source', this.scaleConfig.source)
+            .addField('isContains', ((x) => this.isInDomain(x)))
             .addField('domain', (() => this.vars));
+    }
+
+    isInDomain(val) {
+        return (this.domain().indexOf(val) >= 0);
     }
 
     domain() {

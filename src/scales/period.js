@@ -37,6 +37,12 @@ export class PeriodScale extends BaseScale {
             .addField('discrete', true);
     }
 
+    isInDomain(aTime) {
+        var gen = UnitDomainPeriodGenerator.get(this.scaleConfig.period);
+        var val = gen.cast(new Date(aTime)).getTime();
+        return (this.domain().map(x => x.getTime()).indexOf(val) >= 0);
+    }
+
     create(interval) {
 
         var varSet = this.vars;

@@ -30,6 +30,13 @@ export class LinearScale extends BaseScale {
             .addField('discrete', false);
     }
 
+    isInDomain(x) {
+        var domain = this.domain();
+        var min = domain[0];
+        var max = domain[domain.length - 1];
+        return (!isNaN(min) && !isNaN(max) && (x <= max) && (x >= min));
+    }
+
     create(interval) {
 
         var varSet = this.vars;

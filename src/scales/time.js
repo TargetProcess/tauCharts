@@ -26,6 +26,14 @@ export class TimeScale extends BaseScale {
         this.addField('scaleType', 'time');
     }
 
+    isInDomain(aTime) {
+        var x = new Date(aTime);
+        var domain = this.domain();
+        var min = domain[0];
+        var max = domain[domain.length - 1];
+        return (!isNaN(min) && !isNaN(max) && (x <= max) && (x >= min));
+    }
+
     create(interval) {
 
         var varSet = this.vars;
