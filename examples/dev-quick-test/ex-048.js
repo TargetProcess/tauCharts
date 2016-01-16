@@ -2,7 +2,7 @@ var now = new Date();
 
 window.samples.push({
 
-    "type": "line",
+    "type": "stacked-bar",
     "color": "color",
     "size": "size",
     "x": [
@@ -14,8 +14,8 @@ window.samples.push({
     "guide": [
         {
             "x": {
-                "label": "End Date By Month"//,
-                // "tickPeriod": "month"
+                "label": "End Date By Month",
+                "tickPeriod": "month"
             },
             "y": {
                 "label": "Effort"
@@ -31,10 +31,10 @@ window.samples.push({
     ],
     "dimensions": {
         "x1": {
-            //"type": "order",
-            //"scale": "period"
-            "type": "category",
-            "scale": "ordinal"
+            "type": "order",
+            "scale": "period"
+            //"type": "category",
+            //"scale": "ordinal"
         },
         "y1": {
             "type": "measure",
@@ -78,7 +78,15 @@ window.samples.push({
             items: [
                 {
                     dim: 'y1',
-                    val: 105,
+                    val: 225,
+                    text: '100 points',
+                    position: 'front',
+                    color: '#FFAB00'
+                }
+                ,
+                {
+                    dim: 'y1',
+                    val: [50, 75],
                     text: '100 points',
                     position: 'front',
                     color: '#FFAB00'
@@ -86,7 +94,7 @@ window.samples.push({
                 ,
                 {
                     dim: 'x1',
-                    val: "\/Date(1425189600000-0600)\/",
+                    val: "\/Date(1420092000000-0600)\/",
                     text: 'Build 33',
                     position: 'front',
                     color: 'green'
@@ -94,11 +102,34 @@ window.samples.push({
                 ,
                 {
                     dim: 'x1',
-                    // val: (+new Date('2015-03-01')),
-                    // val: '1425189600000',
-
-                    val: ["\/Date(1430456400000-0500)\/", "\/Date(1433134800000-0500)\/"],
+                    val: tauCharts.api.tickPeriod.get('month').cast(1420092000000),
                     text: 'Build 33',
+                    position: 'front',
+                    color: 'green'
+                }
+                ,
+                {
+                    dim: 'x1',
+                    //val: (new Date('2015-03-01')),
+                    //val: '1425189600000',
+                    //val: ["\/Date(1430456400000-0500)\/", "\/Date(1433134800000-0500)\/"],
+                    val: [
+                        tauCharts.api.tickPeriod.get('month').cast(new Date('2016-05-01')),
+                        tauCharts.api.tickPeriod.get('month').cast(new Date('2016-07-01'))
+                    ],
+                    text: 'Build 33',
+                    position: 'front',
+                    color: 'green'
+                }
+                ,
+                {
+                    dim: 'x1',
+                    val: ["\/Date(1430456400000-0500)\/", "\/Date(1433134800000-0500)\/"],
+                    //val: [
+                    //    tauCharts.api.tickPeriod.get('month').cast(new Date('2016-05-01')),
+                    //    tauCharts.api.tickPeriod.get('month').cast(new Date('2016-07-01'))
+                    //],
+                    text: 'Build 55',
                     position: 'front',
                     color: 'green'
                 }
@@ -571,26 +602,66 @@ window.samples.push({
                 "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"}
             }
         }
-    }, {
-        "x1": "\/Date(1441083600000-0500)\/",
-        "y1": 0.0000,
-        "size": 70,
-        "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"},
-        "dataItem": {
-            "id": "106974",
-            "type": "Feature",
-            "orderingValue": null,
-            "data": {"id": 106974, "name": "New Audit History research", "type": "Feature"},
-            "coords": {
-                "x1": "\/Date(1441083600000-0500)\/",
-                "y1": 0.0000,
-                "size": 70,
-                "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"}
+    }
+        ,
+        {
+            "x1": "\/Date(1441083600000-0500)\/",
+            "y1": 0.0000,
+            "size": 70,
+            "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"},
+            "dataItem": {
+                "id": "106974",
+                "type": "Feature",
+                "orderingValue": null,
+                "data": {"id": 106974, "name": "New Audit History research", "type": "Feature"},
+                "coords": {
+                    "x1": "\/Date(1441083600000-0500)\/",
+                    "y1": 0.0000,
+                    "size": 70,
+                    "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"}
+                }
             }
         }
-    }
+        //,
+        //{
+        //    "x1": "B",
+        //    "y1": 0.0000,
+        //    "size": 70,
+        //    "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"},
+        //    "dataItem": {
+        //        "id": "106974",
+        //        "type": "Feature",
+        //        "orderingValue": null,
+        //        "data": {"id": 106974, "name": "New Audit History research", "type": "Feature"},
+        //        "coords": {
+        //            "x1": "\/Date(1441083600000-0500)\/",
+        //            "y1": 0.0000,
+        //            "size": 70,
+        //            "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"}
+        //        }
+        //    }
+        //}
+        //,
+        //{
+        //    "x1": "A",
+        //    "y1": 0.0000,
+        //    "size": 70,
+        //    "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"},
+        //    "dataItem": {
+        //        "id": "106974",
+        //        "type": "Feature",
+        //        "orderingValue": null,
+        //        "data": {"id": 106974, "name": "New Audit History research", "type": "Feature"},
+        //        "coords": {
+        //            "x1": "\/Date(1441083600000-0500)\/",
+        //            "y1": 0.0000,
+        //            "size": 70,
+        //            "color": {"resourceType": "EntityType", "id": 9, "name": "Feature"}
+        //        }
+        //    }
+        //}
     ].map(function (row) {
-            // row.x1 = parseInt(row.x1.substr(6, 13));
+            row.x1 = parseInt(row.x1.substr(6, 13));
             return row;
         })
 });

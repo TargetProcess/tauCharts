@@ -32,6 +32,91 @@
 
             init: function (chart) {
                 this._chart = chart;
+
+                var specRef = chart.getSpec();
+                specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
+                specRef.transformations = specRef.transformations || {};
+
+                specRef.transformations.dataRange = function (data, metaInfo) {
+
+                    var from = metaInfo.from;
+                    var to = metaInfo.to;
+
+                    var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
+                    var isOutOfDomain = (!primaryScaleInfo.isInDomain(from) || !primaryScaleInfo.isInDomain(to));
+
+                    if (isOutOfDomain) {
+                        console.log('Annotation is out of domain');
+                        return [];
+                    }
+
+                    var secondaryScaleInfo = chart.getScaleInfo(metaInfo.secondaryScale);
+                    var secDomain = secondaryScaleInfo.domain();
+                    var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
+
+                    var a = primaryScaleInfo.dim;
+                    var b = secondaryScaleInfo.dim;
+
+                    var leftBtm = {};
+                    var leftTop = {};
+                    var rghtTop = {};
+                    var rghtBtm = {};
+
+                    leftBtm[a] = from;
+                    leftBtm[b] = boundaries[0];
+
+                    leftTop[a] = from;
+                    leftTop[b] = boundaries[1];
+
+                    rghtTop[a] = to;
+                    rghtTop[b] = boundaries[1];
+
+                    rghtBtm[a] = to;
+                    rghtBtm[b] = boundaries[0];
+
+                    if (metaInfo.axis === 'x') {
+                        leftTop.text = metaInfo.text;
+                    } else {
+                        rghtTop.text = metaInfo.text;
+                    }
+
+                    return [leftBtm, leftTop, rghtTop, rghtBtm];
+                };
+
+                specRef.transformations.dataLimit = function (data, metaInfo) {
+
+                    var from = metaInfo.from;
+                    var primary = metaInfo.primaryScale;
+                    var secondary = metaInfo.secondaryScale;
+
+                    var primaryScaleInfo = chart.getScaleInfo(primary);
+                    var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
+
+                    if (isOutOfDomain) {
+                        console.log('Annotation is out of domain');
+                        return [];
+                    }
+
+                    var secondaryScaleInfo = chart.getScaleInfo(secondary);
+                    var secDomain = secondaryScaleInfo.domain();
+                    var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
+
+                    var src = {};
+                    var dst = {};
+
+                    var a = primaryScaleInfo.dim;
+                    var b = secondaryScaleInfo.dim;
+
+                    src[a] = from;
+                    src[b] = boundaries[0];
+
+                    dst[a] = from;
+                    dst[b] = boundaries[1];
+
+                    dst.text = metaInfo.text;
+
+                    return [src, dst];
+                };
             },
 
             addAreaNote: function (specRef, coordsUnit, noteItem) {
@@ -39,37 +124,19 @@
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                var axis = ((noteItem.dim === xScale.dim) ?
-                    ('x') :
+                var axes = ((noteItem.dim === xScale.dim) ?
+                    ['x', 'y'] :
                     ((noteItem.dim === yScale.dim) ?
-                        ('y') :
+                        ['y', 'x'] :
                         (null)));
 
-                if (axis === null) {
+                if (axes === null) {
                     console.log('Annotation doesn\'t match any data field');
                     return;
                 }
 
                 var from = noteItem.val[0];
                 var to = noteItem.val[1];
-                var primaryScaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
-                var domain = primaryScaleInfo.domain();
-                var min = domain[0];
-                var max = domain[domain.length - 1];
-
-                var isOutOfDomain = ((primaryScaleInfo.discrete) ?
-                    ((domain.indexOf(from) === -1) || (domain.indexOf(to) === -1)) :
-                    (isNaN(min) || isNaN(max) || (from > max) || (to < min)));
-
-                if (isOutOfDomain) {
-                    console.log('Annotation is out of domain');
-                    return;
-                }
-
-                var secAxis = ((axis === 'x') ? 'y' : 'x');
-                var secondaryScaleInfo = this._chart.getScaleInfo(coordsUnit[secAxis]);
-                var secDomain = secondaryScaleInfo.domain();
-                var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
                 var annotatedArea = {
                     type: 'ELEMENT.PATH',
@@ -88,13 +155,12 @@
                         {
                             type: 'dataRange',
                             args: {
-                                axis: axis,
+                                axis: axes[0],
                                 text: noteItem.text,
                                 from: from,
                                 to: to,
-                                x: xScale.dim,
-                                y: yScale.dim,
-                                boundaries: boundaries
+                                primaryScale: coordsUnit[axes[0]],
+                                secondaryScale: coordsUnit[axes[1]]
                             }
                         }
                     ],
@@ -106,8 +172,8 @@
                         },
                         text: {
                             fontColor: noteItem.color,
-                            paddingX: ((axis === 'x') ? 5 : -5),
-                            paddingY: ((axis === 'x') ? 5 : 15)
+                            paddingX: ((axes[0] === 'x') ? 5 : -5),
+                            paddingY: ((axes[0] === 'x') ? 5 : 15)
                         }
                     }
                 };
@@ -120,35 +186,19 @@
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                var axis = ((noteItem.dim === xScale.dim) ?
-                    ('x') :
+                var axes = ((noteItem.dim === xScale.dim) ?
+                    ['x', 'y'] :
                     ((noteItem.dim === yScale.dim) ?
-                        ('y') :
+                        ['y', 'x'] :
                         (null)));
 
-                if (axis === null) {
+                if (axes === null) {
                     console.log('Annotation doesn\'t match any field');
                     return;
                 }
 
                 var text = noteItem.text;
                 var from = noteItem.val;
-                var primaryScaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
-                var domain = primaryScaleInfo.domain();
-
-                var isOutOfDomain = ((primaryScaleInfo.discrete) ?
-                    (domain.indexOf(from) === -1) :
-                    ((from > domain[domain.length - 1]) || (from < domain[0])));
-
-                if (isOutOfDomain) {
-                    console.log('Annotation is out of domain');
-                    return;
-                }
-
-                var secAxis = ((axis === 'x') ? 'y' : 'x');
-                var secondaryScaleInfo = this._chart.getScaleInfo(coordsUnit[secAxis]);
-                var secDomain = secondaryScaleInfo.domain();
-                var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
                 var annotatedLine = {
                     type: 'ELEMENT.LINE',
@@ -167,12 +217,10 @@
                         {
                             type: 'dataLimit',
                             args: {
-                                axis: axis,
                                 from: from,
                                 text: text,
-                                x: xScale.dim,
-                                y: yScale.dim,
-                                boundaries: boundaries
+                                primaryScale: coordsUnit[axes[0]],
+                                secondaryScale: coordsUnit[axes[1]]
                             }
                         }
                     ],
@@ -185,8 +233,8 @@
                         },
                         text: {
                             fontColor: noteItem.color,
-                            paddingX: ((axis === 'x') ? 5 : -5),
-                            paddingY: ((axis === 'x') ? 5 : -5)
+                            paddingX: ((axes[0] === 'x') ? 5 : -5),
+                            paddingY: ((axes[0] === 'x') ? 5 : -5)
                         }
                     }
                 };
@@ -197,57 +245,6 @@
             onSpecReady: function (chart, specRef) {
 
                 var self = this;
-                specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
-                specRef.transformations = specRef.transformations || {};
-
-                specRef.transformations.dataRange = function (data, metaInfo) {
-                    var a = ((metaInfo.axis === 'x') ? metaInfo.x : metaInfo.y);
-                    var b = ((metaInfo.axis === 'x') ? metaInfo.y : metaInfo.x);
-
-                    var leftBtm = {};
-                    var leftTop = {};
-                    var rghtTop = {};
-                    var rghtBtm = {};
-
-                    leftBtm[a] = metaInfo.from;
-                    leftBtm[b] = metaInfo.boundaries[0];
-
-                    leftTop[a] = metaInfo.from;
-                    leftTop[b] = metaInfo.boundaries[1];
-
-                    rghtTop[a] = metaInfo.to;
-                    rghtTop[b] = metaInfo.boundaries[1];
-
-                    rghtBtm[a] = metaInfo.to;
-                    rghtBtm[b] = metaInfo.boundaries[0];
-
-                    if (metaInfo.axis === 'x') {
-                        leftTop.text = metaInfo.text;
-                    } else {
-                        rghtTop.text = metaInfo.text;
-                    }
-
-                    return [leftBtm, leftTop, rghtTop, rghtBtm];
-                };
-
-                specRef.transformations.dataLimit = function (data, metaInfo) {
-                    var a = ((metaInfo.axis === 'x') ? metaInfo.x : metaInfo.y);
-                    var b = ((metaInfo.axis === 'x') ? metaInfo.y : metaInfo.x);
-
-                    var src = {};
-                    var dst = {};
-
-                    src[a] = metaInfo.from;
-                    src[b] = metaInfo.boundaries[0];
-
-                    dst[a] = metaInfo.from;
-                    dst[b] = metaInfo.boundaries[1];
-
-                    dst.text = metaInfo.text;
-
-                    return [src, dst];
-                };
-
                 var units = [];
                 chart.traverseSpec(specRef, function (unit) {
                     if (unit && (unit.type === 'COORDS.RECT') && (unit.units)) {
