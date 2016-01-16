@@ -43,7 +43,14 @@
                     var to = metaInfo.to;
 
                     var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
-                    var isOutOfDomain = (!primaryScaleInfo.isInDomain(from) || !primaryScaleInfo.isInDomain(to));
+
+                    var isX0OutOfDomain = !primaryScaleInfo.isInDomain(from);
+                    var isX1OutOfDomain = !primaryScaleInfo.isInDomain(to);
+
+                    var isOutOfDomain = (primaryScaleInfo.discrete ?
+                        (isX0OutOfDomain || isX1OutOfDomain) :
+                        (isX0OutOfDomain && isX1OutOfDomain)
+                    );
 
                     if (isOutOfDomain) {
                         console.log('Annotation is out of domain');

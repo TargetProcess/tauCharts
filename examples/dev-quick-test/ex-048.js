@@ -86,7 +86,7 @@ window.samples.push({
                 ,
                 {
                     dim: 'y1',
-                    val: [50, 75],
+                    val: [-50, 55],
                     text: '100 points',
                     position: 'front',
                     color: '#FFAB00'
