@@ -158,6 +158,8 @@ define(function (require) {
 
             expect(scale.domain()).to.deep.equal(['low', 'medium', 'high']);
             expect(scale('low')).to.equal('low');
+            expect(scale.isContains('low')).to.equal(true);
+            expect(scale.isContains('wow')).to.equal(false);
         });
 
         it('should support georole on [value] scale', function () {
@@ -187,6 +189,12 @@ define(function (require) {
 
             expect(scale0(new Date('2015-04-19'))).to.equal(100);
             expect(scale0(new Date('2015-04-20'))).to.equal(100);
+
+            expect(scale0.isContains(new Date('2015-04-15'))).to.equal(false);
+            expect(scale0.isContains(new Date('2015-04-16'))).to.equal(true);
+            expect(scale0.isContains(new Date('2015-04-18'))).to.equal(true);
+            expect(scale0.isContains(new Date('2015-04-19'))).to.equal(true);
+            expect(scale0.isContains(new Date('2015-04-20'))).to.equal(false);
 
             var scale1 = new TimeScale(
                 xSrc,
@@ -229,6 +237,12 @@ define(function (require) {
 
             expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
             expect(scale1.stepSize().toFixed(4)).to.equal((100 / scale1.domain().length).toFixed(4));
+
+            expect(scale1.isContains('2015-04-14')).to.equal(false);
+            expect(scale1.isContains('2015-04-15')).to.equal(true);
+            expect(scale1.isContains('2015-04-17')).to.equal(true);
+            expect(scale1.isContains('2015-04-20')).to.equal(true);
+            expect(scale1.isContains('2015-04-21')).to.equal(false);
 
             var scale2 = new PeriodScale(
                 xSrc,
@@ -303,6 +317,12 @@ define(function (require) {
             expect(scale0(3)).to.equal(100);
             expect(scale0(300)).to.equal(100);
 
+            expect(scale0.isContains(0)).to.equal(false);
+            expect(scale0.isContains(1)).to.equal(true);
+            expect(scale0.isContains(2)).to.equal(true);
+            expect(scale0.isContains(3)).to.equal(true);
+            expect(scale0.isContains(3.1)).to.equal(false);
+
             var scale1 = new LinearScale(
                 xSrc,
                 {
@@ -375,6 +395,9 @@ define(function (require) {
             expect(scale0('low')).to.equal('color20-1');
             expect(scale0('high')).to.equal('color20-3');
 
+            expect(scale0.isContains('high')).to.equal(true);
+            expect(scale0.isContains('wwww')).to.equal(false);
+
             var scale1 = new ColorScale(
                 xSrc,
                 {
@@ -440,6 +463,12 @@ define(function (require) {
             expect(scale0(2)).to.equal(8.348469228349536);
             expect(scale0(3)).to.equal(10);
 
+            expect(scale0.isContains(0)).to.equal(false);
+            expect(scale0.isContains(1)).to.equal(true);
+            expect(scale0.isContains(2)).to.equal(true);
+            expect(scale0.isContains(3)).to.equal(true);
+            expect(scale0.isContains(4)).to.equal(false);
+
             var scale1 = new SizeScale(
                 xSrc,
                 {
@@ -452,6 +481,10 @@ define(function (require) {
             expect(scale1('high')).to.equal(5);
             expect(scale1('low')).to.equal(5);
             expect(scale1('medium')).to.equal(5);
+
+            expect(scale1.isContains('high')).to.equal(false);
+            expect(scale1.isContains('medium')).to.equal(false);
+            expect(scale1.isContains('low')).to.equal(false);
 
             var scale2 = new SizeScale(
                 xSrc,
@@ -515,6 +548,11 @@ define(function (require) {
 
             expect(scale0.hasOwnProperty('stepSize')).to.equal(true);
             expect(scale0.stepSize()).to.equal(90 / scale0.domain().length);
+
+            expect(scale0.isContains('high')).to.equal(true);
+            expect(scale0.isContains('medium')).to.equal(true);
+            expect(scale0.isContains('low')).to.equal(true);
+            expect(scale0.isContains('wow')).to.equal(false);
 
             var scale1 = new OrdinalScale(
                 xSrc,
@@ -580,6 +618,11 @@ define(function (require) {
             expect(scale1(0)).to.equal('rgba(90,180,90,0.64)');
             expect(scale1(+3)).to.equal('rgba(90,180,90,1.00)');
             expect(scale1(undefined)).to.equal(undefined);
+
+            expect(scale1.isContains(-3.1)).to.equal(false);
+            expect(scale1.isContains(-3)).to.equal(true);
+            expect(scale1.isContains(0)).to.equal(true);
+            expect(scale1.isContains(+3.1)).to.equal(false);
         });
 
         it('should support brewer on [fill] scale', function () {

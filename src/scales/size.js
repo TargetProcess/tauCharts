@@ -16,7 +16,7 @@ export class SizeScale extends BaseScale {
     }
 
     isInDomain(x) {
-        var domain = this.domain();
+        var domain = this.domain().sort();
         var min = domain[0];
         var max = domain[domain.length - 1];
         return (!isNaN(min) && !isNaN(max) && (x <= max) && (x >= min));
