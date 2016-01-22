@@ -34,6 +34,7 @@ export class PeriodScale extends BaseScale {
         }
 
         this.addField('scaleType', 'period')
+            .addField('period', this.scaleConfig.period)
             .addField('discrete', true);
     }
 
