@@ -44,6 +44,12 @@
 
                     var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
 
+                    if ((primaryScaleInfo.scaleType === 'period')) {
+                        var periodCaster = tauCharts.api.tickPeriod.get(primaryScaleInfo.period);
+                        from = periodCaster.cast(new Date(metaInfo.from));
+                        to = periodCaster.cast(new Date(metaInfo.to));
+                    }
+
                     var isX0OutOfDomain = !primaryScaleInfo.isInDomain(from);
                     var isX1OutOfDomain = !primaryScaleInfo.isInDomain(to);
 
@@ -92,11 +98,13 @@
 
                 specRef.transformations.dataLimit = function (data, metaInfo) {
 
-                    var from = metaInfo.from;
                     var primary = metaInfo.primaryScale;
                     var secondary = metaInfo.secondaryScale;
 
                     var primaryScaleInfo = chart.getScaleInfo(primary);
+                    var from = ((primaryScaleInfo.scaleType === 'period') ?
+                        tauCharts.api.tickPeriod.get(primaryScaleInfo.period).cast(new Date(metaInfo.from)) :
+                        metaInfo.from);
                     var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
 
                     if (isOutOfDomain) {

@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.5 - 2016-01-16
+/*! taucharts - v0.7.6 - 2016-01-25
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -10234,7 +10234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this.vars = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
 	        }
 
-	        _this.addField('scaleType', 'period').addField('discrete', true);
+	        _this.addField('scaleType', 'period').addField('period', _this.scaleConfig.period).addField('discrete', true);
 	        return _this;
 	    }
 
