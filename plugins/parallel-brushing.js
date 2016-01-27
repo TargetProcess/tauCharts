@@ -39,6 +39,7 @@
                     });
 
                 plugin.forceBrush = settings.forceBrush || {};
+                plugin.onBrush = settings.onBrush || _.noop;
             },
 
             onRender: function (chart) {
@@ -102,6 +103,8 @@
 
                             return r;
                         });
+
+                        plugin.onBrush(e);
 
                         if (settings.verbose) {
                             var part = plugin.panel.getElementsByClassName('i-' + i);

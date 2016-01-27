@@ -40294,21 +40294,7 @@
         redraw();
     }
 
-    var showData = function (groups) {
-        var where = Object
-                .keys(groups)
-                .reduce(function (memo, k) {
-                    var v = groups[k];
-                    var str = _.isString(v) ? (k + ' IN ("' + v + '")') : (k + ' = ' + v);
-                    return memo.concat(str);
-                }, [])
-                .join(' AND ');
-
-        var prevWhere = $('#gfilter').val();
-
-        var currWhere = [prevWhere, where].filter(_.identity).join(' AND ');
-
-        $('#gfilter').val(currWhere);
+    var drawTable = function (currWhere) {
 
         var cols = [
             'Title',
@@ -40339,9 +40325,25 @@
                     minSpareCols: 1,
                     minSpareRows: 1,
                     rowHeaders: true,
-                    contextMenu: false,
-                    //width: 1200
+                    contextMenu: false
                 });
+    };
+
+    var showData = function (groups, srcRow, activeChart) {
+
+        var where = Object
+                .keys(groups)
+                .reduce(function (memo, k) {
+                    var v = groups[k];
+                    var str = _.isString(v) ? (k + ' IN ("' + v + '")') : (k + ' = ' + v);
+                    return memo.concat(str);
+                }, [])
+                .join(' AND ');
+
+        $('#gfilter').val(where);
+
+        drawTable(where);
+        redraw(where, groups, activeChart);
     };
 
     function parseGroupBy(query) {
@@ -40357,14 +40359,17 @@
     }
 
     var data = datasets.OscarNominees;
-    var xsql = function (q) {
+    var xsql = function (query, isGlobal) {
         var globFilter = $('#gfilter').val() || '1';
-        return alasql(q, [alasql('SELECT * FROM ? WHERE ' + globFilter, [data])]);
+        return (alasql(query,
+                        isGlobal ? [data] : [alasql('SELECT * FROM ? WHERE ' + globFilter, [data])])
+        );
     };
 
     window.samples = [
         {
-            query: 'SELECT Title, Country, imdbRating, tomatoRating, Genre, Decade, isWinner, oscarWins FROM ?',
+            query: 'SELECT Title, Director, Country, imdbRating, tomatoRating, Genre, Decade, isWinner, oscarWins FROM ?',
+            static: true,
             viz: {
                 type: 'parallel',
                 columns: [
@@ -40373,9 +40378,29 @@
                 color: 'Genre',
                 plugins: [
                     tauCharts.api.plugins.get('parallel-brushing')({
-                        forceBrush: {
-                            // year: [80, 81]
-                        }
+                        onBrush: _.debounce(function (filters) {
+
+                            var handlers = {
+                                inset: function (dim, args) {
+                                    return dim + ' IN ("' + args.join('","') + '")';
+                                }
+                                ,
+                                between: function (dim, args) {
+                                    return (dim + ' >= ' + args[0] + ' AND ' + dim + ' <= ' + args[1]);
+                                }
+                            };
+
+                            var sqlWhere = filters
+                                    .map(function (f) {
+                                        return handlers[f.func](f.dim, f.args);
+                                    })
+                                    .join(' AND ');
+
+                            $('#gfilter').val(sqlWhere);
+                            drawTable(sqlWhere);
+                            redraw();
+
+                        }, 500)
                     })
                     // ,
                     // tauCharts.api.plugins.get('parallel-tooltip')()
@@ -40510,6 +40535,7 @@
 
 <script>
 
+    window.target = null;
     window.charts = [];
     function draw() {
         window.samples.forEach(function (cfg, i) {
@@ -40518,7 +40544,7 @@
             if (cfg.h) s.push('height: ' + cfg.h + 'px');
 
             $('body').append('<div class="cc" id="div' + i + '" style="' + s.join(';') + '"></div>');
-            cfg.viz.data = xsql(cfg.query);
+            cfg.viz.data = xsql(cfg.query, cfg.global);
             cfg.viz.plugins = cfg.viz.plugins || [];
             cfg.viz.plugins = cfg.viz.plugins.concat([
                 // tauCharts.api.plugins.get('legend')(),
@@ -40533,31 +40559,36 @@
         });
     }
 
-    function redraw() {
+    function redraw(where, groups, activeChart) {
         window.charts.forEach(function (chart, i) {
             var cfg = window.samples[i];
-            chart.setData(xsql(cfg.query));
+
+            if (cfg.static || (chart === activeChart)) {
+                chart
+                        .select(function () {
+                            return true;
+                        })
+                        .forEach(function (geom) {
+                            geom.fire('highlight', (function (row) {
+
+                                if (!groups) return true;
+
+                                var list = Object.keys(groups || {}).filter(function (k) {
+                                    return row[k] == groups[k];
+                                });
+                                return list.length > 0;
+                            }));
+                        });
+                return;
+            }
+
+            chart.setData(xsql(cfg.query, cfg.global));
         });
     }
 
     showData({});
     draw();
 
-    function interact() {
-        window.charts.forEach(function (chartInstance) {
-            chartInstance
-                    .select(function () {return true;})
-                    .forEach(function (geom) {
-                        geom.fire('highlight', (function (row) {
-                            return (row.hasOwnProperty('Genre') ?
-                                    (row['Genre'] == 'Crime') :
-                                    (null));
-                        }));
-                    });
-        });
-    }
-
 </script>
-
 </body>
 </html>

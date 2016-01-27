@@ -257,7 +257,7 @@
                     return memo;
                 }, {});
 
-                settings.onRevealAggregation(descFilters, aggregatedRow);
+                settings.onRevealAggregation(descFilters, aggregatedRow, this._chart);
             },
 
             _exclude: function () {
