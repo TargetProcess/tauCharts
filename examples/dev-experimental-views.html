@@ -57,11 +57,12 @@
 <body>
 
 <div id="T0" style="display: block;float: none;overflow:auto;height: 200px; border: solid 1px"></div>
-<div id="T1" style="display: block;float: none;overflow:auto;margin-top:2px">
+<div id="T1" style="display: block;float: none;overflow:auto;margin-top:10px;font-size: large">
     <!-- ABS(imdbRating - tomatoRating) < 0.5 -->
     <!-- imdbRating > 8 AND tomatoRating > 8 -->
     <!-- ABS(imdbRating - tomatoRating) < 0.25 AND imdbRating > 8 AND tomatoRating > 8 -->
-    WHERE <input id="gfilter" type="text" placeholder="..." style="width: 50%" />
+    SELECT * FROM ? WHERE <input id="gfilter" type="text" placeholder="..." style="width: 50%" />
+    <button onclick="applyFilter()">Apply</button>
     <button onclick="clearFilter()">Reset</button>
 </div>
 
@@ -114,7 +115,7 @@
         }
         ,
         {
-            query: 'SELECT Director, SUM(oscarWins) AS SumOscarWins, COUNT(*) AS CountFilms FROM ? GROUP BY Director ORDER BY SumOscarWins',
+            query: 'SELECT Director, SUM(oscarWins) AS SumOscarWins FROM ? GROUP BY Director ORDER BY SumOscarWins',
             viz: {
                 type: 'horizontal-bar',
                 x: 'SumOscarWins',
@@ -296,7 +297,9 @@
     }
 
     function redraw(jsonWhere, activeChart) {
+
         window.charts.forEach(function (chart, i) {
+
             var cfg = window.samples[i];
 
             if (chart === activeChart) {
@@ -322,6 +325,12 @@
 
             chart.setData(xsql(cfg.query));
         });
+    }
+
+    function applyFilter() {
+        var whereFilter = $('#gfilter').val();
+        drawTable(whereFilter);
+        redraw(null, null);
     }
 
     showData({});

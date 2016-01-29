@@ -59,11 +59,11 @@ var drawTable = function (currWhere) {
                 'Title',
                 'Country',
                 'Genre',
-                'Language',
+                // 'Language',
                 'oscarWins',
                 'gotAnOscar',
                 'gotBestPictureOscar',
-                'Decade',
+                // 'Decade',
                 'Year',
                 "imdbRating",
                 "tomatoRating",
@@ -133,9 +133,10 @@ function parseGroupBy(query) {
 }
 
 var data = datasets.OscarNominees;
-var xsql = function (query, isGlobal) {
+var xsql = function (query) {
         var globFilter = $('#gfilter').val() || '1';
-        return (alasql(query,
-                isGlobal ? [data] : [alasql('SELECT * FROM ? WHERE ' + globFilter, [data])])
+        return (alasql(
+                (query),
+                ([alasql('SELECT * FROM ? WHERE ' + globFilter, [data])]))
         );
 };
