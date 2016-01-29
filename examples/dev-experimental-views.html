@@ -12,7 +12,7 @@
     <script src='http://docs.handsontable.com/0.21.0/bower_components/handsontable/dist/handsontable.full.js'></script>
 
     <!-- core -->
-    <script src="http://localhost:9000/tauCharts.js"></script>
+    <script src="../build/development/tauCharts.js"></script>
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
     <!--<script src="../build/development/plugins/tauCharts.export.js"></script>-->
@@ -173,75 +173,75 @@
             w: 200,
             h: 400
         }
-        ,
-        {
-            query: 'SELECT Country, COUNT(*) AS CountOfFilmsByCountry FROM ? GROUP BY Country ORDER BY CountOfFilmsByCountry',
-            viz: {
-                type: 'map',
-                code: 'Country',
-                fill: 'CountOfFilmsByCountry',
-                guide: {
-                    code: {georole:'countries'},
-                    sourcemap: './../src/addons/world-countries.json'
-                },
-                x: 'CountOfFilmsByCountry',
-                y: 'Country',
-                plugins: [
-                    tauCharts.api.plugins.get('geomap-tooltip')(),
-                    tauCharts.api.plugins.get('geomap-legend')()
-                ]
-            },
-            w: 1200,
-            h: 800
-        }
-        ,
-        {
-            query: 'SELECT Director, SUM(oscarWins) AS SumOscarWins, COUNT(*) AS CountFilms FROM ? GROUP BY Director ORDER BY SumOscarWins DESC LIMIT 50',
-            viz: {
-                type: 'bar',
-                y: 'SumOscarWins',
-                x: 'Director',
-                plugins: [
-                    tauCharts.api.plugins.get('layers')({
-                        mode: 'merge',
-                        showPanel: false,
-                        layers: [
-                            {
-                                type: 'bar',
-                                y: 'CountFilms'
-                            }
-                        ]
-                    })
-                    ,
-                    tauCharts.api.plugins.get('legend')()
-                ],
-                settings: {fitModel: 'minimal'}
-            },
-            w: 1200,
-            h: 400
-        }
-        ,
-        {
-            query: 'SELECT Title, Production, budget, boxOffice, Genre, imdbVotes FROM ? WHERE Production in ("Paramount", "Universal", "Columbia")',
-            viz: {
-                type: 'scatterplot',
-                x: ['Genre', 'budget'],
-                y: ['Production', 'boxOffice'],
-                color: 'Genre',
-                plugins: [
-                    tauCharts.api.plugins.get('trendline')({showPanel: false}),
-                    tauCharts.api.plugins.get('annotations')({
-                        showPanel: true,
-                        items: [
-                            { dim: 'imdbRating',   val: 7.5, text: 'Good', position: 'front' }
-                        ]
-                    })
-                ],
-                settings: {fitModel: 'entire-view'}
-            },
-            w: 1200,
-            h: 800
-        }
+//        ,
+//        {
+//            query: 'SELECT Country, COUNT(*) AS CountOfFilmsByCountry FROM ? GROUP BY Country ORDER BY CountOfFilmsByCountry',
+//            viz: {
+//                type: 'map',
+//                code: 'Country',
+//                fill: 'CountOfFilmsByCountry',
+//                guide: {
+//                    code: {georole:'countries'},
+//                    sourcemap: './../src/addons/world-countries.json'
+//                },
+//                x: 'CountOfFilmsByCountry',
+//                y: 'Country',
+//                plugins: [
+//                    tauCharts.api.plugins.get('geomap-tooltip')(),
+//                    tauCharts.api.plugins.get('geomap-legend')()
+//                ]
+//            },
+//            w: 1200,
+//            h: 800
+//        }
+//        ,
+//        {
+//            query: 'SELECT Director, SUM(oscarWins) AS SumOscarWins, COUNT(*) AS CountFilms FROM ? GROUP BY Director ORDER BY SumOscarWins DESC LIMIT 50',
+//            viz: {
+//                type: 'bar',
+//                y: 'SumOscarWins',
+//                x: 'Director',
+//                plugins: [
+//                    tauCharts.api.plugins.get('layers')({
+//                        mode: 'merge',
+//                        showPanel: false,
+//                        layers: [
+//                            {
+//                                type: 'bar',
+//                                y: 'CountFilms'
+//                            }
+//                        ]
+//                    })
+//                    ,
+//                    tauCharts.api.plugins.get('legend')()
+//                ],
+//                settings: {fitModel: 'minimal'}
+//            },
+//            w: 1200,
+//            h: 400
+//        }
+//        ,
+//        {
+//            query: 'SELECT Title, Production, budget, boxOffice, Genre, imdbVotes FROM ? WHERE Production in ("Paramount", "Universal", "Columbia")',
+//            viz: {
+//                type: 'scatterplot',
+//                x: ['Genre', 'budget'],
+//                y: ['Production', 'boxOffice'],
+//                color: 'Genre',
+//                plugins: [
+//                    tauCharts.api.plugins.get('trendline')({showPanel: false}),
+//                    tauCharts.api.plugins.get('annotations')({
+//                        showPanel: true,
+//                        items: [
+//                            { dim: 'imdbRating',   val: 7.5, text: 'Good', position: 'front' }
+//                        ]
+//                    })
+//                ],
+//                settings: {fitModel: 'entire-view'}
+//            },
+//            w: 1200,
+//            h: 800
+//        }
 //        ,
 //        {
 //            query: 'SELECT Country, Genre, Year, COUNT(*) AS FilmsByContryAndYear FROM ? GROUP BY Country, Genre, Year',
