@@ -126,18 +126,6 @@
         }
         ,
         {
-            query: 'SELECT Genre, COUNT(*) AS CountOfFilmsByGenre FROM ? GROUP BY Genre ORDER BY CountOfFilmsByGenre',
-            viz: {
-                type: 'horizontal-bar',
-                x: 'CountOfFilmsByGenre',
-                y: 'Genre',
-                settings: {fitModel: 'minimal'}
-            },
-            w: 400,
-            h: 400
-        }
-        ,
-        {
             query: 'SELECT Title, Director, imdbRating, gotAnOscar, oscarWins, YearDate FROM ?',
             viz: {
                 type: 'line',
@@ -162,14 +150,26 @@
         }
         ,
         {
+            query: 'SELECT Genre, COUNT(*) AS CountOfFilmsByGenre FROM ? GROUP BY Genre ORDER BY CountOfFilmsByGenre',
+            viz: {
+                type: 'horizontal-bar',
+                x: 'CountOfFilmsByGenre',
+                y: 'Genre',
+                settings: {fitModel: 'fit-width'}
+            },
+            w: 200,
+            h: 400
+        }
+        ,
+        {
             query: 'SELECT Country, COUNT(*) AS CountOfFilmsByCountry FROM ? GROUP BY Country ORDER BY CountOfFilmsByCountry',
             viz: {
                 type: 'horizontal-bar',
                 x: 'CountOfFilmsByCountry',
                 y: 'Country',
-                settings: {fitModel: 'minimal'}
+                settings: {fitModel: 'fit-width'}
             },
-            w: 400,
+            w: 200,
             h: 400
         }
         ,
@@ -265,7 +265,7 @@
             if (cfg.h) s.push('height: ' + cfg.h + 'px');
 
             $('body').append('<div class="cc" id="div' + i + '" style="' + s.join(';') + '"></div>');
-            cfg.viz.data = xsql(cfg.query, cfg.global);
+            cfg.viz.data = xsql(cfg.query);
 
             var groupedBy = parseGroupBy(cfg.query);
             cfg.viz.plugins = cfg.viz.plugins || [];
@@ -320,7 +320,7 @@
                         }));
                     });
 
-            chart.setData(xsql(cfg.query, cfg.global));
+            chart.setData(xsql(cfg.query));
         });
     }
 

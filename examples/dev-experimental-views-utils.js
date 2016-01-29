@@ -72,8 +72,8 @@ var drawTable = function (currWhere) {
         ].join(',');
 
         var records = xsql('SELECT ' + cols + ' FROM ? WHERE ' + (currWhere || '1')).map(function (x) {
-                x.Title = x.Title.substring(0, 25) + '...';
-                // x.Year = x.Year.getFullYear();
+                var len = 25;
+                x.Title = x.Title.substring(0, len) + ((x.Title.length > len) ? '...' : '');
                 return x;
         });
 
