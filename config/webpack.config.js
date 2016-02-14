@@ -7,11 +7,11 @@ var ensureDir = function (absolutePath) {
     fs.mkdirsSync(absolutePath);
     return absolutePath;
 };
-var coverage = [{
+var coverage =  {
     test: /\.js$/,
     exclude: /test|addons|plugins|node_modules|bower_components|libs\//,
-    loader: 'istanbul-instrumenter'
-}];
+    loader: 'isparta-loader'
+};
 
 var toAbsolute = function (relativePath) {
     return path.join(__dirname, relativePath);
@@ -26,7 +26,7 @@ var babelConfig = {
         cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
     }
 };
-var generateTestConf = function (postLoader) {
+var generateTestConf = function (addLoaders) {
     return {
         resolve: {
             root: [
@@ -53,6 +53,14 @@ var generateTestConf = function (postLoader) {
             extensions: ['', '.js', '.json']
         },
         devtool: 'inline-source-map',
+        isparta: {
+            embedSource: true,
+            noAutoWrap: true,
+            // these babel options will be passed only to isparta and not to babel-loader
+            babel: {
+                presets: ['es2015']
+            }
+        },
         module: {
             loaders: [
                 {test: /\.css$/, loader: 'css-loader'},
@@ -61,8 +69,7 @@ var generateTestConf = function (postLoader) {
                     loader: 'imports?this=>window!exports?window.Modernizr'
                 },
                 babelConfig
-            ],
-            postLoaders: postLoader
+            ].concat(addLoaders)
         },
         externals: {
             d3: 'd3',
