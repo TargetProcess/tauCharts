@@ -29,6 +29,8 @@ export class Point extends Element {
             }
         );
 
+        this.config.guide.size = (this.config.guide.size || {});
+
         this.on('highlight', (sender, e) => this.highlight(e));
     }
 
@@ -40,29 +42,20 @@ export class Point extends Element {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
 
-        var fitSize = (w, h, maxRelLimit, srcSize, minimalSize) => {
-            var minRefPoint = Math.min(w, h);
-            var minSize = minRefPoint * maxRelLimit;
-            return Math.max(minimalSize, Math.min(srcSize, minSize));
+        var g = config.guide;
+        var isNotZero = (x => x !== 0);
+        const halfPart = 0.5;
+        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
+        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
+        var notLessThan = ((lim, val) => Math.max(val, lim));
+
+        var sizeGuide = {
+            min: g.size.min || (2),
+            max: g.size.max || notLessThan(2, minTickStep),
+            mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
         };
 
-        var width = config.options.width;
-        var height = config.options.height;
-        var g = config.guide;
-        var minimalSize = 1;
-        var maxRelLimit = 0.035;
-        var isNotZero = (x) => x !== 0;
-        var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
-        var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
-
-        this.size = fnCreateScale(
-            'size',
-            config.size,
-            {
-                min: fitSize(width, height, maxRelLimit, 2, minimalSize),
-                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
-                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
-            });
+        this.size = fnCreateScale('size', config.size, sizeGuide);
 
         return this
             .regScale('x', this.xScale)
