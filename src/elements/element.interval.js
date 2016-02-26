@@ -196,15 +196,15 @@ export class Interval extends Element {
 
         var calculateIntervalWidth = (baseScale.discrete ?
             ((d) => (space(d[baseScale.dim]) * colorIndexScaleKoeff)) :
-            ((d) => (minBarW)));
+            (() => (minBarW)));
 
         var calculateGapSize = (baseScale.discrete ?
             ((intervalWidth) => (intervalWidth > (2 * barsGap)) ? barsGap : 0) :
-            ((intervalWidth) => (0)));
+            (() => (0)));
 
         var calculateOffsetStep = (baseScale.discrete ?
             ((d) => calculateIntervalWidth(d)) :
-            ((d) => 0));
+            (() => 0));
 
         var calculateBarW = (d) => {
             var intSize = calculateIntervalWidth(d);
