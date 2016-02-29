@@ -9,6 +9,10 @@ export class Interval extends Element {
 
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
+        this.config.guide.size = (this.config.guide.size || {});
+        this.config.guide.size.min = (this.config.guide.size.min || 3);
+        this.config.guide.size.max = (this.config.guide.size.min);
+        this.config.guide.size.mid = (this.config.guide.size.min);
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -19,7 +23,7 @@ export class Interval extends Element {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-        this.size = fnCreateScale('size', config.size, {});
+        this.size = fnCreateScale('size', config.size, config.guide.size);
 
         return this
             .regScale('x', this.xScale)
@@ -36,11 +40,13 @@ export class Interval extends Element {
         var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
+        var sizeScale = this.size;
         var colorScale = this.color;
 
         var args = {
             xScale,
             yScale,
+            sizeScale,
             colorScale,
             width: config.options.width,
             height: config.options.height,
@@ -88,12 +94,13 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, xScale, yScale, height, prettify}) {
+    _buildVerticalDrawMethod({colorScale, sizeScale, xScale, yScale, height, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
                 baseScale: xScale,
                 valsScale: yScale,
+                sizeScale,
                 colorScale,
                 defaultBaseAbsPosition: height
             });
@@ -129,12 +136,13 @@ export class Interval extends Element {
         };
     }
 
-    _buildHorizontalDrawMethod({colorScale, xScale, yScale, prettify}) {
+    _buildHorizontalDrawMethod({colorScale, sizeScale, xScale, yScale, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
                 baseScale: yScale,
                 valsScale: xScale,
+                sizeScale,
                 colorScale,
                 defaultBaseAbsPosition: 0
             });
@@ -178,14 +186,13 @@ export class Interval extends Element {
         };
     }
 
-    _buildDrawMethod({valsScale, baseScale, colorScale, defaultBaseAbsPosition}) {
+    _buildDrawMethod({valsScale, baseScale, sizeScale, colorScale, defaultBaseAbsPosition}) {
 
         var colorCategories = (this.config.guide.enableColorToBarPosition === true) ? colorScale.domain() : [];
         var colorIndexScale = ((d) => Math.max(0, colorCategories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
         var colorCategoriesCount = (colorCategories.length || 1);
         var colorIndexScaleKoeff = (1 / colorCategoriesCount);
 
-        const minBarW = 3;
         const barsGap = 1;
 
         var baseAbsPos = (valsScale.discrete ?
@@ -194,22 +201,18 @@ export class Interval extends Element {
 
         var space = ((x) => baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount)));
 
-        var calculateIntervalWidth = (baseScale.discrete ?
+        var calculateSlotWidth = (baseScale.discrete ?
             ((d) => (space(d[baseScale.dim]) * colorIndexScaleKoeff)) :
-            (() => (minBarW)));
+            ((d) => (sizeScale(d[sizeScale.dim]))));
 
         var calculateGapSize = (baseScale.discrete ?
-            ((intervalWidth) => (intervalWidth > (2 * barsGap)) ? barsGap : 0) :
+            ((slotWidth) => (slotWidth > (2 * barsGap)) ? barsGap : 0) :
             (() => (0)));
 
-        var calculateOffsetStep = (baseScale.discrete ?
-            ((d) => calculateIntervalWidth(d)) :
-            (() => 0));
-
         var calculateBarW = (d) => {
-            var intSize = calculateIntervalWidth(d);
-            var gapSize = calculateGapSize(intSize);
-            return intSize - 2 * gapSize;
+            var barSize = calculateSlotWidth(d);
+            var gapSize = calculateGapSize(barSize);
+            return barSize - 2 * gapSize;
         };
 
         var calculateBarH = ((d) => Math.abs(valsScale(d[valsScale.dim]) - baseAbsPos));
@@ -220,7 +223,7 @@ export class Interval extends Element {
             var absTickStart = (baseScale(dx) - (space(dx) / 2));
 
             var relSegmStart = (baseScale.discrete ?
-                (colorIndexScale(d) * calculateOffsetStep(d)) :
+                (colorIndexScale(d) * calculateSlotWidth(d)) :
                 (0));
 
             var absBarOffset = (baseScale.discrete ?

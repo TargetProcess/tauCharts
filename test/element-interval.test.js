@@ -1206,4 +1206,39 @@ define(function (require) {
             autoWidth: false
         }
     );
+
+    describeChart('Bar chart',
+        {
+            type : 'horizontal-bar',
+            x    : 'dim_x',
+            y    : 'dim_y',
+            guide: {
+                padding: {l: 0, r: 0, b: 0, t: 0},
+                size: {min: 22}
+            },
+            settings: {specEngine: 'none'}
+        },
+        [
+            {dim_x: 'A', dim_y: 1},
+            {dim_x: 'B', dim_y: 2},
+            {dim_x: 'C', dim_y: 3},
+            {dim_x: 'D', dim_y: 4}
+        ],
+        function (context) {
+
+            it('should allow to customize bar width for measure base scale', function () {
+                var svg0 = context.chart.getSVG();
+                var bars = svg0.querySelectorAll('.bar');
+                expect(bars.length).to.equals(4);
+                var expectedWidth = '22';
+                expect(d3.select(bars[0]).attr('height')).to.equals(expectedWidth);
+                expect(d3.select(bars[1]).attr('height')).to.equals(expectedWidth);
+                expect(d3.select(bars[2]).attr('height')).to.equals(expectedWidth);
+                expect(d3.select(bars[3]).attr('height')).to.equals(expectedWidth);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
