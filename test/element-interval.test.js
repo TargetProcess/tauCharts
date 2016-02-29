@@ -1127,4 +1127,83 @@ define(function (require) {
             autoWidth: false
         }
     );
+
+    describeChart('Bar chart',
+        {
+            type : 'bar',
+            x    : 'dim_x',
+            y    : 'dim_y',
+            color: 'dim_x',
+            guide: {
+                padding: {l: 0, r: 0, b: 0, t: 0}
+            },
+            settings: {specEngine: 'none'}
+        },
+        [
+            {dim_x: 'A', dim_y: 1},
+            {dim_x: 'B', dim_y: 2},
+            {dim_x: 'C', dim_y: 3},
+            {dim_x: 'D', dim_y: 4}
+        ],
+        function (context) {
+
+            it('should disable positioning by color once color and X use the same dim', function () {
+                var svg0 = context.chart.getSVG();
+                var bars = svg0.querySelectorAll('.bar');
+                expect(bars.length).to.equals(4);
+                expect(d3.select(bars[0]).attr('x')).to.equals('51');
+                expect(d3.select(bars[1]).attr('x')).to.equals('251');
+                expect(d3.select(bars[2]).attr('x')).to.equals('451');
+                expect(d3.select(bars[3]).attr('x')).to.equals('651');
+
+                expect(d3.select(bars[0]).attr('width')).to.equals('98');
+                expect(d3.select(bars[1]).attr('width')).to.equals('98');
+                expect(d3.select(bars[2]).attr('width')).to.equals('98');
+                expect(d3.select(bars[3]).attr('width')).to.equals('98');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+
+    describeChart('Bar chart',
+        {
+            type : 'bar',
+            x    : 'dim_x',
+            y    : 'dim_y',
+            color: 'dim_x',
+            guide: {
+                padding: {l: 0, r: 0, b: 0, t: 0},
+                enableColorToBarPosition: true
+            },
+            settings: {specEngine: 'none'}
+        },
+        [
+            {dim_x: 'A', dim_y: 1},
+            {dim_x: 'B', dim_y: 2},
+            {dim_x: 'C', dim_y: 3},
+            {dim_x: 'D', dim_y: 4}
+        ],
+        function (context) {
+
+            it('should force positioning by color once [enableColorToBarPosition] is true', function () {
+                var svg0 = context.chart.getSVG();
+                var bars = svg0.querySelectorAll('.bar');
+                expect(bars.length).to.equals(4);
+                expect(d3.select(bars[0]).attr('x')).to.equals('21');
+                expect(d3.select(bars[1]).attr('x')).to.equals('261');
+                expect(d3.select(bars[2]).attr('x')).to.equals('501');
+                expect(d3.select(bars[3]).attr('x')).to.equals('741');
+
+                expect(d3.select(bars[0]).attr('width')).to.equals('38');
+                expect(d3.select(bars[1]).attr('width')).to.equals('38');
+                expect(d3.select(bars[2]).attr('width')).to.equals('38');
+                expect(d3.select(bars[3]).attr('width')).to.equals('38');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
