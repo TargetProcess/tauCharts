@@ -10,10 +10,6 @@ export class Interval extends Element {
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
         this.config.guide.size = (this.config.guide.size || {});
-        const defaultSize = 3;
-        this.config.guide.size.min = (this.config.guide.size.min || defaultSize);
-        this.config.guide.size.max = (this.config.guide.size.max || this.config.guide.size.min);
-        this.config.guide.size.mid = (this.config.guide.size.mid || this.config.guide.size.min);
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -24,7 +20,12 @@ export class Interval extends Element {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-        this.size = fnCreateScale('size', config.size, config.guide.size);
+
+        const defaultSize = 3;
+        var sizeGuide = {min: (this.config.guide.size.min || defaultSize)};
+        sizeGuide.max = (this.config.guide.size.max || sizeGuide.min);
+        sizeGuide.mid = (this.config.guide.size.mid || sizeGuide.min);
+        this.size = fnCreateScale('size', config.size, sizeGuide);
 
         return this
             .regScale('x', this.xScale)
