@@ -9,6 +9,7 @@ export class Interval extends Element {
 
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
+        this.config.guide.size = (this.config.guide.size || {});
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -19,7 +20,12 @@ export class Interval extends Element {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-        this.size = fnCreateScale('size', config.size, {});
+
+        const defaultSize = 3;
+        var sizeGuide = {min: (this.config.guide.size.min || defaultSize)};
+        sizeGuide.max = (this.config.guide.size.max || sizeGuide.min);
+        sizeGuide.mid = (this.config.guide.size.mid || sizeGuide.min);
+        this.size = fnCreateScale('size', config.size, sizeGuide);
 
         return this
             .regScale('x', this.xScale)
@@ -36,20 +42,14 @@ export class Interval extends Element {
         var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
+        var sizeScale = this.size;
         var colorScale = this.color;
-
-        var domain = (config.guide.enableColorToBarPosition === true) ? colorScale.domain() : [];
-        var colorIndexScale = (d) => {
-            var findIndex = domain.indexOf(d[colorScale.dim]);
-            return findIndex === -1 ? 0 : findIndex;
-        };
-        colorIndexScale.koeff = (1 / ((domain.length || 1) + 1));
 
         var args = {
             xScale,
             yScale,
+            sizeScale,
             colorScale,
-            colorIndexScale,
             width: config.options.width,
             height: config.options.height,
             prettify: config.guide.prettify
@@ -96,20 +96,21 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, xScale, yScale, colorIndexScale, height, prettify}) {
+    _buildVerticalDrawMethod({colorScale, sizeScale, xScale, yScale, height, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
                 baseScale: xScale,
                 valsScale: yScale,
-                colorIndexScale,
+                sizeScale,
+                colorScale,
                 defaultBaseAbsPosition: height
             });
 
         const minBarH = 1;
 
         return {
-            x: (({data: d}) => calculateBarX(d)),
+            x: (({data: d}) => calculateBarX(d) - calculateBarW(d) * 0.5),
             y: (({data: d}) => {
                 var y = calculateBarY(d);
 
@@ -137,20 +138,21 @@ export class Interval extends Element {
         };
     }
 
-    _buildHorizontalDrawMethod({colorScale, xScale, yScale, colorIndexScale, prettify}) {
+    _buildHorizontalDrawMethod({colorScale, sizeScale, xScale, yScale, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
                 baseScale: yScale,
                 valsScale: xScale,
-                colorIndexScale,
+                sizeScale,
+                colorScale,
                 defaultBaseAbsPosition: 0
             });
 
         const minBarH = 1;
 
         return {
-            y: (({data: d}) => calculateBarX(d)),
+            y: (({data: d}) => calculateBarX(d) - calculateBarW(d) * 0.5),
             x: (({data: d}) => {
                 var x = calculateBarY(d);
 
@@ -186,40 +188,51 @@ export class Interval extends Element {
         };
     }
 
-    _buildDrawMethod({valsScale, baseScale, colorIndexScale, defaultBaseAbsPosition}) {
+    _buildDrawMethod({valsScale, baseScale, sizeScale, colorScale, defaultBaseAbsPosition}) {
 
-        const minBarW = 5;
+        var colorCategories = (this.config.guide.enableColorToBarPosition === true) ? colorScale.domain() : [];
+        var colorIndexScale = ((d) => Math.max(0, colorCategories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
+        var colorCategoriesCount = (colorCategories.length || 1);
+        var colorIndexScaleKoeff = (1 / colorCategoriesCount);
+
         const barsGap = 1;
 
-        var baseAbsPos = (() => {
-            // TODO: create [.isContinues] property on scale object
-            var xMin = Math.min(...valsScale.domain());
-            var isXNumber = !isNaN(xMin);
+        var baseAbsPos = (valsScale.discrete ?
+            (() => defaultBaseAbsPosition) :
+            (() => valsScale(Math.max(0, Math.min(...valsScale.domain())))))();
 
-            return (isXNumber) ?
-                valsScale(((xMin <= 0) ? 0 : xMin)) :
-                defaultBaseAbsPosition;
-        })();
+        var space = ((x) => baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount)));
 
-        var calculateIntervalWidth = (d) => (baseScale.stepSize(d[baseScale.dim]) * colorIndexScale.koeff) || minBarW;
-        var calculateGapSize = (intervalWidth) => (intervalWidth > (2 * barsGap)) ? barsGap : 0;
-        var calculateOffset = (d) => (baseScale.stepSize(d[baseScale.dim]) === 0 ? 0 : calculateIntervalWidth(d));
+        var calculateSlotSize = (baseScale.discrete ?
+            ((d) => (space(d[baseScale.dim]) * colorIndexScaleKoeff)) :
+            ((d) => (sizeScale(d[sizeScale.dim]))));
+
+        var calculateGapSize = (baseScale.discrete ?
+            ((slotWidth) => (slotWidth > (2 * barsGap)) ? barsGap : 0) :
+            (() => (0)));
 
         var calculateBarW = (d) => {
-            var intSize = calculateIntervalWidth(d);
-            var gapSize = calculateGapSize(intSize);
-            return intSize - 2 * gapSize;
+            var barSize = calculateSlotSize(d);
+            var gapSize = calculateGapSize(barSize);
+            return barSize - 2 * gapSize;
         };
 
         var calculateBarH = ((d) => Math.abs(valsScale(d[valsScale.dim]) - baseAbsPos));
 
         var calculateBarX = (d) => {
-            var dy = d[baseScale.dim];
-            var absTickMiddle = baseScale(dy) - ((baseScale.stepSize(dy)) / 2);
-            var absBarMiddle = absTickMiddle - (calculateBarW(d) / 2);
-            var absBarOffset = (colorIndexScale(d) + 1) * calculateOffset(d);
+            var dx = d[baseScale.dim];
 
-            return absBarMiddle + absBarOffset;
+            var absTickStart = (baseScale(dx) - (space(dx) / 2));
+
+            var relSegmStart = (baseScale.discrete ?
+                (colorIndexScale(d) * calculateSlotSize(d)) :
+                (0));
+
+            var absBarOffset = (baseScale.discrete ?
+                (calculateBarW(d) * 0.5 + barsGap) :
+                (0));
+
+            return absTickStart + relSegmStart + absBarOffset;
         };
 
         var calculateBarY = ((d) => Math.min(baseAbsPos, valsScale(d[valsScale.dim])));
