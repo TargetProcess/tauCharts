@@ -60,6 +60,7 @@ export class StackedInterval extends Element {
 
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
+        this.config.guide.size = (this.config.guide.size || {});
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -71,33 +72,36 @@ export class StackedInterval extends Element {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
 
-        var fitSize = (w, h, maxRelLimit, srcSize, minimalSize) => {
-            var minRefPoint = Math.min(w, h);
-            var minSize = minRefPoint * maxRelLimit;
-            return Math.max(minimalSize, Math.min(srcSize, minSize));
-        };
-
-        var width = config.options.width;
-        var height = config.options.height;
         var g = config.guide;
-        var minimalSize = 1;
-        var maxRelLimit = 1;
-        var isNotZero = (x) => x !== 0;
-        var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
-        var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+        var isNotZero = (x => x !== 0);
+        const halfPart = 0.5;
+        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
+        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
 
-        this.size = fnCreateScale(
-            'size',
-            config.size,
-            {
+        var notLessThan = ((lim, val) => Math.max(val, lim));
+
+        var sizeGuide = {};
+        var baseScale = (config.flip ? this.yScale : this.xScale);
+        if (baseScale.discrete) {
+            sizeGuide = {
                 normalize: true,
-
                 func: 'linear',
+                min: g.size.min || (0),
+                max: g.size.max || notLessThan(1, minTickStep),
+                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
+            };
+        } else {
+            let defaultSize = 2.5;
+            sizeGuide = {
+                normalize: false,
+                func: 'linear',
+                min: g.size.min || defaultSize,
+                max: g.size.max || notLessThan(defaultSize, minTickStep)
+            };
+            sizeGuide.mid = g.size.mid || sizeGuide.min;
+        }
 
-                min: 0,
-                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
-                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
-            });
+        this.size = fnCreateScale('size', config.size, sizeGuide);
 
         return this
             .regScale('x', this.xScale)
@@ -236,10 +240,7 @@ export class StackedInterval extends Element {
     _buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale, prettify}) {
 
         // show at least 1px gap for bar to make it clickable
-        var minH = 1;
-        // default width for continues scales is 5px
-        var minW = 5;
-        var relW = 0.5;
+        const minH = 1;
 
         var calculateH;
         var calculateW;
@@ -247,6 +248,10 @@ export class StackedInterval extends Element {
         var calculateX;
 
         if (isHorizontal) {
+
+            let slotSize = (yScale.discrete ?
+                ((d) => (yScale.stepSize(d.y) * 0.5 * sizeScale(d.w))) :
+                ((d) => (sizeScale(d.w))));
 
             calculateW = ((d) => {
                 var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
@@ -257,7 +262,7 @@ export class StackedInterval extends Element {
             });
 
             calculateH = ((d) => {
-                var h = ((yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w));
+                var h = slotSize(d);
                 if (prettify) {
                     h = Math.max(minH, h);
                 }
@@ -269,8 +274,12 @@ export class StackedInterval extends Element {
 
         } else {
 
+            let slotSize = (xScale.discrete ?
+                ((d) => (xScale.stepSize(d.x) * 0.5 * sizeScale(d.w))) :
+                ((d) => (sizeScale(d.w))));
+
             calculateW = ((d) => {
-                var w = ((xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w));
+                var w = slotSize(d);
                 if (prettify) {
                     w = Math.max(minH, w);
                 }

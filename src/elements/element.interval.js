@@ -10,9 +10,10 @@ export class Interval extends Element {
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
         this.config.guide.size = (this.config.guide.size || {});
-        this.config.guide.size.min = (this.config.guide.size.min || 3);
-        this.config.guide.size.max = (this.config.guide.size.min);
-        this.config.guide.size.mid = (this.config.guide.size.min);
+        const defaultSize = 3;
+        this.config.guide.size.min = (this.config.guide.size.min || defaultSize);
+        this.config.guide.size.max = (this.config.guide.size.max || this.config.guide.size.min);
+        this.config.guide.size.mid = (this.config.guide.size.mid || this.config.guide.size.min);
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -201,7 +202,7 @@ export class Interval extends Element {
 
         var space = ((x) => baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount)));
 
-        var calculateSlotWidth = (baseScale.discrete ?
+        var calculateSlotSize = (baseScale.discrete ?
             ((d) => (space(d[baseScale.dim]) * colorIndexScaleKoeff)) :
             ((d) => (sizeScale(d[sizeScale.dim]))));
 
@@ -210,7 +211,7 @@ export class Interval extends Element {
             (() => (0)));
 
         var calculateBarW = (d) => {
-            var barSize = calculateSlotWidth(d);
+            var barSize = calculateSlotSize(d);
             var gapSize = calculateGapSize(barSize);
             return barSize - 2 * gapSize;
         };
@@ -223,7 +224,7 @@ export class Interval extends Element {
             var absTickStart = (baseScale(dx) - (space(dx) / 2));
 
             var relSegmStart = (baseScale.discrete ?
-                (colorIndexScale(d) * calculateSlotWidth(d)) :
+                (colorIndexScale(d) * calculateSlotSize(d)) :
                 (0));
 
             var absBarOffset = (baseScale.discrete ?
