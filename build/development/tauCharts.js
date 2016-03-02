@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.6 - 2016-01-25
+/*! taucharts - v0.7.7 - 2016-03-02
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -959,6 +959,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            density: 20
 	        });
 
+	        _this.config.guide.size = _this.config.guide.size || {};
+
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
 	        });
@@ -975,28 +977,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
 
-	            var fitSize = function fitSize(w, h, maxRelLimit, srcSize, minimalSize) {
-	                var minRefPoint = Math.min(w, h);
-	                var minSize = minRefPoint * maxRelLimit;
-	                return Math.max(minimalSize, Math.min(srcSize, minSize));
-	            };
-
-	            var width = config.options.width;
-	            var height = config.options.height;
 	            var g = config.guide;
-	            var minimalSize = 1;
-	            var maxRelLimit = 0.035;
 	            var isNotZero = function isNotZero(x) {
 	                return x !== 0;
 	            };
-	            var minFontSize = _underscore2.default.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
-	            var minTickStep = _underscore2.default.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+	            var halfPart = 0.5;
+	            var minFontSize = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
+	                return n.tickFontHeight;
+	            }).filter(isNotZero));
+	            var minTickStep = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
+	                return n.density;
+	            }).filter(isNotZero));
+	            var notLessThan = function notLessThan(lim, val) {
+	                return Math.max(val, lim);
+	            };
 
-	            this.size = fnCreateScale('size', config.size, {
-	                min: fitSize(width, height, maxRelLimit, 2, minimalSize),
-	                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
-	                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
-	            });
+	            var sizeGuide = {
+	                min: g.size.min || 2,
+	                max: g.size.max || notLessThan(2, minTickStep),
+	                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
+	            };
+
+	            this.size = fnCreateScale('size', config.size, sizeGuide);
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
 	        }
@@ -1978,6 +1980,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.config = config;
 	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, { prettify: true, enableColorToBarPosition: true });
+	        _this.config.guide.size = _this.config.guide.size || {};
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1993,7 +1996,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
-	            this.size = fnCreateScale('size', config.size, {});
+
+	            var defaultSize = 3;
+	            var sizeGuide = { min: this.config.guide.size.min || defaultSize };
+	            sizeGuide.max = this.config.guide.size.max || sizeGuide.min;
+	            sizeGuide.mid = this.config.guide.size.mid || sizeGuide.min;
+	            this.size = fnCreateScale('size', config.size, sizeGuide);
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
 	        }
@@ -2008,20 +2016,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var config = this.config;
 	            var xScale = this.xScale;
 	            var yScale = this.yScale;
+	            var sizeScale = this.size;
 	            var colorScale = this.color;
-
-	            var domain = config.guide.enableColorToBarPosition === true ? colorScale.domain() : [];
-	            var colorIndexScale = function colorIndexScale(d) {
-	                var findIndex = domain.indexOf(d[colorScale.dim]);
-	                return findIndex === -1 ? 0 : findIndex;
-	            };
-	            colorIndexScale.koeff = 1 / ((domain.length || 1) + 1);
 
 	            var args = {
 	                xScale: xScale,
 	                yScale: yScale,
+	                sizeScale: sizeScale,
 	                colorScale: colorScale,
-	                colorIndexScale: colorIndexScale,
 	                width: config.options.width,
 	                height: config.options.height,
 	                prettify: config.guide.prettify
@@ -2066,16 +2068,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: '_buildVerticalDrawMethod',
 	        value: function _buildVerticalDrawMethod(_ref2) {
 	            var colorScale = _ref2.colorScale;
+	            var sizeScale = _ref2.sizeScale;
 	            var xScale = _ref2.xScale;
 	            var yScale = _ref2.yScale;
-	            var colorIndexScale = _ref2.colorIndexScale;
 	            var height = _ref2.height;
 	            var prettify = _ref2.prettify;
 
 	            var _buildDrawMethod2 = this._buildDrawMethod({
 	                baseScale: xScale,
 	                valsScale: yScale,
-	                colorIndexScale: colorIndexScale,
+	                sizeScale: sizeScale,
+	                colorScale: colorScale,
 	                defaultBaseAbsPosition: height
 	            });
 
@@ -2089,7 +2092,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return {
 	                x: function x(_ref3) {
 	                    var d = _ref3.data;
-	                    return calculateBarX(d);
+	                    return calculateBarX(d) - calculateBarW(d) * 0.5;
 	                },
 	                y: function y(_ref4) {
 	                    var d = _ref4.data;
@@ -2131,15 +2134,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: '_buildHorizontalDrawMethod',
 	        value: function _buildHorizontalDrawMethod(_ref8) {
 	            var colorScale = _ref8.colorScale;
+	            var sizeScale = _ref8.sizeScale;
 	            var xScale = _ref8.xScale;
 	            var yScale = _ref8.yScale;
-	            var colorIndexScale = _ref8.colorIndexScale;
 	            var prettify = _ref8.prettify;
 
 	            var _buildDrawMethod3 = this._buildDrawMethod({
 	                baseScale: yScale,
 	                valsScale: xScale,
-	                colorIndexScale: colorIndexScale,
+	                sizeScale: sizeScale,
+	                colorScale: colorScale,
 	                defaultBaseAbsPosition: 0
 	            });
 
@@ -2153,7 +2157,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return {
 	                y: function y(_ref9) {
 	                    var d = _ref9.data;
-	                    return calculateBarX(d);
+	                    return calculateBarX(d) - calculateBarW(d) * 0.5;
 	                },
 	                x: function x(_ref10) {
 	                    var d = _ref10.data;
@@ -2210,36 +2214,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function _buildDrawMethod(_ref14) {
 	            var valsScale = _ref14.valsScale;
 	            var baseScale = _ref14.baseScale;
-	            var colorIndexScale = _ref14.colorIndexScale;
+	            var sizeScale = _ref14.sizeScale;
+	            var colorScale = _ref14.colorScale;
 	            var defaultBaseAbsPosition = _ref14.defaultBaseAbsPosition;
 
-	            var minBarW = 5;
+	            var colorCategories = this.config.guide.enableColorToBarPosition === true ? colorScale.domain() : [];
+	            var colorIndexScale = function colorIndexScale(d) {
+	                return Math.max(0, colorCategories.indexOf(d[colorScale.dim]));
+	            }; // -1 (not found) to 0
+	            var colorCategoriesCount = colorCategories.length || 1;
+	            var colorIndexScaleKoeff = 1 / colorCategoriesCount;
+
 	            var barsGap = 1;
 
-	            var baseAbsPos = (function () {
+	            var baseAbsPos = (valsScale.discrete ? function () {
+	                return defaultBaseAbsPosition;
+	            } : function () {
 	                var _Math;
 
-	                // TODO: create [.isContinues] property on scale object
-	                var xMin = (_Math = Math).min.apply(_Math, _toConsumableArray(valsScale.domain()));
-	                var isXNumber = !isNaN(xMin);
-
-	                return isXNumber ? valsScale(xMin <= 0 ? 0 : xMin) : defaultBaseAbsPosition;
+	                return valsScale(Math.max(0, (_Math = Math).min.apply(_Math, _toConsumableArray(valsScale.domain()))));
 	            })();
 
-	            var calculateIntervalWidth = function calculateIntervalWidth(d) {
-	                return baseScale.stepSize(d[baseScale.dim]) * colorIndexScale.koeff || minBarW;
+	            var space = function space(x) {
+	                return baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount));
 	            };
-	            var calculateGapSize = function calculateGapSize(intervalWidth) {
-	                return intervalWidth > 2 * barsGap ? barsGap : 0;
+
+	            var calculateSlotSize = baseScale.discrete ? function (d) {
+	                return space(d[baseScale.dim]) * colorIndexScaleKoeff;
+	            } : function (d) {
+	                return sizeScale(d[sizeScale.dim]);
 	            };
-	            var calculateOffset = function calculateOffset(d) {
-	                return baseScale.stepSize(d[baseScale.dim]) === 0 ? 0 : calculateIntervalWidth(d);
+
+	            var calculateGapSize = baseScale.discrete ? function (slotWidth) {
+	                return slotWidth > 2 * barsGap ? barsGap : 0;
+	            } : function () {
+	                return 0;
 	            };
 
 	            var calculateBarW = function calculateBarW(d) {
-	                var intSize = calculateIntervalWidth(d);
-	                var gapSize = calculateGapSize(intSize);
-	                return intSize - 2 * gapSize;
+	                var barSize = calculateSlotSize(d);
+	                var gapSize = calculateGapSize(barSize);
+	                return barSize - 2 * gapSize;
 	            };
 
 	            var calculateBarH = function calculateBarH(d) {
@@ -2247,12 +2262,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var calculateBarX = function calculateBarX(d) {
-	                var dy = d[baseScale.dim];
-	                var absTickMiddle = baseScale(dy) - baseScale.stepSize(dy) / 2;
-	                var absBarMiddle = absTickMiddle - calculateBarW(d) / 2;
-	                var absBarOffset = (colorIndexScale(d) + 1) * calculateOffset(d);
+	                var dx = d[baseScale.dim];
 
-	                return absBarMiddle + absBarOffset;
+	                var absTickStart = baseScale(dx) - space(dx) / 2;
+
+	                var relSegmStart = baseScale.discrete ? colorIndexScale(d) * calculateSlotSize(d) : 0;
+
+	                var absBarOffset = baseScale.discrete ? calculateBarW(d) * 0.5 + barsGap : 0;
+
+	                return absTickStart + relSegmStart + absBarOffset;
 	            };
 
 	            var calculateBarY = function calculateBarY(d) {
@@ -2378,6 +2396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.config = config;
 	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, { prettify: true });
+	        _this.config.guide.size = _this.config.guide.size || {};
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2394,32 +2413,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
 
-	            var fitSize = function fitSize(w, h, maxRelLimit, srcSize, minimalSize) {
-	                var minRefPoint = Math.min(w, h);
-	                var minSize = minRefPoint * maxRelLimit;
-	                return Math.max(minimalSize, Math.min(srcSize, minSize));
-	            };
-
-	            var width = config.options.width;
-	            var height = config.options.height;
 	            var g = config.guide;
-	            var minimalSize = 1;
-	            var maxRelLimit = 1;
 	            var isNotZero = function isNotZero(x) {
 	                return x !== 0;
 	            };
-	            var minFontSize = _underscore2.default.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
-	            var minTickStep = _underscore2.default.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
+	            var halfPart = 0.5;
+	            var minFontSize = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
+	                return n.tickFontHeight;
+	            }).filter(isNotZero));
+	            var minTickStep = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
+	                return n.density;
+	            }).filter(isNotZero));
 
-	            this.size = fnCreateScale('size', config.size, {
-	                normalize: true,
+	            var notLessThan = function notLessThan(lim, val) {
+	                return Math.max(val, lim);
+	            };
 
-	                func: 'linear',
+	            var sizeGuide = {};
+	            var baseScale = config.flip ? this.yScale : this.xScale;
+	            if (baseScale.discrete) {
+	                sizeGuide = {
+	                    normalize: true,
+	                    func: 'linear',
+	                    min: g.size.min || 0,
+	                    max: g.size.max || notLessThan(1, minTickStep),
+	                    mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
+	                };
+	            } else {
+	                var defaultSize = 3;
+	                sizeGuide = {
+	                    normalize: false,
+	                    func: 'linear',
+	                    min: g.size.min || defaultSize,
+	                    max: g.size.max || notLessThan(defaultSize, minTickStep)
+	                };
+	                sizeGuide.mid = g.size.mid || sizeGuide.min;
+	            }
 
-	                min: 0,
-	                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
-	                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
-	            });
+	            this.size = fnCreateScale('size', config.size, sizeGuide);
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
 	        }
@@ -2556,9 +2587,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            // show at least 1px gap for bar to make it clickable
 	            var minH = 1;
-	            // default width for continues scales is 5px
-	            var minW = 5;
-	            var relW = 0.5;
 
 	            var calculateH;
 	            var calculateW;
@@ -2566,53 +2594,69 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var calculateX;
 
 	            if (isHorizontal) {
+	                (function () {
 
-	                calculateW = function (d) {
-	                    var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
-	                    if (prettify) {
-	                        w = Math.max(minH, w);
-	                    }
-	                    return w;
-	                };
+	                    var slotSize = yScale.discrete ? function (d) {
+	                        return yScale.stepSize(d.y) * 0.5 * sizeScale(d.w);
+	                    } : function (d) {
+	                        return sizeScale(d.w);
+	                    };
 
-	                calculateH = function (d) {
-	                    var h = (yScale.stepSize(d.y) || minW) * relW * sizeScale(d.w);
-	                    if (prettify) {
-	                        h = Math.max(minH, h);
-	                    }
-	                    return h;
-	                };
+	                    calculateW = function (d) {
+	                        var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
+	                        if (prettify) {
+	                            w = Math.max(minH, w);
+	                        }
+	                        return w;
+	                    };
 
-	                calculateX = function (d) {
-	                    return xScale(d.x - d.h);
-	                };
-	                calculateY = function (d) {
-	                    return yScale(d.y) - calculateH(d) / 2;
-	                };
+	                    calculateH = function (d) {
+	                        var h = slotSize(d);
+	                        if (prettify) {
+	                            h = Math.max(minH, h);
+	                        }
+	                        return h;
+	                    };
+
+	                    calculateX = function (d) {
+	                        return xScale(d.x - d.h);
+	                    };
+	                    calculateY = function (d) {
+	                        return yScale(d.y) - calculateH(d) / 2;
+	                    };
+	                })();
 	            } else {
+	                (function () {
 
-	                calculateW = function (d) {
-	                    var w = (xScale.stepSize(d.x) || minW) * relW * sizeScale(d.w);
-	                    if (prettify) {
-	                        w = Math.max(minH, w);
-	                    }
-	                    return w;
-	                };
+	                    var slotSize = xScale.discrete ? function (d) {
+	                        return xScale.stepSize(d.x) * 0.5 * sizeScale(d.w);
+	                    } : function (d) {
+	                        return sizeScale(d.w);
+	                    };
 
-	                calculateH = function (d) {
-	                    var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
-	                    if (prettify) {
-	                        h = Math.max(minH, h);
-	                    }
-	                    return h;
-	                };
+	                    calculateW = function (d) {
+	                        var w = slotSize(d);
+	                        if (prettify) {
+	                            w = Math.max(minH, w);
+	                        }
+	                        return w;
+	                    };
 
-	                calculateX = function (d) {
-	                    return xScale(d.x) - calculateW(d) / 2;
-	                };
-	                calculateY = function (d) {
-	                    return yScale(d.y);
-	                };
+	                    calculateH = function (d) {
+	                        var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
+	                        if (prettify) {
+	                            h = Math.max(minH, h);
+	                        }
+	                        return h;
+	                    };
+
+	                    calculateX = function (d) {
+	                        return xScale(d.x) - calculateW(d) / 2;
+	                    };
+	                    calculateY = function (d) {
+	                        return yScale(d.y);
+	                    };
+	                })();
 	            }
 
 	            return {
@@ -10781,8 +10825,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _converterHelpers = __webpack_require__(58);
 
+	var disableColorToBarPositionOnceColorAndAxesUseTheSameDim = function disableColorToBarPositionOnceColorAndAxesUseTheSameDim(normConfig) {
+
+	    var baseScale = normConfig.flip ? normConfig.y : normConfig.x;
+	    var isMatch = baseScale.indexOf(normConfig.color) >= 0;
+	    var barGuide = normConfig.guide[normConfig.guide.length - 1];
+	    if (isMatch && !barGuide.hasOwnProperty('enableColorToBarPosition')) {
+	        barGuide.enableColorToBarPosition = false;
+	    }
+
+	    return normConfig;
+	};
+
 	var ChartInterval = function ChartInterval(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
+
+	    config = disableColorToBarPositionOnceColorAndAxesUseTheSameDim(config);
+
 	    return (0, _converterHelpers.transformConfig)('ELEMENT.INTERVAL', config);
 	};
 

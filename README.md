@@ -199,7 +199,7 @@ See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 [Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
 
-[Taucharts samples](http://taucharts.com/taulab/index.html)
+[Taucharts demo page](https://demo.taucharts.com/)
 
 ##License
 
