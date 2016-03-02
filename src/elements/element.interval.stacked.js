@@ -91,7 +91,7 @@ export class StackedInterval extends Element {
                 mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
             };
         } else {
-            let defaultSize = 2.5;
+            let defaultSize = 3;
             sizeGuide = {
                 normalize: false,
                 func: 'linear',
