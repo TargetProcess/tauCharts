@@ -50,8 +50,6 @@ export class Interval extends Element {
             yScale,
             sizeScale,
             colorScale,
-            width: config.options.width,
-            height: config.options.height,
             prettify: config.guide.prettify
         };
 
@@ -96,7 +94,7 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, sizeScale, xScale, yScale, height, prettify}) {
+    _buildVerticalDrawMethod({colorScale, sizeScale, xScale, yScale, prettify}) {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
