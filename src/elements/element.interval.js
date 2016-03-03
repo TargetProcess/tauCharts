@@ -100,11 +100,11 @@ export class Interval extends Element {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
-                baseScale: xScale,
-                valsScale: yScale,
+                xScale,
+                yScale,
+                isHorizontal: false,
                 sizeScale,
-                colorScale,
-                defaultBaseAbsPosition: height
+                colorScale
             });
 
         const minBarH = 1;
@@ -142,11 +142,11 @@ export class Interval extends Element {
 
         var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
             {
-                baseScale: yScale,
-                valsScale: xScale,
+                xScale,
+                yScale,
+                isHorizontal: true,
                 sizeScale,
-                colorScale,
-                defaultBaseAbsPosition: 0
+                colorScale
             });
 
         const minBarH = 1;
@@ -188,24 +188,23 @@ export class Interval extends Element {
         };
     }
 
-    _buildDrawMethod({valsScale, baseScale, sizeScale, colorScale, defaultBaseAbsPosition}) {
+    _buildDrawMethod({xScale, yScale, isHorizontal, sizeScale, colorScale}) {
 
         const barsGap = 1;
+        var baseScale = (isHorizontal ? yScale : xScale);
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         var args = {
-            baseScale,
-            valsScale,
+            xScale,
+            yScale,
+            isHorizontal,
             sizeScale,
             colorScale,
             barsGap,
-            defaultBaseAbsPosition,
-            isHorizontal: (defaultBaseAbsPosition === 0),
             categories: (enableColorToBarPosition ? colorScale.domain() : [])
         };
 
         var createFunc = ((x) => (() => x));
         var barModel = [
-            Interval.decorator_basic,
             Interval.decorator_orientation,
             (baseScale.discrete ?
                 Interval.decorator_discrete_size :
@@ -235,30 +234,30 @@ export class Interval extends Element {
         return model;
     }
 
-    static decorator_basic(model, {baseScale, valsScale}) {
-        var y0 = (valsScale.discrete ?
-            (() => valsScale(valsScale.domain()[0])) :
-            (() => valsScale(Math.max(0, Math.min(...valsScale.domain())))));
+    static decorator_orientation(model, {xScale, yScale, isHorizontal}) {
 
-        var yi = ((d) => (valsScale(d[valsScale.dim])));
-        var xi = ((d) => (baseScale(d[baseScale.dim])));
+        var baseScale = (isHorizontal ? yScale : xScale);
+        var valsScale = (isHorizontal ? xScale : yScale);
 
-        return {y0, yi, xi};
-    }
-
-    static decorator_orientation(model, {valsScale, isHorizontal}) {
         var k = (isHorizontal ? (-0.5) : (0.5));
+
         return {
+
+            scaleX: baseScale,
+            scaleY: valsScale,
+
             y0: (valsScale.discrete ?
-                (() => (model.y0() + valsScale.stepSize(valsScale.domain()[0]) * k)) : // (() => defaultBaseAbsPosition)
-                (model.y0)),
-            yi: model.yi,
-            xi: model.xi
+                (() => valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k) : // (() => defaultBaseAbsPosition)
+                (() => valsScale(Math.max(0, Math.min(...valsScale.domain()))))),
+            yi: ((d) => (valsScale(d[valsScale.dim]))),
+            xi: ((d) => (baseScale(d[baseScale.dim])))
         };
     }
 
     static decorator_continuous_size(model, {sizeScale}) {
         return {
+            scaleX: model.scaleX,
+            scaleY: model.scaleY,
             y0: model.y0,
             yi: model.yi,
             xi: model.xi,
@@ -266,13 +265,15 @@ export class Interval extends Element {
         };
     }
 
-    static decorator_discrete_size(model, {baseScale, categories, barsGap}) {
+    static decorator_discrete_size(model, {categories, barsGap}) {
         var categoriesCount = (categories.length || 1);
-        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
+        var space = ((d) => model.scaleX.stepSize(d[model.scaleX.dim]) * (categoriesCount / (1 + categoriesCount)));
         var fnBarSize = ((d) => (space(d) / categoriesCount));
         var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
 
         return {
+            scaleX: model.scaleX,
+            scaleY: model.scaleY,
             y0: model.y0,
             yi: model.yi,
             xi: model.xi,
@@ -284,13 +285,16 @@ export class Interval extends Element {
         };
     }
 
-    static decorator_discrete_positioningByColor(model, {baseScale, colorScale, categories, barsGap}) {
+    static decorator_discrete_positioningByColor(model, {colorScale, categories, barsGap}) {
+        var baseScale = model.scaleX;
         var categoriesCount = (categories.length || 1);
         var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
         var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
         var fnBarSize = ((d) => (space(d) / categoriesCount));
 
         return {
+            scaleX: model.scaleX,
+            scaleY: model.scaleY,
             y0: model.y0,
             yi: model.yi,
             xi: ((d) => {
