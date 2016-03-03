@@ -88,7 +88,7 @@ function normalizeConfig(config) {
 
     var maxDeep = Math.max(x.length, y.length);
 
-    var guide = normalizeSettings(config.guide, {});
+    var guide = normalizeSettings(config.guide || {}, {});
 
     // feel the gaps if needed
     _.times((maxDeep - guide.length), () => guide.push({}));

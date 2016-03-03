@@ -190,58 +190,116 @@ export class Interval extends Element {
 
     _buildDrawMethod({valsScale, baseScale, sizeScale, colorScale, defaultBaseAbsPosition}) {
 
-        var colorCategories = (this.config.guide.enableColorToBarPosition === true) ? colorScale.domain() : [];
-        var colorIndexScale = ((d) => Math.max(0, colorCategories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
-        var colorCategoriesCount = (colorCategories.length || 1);
-        var colorIndexScaleKoeff = (1 / colorCategoriesCount);
-
         const barsGap = 1;
-
-        var baseAbsPos = (valsScale.discrete ?
-            (() => defaultBaseAbsPosition) :
-            (() => valsScale(Math.max(0, Math.min(...valsScale.domain())))))();
-
-        var space = ((x) => baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount)));
-
-        var calculateSlotSize = (baseScale.discrete ?
-            ((d) => (space(d[baseScale.dim]) * colorIndexScaleKoeff)) :
-            ((d) => (sizeScale(d[sizeScale.dim]))));
-
-        var calculateGapSize = (baseScale.discrete ?
-            ((slotWidth) => (slotWidth > (2 * barsGap)) ? barsGap : 0) :
-            (() => (0)));
-
-        var calculateBarW = (d) => {
-            var barSize = calculateSlotSize(d);
-            var gapSize = calculateGapSize(barSize);
-            return barSize - 2 * gapSize;
+        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
+        var args = {
+            baseScale,
+            valsScale,
+            sizeScale,
+            colorScale,
+            barsGap,
+            defaultBaseAbsPosition,
+            isHorizontal: (defaultBaseAbsPosition === 0),
+            categories: (enableColorToBarPosition ? colorScale.domain() : [])
         };
 
-        var calculateBarH = ((d) => Math.abs(valsScale(d[valsScale.dim]) - baseAbsPos));
-
-        var calculateBarX = (d) => {
-            var dx = d[baseScale.dim];
-
-            var absTickStart = (baseScale(dx) - (space(dx) / 2));
-
-            var relSegmStart = (baseScale.discrete ?
-                (colorIndexScale(d) * calculateSlotSize(d)) :
-                (0));
-
-            var absBarOffset = (baseScale.discrete ?
-                (calculateBarW(d) * 0.5 + barsGap) :
-                (0));
-
-            return absTickStart + relSegmStart + absBarOffset;
-        };
-
-        var calculateBarY = ((d) => Math.min(baseAbsPos, valsScale(d[valsScale.dim])));
+        var createFunc = ((x) => (() => x));
+        var barModel = [
+            Interval.decorator_basic,
+            Interval.decorator_orientation,
+            (baseScale.discrete ?
+                Interval.decorator_discrete_size :
+                Interval.decorator_continuous_size),
+            ((baseScale.discrete && enableColorToBarPosition) ?
+                Interval.decorator_discrete_positioningByColor :
+                Interval.decorator_identity)
+        ].reduce(
+            ((model, transformation) => transformation(model, args)),
+            {
+                y0: createFunc(0),
+                yi: createFunc(0),
+                xi: createFunc(0),
+                size: createFunc(0),
+                color: createFunc('')
+            });
 
         return {
-            calculateBarX,
-            calculateBarY,
-            calculateBarH,
-            calculateBarW
+            calculateBarX: ((d) => barModel.xi(d)),
+            calculateBarY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
+            calculateBarH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
+            calculateBarW: ((d) => barModel.size(d))
+        };
+    }
+
+    static decorator_identity(model, {}) {
+        return model;
+    }
+
+    static decorator_basic(model, {baseScale, valsScale}) {
+        var y0 = (valsScale.discrete ?
+            (() => valsScale(valsScale.domain()[0])) :
+            (() => valsScale(Math.max(0, Math.min(...valsScale.domain())))));
+
+        var yi = ((d) => (valsScale(d[valsScale.dim])));
+        var xi = ((d) => (baseScale(d[baseScale.dim])));
+
+        return {y0, yi, xi};
+    }
+
+    static decorator_orientation(model, {valsScale, isHorizontal}) {
+        var k = (isHorizontal ? (-0.5) : (0.5));
+        return {
+            y0: (valsScale.discrete ?
+                (() => (model.y0() + valsScale.stepSize(valsScale.domain()[0]) * k)) : // (() => defaultBaseAbsPosition)
+                (model.y0)),
+            yi: model.yi,
+            xi: model.xi
+        };
+    }
+
+    static decorator_continuous_size(model, {sizeScale}) {
+        return {
+            y0: model.y0,
+            yi: model.yi,
+            xi: model.xi,
+            size: ((d) => (sizeScale(d[sizeScale.dim])))
+        };
+    }
+
+    static decorator_discrete_size(model, {baseScale, categories, barsGap}) {
+        var categoriesCount = (categories.length || 1);
+        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
+        var fnBarSize = ((d) => (space(d) / categoriesCount));
+        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
+
+        return {
+            y0: model.y0,
+            yi: model.yi,
+            xi: model.xi,
+            size: ((d) => {
+                var barSize = fnBarSize(d);
+                var gapSize = fnGapSize(barSize);
+                return barSize - 2 * gapSize;
+            })
+        };
+    }
+
+    static decorator_discrete_positioningByColor(model, {baseScale, colorScale, categories, barsGap}) {
+        var categoriesCount = (categories.length || 1);
+        var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
+        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
+        var fnBarSize = ((d) => (space(d) / categoriesCount));
+
+        return {
+            y0: model.y0,
+            yi: model.yi,
+            xi: ((d) => {
+                var absTickStart = (model.xi(d) - (space(d) / 2));
+                var relSegmStart = (colorIndexScale(d) * fnBarSize(d));
+                var absBarOffset = (model.size(d) * 0.5 + barsGap);
+                return absTickStart + relSegmStart + absBarOffset;
+            }),
+            size: model.size
         };
     }
 
