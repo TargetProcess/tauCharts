@@ -185,8 +185,6 @@ export class Interval extends Element {
     }
 
     buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap}) {
-
-        var baseScale = (isHorizontal ? yScale : xScale);
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         var args = {
             xScale,
@@ -199,7 +197,8 @@ export class Interval extends Element {
         };
 
         var barModel = this
-            .setupTransformations(baseScale)
+            .setupTransformations()
+            .filter(x => x)
             .reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
 
         return {
@@ -211,17 +210,13 @@ export class Interval extends Element {
         };
     }
 
-    setupTransformations(baseScale) {
+    setupTransformations() {
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         return [
             IntervalModel.decorator_orientation,
-            (baseScale.discrete ?
-                IntervalModel.decorator_discrete_size :
-                IntervalModel.decorator_continuous_size),
-            ((baseScale.discrete && enableColorToBarPosition) ?
-                IntervalModel.decorator_discrete_positioningByColor :
-                IntervalModel.decorator_identity),
-            IntervalModel.decorator_color
+            IntervalModel.decorator_size,
+            IntervalModel.decorator_color,
+            enableColorToBarPosition && IntervalModel.decorator_positioningByColor
         ];
     }
 

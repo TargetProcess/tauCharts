@@ -45,6 +45,22 @@ export class IntervalModel {
         });
     }
 
+    static decorator_size(model, params) {
+        var method = (model.scaleX.discrete ?
+            IntervalModel.decorator_discrete_size :
+            IntervalModel.decorator_continuous_size);
+
+        return method(model, params);
+    }
+
+    static decorator_dynamic_size(model, params) {
+        var method = (model.scaleX.discrete ?
+            IntervalModel.decorator_discrete_dynamic_size :
+            IntervalModel.decorator_continuous_size);
+
+        return method(model, params);
+    }
+
     static decorator_continuous_size(model, {sizeScale}) {
         return IntervalModel.compose(model, {
             size: ((d) => (sizeScale(d[sizeScale.dim])))
@@ -72,6 +88,14 @@ export class IntervalModel {
                 return (model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5 * sizeScale(d[sizeScale.dim]) - (2 * barsGap));
             })
         });
+    }
+
+    static decorator_positioningByColor(model, params) {
+        var method = (model.scaleX.discrete ?
+            IntervalModel.decorator_discrete_positioningByColor :
+            IntervalModel.decorator_identity);
+
+        return method(model, params);
     }
 
     static decorator_discrete_positioningByColor(model, {colorScale, categories, barsGap}) {

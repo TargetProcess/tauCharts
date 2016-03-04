@@ -111,18 +111,13 @@ export class StackedInterval extends Interval {
     }
 
     setupTransformations() {
-        var baseScale = (this.config.flip ? this.yScale : this.xScale);
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         return [
             IntervalModel.decorator_orientation,
             IntervalModel.decorator_stack,
-            (baseScale.discrete ?
-                IntervalModel.decorator_discrete_dynamic_size :
-                IntervalModel.decorator_continuous_size),
-            ((baseScale.discrete && enableColorToBarPosition) ?
-                IntervalModel.decorator_discrete_positioningByColor :
-                IntervalModel.decorator_identity),
-            IntervalModel.decorator_color
+            IntervalModel.decorator_dynamic_size,
+            IntervalModel.decorator_color,
+            enableColorToBarPosition && IntervalModel.decorator_positioningByColor
         ];
     }
 }
