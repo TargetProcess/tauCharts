@@ -47,27 +47,27 @@ export class IntervalModel {
 
     static decorator_size(model, params) {
         var method = (model.scaleX.discrete ?
-            IntervalModel.decorator_discrete_size :
-            IntervalModel.decorator_continuous_size);
+            IntervalModel.___dis___decorator_size :
+            IntervalModel.___con___decorator_size);
 
         return method(model, params);
     }
 
     static decorator_dynamic_size(model, params) {
         var method = (model.scaleX.discrete ?
-            IntervalModel.decorator_discrete_dynamic_size :
-            IntervalModel.decorator_continuous_size);
+            IntervalModel.___dis___decorator_size_dynamic :
+            IntervalModel.___con___decorator_size);
 
         return method(model, params);
     }
 
-    static decorator_continuous_size(model, {sizeScale}) {
+    static ___con___decorator_size(model, {sizeScale}) {
         return IntervalModel.compose(model, {
             size: ((d) => (sizeScale(d[sizeScale.dim])))
         });
     }
 
-    static decorator_discrete_size(model, {categories, barsGap}) {
+    static ___dis___decorator_size(model, {categories, barsGap}) {
         var categoriesCount = (categories.length || 1);
         var space = ((d) => model.scaleX.stepSize(d[model.scaleX.dim]) * (categoriesCount / (1 + categoriesCount)));
         var fnBarSize = ((d) => (space(d) / categoriesCount));
@@ -82,7 +82,7 @@ export class IntervalModel {
         });
     }
 
-    static decorator_discrete_dynamic_size(model, {sizeScale, barsGap}) {
+    static ___dis___decorator_size_dynamic(model, {sizeScale, barsGap}) {
         return IntervalModel.compose(model, {
             size: ((d) => {
                 return (model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5 * sizeScale(d[sizeScale.dim]) - (2 * barsGap));
