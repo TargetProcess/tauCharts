@@ -12,6 +12,9 @@ export class Interval extends Element {
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
         this.config.guide.size = (this.config.guide.size || {});
 
+        this.barsGap = 1;
+        this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+
         this.on('highlight', (sender, e) => this.highlight(e));
     }
 
@@ -47,10 +50,12 @@ export class Interval extends Element {
         var colorScale = this.color;
         var isHorizontal = config.flip || config.guide.flip;
         var prettify = config.guide.prettify;
+        var barsGap = this.barsGap;
+        var baseCssClass = this.baseCssClass;
 
-        var barModel = this.buildModel({xScale, yScale, sizeScale, colorScale, isHorizontal});
+        var barModel = this.buildModel({xScale, yScale, sizeScale, colorScale, isHorizontal, barsGap});
 
-        var params = {prettify, xScale, yScale, minBarHeight: 1};
+        var params = {prettify, xScale, yScale, minBarHeight: 1, baseCssClass};
         var d3Attrs = (isHorizontal ?
             this.toHorizontalDrawMethod(barModel, params) :
             this.toVerticalDrawMethod(barModel, params));
@@ -92,7 +97,7 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, yScale}) {
+    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, yScale, baseCssClass}) {
 
         return {
             x: (({data: d}) => barX(d) - barW(d) * 0.5),
@@ -119,11 +124,11 @@ export class Interval extends Element {
                 }
             }),
             width: (({data: d}) => barW(d)),
-            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${barColor(d)}`)
+            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
-    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, xScale}) {
+    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, xScale, baseCssClass}) {
 
         return {
             y: (({data: d}) => barX(d) - barW(d) * 0.5),
@@ -158,13 +163,12 @@ export class Interval extends Element {
                     return w;
                 }
             }),
-            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${barColor(d)}`)
+            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
-    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale}) {
+    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap}) {
 
-        const barsGap = 1;
         var baseScale = (isHorizontal ? yScale : xScale);
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         var args = {

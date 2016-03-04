@@ -1,3 +1,5 @@
+import {default as _} from 'underscore';
+
 export class IntervalModel {
 
     constructor(model = {}) {
@@ -64,6 +66,14 @@ export class IntervalModel {
         });
     }
 
+    static decorator_discrete_dynamic_size(model, {sizeScale, barsGap}) {
+        return IntervalModel.compose(model, {
+            size: ((d) => {
+                return (model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5 * sizeScale(d[sizeScale.dim]) - (2 * barsGap));
+            })
+        });
+    }
+
     static decorator_discrete_positioningByColor(model, {colorScale, categories, barsGap}) {
         var baseScale = model.scaleX;
         var categoriesCount = (categories.length || 1);
@@ -84,6 +94,51 @@ export class IntervalModel {
     static decorator_color(model, {colorScale}) {
         return IntervalModel.compose(model, {
             color: ((d) => colorScale(d[colorScale.dim]))
+        });
+    }
+
+    static decorator_stack(model, {}) {
+
+        var xScale = model.scaleX;
+        var yScale = model.scaleY;
+
+        var createFnStack = (totalState) => {
+            return ((d) => {
+                var x = d[xScale.dim];
+                var y = d[yScale.dim];
+
+                var isPositive = (y >= 0);
+                var state = (isPositive ? totalState.positive : totalState.negative);
+
+                let prevStack = (state[x] || 0);
+                let nextStack = (prevStack + y);
+                state[x] = nextStack;
+
+                return {isPositive, nextStack, prevStack};
+            });
+        };
+
+        var stackYi = createFnStack({positive: {}, negative: {}});
+        var stackY0 = createFnStack({positive: {}, negative: {}});
+
+        var seq = [];
+        var memoize = ((fn) => _.memoize(fn, ((d) => {
+            var i = seq.indexOf(d);
+            if (i < 0) {
+                i = ((seq.push(d)) - 1);
+            }
+            return i;
+        })));
+
+        return IntervalModel.compose(model, {
+            yi: memoize((d) => {
+                var {isPositive, nextStack, prevStack} = stackYi(d);
+                return (isPositive ? yScale(nextStack) : yScale(prevStack));
+            }),
+            y0: memoize((d) => {
+                var {isPositive, nextStack, prevStack} = stackY0(d);
+                return (isPositive ? yScale(prevStack) : yScale(nextStack));
+            })
         });
     }
 }

@@ -1,6 +1,7 @@
 import {default as _} from 'underscore';
 import {CSS_PREFIX} from './../const';
 import {Element} from './element';
+import {IntervalModel} from '../models/interval';
 import {TauChartError as Error, errorCodes} from './../error';
 
 export class StackedInterval extends Element {
@@ -59,8 +60,11 @@ export class StackedInterval extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
+        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: false});
         this.config.guide.size = (this.config.guide.size || {});
+
+        this.barsGap = 0;
+        this.baseCssClass = `i-role-element i-role-datum bar bar-stack ${CSS_PREFIX}bar-stacked`;
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -114,197 +118,180 @@ export class StackedInterval extends Element {
 
         var self = this;
 
+        var options = this.config.options;
+        var uid = options.uid;
         var config = this.config;
-        var options = config.options;
         var xScale = this.xScale;
         var yScale = this.yScale;
         var sizeScale = this.size;
         var colorScale = this.color;
+        var isHorizontal = config.flip || config.guide.flip;
+        var prettify = config.guide.prettify;
+        var barsGap = this.barsGap;
+        var baseCssClass = this.baseCssClass;
 
-        var isHorizontal = config.flip;
+        var barModel = this.buildModel({xScale, yScale, sizeScale, colorScale, isHorizontal, barsGap});
 
-        var viewMapper;
-
-        if (isHorizontal) {
-            viewMapper = (totals, d) => {
-                var x = d[xScale.dim];
-                var y = d[yScale.dim];
-
-                var item = {
-                    y: y,
-                    w: d[sizeScale.dim],
-                    c: d[colorScale.dim]
-                };
-
-                if (x >= 0) {
-                    totals.positive[y] = ((totals.positive[y] || 0) + x);
-                    item.x = totals.positive[y];
-                    item.h = x;
-                } else {
-                    var prevStack = (totals.negative[y] || 0);
-                    totals.negative[y] = (prevStack + x);
-                    item.x = prevStack;
-                    item.h = Math.abs(x);
-                }
-
-                return item;
-            };
-        } else {
-            viewMapper = (totals, d) => {
-                var x = d[xScale.dim];
-                var y = d[yScale.dim];
-
-                var item = {
-                    x: x,
-                    w: d[sizeScale.dim],
-                    c: d[colorScale.dim]
-                };
-
-                if (y >= 0) {
-                    totals.positive[x] = ((totals.positive[x] || 0) + y);
-                    item.y = totals.positive[x];
-                    item.h = y;
-                } else {
-                    let prevStack = (totals.negative[x] || 0);
-                    totals.negative[x] = (prevStack + y);
-                    item.y = prevStack;
-                    item.h = Math.abs(y);
-                }
-
-                return item;
-            };
-        }
-
-        var d3Attrs = this._buildDrawModel(
-            isHorizontal,
-            {
-                xScale,
-                yScale,
-                sizeScale,
-                colorScale,
-                prettify: config.guide.prettify
-            });
+        var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
+        var d3Attrs = (isHorizontal ?
+            this.toHorizontalDrawMethod(barModel, params) :
+            this.toVerticalDrawMethod(barModel, params));
 
         var updateBar = function () {
             return this.attr(d3Attrs);
         };
 
-        var uid = options.uid;
-        var totals = {
-            positive: {},
-            negative: {}
-        };
-        var updateGroups = function () {
-            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`)
-                .call(function () {
-                    var bars = this
-                        .selectAll('.bar-stack')
-                        .data((frame) => {
-                            // var totals = {}; // if 1-only frame support is required
-                            return frame.data.map((d) => ({uid: uid, data: d, view: viewMapper(totals, d)}));
-                        });
-                    bars.exit()
-                        .remove();
-                    bars.call(updateBar);
-                    bars.enter()
-                        .append('rect')
-                        .call(updateBar);
+        var updateBarContainer = function () {
+            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`);
+            var bars = this.selectAll('.bar').data((d) => {
+                return d.values.map(item => ({
+                    data: item,
+                    uid: d.uid
+                }));
+            });
+            bars.exit()
+                .remove();
+            bars.call(updateBar);
+            bars.enter()
+                .append('rect')
+                .call(updateBar);
 
-                    self.subscribe(
-                        bars,
-                        (({data:d}) => d),
-                        ((d3Event, {view:v}) => {
-                            d3Event.chartElementViewModel = v;
-                            return d3Event;
-                        }));
-                });
+            self.subscribe(bars, ({data:d}) => d);
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
-        var frameGroups = options.container
+        var elements = options
+            .container
             .selectAll(`.frame-id-${uid}`)
-            .data(frames.map(mapper), (f) => f.hash);
-        frameGroups
+            .data(frames.map((fr)=>({hash: fr.hash(), key: fr.key, values: fr.part(), uid: this.config.options.uid})));
+        elements
             .exit()
             .remove();
-        frameGroups
-            .call(updateGroups);
-        frameGroups
+        elements
+            .call(updateBarContainer);
+        elements
             .enter()
             .append('g')
-            .call(updateGroups);
-
-        return [];
+            .call(updateBarContainer);
     }
 
-    _buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale, prettify}) {
+    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, yScale, baseCssClass}) {
 
-        // show at least 1px gap for bar to make it clickable
-        const minH = 1;
-
-        var calculateH;
-        var calculateW;
-        var calculateY;
-        var calculateX;
-
-        if (isHorizontal) {
-
-            let slotSize = (yScale.discrete ?
-                ((d) => (yScale.stepSize(d.y) * 0.5 * sizeScale(d.w))) :
-                ((d) => (sizeScale(d.w))));
-
-            calculateW = ((d) => {
-                var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
-                if (prettify) {
-                    w = Math.max(minH, w);
-                }
-                return w;
-            });
-
-            calculateH = ((d) => {
-                var h = slotSize(d);
-                if (prettify) {
-                    h = Math.max(minH, h);
-                }
-                return h;
-            });
-
-            calculateX = ((d) => (xScale(d.x - d.h)));
-            calculateY = ((d) => (yScale(d.y) - (calculateH(d) / 2)));
-
-        } else {
-
-            let slotSize = (xScale.discrete ?
-                ((d) => (xScale.stepSize(d.x) * 0.5 * sizeScale(d.w))) :
-                ((d) => (sizeScale(d.w))));
-
-            calculateW = ((d) => {
-                var w = slotSize(d);
-                if (prettify) {
-                    w = Math.max(minH, w);
-                }
-                return w;
-            });
-
-            calculateH = ((d) => {
-                var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
-                if (prettify) {
-                    h = Math.max(minH, h);
-                }
-                return h;
-            });
-
-            calculateX = ((d) => (xScale(d.x) - (calculateW(d) / 2)));
-            calculateY = ((d) => (yScale(d.y)));
-
-        }
+        var calculateW = ((d) => {
+            var w = barW(d);
+            if (prettify) {
+                w = Math.max(minBarW, w);
+            }
+            return w;
+        });
 
         return {
-            x: (({view:d}) => calculateX(d)),
-            y: (({view:d}) => calculateY(d)),
-            height: (({view:d}) => calculateH(d)),
-            width: (({view:d}) => calculateW(d)),
-            class: (({view:d}) => `i-role-element i-role-datum bar-stack ${CSS_PREFIX}bar-stacked ${colorScale(d.c)}`)
+            x: (({data: d}) => barX(d) - calculateW(d) * 0.5),
+            y: (({data: d}) => {
+                var y = barY(d);
+
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var h = barH(d);
+                    var isTooSmall = (h < minBarH);
+                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
+                } else {
+                    return y;
+                }
+            }),
+            height: (({data: d}) => {
+                var h = barH(d);
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var y = d[yScale.dim];
+                    return (y === 0) ? h : Math.max(minBarH, h);
+                } else {
+                    return h;
+                }
+            }),
+            width: (({data: d}) => calculateW(d)),
+            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
+        };
+    }
+
+    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, xScale, baseCssClass}) {
+
+        var calculateH = ((d) => {
+            var h = barW(d);
+            if (prettify) {
+                h = Math.max(minBarW, h);
+            }
+            return h;
+        });
+
+        return {
+            y: (({data: d}) => barX(d) - calculateH(d) * 0.5),
+            x: (({data: d}) => {
+                var x = barY(d);
+
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var h = barH(d);
+                    var dx = d[xScale.dim];
+                    var offset = 0;
+
+                    if (dx === 0) {offset = 0;}
+                    if (dx > 0) {offset = (h);}
+                    if (dx < 0) {offset = (0 - minBarH);}
+
+                    var isTooSmall = (h < minBarH);
+                    return (isTooSmall) ? (x + offset) : (x);
+                } else {
+                    return x;
+                }
+            }),
+            height: (({data: d}) => calculateH(d)),
+            width: (({data: d}) => {
+                var w = barH(d);
+
+                if (prettify) {
+                    // decorate for better visual look & feel
+                    var x = d[xScale.dim];
+                    return (x === 0) ? w : Math.max(minBarH, w);
+                } else {
+                    return w;
+                }
+            }),
+            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
+        };
+    }
+
+    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap}) {
+
+        var baseScale = (isHorizontal ? yScale : xScale);
+        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
+        var args = {
+            xScale,
+            yScale,
+            isHorizontal,
+            sizeScale,
+            colorScale,
+            barsGap,
+            categories: (enableColorToBarPosition ? colorScale.domain() : [])
+        };
+
+        var barModel = [
+            IntervalModel.decorator_orientation,
+            IntervalModel.decorator_stack,
+            (baseScale.discrete ?
+                IntervalModel.decorator_discrete_dynamic_size :
+                IntervalModel.decorator_continuous_size),
+            ((baseScale.discrete && enableColorToBarPosition) ?
+                IntervalModel.decorator_discrete_positioningByColor :
+                IntervalModel.decorator_identity),
+            IntervalModel.decorator_color
+        ].reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
+
+        return {
+            barX: ((d) => barModel.xi(d)),
+            barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
+            barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
+            barW: ((d) => barModel.size(d)),
+            barColor: ((d) => barModel.color(d))
         };
     }
 
