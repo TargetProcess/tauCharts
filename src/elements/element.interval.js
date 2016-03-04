@@ -245,7 +245,7 @@ export class Interval extends Element {
             scaleY: valsScale,
 
             y0: (valsScale.discrete ?
-                (() => valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k) : // (() => defaultBaseAbsPosition)
+                (() => valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k) :
                 (() => valsScale(Math.max(0, Math.min(...valsScale.domain()))))),
             yi: ((d) => (valsScale(d[valsScale.dim]))),
             xi: ((d) => (baseScale(d[baseScale.dim])))
