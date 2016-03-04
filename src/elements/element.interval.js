@@ -44,18 +44,15 @@ export class Interval extends Element {
         var yScale = this.yScale;
         var sizeScale = this.size;
         var colorScale = this.color;
-
-        var args = {
-            xScale,
-            yScale,
-            sizeScale,
-            colorScale,
-            prettify: config.guide.prettify
-        };
-
         var isHorizontal = config.flip || config.guide.flip;
+        var prettify = config.guide.prettify;
 
-        var d3Attrs = isHorizontal ? this._buildHorizontalDrawMethod(args) : this._buildVerticalDrawMethod(args);
+        var barModel = this._buildDrawMethod({xScale, yScale, sizeScale, colorScale, isHorizontal});
+
+        var params = {prettify, xScale, yScale, minBarHeight: 1};
+        var d3Attrs = (isHorizontal ?
+            this.toHorizontalDrawMethod(barModel, params) :
+            this.toVerticalDrawMethod(barModel, params));
 
         var updateBar = function () {
             return this.attr(d3Attrs);
@@ -94,95 +91,73 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, sizeScale, xScale, yScale, prettify}) {
-
-        var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
-            {
-                xScale,
-                yScale,
-                isHorizontal: false,
-                sizeScale,
-                colorScale
-            });
-
-        const minBarH = 1;
+    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, yScale}) {
 
         return {
-            x: (({data: d}) => calculateBarX(d) - calculateBarW(d) * 0.5),
+            x: (({data: d}) => barX(d) - barW(d) * 0.5),
             y: (({data: d}) => {
-                var y = calculateBarY(d);
+                var y = barY(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
-                    var h = calculateBarH(d);
-                    var isTooSmall = (h < minBarH);
-                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
+                    var h = barH(d);
+                    var isTooSmall = (h < minBarHeight);
+                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarHeight) : y);
                 } else {
                     return y;
                 }
             }),
             height: (({data: d}) => {
-                var h = calculateBarH(d);
+                var h = barH(d);
                 if (prettify) {
                     // decorate for better visual look & feel
                     var y = d[yScale.dim];
-                    return (y === 0) ? h : Math.max(minBarH, h);
+                    return (y === 0) ? h : Math.max(minBarHeight, h);
                 } else {
                     return h;
                 }
             }),
-            width: (({data: d}) => calculateBarW(d)),
-            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.dim])}`)
+            width: (({data: d}) => barW(d)),
+            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${barColor(d)}`)
         };
     }
 
-    _buildHorizontalDrawMethod({colorScale, sizeScale, xScale, yScale, prettify}) {
-
-        var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
-            {
-                xScale,
-                yScale,
-                isHorizontal: true,
-                sizeScale,
-                colorScale
-            });
-
-        const minBarH = 1;
+    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, xScale}) {
 
         return {
-            y: (({data: d}) => calculateBarX(d) - calculateBarW(d) * 0.5),
+            y: (({data: d}) => barX(d) - barW(d) * 0.5),
             x: (({data: d}) => {
-                var x = calculateBarY(d);
+                var x = barY(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
-                    var h = calculateBarH(d);
+                    var h = barH(d);
                     var dx = d[xScale.dim];
                     var offset = 0;
 
                     if (dx === 0) {offset = 0;}
                     if (dx > 0) {offset = (h);}
-                    if (dx < 0) {offset = (0 - minBarH);}
+                    if (dx < 0) {offset = (0 - minBarHeight);}
 
-                    var isTooSmall = (h < minBarH);
+                    var isTooSmall = (h < minBarHeight);
                     return (isTooSmall) ? (x + offset) : (x);
                 } else {
                     return x;
                 }
             }),
-            height: (({data: d}) => calculateBarW(d)),
+            height: (({data: d}) => barW(d)),
             width: (({data: d}) => {
-                var w = calculateBarH(d);
+                var w = barH(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
                     var x = d[xScale.dim];
-                    return (x === 0) ? w : Math.max(minBarH, w);
+                    return (x === 0) ? w : Math.max(minBarHeight, w);
                 } else {
                     return w;
                 }
             }),
-            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.dim])}`)
+            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${barColor(d)}`)
         };
     }
 
@@ -209,7 +184,8 @@ export class Interval extends Element {
                 Interval.decorator_continuous_size),
             ((baseScale.discrete && enableColorToBarPosition) ?
                 Interval.decorator_discrete_positioningByColor :
-                Interval.decorator_identity)
+                Interval.decorator_identity),
+            Interval.decorator_color
         ].reduce(
             ((model, transformation) => transformation(model, args)),
             {
@@ -221,10 +197,11 @@ export class Interval extends Element {
             });
 
         return {
-            calculateBarX: ((d) => barModel.xi(d)),
-            calculateBarY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
-            calculateBarH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
-            calculateBarW: ((d) => barModel.size(d))
+            barX: ((d) => barModel.xi(d)),
+            barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
+            barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
+            barW: ((d) => barModel.size(d)),
+            barColor: ((d) => barModel.color(d))
         };
     }
 
@@ -302,6 +279,18 @@ export class Interval extends Element {
                 return absTickStart + relSegmStart + absBarOffset;
             }),
             size: model.size
+        };
+    }
+
+    static decorator_color(model, {colorScale}) {
+        return {
+            scaleX: model.scaleX,
+            scaleY: model.scaleY,
+            y0: model.y0,
+            yi: model.yi,
+            xi: model.xi,
+            size: model.size,
+            color: ((d) => colorScale(d[colorScale.dim]))
         };
     }
 
