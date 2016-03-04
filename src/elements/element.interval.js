@@ -43,6 +43,7 @@ export class Interval extends Element {
         var self = this;
 
         var options = this.config.options;
+        var uid = options.uid;
         var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
@@ -55,7 +56,7 @@ export class Interval extends Element {
 
         var barModel = this.buildModel({xScale, yScale, sizeScale, colorScale, isHorizontal, barsGap});
 
-        var params = {prettify, xScale, yScale, minBarHeight: 1, baseCssClass};
+        var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
         var d3Attrs = (isHorizontal ?
             this.toHorizontalDrawMethod(barModel, params) :
             this.toVerticalDrawMethod(barModel, params));
@@ -65,7 +66,7 @@ export class Interval extends Element {
         };
 
         var updateBarContainer = function () {
-            this.attr('class', 'i-role-bar-group');
+            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`);
             var bars = this.selectAll('.bar').data((d) => {
                 return d.values.map(item => ({
                     data: item,
@@ -84,8 +85,8 @@ export class Interval extends Element {
 
         var elements = options
             .container
-            .selectAll(`.i-role-bar-group`)
-            .data(frames.map((fr)=>({key: fr.key, values: fr.part(), uid: this.config.options.uid})));
+            .selectAll(`.frame-id-${uid}`)
+            .data(frames.map((fr)=>({hash: fr.hash(), key: fr.key, values: fr.part(), uid: this.config.options.uid})));
         elements
             .exit()
             .remove();
@@ -97,18 +98,26 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, yScale, baseCssClass}) {
+    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, yScale, baseCssClass}) {
+
+        var calculateW = ((d) => {
+            var w = barW(d);
+            if (prettify) {
+                w = Math.max(minBarW, w);
+            }
+            return w;
+        });
 
         return {
-            x: (({data: d}) => barX(d) - barW(d) * 0.5),
+            x: (({data: d}) => barX(d) - calculateW(d) * 0.5),
             y: (({data: d}) => {
                 var y = barY(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
                     var h = barH(d);
-                    var isTooSmall = (h < minBarHeight);
-                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarHeight) : y);
+                    var isTooSmall = (h < minBarH);
+                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
                 } else {
                     return y;
                 }
@@ -118,20 +127,28 @@ export class Interval extends Element {
                 if (prettify) {
                     // decorate for better visual look & feel
                     var y = d[yScale.dim];
-                    return (y === 0) ? h : Math.max(minBarHeight, h);
+                    return (y === 0) ? h : Math.max(minBarH, h);
                 } else {
                     return h;
                 }
             }),
-            width: (({data: d}) => barW(d)),
+            width: (({data: d}) => calculateW(d)),
             class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
-    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarHeight, xScale, baseCssClass}) {
+    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, xScale, baseCssClass}) {
+
+        var calculateH = ((d) => {
+            var h = barW(d);
+            if (prettify) {
+                h = Math.max(minBarW, h);
+            }
+            return h;
+        });
 
         return {
-            y: (({data: d}) => barX(d) - barW(d) * 0.5),
+            y: (({data: d}) => barX(d) - calculateH(d) * 0.5),
             x: (({data: d}) => {
                 var x = barY(d);
 
@@ -143,22 +160,22 @@ export class Interval extends Element {
 
                     if (dx === 0) {offset = 0;}
                     if (dx > 0) {offset = (h);}
-                    if (dx < 0) {offset = (0 - minBarHeight);}
+                    if (dx < 0) {offset = (0 - minBarH);}
 
-                    var isTooSmall = (h < minBarHeight);
+                    var isTooSmall = (h < minBarH);
                     return (isTooSmall) ? (x + offset) : (x);
                 } else {
                     return x;
                 }
             }),
-            height: (({data: d}) => barW(d)),
+            height: (({data: d}) => calculateH(d)),
             width: (({data: d}) => {
                 var w = barH(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
                     var x = d[xScale.dim];
-                    return (x === 0) ? w : Math.max(minBarHeight, w);
+                    return (x === 0) ? w : Math.max(minBarH, w);
                 } else {
                     return w;
                 }
@@ -181,16 +198,9 @@ export class Interval extends Element {
             categories: (enableColorToBarPosition ? colorScale.domain() : [])
         };
 
-        var barModel = [
-            IntervalModel.decorator_orientation,
-            (baseScale.discrete ?
-                IntervalModel.decorator_discrete_size :
-                IntervalModel.decorator_continuous_size),
-            ((baseScale.discrete && enableColorToBarPosition) ?
-                IntervalModel.decorator_discrete_positioningByColor :
-                IntervalModel.decorator_identity),
-            IntervalModel.decorator_color
-        ].reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
+        var barModel = this
+            .setupTransformations(baseScale)
+            .reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
 
         return {
             barX: ((d) => barModel.xi(d)),
@@ -199,6 +209,20 @@ export class Interval extends Element {
             barW: ((d) => barModel.size(d)),
             barColor: ((d) => barModel.color(d))
         };
+    }
+
+    setupTransformations(baseScale) {
+        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
+        return [
+            IntervalModel.decorator_orientation,
+            (baseScale.discrete ?
+                IntervalModel.decorator_discrete_size :
+                IntervalModel.decorator_continuous_size),
+            ((baseScale.discrete && enableColorToBarPosition) ?
+                IntervalModel.decorator_discrete_positioningByColor :
+                IntervalModel.decorator_identity),
+            IntervalModel.decorator_color
+        ];
     }
 
     highlight(filter) {
