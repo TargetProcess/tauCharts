@@ -1,5 +1,3 @@
-import {default as _} from 'underscore';
-
 export class IntervalModel {
 
     constructor(model = {}) {

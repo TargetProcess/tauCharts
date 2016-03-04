@@ -48,7 +48,7 @@ export class Interval extends Element {
         var isHorizontal = config.flip || config.guide.flip;
         var prettify = config.guide.prettify;
 
-        var barModel = this._buildDrawMethod({xScale, yScale, sizeScale, colorScale, isHorizontal});
+        var barModel = this.buildModel({xScale, yScale, sizeScale, colorScale, isHorizontal});
 
         var params = {prettify, xScale, yScale, minBarHeight: 1};
         var d3Attrs = (isHorizontal ?
@@ -162,7 +162,7 @@ export class Interval extends Element {
         };
     }
 
-    _buildDrawMethod({xScale, yScale, isHorizontal, sizeScale, colorScale}) {
+    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale}) {
 
         const barsGap = 1;
         var baseScale = (isHorizontal ? yScale : xScale);
