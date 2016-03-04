@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
+import {IntervalModel} from '../models/interval';
 import {default as _} from 'underscore';
 export class Interval extends Element {
 
@@ -176,25 +177,16 @@ export class Interval extends Element {
             categories: (enableColorToBarPosition ? colorScale.domain() : [])
         };
 
-        var createFunc = ((x) => (() => x));
         var barModel = [
-            Interval.decorator_orientation,
+            IntervalModel.decorator_orientation,
             (baseScale.discrete ?
-                Interval.decorator_discrete_size :
-                Interval.decorator_continuous_size),
+                IntervalModel.decorator_discrete_size :
+                IntervalModel.decorator_continuous_size),
             ((baseScale.discrete && enableColorToBarPosition) ?
-                Interval.decorator_discrete_positioningByColor :
-                Interval.decorator_identity),
-            Interval.decorator_color
-        ].reduce(
-            ((model, transformation) => transformation(model, args)),
-            {
-                y0: createFunc(0),
-                yi: createFunc(0),
-                xi: createFunc(0),
-                size: createFunc(0),
-                color: createFunc('')
-            });
+                IntervalModel.decorator_discrete_positioningByColor :
+                IntervalModel.decorator_identity),
+            IntervalModel.decorator_color
+        ].reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
 
         return {
             barX: ((d) => barModel.xi(d)),
@@ -202,95 +194,6 @@ export class Interval extends Element {
             barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
             barW: ((d) => barModel.size(d)),
             barColor: ((d) => barModel.color(d))
-        };
-    }
-
-    static decorator_identity(model, {}) {
-        return model;
-    }
-
-    static decorator_orientation(model, {xScale, yScale, isHorizontal}) {
-
-        var baseScale = (isHorizontal ? yScale : xScale);
-        var valsScale = (isHorizontal ? xScale : yScale);
-
-        var k = (isHorizontal ? (-0.5) : (0.5));
-
-        return {
-
-            scaleX: baseScale,
-            scaleY: valsScale,
-
-            y0: (valsScale.discrete ?
-                (() => valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k) :
-                (() => valsScale(Math.max(0, Math.min(...valsScale.domain()))))),
-            yi: ((d) => (valsScale(d[valsScale.dim]))),
-            xi: ((d) => (baseScale(d[baseScale.dim])))
-        };
-    }
-
-    static decorator_continuous_size(model, {sizeScale}) {
-        return {
-            scaleX: model.scaleX,
-            scaleY: model.scaleY,
-            y0: model.y0,
-            yi: model.yi,
-            xi: model.xi,
-            size: ((d) => (sizeScale(d[sizeScale.dim])))
-        };
-    }
-
-    static decorator_discrete_size(model, {categories, barsGap}) {
-        var categoriesCount = (categories.length || 1);
-        var space = ((d) => model.scaleX.stepSize(d[model.scaleX.dim]) * (categoriesCount / (1 + categoriesCount)));
-        var fnBarSize = ((d) => (space(d) / categoriesCount));
-        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
-
-        return {
-            scaleX: model.scaleX,
-            scaleY: model.scaleY,
-            y0: model.y0,
-            yi: model.yi,
-            xi: model.xi,
-            size: ((d) => {
-                var barSize = fnBarSize(d);
-                var gapSize = fnGapSize(barSize);
-                return barSize - 2 * gapSize;
-            })
-        };
-    }
-
-    static decorator_discrete_positioningByColor(model, {colorScale, categories, barsGap}) {
-        var baseScale = model.scaleX;
-        var categoriesCount = (categories.length || 1);
-        var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
-        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
-        var fnBarSize = ((d) => (space(d) / categoriesCount));
-
-        return {
-            scaleX: model.scaleX,
-            scaleY: model.scaleY,
-            y0: model.y0,
-            yi: model.yi,
-            xi: ((d) => {
-                var absTickStart = (model.xi(d) - (space(d) / 2));
-                var relSegmStart = (colorIndexScale(d) * fnBarSize(d));
-                var absBarOffset = (model.size(d) * 0.5 + barsGap);
-                return absTickStart + relSegmStart + absBarOffset;
-            }),
-            size: model.size
-        };
-    }
-
-    static decorator_color(model, {colorScale}) {
-        return {
-            scaleX: model.scaleX,
-            scaleY: model.scaleY,
-            y0: model.y0,
-            yi: model.yi,
-            xi: model.xi,
-            size: model.size,
-            color: ((d) => colorScale(d[colorScale.dim]))
         };
     }
 
