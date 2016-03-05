@@ -10,10 +10,37 @@ export class Interval extends Element {
 
         this.config = config;
         this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
+
+        this.config.guide.x = this.config.guide.x || {};
+        this.config.guide.x = _.defaults(
+            this.config.guide.x,
+            {
+                tickFontHeight: 0,
+                density: 20
+            }
+        );
+
+        this.config.guide.y = this.config.guide.y || {};
+        this.config.guide.y = _.defaults(
+            this.config.guide.y,
+            {
+                tickFontHeight: 0,
+                density: 20
+            }
+        );
+
         this.config.guide.size = (this.config.guide.size || {});
 
         this.barsGap = 1;
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+
+        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        this.decorators = [
+            IntervalModel.decorator_orientation,
+            IntervalModel.decorator_size,
+            IntervalModel.decorator_color,
+            enableColorPositioning && IntervalModel.decorator_positioningByColor
+        ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -25,10 +52,35 @@ export class Interval extends Element {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
 
-        const defaultSize = 3;
-        var sizeGuide = {min: (this.config.guide.size.min || defaultSize)};
-        sizeGuide.max = (this.config.guide.size.max || sizeGuide.min);
-        sizeGuide.mid = (this.config.guide.size.mid || sizeGuide.min);
+        var g = config.guide;
+        var isNotZero = (x => x !== 0);
+        const halfPart = 0.5;
+        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
+        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
+
+        var notLessThan = ((lim, val) => Math.max(val, lim));
+
+        var sizeGuide = {};
+        var baseScale = (config.flip ? this.yScale : this.xScale);
+        if (baseScale.discrete) {
+            sizeGuide = {
+                normalize: true,
+                func: 'linear',
+                min: g.size.min || (0),
+                max: g.size.max || notLessThan(1, minTickStep),
+                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
+            };
+        } else {
+            let defaultSize = 3;
+            sizeGuide = {
+                normalize: false,
+                func: 'linear',
+                min: g.size.min || defaultSize,
+                max: g.size.max || notLessThan(defaultSize, minTickStep)
+            };
+            sizeGuide.mid = g.size.mid || sizeGuide.min;
+        }
+
         this.size = fnCreateScale('size', config.size, sizeGuide);
 
         return this
@@ -197,7 +249,7 @@ export class Interval extends Element {
         };
 
         var barModel = this
-            .setupTransformations()
+            .decorators
             .filter(x => x)
             .reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
 
@@ -208,16 +260,6 @@ export class Interval extends Element {
             barW: ((d) => barModel.size(d)),
             barColor: ((d) => barModel.color(d))
         };
-    }
-
-    setupTransformations() {
-        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
-        return [
-            IntervalModel.decorator_orientation,
-            IntervalModel.decorator_size,
-            IntervalModel.decorator_color,
-            enableColorToBarPosition && IntervalModel.decorator_positioningByColor
-        ];
     }
 
     highlight(filter) {

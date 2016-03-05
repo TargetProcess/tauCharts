@@ -60,64 +60,16 @@ export class StackedInterval extends Interval {
         super(config);
 
         this.config.guide.enableColorToBarPosition = false;
-
         this.barsGap = 0;
         this.baseCssClass = `i-role-element i-role-datum bar bar-stack ${CSS_PREFIX}bar-stacked`;
-    }
 
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
-
-        var g = config.guide;
-        var isNotZero = (x => x !== 0);
-        const halfPart = 0.5;
-        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
-        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
-
-        var notLessThan = ((lim, val) => Math.max(val, lim));
-
-        var sizeGuide = {};
-        var baseScale = (config.flip ? this.yScale : this.xScale);
-        if (baseScale.discrete) {
-            sizeGuide = {
-                normalize: true,
-                func: 'linear',
-                min: g.size.min || (0),
-                max: g.size.max || notLessThan(1, minTickStep),
-                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-            };
-        } else {
-            let defaultSize = 3;
-            sizeGuide = {
-                normalize: false,
-                func: 'linear',
-                min: g.size.min || defaultSize,
-                max: g.size.max || notLessThan(defaultSize, minTickStep)
-            };
-            sizeGuide.mid = g.size.mid || sizeGuide.min;
-        }
-
-        this.size = fnCreateScale('size', config.size, sizeGuide);
-
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color);
-    }
-
-    setupTransformations() {
-        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
-        return [
+        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        this.decorators = [
             IntervalModel.decorator_orientation,
             IntervalModel.decorator_stack,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
-            enableColorToBarPosition && IntervalModel.decorator_positioningByColor
+            enableColorPositioning && IntervalModel.decorator_positioningByColor
         ];
     }
 }
