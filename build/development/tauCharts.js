@@ -1,4 +1,4 @@
-/*! taucharts - v0.7.7 - 2016-03-02
+/*! taucharts - v0.7.8 - 2016-03-09
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -68,75 +68,75 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(4);
 
-	var _tau = __webpack_require__(16);
+	var _tau = __webpack_require__(17);
 
-	var _tau2 = __webpack_require__(20);
+	var _tau2 = __webpack_require__(21);
 
-	var _tau3 = __webpack_require__(35);
+	var _tau3 = __webpack_require__(36);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(18);
+	var _unitDomainPeriodGenerator = __webpack_require__(19);
 
-	var _formatterRegistry = __webpack_require__(31);
+	var _formatterRegistry = __webpack_require__(32);
 
-	var _unitsRegistry = __webpack_require__(24);
+	var _unitsRegistry = __webpack_require__(25);
 
-	var _scalesRegistry = __webpack_require__(25);
+	var _scalesRegistry = __webpack_require__(26);
 
-	var _coords = __webpack_require__(37);
+	var _coords = __webpack_require__(38);
 
-	var _coords2 = __webpack_require__(40);
+	var _coords2 = __webpack_require__(41);
 
-	var _coords3 = __webpack_require__(41);
+	var _coords3 = __webpack_require__(42);
 
 	var _element = __webpack_require__(5);
 
-	var _element2 = __webpack_require__(44);
+	var _element2 = __webpack_require__(45);
 
-	var _element3 = __webpack_require__(45);
+	var _element3 = __webpack_require__(46);
 
 	var _element4 = __webpack_require__(9);
 
 	var _element5 = __webpack_require__(13);
 
-	var _elementInterval = __webpack_require__(14);
+	var _elementInterval = __webpack_require__(15);
 
-	var _elementParallel = __webpack_require__(46);
+	var _elementParallel = __webpack_require__(47);
 
-	var _color = __webpack_require__(47);
+	var _color = __webpack_require__(48);
 
-	var _size = __webpack_require__(49);
+	var _size = __webpack_require__(50);
 
-	var _ordinal = __webpack_require__(50);
+	var _ordinal = __webpack_require__(51);
 
-	var _period = __webpack_require__(51);
+	var _period = __webpack_require__(52);
 
-	var _time = __webpack_require__(52);
+	var _time = __webpack_require__(53);
 
-	var _linear = __webpack_require__(53);
+	var _linear = __webpack_require__(54);
 
-	var _value = __webpack_require__(54);
+	var _value = __webpack_require__(55);
 
-	var _fill = __webpack_require__(55);
+	var _fill = __webpack_require__(56);
 
-	var _chartAliasRegistry = __webpack_require__(36);
+	var _chartAliasRegistry = __webpack_require__(37);
 
-	var _chartMap = __webpack_require__(56);
+	var _chartMap = __webpack_require__(57);
 
-	var _chartInterval = __webpack_require__(57);
+	var _chartInterval = __webpack_require__(58);
 
-	var _chartScatterplot = __webpack_require__(59);
+	var _chartScatterplot = __webpack_require__(60);
 
-	var _chartLine = __webpack_require__(60);
+	var _chartLine = __webpack_require__(61);
 
-	var _chartArea = __webpack_require__(61);
+	var _chartArea = __webpack_require__(62);
 
-	var _chartIntervalStacked = __webpack_require__(62);
+	var _chartIntervalStacked = __webpack_require__(63);
 
-	var _chartParallel = __webpack_require__(63);
+	var _chartParallel = __webpack_require__(64);
 
-	var _error = __webpack_require__(15);
+	var _error = __webpack_require__(16);
 
-	var _pluginsSdk = __webpack_require__(64);
+	var _pluginsSdk = __webpack_require__(65);
 
 	var _underscore = __webpack_require__(3);
 
@@ -450,7 +450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element3 = __webpack_require__(13);
 
-	var _elementInterval = __webpack_require__(14);
+	var _elementInterval = __webpack_require__(15);
 
 	var _underscore = __webpack_require__(3);
 
@@ -1956,13 +1956,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(7);
 
+	var _interval = __webpack_require__(14);
+
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1979,8 +1979,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Interval).call(this, config));
 
 	        _this.config = config;
-	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, { prettify: true, enableColorToBarPosition: true });
-	        _this.config.guide.size = _this.config.guide.size || {};
+	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
+	            prettify: true,
+	            enableColorToBarPosition: true
+	        });
+
+	        _this.config.guide.x = _this.config.guide.x || {};
+	        _this.config.guide.x = _underscore2.default.defaults(_this.config.guide.x, {
+	            tickFontHeight: 0,
+	            density: 20
+	        });
+
+	        _this.config.guide.y = _this.config.guide.y || {};
+	        _this.config.guide.y = _underscore2.default.defaults(_this.config.guide.y, {
+	            tickFontHeight: 0,
+	            density: 20
+	        });
+
+	        _this.config.guide.size = _underscore2.default.defaults(_this.config.guide.size || {}, {
+	            enableDistributeEvenly: false
+	        });
+
+	        _this.barsGap = 1;
+	        _this.baseCssClass = 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar';
+
+	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
+	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
+	        _this.decorators = [_interval.IntervalModel.decorator_orientation, enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_size, _interval.IntervalModel.decorator_color, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1997,11 +2022,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
 
-	            var defaultSize = 3;
-	            var sizeGuide = { min: this.config.guide.size.min || defaultSize };
-	            sizeGuide.max = this.config.guide.size.max || sizeGuide.min;
-	            sizeGuide.mid = this.config.guide.size.mid || sizeGuide.min;
+	            var g = config.guide;
+	            var isNotZero = function isNotZero(x) {
+	                return x !== 0;
+	            };
+	            var halfPart = 0.5;
+	            var minFontSize = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
+	                return n.tickFontHeight;
+	            }).filter(isNotZero));
+	            var minTickStep = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
+	                return n.density;
+	            }).filter(isNotZero));
+
+	            var notLessThan = function notLessThan(lim, val) {
+	                return Math.max(val, lim);
+	            };
+
+	            var sizeGuide = {};
+	            var baseScale = config.flip ? this.yScale : this.xScale;
+	            if (baseScale.discrete) {
+	                sizeGuide = {
+	                    normalize: true,
+	                    func: 'linear',
+	                    min: g.size.min || 0,
+	                    max: g.size.max || notLessThan(1, minTickStep),
+	                    mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
+	                };
+	            } else {
+	                var defaultSize = 3;
+	                sizeGuide = {
+	                    normalize: this.config.guide.size.enableDistributeEvenly,
+	                    func: 'linear',
+	                    min: g.size.min || defaultSize,
+	                    max: g.size.max || notLessThan(defaultSize, minTickStep)
+	                };
+	                sizeGuide.mid = g.size.mid || sizeGuide.min;
+	            }
+
 	            this.size = fnCreateScale('size', config.size, sizeGuide);
+	            this.sizeMax = sizeGuide.max;
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
 	        }
@@ -2013,32 +2072,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var self = this;
 
 	            var options = this.config.options;
+	            var uid = options.uid;
 	            var config = this.config;
 	            var xScale = this.xScale;
 	            var yScale = this.yScale;
 	            var sizeScale = this.size;
 	            var colorScale = this.color;
+	            var isHorizontal = config.flip || config.guide.flip;
+	            var prettify = config.guide.prettify;
+	            var barsGap = this.barsGap;
+	            var baseCssClass = this.baseCssClass;
 
-	            var args = {
+	            var fullData = frames.reduce(function (memo, f) {
+	                return memo.concat(f.part());
+	            }, []);
+
+	            var barModel = this.buildModel({
 	                xScale: xScale,
 	                yScale: yScale,
 	                sizeScale: sizeScale,
 	                colorScale: colorScale,
-	                width: config.options.width,
-	                height: config.options.height,
-	                prettify: config.guide.prettify
-	            };
+	                isHorizontal: isHorizontal,
+	                barsGap: barsGap,
+	                maxSize: this.sizeMax,
+	                dataSource: fullData
+	            });
 
-	            var isHorizontal = config.flip || config.guide.flip;
-
-	            var d3Attrs = isHorizontal ? this._buildHorizontalDrawMethod(args) : this._buildVerticalDrawMethod(args);
+	            var params = { prettify: prettify, xScale: xScale, yScale: yScale, minBarH: 1, minBarW: 1, baseCssClass: baseCssClass };
+	            var d3Attrs = isHorizontal ? this.toHorizontalDrawMethod(barModel, params) : this.toVerticalDrawMethod(barModel, params);
 
 	            var updateBar = function updateBar() {
 	                return this.attr(d3Attrs);
 	            };
 
 	            var updateBarContainer = function updateBarContainer() {
-	                this.attr('class', 'i-role-bar-group');
+	                this.attr('class', function (f) {
+	                    return 'frame-id-' + uid + ' frame-' + f.hash + ' i-role-bar-group';
+	                });
 	                var bars = this.selectAll('.bar').data(function (d) {
 	                    return d.values.map(function (item) {
 	                        return {
@@ -2057,61 +2127,58 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            };
 
-	            var elements = options.container.selectAll('.i-role-bar-group').data(frames.map(function (fr) {
-	                return { key: fr.key, values: fr.part(), uid: _this2.config.options.uid };
+	            var elements = options.container.selectAll('.frame-id-' + uid).data(frames.map(function (fr) {
+	                return { hash: fr.hash(), key: fr.key, values: fr.part(), uid: _this2.config.options.uid };
 	            }));
 	            elements.exit().remove();
 	            elements.call(updateBarContainer);
 	            elements.enter().append('g').call(updateBarContainer);
 	        }
 	    }, {
-	        key: '_buildVerticalDrawMethod',
-	        value: function _buildVerticalDrawMethod(_ref2) {
-	            var colorScale = _ref2.colorScale;
-	            var sizeScale = _ref2.sizeScale;
-	            var xScale = _ref2.xScale;
-	            var yScale = _ref2.yScale;
-	            var height = _ref2.height;
-	            var prettify = _ref2.prettify;
+	        key: 'toVerticalDrawMethod',
+	        value: function toVerticalDrawMethod(_ref2, _ref3) {
+	            var barX = _ref2.barX;
+	            var barY = _ref2.barY;
+	            var barH = _ref2.barH;
+	            var barW = _ref2.barW;
+	            var barColor = _ref2.barColor;
+	            var prettify = _ref3.prettify;
+	            var minBarH = _ref3.minBarH;
+	            var minBarW = _ref3.minBarW;
+	            var yScale = _ref3.yScale;
+	            var baseCssClass = _ref3.baseCssClass;
 
-	            var _buildDrawMethod2 = this._buildDrawMethod({
-	                baseScale: xScale,
-	                valsScale: yScale,
-	                sizeScale: sizeScale,
-	                colorScale: colorScale,
-	                defaultBaseAbsPosition: height
-	            });
-
-	            var calculateBarX = _buildDrawMethod2.calculateBarX;
-	            var calculateBarY = _buildDrawMethod2.calculateBarY;
-	            var calculateBarH = _buildDrawMethod2.calculateBarH;
-	            var calculateBarW = _buildDrawMethod2.calculateBarW;
-
-	            var minBarH = 1;
+	            var calculateW = function calculateW(d) {
+	                var w = barW(d);
+	                if (prettify) {
+	                    w = Math.max(minBarW, w);
+	                }
+	                return w;
+	            };
 
 	            return {
-	                x: function x(_ref3) {
-	                    var d = _ref3.data;
-	                    return calculateBarX(d) - calculateBarW(d) * 0.5;
-	                },
-	                y: function y(_ref4) {
+	                x: function x(_ref4) {
 	                    var d = _ref4.data;
+	                    return barX(d) - calculateW(d) * 0.5;
+	                },
+	                y: function y(_ref5) {
+	                    var d = _ref5.data;
 
-	                    var y = calculateBarY(d);
+	                    var y = barY(d);
 
 	                    if (prettify) {
 	                        // decorate for better visual look & feel
-	                        var h = calculateBarH(d);
+	                        var h = barH(d);
 	                        var isTooSmall = h < minBarH;
 	                        return isTooSmall && d[yScale.dim] > 0 ? y - minBarH : y;
 	                    } else {
 	                        return y;
 	                    }
 	                },
-	                height: function height(_ref5) {
-	                    var d = _ref5.data;
+	                height: function height(_ref6) {
+	                    var d = _ref6.data;
 
-	                    var h = calculateBarH(d);
+	                    var h = barH(d);
 	                    if (prettify) {
 	                        // decorate for better visual look & feel
 	                        var y = d[yScale.dim];
@@ -2120,53 +2187,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return h;
 	                    }
 	                },
-	                width: function width(_ref6) {
-	                    var d = _ref6.data;
-	                    return calculateBarW(d);
-	                },
-	                class: function _class(_ref7) {
+	                width: function width(_ref7) {
 	                    var d = _ref7.data;
-	                    return 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar ' + colorScale(d[colorScale.dim]);
+	                    return calculateW(d);
+	                },
+	                class: function _class(_ref8) {
+	                    var d = _ref8.data;
+	                    return baseCssClass + ' ' + barColor(d);
 	                }
 	            };
 	        }
 	    }, {
-	        key: '_buildHorizontalDrawMethod',
-	        value: function _buildHorizontalDrawMethod(_ref8) {
-	            var colorScale = _ref8.colorScale;
-	            var sizeScale = _ref8.sizeScale;
-	            var xScale = _ref8.xScale;
-	            var yScale = _ref8.yScale;
-	            var prettify = _ref8.prettify;
+	        key: 'toHorizontalDrawMethod',
+	        value: function toHorizontalDrawMethod(_ref9, _ref10) {
+	            var barX = _ref9.barX;
+	            var barY = _ref9.barY;
+	            var barH = _ref9.barH;
+	            var barW = _ref9.barW;
+	            var barColor = _ref9.barColor;
+	            var prettify = _ref10.prettify;
+	            var minBarH = _ref10.minBarH;
+	            var minBarW = _ref10.minBarW;
+	            var xScale = _ref10.xScale;
+	            var baseCssClass = _ref10.baseCssClass;
 
-	            var _buildDrawMethod3 = this._buildDrawMethod({
-	                baseScale: yScale,
-	                valsScale: xScale,
-	                sizeScale: sizeScale,
-	                colorScale: colorScale,
-	                defaultBaseAbsPosition: 0
-	            });
-
-	            var calculateBarX = _buildDrawMethod3.calculateBarX;
-	            var calculateBarY = _buildDrawMethod3.calculateBarY;
-	            var calculateBarH = _buildDrawMethod3.calculateBarH;
-	            var calculateBarW = _buildDrawMethod3.calculateBarW;
-
-	            var minBarH = 1;
+	            var calculateH = function calculateH(d) {
+	                var h = barW(d);
+	                if (prettify) {
+	                    h = Math.max(minBarW, h);
+	                }
+	                return h;
+	            };
 
 	            return {
-	                y: function y(_ref9) {
-	                    var d = _ref9.data;
-	                    return calculateBarX(d) - calculateBarW(d) * 0.5;
+	                y: function y(_ref11) {
+	                    var d = _ref11.data;
+	                    return barX(d) - calculateH(d) * 0.5;
 	                },
-	                x: function x(_ref10) {
-	                    var d = _ref10.data;
+	                x: function x(_ref12) {
+	                    var d = _ref12.data;
 
-	                    var x = calculateBarY(d);
+	                    var x = barY(d);
 
 	                    if (prettify) {
 	                        // decorate for better visual look & feel
-	                        var h = calculateBarH(d);
+	                        var h = barH(d);
 	                        var dx = d[xScale.dim];
 	                        var offset = 0;
 
@@ -2186,14 +2251,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return x;
 	                    }
 	                },
-	                height: function height(_ref11) {
-	                    var d = _ref11.data;
-	                    return calculateBarW(d);
+	                height: function height(_ref13) {
+	                    var d = _ref13.data;
+	                    return calculateH(d);
 	                },
-	                width: function width(_ref12) {
-	                    var d = _ref12.data;
+	                width: function width(_ref14) {
+	                    var d = _ref14.data;
 
-	                    var w = calculateBarH(d);
+	                    var w = barH(d);
 
 	                    if (prettify) {
 	                        // decorate for better visual look & feel
@@ -2203,85 +2268,59 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return w;
 	                    }
 	                },
-	                class: function _class(_ref13) {
-	                    var d = _ref13.data;
-	                    return 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar ' + colorScale(d[colorScale.dim]);
+	                class: function _class(_ref15) {
+	                    var d = _ref15.data;
+	                    return baseCssClass + ' ' + barColor(d);
 	                }
 	            };
 	        }
 	    }, {
-	        key: '_buildDrawMethod',
-	        value: function _buildDrawMethod(_ref14) {
-	            var valsScale = _ref14.valsScale;
-	            var baseScale = _ref14.baseScale;
-	            var sizeScale = _ref14.sizeScale;
-	            var colorScale = _ref14.colorScale;
-	            var defaultBaseAbsPosition = _ref14.defaultBaseAbsPosition;
+	        key: 'buildModel',
+	        value: function buildModel(_ref16) {
+	            var xScale = _ref16.xScale;
+	            var yScale = _ref16.yScale;
+	            var isHorizontal = _ref16.isHorizontal;
+	            var sizeScale = _ref16.sizeScale;
+	            var colorScale = _ref16.colorScale;
+	            var barsGap = _ref16.barsGap;
+	            var dataSource = _ref16.dataSource;
+	            var maxSize = _ref16.maxSize;
 
-	            var colorCategories = this.config.guide.enableColorToBarPosition === true ? colorScale.domain() : [];
-	            var colorIndexScale = function colorIndexScale(d) {
-	                return Math.max(0, colorCategories.indexOf(d[colorScale.dim]));
-	            }; // -1 (not found) to 0
-	            var colorCategoriesCount = colorCategories.length || 1;
-	            var colorIndexScaleKoeff = 1 / colorCategoriesCount;
-
-	            var barsGap = 1;
-
-	            var baseAbsPos = (valsScale.discrete ? function () {
-	                return defaultBaseAbsPosition;
-	            } : function () {
-	                var _Math;
-
-	                return valsScale(Math.max(0, (_Math = Math).min.apply(_Math, _toConsumableArray(valsScale.domain()))));
-	            })();
-
-	            var space = function space(x) {
-	                return baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount));
+	            var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
+	            var args = {
+	                xScale: xScale,
+	                yScale: yScale,
+	                isHorizontal: isHorizontal,
+	                sizeScale: sizeScale,
+	                colorScale: colorScale,
+	                barsGap: barsGap,
+	                maxSize: maxSize,
+	                dataSource: dataSource,
+	                categories: enableColorToBarPosition ? colorScale.domain() : []
 	            };
 
-	            var calculateSlotSize = baseScale.discrete ? function (d) {
-	                return space(d[baseScale.dim]) * colorIndexScaleKoeff;
-	            } : function (d) {
-	                return sizeScale(d[sizeScale.dim]);
-	            };
-
-	            var calculateGapSize = baseScale.discrete ? function (slotWidth) {
-	                return slotWidth > 2 * barsGap ? barsGap : 0;
-	            } : function () {
-	                return 0;
-	            };
-
-	            var calculateBarW = function calculateBarW(d) {
-	                var barSize = calculateSlotSize(d);
-	                var gapSize = calculateGapSize(barSize);
-	                return barSize - 2 * gapSize;
-	            };
-
-	            var calculateBarH = function calculateBarH(d) {
-	                return Math.abs(valsScale(d[valsScale.dim]) - baseAbsPos);
-	            };
-
-	            var calculateBarX = function calculateBarX(d) {
-	                var dx = d[baseScale.dim];
-
-	                var absTickStart = baseScale(dx) - space(dx) / 2;
-
-	                var relSegmStart = baseScale.discrete ? colorIndexScale(d) * calculateSlotSize(d) : 0;
-
-	                var absBarOffset = baseScale.discrete ? calculateBarW(d) * 0.5 + barsGap : 0;
-
-	                return absTickStart + relSegmStart + absBarOffset;
-	            };
-
-	            var calculateBarY = function calculateBarY(d) {
-	                return Math.min(baseAbsPos, valsScale(d[valsScale.dim]));
-	            };
+	            var barModel = this.decorators.filter(function (x) {
+	                return x;
+	            }).reduce(function (model, transform) {
+	                return transform(model, args);
+	            }, new _interval.IntervalModel());
 
 	            return {
-	                calculateBarX: calculateBarX,
-	                calculateBarY: calculateBarY,
-	                calculateBarH: calculateBarH,
-	                calculateBarW: calculateBarW
+	                barX: function barX(d) {
+	                    return barModel.xi(d);
+	                },
+	                barY: function barY(d) {
+	                    return Math.min(barModel.y0(d), barModel.yi(d));
+	                },
+	                barH: function barH(d) {
+	                    return Math.abs(barModel.yi(d) - barModel.y0(d));
+	                },
+	                barW: function barW(d) {
+	                    return barModel.size(d);
+	                },
+	                barColor: function barColor(d) {
+	                    return barModel.color(d);
+	                }
 	            };
 	        }
 	    }, {
@@ -2289,12 +2328,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function highlight(filter) {
 
 	            this.config.options.container.selectAll('.bar').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(_ref15) {
-	                    var d = _ref15.data;
+	                'graphical-report__highlighted': function graphicalReport__highlighted(_ref17) {
+	                    var d = _ref17.data;
 	                    return filter(d) === true;
 	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(_ref16) {
-	                    var d = _ref16.data;
+	                'graphical-report__dimmed': function graphicalReport__dimmed(_ref18) {
+	                    var d = _ref18.data;
 	                    return filter(d) === false;
 	                }
 	            });
@@ -2315,6 +2354,301 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.IntervalModel = undefined;
+
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var IntervalModel = exports.IntervalModel = (function () {
+	    function IntervalModel() {
+	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+	        _classCallCheck(this, IntervalModel);
+
+	        var createFunc = function createFunc(x) {
+	            return function () {
+	                return x;
+	            };
+	        };
+	        this.scaleX = model.scaleX || null;
+	        this.scaleY = model.scaleY || null;
+	        this.y0 = model.y0 || createFunc(0);
+	        this.yi = model.yi || createFunc(0);
+	        this.xi = model.xi || createFunc(0);
+	        this.size = model.size || createFunc(1);
+	        this.color = model.color || createFunc('');
+	    }
+
+	    _createClass(IntervalModel, null, [{
+	        key: 'compose',
+	        value: function compose(prev) {
+	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	            return Object.keys(updates).reduce(function (memo, propName) {
+	                memo[propName] = updates[propName];
+	                return memo;
+	            }, new IntervalModel(prev));
+	        }
+	    }, {
+	        key: 'decorator_identity',
+	        value: function decorator_identity(model) {
+	            return IntervalModel.compose(model);
+	        }
+	    }, {
+	        key: 'decorator_orientation',
+	        value: function decorator_orientation(model, _ref) {
+	            var xScale = _ref.xScale;
+	            var yScale = _ref.yScale;
+	            var isHorizontal = _ref.isHorizontal;
+
+	            var baseScale = isHorizontal ? yScale : xScale;
+	            var valsScale = isHorizontal ? xScale : yScale;
+
+	            var k = isHorizontal ? -0.5 : 0.5;
+
+	            return IntervalModel.compose(model, {
+	                scaleX: baseScale,
+	                scaleY: valsScale,
+	                y0: valsScale.discrete ? function () {
+	                    return valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k;
+	                } : function () {
+	                    var _Math;
+
+	                    return valsScale(Math.max(0, (_Math = Math).min.apply(_Math, _toConsumableArray(valsScale.domain()))));
+	                },
+	                yi: function yi(d) {
+	                    return valsScale(d[valsScale.dim]);
+	                },
+	                xi: function xi(d) {
+	                    return baseScale(d[baseScale.dim]);
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_size',
+	        value: function decorator_size(model, params) {
+	            var method = model.scaleX.discrete ? IntervalModel.___dis___decorator_size : IntervalModel.___con___decorator_size_dynamic;
+
+	            return method(model, params);
+	        }
+	    }, {
+	        key: 'decorator_dynamic_size',
+	        value: function decorator_dynamic_size(model, params) {
+	            var method = model.scaleX.discrete ? IntervalModel.___dis___decorator_size_dynamic : IntervalModel.___con___decorator_size_dynamic;
+
+	            return method(model, params);
+	        }
+	    }, {
+	        key: '___con___decorator_size_dynamic',
+	        value: function ___con___decorator_size_dynamic(model, _ref2) {
+	            var sizeScale = _ref2.sizeScale;
+
+	            return IntervalModel.compose(model, {
+	                size: function size(d) {
+	                    return model.size(d) * sizeScale(d[sizeScale.dim]);
+	                }
+	            });
+	        }
+	    }, {
+	        key: '___dis___decorator_size',
+	        value: function ___dis___decorator_size(model, _ref3) {
+	            var categories = _ref3.categories;
+	            var barsGap = _ref3.barsGap;
+
+	            var categoriesCount = categories.length || 1;
+	            var space = function space(d) {
+	                return model.scaleX.stepSize(d[model.scaleX.dim]) * (categoriesCount / (1 + categoriesCount));
+	            };
+	            var fnBarSize = function fnBarSize(d) {
+	                return space(d) / categoriesCount;
+	            };
+	            var fnGapSize = function fnGapSize(w) {
+	                return w > 2 * barsGap ? barsGap : 0;
+	            };
+
+	            return IntervalModel.compose(model, {
+	                size: function size(d) {
+	                    var barSize = fnBarSize(d);
+	                    var gapSize = fnGapSize(barSize);
+	                    return barSize - 2 * gapSize;
+	                }
+	            });
+	        }
+	    }, {
+	        key: '___dis___decorator_size_dynamic',
+	        value: function ___dis___decorator_size_dynamic(model, _ref4) {
+	            var sizeScale = _ref4.sizeScale;
+	            var barsGap = _ref4.barsGap;
+
+	            return IntervalModel.compose(model, {
+	                size: function size(d) {
+	                    return model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5 * sizeScale(d[sizeScale.dim]) - 2 * barsGap;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_positioningByColor',
+	        value: function decorator_positioningByColor(model, params) {
+	            var method = model.scaleX.discrete ? IntervalModel.decorator_discrete_positioningByColor : IntervalModel.decorator_identity;
+
+	            return method(model, params);
+	        }
+	    }, {
+	        key: 'decorator_discrete_positioningByColor',
+	        value: function decorator_discrete_positioningByColor(model, _ref5) {
+	            var colorScale = _ref5.colorScale;
+	            var categories = _ref5.categories;
+	            var barsGap = _ref5.barsGap;
+
+	            var baseScale = model.scaleX;
+	            var categoriesCount = categories.length || 1;
+	            var colorIndexScale = function colorIndexScale(d) {
+	                return Math.max(0, categories.indexOf(d[colorScale.dim]));
+	            }; // -1 (not found) to 0
+	            var space = function space(d) {
+	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
+	            };
+	            var fnBarSize = function fnBarSize(d) {
+	                return space(d) / categoriesCount;
+	            };
+
+	            return IntervalModel.compose(model, {
+	                xi: function xi(d) {
+	                    var absTickStart = model.xi(d) - space(d) / 2;
+	                    var relSegmStart = colorIndexScale(d) * fnBarSize(d);
+	                    var absBarOffset = model.size(d) * 0.5 + barsGap;
+	                    return absTickStart + relSegmStart + absBarOffset;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_color',
+	        value: function decorator_color(model, _ref6) {
+	            var colorScale = _ref6.colorScale;
+
+	            return IntervalModel.compose(model, {
+	                color: function color(d) {
+	                    return colorScale(d[colorScale.dim]);
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_stack',
+	        value: function decorator_stack(model, _ref7) {
+	            _objectDestructuringEmpty(_ref7);
+
+	            var xScale = model.scaleX;
+	            var yScale = model.scaleY;
+
+	            var createFnStack = function createFnStack(totalState) {
+	                return function (d) {
+	                    var x = d[xScale.dim];
+	                    var y = d[yScale.dim];
+
+	                    var isPositive = y >= 0;
+	                    var state = isPositive ? totalState.positive : totalState.negative;
+
+	                    var prevStack = state[x] || 0;
+	                    var nextStack = prevStack + y;
+	                    state[x] = nextStack;
+
+	                    return { isPositive: isPositive, nextStack: nextStack, prevStack: prevStack };
+	                };
+	            };
+
+	            var stackYi = createFnStack({ positive: {}, negative: {} });
+	            var stackY0 = createFnStack({ positive: {}, negative: {} });
+
+	            var seq = [];
+	            var memoize = function memoize(fn) {
+	                return _underscore2.default.memoize(fn, function (d) {
+	                    var i = seq.indexOf(d);
+	                    if (i < 0) {
+	                        i = seq.push(d) - 1;
+	                    }
+	                    return i;
+	                });
+	            };
+
+	            return IntervalModel.compose(model, {
+	                yi: memoize(function (d) {
+	                    var _stackYi = stackYi(d);
+
+	                    var isPositive = _stackYi.isPositive;
+	                    var nextStack = _stackYi.nextStack;
+	                    var prevStack = _stackYi.prevStack;
+
+	                    return isPositive ? yScale(nextStack) : yScale(prevStack);
+	                }),
+	                y0: memoize(function (d) {
+	                    var _stackY = stackY0(d);
+
+	                    var isPositive = _stackY.isPositive;
+	                    var nextStack = _stackY.nextStack;
+	                    var prevStack = _stackY.prevStack;
+
+	                    return isPositive ? yScale(prevStack) : yScale(nextStack);
+	                })
+	            });
+	        }
+	    }, {
+	        key: 'decorator_size_distribute_evenly',
+	        value: function decorator_size_distribute_evenly(model, _ref8) {
+	            var dataSource = _ref8.dataSource;
+	            var maxSize = _ref8.maxSize;
+
+	            if (model.scaleX.discrete) {
+	                return IntervalModel.decorator_identity(model);
+	            }
+
+	            var asc = function asc(a, b) {
+	                return a - b;
+	            };
+
+	            var xs = dataSource.map(function (row) {
+	                return model.xi(row);
+	            }).sort(asc);
+
+	            var prev = xs[0];
+	            var diff = xs.slice(1).map(function (curr) {
+	                var diff = curr - prev;
+	                prev = curr;
+	                return diff;
+	            }).filter(function (diff) {
+	                return diff > 0;
+	            }).sort(asc).concat(Number.MAX_VALUE)[0];
+
+	            return IntervalModel.compose(model, {
+	                size: function size() {
+	                    return Math.min(maxSize, diff);
+	                }
+	            });
+	        }
+	    }]);
+
+	    return IntervalModel;
+	})();
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 	exports.StackedInterval = undefined;
 
 	var _underscore = __webpack_require__(3);
@@ -2323,9 +2657,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _element = __webpack_require__(7);
+	var _element = __webpack_require__(13);
 
-	var _error = __webpack_require__(15);
+	var _interval = __webpack_require__(14);
+
+	var _error = __webpack_require__(16);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2337,8 +2673,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var StackedInterval = exports.StackedInterval = (function (_Element) {
-	    _inherits(StackedInterval, _Element);
+	var StackedInterval = exports.StackedInterval = (function (_Interval) {
+	    _inherits(StackedInterval, _Interval);
 
 	    _createClass(StackedInterval, null, [{
 	        key: 'embedUnitFrameToSpec',
@@ -2394,316 +2730,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StackedInterval).call(this, config));
 
-	        _this.config = config;
-	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, { prettify: true });
-	        _this.config.guide.size = _this.config.guide.size || {};
+	        _this.config.guide.enableColorToBarPosition = false;
+	        _this.barsGap = 0;
+	        _this.baseCssClass = 'i-role-element i-role-datum bar bar-stack ' + _const.CSS_PREFIX + 'bar-stacked';
 
-	        _this.on('highlight', function (sender, e) {
-	            return _this.highlight(e);
-	        });
+	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
+	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
+	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_stack, enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor];
 	        return _this;
 	    }
 
-	    _createClass(StackedInterval, [{
-	        key: 'createScales',
-	        value: function createScales(fnCreateScale) {
-
-	            var config = this.config;
-	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-	            this.color = fnCreateScale('color', config.color, {});
-
-	            var g = config.guide;
-	            var isNotZero = function isNotZero(x) {
-	                return x !== 0;
-	            };
-	            var halfPart = 0.5;
-	            var minFontSize = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
-	                return n.tickFontHeight;
-	            }).filter(isNotZero));
-	            var minTickStep = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
-	                return n.density;
-	            }).filter(isNotZero));
-
-	            var notLessThan = function notLessThan(lim, val) {
-	                return Math.max(val, lim);
-	            };
-
-	            var sizeGuide = {};
-	            var baseScale = config.flip ? this.yScale : this.xScale;
-	            if (baseScale.discrete) {
-	                sizeGuide = {
-	                    normalize: true,
-	                    func: 'linear',
-	                    min: g.size.min || 0,
-	                    max: g.size.max || notLessThan(1, minTickStep),
-	                    mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-	                };
-	            } else {
-	                var defaultSize = 3;
-	                sizeGuide = {
-	                    normalize: false,
-	                    func: 'linear',
-	                    min: g.size.min || defaultSize,
-	                    max: g.size.max || notLessThan(defaultSize, minTickStep)
-	                };
-	                sizeGuide.mid = g.size.mid || sizeGuide.min;
-	            }
-
-	            this.size = fnCreateScale('size', config.size, sizeGuide);
-
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
-	        }
-	    }, {
-	        key: 'drawFrames',
-	        value: function drawFrames(frames) {
-
-	            var self = this;
-
-	            var config = this.config;
-	            var options = config.options;
-	            var xScale = this.xScale;
-	            var yScale = this.yScale;
-	            var sizeScale = this.size;
-	            var colorScale = this.color;
-
-	            var isHorizontal = config.flip;
-
-	            var viewMapper;
-
-	            if (isHorizontal) {
-	                viewMapper = function (totals, d) {
-	                    var x = d[xScale.dim];
-	                    var y = d[yScale.dim];
-
-	                    var item = {
-	                        y: y,
-	                        w: d[sizeScale.dim],
-	                        c: d[colorScale.dim]
-	                    };
-
-	                    if (x >= 0) {
-	                        totals.positive[y] = (totals.positive[y] || 0) + x;
-	                        item.x = totals.positive[y];
-	                        item.h = x;
-	                    } else {
-	                        var prevStack = totals.negative[y] || 0;
-	                        totals.negative[y] = prevStack + x;
-	                        item.x = prevStack;
-	                        item.h = Math.abs(x);
-	                    }
-
-	                    return item;
-	                };
-	            } else {
-	                viewMapper = function (totals, d) {
-	                    var x = d[xScale.dim];
-	                    var y = d[yScale.dim];
-
-	                    var item = {
-	                        x: x,
-	                        w: d[sizeScale.dim],
-	                        c: d[colorScale.dim]
-	                    };
-
-	                    if (y >= 0) {
-	                        totals.positive[x] = (totals.positive[x] || 0) + y;
-	                        item.y = totals.positive[x];
-	                        item.h = y;
-	                    } else {
-	                        var prevStack = totals.negative[x] || 0;
-	                        totals.negative[x] = prevStack + y;
-	                        item.y = prevStack;
-	                        item.h = Math.abs(y);
-	                    }
-
-	                    return item;
-	                };
-	            }
-
-	            var d3Attrs = this._buildDrawModel(isHorizontal, {
-	                xScale: xScale,
-	                yScale: yScale,
-	                sizeScale: sizeScale,
-	                colorScale: colorScale,
-	                prettify: config.guide.prettify
-	            });
-
-	            var updateBar = function updateBar() {
-	                return this.attr(d3Attrs);
-	            };
-
-	            var uid = options.uid;
-	            var totals = {
-	                positive: {},
-	                negative: {}
-	            };
-	            var updateGroups = function updateGroups() {
-	                this.attr('class', function (f) {
-	                    return 'frame-id-' + uid + ' frame-' + f.hash + ' i-role-bar-group';
-	                }).call(function () {
-	                    var bars = this.selectAll('.bar-stack').data(function (frame) {
-	                        // var totals = {}; // if 1-only frame support is required
-	                        return frame.data.map(function (d) {
-	                            return { uid: uid, data: d, view: viewMapper(totals, d) };
-	                        });
-	                    });
-	                    bars.exit().remove();
-	                    bars.call(updateBar);
-	                    bars.enter().append('rect').call(updateBar);
-
-	                    self.subscribe(bars, function (_ref) {
-	                        var d = _ref.data;
-	                        return d;
-	                    }, function (d3Event, _ref2) {
-	                        var v = _ref2.view;
-
-	                        d3Event.chartElementViewModel = v;
-	                        return d3Event;
-	                    });
-	                });
-	            };
-
-	            var mapper = function mapper(f) {
-	                return { tags: f.key || {}, hash: f.hash(), data: f.part() };
-	            };
-	            var frameGroups = options.container.selectAll('.frame-id-' + uid).data(frames.map(mapper), function (f) {
-	                return f.hash;
-	            });
-	            frameGroups.exit().remove();
-	            frameGroups.call(updateGroups);
-	            frameGroups.enter().append('g').call(updateGroups);
-
-	            return [];
-	        }
-	    }, {
-	        key: '_buildDrawModel',
-	        value: function _buildDrawModel(isHorizontal, _ref3) {
-	            var xScale = _ref3.xScale;
-	            var yScale = _ref3.yScale;
-	            var sizeScale = _ref3.sizeScale;
-	            var colorScale = _ref3.colorScale;
-	            var prettify = _ref3.prettify;
-
-	            // show at least 1px gap for bar to make it clickable
-	            var minH = 1;
-
-	            var calculateH;
-	            var calculateW;
-	            var calculateY;
-	            var calculateX;
-
-	            if (isHorizontal) {
-	                (function () {
-
-	                    var slotSize = yScale.discrete ? function (d) {
-	                        return yScale.stepSize(d.y) * 0.5 * sizeScale(d.w);
-	                    } : function (d) {
-	                        return sizeScale(d.w);
-	                    };
-
-	                    calculateW = function (d) {
-	                        var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
-	                        if (prettify) {
-	                            w = Math.max(minH, w);
-	                        }
-	                        return w;
-	                    };
-
-	                    calculateH = function (d) {
-	                        var h = slotSize(d);
-	                        if (prettify) {
-	                            h = Math.max(minH, h);
-	                        }
-	                        return h;
-	                    };
-
-	                    calculateX = function (d) {
-	                        return xScale(d.x - d.h);
-	                    };
-	                    calculateY = function (d) {
-	                        return yScale(d.y) - calculateH(d) / 2;
-	                    };
-	                })();
-	            } else {
-	                (function () {
-
-	                    var slotSize = xScale.discrete ? function (d) {
-	                        return xScale.stepSize(d.x) * 0.5 * sizeScale(d.w);
-	                    } : function (d) {
-	                        return sizeScale(d.w);
-	                    };
-
-	                    calculateW = function (d) {
-	                        var w = slotSize(d);
-	                        if (prettify) {
-	                            w = Math.max(minH, w);
-	                        }
-	                        return w;
-	                    };
-
-	                    calculateH = function (d) {
-	                        var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
-	                        if (prettify) {
-	                            h = Math.max(minH, h);
-	                        }
-	                        return h;
-	                    };
-
-	                    calculateX = function (d) {
-	                        return xScale(d.x) - calculateW(d) / 2;
-	                    };
-	                    calculateY = function (d) {
-	                        return yScale(d.y);
-	                    };
-	                })();
-	            }
-
-	            return {
-	                x: function x(_ref4) {
-	                    var d = _ref4.view;
-	                    return calculateX(d);
-	                },
-	                y: function y(_ref5) {
-	                    var d = _ref5.view;
-	                    return calculateY(d);
-	                },
-	                height: function height(_ref6) {
-	                    var d = _ref6.view;
-	                    return calculateH(d);
-	                },
-	                width: function width(_ref7) {
-	                    var d = _ref7.view;
-	                    return calculateW(d);
-	                },
-	                class: function _class(_ref8) {
-	                    var d = _ref8.view;
-	                    return 'i-role-element i-role-datum bar-stack ' + _const.CSS_PREFIX + 'bar-stacked ' + colorScale(d.c);
-	                }
-	            };
-	        }
-	    }, {
-	        key: 'highlight',
-	        value: function highlight(filter) {
-
-	            this.config.options.container.selectAll('.bar-stack').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(_ref9) {
-	                    var d = _ref9.data;
-	                    return filter(d) === true;
-	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(_ref10) {
-	                    var d = _ref10.data;
-	                    return filter(d) === false;
-	                }
-	            });
-	        }
-	    }]);
-
 	    return StackedInterval;
-	})(_element.Element);
+	})(_element.Interval);
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -2746,7 +2787,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.errorCodes = errorCodes;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2766,9 +2807,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _algebra = __webpack_require__(17);
+	var _algebra = __webpack_require__(18);
 
-	var _dataFrame = __webpack_require__(19);
+	var _dataFrame = __webpack_require__(20);
 
 	var _underscore = __webpack_require__(3);
 
@@ -3019,7 +3060,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_event.Emitter);
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3033,7 +3074,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(18);
+	var _unitDomainPeriodGenerator = __webpack_require__(19);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3122,7 +3163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.FramesAlgebra = FramesAlgebra;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -3233,7 +3274,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.UnitDomainPeriodGenerator = UnitDomainPeriodGenerator;
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3298,7 +3339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3312,37 +3353,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Plot = undefined;
 
-	var _balloon = __webpack_require__(21);
+	var _balloon = __webpack_require__(22);
 
 	var _event = __webpack_require__(8);
 
-	var _plugins = __webpack_require__(23);
+	var _plugins = __webpack_require__(24);
 
 	var _utils = __webpack_require__(4);
 
 	var _utilsDom = __webpack_require__(1);
 
-	var _unitsRegistry = __webpack_require__(24);
+	var _unitsRegistry = __webpack_require__(25);
 
-	var _scalesRegistry = __webpack_require__(25);
+	var _scalesRegistry = __webpack_require__(26);
 
-	var _scalesFactory = __webpack_require__(26);
+	var _scalesFactory = __webpack_require__(27);
 
-	var _dataProcessor = __webpack_require__(27);
+	var _dataProcessor = __webpack_require__(28);
 
-	var _layuotTemplate = __webpack_require__(28);
+	var _layuotTemplate = __webpack_require__(29);
 
-	var _specConverter = __webpack_require__(29);
+	var _specConverter = __webpack_require__(30);
 
-	var _specTransformAutoLayout = __webpack_require__(30);
+	var _specTransformAutoLayout = __webpack_require__(31);
 
-	var _specTransformCalcSize = __webpack_require__(32);
+	var _specTransformCalcSize = __webpack_require__(33);
 
-	var _specTransformApplyRatio = __webpack_require__(33);
+	var _specTransformApplyRatio = __webpack_require__(34);
 
-	var _specTransformExtractAxes = __webpack_require__(34);
+	var _specTransformExtractAxes = __webpack_require__(35);
 
-	var _tau = __webpack_require__(16);
+	var _tau = __webpack_require__(17);
 
 	var _underscore = __webpack_require__(3);
 
@@ -3795,7 +3836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_event.Emitter);
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3807,13 +3848,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _tauTooltip = __webpack_require__(22);
+	var _tauTooltip = __webpack_require__(23);
 
 	_tauTooltip.Tooltip.defaults.baseClass = _const.CSS_PREFIX + 'tooltip';
 	exports.Tooltip = _tauTooltip.Tooltip;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function webpackUniversalModuleDefinition(root, factory) {
@@ -4530,7 +4571,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4583,7 +4624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Plugins = Plugins;
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4593,7 +4634,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.unitsRegistry = undefined;
 
-	var _error = __webpack_require__(15);
+	var _error = __webpack_require__(16);
 
 	var UnitsMap = {};
 
@@ -4617,7 +4658,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.unitsRegistry = unitsRegistry;
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4642,7 +4683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.scalesRegistry = scalesRegistry;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4654,7 +4695,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ScalesFactory = undefined;
 
-	var _dataFrame = __webpack_require__(19);
+	var _dataFrame = __webpack_require__(20);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4699,7 +4740,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4901,7 +4942,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.DataProcessor = DataProcessor;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4947,7 +4988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getLayout = getLayout;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5287,7 +5328,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5305,7 +5346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(4);
 
-	var _formatterRegistry = __webpack_require__(31);
+	var _formatterRegistry = __webpack_require__(32);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5957,7 +5998,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6066,7 +6107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.FormatterRegistry = FormatterRegistry;
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6292,7 +6333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6433,7 +6474,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6566,7 +6607,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6580,9 +6621,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Chart = undefined;
 
-	var _tau = __webpack_require__(20);
+	var _tau = __webpack_require__(21);
 
-	var _chartAliasRegistry = __webpack_require__(36);
+	var _chartAliasRegistry = __webpack_require__(37);
 
 	var _underscore = __webpack_require__(3);
 
@@ -6666,7 +6707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Chart = Chart;
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6676,7 +6717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.chartTypesRegistry = undefined;
 
-	var _error = __webpack_require__(15);
+	var _error = __webpack_require__(16);
 
 	var _underscore = __webpack_require__(3);
 
@@ -6731,7 +6772,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.chartTypesRegistry = chartTypesRegistry;
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6753,13 +6794,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(7);
 
-	var _utilsDraw = __webpack_require__(38);
+	var _utilsDraw = __webpack_require__(39);
 
 	var _const = __webpack_require__(6);
 
-	var _formatterRegistry = __webpack_require__(31);
+	var _formatterRegistry = __webpack_require__(32);
 
-	var _d3Decorators = __webpack_require__(39);
+	var _d3Decorators = __webpack_require__(40);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -7115,7 +7156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_element.Element);
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -7153,7 +7194,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.utilsDraw = utilsDraw;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7163,7 +7204,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.cutText = exports.wrapText = exports.d3_decorator_avoid_labels_collisions = exports.d3_decorator_prettify_categorical_axis_ticks = exports.d3_decorator_fix_horizontal_axis_ticks_overflow = exports.d3_decorator_fix_axis_bottom_line = exports.d3_decorator_prettify_axis_label = exports.d3_decorator_wrap_tick_label = undefined;
 
-	var _utilsDraw = __webpack_require__(38);
+	var _utilsDraw = __webpack_require__(39);
 
 	var _underscore = __webpack_require__(3);
 
@@ -7498,7 +7539,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.cutText = cutText;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7520,13 +7561,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(7);
 
-	var _utilsDraw = __webpack_require__(38);
+	var _utilsDraw = __webpack_require__(39);
 
 	var _utils = __webpack_require__(4);
 
 	var _const = __webpack_require__(6);
 
-	var _formatterRegistry = __webpack_require__(31);
+	var _formatterRegistry = __webpack_require__(32);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -7792,7 +7833,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_element.Element);
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7812,11 +7853,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
-	var _topojson = __webpack_require__(42);
+	var _topojson = __webpack_require__(43);
 
 	var _topojson2 = _interopRequireDefault(_topojson);
 
-	var _d3Labeler = __webpack_require__(43);
+	var _d3Labeler = __webpack_require__(44);
 
 	var _element = __webpack_require__(7);
 
@@ -8350,7 +8391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_element.Element);
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
@@ -8890,7 +8931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -9226,7 +9267,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.d3Labeler = d3Labeler;
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9238,7 +9279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Area = undefined;
 
-	var _element = __webpack_require__(45);
+	var _element = __webpack_require__(46);
 
 	var _utils = __webpack_require__(4);
 
@@ -9308,7 +9349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_element.Path);
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9588,7 +9629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_element.Element);
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9735,7 +9776,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_element.Element);
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9747,7 +9788,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ColorScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	var _underscore = __webpack_require__(3);
 
@@ -9848,7 +9889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9985,7 +10026,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9997,7 +10038,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.SizeScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	var _underscore = __webpack_require__(3);
 
@@ -10110,7 +10151,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10122,7 +10163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.OrdinalScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	var _d = __webpack_require__(2);
 
@@ -10210,7 +10251,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10222,9 +10263,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.PeriodScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(18);
+	var _unitDomainPeriodGenerator = __webpack_require__(19);
 
 	var _underscore = __webpack_require__(3);
 
@@ -10359,7 +10400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10371,7 +10412,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.TimeScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	var _underscore = __webpack_require__(3);
 
@@ -10465,7 +10506,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10477,7 +10518,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.LinearScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	var _utils = __webpack_require__(4);
 
@@ -10578,7 +10619,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10590,7 +10631,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ValueScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -10623,7 +10664,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10635,7 +10676,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.FillScale = undefined;
 
-	var _base = __webpack_require__(48);
+	var _base = __webpack_require__(49);
 
 	var _utils = __webpack_require__(4);
 
@@ -10725,7 +10766,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_base.BaseScale);
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10813,7 +10854,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartMap = ChartMap;
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10823,7 +10864,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartInterval = undefined;
 
-	var _converterHelpers = __webpack_require__(58);
+	var _converterHelpers = __webpack_require__(59);
 
 	var disableColorToBarPositionOnceColorAndAxesUseTheSameDim = function disableColorToBarPositionOnceColorAndAxesUseTheSameDim(normConfig) {
 
@@ -10848,7 +10889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartInterval = ChartInterval;
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10957,7 +10998,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var maxDeep = Math.max(x.length, y.length);
 
-	    var guide = normalizeSettings(config.guide, {});
+	    var guide = normalizeSettings(config.guide || {}, {});
 
 	    // feel the gaps if needed
 	    _underscore2.default.times(maxDeep - guide.length, function () {
@@ -11040,7 +11081,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.transformConfig = transformConfig;
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11050,7 +11091,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartScatterplot = undefined;
 
-	var _converterHelpers = __webpack_require__(58);
+	var _converterHelpers = __webpack_require__(59);
 
 	var ChartScatterplot = function ChartScatterplot(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -11060,7 +11101,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartScatterplot = ChartScatterplot;
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11070,9 +11111,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartLine = undefined;
 
-	var _dataProcessor = __webpack_require__(27);
+	var _dataProcessor = __webpack_require__(28);
 
-	var _converterHelpers = __webpack_require__(58);
+	var _converterHelpers = __webpack_require__(59);
 
 	var ChartLine = function ChartLine(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -11148,7 +11189,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartLine = ChartLine;
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11158,9 +11199,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartArea = undefined;
 
-	var _dataProcessor = __webpack_require__(27);
+	var _dataProcessor = __webpack_require__(28);
 
-	var _converterHelpers = __webpack_require__(58);
+	var _converterHelpers = __webpack_require__(59);
 
 	var ChartArea = function ChartArea(rawConfig) {
 
@@ -11249,7 +11290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartArea = ChartArea;
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11259,7 +11300,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartIntervalStacked = undefined;
 
-	var _converterHelpers = __webpack_require__(58);
+	var _converterHelpers = __webpack_require__(59);
 
 	var ChartIntervalStacked = function ChartIntervalStacked(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -11269,7 +11310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartIntervalStacked = ChartIntervalStacked;
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11355,7 +11396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartParallel = ChartParallel;
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11371,11 +11412,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
-	var _formatterRegistry = __webpack_require__(31);
+	var _formatterRegistry = __webpack_require__(32);
 
-	var _unit = __webpack_require__(65);
+	var _unit = __webpack_require__(66);
 
-	var _spec = __webpack_require__(66);
+	var _spec = __webpack_require__(67);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -11553,7 +11594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.PluginsSDK = PluginsSDK;
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -11656,7 +11697,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Unit = Unit;
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11668,7 +11709,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Spec = undefined;
 
-	var _unit = __webpack_require__(65);
+	var _unit = __webpack_require__(66);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 

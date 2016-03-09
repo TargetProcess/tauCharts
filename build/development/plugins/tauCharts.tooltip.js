@@ -325,9 +325,12 @@
 
                 var mouseOverHandler = function (sender, e) {
                     var data = e.data;
-                    var coords = (settings.dockToData ?
-                        self._getNearestDataCoordinates(sender, e) :
-                        self._getMouseCoordinates(sender, e));
+                    // TODO: get back to "nearest point" feature when GoG models are ready
+                    // var coords = (settings.dockToData ?
+                    //    self._getNearestDataCoordinates(sender, e) :
+                    //    self._getMouseCoordinates(sender, e));
+
+                    var coords = self._getMouseCoordinates(sender, e);
 
                     self._currentUnit = sender;
                     self.showTooltip(data, {x: coords.left, y: coords.top});
