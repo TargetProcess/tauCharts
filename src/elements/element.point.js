@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
+import {PointModel} from '../models/point';
 import {default as _} from 'underscore';
 export class Point extends Element {
 
@@ -30,6 +31,12 @@ export class Point extends Element {
         );
 
         this.config.guide.size = (this.config.guide.size || {});
+
+        this.decorators = [
+            PointModel.decorator_orientation,
+            PointModel.decorator_size,
+            PointModel.decorator_color
+        ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -64,6 +71,23 @@ export class Point extends Element {
             .regScale('color', this.color);
     }
 
+    buildModel({xScale, yScale, sizeScale, colorScale}) {
+
+        var args = {xScale, yScale, sizeScale, colorScale};
+
+        var pointModel = this
+            .decorators
+            .filter(x => x)
+            .reduce(((model, transform) => transform(model, args)), (new PointModel()));
+
+        return {
+            x: pointModel.xi,
+            y: pointModel.yi,
+            size: pointModel.size,
+            color: pointModel.color
+        };
+    }
+
     drawFrames(frames) {
 
         var self = this;
@@ -72,32 +96,26 @@ export class Point extends Element {
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
-        var xScale = this.xScale;
-        var yScale = this.yScale;
-        var cScale = this.color;
-        var sScale = this.size;
+        var pointModel = this.buildModel({
+            xScale: this.xScale,
+            yScale: this.yScale,
+            colorScale: this.color,
+            sizeScale: this.size
+        });
+
+        var attr = {
+            r: (({data:d}) => pointModel.size(d)),
+            cx: (({data:d}) => pointModel.x(d)),
+            cy: (({data:d}) => pointModel.y(d)),
+            class: (({data:d}) => `${prefix} ${pointModel.color(d)}`)
+        };
 
         var enter = function () {
-            return this
-                .attr({
-                    r: ({data:d}) => sScale(d[sScale.dim]),
-                    cx: ({data:d}) => xScale(d[xScale.dim]),
-                    cy: ({data:d}) => yScale(d[yScale.dim]),
-                    class: ({data:d}) => `${prefix} ${cScale(d[cScale.dim])}`
-                })
-                .transition()
-                .duration(500)
-                .attr('r', ({data:d}) => sScale(d[sScale.dim]));
+            return this.attr(attr).transition().duration(500).attr('r', attr.r);
         };
 
         var update = function () {
-            return this
-                .attr({
-                    r: ({data:d}) => sScale(d[sScale.dim]),
-                    cx: ({data:d}) => xScale(d[xScale.dim]),
-                    cy: ({data:d}) => yScale(d[yScale.dim]),
-                    class: ({data:d}) => `${prefix} ${cScale(d[cScale.dim])}`
-                });
+            return this.attr(attr);
         };
 
         var updateGroups = function () {
