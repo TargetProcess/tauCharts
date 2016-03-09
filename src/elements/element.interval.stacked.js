@@ -1,9 +1,10 @@
 import {default as _} from 'underscore';
 import {CSS_PREFIX} from './../const';
-import {Element} from './element';
+import {Interval} from './element.interval';
+import {IntervalModel} from '../models/interval';
 import {TauChartError as Error, errorCodes} from './../error';
 
-export class StackedInterval extends Element {
+export class StackedInterval extends Interval {
 
     static embedUnitFrameToSpec(cfg, spec) {
 
@@ -58,265 +59,19 @@ export class StackedInterval extends Element {
 
         super(config);
 
-        this.config = config;
-        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true});
-        this.config.guide.size = (this.config.guide.size || {});
+        this.config.guide.enableColorToBarPosition = false;
+        this.barsGap = 0;
+        this.baseCssClass = `i-role-element i-role-datum bar bar-stack ${CSS_PREFIX}bar-stacked`;
 
-        this.on('highlight', (sender, e) => this.highlight(e));
-    }
-
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
-
-        var g = config.guide;
-        var isNotZero = (x => x !== 0);
-        const halfPart = 0.5;
-        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
-        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
-
-        var notLessThan = ((lim, val) => Math.max(val, lim));
-
-        var sizeGuide = {};
-        var baseScale = (config.flip ? this.yScale : this.xScale);
-        if (baseScale.discrete) {
-            sizeGuide = {
-                normalize: true,
-                func: 'linear',
-                min: g.size.min || (0),
-                max: g.size.max || notLessThan(1, minTickStep),
-                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-            };
-        } else {
-            let defaultSize = 3;
-            sizeGuide = {
-                normalize: false,
-                func: 'linear',
-                min: g.size.min || defaultSize,
-                max: g.size.max || notLessThan(defaultSize, minTickStep)
-            };
-            sizeGuide.mid = g.size.mid || sizeGuide.min;
-        }
-
-        this.size = fnCreateScale('size', config.size, sizeGuide);
-
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color);
-    }
-
-    drawFrames(frames) {
-
-        var self = this;
-
-        var config = this.config;
-        var options = config.options;
-        var xScale = this.xScale;
-        var yScale = this.yScale;
-        var sizeScale = this.size;
-        var colorScale = this.color;
-
-        var isHorizontal = config.flip;
-
-        var viewMapper;
-
-        if (isHorizontal) {
-            viewMapper = (totals, d) => {
-                var x = d[xScale.dim];
-                var y = d[yScale.dim];
-
-                var item = {
-                    y: y,
-                    w: d[sizeScale.dim],
-                    c: d[colorScale.dim]
-                };
-
-                if (x >= 0) {
-                    totals.positive[y] = ((totals.positive[y] || 0) + x);
-                    item.x = totals.positive[y];
-                    item.h = x;
-                } else {
-                    var prevStack = (totals.negative[y] || 0);
-                    totals.negative[y] = (prevStack + x);
-                    item.x = prevStack;
-                    item.h = Math.abs(x);
-                }
-
-                return item;
-            };
-        } else {
-            viewMapper = (totals, d) => {
-                var x = d[xScale.dim];
-                var y = d[yScale.dim];
-
-                var item = {
-                    x: x,
-                    w: d[sizeScale.dim],
-                    c: d[colorScale.dim]
-                };
-
-                if (y >= 0) {
-                    totals.positive[x] = ((totals.positive[x] || 0) + y);
-                    item.y = totals.positive[x];
-                    item.h = y;
-                } else {
-                    let prevStack = (totals.negative[x] || 0);
-                    totals.negative[x] = (prevStack + y);
-                    item.y = prevStack;
-                    item.h = Math.abs(y);
-                }
-
-                return item;
-            };
-        }
-
-        var d3Attrs = this._buildDrawModel(
-            isHorizontal,
-            {
-                xScale,
-                yScale,
-                sizeScale,
-                colorScale,
-                prettify: config.guide.prettify
-            });
-
-        var updateBar = function () {
-            return this.attr(d3Attrs);
-        };
-
-        var uid = options.uid;
-        var totals = {
-            positive: {},
-            negative: {}
-        };
-        var updateGroups = function () {
-            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`)
-                .call(function () {
-                    var bars = this
-                        .selectAll('.bar-stack')
-                        .data((frame) => {
-                            // var totals = {}; // if 1-only frame support is required
-                            return frame.data.map((d) => ({uid: uid, data: d, view: viewMapper(totals, d)}));
-                        });
-                    bars.exit()
-                        .remove();
-                    bars.call(updateBar);
-                    bars.enter()
-                        .append('rect')
-                        .call(updateBar);
-
-                    self.subscribe(
-                        bars,
-                        (({data:d}) => d),
-                        ((d3Event, {view:v}) => {
-                            d3Event.chartElementViewModel = v;
-                            return d3Event;
-                        }));
-                });
-        };
-
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
-        var frameGroups = options.container
-            .selectAll(`.frame-id-${uid}`)
-            .data(frames.map(mapper), (f) => f.hash);
-        frameGroups
-            .exit()
-            .remove();
-        frameGroups
-            .call(updateGroups);
-        frameGroups
-            .enter()
-            .append('g')
-            .call(updateGroups);
-
-        return [];
-    }
-
-    _buildDrawModel(isHorizontal, {xScale, yScale, sizeScale, colorScale, prettify}) {
-
-        // show at least 1px gap for bar to make it clickable
-        const minH = 1;
-
-        var calculateH;
-        var calculateW;
-        var calculateY;
-        var calculateX;
-
-        if (isHorizontal) {
-
-            let slotSize = (yScale.discrete ?
-                ((d) => (yScale.stepSize(d.y) * 0.5 * sizeScale(d.w))) :
-                ((d) => (sizeScale(d.w))));
-
-            calculateW = ((d) => {
-                var w = Math.abs(xScale(d.x) - xScale(d.x - d.h));
-                if (prettify) {
-                    w = Math.max(minH, w);
-                }
-                return w;
-            });
-
-            calculateH = ((d) => {
-                var h = slotSize(d);
-                if (prettify) {
-                    h = Math.max(minH, h);
-                }
-                return h;
-            });
-
-            calculateX = ((d) => (xScale(d.x - d.h)));
-            calculateY = ((d) => (yScale(d.y) - (calculateH(d) / 2)));
-
-        } else {
-
-            let slotSize = (xScale.discrete ?
-                ((d) => (xScale.stepSize(d.x) * 0.5 * sizeScale(d.w))) :
-                ((d) => (sizeScale(d.w))));
-
-            calculateW = ((d) => {
-                var w = slotSize(d);
-                if (prettify) {
-                    w = Math.max(minH, w);
-                }
-                return w;
-            });
-
-            calculateH = ((d) => {
-                var h = Math.abs(yScale(d.y) - yScale(d.y - d.h));
-                if (prettify) {
-                    h = Math.max(minH, h);
-                }
-                return h;
-            });
-
-            calculateX = ((d) => (xScale(d.x) - (calculateW(d) / 2)));
-            calculateY = ((d) => (yScale(d.y)));
-
-        }
-
-        return {
-            x: (({view:d}) => calculateX(d)),
-            y: (({view:d}) => calculateY(d)),
-            height: (({view:d}) => calculateH(d)),
-            width: (({view:d}) => calculateW(d)),
-            class: (({view:d}) => `i-role-element i-role-datum bar-stack ${CSS_PREFIX}bar-stacked ${colorScale(d.c)}`)
-        };
-    }
-
-    highlight(filter) {
-
-        this.config
-            .options
-            .container
-            .selectAll('.bar-stack')
-            .classed({
-                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
-                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
-            });
+        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+        this.decorators = [
+            IntervalModel.decorator_orientation,
+            IntervalModel.decorator_stack,
+            enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
+            IntervalModel.decorator_dynamic_size,
+            IntervalModel.decorator_color,
+            enableColorPositioning && IntervalModel.decorator_positioningByColor
+        ];
     }
 }

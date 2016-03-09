@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
+import {IntervalModel} from '../models/interval';
 import {default as _} from 'underscore';
 export class Interval extends Element {
 
@@ -8,8 +9,49 @@ export class Interval extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
-        this.config.guide.size = (this.config.guide.size || {});
+        this.config.guide = _.defaults(
+            (this.config.guide || {}),
+            {
+                prettify: true,
+                enableColorToBarPosition: true
+            });
+
+        this.config.guide.x = this.config.guide.x || {};
+        this.config.guide.x = _.defaults(
+            this.config.guide.x,
+            {
+                tickFontHeight: 0,
+                density: 20
+            }
+        );
+
+        this.config.guide.y = this.config.guide.y || {};
+        this.config.guide.y = _.defaults(
+            this.config.guide.y,
+            {
+                tickFontHeight: 0,
+                density: 20
+            }
+        );
+
+        this.config.guide.size = _.defaults(
+            (this.config.guide.size || {}),
+            {
+                enableDistributeEvenly: false
+            });
+
+        this.barsGap = 1;
+        this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+
+        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+        this.decorators = [
+            IntervalModel.decorator_orientation,
+            enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
+            IntervalModel.decorator_size,
+            IntervalModel.decorator_color,
+            enableColorPositioning && IntervalModel.decorator_positioningByColor
+        ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -21,11 +63,37 @@ export class Interval extends Element {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
 
-        const defaultSize = 3;
-        var sizeGuide = {min: (this.config.guide.size.min || defaultSize)};
-        sizeGuide.max = (this.config.guide.size.max || sizeGuide.min);
-        sizeGuide.mid = (this.config.guide.size.mid || sizeGuide.min);
+        var g = config.guide;
+        var isNotZero = (x => x !== 0);
+        const halfPart = 0.5;
+        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
+        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
+
+        var notLessThan = ((lim, val) => Math.max(val, lim));
+
+        var sizeGuide = {};
+        var baseScale = (config.flip ? this.yScale : this.xScale);
+        if (baseScale.discrete) {
+            sizeGuide = {
+                normalize: true,
+                func: 'linear',
+                min: g.size.min || (0),
+                max: g.size.max || notLessThan(1, minTickStep),
+                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
+            };
+        } else {
+            let defaultSize = 3;
+            sizeGuide = {
+                normalize: this.config.guide.size.enableDistributeEvenly,
+                func: 'linear',
+                min: g.size.min || defaultSize,
+                max: g.size.max || notLessThan(defaultSize, minTickStep)
+            };
+            sizeGuide.mid = g.size.mid || sizeGuide.min;
+        }
+
         this.size = fnCreateScale('size', config.size, sizeGuide);
+        this.sizeMax = sizeGuide.max;
 
         return this
             .regScale('x', this.xScale)
@@ -39,32 +107,41 @@ export class Interval extends Element {
         var self = this;
 
         var options = this.config.options;
+        var uid = options.uid;
         var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
         var sizeScale = this.size;
         var colorScale = this.color;
+        var isHorizontal = config.flip || config.guide.flip;
+        var prettify = config.guide.prettify;
+        var barsGap = this.barsGap;
+        var baseCssClass = this.baseCssClass;
 
-        var args = {
+        var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
+
+        var barModel = this.buildModel({
             xScale,
             yScale,
             sizeScale,
             colorScale,
-            width: config.options.width,
-            height: config.options.height,
-            prettify: config.guide.prettify
-        };
+            isHorizontal,
+            barsGap,
+            maxSize: this.sizeMax,
+            dataSource: fullData
+        });
 
-        var isHorizontal = config.flip || config.guide.flip;
-
-        var d3Attrs = isHorizontal ? this._buildHorizontalDrawMethod(args) : this._buildVerticalDrawMethod(args);
+        var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
+        var d3Attrs = (isHorizontal ?
+            this.toHorizontalDrawMethod(barModel, params) :
+            this.toVerticalDrawMethod(barModel, params));
 
         var updateBar = function () {
             return this.attr(d3Attrs);
         };
 
         var updateBarContainer = function () {
-            this.attr('class', 'i-role-bar-group');
+            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`);
             var bars = this.selectAll('.bar').data((d) => {
                 return d.values.map(item => ({
                     data: item,
@@ -83,8 +160,8 @@ export class Interval extends Element {
 
         var elements = options
             .container
-            .selectAll(`.i-role-bar-group`)
-            .data(frames.map((fr)=>({key: fr.key, values: fr.part(), uid: this.config.options.uid})));
+            .selectAll(`.frame-id-${uid}`)
+            .data(frames.map((fr)=>({hash: fr.hash(), key: fr.key, values: fr.part(), uid: this.config.options.uid})));
         elements
             .exit()
             .remove();
@@ -96,27 +173,24 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    _buildVerticalDrawMethod({colorScale, sizeScale, xScale, yScale, height, prettify}) {
+    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, yScale, baseCssClass}) {
 
-        var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
-            {
-                baseScale: xScale,
-                valsScale: yScale,
-                sizeScale,
-                colorScale,
-                defaultBaseAbsPosition: height
-            });
-
-        const minBarH = 1;
+        var calculateW = ((d) => {
+            var w = barW(d);
+            if (prettify) {
+                w = Math.max(minBarW, w);
+            }
+            return w;
+        });
 
         return {
-            x: (({data: d}) => calculateBarX(d) - calculateBarW(d) * 0.5),
+            x: (({data: d}) => barX(d) - calculateW(d) * 0.5),
             y: (({data: d}) => {
-                var y = calculateBarY(d);
+                var y = barY(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
-                    var h = calculateBarH(d);
+                    var h = barH(d);
                     var isTooSmall = (h < minBarH);
                     return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
                 } else {
@@ -124,7 +198,7 @@ export class Interval extends Element {
                 }
             }),
             height: (({data: d}) => {
-                var h = calculateBarH(d);
+                var h = barH(d);
                 if (prettify) {
                     // decorate for better visual look & feel
                     var y = d[yScale.dim];
@@ -133,32 +207,29 @@ export class Interval extends Element {
                     return h;
                 }
             }),
-            width: (({data: d}) => calculateBarW(d)),
-            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.dim])}`)
+            width: (({data: d}) => calculateW(d)),
+            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
-    _buildHorizontalDrawMethod({colorScale, sizeScale, xScale, yScale, prettify}) {
+    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, xScale, baseCssClass}) {
 
-        var {calculateBarX, calculateBarY, calculateBarH, calculateBarW} = this._buildDrawMethod(
-            {
-                baseScale: yScale,
-                valsScale: xScale,
-                sizeScale,
-                colorScale,
-                defaultBaseAbsPosition: 0
-            });
-
-        const minBarH = 1;
+        var calculateH = ((d) => {
+            var h = barW(d);
+            if (prettify) {
+                h = Math.max(minBarW, h);
+            }
+            return h;
+        });
 
         return {
-            y: (({data: d}) => calculateBarX(d) - calculateBarW(d) * 0.5),
+            y: (({data: d}) => barX(d) - calculateH(d) * 0.5),
             x: (({data: d}) => {
-                var x = calculateBarY(d);
+                var x = barY(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
-                    var h = calculateBarH(d);
+                    var h = barH(d);
                     var dx = d[xScale.dim];
                     var offset = 0;
 
@@ -172,9 +243,9 @@ export class Interval extends Element {
                     return x;
                 }
             }),
-            height: (({data: d}) => calculateBarW(d)),
+            height: (({data: d}) => calculateH(d)),
             width: (({data: d}) => {
-                var w = calculateBarH(d);
+                var w = barH(d);
 
                 if (prettify) {
                     // decorate for better visual look & feel
@@ -184,64 +255,35 @@ export class Interval extends Element {
                     return w;
                 }
             }),
-            class: (({data: d}) => `i-role-element i-role-datum bar ${CSS_PREFIX}bar ${colorScale(d[colorScale.dim])}`)
+            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
-    _buildDrawMethod({valsScale, baseScale, sizeScale, colorScale, defaultBaseAbsPosition}) {
-
-        var colorCategories = (this.config.guide.enableColorToBarPosition === true) ? colorScale.domain() : [];
-        var colorIndexScale = ((d) => Math.max(0, colorCategories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
-        var colorCategoriesCount = (colorCategories.length || 1);
-        var colorIndexScaleKoeff = (1 / colorCategoriesCount);
-
-        const barsGap = 1;
-
-        var baseAbsPos = (valsScale.discrete ?
-            (() => defaultBaseAbsPosition) :
-            (() => valsScale(Math.max(0, Math.min(...valsScale.domain())))))();
-
-        var space = ((x) => baseScale.stepSize(x) * (colorCategoriesCount / (1 + colorCategoriesCount)));
-
-        var calculateSlotSize = (baseScale.discrete ?
-            ((d) => (space(d[baseScale.dim]) * colorIndexScaleKoeff)) :
-            ((d) => (sizeScale(d[sizeScale.dim]))));
-
-        var calculateGapSize = (baseScale.discrete ?
-            ((slotWidth) => (slotWidth > (2 * barsGap)) ? barsGap : 0) :
-            (() => (0)));
-
-        var calculateBarW = (d) => {
-            var barSize = calculateSlotSize(d);
-            var gapSize = calculateGapSize(barSize);
-            return barSize - 2 * gapSize;
+    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap, dataSource, maxSize}) {
+        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
+        var args = {
+            xScale,
+            yScale,
+            isHorizontal,
+            sizeScale,
+            colorScale,
+            barsGap,
+            maxSize,
+            dataSource,
+            categories: (enableColorToBarPosition ? colorScale.domain() : [])
         };
 
-        var calculateBarH = ((d) => Math.abs(valsScale(d[valsScale.dim]) - baseAbsPos));
-
-        var calculateBarX = (d) => {
-            var dx = d[baseScale.dim];
-
-            var absTickStart = (baseScale(dx) - (space(dx) / 2));
-
-            var relSegmStart = (baseScale.discrete ?
-                (colorIndexScale(d) * calculateSlotSize(d)) :
-                (0));
-
-            var absBarOffset = (baseScale.discrete ?
-                (calculateBarW(d) * 0.5 + barsGap) :
-                (0));
-
-            return absTickStart + relSegmStart + absBarOffset;
-        };
-
-        var calculateBarY = ((d) => Math.min(baseAbsPos, valsScale(d[valsScale.dim])));
+        var barModel = this
+            .decorators
+            .filter(x => x)
+            .reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
 
         return {
-            calculateBarX,
-            calculateBarY,
-            calculateBarH,
-            calculateBarW
+            barX: ((d) => barModel.xi(d)),
+            barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
+            barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
+            barW: ((d) => barModel.size(d)),
+            barColor: ((d) => barModel.color(d))
         };
     }
 

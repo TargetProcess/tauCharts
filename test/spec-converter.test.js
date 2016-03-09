@@ -71,13 +71,13 @@ define(function (require) {
                             {
                                 team: 'beta',
                                 proj: 'TP2',
-                                date: testUtils.toLocalDate('2015-01-01').toISOString(),
+                                date: new Date('2015-01-01'),
                                 count: 30
                             },
                             {
                                 "team": "alpha",
                                 "proj": "TP2",
-                                "date": testUtils.toLocalDate('2015-01-01').toISOString(),
+                                "date": new Date('2015-01-01'),
                                 "count": 10
                             }
                         ]
@@ -145,7 +145,20 @@ define(function (require) {
                 }
             };
 
-            expect(JSON.stringify(spec.sources)).to.deep.equal(JSON.stringify(x.sources));
+            expect(JSON.stringify(spec.sources['?'].dims)).to.deep.equal(JSON.stringify(x.sources['?'].dims));
+            expect(JSON.stringify(spec.sources['?'].data)).to.deep.equal(JSON.stringify(x.sources['?'].data));
+            expect(JSON.stringify(spec.sources['/'].dims)).to.deep.equal(JSON.stringify(x.sources['/'].dims));
+
+            var actRows = spec.sources['/'].data;
+            var expRows = x.sources['/'].data;
+            expect(actRows.length).to.equal(expRows.length);
+            actRows.forEach((row, i) => {
+                expect(row.team).to.equal(expRows[i].team);
+                expect(row.proj).to.equal(expRows[i].proj);
+                expect(row.count).to.equal(expRows[i].count);
+                expect(row.date.getTime()).to.equal(expRows[i].date.getTime());
+            });
+
             expect(JSON.stringify(spec.unit)).to.deep.equal(JSON.stringify(x.unit));
             expect(JSON.stringify(spec.scales)).to.deep.equal(JSON.stringify(x.scales));
         });
@@ -214,7 +227,6 @@ define(function (require) {
                             "date": {"type": "measure"},
                             "week": {"type": "order"},
                             "team": {"type": "category"},
-                            // "proj": {"type": "category"},
                             "count": {"type": "measure"},
                             "proj.name": {"type": "category"}
                         },
@@ -222,8 +234,8 @@ define(function (require) {
                             {
                                 "team": "alpha",
                                 "proj": {"id": 13, "name": "TP2"},
-                                "date": testUtils.toLocalDate("2015-01-01").toISOString(),
-                                "week": testUtils.toLocalDate("2015-01-04").toISOString(),
+                                "date": new Date("2015-01-01"),
+                                "week": new Date("2015-01-04"),
                                 "count": 10,
                                 "proj.id": 13,
                                 "proj.name": "TP2"
@@ -231,8 +243,8 @@ define(function (require) {
                             {
                                 "team": "alpha",
                                 "proj": {"id": 13, "name": "TP2"},
-                                "date": testUtils.toLocalDate("2015-01-01").toISOString(),
-                                "week": testUtils.toLocalDate("2015-01-04").toISOString(),
+                                "date": new Date("2015-01-01"),
+                                "week": new Date("2015-01-04"),
                                 "count": 10,
                                 "proj.id": 13,
                                 "proj.name": "TP2"
@@ -307,7 +319,24 @@ define(function (require) {
                 }
             };
 
-            expect(JSON.stringify(spec.sources)).to.deep.equal(JSON.stringify(x.sources));
+            expect(JSON.stringify(spec.sources['?'].dims)).to.deep.equal(JSON.stringify(x.sources['?'].dims));
+            expect(JSON.stringify(spec.sources['?'].data)).to.deep.equal(JSON.stringify(x.sources['?'].data));
+            expect(JSON.stringify(spec.sources['/'].dims)).to.deep.equal(JSON.stringify(x.sources['/'].dims));
+
+            var actRows = spec.sources['/'].data;
+            var expRows = x.sources['/'].data;
+            expect(actRows.length).to.equal(expRows.length);
+            actRows.forEach((row, i) => {
+                expect(row.team).to.equal(expRows[i].team);
+                expect(row.count).to.equal(expRows[i].count);
+                expect(row['proj.id']).to.equal(expRows[i]['proj.id']);
+                expect(row['proj.name']).to.equal(expRows[i]['proj.name']);
+                expect(row['date'].getTime()).to.equal(expRows[i]['date'].getTime());
+                expect(row['week'].getTime()).to.equal(expRows[i]['week'].getTime());
+
+                expect(JSON.stringify(row['proj'])).to.equal(JSON.stringify(expRows[i]['proj']));
+            });
+
             expect(JSON.stringify(spec.unit)).to.deep.equal(JSON.stringify(x.unit));
             expect(JSON.stringify(spec.scales)).to.deep.equal(JSON.stringify(x.scales));
         });
