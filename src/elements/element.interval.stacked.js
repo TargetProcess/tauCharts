@@ -64,9 +64,11 @@ export class StackedInterval extends Interval {
         this.baseCssClass = `i-role-element i-role-datum bar bar-stack ${CSS_PREFIX}bar-stacked`;
 
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
         this.decorators = [
             IntervalModel.decorator_orientation,
             IntervalModel.decorator_stack,
+            enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
             enableColorPositioning && IntervalModel.decorator_positioningByColor

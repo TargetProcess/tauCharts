@@ -9,7 +9,12 @@ export class Interval extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(this.config.guide || {}, {prettify: true, enableColorToBarPosition: true});
+        this.config.guide = _.defaults(
+            (this.config.guide || {}),
+            {
+                prettify: true,
+                enableColorToBarPosition: true
+            });
 
         this.config.guide.x = this.config.guide.x || {};
         this.config.guide.x = _.defaults(
@@ -29,14 +34,20 @@ export class Interval extends Element {
             }
         );
 
-        this.config.guide.size = (this.config.guide.size || {});
+        this.config.guide.size = _.defaults(
+            (this.config.guide.size || {}),
+            {
+                enableDistributeEvenly: false
+            });
 
         this.barsGap = 1;
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
 
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
         this.decorators = [
             IntervalModel.decorator_orientation,
+            enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_size,
             IntervalModel.decorator_color,
             enableColorPositioning && IntervalModel.decorator_positioningByColor
@@ -73,7 +84,7 @@ export class Interval extends Element {
         } else {
             let defaultSize = 3;
             sizeGuide = {
-                normalize: false,
+                normalize: this.config.guide.size.enableDistributeEvenly,
                 func: 'linear',
                 min: g.size.min || defaultSize,
                 max: g.size.max || notLessThan(defaultSize, minTickStep)
@@ -82,6 +93,7 @@ export class Interval extends Element {
         }
 
         this.size = fnCreateScale('size', config.size, sizeGuide);
+        this.sizeMax = sizeGuide.max;
 
         return this
             .regScale('x', this.xScale)
@@ -106,7 +118,18 @@ export class Interval extends Element {
         var barsGap = this.barsGap;
         var baseCssClass = this.baseCssClass;
 
-        var barModel = this.buildModel({xScale, yScale, sizeScale, colorScale, isHorizontal, barsGap});
+        var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
+
+        var barModel = this.buildModel({
+            xScale,
+            yScale,
+            sizeScale,
+            colorScale,
+            isHorizontal,
+            barsGap,
+            maxSize: this.sizeMax,
+            dataSource: fullData
+        });
 
         var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
         var d3Attrs = (isHorizontal ?
@@ -236,7 +259,7 @@ export class Interval extends Element {
         };
     }
 
-    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap}) {
+    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap, dataSource, maxSize}) {
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         var args = {
             xScale,
@@ -245,6 +268,8 @@ export class Interval extends Element {
             sizeScale,
             colorScale,
             barsGap,
+            maxSize,
+            dataSource,
             categories: (enableColorToBarPosition ? colorScale.domain() : [])
         };
 

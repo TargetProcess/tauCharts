@@ -9,7 +9,7 @@ export class IntervalModel {
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
-        this.size = model.size || createFunc(0);
+        this.size = model.size || createFunc(1);
         this.color = model.color || createFunc('');
     }
 
@@ -23,7 +23,7 @@ export class IntervalModel {
             (new IntervalModel(prev))));
     }
 
-    static decorator_identity(model, {}) {
+    static decorator_identity(model) {
         return IntervalModel.compose(model);
     }
 
@@ -48,7 +48,7 @@ export class IntervalModel {
     static decorator_size(model, params) {
         var method = (model.scaleX.discrete ?
             IntervalModel.___dis___decorator_size :
-            IntervalModel.___con___decorator_size);
+            IntervalModel.___con___decorator_size_dynamic);
 
         return method(model, params);
     }
@@ -56,14 +56,14 @@ export class IntervalModel {
     static decorator_dynamic_size(model, params) {
         var method = (model.scaleX.discrete ?
             IntervalModel.___dis___decorator_size_dynamic :
-            IntervalModel.___con___decorator_size);
+            IntervalModel.___con___decorator_size_dynamic);
 
         return method(model, params);
     }
 
-    static ___con___decorator_size(model, {sizeScale}) {
+    static ___con___decorator_size_dynamic(model, {sizeScale}) {
         return IntervalModel.compose(model, {
-            size: ((d) => (sizeScale(d[sizeScale.dim])))
+            size: ((d) => (model.size(d) * sizeScale(d[sizeScale.dim])))
         });
     }
 
@@ -163,6 +163,36 @@ export class IntervalModel {
                 var {isPositive, nextStack, prevStack} = stackY0(d);
                 return (isPositive ? yScale(prevStack) : yScale(nextStack));
             })
+        });
+    }
+
+    static decorator_size_distribute_evenly(model, {dataSource, maxSize}) {
+
+        if (model.scaleX.discrete) {
+            return IntervalModel.decorator_identity(model);
+        }
+
+        var asc = ((a, b) => (a - b));
+
+        var xs = dataSource
+            .map((row) => model.xi(row))
+            .sort(asc);
+
+        var prev = xs[0];
+        var diff = (xs
+            .slice(1)
+            .map((curr) => {
+                var diff = (curr - prev);
+                prev = curr;
+                return diff;
+            })
+            .filter(diff => (diff > 0))
+            .sort(asc)
+            .concat(Number.MAX_VALUE)
+            [0]);
+
+        return IntervalModel.compose(model, {
+            size: (() => Math.min(maxSize, diff))
         });
     }
 }
