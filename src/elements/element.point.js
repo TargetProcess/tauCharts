@@ -96,7 +96,7 @@ export class Point extends Element {
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
-        var pointModel = this.buildModel({
+        var model = this.buildModel({
             xScale: this.xScale,
             yScale: this.yScale,
             colorScale: this.color,
@@ -104,10 +104,10 @@ export class Point extends Element {
         });
 
         var attr = {
-            r: (({data:d}) => pointModel.size(d)),
-            cx: (({data:d}) => pointModel.x(d)),
-            cy: (({data:d}) => pointModel.y(d)),
-            class: (({data:d}) => `${prefix} ${pointModel.color(d)}`)
+            r: (({data:d}) => model.size(d)),
+            cx: (({data:d}) => model.x(d)),
+            cy: (({data:d}) => model.y(d)),
+            class: (({data:d}) => `${prefix} ${model.color(d)}`)
         };
 
         var enter = function () {

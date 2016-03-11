@@ -11,8 +11,8 @@ export function elementDecoratorShowAnchors({container, guide, xScale, yScale}) 
     };
 
     var dots = container
-        .selectAll('circle')
-        .data(({data: frame}) => frame.data);
+        .selectAll('.i-data-anchor')
+        .data((fiber) => fiber);
     dots.exit()
         .remove();
     dots.call(anchorUpdate);

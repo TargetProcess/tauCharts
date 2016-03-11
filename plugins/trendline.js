@@ -448,6 +448,7 @@
 
                     var x = props.x.dim;
                     var y = props.y.dim;
+                    var g = props.g.dim;
 
                     var isXPeriod = (props.x.type === 'period' && props.x.period);
                     var isYPeriod = (props.y.type === 'period' && props.y.period);
@@ -463,31 +464,39 @@
                     var src = data.map(function (item) {
                         var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
                         var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
-                        return [ix, iy];
+                        var ig = item[g];
+                        return [ix, iy, ig];
                     });
 
-                    var regression = regressionsHub(props.type, src);
-                    var points = _(regression.points)
-                        .chain()
-                        .filter(function (p) {
-                            return ((p[0] !== null) && (p[1] !== null));
-                        })
-                        .sortBy(function (p) {
-                            return p[0];
-                        })
-                        .map(function (p) {
-                            var item = {};
-                            item[x] = xMapper(p[0]);
-                            item[y] = yMapper(p[1]);
-                            return item;
-                        })
-                        .value();
+                    var groups = _.groupBy(src, '2');
+                    return Object.keys(groups).reduce(
+                        function (memo, k) {
+                            var fiber = groups[k];
+                            var regression = regressionsHub(props.type, fiber);
+                            var points = _(regression.points)
+                                .chain()
+                                .filter(function (p) {
+                                    return ((p[0] !== null) && (p[1] !== null));
+                                })
+                                .sortBy(function (p) {
+                                    return p[0];
+                                })
+                                .map(function (p) {
+                                    var item = {};
+                                    item[x] = xMapper(p[0]);
+                                    item[y] = yMapper(p[1]);
+                                    item[g] = k;
+                                    return item;
+                                })
+                                .value();
 
-                    if ((points.length > 1) && (isXPeriod || isYPeriod)) {
-                        points = [points[0], points[points.length - 1]];
-                    }
+                            if ((points.length > 1) && (isXPeriod || isYPeriod)) {
+                                points = [points[0], points[points.length - 1]];
+                            }
 
-                    return points.length > 1 ? points : [];
+                            return memo.concat(points.length > 1 ? points : []);
+                        },
+                        []);
                 };
 
                 chart.traverseSpec(
@@ -500,6 +509,7 @@
 
                         var xScale = specRef.scales[unit.x];
                         var yScale = specRef.scales[unit.y];
+                        var colorScale = specRef.scales[unit.color] || {};
 
                         var trend = JSON.parse(JSON.stringify(unit));
 
@@ -511,10 +521,13 @@
                             args: {
                                 type: settings.type,
                                 x: xScale,
-                                y: yScale
+                                y: yScale,
+                                g: colorScale
                             }
                         });
-                        trend.guide = trend.guide || {};
+                        // var basicGuide = {interpolate: 'basis'};
+                        var basicGuide = {};
+                        trend.guide = _.defaults(basicGuide, trend.guide || {});
                         trend.guide.showAnchors   = false;
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';

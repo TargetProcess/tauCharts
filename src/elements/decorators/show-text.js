@@ -57,7 +57,7 @@ export function elementDecoratorShowText({container, guide, xScale, yScale, text
 
     var text = container
         .selectAll('.caption')
-        .data(({data: frame}) => frame.data.filter((d) => d[textScale.dim]));
+        .data((fiber) => fiber.filter((d) => d[textScale.dim]));
     text.exit()
         .remove();
     text.call(captionUpdate);
