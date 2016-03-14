@@ -1,6 +1,7 @@
 import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {Element} from './element';
+import {CartesianModel} from '../models/cartesian';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
@@ -122,7 +123,31 @@ export class Cartesian extends Element {
             .regScale('y', this.yScale);
     }
 
+    buildModel(args) {
+
+        return [
+            CartesianModel.decorator_size,
+            CartesianModel.decorator_color
+        ].filter(x => x).reduce(
+            ((model, transform) => transform(model, args)),
+            (new CartesianModel({
+                scaleX: args.scaleX,
+                scaleY: args.scaleY,
+                xi: (() => args.w / 2),
+                yi: (() => args.h / 2),
+                sizeX: (() => args.w),
+                sizeY: (() => args.h)
+            })));
+    }
+
     drawFrames(frames, continuation) {
+
+        var model = this.buildModel({
+            scaleX: this.xScale,
+            scaleY: this.yScale,
+            w: this.W,
+            h: this.H
+        });
 
         var node = _.extend({}, this.config);
 
@@ -189,49 +214,21 @@ export class Cartesian extends Element {
 
         var updateCellLayers = (cellId, cell, frame) => {
 
-            var mapper;
-            var frameId = frame.hash();
-            if (frame.key) {
-
-                var xKey = frame.key[node.x.dim];
-                var yKey = frame.key[node.y.dim];
-
-                var coordX = node.x(xKey);
-                var coordY = node.y(yKey);
-
-                var xPart = node.x.stepSize(xKey);
-                var yPart = node.y.stepSize(yKey);
-
-                mapper = (unit, i) => {
-                    unit.options = {
-                        uid: frameId + i,
-                        frameId: frameId,
-                        container: cell,
-                        containerWidth: innerWidth,
-                        containerHeight: innerHeight,
-                        left: coordX - xPart / 2,
-                        top: coordY - yPart / 2,
-                        width: xPart,
-                        height: yPart
-                    };
-                    return unit;
-                };
-            } else {
-                mapper = (unit, i) => {
-                    unit.options = {
-                        uid: frameId + i,
-                        frameId: frameId,
-                        container: cell,
-                        containerWidth: innerWidth,
-                        containerHeight: innerHeight,
-                        left: 0,
-                        top: 0,
-                        width: innerWidth,
-                        height: innerHeight
-                    };
-                    return unit;
-                };
-            }
+            var mapper = ((basicOptions, unit, i) => {
+                unit.options = _.extend({uid: basicOptions.frameId + i}, basicOptions);
+                return unit;
+            }).bind(
+                null,
+                {
+                    frameId: frame.hash(),
+                    container: cell,
+                    containerWidth: innerWidth,
+                    containerHeight: innerHeight,
+                    left: (model.xi(frame.key) - model.sizeX(frame.key) / 2),
+                    top: (model.yi(frame.key) - model.sizeY(frame.key) / 2),
+                    width: (model.sizeX(frame.key)),
+                    height: (model.sizeY(frame.key))
+                });
 
             var continueDrawUnit = function (unit) {
                 unit.options.container = d3.select(this);
