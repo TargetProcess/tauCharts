@@ -275,9 +275,11 @@
     }
     /*  Bar  */
     &__bar {
-        shape-rendering: crispEdges;
+        shape-rendering: auto;
         transition: opacity 0.2s ease;
-        //fill: steelblue;
+        stroke-opacity: 0.5;
+        stroke-width: 1;
+        stroke: #fff;
     }
 
     /*  Bar  */
@@ -295,6 +297,7 @@
 
     /* TODO: fix to avoid conflict on "stroke" with color brewer */
     /* TODO: remove this when CSS for color brewer is fixed */
+    .graphical-report__svg &__bar,
     .graphical-report__svg &__bar-stacked {
         stroke: #fff;
     }
