@@ -47,8 +47,8 @@ export class Plot extends Emitter {
         ];
 
         this.onUnitsStructureExpandedTransformers = [
-            SpecTransformCalcSize,
-            SpecTransformExtractAxes
+            SpecTransformExtractAxes,
+            SpecTransformCalcSize
         ];
 
         this._originData = _.clone(this.configGPL.sources);

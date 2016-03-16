@@ -1,35 +1,15 @@
 import {utils} from './utils/utils';
+import {SpecTransformOptimize} from './spec-transform-optimize';
 
-var tryOptimizeSpec = (root, localSettings) => {
-
-    if (root.guide.x.hide !== true && root.guide.x.rotate !== 0) {
-        root.guide.x.rotate = 0;
-        root.guide.x.textAnchor = 'middle';
-        // root.guide.x.tickFormatWordWrapLimit = perTickX;
-
-        var s = Math.min(localSettings.xAxisTickLabelLimit, root.guide.x.$maxTickTextW);
-        var xDelta = 0 - s + root.guide.x.$maxTickTextH;
-
-        root.guide.padding.b += (root.guide.padding.b > 0) ? xDelta : 0;
-
-        if (root.guide.x.label.padding > (s + localSettings.xAxisPadding)) {
-            root.guide.x.label.padding += xDelta;
-        }
-    }
-
-    (root.units || [])
-        .filter((u) => u.type === 'COORDS.RECT')
-        .forEach((u) => tryOptimizeSpec(u, localSettings));
-};
-
-var byMaxText = ((gx) => gx.$maxTickTextW);
+var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);
+var byPessimisticMaxText = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
 var byDensity = ((gx) => gx.density);
 
 var fitModelStrategies = {
 
-    'entire-view'(srcSize, calcSize, specRef) {
+    'entire-view'(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
-        var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
+        var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
         if (widthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
         }
@@ -46,18 +26,19 @@ var fitModelStrategies = {
         return {newW, newH};
     },
 
-    normal(srcSize, calcSize, specRef) {
+    normal(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
-        var newW;
+        var newW = srcSize.width;
 
-        var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
-        var originalWidth = srcSize.width;
-
-        if (widthByMaxText <= originalWidth) {
+        var optimisticWidthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
+        if (optimisticWidthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
-            newW = Math.max(originalWidth, widthByMaxText);
         } else {
-            newW = Math.max(originalWidth, Math.max(srcSize.width, calcSize('x', specRef.unit, byDensity)));
+            var pessimisticWidthByMaxText = calcSize('x', specRef.unit, byPessimisticMaxText);
+            if (pessimisticWidthByMaxText > srcSize.width) {
+                var widthByDensity = Math.max(srcSize.width, calcSize('x', specRef.unit, byDensity));
+                newW = Math.min(pessimisticWidthByMaxText, widthByDensity);
+            }
         }
 
         var newH = Math.max(srcSize.height, calcSize('y', specRef.unit, byDensity));
@@ -65,8 +46,8 @@ var fitModelStrategies = {
         return {newW, newH};
     },
 
-    'fit-width'(srcSize, calcSize, specRef) {
-        var widthByMaxText = calcSize('x', specRef.unit, byMaxText);
+    'fit-width'(srcSize, calcSize, specRef, tryOptimizeSpec) {
+        var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
         if (widthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
         }
@@ -172,7 +153,7 @@ export class SpecTransformCalcSize {
 
         var strategy = fitModelStrategies[fitModel];
         if (strategy) {
-            let newSize = strategy(srcSize, calcSizeRecursively, specRef);
+            let newSize = strategy(srcSize, calcSizeRecursively, specRef, SpecTransformOptimize.optimize);
             newW = newSize.newW;
             newH = newSize.newH;
         }
