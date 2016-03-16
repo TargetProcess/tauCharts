@@ -37,7 +37,7 @@ export class Interval extends Element {
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
-                enableDistributeEvenly: false
+                enableDistributeEvenly: true
             });
 
         this.barsGap = 1;

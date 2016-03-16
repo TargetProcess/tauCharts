@@ -107,7 +107,10 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                             type: 'ELEMENT.INTERVAL.STACKED',
                             x: 'x',
                             y: 'y',
-                            guide: {prettify: false}
+                            guide: {
+                                prettify: false,
+                                size: {enableDistributeEvenly: false}
+                            }
                         }
                     ]
                 }
@@ -169,7 +172,10 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                             flip: true,
                             x: 'x',
                             y: 'y',
-                            guide: {prettify: false}
+                            guide: {
+                                prettify: false,
+                                size: {enableDistributeEvenly: false}
+                            }
                         }
                     ]
                 }

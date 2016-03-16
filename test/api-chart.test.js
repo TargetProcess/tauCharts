@@ -146,7 +146,9 @@ define(function (require) {
                     {x: 'TP3', y: 'Lambda', z: 3}
                 ],
                 settings: {
-                    fitModel: fitModel
+                    fitModel: fitModel,
+                    xDensityPadding: 0,
+                    yDensityPadding: 0
                 }
             };
         };
@@ -178,19 +180,19 @@ define(function (require) {
         it('should support [fit-width] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-width'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 600, 185);
+            checkSizes(chart1, 600, 250);
         });
 
         it('should support [fit-height] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-height'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 242, 800);
+            checkSizes(chart1, 183, 800);
         });
 
         it('should support [minimal] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('minimal'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 242, 220);
+            checkSizes(chart1, 183, 250);
         });
 
         afterEach(function () {
