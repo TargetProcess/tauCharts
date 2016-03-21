@@ -118,7 +118,19 @@ export class Interval extends Element {
         var barsGap = this.barsGap;
         var baseCssClass = this.baseCssClass;
 
-        var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
+        var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
+            memo[x] = i;
+            return memo;
+        }, {});
+
+        var colorIndex = ((row) => {
+            var c = row[colorScale.dim];
+            return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
+        });
+
+        var fullData = frames
+            .reduce(((memo, f) => memo.concat(f.part())), [])
+            .sort((a, b) => (colorIndex(a) - colorIndex(b)));
 
         var barModel = this.buildModel({
             xScale,
@@ -141,13 +153,8 @@ export class Interval extends Element {
         };
 
         var updateBarContainer = function () {
-            this.attr('class', (f) => `frame-id-${uid} frame-${f.hash} i-role-bar-group`);
-            var bars = this.selectAll('.bar').data((d) => {
-                return d.values.map(item => ({
-                    data: item,
-                    uid: d.uid
-                }));
-            });
+            this.attr('class', `frame-id-${uid} i-role-bar-group`);
+            var bars = this.selectAll('.bar').data((fiber) => fiber);
             bars.exit()
                 .remove();
             bars.call(updateBar);
@@ -155,13 +162,18 @@ export class Interval extends Element {
                 .append('rect')
                 .call(updateBar);
 
-            self.subscribe(bars, ({data:d}) => d);
+            self.subscribe(bars);
         };
+
+        var groups = _.groupBy(fullData, barModel.group);
+        var fibers = Object
+            .keys(groups)
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var elements = options
             .container
             .selectAll(`.frame-id-${uid}`)
-            .data(frames.map((fr)=>({hash: fr.hash(), key: fr.key, values: fr.part(), uid: this.config.options.uid})));
+            .data(fibers);
         elements
             .exit()
             .remove();
@@ -184,8 +196,8 @@ export class Interval extends Element {
         });
 
         return {
-            x: (({data: d}) => barX(d) - calculateW(d) * 0.5),
-            y: (({data: d}) => {
+            x: ((d) => barX(d) - calculateW(d) * 0.5),
+            y: ((d) => {
                 var y = barY(d);
 
                 if (prettify) {
@@ -197,7 +209,7 @@ export class Interval extends Element {
                     return y;
                 }
             }),
-            height: (({data: d}) => {
+            height: ((d) => {
                 var h = barH(d);
                 if (prettify) {
                     // decorate for better visual look & feel
@@ -207,8 +219,8 @@ export class Interval extends Element {
                     return h;
                 }
             }),
-            width: (({data: d}) => calculateW(d)),
-            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
+            width: ((d) => calculateW(d)),
+            class: ((d) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
@@ -223,8 +235,8 @@ export class Interval extends Element {
         });
 
         return {
-            y: (({data: d}) => barX(d) - calculateH(d) * 0.5),
-            x: (({data: d}) => {
+            y: ((d) => barX(d) - calculateH(d) * 0.5),
+            x: ((d) => {
                 var x = barY(d);
 
                 if (prettify) {
@@ -243,8 +255,8 @@ export class Interval extends Element {
                     return x;
                 }
             }),
-            height: (({data: d}) => calculateH(d)),
-            width: (({data: d}) => {
+            height: ((d) => calculateH(d)),
+            width: ((d) => {
                 var w = barH(d);
 
                 if (prettify) {
@@ -255,7 +267,7 @@ export class Interval extends Element {
                     return w;
                 }
             }),
-            class: (({data: d}) => `${baseCssClass} ${barColor(d)}`)
+            class: ((d) => `${baseCssClass} ${barColor(d)}`)
         };
     }
 
@@ -283,7 +295,8 @@ export class Interval extends Element {
             barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
             barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
             barW: ((d) => barModel.size(d)),
-            barColor: ((d) => barModel.color(d))
+            barColor: ((d) => barModel.color(d)),
+            group: ((d) => d[colorScale.dim])
         };
     }
 
@@ -294,8 +307,8 @@ export class Interval extends Element {
             .container
             .selectAll('.bar')
             .classed({
-                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
-                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
+                'graphical-report__highlighted': ((d) => filter(d) === true),
+                'graphical-report__dimmed': ((d) => filter(d) === false)
             });
     }
 }

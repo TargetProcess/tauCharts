@@ -882,4 +882,65 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         expect(svg2.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
         expect(svg2.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
     });
+
+    it('should infer color order from data by default', function () {
+
+        var chart0 = new tauCharts.Chart({
+            type: 'stacked-bar',
+            data: [
+                {x: 'A', y: 1, c: 'C1'},
+                {x: 'A', y: 2, c: 'C2'},
+                {x: 'A', y: 3, c: 'C3'}
+            ],
+            x: 'x',
+            y: 'y',
+            color: 'c'
+        });
+        chart0.renderTo(div, size);
+
+        var svg0 = chart0.getSVG();
+        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(3);
+        var tempOrder = [];
+        d3.select(svg0).selectAll('.bar-stack')[0].forEach(function (rect) {
+            var d3Rect = d3.select(rect);
+            var d = d3Rect.data()[0];
+            var y = d3Rect.attr('y');
+            tempOrder.push({c: d.c, y: y});
+        });
+        var actualOrder = tempOrder.sort((a, b) => b.y - a.y).map((x) => x.c);
+        expect(actualOrder).to.deep.equal(['C1', 'C2', 'C3'], 'by default order from data');
+    });
+
+    it('should take color order from dimension order if specified', function () {
+
+        var chart0 = new tauCharts.Chart({
+            dimensions: {
+                c: {'type': 'category', 'scale': 'ordinal', order: ['C3', 'C1', 'C2']},
+                x: {'type': 'category', 'scale': 'ordinal'},
+                y: {'type': 'measure', 'scale': 'linear'}
+            },
+            type: 'stacked-bar',
+            data: [
+                {x: 'A', y: 1, c: 'C1'},
+                {x: 'A', y: 2, c: 'C2'},
+                {x: 'A', y: 3, c: 'C3'}
+            ],
+            x: 'x',
+            y: 'y',
+            color: 'c'
+        });
+        chart0.renderTo(div, size);
+
+        var svg0 = chart0.getSVG();
+        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(3);
+        var tempOrder = [];
+        d3.select(svg0).selectAll('.bar-stack')[0].forEach(function (rect) {
+            var d3Rect = d3.select(rect);
+            var d = d3Rect.data()[0];
+            var y = d3Rect.attr('y');
+            tempOrder.push({c: d.c, y: y});
+        });
+        var actualOrder = tempOrder.sort((a, b) => b.y - a.y).map((x) => x.c);
+        expect(actualOrder).to.deep.equal(['C3', 'C1', 'C2'], 'specified order');
+    });
 });
