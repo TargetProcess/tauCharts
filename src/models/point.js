@@ -8,6 +8,7 @@ export class PointModel {
         this.xi = model.xi || createFunc(0);
         this.size = model.size || createFunc(1);
         this.color = model.color || createFunc('');
+        this.group = model.group || createFunc('');
     }
 
     static compose(prev, updates = {}) {
@@ -46,6 +47,12 @@ export class PointModel {
     static decorator_color(model, {colorScale}) {
         return PointModel.compose(model, {
             color: ((d) => colorScale(d[colorScale.dim]))
+        });
+    }
+
+    static decorator_group(model, {colorScale}) {
+        return PointModel.compose(model, {
+            group: ((d) => (d[colorScale.dim]))
         });
     }
 }

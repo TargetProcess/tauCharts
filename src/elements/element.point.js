@@ -34,6 +34,7 @@ export class Point extends Element {
 
         this.decorators = [
             PointModel.decorator_orientation,
+            PointModel.decorator_group,
             PointModel.decorator_size,
             PointModel.decorator_color
         ];
@@ -84,7 +85,8 @@ export class Point extends Element {
             x: pointModel.xi,
             y: pointModel.yi,
             size: pointModel.size,
-            color: pointModel.color
+            color: pointModel.color,
+            group: pointModel.group
         };
     }
 
@@ -96,6 +98,8 @@ export class Point extends Element {
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
+        var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
+
         var model = this.buildModel({
             xScale: this.xScale,
             yScale: this.yScale,
@@ -104,10 +108,10 @@ export class Point extends Element {
         });
 
         var attr = {
-            r: (({data:d}) => model.size(d)),
-            cx: (({data:d}) => model.x(d)),
-            cy: (({data:d}) => model.y(d)),
-            class: (({data:d}) => `${prefix} ${model.color(d)}`)
+            r: ((d) => model.size(d)),
+            cx: ((d) => model.x(d)),
+            cy: ((d) => model.y(d)),
+            class: ((d) => `${prefix} ${model.color(d)}`)
         };
 
         var enter = function () {
@@ -120,11 +124,11 @@ export class Point extends Element {
 
         var updateGroups = function () {
 
-            this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
+            this.attr('class', `frame-id-${options.uid}`)
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
-                        .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
+                        .data((fiber) => fiber);
                     dots.exit()
                         .remove();
                     dots.call(update);
@@ -132,15 +136,18 @@ export class Point extends Element {
                         .append('circle')
                         .call(enter);
 
-                    self.subscribe(dots, ({data:d}) => d);
+                    self.subscribe(dots);
                 });
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
+        var groups = _.groupBy(fullData, model.group);
+        var fibers = Object
+            .keys(groups)
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var frameGroups = options.container
             .selectAll(`.frame-id-${options.uid}`)
-            .data(frames.map(mapper), (f) => f.hash);
+            .data(fibers);
         frameGroups
             .exit()
             .remove();
@@ -160,8 +167,8 @@ export class Point extends Element {
             .container
             .selectAll('.dot')
             .classed({
-                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
-                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
+                'graphical-report__highlighted': ((d) => filter(d) === true),
+                'graphical-report__dimmed': ((d) => filter(d) === false)
             });
     }
 }
