@@ -473,8 +473,11 @@
   transition: stroke-opacity 0.2s ease;
 }
 .graphical-report__bar {
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
   transition: opacity 0.2s ease;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+  stroke: #fff;
 }
 .graphical-report__bar-stacked {
   shape-rendering: crispEdges;
@@ -487,6 +490,7 @@
   opacity: 0.55;
   transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
 }
+.graphical-report__svg .graphical-report__bar,
 .graphical-report__svg .graphical-report__bar-stacked {
   stroke: #fff;
 }
