@@ -63,6 +63,10 @@ var extendAxis = function (guide, dimension, extend) {
         }
     );
     guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
+    guide[dimension].nice = guide[dimension].hasOwnProperty('nice') ?
+        guide[dimension].nice :
+        guide[dimension].autoScale;
+
     return guide[dimension];
 };
 

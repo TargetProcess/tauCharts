@@ -210,6 +210,30 @@ define(function (require) {
 
             expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
             expect(scale1.stepSize()).to.equal(0);
+
+            var scale2 = new TimeScale(
+                xSrc,
+                {
+                    dim: 't',
+                    nice: true,
+                    niceInterval: 'year'
+                }).create([0, 100]);
+
+            var actualDomain = scale2.domain();
+
+            expect(actualDomain[0].getFullYear()).to.equal(2015);
+            expect(actualDomain[0].getMonth()).to.equal(0);
+            expect(actualDomain[0].getDate()).to.equal(1);
+
+            expect(actualDomain[1].getFullYear()).to.equal(2016);
+            expect(actualDomain[1].getMonth()).to.equal(0);
+            expect(actualDomain[1].getDate()).to.equal(1);
+
+            expect(scale2(actualDomain[0])).to.equal(0);
+            expect(scale2(actualDomain[1])).to.equal(100);
+
+            expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale2.stepSize()).to.equal(0);
         });
 
         it('should support [period] scale', function () {
@@ -341,7 +365,7 @@ define(function (require) {
                     dim: 'i',
                     min: -10,
                     max: 10,
-                    autoScale: true
+                    nice: true
                 }).create([0, 100]);
 
             expect(scale1A.domain()).to.deep.equal([-12, 12]);
@@ -352,7 +376,7 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 'i',
-                    autoScale: true
+                    nice: true
                 }).create([0, 100]);
 
             expect(scale2.domain()).to.deep.equal([0, 3.2]);
@@ -659,13 +683,13 @@ define(function (require) {
             }).to.throw('This brewer is not supported');
         });
 
-        it('should support autoScale on [fill] scale', function () {
+        it('should support "nice" on [fill] scale', function () {
 
             var scale0 = new FillScale(
                 xSrc,
                 {
                     dim: 's',
-                    autoScale: true
+                    nice: true
                 }).create();
 
             expect(scale0.domain()).to.deep.equal([-3.5, 3.5]);
@@ -684,7 +708,7 @@ define(function (require) {
             expect(scale0.domain()).to.deep.equal([-10, 100]);
         });
 
-        it('should support min / max + autoScale on [fill] scale', function () {
+        it('should support min / max + nice on [fill] scale', function () {
 
             var scale0 = new FillScale(
                 xSrc,
@@ -692,7 +716,7 @@ define(function (require) {
                     dim: 's',
                     min: -10,
                     max: 100,
-                    autoScale: true
+                    nice: true
                 }).create();
 
             expect(scale0.domain()).to.deep.equal([-20, 110]);

@@ -94,9 +94,9 @@ define(function (require) {
                     "text:default"  : {"type": "value", source: "?"},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
 
-                    "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", order: ['alpha', 'beta'], "autoScale": true},
-                    "x_date"        : {"type": "time", "source": "/", "dim": "date", "autoScale": true},
-                    "y_count"       : {"type": "linear", "source": "/", "dim": "count", "autoScale": true}
+                    "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", order: ['alpha', 'beta'], "autoScale": true, "nice":true, "niceInterval":null},
+                    "x_date"        : {"type": "time", "source": "/", "dim": "date", "autoScale": true, "nice":true, "niceInterval":null},
+                    "y_count"       : {"type": "linear", "source": "/", "dim": "count", "autoScale": true, "nice":true, "niceInterval":null}
                 },
                 "trans": {},
                 "unit": {
@@ -263,10 +263,10 @@ define(function (require) {
                     "text:default": {"type": "value", source: "?"},
                     "color:default": {"type": "color", "source": "?", "brewer": null},
 
-                    "x_week": {"type": "period", "source": "/", "dim": "week", "autoScale": true, "period": "week"},
-                    "y_proj": {"type": "ordinal", "source": "/", "dim": "proj.name", "autoScale": true},
-                    "x_date": {"type": "time", "source": "/", "dim": "date", "autoScale": true},
-                    "y_count": {"type": "linear", "source": "/", "dim": "count", "autoScale": true}
+                    "x_week": {"type": "period", "source": "/", "dim": "week", "autoScale": true, "nice":true, "niceInterval":null, "period": "week"},
+                    "y_proj": {"type": "ordinal", "source": "/", "dim": "proj.name", "autoScale": true, "nice":true, "niceInterval":null},
+                    "x_date": {"type": "time", "source": "/", "dim": "date", "autoScale": true, "nice":true, "niceInterval":null},
+                    "y_count": {"type": "linear", "source": "/", "dim": "count", "autoScale": true, "nice":true, "niceInterval":null}
                 },
                 "trans": {},
                 "unit": {

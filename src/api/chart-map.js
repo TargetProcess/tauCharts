@@ -63,8 +63,8 @@ var ChartMap = (config) => {
 
             size: scalesPool('size', config.size, guide.size),
             color: scalesPool('color', config.color, guide.color),
-            latitude: scalesPool('linear', config.latitude, {autoScale: false}),
-            longitude: scalesPool('linear', config.longitude, {autoScale: false}),
+            latitude: scalesPool('linear', config.latitude, {nice: false}),
+            longitude: scalesPool('linear', config.longitude, {nice: false}),
 
             guide: guide
         },

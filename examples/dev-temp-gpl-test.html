@@ -452,7 +452,7 @@
             'colorDim': {type: 'color', source: '/', dim: 'team'},
             'story': {type: 'ordinal', source: '/', dim: 'story'},
             'bug': {type: 'ordinal', source: '/', dim: 'bug'},
-            'count': {type: 'linear', source: '/', dim: 'count', autoScale: true, min: 0, max: 20},
+            'count': {type: 'linear', source: '/', dim: 'count', nice: true, min: 0, max: 20},
             'proj': {type: 'ordinal', source: '/', dim: 'project'},
             'team': {type: 'ordinal', source: '/', dim: 'team'},
             'text_team': {type: 'value', source: '/', dim: 'team'}
@@ -617,7 +617,7 @@
             'text:default': {type: 'value', source: '?'},
             'size:default': {type: 'size', name: 'DefSize', source: '?', mid: 5},
             'color:default': {type: 'color', name: 'DefColor', source: '?', brewer: null},
-            'count': {type: 'linear', source: '/', dim: 'count', autoScale: true},
+            'count': {type: 'linear', source: '/', dim: 'count', nice: true},
             'xdate': {type: 'linear', source: '/', dim: 'xdate'},
 
             'annotation1': {type: 'color', source: '/', dim: 'count', brewer: ['color20-2']},
@@ -870,7 +870,7 @@
                 fitToFrame: false,
                 source: '/',
                 dim: 'count',
-                autoScale: true,
+                nice: true,
                 min: 0,
                 max: 20
             },
@@ -880,7 +880,7 @@
             'xScale': {type: 'ordinal', source: '$', dim: 'x'},
             'yScale': {type: 'ordinal', source: '$', dim: 'y'},
 
-            'counz': {type: 'linear', name: 'C', source: '@', dim: 'count', autoScale: true},
+            'counz': {type: 'linear', name: 'C', source: '@', dim: 'count', nice: true},
             'xdate': {type: 'linear', name: 'P', source: '@', dim: 'xdate'},
 
             'annotation1': {type: 'color', name: 'limit', source: '@', dim: 'count', brewer: ['color20-2']},
@@ -1122,9 +1122,9 @@
             'xScale': {type: 'ordinal', source: '$', dim: 'x'},
             'yScale': {type: 'ordinal', source: '$', dim: 'y', ratio: {1: 0.4, 2: 0.6}},
 
-            "x_car":{"type":"ordinal","source":"/","dim":"car","autoScale":true,"dimType":"category"},
-            "y_co2":{"type":"linear","source":"/","dim":"co2","autoScale":true,"dimType":"measure"},
-            "y_hp":{"type":"linear","source":"/","dim":"hp","autoScale":true,"dimType":"measure"},
+            "x_car":{"type":"ordinal","source":"/","dim":"car","nice":true,"dimType":"category"},
+            "y_co2":{"type":"linear","source":"/","dim":"co2","nice":true,"dimType":"measure"},
+            "y_hp":{"type":"linear","source":"/","dim":"hp","nice":true,"dimType":"measure"},
             "color_undefined":{"type":"color","source":"/"},
             "size_undefined":{"type":"size","source":"/","min":2,"max":10,"mid":5}
         },
@@ -1160,7 +1160,7 @@
                             guide: {
                                 autoLayout: "",
                                 x: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "x axis",
                                     hide: true,
                                     label: {
@@ -1178,7 +1178,7 @@
                                     textAnchor: "start"
                                 },
                                 y: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "y axis",
                                     hide: false,
                                     label: {
@@ -1248,7 +1248,7 @@
                             guide: {
                                 autoLayout: "",
                                 x: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "x axis",
                                     hide: false,
                                     label: {
@@ -1265,7 +1265,7 @@
                                     textAnchor: "start"
                                 },
                                 y: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "y axis",
                                     hide: false,
                                     label: {
@@ -1372,9 +1372,9 @@
             'xScale': {type: 'ordinal', source: '$', dim: 'x'},
             'yScale': {type: 'ordinal', source: '$', dim: 'y'},
 
-            "x_car":{"type":"ordinal","source":"/","dim":"car","autoScale":true,"dimType":"category"},
-            "y_co2":{"type":"linear","source":"/","dim":"co2","autoScale":true,"dimType":"measure"},
-            "y_hp":{"type":"linear","source":"/","dim":"hp","autoScale":true,"dimType":"measure"},
+            "x_car":{"type":"ordinal","source":"/","dim":"car","nice":true,"dimType":"category"},
+            "y_co2":{"type":"linear","source":"/","dim":"co2","nice":true,"dimType":"measure"},
+            "y_hp":{"type":"linear","source":"/","dim":"hp","nice":true,"dimType":"measure"},
             "color_undefined":{"type":"color","source":"/"},
             "color_undefined2":{"type":"color","source":"/", brewer: ['color20-2']},
             "size_undefined":{"type":"size","source":"/","min":2,"max":10,"mid":5}
@@ -1411,7 +1411,7 @@
                             guide: {
                                 autoLayout: "",
                                 x: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "x axis",
                                     hide: false,
                                     label: {
@@ -1428,7 +1428,7 @@
                                     textAnchor: "start"
                                 },
                                 y: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "y axis",
                                     hide: false,
                                     label: {
@@ -1497,7 +1497,7 @@
                             guide: {
                                 autoLayout: "",
                                 x: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "x axis",
                                     hide: true,
                                     label: {
@@ -1514,7 +1514,7 @@
                                     textAnchor: "start"
                                 },
                                 y: {
-                                    autoScale: true,
+                                    nice: true,
                                     cssClass: "y axis",
                                     hide: false,
                                     label: {

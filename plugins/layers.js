@@ -477,7 +477,7 @@
                             scaleName,
                             _.extend(
                                 {type: 'linear', source: '/', dim: scaleName, autoScale: true},
-                                (_.pick(layer.guide || {}, 'min', 'max', 'autoScale'))));
+                                (_.pick(layer.guide || {}, 'min', 'max', 'autoScale', 'nice', 'niceInterval'))));
                     }, fullSpec);
 
                 var currLayers = [this.primaryY].concat(settings.layers).sort(function (a, b) {
@@ -564,7 +564,7 @@
                         var yScale = fullSpec.getScale(y);
                         yScale.min = minMax[0];
                         yScale.max = minMax[1];
-                        yScale.autoScale = false;
+                        yScale.nice = false;
                     });
                 }
             },

@@ -24,7 +24,7 @@ export class LinearScale extends BaseScale {
             Math.max(...[max, vars[1]].filter(isNum))
         ];
 
-        this.vars = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);
+        this.vars = (props.nice) ? utils.niceZeroBased(vars) : d3.extent(vars);
 
         this.addField('scaleType', 'linear')
             .addField('discrete', false);

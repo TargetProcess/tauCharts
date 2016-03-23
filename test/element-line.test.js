@@ -146,8 +146,8 @@ define(function (require) {
                         x: 'x',
                         y: 'y',
                         guide: {
-                            x: {autoScale: false},
-                            y: {autoScale: false}
+                            x: {nice: false},
+                            y: {nice: false}
                         },
                         unit: [
                             {

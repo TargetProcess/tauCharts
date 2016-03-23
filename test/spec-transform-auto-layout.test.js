@@ -114,6 +114,7 @@ define(function (require) {
             var y = full.unit.guide.y;
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis');
@@ -126,6 +127,7 @@ define(function (require) {
             expect(x.tickFormatWordWrapLimit).to.equal(100);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(0);
             expect(y.cssClass).to.equal('y axis');
@@ -150,6 +152,7 @@ define(function (require) {
             var y = full.unit.guide.y;
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(20);
             expect(x.cssClass).to.equal('x axis');
@@ -160,6 +163,7 @@ define(function (require) {
             expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(20);
             expect(y.cssClass).to.equal('y axis');
@@ -198,6 +202,7 @@ define(function (require) {
             var y = full.unit.guide.y;
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(20);
             expect(x.cssClass).to.equal('x axis');
@@ -208,6 +213,7 @@ define(function (require) {
             expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(20);
             expect(y.cssClass).to.equal('y axis');
@@ -281,6 +287,7 @@ define(function (require) {
             expect(full.unit.guide.showGridLines).to.equal('');
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis facet-axis');
@@ -295,6 +302,7 @@ define(function (require) {
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(0);
             expect(y.cssClass).to.equal('y axis facet-axis');
@@ -448,6 +456,7 @@ define(function (require) {
             expect(full.unit.guide.showGridLines || '').to.equal('');
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis facet-axis compact');
@@ -463,6 +472,7 @@ define(function (require) {
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(0);
             expect(y.cssClass).to.equal('y axis facet-axis compact');

@@ -22,7 +22,7 @@ export class FillScale extends BaseScale {
             Math.max(max, vars[1])
         ];
 
-        this.vars = (props.autoScale) ? utils.autoScale(vars) : d3.extent(vars);
+        this.vars = (props.nice) ? utils.niceZeroBased(vars) : d3.extent(vars);
 
         var opacityStep = (1 - 0.2) / 9;
         var defBrewer = _.times(10, (i) => `rgba(90,180,90,${(0.2 + i * opacityStep).toFixed(2)})`);

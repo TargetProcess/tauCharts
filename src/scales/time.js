@@ -18,10 +18,26 @@ export class TimeScale extends BaseScale {
         var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
         var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domain[1] : new Date(props.max).getTime();
 
-        this.vars = [
+        vars = [
             new Date(Math.min(min, domain[0])),
             new Date(Math.max(max, domain[1]))
         ];
+
+        this.niceIntervalFn = null;
+        if (props.nice) {
+            var niceInterval = props.niceInterval;
+            if (d3.time[niceInterval]) {
+                this.niceIntervalFn = d3.time[niceInterval];
+            } else {
+                // TODO: show warning?
+                this.niceIntervalFn = null;
+            }
+
+            this.vars = d3.time.scale().domain(vars).nice(this.niceIntervalFn).domain();
+
+        } else {
+            this.vars = vars;
+        }
 
         this.addField('scaleType', 'time');
     }
@@ -39,6 +55,9 @@ export class TimeScale extends BaseScale {
         var varSet = this.vars;
 
         var d3Domain = d3.time.scale().domain(varSet);
+        if (this.scaleConfig.nice) {
+            d3Domain = d3Domain.nice(this.niceIntervalFn);
+        }
 
         var d3Scale = d3Domain.range(interval);
 

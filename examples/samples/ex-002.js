@@ -12,8 +12,8 @@ window.samples.push({
         guide: [
             {},
             {
-                x: {autoScale: false},
-                y: {autoScale: false, min: -1.5, max: 1.5},
+                x: {nice: false},
+                y: {nice: false, min: -1.5, max: 1.5},
                 interpolate: 'basis'
             }
         ],

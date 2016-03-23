@@ -99,8 +99,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     y: 'y',
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true, autoScale: false, min: 0, max: 1},
-                        y: {hide: true, autoScale: false, min: 0, max: 1}
+                        x: {hide: true, nice: false, min: 0, max: 1},
+                        y: {hide: true, nice: false, min: 0, max: 1}
                     },
                     unit: [
                         {
@@ -163,8 +163,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     y: 'y',
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true, autoScale: false, min: 0, max: 1},
-                        y: {hide: true, autoScale: false, min: 0, max: 1}
+                        x: {hide: true, nice: false, min: 0, max: 1},
+                        y: {hide: true, nice: false, min: 0, max: 1}
                     },
                     unit: [
                         {
@@ -232,7 +232,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
                         x: {hide: true},
-                        y: {hide: true, autoScale: false, min: 0, max: 1}
+                        y: {hide: true, nice: false, min: 0, max: 1}
                     },
                     unit: [
                         {
@@ -309,7 +309,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
                         x: {hide: true},
-                        y: {hide: true, autoScale: false, min: 0, max: 1}
+                        y: {hide: true, nice: false, min: 0, max: 1}
                     },
                     unit: [
                         {
@@ -384,7 +384,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
                         x: {hide: true},
-                        y: {hide: true, autoScale: false, min: 0, max: 1}
+                        y: {hide: true, nice: false, min: 0, max: 1}
                     },
                     unit: [
                         {
@@ -455,7 +455,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
                         x: {hide: true},
-                        y: {hide: true, autoScale: false, min: 0, max: 1}
+                        y: {hide: true, nice: false, min: 0, max: 1}
                     },
                     unit: [
                         {
@@ -525,7 +525,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     y: 'y',
                     guide: {
                         padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true, autoScale: false, min: 0, max: 1},
+                        x: {hide: true, nice: false, min: 0, max: 1},
                         y: {hide: true}
                     },
                     unit: [
@@ -628,7 +628,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             guide: {
                 padding: {l: 0, r: 0, t: 0, b: 0},
                 x: {hide: true},
-                y: {hide: true, autoScale: false, min: 0, max: 1},
+                y: {hide: true, nice: false, min: 0, max: 1},
                 prettify: false
             },
             settings: {
@@ -687,7 +687,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             guide: {
                 padding: {l: 0, r: 0, t: 0, b: 0},
                 x: {hide: true},
-                y: {hide: true, autoScale: false, min: 0, max: 1},
+                y: {hide: true, nice: false, min: 0, max: 1},
                 prettify: false
             },
             settings: {
@@ -745,7 +745,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             size: 's',
             guide: {
                 padding: {l: 0, r: 0, t: 0, b: 0},
-                x: {hide: true, autoScale: false, min: 0},
+                x: {hide: true, nice: false, min: 0},
                 y: {hide: true}
             },
             settings: {
@@ -803,7 +803,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             size: 's',
             guide: {
                 padding: {l: 0, r: 0, t: 0, b: 0},
-                x: {hide: true, autoScale: false, min: 0},
+                x: {hide: true, nice: false, min: 0},
                 y: {hide: true}
             },
             settings: {

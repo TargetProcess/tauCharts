@@ -576,7 +576,7 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false, min: 0},
+                    x: {hide: true, nice: false, min: 0},
                     y: {hide: false, scaleOrient: 'right'}
                 },
                 settings: {
@@ -606,7 +606,7 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false, min: 0},
+                    x: {hide: true, nice: false, min: 0},
                     y: {hide: false, scaleOrient: 'left'}
                 },
                 settings: {
@@ -636,7 +636,7 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: false, autoScale: false, min: 0, scaleOrient: 'top'},
+                    x: {hide: false, nice: false, min: 0, scaleOrient: 'top'},
                     y: {hide: true}
                 },
                 settings: {
@@ -666,7 +666,7 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: false, autoScale: false, min: 0, scaleOrient: 'bottom'},
+                    x: {hide: false, nice: false, min: 0, scaleOrient: 'bottom'},
                     y: {hide: true}
                 },
                 settings: {

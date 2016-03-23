@@ -204,8 +204,8 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -299,8 +299,8 @@ define(function (require) {
                 y: 'x',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -379,8 +379,8 @@ define(function (require) {
                 y: 'catY',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -448,8 +448,8 @@ define(function (require) {
                 y: 'x',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -526,8 +526,8 @@ define(function (require) {
                 y: 'y',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -593,8 +593,8 @@ define(function (require) {
                 y: 'catY',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -663,8 +663,8 @@ define(function (require) {
                 y: 'count',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {
@@ -740,8 +740,8 @@ define(function (require) {
                 y: 'date',
                 guide: {
                     padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, autoScale: false, min: 0, max: 100},
-                    y: {hide: true, autoScale: false}
+                    x: {hide: true, nice: false, min: 0, max: 100},
+                    y: {hide: true, nice: false}
                 },
                 units: [
                     {

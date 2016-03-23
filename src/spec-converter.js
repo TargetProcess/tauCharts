@@ -245,6 +245,20 @@ export class SpecConverter {
                 item.autoScale = true;
             }
 
+            if (guide.hasOwnProperty('nice')) {
+                item.nice = guide.nice;
+            } else {
+                // #121763
+                // for backward compatibility with "autoScale" property
+                item.nice = item.autoScale;
+            }
+
+            if (guide.hasOwnProperty('niceInterval')) {
+                item.niceInterval = guide.niceInterval;
+            } else {
+                item.niceInterval = null;
+            }
+
             if (guide.hasOwnProperty('tickPeriod')) {
                 item.period = guide.tickPeriod;
             }
