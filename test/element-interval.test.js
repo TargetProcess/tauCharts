@@ -555,9 +555,7 @@ define(function (require) {
                             "y": 55.5,
                             height: 3,
                             width: 20
-                        }
-                    ],
-                    [
+                        },
                         {
                             "x": 0,
                             "y": 62.5,
@@ -569,9 +567,7 @@ define(function (require) {
                             "y": -1.5,
                             height: 3,
                             width: 100
-                        }
-                    ],
-                    [
+                        },
                         {
                             "x": 0,
                             "y": 98.5,
@@ -623,9 +619,7 @@ define(function (require) {
                             "y": 91,
                             height: 18,
                             width: 20
-                        }
-                    ],
-                    [
+                        },
                         {
                             "x": 0,
                             "y": 51,
@@ -637,9 +631,7 @@ define(function (require) {
                             "y": 51,
                             height: 18,
                             width: 100
-                        }
-                    ],
-                    [
+                        },
                         {
                             "x": 0,
                             "y": 11,

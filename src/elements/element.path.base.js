@@ -213,10 +213,7 @@ export class BasePath extends Element {
         var groups = _.groupBy(fullData, model.group);
         var fibers = Object
             .keys(groups)
-            .reduce((memo, k) => {
-                memo.push(groups[k]);
-                return memo;
-            }, []);
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var drawFrame = (id) => {
 
