@@ -210,6 +210,30 @@ define(function (require) {
 
             expect(scale1.hasOwnProperty('stepSize')).to.equal(true);
             expect(scale1.stepSize()).to.equal(0);
+
+            var scale2 = new TimeScale(
+                xSrc,
+                {
+                    dim: 't',
+                    nice: true,
+                    niceInterval: 'year'
+                }).create([0, 100]);
+
+            var actualDomain = scale2.domain();
+
+            expect(actualDomain[0].getFullYear()).to.equal(2015);
+            expect(actualDomain[0].getMonth()).to.equal(0);
+            expect(actualDomain[0].getDate()).to.equal(1);
+
+            expect(actualDomain[1].getFullYear()).to.equal(2016);
+            expect(actualDomain[1].getMonth()).to.equal(0);
+            expect(actualDomain[1].getDate()).to.equal(1);
+
+            expect(scale2(actualDomain[0])).to.equal(0);
+            expect(scale2(actualDomain[1])).to.equal(100);
+
+            expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale2.stepSize()).to.equal(0);
         });
 
         it('should support [period] scale', function () {
