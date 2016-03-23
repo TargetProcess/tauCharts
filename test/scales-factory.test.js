@@ -341,7 +341,7 @@ define(function (require) {
                     dim: 'i',
                     min: -10,
                     max: 10,
-                    autoScale: true
+                    nice: true
                 }).create([0, 100]);
 
             expect(scale1A.domain()).to.deep.equal([-12, 12]);
@@ -352,7 +352,7 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 'i',
-                    autoScale: true
+                    nice: true
                 }).create([0, 100]);
 
             expect(scale2.domain()).to.deep.equal([0, 3.2]);
@@ -659,13 +659,13 @@ define(function (require) {
             }).to.throw('This brewer is not supported');
         });
 
-        it('should support autoScale on [fill] scale', function () {
+        it('should support "nice" on [fill] scale', function () {
 
             var scale0 = new FillScale(
                 xSrc,
                 {
                     dim: 's',
-                    autoScale: true
+                    nice: true
                 }).create();
 
             expect(scale0.domain()).to.deep.equal([-3.5, 3.5]);
@@ -684,7 +684,7 @@ define(function (require) {
             expect(scale0.domain()).to.deep.equal([-10, 100]);
         });
 
-        it('should support min / max + autoScale on [fill] scale', function () {
+        it('should support min / max + nice on [fill] scale', function () {
 
             var scale0 = new FillScale(
                 xSrc,
@@ -692,7 +692,7 @@ define(function (require) {
                     dim: 's',
                     min: -10,
                     max: 100,
-                    autoScale: true
+                    nice: true
                 }).create();
 
             expect(scale0.domain()).to.deep.equal([-20, 110]);

@@ -7,7 +7,7 @@ define(function (require) {
 
     var check = function (samples) {
         samples.forEach(function (s) {
-            expect(utils.autoScale(s[0])).to.deep.equal(s[1]);
+            expect(utils.niceZeroBased(s[0])).to.deep.equal(s[1]);
         });
     };
 

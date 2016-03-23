@@ -15,8 +15,8 @@ define(function (require) {
                     x: 'x',
                     y: 'y',
                     guide: {
-                        x: {hide: true, autoScale: false},
-                        y: {hide: true, autoScale: false},
+                        x: {hide: true, nice: false},
+                        y: {hide: true, nice: false},
                         padding: {l: 0, r: 0, b: 0, t: 0}
                     },
                     unit: [

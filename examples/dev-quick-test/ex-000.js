@@ -113,8 +113,8 @@ window.samples.push({
 
     guide: [
         {
-            x: {autoScale: false},
-            y: {autoScale: false}
+            x: {nice: false},
+            y: {nice: false}
             // ,flip: true
         }
     ],

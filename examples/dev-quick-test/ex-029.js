@@ -4,7 +4,7 @@
         return {
             autoLayout: "",
             x: {
-                autoScale: true,
+                nice: true,
                 cssClass: "x axis",
                 hide: false,
                 label: {
@@ -21,7 +21,7 @@
                 textAnchor: "start"
             },
             y: {
-                autoScale: true,
+                nice: true,
                 cssClass: "y axis",
                 hide: false,
                 label: {
@@ -136,11 +136,11 @@
                 "type": "ordinal",
                 "source": "/",
                 "dim": "product_name",
-                "autoScale": true,
+                "nice": true,
                 "dimType": "category"
             },
-            "y_param1": {"type": "linear", "source": "/", "dim": "param1", "autoScale": true, "dimType": "measure"},
-            "y_param2": {"type": "linear", "source": "/", "dim": "param2", "autoScale": true, "dimType": "measure"},
+            "y_param1": {"type": "linear", "source": "/", "dim": "param1", "nice": true, "dimType": "measure"},
+            "y_param2": {"type": "linear", "source": "/", "dim": "param2", "nice": true, "dimType": "measure"},
 
             "color_undefined": {"type": "color", "source": "/"},
             "size_undefined": {"type": "size", "source": "/", "min": 2, "max": 10, "mid": 5},
@@ -149,7 +149,7 @@
                 "type": "linear",
                 "source": "STACKED",
                 "dim": "m1",
-                "autoScale": false,
+                "nice": false,
                 "dimType": "measure"
             },
             "stacked_c1": {"type": "color", "source": "STACKED", "dim": "c1"}

@@ -16,12 +16,12 @@ window.samples.push({
                 x: {
                     padding: 8,
                     label: 'Cycle Time',
-                    autoScale: false
+                    nice: false
                 },
                 y: {
                     padding: 8,
                     label: 'Effort',
-                    autoScale: false
+                    nice: false
                 }
             },
             x: 'cycleTime',

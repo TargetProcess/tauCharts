@@ -54,6 +54,11 @@ export class BaseScale {
         this.vars = vars;
         this.scaleConfig = scaleConfig;
 
+        // keep for backward compatibility with "autoScale"
+        this.scaleConfig.nice = ((this.scaleConfig.hasOwnProperty('nice')) ?
+            (this.scaleConfig.nice) :
+            (this.scaleConfig.autoScale));
+
         this.addField('dim', this.scaleConfig.dim)
             .addField('scaleDim', this.scaleConfig.dim)
             .addField('scaleType', this.scaleConfig.type)

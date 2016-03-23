@@ -277,7 +277,7 @@ var utils = {
     isLineElement(element) {
         return element instanceof Line;
     },
-    autoScale(domain) {
+    niceZeroBased(domain) {
 
         var m = 10;
 
