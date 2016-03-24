@@ -102,9 +102,7 @@ export class SpecTransformCalcSize {
 
             var r = 0;
 
-            var isDiscrete = (['ordinal', 'period'].indexOf(scaleInfo.scaleType) >= 0);
-
-            if (isDiscrete) {
+            if (scaleInfo.discrete) {
                 r = maxTickText * scaleInfo.domain().length;
             } else {
                 r = maxTickText * 4;
