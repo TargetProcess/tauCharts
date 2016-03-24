@@ -1,4 +1,4 @@
-/*! taucharts - v0.8.0 - 2016-03-21
+/*! taucharts - v0.8.1 - 2016-03-24
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -444,6 +444,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.utils = undefined;
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 	var _element = __webpack_require__(5);
 
 	var _element2 = __webpack_require__(10);
@@ -457,8 +459,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _underscore2 = _interopRequireDefault(_underscore);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 	var traverseJSON = function traverseJSON(srcObject, byProperty, fnSelectorPredicates, funcTransformRules) {
 
@@ -486,7 +486,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var hashGen = 0;
 	var hashMap = {};
 
-	var deepClone = (function () {
+	var deepClone = function () {
 
 	    // clone objects, skip other types.
 	    function clone(target) {
@@ -715,7 +715,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 
 	    return deepCopy;
-	})();
+	}();
 	var chartElement = [_element3.Interval, _element.Point, _element2.Line, _elementInterval.StackedInterval];
 	var utils = {
 	    clone: function clone(obj) {
@@ -732,7 +732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    isLineElement: function isLineElement(element) {
 	        return element instanceof _element2.Line;
 	    },
-	    autoScale: function autoScale(domain) {
+	    niceZeroBased: function niceZeroBased(domain) {
 
 	        var m = 10;
 
@@ -785,6 +785,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return [parseFloat(extent[0].toFixed(15)), parseFloat(extent[1].toFixed(15))];
 	    },
+
 
 	    traverseJSON: traverseJSON,
 
@@ -886,6 +887,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    throttleLastEvent: function throttleLastEvent(last, eventType, handler) {
 	        var limitFromPrev = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
 
+
 	        return function () {
 	            var curr = { e: eventType, ts: new Date() };
 	            var diff = last.e && last.e === curr.e ? curr.ts - last.ts : limitFromPrev;
@@ -912,12 +914,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Point = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _const = __webpack_require__(6);
 
@@ -937,7 +939,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Point = exports.Point = (function (_Element) {
+	var Point = exports.Point = function (_Element) {
 	    _inherits(Point, _Element);
 
 	    function Point(config) {
@@ -963,7 +965,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.config.guide.size = _this.config.guide.size || {};
 
-	        _this.decorators = [_point.PointModel.decorator_orientation, _point.PointModel.decorator_size, _point.PointModel.decorator_color];
+	        _this.decorators = [_point.PointModel.decorator_orientation, _point.PointModel.decorator_group, _point.PointModel.decorator_size, _point.PointModel.decorator_color];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1014,6 +1016,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var sizeScale = _ref.sizeScale;
 	            var colorScale = _ref.colorScale;
 
+
 	            var args = { xScale: xScale, yScale: yScale, sizeScale: sizeScale, colorScale: colorScale };
 
 	            var pointModel = this.decorators.filter(function (x) {
@@ -1026,7 +1029,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                x: pointModel.xi,
 	                y: pointModel.yi,
 	                size: pointModel.size,
-	                color: pointModel.color
+	                color: pointModel.color,
+	                group: pointModel.group
 	            };
 	        }
 	    }, {
@@ -1039,6 +1043,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var prefix = _const.CSS_PREFIX + 'dot dot i-role-element i-role-datum';
 
+	            var fullData = frames.reduce(function (memo, f) {
+	                return memo.concat(f.part());
+	            }, []);
+
 	            var model = this.buildModel({
 	                xScale: this.xScale,
 	                yScale: this.yScale,
@@ -1047,20 +1055,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 
 	            var attr = {
-	                r: function r(_ref2) {
-	                    var d = _ref2.data;
+	                r: function r(d) {
 	                    return model.size(d);
 	                },
-	                cx: function cx(_ref3) {
-	                    var d = _ref3.data;
+	                cx: function cx(d) {
 	                    return model.x(d);
 	                },
-	                cy: function cy(_ref4) {
-	                    var d = _ref4.data;
+	                cy: function cy(d) {
 	                    return model.y(d);
 	                },
-	                class: function _class(_ref5) {
-	                    var d = _ref5.data;
+	                class: function _class(d) {
 	                    return prefix + ' ' + model.color(d);
 	                }
 	            };
@@ -1075,32 +1079,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var updateGroups = function updateGroups() {
 
-	                this.attr('class', function (f) {
-	                    return 'frame-id-' + options.uid + ' frame-' + f.hash;
-	                }).call(function () {
-	                    var dots = this.selectAll('circle').data(function (frame) {
-	                        return frame.data.map(function (item) {
-	                            return { data: item, uid: options.uid };
-	                        });
+	                this.attr('class', 'frame-id-' + options.uid).call(function () {
+	                    var dots = this.selectAll('circle').data(function (fiber) {
+	                        return fiber;
 	                    });
 	                    dots.exit().remove();
 	                    dots.call(update);
 	                    dots.enter().append('circle').call(enter);
 
-	                    self.subscribe(dots, function (_ref6) {
-	                        var d = _ref6.data;
-	                        return d;
-	                    });
+	                    self.subscribe(dots);
 	                });
 	            };
 
-	            var mapper = function mapper(f) {
-	                return { tags: f.key || {}, hash: f.hash(), data: f.part() };
-	            };
+	            var groups = _underscore2.default.groupBy(fullData, model.group);
+	            var fibers = Object.keys(groups).reduce(function (memo, k) {
+	                return memo.concat([groups[k]]);
+	            }, []);
 
-	            var frameGroups = options.container.selectAll('.frame-id-' + options.uid).data(frames.map(mapper), function (f) {
-	                return f.hash;
-	            });
+	            var frameGroups = options.container.selectAll('.frame-id-' + options.uid).data(fibers);
 	            frameGroups.exit().remove();
 	            frameGroups.call(updateGroups);
 	            frameGroups.enter().append('g').call(updateGroups);
@@ -1111,12 +1107,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'highlight',
 	        value: function highlight(filter) {
 	            this.config.options.container.selectAll('.dot').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(_ref7) {
-	                    var d = _ref7.data;
+	                'graphical-report__highlighted': function graphicalReport__highlighted(d) {
 	                    return filter(d) === true;
 	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(_ref8) {
-	                    var d = _ref8.data;
+	                'graphical-report__dimmed': function graphicalReport__dimmed(d) {
 	                    return filter(d) === false;
 	                }
 	            });
@@ -1124,7 +1118,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Point;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 6 */
@@ -1143,12 +1137,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Element = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _event = __webpack_require__(8);
 
@@ -1166,7 +1160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Element = exports.Element = (function (_Emitter) {
+	var Element = exports.Element = function (_Emitter) {
 	    _inherits(Element, _Emitter);
 
 	    // add base behaviour here
@@ -1241,7 +1235,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Element;
-	})(_event.Emitter);
+	}(_event.Emitter);
 
 /***/ },
 /* 8 */
@@ -1249,11 +1243,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1269,7 +1263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var eventFunction = events[eventName];
 
 	    if (!eventFunction) {
-	        eventFunction = function () {
+	        eventFunction = function eventFunction() {
 	            var cursor = this;
 	            var args;
 	            var fn;
@@ -1337,7 +1331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @class
 	 */
 
-	var Emitter = (function () {
+	var Emitter = function () {
 	    /**
 	     * @constructor
 	     */
@@ -1354,6 +1348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {object} callbacks Callback set.
 	     * @param {object=} context Context object.
 	     */
+
 
 	    _createClass(Emitter, [{
 	        key: 'addHandler',
@@ -1396,7 +1391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            context = context || this;
 
 	            // search for handler and remove it
-	            while ((prev = cursor, cursor = cursor.handler)) {
+	            while (prev = cursor, cursor = cursor.handler) {
 	                // jshint ignore:line
 	                if (cursor.callbacks === callbacks && cursor.context === context) {
 	                    // make it non-callable
@@ -1425,11 +1420,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Emitter;
-	})();
+	}();
 
 	//
 	// export names
 	//
+
 
 	exports.Emitter = Emitter;
 
@@ -1439,15 +1435,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var PointModel = exports.PointModel = (function () {
+	var PointModel = exports.PointModel = function () {
 	    function PointModel() {
 	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -1464,6 +1460,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.xi = model.xi || createFunc(0);
 	        this.size = model.size || createFunc(1);
 	        this.color = model.color || createFunc('');
+	        this.group = model.group || createFunc('');
 	    }
 
 	    _createClass(PointModel, null, [{
@@ -1488,6 +1485,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var yScale = _ref.yScale;
 	            var _ref$isHorizontal = _ref.isHorizontal;
 	            var isHorizontal = _ref$isHorizontal === undefined ? false : _ref$isHorizontal;
+
 
 	            var baseScale = isHorizontal ? yScale : xScale;
 	            var valsScale = isHorizontal ? xScale : yScale;
@@ -1525,10 +1523,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            });
 	        }
+	    }, {
+	        key: 'decorator_group',
+	        value: function decorator_group(model, _ref4) {
+	            var colorScale = _ref4.colorScale;
+
+	            return PointModel.compose(model, {
+	                group: function group(d) {
+	                    return d[colorScale.dim];
+	                }
+	            });
+	        }
 	    }]);
 
 	    return PointModel;
-	})();
+	}();
 
 /***/ },
 /* 10 */
@@ -1536,14 +1545,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Line = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 	var _const = __webpack_require__(6);
 
@@ -1567,7 +1576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Line = exports.Line = (function (_BasePath) {
+	var Line = exports.Line = function (_BasePath) {
 	    _inherits(Line, _BasePath);
 
 	    function Line(config) {
@@ -1670,7 +1679,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Line;
-	})(_elementPath.BasePath);
+	}(_elementPath.BasePath);
 
 /***/ },
 /* 11 */
@@ -1678,12 +1687,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.BasePath = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _element = __webpack_require__(7);
 
@@ -1709,7 +1718,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var BasePath = exports.BasePath = (function (_Element) {
+	var BasePath = exports.BasePath = function (_Element) {
 	    _inherits(BasePath, _Element);
 
 	    function BasePath(config) {
@@ -1785,6 +1794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var colorScale = _ref.colorScale;
 	            var textScale = _ref.textScale;
 	            var dataSource = _ref.dataSource;
+
 
 	            var args = { xScale: xScale, yScale: yScale, sizeScale: sizeScale, colorScale: colorScale, dataSource: dataSource };
 
@@ -1928,8 +1938,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var groups = _underscore2.default.groupBy(fullData, model.group);
 	            var fibers = Object.keys(groups).reduce(function (memo, k) {
-	                memo.push(groups[k]);
-	                return memo;
+	                return memo.concat([groups[k]]);
 	            }, []);
 
 	            var drawFrame = function drawFrame(id) {
@@ -1984,7 +1993,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return BasePath;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 12 */
@@ -1992,15 +2001,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var PathModel = exports.PathModel = (function () {
+	var PathModel = exports.PathModel = function () {
 	    function PathModel() {
 	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -2042,6 +2051,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var yScale = _ref.yScale;
 	            var _ref$isHorizontal = _ref.isHorizontal;
 	            var isHorizontal = _ref$isHorizontal === undefined ? false : _ref$isHorizontal;
+
 
 	            var baseScale = isHorizontal ? yScale : xScale;
 	            var valsScale = isHorizontal ? xScale : yScale;
@@ -2093,7 +2103,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return PathModel;
-	})();
+	}();
 
 /***/ },
 /* 13 */
@@ -2111,6 +2121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var xScale = _ref.xScale;
 	    var yScale = _ref.yScale;
 	    var textScale = _ref.textScale;
+
 
 	    var xDomain = xScale.domain();
 	    var yDomain = yScale.domain();
@@ -2205,6 +2216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var xScale = _ref.xScale;
 	    var yScale = _ref.yScale;
 
+
 	    var anchorUpdate = function anchorUpdate() {
 	        return this.attr({
 	            r: guide.anchorSize,
@@ -2273,12 +2285,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Interval = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _const = __webpack_require__(6);
 
@@ -2298,7 +2310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Interval = exports.Interval = (function (_Element) {
+	var Interval = exports.Interval = function (_Element) {
 	    _inherits(Interval, _Element);
 
 	    function Interval(config) {
@@ -2395,7 +2407,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'drawFrames',
 	        value: function drawFrames(frames) {
-	            var _this2 = this;
 
 	            var self = this;
 
@@ -2411,9 +2422,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var barsGap = this.barsGap;
 	            var baseCssClass = this.baseCssClass;
 
+	            var colorsOrder = colorScale.domain().reduce(function (memo, x, i) {
+	                memo[x] = i;
+	                return memo;
+	            }, {});
+
+	            var colorIndex = function colorIndex(row) {
+	                var c = row[colorScale.dim];
+	                return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
+	            };
+
 	            var fullData = frames.reduce(function (memo, f) {
 	                return memo.concat(f.part());
-	            }, []);
+	            }, []).sort(function (a, b) {
+	                return colorIndex(a) - colorIndex(b);
+	            });
 
 	            var barModel = this.buildModel({
 	                xScale: xScale,
@@ -2434,47 +2457,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var updateBarContainer = function updateBarContainer() {
-	                this.attr('class', function (f) {
-	                    return 'frame-id-' + uid + ' frame-' + f.hash + ' i-role-bar-group';
-	                });
-	                var bars = this.selectAll('.bar').data(function (d) {
-	                    return d.values.map(function (item) {
-	                        return {
-	                            data: item,
-	                            uid: d.uid
-	                        };
-	                    });
+	                this.attr('class', 'frame-id-' + uid + ' i-role-bar-group');
+	                var bars = this.selectAll('.bar').data(function (fiber) {
+	                    return fiber;
 	                });
 	                bars.exit().remove();
 	                bars.call(updateBar);
 	                bars.enter().append('rect').call(updateBar);
 
-	                self.subscribe(bars, function (_ref) {
-	                    var d = _ref.data;
-	                    return d;
-	                });
+	                self.subscribe(bars);
 	            };
 
-	            var elements = options.container.selectAll('.frame-id-' + uid).data(frames.map(function (fr) {
-	                return { hash: fr.hash(), key: fr.key, values: fr.part(), uid: _this2.config.options.uid };
-	            }));
+	            var groups = _underscore2.default.groupBy(fullData, barModel.group);
+	            var fibers = Object.keys(groups).reduce(function (memo, k) {
+	                return memo.concat([groups[k]]);
+	            }, []);
+
+	            var elements = options.container.selectAll('.frame-id-' + uid).data(fibers);
 	            elements.exit().remove();
 	            elements.call(updateBarContainer);
 	            elements.enter().append('g').call(updateBarContainer);
 	        }
 	    }, {
 	        key: 'toVerticalDrawMethod',
-	        value: function toVerticalDrawMethod(_ref2, _ref3) {
-	            var barX = _ref2.barX;
-	            var barY = _ref2.barY;
-	            var barH = _ref2.barH;
-	            var barW = _ref2.barW;
-	            var barColor = _ref2.barColor;
-	            var prettify = _ref3.prettify;
-	            var minBarH = _ref3.minBarH;
-	            var minBarW = _ref3.minBarW;
-	            var yScale = _ref3.yScale;
-	            var baseCssClass = _ref3.baseCssClass;
+	        value: function toVerticalDrawMethod(_ref, _ref2) {
+	            var barX = _ref.barX;
+	            var barY = _ref.barY;
+	            var barH = _ref.barH;
+	            var barW = _ref.barW;
+	            var barColor = _ref.barColor;
+	            var prettify = _ref2.prettify;
+	            var minBarH = _ref2.minBarH;
+	            var minBarW = _ref2.minBarW;
+	            var yScale = _ref2.yScale;
+	            var baseCssClass = _ref2.baseCssClass;
+
 
 	            var calculateW = function calculateW(d) {
 	                var w = barW(d);
@@ -2485,13 +2502,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            return {
-	                x: function x(_ref4) {
-	                    var d = _ref4.data;
+	                x: function x(d) {
 	                    return barX(d) - calculateW(d) * 0.5;
 	                },
-	                y: function y(_ref5) {
-	                    var d = _ref5.data;
-
+	                y: function y(d) {
 	                    var y = barY(d);
 
 	                    if (prettify) {
@@ -2503,9 +2517,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return y;
 	                    }
 	                },
-	                height: function height(_ref6) {
-	                    var d = _ref6.data;
-
+	                height: function height(d) {
 	                    var h = barH(d);
 	                    if (prettify) {
 	                        // decorate for better visual look & feel
@@ -2515,29 +2527,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return h;
 	                    }
 	                },
-	                width: function width(_ref7) {
-	                    var d = _ref7.data;
+	                width: function width(d) {
 	                    return calculateW(d);
 	                },
-	                class: function _class(_ref8) {
-	                    var d = _ref8.data;
+	                class: function _class(d) {
 	                    return baseCssClass + ' ' + barColor(d);
 	                }
 	            };
 	        }
 	    }, {
 	        key: 'toHorizontalDrawMethod',
-	        value: function toHorizontalDrawMethod(_ref9, _ref10) {
-	            var barX = _ref9.barX;
-	            var barY = _ref9.barY;
-	            var barH = _ref9.barH;
-	            var barW = _ref9.barW;
-	            var barColor = _ref9.barColor;
-	            var prettify = _ref10.prettify;
-	            var minBarH = _ref10.minBarH;
-	            var minBarW = _ref10.minBarW;
-	            var xScale = _ref10.xScale;
-	            var baseCssClass = _ref10.baseCssClass;
+	        value: function toHorizontalDrawMethod(_ref3, _ref4) {
+	            var barX = _ref3.barX;
+	            var barY = _ref3.barY;
+	            var barH = _ref3.barH;
+	            var barW = _ref3.barW;
+	            var barColor = _ref3.barColor;
+	            var prettify = _ref4.prettify;
+	            var minBarH = _ref4.minBarH;
+	            var minBarW = _ref4.minBarW;
+	            var xScale = _ref4.xScale;
+	            var baseCssClass = _ref4.baseCssClass;
+
 
 	            var calculateH = function calculateH(d) {
 	                var h = barW(d);
@@ -2548,13 +2559,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            return {
-	                y: function y(_ref11) {
-	                    var d = _ref11.data;
+	                y: function y(d) {
 	                    return barX(d) - calculateH(d) * 0.5;
 	                },
-	                x: function x(_ref12) {
-	                    var d = _ref12.data;
-
+	                x: function x(d) {
 	                    var x = barY(d);
 
 	                    if (prettify) {
@@ -2579,13 +2587,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return x;
 	                    }
 	                },
-	                height: function height(_ref13) {
-	                    var d = _ref13.data;
+	                height: function height(d) {
 	                    return calculateH(d);
 	                },
-	                width: function width(_ref14) {
-	                    var d = _ref14.data;
-
+	                width: function width(d) {
 	                    var w = barH(d);
 
 	                    if (prettify) {
@@ -2596,23 +2601,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return w;
 	                    }
 	                },
-	                class: function _class(_ref15) {
-	                    var d = _ref15.data;
+	                class: function _class(d) {
 	                    return baseCssClass + ' ' + barColor(d);
 	                }
 	            };
 	        }
 	    }, {
 	        key: 'buildModel',
-	        value: function buildModel(_ref16) {
-	            var xScale = _ref16.xScale;
-	            var yScale = _ref16.yScale;
-	            var isHorizontal = _ref16.isHorizontal;
-	            var sizeScale = _ref16.sizeScale;
-	            var colorScale = _ref16.colorScale;
-	            var barsGap = _ref16.barsGap;
-	            var dataSource = _ref16.dataSource;
-	            var maxSize = _ref16.maxSize;
+	        value: function buildModel(_ref5) {
+	            var xScale = _ref5.xScale;
+	            var yScale = _ref5.yScale;
+	            var isHorizontal = _ref5.isHorizontal;
+	            var sizeScale = _ref5.sizeScale;
+	            var colorScale = _ref5.colorScale;
+	            var barsGap = _ref5.barsGap;
+	            var dataSource = _ref5.dataSource;
+	            var maxSize = _ref5.maxSize;
 
 	            var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
 	            var args = {
@@ -2648,6 +2652,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                },
 	                barColor: function barColor(d) {
 	                    return barModel.color(d);
+	                },
+	                group: function group(d) {
+	                    return d[colorScale.dim];
 	                }
 	            };
 	        }
@@ -2656,12 +2663,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function highlight(filter) {
 
 	            this.config.options.container.selectAll('.bar').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(_ref17) {
-	                    var d = _ref17.data;
+	                'graphical-report__highlighted': function graphicalReport__highlighted(d) {
 	                    return filter(d) === true;
 	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(_ref18) {
-	                    var d = _ref18.data;
+	                'graphical-report__dimmed': function graphicalReport__dimmed(d) {
 	                    return filter(d) === false;
 	                }
 	            });
@@ -2669,7 +2674,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Interval;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 17 */
@@ -2677,12 +2682,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.IntervalModel = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _underscore = __webpack_require__(3);
 
@@ -2696,7 +2701,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var IntervalModel = exports.IntervalModel = (function () {
+	var IntervalModel = exports.IntervalModel = function () {
 	    function IntervalModel() {
 	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -2738,6 +2743,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var yScale = _ref.yScale;
 	            var isHorizontal = _ref.isHorizontal;
 
+
 	            var baseScale = isHorizontal ? yScale : xScale;
 	            var valsScale = isHorizontal ? xScale : yScale;
 
@@ -2749,9 +2755,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                y0: valsScale.discrete ? function () {
 	                    return valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k;
 	                } : function () {
-	                    var _Math;
-
-	                    return valsScale(Math.max(0, (_Math = Math).min.apply(_Math, _toConsumableArray(valsScale.domain()))));
+	                    return valsScale(Math.max(0, Math.min.apply(Math, _toConsumableArray(valsScale.domain()))));
 	                },
 	                yi: function yi(d) {
 	                    return valsScale(d[valsScale.dim]);
@@ -2934,6 +2938,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var dataSource = _ref8.dataSource;
 	            var maxSize = _ref8.maxSize;
 
+
 	            if (model.scaleX.discrete) {
 	                return IntervalModel.decorator_identity(model);
 	            }
@@ -2964,7 +2969,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return IntervalModel;
-	})();
+	}();
 
 /***/ },
 /* 18 */
@@ -2972,12 +2977,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.StackedInterval = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _underscore = __webpack_require__(3);
 
@@ -3001,13 +3006,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var StackedInterval = exports.StackedInterval = (function (_Interval) {
+	var StackedInterval = exports.StackedInterval = function (_Interval) {
 	    _inherits(StackedInterval, _Interval);
 
 	    _createClass(StackedInterval, null, [{
 	        key: 'embedUnitFrameToSpec',
 	        value: function embedUnitFrameToSpec(cfg, spec) {
-	            var _Math, _Math2;
 
 	            var isHorizontal = cfg.flip;
 
@@ -3040,8 +3044,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return groups;
 	            }, { negative: {}, positive: {} });
 
-	            var negativeSum = (_Math = Math).min.apply(_Math, _toConsumableArray(_underscore2.default.values(groupsSums.negative).concat(0)));
-	            var positiveSum = (_Math2 = Math).max.apply(_Math2, _toConsumableArray(_underscore2.default.values(groupsSums.positive).concat(0)));
+	            var negativeSum = Math.min.apply(Math, _toConsumableArray(_underscore2.default.values(groupsSums.negative).concat(0)));
+	            var positiveSum = Math.max.apply(Math, _toConsumableArray(_underscore2.default.values(groupsSums.positive).concat(0)));
 
 	            if (!stackScale.hasOwnProperty('max') || stackScale.max < positiveSum) {
 	                stackScale.max = positiveSum;
@@ -3069,7 +3073,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    return StackedInterval;
-	})(_element.Interval);
+	}(_element.Interval);
 
 /***/ },
 /* 19 */
@@ -3087,7 +3091,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var TauChartError = (function (_Error) {
+	var TauChartError = function (_Error) {
 	    _inherits(TauChartError, _Error);
 
 	    function TauChartError(message, errorCode) {
@@ -3102,7 +3106,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    return TauChartError;
-	})(Error);
+	}(Error);
 
 	var errorCodes = {
 	    INVALID_DATA_TO_STACKED_BAR_CHART: 'INVALID_DATA_TO_STACKED_BAR_CHART',
@@ -3120,12 +3124,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.GPL = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _event = __webpack_require__(8);
 
@@ -3159,7 +3163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _underscore2.default.isDate(v) ? v.getTime() : v;
 	};
 
-	var GPL = exports.GPL = (function (_Emitter) {
+	var GPL = exports.GPL = function (_Emitter) {
 	    _inherits(GPL, _Emitter);
 
 	    function GPL(config, scalesRegistryInstance, unitsRegistry) {
@@ -3248,6 +3252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var parentPipe = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
+
 	            var self = this;
 
 	            if (root.expression.operator === false) {
@@ -3311,6 +3316,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function _drawUnitsStructure(unitConfig, rootFrame) {
 	            var rootUnit = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
 
+
 	            var self = this;
 
 	            // Rule to cancel parent frame inheritance
@@ -3322,11 +3328,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            unitNode.createScales(function (type, alias, dynamicProps) {
 	                var key = alias || type + ':default';
 	                return self.scalesHub.createScaleInfo(self.scales[key], passFrame).create(dynamicProps);
-	            }).drawFrames(unitConfig.frames, (function (rootUnit) {
+	            }).drawFrames(unitConfig.frames, function (rootUnit) {
 	                return function (rootConf, rootFrame) {
 	                    self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
 	                };
-	            })(unitNode));
+	            }(unitNode));
 
 	            if (self.onUnitDraw) {
 	                self.onUnitDraw(unitNode);
@@ -3385,7 +3391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return GPL;
-	})(_event.Emitter);
+	}(_event.Emitter);
 
 /***/ },
 /* 21 */
@@ -3607,18 +3613,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.DataFrame = undefined;
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _utils = __webpack_require__(4);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var DataFrame = exports.DataFrame = (function () {
+	var DataFrame = exports.DataFrame = function () {
 	    function DataFrame(_ref, dataSource) {
 	        var key = _ref.key;
 	        var pipe = _ref.pipe;
@@ -3664,7 +3670,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return DataFrame;
-	})();
+	}();
 
 /***/ },
 /* 24 */
@@ -3672,14 +3678,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Plot = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 	var _balloon = __webpack_require__(25);
 
@@ -3729,7 +3735,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Plot = exports.Plot = (function (_Emitter) {
+	var Plot = exports.Plot = function (_Emitter) {
 	    _inherits(Plot, _Emitter);
 
 	    function Plot(config) {
@@ -3957,6 +3963,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var param = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
+
 	            var excludeFiltersByTagAndSource = function excludeFiltersByTagAndSource(k) {
 	                return function (f) {
 	                    return _underscore2.default.contains(param.excludeFilter, f.tag) || f.src !== k;
@@ -4161,7 +4168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Plot;
-	})(_event.Emitter);
+	}(_event.Emitter);
 
 /***/ },
 /* 25 */
@@ -4904,15 +4911,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Plugins = (function () {
+	var Plugins = function () {
 	    function Plugins(plugins, chart) {
 	        _classCallCheck(this, Plugins);
 
@@ -4947,7 +4954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Plugins;
-	})();
+	}();
 
 	exports.Plugins = Plugins;
 
@@ -5016,18 +5023,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.ScalesFactory = undefined;
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _dataFrame = __webpack_require__(23);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var ScalesFactory = exports.ScalesFactory = (function () {
+	var ScalesFactory = exports.ScalesFactory = function () {
 	    function ScalesFactory(scalesRegistry, sources, scales) {
 	        _classCallCheck(this, ScalesFactory);
 
@@ -5040,6 +5047,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'createScaleInfo',
 	        value: function createScaleInfo(scaleConfig) {
 	            var dataFrame = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
 
 	            var ScaleClass = this.registry.get(scaleConfig.type);
 
@@ -5065,7 +5073,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return ScalesFactory;
-	})();
+	}();
 
 /***/ },
 /* 31 */
@@ -5321,12 +5329,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.SpecConverter = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _underscore = __webpack_require__(3);
 
@@ -5338,7 +5346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var SpecConverter = exports.SpecConverter = (function () {
+	var SpecConverter = exports.SpecConverter = function () {
 	    function SpecConverter(spec) {
 	        _classCallCheck(this, SpecConverter);
 
@@ -5592,6 +5600,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    item.autoScale = true;
 	                }
 
+	                if (guide.hasOwnProperty('nice')) {
+	                    item.nice = guide.nice;
+	                } else {
+	                    // #121763
+	                    // for backward compatibility with "autoScale" property
+	                    item.nice = item.autoScale;
+	                }
+
+	                if (guide.hasOwnProperty('niceInterval')) {
+	                    item.niceInterval = guide.niceInterval;
+	                } else {
+	                    item.niceInterval = null;
+	                }
+
 	                if (guide.hasOwnProperty('tickPeriod')) {
 	                    item.period = guide.tickPeriod;
 	                }
@@ -5653,7 +5675,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SpecConverter;
-	})();
+	}();
 
 /***/ },
 /* 34 */
@@ -5661,12 +5683,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.SpecTransformAutoLayout = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _underscore = __webpack_require__(3);
 
@@ -5731,6 +5753,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        autoScale: true
 	    });
 	    guide[dimension].tickFormat = guide[dimension].tickFormat || guide[dimension].tickPeriod;
+	    guide[dimension].nice = guide[dimension].hasOwnProperty('nice') ? guide[dimension].nice : guide[dimension].autoScale;
+
 	    return guide[dimension];
 	};
 
@@ -5908,16 +5932,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        unit.guide.y.tickFormatWordWrap = true;
 	        unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
 
-	        var guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
-	        var koeffLinesCount = Math.min(guessLinesCount, settings.yTickWordWrapLinesLimit);
-	        var textLinesHeight = koeffLinesCount * maxYTickSize.height;
+	        var _guessLinesCount = Math.ceil(maxYTickSize.width / settings.yAxisTickLabelLimit);
+	        var _koeffLinesCount = Math.min(_guessLinesCount, settings.yTickWordWrapLinesLimit);
+	        var _textLinesHeight = _koeffLinesCount * maxYTickSize.height;
 
 	        if (isYVertical) {
-	            yTickBox.w = textLinesHeight;
+	            yTickBox.w = _textLinesHeight;
 	            yTickBox.h = settings.yAxisTickLabelLimit;
 	        } else {
 	            yTickBox.w = settings.yAxisTickLabelLimit;
-	            yTickBox.h = textLinesHeight;
+	            yTickBox.h = _textLinesHeight;
 	        }
 	    }
 
@@ -6292,7 +6316,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var SpecTransformAutoLayout = exports.SpecTransformAutoLayout = (function () {
+	var SpecTransformAutoLayout = exports.SpecTransformAutoLayout = function () {
 	    function SpecTransformAutoLayout(spec) {
 	        _classCallCheck(this, SpecTransformAutoLayout);
 
@@ -6323,7 +6347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SpecTransformAutoLayout;
-	})();
+	}();
 
 /***/ },
 /* 35 */
@@ -6414,7 +6438,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        if (!hasFormat && formatAlias) {
-	            formatter = function (v) {
+	            formatter = function formatter(v) {
 	                var f = _underscore2.default.isDate(v) ? _d2.default.time.format(formatAlias) : _d2.default.format(formatAlias);
 	                return f(v);
 	            };
@@ -6440,12 +6464,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.SpecTransformCalcSize = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _utils = __webpack_require__(4);
 
@@ -6519,7 +6543,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var SpecTransformCalcSize = exports.SpecTransformCalcSize = (function () {
+	var SpecTransformCalcSize = exports.SpecTransformCalcSize = function () {
 	    function SpecTransformCalcSize(spec) {
 	        _classCallCheck(this, SpecTransformCalcSize);
 
@@ -6559,9 +6583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                var r = 0;
 
-	                var isDiscrete = ['ordinal', 'period'].indexOf(scaleInfo.scaleType) >= 0;
-
-	                if (isDiscrete) {
+	                if (scaleInfo.discrete) {
 	                    r = maxTickText * scaleInfo.domain().length;
 	                } else {
 	                    r = maxTickText * 4;
@@ -6572,6 +6594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var calcSizeRecursively = function calcSizeRecursively(prop, root, takeStepSizeStrategy) {
 	                var frame = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
+
 
 	                var xCfg = prop === 'x' ? root.x : root.y;
 	                var yCfg = prop === 'x' ? root.y : root.x;
@@ -6585,7 +6608,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var xScale = chart.getScaleInfo(xCfg, frame);
 	                    return resScaleSize + calcScaleSize(xScale, xSize);
 	                } else {
-	                    var _Math;
 
 	                    var rows = groupFramesBy(root.frames, scales[yCfg].dim);
 	                    var rowsSizes = Object.keys(rows).map(function (kRow) {
@@ -6597,7 +6619,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    });
 
 	                    // pick up max row size
-	                    var maxRowSize = (_Math = Math).max.apply(_Math, _toConsumableArray(rowsSizes));
+	                    var maxRowSize = Math.max.apply(Math, _toConsumableArray(rowsSizes));
 	                    return resScaleSize + maxRowSize;
 	                }
 	            };
@@ -6640,7 +6662,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SpecTransformCalcSize;
-	})();
+	}();
 
 /***/ },
 /* 37 */
@@ -6648,15 +6670,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var SpecTransformOptimize = exports.SpecTransformOptimize = (function () {
+	var SpecTransformOptimize = exports.SpecTransformOptimize = function () {
 	    function SpecTransformOptimize() {
 	        _classCallCheck(this, SpecTransformOptimize);
 	    }
@@ -6699,7 +6721,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SpecTransformOptimize;
-	})();
+	}();
 
 /***/ },
 /* 38 */
@@ -6707,18 +6729,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.SpecTransformApplyRatio = undefined;
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _utils = __webpack_require__(4);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var SpecTransformApplyRatio = exports.SpecTransformApplyRatio = (function () {
+	var SpecTransformApplyRatio = exports.SpecTransformApplyRatio = function () {
 	    function SpecTransformApplyRatio(spec) {
 	        _classCallCheck(this, SpecTransformApplyRatio);
 
@@ -6760,6 +6782,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var traverse = function traverse(root, enterFn, exitFn) {
 	                var level = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
+
 
 	                var shouldContinue = enterFn(root, level);
 
@@ -6840,7 +6863,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SpecTransformApplyRatio;
-	})();
+	}();
 
 /***/ },
 /* 39 */
@@ -6848,18 +6871,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.SpecTransformExtractAxes = undefined;
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _utils = __webpack_require__(4);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var SpecTransformExtractAxes = exports.SpecTransformExtractAxes = (function () {
+	var SpecTransformExtractAxes = exports.SpecTransformExtractAxes = function () {
 	    function SpecTransformExtractAxes(spec) {
 	        _classCallCheck(this, SpecTransformExtractAxes);
 
@@ -6973,7 +6996,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SpecTransformExtractAxes;
-	})();
+	}();
 
 /***/ },
 /* 40 */
@@ -6981,14 +7004,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Chart = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 	var _tau = __webpack_require__(24);
 
@@ -7006,7 +7029,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Chart = (function (_Plot) {
+	var Chart = function (_Plot) {
 	    _inherits(Chart, _Plot);
 
 	    function Chart(config) {
@@ -7044,9 +7067,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Chart;
-	})(_tau.Plot);
+	}(_tau.Plot);
 
-	Chart.resizeOnWindowEvent = (function () {
+	Chart.resizeOnWindowEvent = function () {
 
 	    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
 	        return setTimeout(fn, 17);
@@ -7070,7 +7093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    return requestReposition;
-	})();
+	}();
 	Chart.winAware = [];
 	window.addEventListener('resize', Chart.resizeOnWindowEvent);
 	exports.Chart = Chart;
@@ -7146,12 +7169,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Cartesian = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _d = __webpack_require__(2);
 
@@ -7183,7 +7206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Cartesian = exports.Cartesian = (function (_Element) {
+	var Cartesian = exports.Cartesian = function (_Element) {
 	    _inherits(Cartesian, _Element);
 
 	    function Cartesian(config) {
@@ -7362,10 +7385,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var updateCellLayers = function updateCellLayers(cellId, cell, frame) {
 
-	                var mapper = (function (basicOptions, unit, i) {
+	                var mapper = function (basicOptions, unit, i) {
 	                    unit.options = _underscore2.default.extend({ uid: basicOptions.frameId + i }, basicOptions);
 	                    return unit;
-	                }).bind(null, {
+	                }.bind(null, {
 	                    frameId: frame.hash(),
 	                    container: cell,
 	                    containerWidth: innerWidth,
@@ -7496,18 +7519,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        var yOrientKoeff = yScale.guide.scaleOrient === 'right' ? 1 : -1;
 	                        var yGridAxis = _d2.default.svg.axis().scale(yScale.scaleObj).orient(yScale.guide.scaleOrient).tickSize(yOrientKoeff * width);
 
-	                        var formatter = _formatterRegistry.FormatterRegistry.get(yScale.guide.tickFormat);
-	                        if (formatter !== null) {
+	                        var _formatter = _formatterRegistry.FormatterRegistry.get(yScale.guide.tickFormat);
+	                        if (_formatter !== null) {
 	                            yGridAxis.ticks(Math.round(height / yScale.guide.density));
-	                            yGridAxis.tickFormat(formatter);
+	                            yGridAxis.tickFormat(_formatter);
 	                        }
 
 	                        var yGridLines = gridLines.append('g').attr('class', 'grid-lines-y').call(yGridAxis);
 
-	                        var isHorizontal = _utilsDraw.utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h';
-	                        var prettifyTick = yScale.scaleType === 'ordinal' || yScale.scaleType === 'period';
-	                        if (prettifyTick) {
-	                            (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(yGridLines, yScale, isHorizontal);
+	                        var _isHorizontal = _utilsDraw.utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h';
+	                        var _prettifyTick = yScale.scaleType === 'ordinal' || yScale.scaleType === 'period';
+	                        if (_prettifyTick) {
+	                            (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(yGridLines, yScale, _isHorizontal);
 	                        }
 
 	                        var fixLineScales = ['time', 'ordinal', 'period'];
@@ -7526,7 +7549,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Cartesian;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 43 */
@@ -7534,17 +7557,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var CartesianModel = exports.CartesianModel = (function () {
+	var CartesianModel = exports.CartesianModel = function () {
 	    function CartesianModel() {
 	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -7612,7 +7635,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return CartesianModel;
-	})();
+	}();
 
 /***/ },
 /* 44 */
@@ -7876,8 +7899,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var box = axisNode.selectAll('path.domain').node().getBBox();
 	        labelTextNode.attr('x', isHorizontal ? box.width : 0);
 	    } else if (guide.dock === 'left') {
-	        var box = axisNode.selectAll('path.domain').node().getBBox();
-	        labelTextNode.attr('x', isHorizontal ? 0 : -box.height);
+	        var _box = axisNode.selectAll('path.domain').node().getBBox();
+	        labelTextNode.attr('x', isHorizontal ? 0 : -_box.height);
 	    }
 	};
 
@@ -8003,12 +8026,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Parallel = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _d = __webpack_require__(2);
 
@@ -8038,7 +8061,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Parallel = exports.Parallel = (function (_Element) {
+	var Parallel = exports.Parallel = function (_Element) {
 	    _inherits(Parallel, _Element);
 
 	    function Parallel(config) {
@@ -8261,6 +8284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function _forceBrushing() {
 	            var colsBrushSettings = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
+
 	            var columnsBrushes = this.columnsBrushes;
 	            var columnsScalesMap = this.columnsScalesMap;
 
@@ -8270,13 +8294,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var brushExt = colsBrushSettings[k];
 	                var ext = [];
 	                if (columnsScalesMap[k].discrete) {
-	                    var _Math, _Math2;
-
 	                    var positions = brushExt.map(columnsScalesMap[k]).filter(function (x) {
 	                        return x >= 0;
 	                    });
 	                    var stepSize = columnsScalesMap[k].stepSize() / 2;
-	                    ext = [(_Math = Math).min.apply(_Math, _toConsumableArray(positions)) - stepSize, (_Math2 = Math).max.apply(_Math2, _toConsumableArray(positions)) + stepSize];
+	                    ext = [Math.min.apply(Math, _toConsumableArray(positions)) - stepSize, Math.max.apply(Math, _toConsumableArray(positions)) + stepSize];
 	                } else {
 	                    ext = [brushExt[0], brushExt[1]];
 	                }
@@ -8289,7 +8311,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Parallel;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 47 */
@@ -8297,12 +8319,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.GeoMap = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _d = __webpack_require__(2);
 
@@ -8336,7 +8358,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var hierarchy = ['land', 'continents', 'georegions', 'countries', 'regions', 'subunits', 'states', 'counties'];
 
-	var GeoMap = exports.GeoMap = (function (_Element) {
+	var GeoMap = exports.GeoMap = function (_Element) {
 	    _inherits(GeoMap, _Element);
 
 	    function GeoMap(config) {
@@ -8847,7 +8869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return GeoMap;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 48 */
@@ -9731,12 +9753,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Area = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _element = __webpack_require__(51);
 
@@ -9748,7 +9770,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Area = exports.Area = (function (_Path) {
+	var Area = exports.Area = function (_Path) {
 	    _inherits(Area, _Path);
 
 	    function Area(config) {
@@ -9805,7 +9827,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Area;
-	})(_element.Path);
+	}(_element.Path);
 
 /***/ },
 /* 51 */
@@ -9813,14 +9835,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Path = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 	var _const = __webpack_require__(6);
 
@@ -9834,7 +9856,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Path = exports.Path = (function (_BasePath) {
+	var Path = exports.Path = function (_BasePath) {
 	    _inherits(Path, _BasePath);
 
 	    function Path(config) {
@@ -9853,6 +9875,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
 	                var y = _ref.y;
+
 
 	                // d3.invert doesn't work for ordinal axes
 	                var nearest = self.unpackFrameData(rows).map(function (row) {
@@ -9915,7 +9938,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Path;
-	})(_elementPath.BasePath);
+	}(_elementPath.BasePath);
 
 /***/ },
 /* 52 */
@@ -9923,12 +9946,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.ParallelLine = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _const = __webpack_require__(6);
 
@@ -9950,7 +9973,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var ParallelLine = exports.ParallelLine = (function (_Element) {
+	var ParallelLine = exports.ParallelLine = function (_Element) {
 	    _inherits(ParallelLine, _Element);
 
 	    function ParallelLine(config) {
@@ -10062,7 +10085,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return ParallelLine;
-	})(_element.Element);
+	}(_element.Element);
 
 /***/ },
 /* 53 */
@@ -10070,12 +10093,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.ColorScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10096,9 +10119,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	/* jshint ignore:start */
 
+
 	/* jshint ignore:end */
 
-	var ColorScale = exports.ColorScale = (function (_BaseScale) {
+	var ColorScale = exports.ColorScale = function (_BaseScale) {
 	    _inherits(ColorScale, _BaseScale);
 
 	    function ColorScale(xSource, scaleConfig) {
@@ -10157,7 +10181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                func = wrapString(buildArrayGetClass(varSet, brewer));
 	            } else if (_underscore2.default.isFunction(brewer)) {
 
-	                func = function (d) {
+	                func = function func(d) {
 	                    return brewer(d, wrapString(buildArrayGetClass(varSet, _underscore2.default.times(20, function (i) {
 	                        return 'color20-' + (1 + i);
 	                    }))));
@@ -10175,7 +10199,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return ColorScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 54 */
@@ -10183,13 +10207,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	/* jshint ignore:start */
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.BaseScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	/* jshint ignore:start */
+
 
 	var _utils = __webpack_require__(4);
 
@@ -10215,7 +10240,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _utils.utils.generateHash([varSet, interval].map(JSON.stringify).join(''));
 	};
 
-	var BaseScale = exports.BaseScale = (function () {
+	var BaseScale = exports.BaseScale = function () {
 	    function BaseScale(dataFrame, scaleConfig) {
 	        var _this = this;
 
@@ -10257,6 +10282,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.vars = vars;
 	        this.scaleConfig = scaleConfig;
 
+	        // keep for backward compatibility with "autoScale"
+	        this.scaleConfig.nice = this.scaleConfig.hasOwnProperty('nice') ? this.scaleConfig.nice : this.scaleConfig.autoScale;
+
 	        this.addField('dim', this.scaleConfig.dim).addField('scaleDim', this.scaleConfig.dim).addField('scaleType', this.scaleConfig.type).addField('source', this.scaleConfig.source).addField('isContains', function (x) {
 	            return _this.isInDomain(x);
 	        }).addField('domain', function () {
@@ -10293,6 +10321,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var dynamicProps = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
+
 	            var scaleFn = Object.keys(this._fields).reduce(function (memo, k) {
 	                memo[k] = _this2._fields[k];
 	                return memo;
@@ -10312,7 +10341,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return BaseScale;
-	})();
+	}();
 
 /***/ },
 /* 55 */
@@ -10320,12 +10349,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.SizeScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10352,7 +10381,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var SizeScale = exports.SizeScale = (function (_BaseScale) {
+	var SizeScale = exports.SizeScale = function (_BaseScale) {
 	    _inherits(SizeScale, _BaseScale);
 
 	    function SizeScale(xSource, scaleConfig) {
@@ -10376,6 +10405,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'create',
 	        value: function create() {
 	            var localProps = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
 
 	            var props = this.scaleConfig;
 	            var varSet = this.vars;
@@ -10401,24 +10431,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var func;
 	            if (values.length === 0) {
-	                func = function () {
+	                func = function func() {
 	                    return fnNorm(midSize, midSize);
 	                };
 	            } else {
-	                var _Math, _Math2;
-
 	                var k = 1;
 	                var xMin = 0;
 
-	                var min = (_Math = Math).min.apply(_Math, _toConsumableArray(values));
-	                var max = (_Math2 = Math).max.apply(_Math2, _toConsumableArray(values));
+	                var min = Math.min.apply(Math, _toConsumableArray(values));
+	                var max = Math.max.apply(Math, _toConsumableArray(values));
 
 	                var len = f(Math.max(Math.abs(min), Math.abs(max), max - min));
 
 	                xMin = min < 0 ? min : 0;
 	                k = len === 0 ? 1 : (maxSize - minSize) / len;
 
-	                func = function (x) {
+	                func = function func(x) {
 
 	                    var numX = x !== null ? parseFloat(x) : 0;
 
@@ -10437,7 +10465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return SizeScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 56 */
@@ -10445,12 +10473,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.OrdinalScale = undefined;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10460,8 +10490,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -10470,7 +10498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var OrdinalScale = exports.OrdinalScale = (function (_BaseScale) {
+	var OrdinalScale = exports.OrdinalScale = function (_BaseScale) {
 	    _inherits(OrdinalScale, _BaseScale);
 
 	    function OrdinalScale(xSource, scaleConfig) {
@@ -10485,7 +10513,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(OrdinalScale, [{
 	        key: 'create',
 	        value: function create(interval) {
-	            var _Math;
 
 	            var props = this.scaleConfig;
 	            var varSet = this.vars;
@@ -10494,7 +10521,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var d3Scale = d3Domain.rangePoints(interval, 1);
 
-	            var size = (_Math = Math).max.apply(_Math, _toConsumableArray(interval));
+	            var size = Math.max.apply(Math, _toConsumableArray(interval));
 
 	            var fnRatio = function fnRatio(key) {
 	                var ratioType = _typeof(props.ratio);
@@ -10537,7 +10564,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return OrdinalScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 57 */
@@ -10545,12 +10572,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.PeriodScale = undefined;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10566,8 +10595,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -10577,9 +10604,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	/* jshint ignore:start */
 
+
 	/* jshint ignore:end */
 
-	var PeriodScale = exports.PeriodScale = (function (_BaseScale) {
+	var PeriodScale = exports.PeriodScale = function (_BaseScale) {
 	    _inherits(PeriodScale, _BaseScale);
 
 	    function PeriodScale(xSource, scaleConfig) {
@@ -10624,7 +10652,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'create',
 	        value: function create(interval) {
-	            var _Math;
 
 	            var varSet = this.vars;
 	            var varSetTicks = this.vars.map(function (t) {
@@ -10638,7 +10665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var d3DomainTicks = _d2.default.scale.ordinal().domain(varSetTicks.map(String));
 	            var d3ScaleTicks = d3DomainTicks.rangePoints(interval, 1);
 
-	            var size = (_Math = Math).max.apply(_Math, _toConsumableArray(interval));
+	            var size = Math.max.apply(Math, _toConsumableArray(interval));
 
 	            var fnRatio = function fnRatio(key) {
 
@@ -10686,7 +10713,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return PeriodScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 58 */
@@ -10694,12 +10721,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.TimeScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10720,9 +10747,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	/* jshint ignore:start */
 
+
 	/* jshint ignore:end */
 
-	var TimeScale = exports.TimeScale = (function (_BaseScale) {
+	var TimeScale = exports.TimeScale = function (_BaseScale) {
 	    _inherits(TimeScale, _BaseScale);
 
 	    function TimeScale(xSource, scaleConfig) {
@@ -10740,7 +10768,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var min = _underscore2.default.isNull(props.min) || _underscore2.default.isUndefined(props.min) ? domain[0] : new Date(props.min).getTime();
 	        var max = _underscore2.default.isNull(props.max) || _underscore2.default.isUndefined(props.max) ? domain[1] : new Date(props.max).getTime();
 
-	        _this.vars = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
+	        vars = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
+
+	        _this.niceIntervalFn = null;
+	        if (props.nice) {
+	            var niceInterval = props.niceInterval;
+	            if (_d2.default.time[niceInterval]) {
+	                _this.niceIntervalFn = _d2.default.time[niceInterval];
+	            } else {
+	                // TODO: show warning?
+	                _this.niceIntervalFn = null;
+	            }
+
+	            _this.vars = _d2.default.time.scale().domain(vars).nice(_this.niceIntervalFn).domain();
+	        } else {
+	            _this.vars = vars;
+	        }
 
 	        _this.addField('scaleType', 'time');
 	        return _this;
@@ -10762,6 +10805,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var varSet = this.vars;
 
 	            var d3Domain = _d2.default.time.scale().domain(varSet);
+	            if (this.scaleConfig.nice) {
+	                d3Domain = d3Domain.nice(this.niceIntervalFn);
+	            }
 
 	            var d3Scale = d3Domain.range(interval);
 
@@ -10792,7 +10838,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return TimeScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 59 */
@@ -10800,12 +10846,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.LinearScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10830,14 +10876,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	/* jshint ignore:start */
 
+
 	/* jshint ignore:end */
 
-	var LinearScale = exports.LinearScale = (function (_BaseScale) {
+	var LinearScale = exports.LinearScale = function (_BaseScale) {
 	    _inherits(LinearScale, _BaseScale);
 
 	    function LinearScale(xSource, scaleConfig) {
-	        var _Math, _Math2;
-
 	        _classCallCheck(this, LinearScale);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LinearScale).call(this, xSource, scaleConfig));
@@ -10852,9 +10897,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var min = isNum(props.min) ? props.min : vars[0];
 	        var max = isNum(props.max) ? props.max : vars[1];
 
-	        vars = [(_Math = Math).min.apply(_Math, _toConsumableArray([min, vars[0]].filter(isNum))), (_Math2 = Math).max.apply(_Math2, _toConsumableArray([max, vars[1]].filter(isNum)))];
+	        vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(isNum)))];
 
-	        _this.vars = props.autoScale ? _utils.utils.autoScale(vars) : _d2.default.extent(vars);
+	        _this.vars = props.nice ? _utils.utils.niceZeroBased(vars) : _d2.default.extent(vars);
 
 	        _this.addField('scaleType', 'linear').addField('discrete', false);
 	        return _this;
@@ -10905,7 +10950,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return LinearScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 60 */
@@ -10913,12 +10958,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.ValueScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10928,7 +10973,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var ValueScale = exports.ValueScale = (function (_BaseScale) {
+	var ValueScale = exports.ValueScale = function (_BaseScale) {
 	    _inherits(ValueScale, _BaseScale);
 
 	    function ValueScale(xSource, scaleConfig) {
@@ -10950,7 +10995,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return ValueScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 61 */
@@ -10958,12 +11003,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.FillScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _base = __webpack_require__(54);
 
@@ -10986,9 +11031,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	/* jshint ignore:start */
 
+
 	/* jshint ignore:end */
 
-	var FillScale = exports.FillScale = (function (_BaseScale) {
+	var FillScale = exports.FillScale = function (_BaseScale) {
 	    _inherits(FillScale, _BaseScale);
 
 	    function FillScale(xSource, scaleConfig) {
@@ -11004,7 +11050,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
 
-	        _this.vars = props.autoScale ? _utils.utils.autoScale(vars) : _d2.default.extent(vars);
+	        _this.vars = props.nice ? _utils.utils.niceZeroBased(vars) : _d2.default.extent(vars);
 
 	        var opacityStep = (1 - 0.2) / 9;
 	        var defBrewer = _underscore2.default.times(10, function (i) {
@@ -11052,7 +11098,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return FillScale;
-	})(_base.BaseScale);
+	}(_base.BaseScale);
 
 /***/ },
 /* 62 */
@@ -11130,8 +11176,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            size: scalesPool('size', config.size, guide.size),
 	            color: scalesPool('color', config.color, guide.color),
-	            latitude: scalesPool('linear', config.latitude, { autoScale: false }),
-	            longitude: scalesPool('linear', config.longitude, { autoScale: false }),
+	            latitude: scalesPool('linear', config.latitude, { nice: false }),
+	            longitude: scalesPool('linear', config.longitude, { nice: false }),
 
 	            guide: guide
 	        },
@@ -11183,12 +11229,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _strategyNormalizeAxi;
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.transformConfig = exports.normalizeConfig = undefined;
+
+	var _strategyNormalizeAxi;
 
 	var _utils = __webpack_require__(4);
 
@@ -11690,12 +11736,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.PluginsSDK = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _underscore = __webpack_require__(3);
 
@@ -11713,7 +11759,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var customTokens = {};
 
-	var PluginsSDK = (function () {
+	var PluginsSDK = function () {
 	    function PluginsSDK() {
 	        _classCallCheck(this, PluginsSDK);
 	    }
@@ -11878,7 +11924,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return PluginsSDK;
-	})();
+	}();
 
 	exports.PluginsSDK = PluginsSDK;
 
@@ -11888,15 +11934,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Unit = (function () {
+	var Unit = function () {
 	    function Unit(unitRef) {
 	        _classCallCheck(this, Unit);
 
@@ -11981,7 +12027,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Unit;
-	})();
+	}();
 
 	exports.Unit = Unit;
 
@@ -11991,18 +12037,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Spec = undefined;
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _unit = __webpack_require__(71);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Spec = (function () {
+	var Spec = function () {
 	    function Spec(specRef) {
 	        _classCallCheck(this, Spec);
 
@@ -12073,7 +12119,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Spec;
-	})();
+	}();
 
 	exports.Spec = Spec;
 

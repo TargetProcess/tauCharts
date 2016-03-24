@@ -210,7 +210,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	                return Promise.all(cssPromises).then(function (res) {
 	                    return res.join(' ').replace(/&/g, '');
-	                }).then((function (res) {
+	                }).then(function (res) {
 	                    var style = createStyleElement(res);
 	                    var div = document.createElement('div');
 	                    var svg = chart.getSVG().cloneNode(true);
@@ -234,7 +234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            }
 	                        });
 	                    });
-	                }).bind(this));
+	                }.bind(this));
 	            },
 	            _findUnit: function _findUnit(chart) {
 	                var conf = chart.getSpec();
@@ -256,7 +256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            },
 	            _toPng: function _toPng(chart) {
-	                this._createDataUrl(chart).then((function (dataURL) {
+	                this._createDataUrl(chart).then(function (dataURL) {
 	                    var data = atob(dataURL.substring('data:image/png;base64,'.length)),
 	                        asArray = new Uint8Array(data.length);
 
@@ -266,7 +266,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                    var blob = new Blob([asArray.buffer], { type: 'image/png' });
 	                    saveAs(blob, (this._fileName || 'export') + '.png');
-	                }).bind(this));
+	                }.bind(this));
 	            },
 	            _toPrint: function _toPrint(chart) {
 	                this._createDataUrl(chart).then(function (dataURL) {
@@ -400,7 +400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    values = [first];
 	                }
 
-	                var data = values.map((function (value) {
+	                var data = values.map(function (value) {
 	                    var radius = sizeScale(value);
 	                    return {
 	                        diameter: doEven(radius * 2 + 2),
@@ -408,7 +408,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        value: value,
 	                        className: configUnit.color ? 'color-definite' : ''
 	                    };
-	                }).bind(this)).reverse();
+	                }.bind(this)).reverse();
 
 	                var maxDiameter = Math.max.apply(null, _.pluck(data, 'diameter'));
 	                var fontSize = settings.fontSize;
@@ -502,20 +502,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            },
 	            _handleMenu: function _handleMenu(popupElement, chart, popup) {
-	                popupElement.addEventListener('click', (function (e) {
+	                popupElement.addEventListener('click', function (e) {
 	                    if (e.target.tagName.toLowerCase() === 'a') {
 	                        var value = e.target.getAttribute('data-value');
 	                        this._select(value, chart);
 	                        popup.hide();
 	                    }
-	                }).bind(this));
-	                popupElement.addEventListener('mouseover', (function (e) {
+	                }.bind(this));
+	                popupElement.addEventListener('mouseover', function (e) {
 	                    if (e.target.tagName.toLowerCase() === 'a') {
 	                        e.target.focus();
 	                    }
-	                }).bind(this));
+	                }.bind(this));
 
-	                popupElement.addEventListener('keydown', (function (e) {
+	                popupElement.addEventListener('keydown', function (e) {
 	                    if (e.keyCode === keyCode.ESCAPE) {
 	                        popup.hide();
 	                    }
@@ -538,7 +538,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        this._select(value, chart);
 	                    }
 	                    e.preventDefault();
-	                }).bind(this));
+	                }.bind(this));
 	                var timeoutID = null;
 
 	                popupElement.addEventListener('blur', function () {
@@ -592,9 +592,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var popupElement = popup.getElement();
 	                popupElement.setAttribute('tabindex', '-1');
 	                this._handleMenu(popupElement, chart, popup);
-	                chart.on('exportTo', (function (chart, type) {
+	                chart.on('exportTo', function (chart, type) {
 	                    this._select(type, chart);
-	                }).bind(this));
+	                }.bind(this));
 	            },
 	            destroy: function destroy() {
 	                if (this._popup) {

@@ -47,7 +47,7 @@ window.samples.push({
         {
             // x: {tickPeriod: 'day'},
             y: {
-                autoScale: false,
+                nice: false,
                 min: -20,
                 max: 25,
                 label: 'Sinus'
@@ -66,7 +66,7 @@ window.samples.push({
                     type: 'area',
                     y: 'cos',
                     guide: {
-                        autoScale: false,
+                        nice: false,
                         label: 'Cosinus'
                     }
                 }
@@ -75,7 +75,7 @@ window.samples.push({
                     type: 'line',
                     y: 'r1',
                     guide: {
-                        autoScale: false,
+                        nice: false,
                         label: 'Random'
                     }
                 }
