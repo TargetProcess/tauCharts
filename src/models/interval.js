@@ -166,7 +166,7 @@ export class IntervalModel {
         });
     }
 
-    static decorator_size_distribute_evenly(model, {dataSource, maxSize}) {
+    static decorator_size_distribute_evenly(model, {dataSource, minSize, maxSize}) {
 
         if (model.scaleX.discrete) {
             return IntervalModel.decorator_identity(model);
@@ -192,7 +192,7 @@ export class IntervalModel {
             [0]);
 
         return IntervalModel.compose(model, {
-            size: (() => Math.min(maxSize, diff))
+            size: (() => Math.max(minSize, Math.min(maxSize, diff)))
         });
     }
 }

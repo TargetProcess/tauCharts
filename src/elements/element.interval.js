@@ -93,6 +93,7 @@ export class Interval extends Element {
         }
 
         this.size = fnCreateScale('size', config.size, sizeGuide);
+        this.sizeMin = sizeGuide.min;
         this.sizeMax = sizeGuide.max;
 
         return this
@@ -139,6 +140,7 @@ export class Interval extends Element {
             colorScale,
             isHorizontal,
             barsGap,
+            minSize: this.sizeMin,
             maxSize: this.sizeMax,
             dataSource: fullData
         });
@@ -271,7 +273,7 @@ export class Interval extends Element {
         };
     }
 
-    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap, dataSource, maxSize}) {
+    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap, dataSource, minSize, maxSize}) {
         var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
         var args = {
             xScale,
@@ -280,6 +282,7 @@ export class Interval extends Element {
             sizeScale,
             colorScale,
             barsGap,
+            minSize,
             maxSize,
             dataSource,
             categories: (enableColorToBarPosition ? colorScale.domain() : [])
