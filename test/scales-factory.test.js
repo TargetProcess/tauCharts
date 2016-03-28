@@ -721,5 +721,53 @@ define(function (require) {
 
             expect(scale0.domain()).to.deep.equal([-20, 110]);
         });
+
+        it('should support rgb-based [color] scale without brewer', function () {
+
+            var defaultRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:0}, {x:100}];
+                    },
+                    full: function () {
+                        return [{x:0}, {x:100}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure'
+                }).create();
+
+            expect(defaultRgbScale(0)).to.equal('#eeeeee');
+            expect(defaultRgbScale(50)).to.equal('#777777');
+            expect(defaultRgbScale(100)).to.equal('#000000');
+        });
+
+        it('should support rgb-based [color] scale with brewer', function () {
+
+            var defaultRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:0}, {x:100}];
+                    },
+                    full: function () {
+                        return [{x:0}, {x:100}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    brewer: ['#ff0000', '#000000', '#eeeeee', '#aaaaaa', '#0000ff']
+                }).create();
+
+            expect(defaultRgbScale(0)).to.equal('#ff0000');
+            expect(defaultRgbScale(25)).to.equal('#000000');
+            expect(defaultRgbScale(50)).to.equal('#eeeeee');
+            expect(defaultRgbScale(75)).to.equal('#aaaaaa');
+            expect(defaultRgbScale(100)).to.equal('#0000ff');
+
+            expect(defaultRgbScale(10)).to.equal('#990000');
+            expect(defaultRgbScale(90)).to.equal('#4444dd');
+        });
     });
 });

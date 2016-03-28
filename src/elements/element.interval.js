@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
+import {utils} from '../utils/utils';
 import {IntervalModel} from '../models/interval';
 import {default as _} from 'underscore';
 export class Interval extends Element {
@@ -187,7 +188,9 @@ export class Interval extends Element {
             .call(updateBarContainer);
     }
 
-    toVerticalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, yScale, baseCssClass}) {
+    toVerticalDrawMethod(
+        {barX, barY, barH, barW, barColor, barClass},
+        {prettify, minBarH, minBarW, yScale, baseCssClass}) {
 
         var calculateW = ((d) => {
             var w = barW(d);
@@ -222,11 +225,14 @@ export class Interval extends Element {
                 }
             }),
             width: ((d) => calculateW(d)),
-            class: ((d) => `${baseCssClass} ${barColor(d)}`)
+            class: ((d) => `${baseCssClass} ${barClass(d)}`),
+            fill: ((d) => barColor(d))
         };
     }
 
-    toHorizontalDrawMethod({barX, barY, barH, barW, barColor}, {prettify, minBarH, minBarW, xScale, baseCssClass}) {
+    toHorizontalDrawMethod(
+        {barX, barY, barH, barW, barColor, barClass},
+        {prettify, minBarH, minBarW, xScale, baseCssClass}) {
 
         var calculateH = ((d) => {
             var h = barW(d);
@@ -269,7 +275,8 @@ export class Interval extends Element {
                     return w;
                 }
             }),
-            class: ((d) => `${baseCssClass} ${barColor(d)}`)
+            class: ((d) => `${baseCssClass} ${barClass(d)}`),
+            fill: ((d) => barColor(d))
         };
     }
 
@@ -298,7 +305,8 @@ export class Interval extends Element {
             barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
             barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
             barW: ((d) => barModel.size(d)),
-            barColor: ((d) => barModel.color(d)),
+            barColor: ((d) => utils.extRGBColor(barModel.color(d))),
+            barClass: ((d) => utils.extCSSClass(barModel.color(d))),
             group: ((d) => d[colorScale.dim])
         };
     }

@@ -1,6 +1,6 @@
 window.samples.push({
 
-    "type": "bar",
+    "type": "stacked-bar",
     "color": "color",
     "size": null,
     "x": ["x1"],
@@ -15,7 +15,8 @@ window.samples.push({
                 "label": "Average Cycle Time"
             },
             "color": {
-                "label": "Entity Type Id"
+                "label": "Entity Type Id",
+                brewer: ['#eee', '#ff0000', 'green', 'blue']
             }
         }
     ],

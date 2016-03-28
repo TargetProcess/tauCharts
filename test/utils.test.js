@@ -149,6 +149,50 @@ define(function (require) {
         });
     });
 
+    describe('utils.splitEvenly()', function() {
+
+        it('should split source domain to chunks', function() {
+            var x0 = utils.splitEvenly([0, 100], 5);
+            expect(x0).to.deep.equal([0, 25, 50, 75, 100]);
+
+            var x1 = utils.splitEvenly([0, 100], 3);
+            expect(x1).to.deep.equal([0, 50, 100]);
+
+            var x2 = utils.splitEvenly([-100, 100], 3);
+            expect(x2).to.deep.equal([-100, 0, 100]);
+
+            var x3 = utils.splitEvenly([-100, 100], 5);
+            expect(x3).to.deep.equal([-100, -50, 0, 50, 100]);
+
+            var x4 = utils.splitEvenly([-100, 100], 0);
+            expect(x4).to.deep.equal([-100, 100]);
+        });
+    });
+
+    describe('utils.extRGBColor()', function() {
+
+        it('should extract color if value starts from # or "rgb(" or "rgba("', function() {
+            expect(utils.extRGBColor('')).to.equal('');
+            expect(utils.extRGBColor('#000000')).to.equal('#000000');
+            expect(utils.extRGBColor('rgb(0,0,0)')).to.equal('rgb(0,0,0)');
+            expect(utils.extRGBColor('rgba(0,0,0,1)')).to.equal('rgba(0,0,0,1)');
+            expect(utils.extRGBColor('rgbaL(0,0,0,1)')).to.equal('');
+        });
+    });
+
+    describe('utils.extCSSClass()', function() {
+
+        it('should extract color if value starts from # or "rgb(" or "rgba("', function() {
+            expect(utils.extCSSClass('')).to.equal('');
+            expect(utils.extCSSClass('#000000')).to.equal('');
+            expect(utils.extCSSClass('rgb(0,0,0)')).to.equal('');
+            expect(utils.extCSSClass('rgba(0,0,0,1)')).to.equal('');
+
+            expect(utils.extCSSClass('rgbaL(0,0,0,1)')).to.equal('rgbaL(0,0,0,1)', 'returns any invalid stuff');
+            expect(utils.extCSSClass('zzz')).to.equal('zzz');
+        });
+    });
+
     describe('d3 decorators', function() {
 
         var svgNode;

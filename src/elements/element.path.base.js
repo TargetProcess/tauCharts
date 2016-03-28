@@ -2,6 +2,7 @@ import {Element} from './element';
 import {PathModel} from '../models/path';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
+import {utils} from '../utils/utils';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
@@ -89,7 +90,8 @@ export class BasePath extends Element {
             y: pathModel.yi,
             size: pathModel.size,
             group: pathModel.group,
-            color: pathModel.color,
+            color: (d) => utils.extRGBColor(pathModel.color(d)),
+            class: (d) => utils.extCSSClass(pathModel.color(d)),
             matchRowInCoordinates() {
                 throw 'Not implemented';
             },
@@ -261,7 +263,8 @@ export class BasePath extends Element {
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (d) => (filter(d) ? 3 : this.config.guide.anchorSize),
-                class: (d) => (`${cssClass} ${this.model.color(d)}`)
+                fill: (d) => this.model.color(d),
+                class: (d) => (`${cssClass} ${this.model.class(d)}`)
             });
     }
 }

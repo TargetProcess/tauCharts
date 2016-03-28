@@ -448,6 +448,22 @@ var utils = {
             last.e = curr.e;
             last.ts = curr.ts;
         };
+    },
+
+    splitEvenly: function (domain, parts) {
+        var min = domain[0];
+        var max = domain[1];
+        var segment = ((max - min) / (parts - 1));
+        var chunks = _.times(parts - 2, (n) => (min + segment * (n + 1)));
+        return [min].concat(chunks).concat(max);
+    },
+
+    extRGBColor: function (x) {
+        return ((/^(#|rgb\(|rgba\()/.test(x)) ? x : '');
+    },
+
+    extCSSClass: function (x) {
+        return !this.extRGBColor(x) ? x : '';
     }
 };
 
