@@ -401,31 +401,37 @@
                     }
                 });
 
-                var toLabelValuePair = function (k, x) {
+                var toLabelValuePair = function (x) {
 
-                    var res = {
-                        label: k,
-                        value: x
-                    };
+                    var res = {};
 
-                    if (_.isObject(x) && x.hasOwnProperty('label')) {
-                        res.label = x.label;
-                    }
-
-                    if (_.isObject(x) && x.hasOwnProperty('value')) {
-                        res.value = x.value;
+                    if (_.isFunction(x) || _.isString(x)) {
+                        res = {format: x};
+                    } else if (_.isObject(x)) {
+                        res = _.pick(x, 'label', 'format', 'nullAlias');
                     }
 
                     return res;
                 };
 
                 Object.keys(settings.formatters).forEach(function (k) {
-                    var fmt = toLabelValuePair(k, settings.formatters[k]);
-                    info[k] = info[k] || {label: fmt.label, nullAlias: ('No ' + fmt.label)};
-                    info[k].format = (_.isFunction(fmt.value) ?
-                            (fmt.value) :
-                            (tauCharts.api.tickFormat.get(fmt.value, info[k].nullAlias))
-                    );
+
+                    var fmt = toLabelValuePair(settings.formatters[k]);
+
+                    info[k] = _.extend(
+                        ({label: k, nullAlias: ('No ' + k)}),
+                        (info[k] || {}),
+                        (_.pick(fmt, 'label', 'nullAlias')));
+
+                    if (fmt.hasOwnProperty('format')) {
+                        info[k].format = (_.isFunction(fmt.format) ?
+                            (fmt.format) :
+                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias)));
+                    } else {
+                        info[k].format = (info[k].hasOwnProperty('format')) ?
+                            (info[k].format) :
+                            (tauCharts.api.tickFormat.get(null, info[k].nullAlias));
+                    }
                 });
 
                 return {

@@ -327,13 +327,16 @@ describeChart("tooltip formatting",
         },
         plugins: [
             tooltip({
-                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue', '__blahblah'],
+                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue', '__blahblah', '__asisName', '__nullProp'],
                 formatters: {
                     colorValue: function (srcVal) {
                         return ['(', srcVal, ')'].join('');
                     },
                     sizeValue: '%',
-                    __blahblah: {label: 'ImportantField', value: '%'}
+                    __blahblah: {label: 'ImportantField', format: '%'},
+                    __asisName: {label: 'SimpleName'},
+                    __nullProp: {label: 'NullProp', nullAlias: 'No such prop'},
+                    date: {"label": "Create Date Day"}
                 }
             })
         ]
@@ -348,7 +351,9 @@ describeChart("tooltip formatting",
             "simple": 0.1,
             "colorValue": "UserStory",
             "sizeValue": 10,
-            "__blahblah": 2
+            "__blahblah": 2,
+            "__nullProp": null,
+            "__asisName": 22
         },
         {
             "complex": null,
@@ -356,7 +361,9 @@ describeChart("tooltip formatting",
             "simple": 0.9,
             "colorValue": "Bug",
             "sizeValue": 20,
-            "__blahblah": 3
+            "__blahblah": 3,
+            "__nullProp": 'Hi',
+            "__asisName": 33
         }
     ],
     function (context) {
@@ -377,11 +384,13 @@ describeChart("tooltip formatting",
                 .then(function (content) {
                     var $content = $(content);
                     validateLabel($content, 'Project', 'No Project');
-                    validateLabel($content, 'Create Date By Day', '09-Jan');
+                    validateLabel($content, 'Create Date Day', '09-Jan');
                     validateLabel($content, 'Progress', '90%');
                     validateLabel($content, 'Entity Type', '(Bug)');
                     validateLabel($content, 'Effort', '2000%');
                     validateLabel($content, 'ImportantField', '300%');
+                    validateLabel($content, 'SimpleName', '33');
+                    validateLabel($content, 'NullProp', 'Hi');
                     return hideTooltip(expect, context.chart, 0);
                 })
                 .then(function () {
@@ -390,11 +399,13 @@ describeChart("tooltip formatting",
                 .then(function (content) {
                     var $content = $(content);
                     validateLabel($content, 'Project', 'TP3');
-                    validateLabel($content, 'Create Date By Day', '08-Jan');
+                    validateLabel($content, 'Create Date Day', '08-Jan');
                     validateLabel($content, 'Effort', '1000%');
                     validateLabel($content, 'Entity Type', '(UserStory)');
                     validateLabel($content, 'Progress', '10%');
                     validateLabel($content, 'ImportantField', '200%');
+                    validateLabel($content, 'SimpleName', '22');
+                    validateLabel($content, 'NullProp', 'No such prop');
                     return hideTooltip(expect, context.chart, 1);
                 })
                 .always(function () {
