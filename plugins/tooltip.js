@@ -401,13 +401,37 @@
                     }
                 });
 
+                var toLabelValuePair = function (x) {
+
+                    var res = {};
+
+                    if (_.isFunction(x) || _.isString(x)) {
+                        res = {format: x};
+                    } else if (_.isObject(x)) {
+                        res = _.pick(x, 'label', 'format', 'nullAlias');
+                    }
+
+                    return res;
+                };
+
                 Object.keys(settings.formatters).forEach(function (k) {
-                    var fmt = settings.formatters[k];
-                    info[k] = info[k] || {label: k, nullAlias: ('No ' + k)};
-                    info[k].format = (_.isFunction(fmt) ?
-                            (fmt) :
-                            (tauCharts.api.tickFormat.get(fmt, info[k].nullAlias))
-                    );
+
+                    var fmt = toLabelValuePair(settings.formatters[k]);
+
+                    info[k] = _.extend(
+                        ({label: k, nullAlias: ('No ' + k)}),
+                        (info[k] || {}),
+                        (_.pick(fmt, 'label', 'nullAlias')));
+
+                    if (fmt.hasOwnProperty('format')) {
+                        info[k].format = (_.isFunction(fmt.format) ?
+                            (fmt.format) :
+                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias)));
+                    } else {
+                        info[k].format = (info[k].hasOwnProperty('format')) ?
+                            (info[k].format) :
+                            (tauCharts.api.tickFormat.get(null, info[k].nullAlias));
+                    }
                 });
 
                 return {
