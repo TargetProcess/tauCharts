@@ -480,7 +480,7 @@
   stroke: #fff;
 }
 .graphical-report__bar-stacked {
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
   transition: opacity 0.2s ease;
   stroke-opacity: 0.5;
   stroke-width: 1;

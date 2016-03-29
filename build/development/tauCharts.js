@@ -1,4 +1,4 @@
-/*! taucharts - v0.8.1 - 2016-03-24
+/*! taucharts - v0.8.1 - 2016-03-29
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -2400,6 +2400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            this.size = fnCreateScale('size', config.size, sizeGuide);
+	            this.sizeMin = sizeGuide.min;
 	            this.sizeMax = sizeGuide.max;
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
@@ -2445,8 +2446,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                colorScale: colorScale,
 	                isHorizontal: isHorizontal,
 	                barsGap: barsGap,
+	                minSize: this.sizeMin,
 	                maxSize: this.sizeMax,
-	                dataSource: fullData
+	                dataSource: frames[0].full()
 	            });
 
 	            var params = { prettify: prettify, xScale: xScale, yScale: yScale, minBarH: 1, minBarW: 1, baseCssClass: baseCssClass };
@@ -2616,6 +2618,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var colorScale = _ref5.colorScale;
 	            var barsGap = _ref5.barsGap;
 	            var dataSource = _ref5.dataSource;
+	            var minSize = _ref5.minSize;
 	            var maxSize = _ref5.maxSize;
 
 	            var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
@@ -2626,6 +2629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                sizeScale: sizeScale,
 	                colorScale: colorScale,
 	                barsGap: barsGap,
+	                minSize: minSize,
 	                maxSize: maxSize,
 	                dataSource: dataSource,
 	                categories: enableColorToBarPosition ? colorScale.domain() : []
@@ -2936,6 +2940,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'decorator_size_distribute_evenly',
 	        value: function decorator_size_distribute_evenly(model, _ref8) {
 	            var dataSource = _ref8.dataSource;
+	            var minSize = _ref8.minSize;
 	            var maxSize = _ref8.maxSize;
 
 
@@ -2962,7 +2967,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            return IntervalModel.compose(model, {
 	                size: function size() {
-	                    return Math.min(maxSize, diff);
+	                    return Math.max(minSize, Math.min(maxSize, diff));
 	                }
 	            });
 	        }
