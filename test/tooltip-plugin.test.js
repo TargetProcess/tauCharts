@@ -327,12 +327,13 @@ describeChart("tooltip formatting",
         },
         plugins: [
             tooltip({
-                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue'],
+                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue', '__blahblah'],
                 formatters: {
                     colorValue: function (srcVal) {
                         return ['(', srcVal, ')'].join('');
                     },
-                    sizeValue: '%'
+                    sizeValue: '%',
+                    __blahblah: {label: 'ImportantField', value: '%'}
                 }
             })
         ]
@@ -346,14 +347,16 @@ describeChart("tooltip formatting",
             "date": new Date(iso("2015-01-08T00:00:00")),
             "simple": 0.1,
             "colorValue": "UserStory",
-            "sizeValue": 10
+            "sizeValue": 10,
+            "__blahblah": 2
         },
         {
             "complex": null,
             "date": new Date(iso("2015-01-09T00:00:00")),
             "simple": 0.9,
             "colorValue": "Bug",
-            "sizeValue": 20
+            "sizeValue": 20,
+            "__blahblah": 3
         }
     ],
     function (context) {
@@ -378,6 +381,7 @@ describeChart("tooltip formatting",
                     validateLabel($content, 'Progress', '90%');
                     validateLabel($content, 'Entity Type', '(Bug)');
                     validateLabel($content, 'Effort', '2000%');
+                    validateLabel($content, 'ImportantField', '300%');
                     return hideTooltip(expect, context.chart, 0);
                 })
                 .then(function () {
@@ -390,6 +394,7 @@ describeChart("tooltip formatting",
                     validateLabel($content, 'Effort', '1000%');
                     validateLabel($content, 'Entity Type', '(UserStory)');
                     validateLabel($content, 'Progress', '10%');
+                    validateLabel($content, 'ImportantField', '200%');
                     return hideTooltip(expect, context.chart, 1);
                 })
                 .always(function () {

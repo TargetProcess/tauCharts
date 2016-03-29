@@ -401,12 +401,30 @@
                     }
                 });
 
+                var toLabelValuePair = function (k, x) {
+
+                    var res = {
+                        label: k,
+                        value: x
+                    };
+
+                    if (_.isObject(x) && x.hasOwnProperty('label')) {
+                        res.label = x.label;
+                    }
+
+                    if (_.isObject(x) && x.hasOwnProperty('value')) {
+                        res.value = x.value;
+                    }
+
+                    return res;
+                };
+
                 Object.keys(settings.formatters).forEach(function (k) {
-                    var fmt = settings.formatters[k];
-                    info[k] = info[k] || {label: k, nullAlias: ('No ' + k)};
-                    info[k].format = (_.isFunction(fmt) ?
-                            (fmt) :
-                            (tauCharts.api.tickFormat.get(fmt, info[k].nullAlias))
+                    var fmt = toLabelValuePair(k, settings.formatters[k]);
+                    info[k] = info[k] || {label: fmt.label, nullAlias: ('No ' + fmt.label)};
+                    info[k].format = (_.isFunction(fmt.value) ?
+                            (fmt.value) :
+                            (tauCharts.api.tickFormat.get(fmt.value, info[k].nullAlias))
                     );
                 });
 
