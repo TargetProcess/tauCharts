@@ -257,7 +257,7 @@ export class Plot extends Emitter {
 
     getScaleFactory(dataSources = null) {
         return new ScalesFactory(
-            scalesRegistry,
+            scalesRegistry.instance(this._liveSpec.settings),
             dataSources || this._liveSpec.sources,
             this._liveSpec.scales
         );

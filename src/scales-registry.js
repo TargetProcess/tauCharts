@@ -1,15 +1,25 @@
 var ScalesMap = {};
+var ConfigMap = {};
 
-var scalesRegistry = {
+export class scalesRegistry {
 
-    reg: function (scaleType, scaleClass) {
+    static reg (scaleType, scaleClass, configInterceptor = (x => x)) {
         ScalesMap[scaleType] = scaleClass;
+        ConfigMap[scaleType] = configInterceptor;
         return this;
-    },
+    }
 
-    get: function (scaleType) {
+    static get (scaleType) {
         return ScalesMap[scaleType];
     }
-};
 
-export {scalesRegistry};
+    static instance (settings = {}) {
+        return {
+            create: function (scaleType, dataFrame, scaleConfig) {
+                var ScaleClass = scalesRegistry.get(scaleType);
+                var configFunc = ConfigMap[scaleType];
+                return new ScaleClass(dataFrame, configFunc(scaleConfig, settings));
+            }
+        };
+    }
+}

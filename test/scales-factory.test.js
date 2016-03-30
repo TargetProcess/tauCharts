@@ -43,7 +43,7 @@ define(function (require) {
             ];
 
             var f = new ScalesFactory(
-                ScalesRegistry,
+                ScalesRegistry.instance(),
                 {
                     '/': {
                         dims: {

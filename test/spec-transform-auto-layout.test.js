@@ -4,7 +4,7 @@ define(function (require) {
     var SpecAutoLayout = require('src/spec-transform-auto-layout').SpecTransformAutoLayout;
     var SpecConverter = require('src/spec-converter').SpecConverter;
     var tauCharts = require('src/tau.charts');
-    var scalesRegistry = tauCharts.api.scalesRegistry;
+    var scalesRegistry = tauCharts.api.scalesRegistry.instance();
     var ScalesFactory = require('src/scales-factory').ScalesFactory;
 
     describe('Spec engine factory', function () {
