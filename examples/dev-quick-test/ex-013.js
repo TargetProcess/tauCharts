@@ -18,8 +18,8 @@ window.samples.push({
             }
         }),
         tauCharts.api.plugins.get('parallel-tooltip')()
-        // ,
-        // tauCharts.api.plugins.get('geomap-legend')()
+        ,
+        tauCharts.api.plugins.get('geomap-legend')()
     ]
 
 });
