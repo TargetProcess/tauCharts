@@ -13,6 +13,14 @@
 
     var _ = tauCharts.api._;
 
+    var extractRGBColor = function (x) {
+        return ((/^(#|rgb\(|rgba\()/.test(x)) ? x : '');
+    };
+
+    var extractCSSClass = function (x) {
+        return !extractRGBColor(x) ? x : '';
+    };
+
     function ChartLegend(xSettings) {
 
         var settings = _.defaults(
@@ -146,10 +154,12 @@
             _template: _.template('<div class="graphical-report__legend__wrap"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
-                '<div class="graphical-report__legend__guide__wrap">',
-                '<div class="graphical-report__legend__guide <%=color%>"></div>',
-                '</div>',
-                '<%=label%>',
+                '   <div class="graphical-report__legend__guide__wrap">',
+                '   <div class="graphical-report__legend__guide <%=cssClass%>"',
+                '        style="background-color: <%=cssColor%>">',
+                '   </div>',
+                '   </div>',
+                '   <%=label%>',
                 '</div>'
             ].join('')),
             _itemFillTemplate: _.template([
@@ -299,6 +309,8 @@
                                             scaleId: d.scaleId,
                                             dim: _.escape(d.dim),
                                             color: d.color,
+                                            cssClass: (extractCSSClass(d.color)),
+                                            cssColor: (extractRGBColor(d.color)),
                                             classDisabled: d.disabled ? 'disabled' : '',
                                             label: _.escape(isEmpty(d.label) ? noVal : d.label),
                                             value: _.escape(d.value)
