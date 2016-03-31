@@ -199,6 +199,10 @@ export class SpecConverter {
             if (dims[dimName] && dims[dimName].hasOwnProperty('order')) {
                 item.order = dims[dimName].order;
             }
+
+            if (guide.hasOwnProperty('nice')) {
+                item.nice = guide.nice;
+            }
         }
 
         if (scaleType === 'size' && dimName !== null) {

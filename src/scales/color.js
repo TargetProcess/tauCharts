@@ -32,7 +32,16 @@ export class ColorScale extends BaseScale {
                 Math.max(...[max, vars[1]].filter(isNum))
             ];
 
-            this.vars = (props.nice) ? utils.niceZeroBased(vars) : d3.extent(vars);
+            if (props.nice) {
+
+                if ((vars[0] < 0) && (vars[1] > 0)) {
+                    // symmetry
+                    let maxPart = Math.max(...vars.map(Math.abs));
+                    vars = [-maxPart, maxPart];
+                }
+            }
+
+            this.vars = vars;
         }
 
         this.addField('scaleType', 'color')

@@ -722,30 +722,137 @@ define(function (require) {
             expect(scale0.domain()).to.deep.equal([-20, 110]);
         });
 
-        it('should support rgb-based [color] scale without brewer', function () {
+        it('should support rgb-based [color] scale nice = false', function () {
 
-            var defaultRgbScale = new ColorScale(
+            var negPosRgbScale = new ColorScale(
                 {
                     part: function () {
-                        return [{x:0}, {x:100}];
+                        return [{x:-9}, {x:101}];
                     },
                     full: function () {
-                        return [{x:0}, {x:100}];
+                        return [{x:-9}, {x:101}];
                     }
                 },
                 {
                     dim: 'x',
-                    dimType: 'measure'
+                    dimType: 'measure',
+                    nice: false,
+                    brewer: ['#fff', '#000']
                 }).create();
 
-            expect(defaultRgbScale(0)).to.equal('#eeeeee');
-            expect(defaultRgbScale(50)).to.equal('#777777');
-            expect(defaultRgbScale(100)).to.equal('#000000');
+            expect(negPosRgbScale.domain()).to.deep.equal([-9, 101]);
+            expect(negPosRgbScale(-9)).to.equal('#ffffff');
+            expect(negPosRgbScale(0)).to.equal('#eaeaea');
+            expect(negPosRgbScale(101)).to.equal('#000000');
+
+            var posPosRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:9}, {x:101}];
+                    },
+                    full: function () {
+                        return [{x:9}, {x:101}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    nice: false,
+                    brewer: ['#fff', '#000']
+                }).create();
+
+            expect(posPosRgbScale.domain()).to.deep.equal([9, 101]);
+            expect(posPosRgbScale(9)).to.equal('#ffffff');
+            expect(posPosRgbScale(101)).to.equal('#000000');
+
+            var negNegRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:-9}, {x:-101}];
+                    },
+                    full: function () {
+                        return [{x:-9}, {x:-101}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    nice: false,
+                    brewer: ['#fff', '#000']
+                }).create();
+
+            expect(negNegRgbScale.domain()).to.deep.equal([-101, -9]);
+            expect(negNegRgbScale(-101)).to.equal('#ffffff');
+            expect(negNegRgbScale(-9)).to.equal('#000000');
         });
 
-        it('should support rgb-based [color] scale with brewer', function () {
+        it('should support rgb-based [color] scale nice = true', function () {
 
-            var defaultRgbScale = new ColorScale(
+            var negPosRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:-9}, {x:101}];
+                    },
+                    full: function () {
+                        return [{x:-9}, {x:101}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    nice: true,
+                    brewer: ['#fff', '#000']
+                }).create();
+
+            expect(negPosRgbScale.domain()).to.deep.equal([-101, 101]);
+            expect(negPosRgbScale(-101)).to.equal('#ffffff');
+            expect(negPosRgbScale(0)).to.equal('#808080');
+            expect(negPosRgbScale(101)).to.equal('#000000');
+
+            var posPosRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:9}, {x:101}];
+                    },
+                    full: function () {
+                        return [{x:9}, {x:101}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    nice: true,
+                    brewer: ['#fff', '#000']
+                }).create();
+
+            expect(posPosRgbScale.domain()).to.deep.equal([9, 101]);
+            expect(posPosRgbScale(9)).to.equal('#ffffff');
+            expect(posPosRgbScale(101)).to.equal('#000000');
+
+            var negNegRgbScale = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:-9}, {x:-101}];
+                    },
+                    full: function () {
+                        return [{x:-9}, {x:-101}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    nice: true,
+                    brewer: ['#fff', '#000']
+                }).create();
+
+            expect(negNegRgbScale.domain()).to.deep.equal([-101, -9]);
+            expect(negNegRgbScale(-101)).to.equal('#ffffff');
+            expect(negNegRgbScale(-9)).to.equal('#000000');
+        });
+
+        it('should support rgb-based [color] scale with min / max specified', function () {
+
+            var scale0 = new ColorScale(
                 {
                     part: function () {
                         return [{x:0}, {x:100}];
@@ -757,17 +864,38 @@ define(function (require) {
                 {
                     dim: 'x',
                     dimType: 'measure',
+                    min: -100,
+                    max: 110,
+                    nice: false,
                     brewer: ['#ff0000', '#000000', '#eeeeee', '#aaaaaa', '#0000ff']
                 }).create();
 
-            expect(defaultRgbScale(0)).to.equal('#ff0000');
-            expect(defaultRgbScale(25)).to.equal('#000000');
-            expect(defaultRgbScale(50)).to.equal('#eeeeee');
-            expect(defaultRgbScale(75)).to.equal('#aaaaaa');
-            expect(defaultRgbScale(100)).to.equal('#0000ff');
+            expect(scale0.domain()).to.deep.equal([-100, 110]);
+            expect(scale0(-100)).to.equal('#ff0000');
+            expect(scale0(110)).to.equal('#0000ff');
 
-            expect(defaultRgbScale(10)).to.equal('#990000');
-            expect(defaultRgbScale(90)).to.equal('#4444dd');
+            var scale1 = new ColorScale(
+                {
+                    part: function () {
+                        return [{x:0}, {x:100}];
+                    },
+                    full: function () {
+                        return [{x:0}, {x:100}];
+                    }
+                },
+                {
+                    dim: 'x',
+                    dimType: 'measure',
+                    min: -100,
+                    max: 110,
+                    nice: true,
+                    brewer: ['#ff0000', '#000000', '#eeeeee', '#aaaaaa', '#0000ff']
+                }).create();
+
+            expect(scale1.domain()).to.deep.equal([-110, 110]);
+            expect(scale1(-110)).to.equal('#ff0000');
+            expect(scale1(0)).to.equal('#eeeeee');
+            expect(scale1(110)).to.equal('#0000ff');
         });
     });
 });
