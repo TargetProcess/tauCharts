@@ -1,6 +1,5 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {utils} from '../utils/utils';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
@@ -67,8 +66,8 @@ export class ParallelLine extends Element {
 
         var markPath = function () {
             this.attr({
-                stroke: (row) => utils.extRGBColor(color(row[color.dim])),
-                class: (row) => `${CSS_PREFIX}__line line ${utils.extCSSClass(color(row[color.dim]))} foreground`
+                stroke: (row) => color.toColor(color(row[color.dim])),
+                class: (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`
             });
         };
 

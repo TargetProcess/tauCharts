@@ -46,7 +46,9 @@ export class ColorScale extends BaseScale {
 
         this.addField('scaleType', 'color')
             .addField('discrete', discrete)
-            .addField('brewer', scaleBrewer);
+            .addField('brewer', scaleBrewer)
+            .addField('toColor', utils.extRGBColor)
+            .addField('toClass', utils.extCSSClass);
     }
 
     create() {

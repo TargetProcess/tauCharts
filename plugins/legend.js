@@ -13,14 +13,6 @@
 
     var _ = tauCharts.api._;
 
-    var extractRGBColor = function (x) {
-        return ((/^(#|rgb\(|rgba\()/.test(x)) ? x : '');
-    };
-
-    var extractCSSClass = function (x) {
-        return !extractRGBColor(x) ? x : '';
-    };
-
     function ChartLegend(xSettings) {
 
         var settings = _.defaults(
@@ -309,8 +301,8 @@
                                             scaleId: d.scaleId,
                                             dim: _.escape(d.dim),
                                             color: d.color,
-                                            cssClass: (extractCSSClass(d.color)),
-                                            cssColor: (extractRGBColor(d.color)),
+                                            cssClass: (colorScale.toClass(d.color)),
+                                            cssColor: (colorScale.toColor(d.color)),
                                             classDisabled: d.disabled ? 'disabled' : '',
                                             label: _.escape(isEmpty(d.label) ? noVal : d.label),
                                             value: _.escape(d.value)

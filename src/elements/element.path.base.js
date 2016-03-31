@@ -2,7 +2,6 @@ import {Element} from './element';
 import {PathModel} from '../models/path';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
-import {utils} from '../utils/utils';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
@@ -90,8 +89,8 @@ export class BasePath extends Element {
             y: pathModel.yi,
             size: pathModel.size,
             group: pathModel.group,
-            color: (d) => utils.extRGBColor(pathModel.color(d)),
-            class: (d) => utils.extCSSClass(pathModel.color(d)),
+            color: (d) => colorScale.toColor(pathModel.color(d)),
+            class: (d) => colorScale.toClass(pathModel.color(d)),
             matchRowInCoordinates() {
                 throw 'Not implemented';
             },

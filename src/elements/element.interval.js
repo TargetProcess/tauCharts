@@ -1,6 +1,5 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {utils} from '../utils/utils';
 import {IntervalModel} from '../models/interval';
 import {default as _} from 'underscore';
 export class Interval extends Element {
@@ -305,8 +304,8 @@ export class Interval extends Element {
             barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
             barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
             barW: ((d) => barModel.size(d)),
-            barColor: ((d) => utils.extRGBColor(barModel.color(d))),
-            barClass: ((d) => utils.extCSSClass(barModel.color(d))),
+            barColor: ((d) => colorScale.toColor(barModel.color(d))),
+            barClass: ((d) => colorScale.toClass(barModel.color(d))),
             group: ((d) => d[colorScale.dim])
         };
     }

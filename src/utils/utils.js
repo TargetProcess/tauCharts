@@ -264,6 +264,9 @@ var chartElement = [
     Line,
     StackedInterval
 ];
+
+var testColorCode = ((x) => (/^(#|rgb\(|rgba\()/.test(x)));
+
 var utils = {
     clone(obj) {
         return deepClone(obj);
@@ -459,11 +462,11 @@ var utils = {
     },
 
     extRGBColor: function (x) {
-        return ((/^(#|rgb\(|rgba\()/.test(x)) ? x : '');
+        return (testColorCode(x) ? x : '');
     },
 
     extCSSClass: function (x) {
-        return !this.extRGBColor(x) ? x : '';
+        return (testColorCode(x) ? '' : x);
     }
 };
 

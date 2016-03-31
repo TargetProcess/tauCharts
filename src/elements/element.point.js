@@ -2,7 +2,6 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {PointModel} from '../models/point';
 import {default as _} from 'underscore';
-import {utils} from '../utils/utils';
 export class Point extends Element {
 
     constructor(config) {
@@ -87,8 +86,8 @@ export class Point extends Element {
             y: pointModel.yi,
             size: pointModel.size,
             group: pointModel.group,
-            color: (d) => utils.extRGBColor(pointModel.color(d)),
-            class: (d) => utils.extCSSClass(pointModel.color(d))
+            color: (d) => colorScale.toColor(pointModel.color(d)),
+            class: (d) => colorScale.toClass(pointModel.color(d))
         };
     }
 
