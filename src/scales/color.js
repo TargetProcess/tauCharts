@@ -1,4 +1,5 @@
 import {BaseScale} from './base';
+import {utils} from '../utils/utils';
 /* jshint ignore:start */
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -10,22 +11,67 @@ export class ColorScale extends BaseScale {
 
         super(xSource, scaleConfig);
 
-        this.defaultColorClass = _.constant('color-default');
-        var scaleBrewer = this.scaleConfig.brewer || _.times(20, (i) => 'color20-' + (1 + i));
+        var discrete = (scaleConfig.dimType !== 'measure');
+
+        var scaleBrewer = (discrete ?
+                (this.scaleConfig.brewer || _.times(20, (i) => 'color20-' + (1 + i))) :
+                (this.scaleConfig.brewer || ['#eee', '#000'])
+        );
+
+        var props = this.scaleConfig;
+
+        if (!discrete) {
+            var vars = d3.extent(this.vars);
+
+            var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
+            var min = isNum(props.min) ? props.min : vars[0];
+            var max = isNum(props.max) ? props.max : vars[1];
+
+            vars = [
+                Math.min(...[min, vars[0]].filter(isNum)),
+                Math.max(...[max, vars[1]].filter(isNum))
+            ];
+
+            if (props.nice) {
+
+                if ((vars[0] < 0) && (vars[1] > 0)) {
+                    // symmetry
+                    let maxPart = Math.max(...vars.map(Math.abs));
+                    vars = [-maxPart, maxPart];
+                }
+            }
+
+            this.vars = vars;
+        }
 
         this.addField('scaleType', 'color')
-            .addField('brewer', scaleBrewer);
+            .addField('discrete', discrete)
+            .addField('brewer', scaleBrewer)
+            .addField('toColor', utils.extRGBColor)
+            .addField('toClass', utils.extCSSClass);
     }
 
     create() {
 
-        var varSet = this.vars;
+        var discrete = this.discrete;
 
+        var varSet = this.vars;
         var brewer = this.getField('brewer');
+
+        var func = discrete ?
+            this.createDiscreteScale(varSet, brewer) :
+            this.createContinuesScale(varSet, brewer);
+
+        return this.toBaseScale(func);
+    }
+
+    createDiscreteScale(varSet, brewer) {
+
+        var defaultColorClass = _.constant('color-default');
 
         var buildArrayGetClass = (domain, brewer) => {
             if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
-                return this.defaultColorClass;
+                return defaultColorClass;
             } else {
                 var fullDomain = domain.map((x) => String(x).toString());
                 return d3.scale.ordinal().range(brewer).domain(fullDomain);
@@ -53,7 +99,7 @@ export class ColorScale extends BaseScale {
 
         } else if (_.isObject(brewer)) {
 
-            func = buildObjectGetClass(brewer, this.defaultColorClass);
+            func = buildObjectGetClass(brewer, defaultColorClass);
 
         } else {
 
@@ -61,6 +107,26 @@ export class ColorScale extends BaseScale {
 
         }
 
-        return this.toBaseScale(func);
+        return func;
+    }
+
+    createContinuesScale(varSet, brewer) {
+
+        var func;
+
+        if (_.isArray(brewer)) {
+
+            func = d3.scale
+                .linear()
+                .domain(utils.splitEvenly(varSet, brewer.length))
+                .range(brewer);
+
+        } else {
+
+            throw new Error('This brewer is not supported');
+
+        }
+
+        return func;
     }
 }

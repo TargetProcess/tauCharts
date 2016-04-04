@@ -13,6 +13,16 @@
 
     var _ = tauCharts.api._;
 
+    var splitEvenly = function (domain, parts) {
+        var min = domain[0];
+        var max = domain[1];
+        var segment = ((max - min) / (parts - 1));
+        var chunks = _.times(parts - 2, function (n) {
+            return (min + segment * (n + 1));
+        });
+        return [min].concat(chunks).concat(max);
+    };
+
     function ChartLegend(xSettings) {
 
         var settings = _.defaults(
@@ -75,9 +85,23 @@
                     };
                 };
 
-                this._color = Object.keys(spec.scales).reduce(reducer('color'), []);
-                this._fill = Object.keys(spec.scales).reduce(reducer('fill'), []);
-                this._size = Object.keys(spec.scales).reduce(reducer('size'), []);
+                this._color = Object
+                    .keys(spec.scales)
+                    .reduce(reducer('color'), [])
+                    .filter(function (scale) {
+                        return chart.getScaleInfo(scale).discrete;
+                    });
+
+                this._fill = Object
+                    .keys(spec.scales)
+                    .reduce(reducer('color'), [])
+                    .filter(function (scale) {
+                        return !chart.getScaleInfo(scale).discrete;
+                    });
+
+                this._size = Object
+                    .keys(spec.scales)
+                    .reduce(reducer('size'), []);
 
                 var hasColorScales = (this._color.length > 0);
                 var hasFillScales = (this._fill.length > 0);
@@ -138,6 +162,7 @@
             onRender: function () {
                 this._clearPanel();
                 this._drawColorLegend();
+                this._drawFillLegend();
                 this._drawSizeLegend();
             },
 
@@ -146,10 +171,12 @@
             _template: _.template('<div class="graphical-report__legend__wrap"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: _.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
-                '<div class="graphical-report__legend__guide__wrap">',
-                '<div class="graphical-report__legend__guide <%=color%>"></div>',
-                '</div>',
-                '<%=label%>',
+                '   <div class="graphical-report__legend__guide__wrap">',
+                '   <div class="graphical-report__legend__guide <%=cssClass%>"',
+                '        style="background-color: <%=cssColor%>">',
+                '   </div>',
+                '   </div>',
+                '   <%=label%>',
                 '</div>'
             ].join('')),
             _itemFillTemplate: _.template([
@@ -173,6 +200,75 @@
                 if (this._container) {
                     this._container.innerHTML = '';
                 }
+            },
+
+            _drawFillLegend: function () {
+                var self = this;
+
+                self._fill.forEach(function (c) {
+                    var firstNode = self
+                        ._chart
+                        .select(function (unit) {
+                            return (unit.config.color === c);
+                        })
+                        [0];
+
+                    if (firstNode) {
+
+                        var guide = firstNode.config.guide || {};
+
+                        var fillScale = firstNode.getScale('color');
+
+                        var domain = _(fillScale.domain()).sortBy();
+
+                        var brewerLength = fillScale.brewer.length;
+
+                        var height = 120;
+                        var fontHeight = 13;
+
+                        var stops = splitEvenly(domain, brewerLength)
+                            .reverse()
+                            .map(function (x, i) {
+                                var p = (i / (brewerLength - 1)) * 100;
+                                return (
+                                    '<stop offset="' + p + '%"' +
+                                    '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
+                            });
+
+                        var labelsLength = 3;
+                        var labels = splitEvenly(domain, labelsLength)
+                            .reverse()
+                            .map(function (x, i, list) {
+                                var p = (i / (labelsLength - 1));
+                                var vPad = 0.5 * ((i === 0) ?
+                                        fontHeight :
+                                        ((i === list.length - 1) ? (-fontHeight) : 0));
+                                var y = (height * p) + vPad + fontHeight / 2;
+                                return '<text x="25" y="' + y + '">' + x + '</text>';
+                            });
+
+                        var title = ((guide.color || {}).label || {}).text || fillScale.dim;
+
+                        var gradient = [
+                            '<svg height="' + height + '" width="100%" style="margin: 0 0 10px 10px">',
+                            '   <defs>',
+                            '       <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">',
+                            stops.join(''),
+                            '       </linearGradient>',
+                            '   </defs>',
+                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#grad1)"></rect>',
+                            labels.join(''),
+                            '   Sorry, your browser does not support inline SVG.',
+                            '</svg>'
+                        ].join('');
+
+                        self._container
+                            .insertAdjacentHTML('beforeend', self._template({
+                                name: title,
+                                items: gradient
+                            }));
+                    }
+                });
             },
 
             _drawSizeLegend: function () {
@@ -299,6 +395,8 @@
                                             scaleId: d.scaleId,
                                             dim: _.escape(d.dim),
                                             color: d.color,
+                                            cssClass: (colorScale.toClass(d.color)),
+                                            cssColor: (colorScale.toColor(d.color)),
                                             classDisabled: d.disabled ? 'disabled' : '',
                                             label: _.escape(isEmpty(d.label) ? noVal : d.label),
                                             value: _.escape(d.value)

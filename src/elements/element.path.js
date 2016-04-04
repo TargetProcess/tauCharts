@@ -42,10 +42,12 @@ export class Path extends BasePath {
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
         const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
-            class: (fiber) => `${groupPref} ${baseModel.color(fiber[0])} frame-${options.uid}`
+            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
         };
 
         baseModel.pathAttributes = {
+            fill: (fiber) => baseModel.color(fiber[0]),
+            stroke: (fiber) => baseModel.color(fiber[0]),
             points: ((fiber) => (fiber.map((d) => [baseModel.x(d), baseModel.y(d)].join(',')).join(' ')))
         };
 
@@ -53,7 +55,8 @@ export class Path extends BasePath {
             r: (d) => baseModel.size(d),
             cx: (d) => baseModel.x(d),
             cy: (d) => baseModel.y(d),
-            class: (d) => (`${pointPref} ${baseModel.color(d)}`)
+            fill: (d) => baseModel.color(d),
+            class: (d) => (`${pointPref} ${baseModel.class(d)}`)
         };
 
         baseModel.pathElement = 'polygon';

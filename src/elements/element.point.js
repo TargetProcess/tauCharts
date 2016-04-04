@@ -85,8 +85,9 @@ export class Point extends Element {
             x: pointModel.xi,
             y: pointModel.yi,
             size: pointModel.size,
-            color: pointModel.color,
-            group: pointModel.group
+            group: pointModel.group,
+            color: (d) => colorScale.toColor(pointModel.color(d)),
+            class: (d) => colorScale.toClass(pointModel.color(d))
         };
     }
 
@@ -111,7 +112,8 @@ export class Point extends Element {
             r: ((d) => model.size(d)),
             cx: ((d) => model.x(d)),
             cy: ((d) => model.y(d)),
-            class: ((d) => `${prefix} ${model.color(d)}`)
+            fill: ((d) => model.color(d)),
+            class: ((d) => `${prefix} ${model.class(d)}`)
         };
 
         var enter = function () {

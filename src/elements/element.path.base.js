@@ -89,7 +89,8 @@ export class BasePath extends Element {
             y: pathModel.yi,
             size: pathModel.size,
             group: pathModel.group,
-            color: pathModel.color,
+            color: (d) => colorScale.toColor(pathModel.color(d)),
+            class: (d) => colorScale.toClass(pathModel.color(d)),
             matchRowInCoordinates() {
                 throw 'Not implemented';
             },
@@ -261,7 +262,8 @@ export class BasePath extends Element {
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (d) => (filter(d) ? 3 : this.config.guide.anchorSize),
-                class: (d) => (`${cssClass} ${this.model.color(d)}`)
+                fill: (d) => this.model.color(d),
+                class: (d) => (`${cssClass} ${this.model.class(d)}`)
             });
     }
 }

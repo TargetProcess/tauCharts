@@ -64,11 +64,12 @@ export class Line extends BasePath {
         }
 
         baseModel.groupAttributes = {
-            class: (fiber) => `${groupPref} ${baseModel.color(fiber[0])} frame-${options.uid}`
+            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
         };
 
         baseModel.pathAttributes = {
             d: d3Line,
+            stroke: (fiber) => baseModel.color(fiber[0]),
             class: datumClass
         };
 
@@ -76,7 +77,8 @@ export class Line extends BasePath {
             r: (d) => baseModel.size(d),
             cx: (d) => baseModel.x(d),
             cy: (d) => baseModel.y(d),
-            class: (d) => (`${pointPref} ${baseModel.color(d)}`)
+            fill: (d) => baseModel.color(d),
+            class: (d) => (`${pointPref} ${baseModel.class(d)}`)
         };
 
         baseModel.pathElement = 'path';

@@ -314,7 +314,9 @@
                         .domain();
 
                     if (!scaleConfig.brewer) {
-                        scaleConfig.brewer = self._generateColorMap(fullLegendDomain);
+                        scaleConfig.brewer = ((scaleConfig.dimType !== 'measure') ?
+                            (self._generateColorMap(fullLegendDomain)) :
+                            (['#e5f5e0', '#a1d99b', '#31a354']));
                     }
                 });
             }

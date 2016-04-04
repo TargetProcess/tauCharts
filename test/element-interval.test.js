@@ -6,7 +6,7 @@ define(function (require) {
     var _ = require('underscore');
     var assert = require('chai').assert;
     var tauCharts = require('src/tau.charts');
-    var scalesRegistry = tauCharts.api.scalesRegistry;
+    var scalesRegistry = tauCharts.api.scalesRegistry.instance();
     var Cartesian = require('src/elements/coords.cartesian').Cartesian;
     var Interval = require('src/elements/element.interval').Interval;
     var ScalesFactory = require('src/scales-factory').ScalesFactory;

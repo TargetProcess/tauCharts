@@ -59,11 +59,16 @@ export class ParallelLine extends Element {
         var d3Line = d3.svg.line();
 
         var drawPath = function () {
-            this.attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])])));
+            this.attr({
+                d: (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])]))
+            });
         };
 
         var markPath = function () {
-            this.attr('class', (row) => `${CSS_PREFIX}__line line ${color(row[color.dim])} foreground`);
+            this.attr({
+                stroke: (row) => color.toColor(color(row[color.dim])),
+                class: (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`
+            });
         };
 
         var updateFrame = function () {

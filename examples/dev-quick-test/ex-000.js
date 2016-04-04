@@ -113,6 +113,9 @@ window.samples.push({
 
     guide: [
         {
+            color: {
+                brewer: ['#ff0000', '#00ff00']
+            },
             x: {nice: false},
             y: {nice: false}
             // ,flip: true

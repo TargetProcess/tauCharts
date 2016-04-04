@@ -23,6 +23,7 @@
         n = Math.round(n);
         return n % 2 ? n + 1 : n;
     };
+
     var isEmpty = function (x) {
         return (x === null) || (x === '') || (typeof x === 'undefined');
     };
@@ -49,6 +50,7 @@
         TAB: 9,
         UP: 38
     };
+
     var createStyleElement = function (styles, mediaType) {
         mediaType = mediaType || 'all';
         var style = document.createElement('style');
@@ -56,6 +58,7 @@
         style.innerHTML = styles;
         return style;
     };
+
     var printStyles = createStyleElement(printCss, 'print');
     var imagePlaceHolder;
     var removePrintStyles = function () {
@@ -112,6 +115,14 @@
             });
 
         return svg;
+    };
+
+    var getGuideLabel = function (guide, key, defaultLabel) {
+
+        var kGuide = ((guide || {})[key] || {});
+        var kLabel = (_.isObject(kGuide.label)) ? kGuide.label.text : kGuide.label;
+
+        return kLabel || defaultLabel;
     };
 
     function exportTo(settings) {
@@ -171,7 +182,8 @@
                         var div = document.createElement('div');
                         var svg = chart.getSVG().cloneNode(true);
                         div.appendChild(fixSVGForCanvgCompatibility(svg));
-                        d3.select(svg).attr('version', 1.1)
+                        d3.select(svg)
+                            .attr('version', 1.1)
                             .attr('xmlns', 'http://www.w3.org/2000/svg');
                         svg.insertBefore(style, svg.firstChild);
                         this._renderAdditionalInfo(svg, chart);
@@ -196,6 +208,7 @@
                         });
                     }.bind(this));
             },
+
             _findUnit: function (chart) {
                 var conf = chart.getSpec();
                 var spec = chart.getSpec();
@@ -220,6 +233,7 @@
                     }
                 });
             },
+
             _toPng: function (chart) {
                 this._createDataUrl(chart)
                     .then(function (dataURL) {
@@ -234,6 +248,7 @@
                         saveAs(blob, (this._fileName || 'export') + '.png');
                     }.bind(this));
             },
+
             _toPrint: function (chart) {
                 this._createDataUrl(chart)
                     .then(function (dataURL) {
@@ -319,31 +334,104 @@
                 downloadExportFile(fileName, 'text/csv', csv);
             },
 
+            _renderFillLegend: function (configUnit, svg, chart, width) {
+
+                var splitEvenly = function (domain, parts) {
+                    var min = domain[0];
+                    var max = domain[1];
+                    var segment = ((max - min) / (parts - 1));
+                    var chunks = _.times(parts - 2, function (n) {
+                        return (min + segment * (n + 1));
+                    });
+                    return [min].concat(chunks).concat(max);
+                };
+
+                var fillScale = this._unit.getScale('color');
+                var title = getGuideLabel(configUnit.guide, 'color', fillScale.dim).toUpperCase();
+                var titleStyle = 'text-transform:uppercase;font-weight:600;font-size:' + settings.fontSize + 'px';
+
+                var domain = _(fillScale.domain()).sortBy();
+                var brewerLength = fillScale.brewer.length;
+                var labelsLength = 3;
+                var height = 120;
+                var fontHeight = settings.fontSize;
+                var titlePadding = 20;
+
+                var stops = splitEvenly(domain, brewerLength)
+                    .reverse()
+                    .map(function (x, i) {
+                        var p = (i / (brewerLength - 1)) * 100;
+                        return (
+                        '<stop offset="' + p + '%"' +
+                        '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
+                    });
+
+                var labels = splitEvenly(domain, labelsLength)
+                    .reverse()
+                    .map(function (x, i, list) {
+                        var p = (i / (labelsLength - 1));
+                        var vPad = 0.5 * ((i === 0) ?
+                                fontHeight :
+                                ((i === list.length - 1) ? (-fontHeight) : 0));
+                        var y = ((height - titlePadding) * p) + vPad + fontHeight / 2;
+                        return '<text x="25" y="' + y + '">' + x + '</text>';
+                    });
+
+                var gradient = [
+                    '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" height="' + height + '" width="100%">',
+                    '   <defs>',
+                    '       <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">',
+                    stops.join(''),
+                    '       </linearGradient>',
+                    '   </defs>',
+                    '   <text x="0" y="10" style="' + titleStyle + '">' + title + '</text>',
+                    '   <g transform="translate(0,20)">',
+                    '       <rect x="0" y="0" height="' + (height - titlePadding) + '" width="20" fill="url(#grad1)">',
+                    '       </rect>',
+                    labels.join(''),
+                    '   </g>',
+                    '   Sorry, your browser does not support inline SVG.',
+                    '</svg>'
+                ].join('');
+
+                // insert to live document before attaching to export SVG (IE9 issue)
+                var doc = (new DOMParser().parseFromString(gradient, 'application/xml')).documentElement;
+                document.body.appendChild(doc);
+
+                svg
+                    .append('g')
+                    .attr('class', 'legend')
+                    .attr('transform', 'translate(' + (width + 10) + ',' + settings.paddingTop + ')')
+                    .node()
+                    .appendChild(doc);
+
+                return {h: height, w: 0};
+            },
+
             _renderColorLegend: function (configUnit, svg, chart, width) {
-                var colorScale = this._unit.color;
-                var colorDimension = this._unit.color.dim;
-                configUnit.guide = configUnit.guide || {};
-                configUnit.guide.color = configUnit.guide.color || {};
 
-                var colorLabelText = (_.isObject(configUnit.guide.color.label)) ?
-                    configUnit.guide.color.label.text :
-                    configUnit.guide.color.label;
+                var colorScale = this._unit.getScale('color');
+                var colorScaleName = getGuideLabel(configUnit.guide, 'color', colorScale.dim).toUpperCase();
 
-                var colorScaleName = colorLabelText || colorScale.dim;
-                var data = this._getColorMap(
-                    chart.getChartModelData({excludeFilter: ['legend']}),
-                    colorScale,
-                    colorDimension
-                ).values;
+                var data = this
+                    ._getColorMap(chart.getChartModelData({excludeFilter: ['legend']}), colorScale, colorScale.dim)
+                    .values;
+
                 var draw = function () {
+
                     this.attr('transform', function (d, index) {
                         return 'translate(5,' + 20 * (index + 1) + ')';
                     });
+
                     this.append('circle')
                         .attr('r', 6)
+                        .attr('fill', function (d) {
+                            return colorScale.toColor(d.color);
+                        })
                         .attr('class', function (d) {
-                            return d.color;
+                            return colorScale.toClass(d.color);
                         });
+
                     this.append('text')
                         .attr('x', 12)
                         .attr('y', 5)
@@ -374,20 +462,23 @@
                     .append('g')
                     .call(draw);
 
-                return {h: (data.length * 20 + 20), w: 0};
+                return {h: (data.length * 20), w: 0};
             },
+
             _renderSizeLegend: function (configUnit, svg, chart, width, offset) {
-                var sizeScale = this._unit.size;
-                var sizeDimension = this._unit.size.scaleDim;
-                configUnit.guide = configUnit.guide || {};
-                configUnit.guide.size = this._unit.config.guide.size;
-                var sizeScaleName = configUnit.guide.size.label.text || sizeDimension;
-                var chartData = _.sortBy(chart.getChartModelData(), function (el) {
-                    return sizeScale(el[sizeDimension]);
-                });
+
+                var sizeScale = this._unit.getScale('size');
+                var sizeScaleName = getGuideLabel(configUnit.guide, 'size', sizeScale.dim).toUpperCase();
+
+                var chartData = _.sortBy(
+                    chart.getChartModelData(),
+                    function (el) {
+                        return sizeScale(el[sizeScale.dim]);
+                    });
+
                 var chartDataLength = chartData.length;
-                var first = chartData[0][sizeDimension];
-                var last = chartData[chartDataLength - 1][sizeDimension];
+                var first = chartData[0][sizeScale.dim];
+                var last = chartData[chartDataLength - 1][sizeScale.dim];
                 var values;
                 if ((last - first)) {
                     var count = log10(last - first);
@@ -423,7 +514,7 @@
                 var offsetInner = 0;
                 var draw = function () {
 
-                    this.attr('transform', function (d) {
+                    this.attr('transform', function () {
                         offsetInner += maxDiameter;
                         var transform = 'translate(5,' + (offsetInner) + ')';
                         offsetInner += 10;
@@ -431,25 +522,22 @@
                     });
 
                     this.append('circle')
-                        .attr('r', function (d) {
-                            return d.radius;
-                        })
-                        .attr('class', function (d) {
-                            return d.className;
+                        .attr({
+                            r: function (d) {
+                                return d.radius;
+                            },
+                            class: function (d) {
+                                return d.className;
+                            }
                         })
                         .style({opacity: 0.4});
 
                     this.append('g')
-                        .attr('transform', function (d) {
+                        .attr('transform', function () {
                             return 'translate(' + maxDiameter + ',' + (fontSize / 2) + ')';
                         })
                         .append('text')
-                        .attr('x', function (d) {
-                            return 0;// d.diameter;
-                        })
-                        .attr('y', function (d) {
-                            return 0;// d.radius-6.5;
-                        })
+                        .attr({x: 0, y: 0})
                         .text(function (d) {
                             return d.value;
                         })
@@ -477,44 +565,45 @@
                     .append('g')
                     .call(draw);
             },
+
             _renderAdditionalInfo: function (svg, chart) {
                 var configUnit = this._findUnit(chart);
                 if (!configUnit) {
                     return;
                 }
+
                 var offset = {h: 0, w: 0};
-                var spec = chart.getSpec();
                 svg = d3.select(svg);
                 var width = parseInt(svg.attr('width'), 10);
                 var height = svg.attr('height');
                 svg.attr('width', width + 160);
-                var checkNotEmpty = function (dimName) {
-                    var sizeScaleCfg = spec.scales[dimName];
-                    return (
-                    sizeScaleCfg &&
-                    sizeScaleCfg.dim &&
-                    sizeScaleCfg.source &&
-                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim]
-                    );
-                };
-                if (checkNotEmpty(configUnit.color)) {
+
+                var colorScale = chart.getScaleInfo(configUnit.color);
+                if (colorScale.dim && !colorScale.discrete) {
+                    // draw gradient
+                    var offsetFillLegend = this._renderFillLegend(configUnit, svg, chart, width);
+                    offset.h = offsetFillLegend.h + 20;
+                    offset.w = offsetFillLegend.w;
+                }
+
+                if (colorScale.dim && colorScale.discrete) {
                     var offsetColorLegend = this._renderColorLegend(configUnit, svg, chart, width);
-                    offset.h = offsetColorLegend.h;
+                    offset.h = offsetColorLegend.h + 20;
                     offset.w = offsetColorLegend.w;
                 }
-                var spec = chart.getSpec();
-                var sizeScaleCfg = spec.scales[configUnit.size];
-                if (configUnit.size &&
-                    sizeScaleCfg.dim &&
-                    spec.sources[sizeScaleCfg.source].dims[sizeScaleCfg.dim].type === 'measure') {
+
+                var sizeScale = chart.getScaleInfo(configUnit.size);
+                if (sizeScale.dim && !sizeScale.discrete) {
                     this._renderSizeLegend(configUnit, svg, chart, width, offset);
                 }
             },
+
             onUnitDraw: function (chart, unit) {
                 if (tauCharts.api.isChartElement(unit)) {
                     this._unit = unit;
                 }
             },
+
             _getColorMap: function (data, colorScale, colorDimension) {
 
                 return _(data)
@@ -534,6 +623,7 @@
                     },
                     {brewer: {}, values: []});
             },
+
             _select: function (value, chart) {
                 value = value || '';
                 var method = this['_to' + value.charAt(0).toUpperCase() + value.slice(1)];
@@ -541,6 +631,7 @@
                     method.call(this, chart);
                 }
             },
+
             _handleMenu: function (popupElement, chart, popup) {
                 popupElement.addEventListener('click', function (e) {
                     if (e.target.tagName.toLowerCase() === 'a') {
@@ -596,6 +687,7 @@
                     }
                 });
             },
+
             init: function (chart) {
                 settings = settings || {};
                 this._chart = chart;
@@ -655,6 +747,7 @@
                     this._select(type, chart);
                 }.bind(this));
             },
+
             destroy: function () {
                 if (this._popup) {
                     this._popup.destroy();

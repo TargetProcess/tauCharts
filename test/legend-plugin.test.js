@@ -11,7 +11,7 @@ define(function (require) {
     var describeChart = testUtils.describeChart;
 
     function getText(node) {
-        return node.parentNode.parentNode.textContent;
+        return node.parentNode.parentNode.textContent.trim();
     }
 
     var expectLegend = function (expect, chart) {

@@ -10,8 +10,6 @@ export class ScalesFactory {
 
     createScaleInfo(scaleConfig, dataFrame = null) {
 
-        var ScaleClass = this.registry.get(scaleConfig.type);
-
         var dim = scaleConfig.dim;
         var src = scaleConfig.source;
 
@@ -22,7 +20,7 @@ export class ScalesFactory {
 
         scaleConfig.dimType = type;
 
-        return (new ScaleClass(frame, scaleConfig));
+        return this.registry.create(scaleConfig.type, frame, scaleConfig);
     }
 
     createScaleInfoByName(name, dataFrame = null) {
