@@ -1,4 +1,4 @@
-/*! taucharts - v0.8.1 - 2016-03-29
+/*! taucharts - v0.8.2 - 2016-04-04
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -148,6 +148,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	var colorBrewers = {};
 	var plugins = {};
 
@@ -191,6 +193,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 	    globalSettings: {
+
+	        defaultNiceColor: true,
+
+	        // jscs:disable
+	        defaultColorBrewer: ["#fde725", "#fbe723", "#f8e621", "#f6e620", "#f4e61e", "#f1e51d", "#efe51c", "#ece51b", "#eae51a", "#e7e419", "#e5e419", "#e2e418", "#dfe318", "#dde318", "#dae319", "#d8e219", "#d5e21a", "#d2e21b", "#d0e11c", "#cde11d", "#cae11f", "#c8e020", "#c5e021", "#c2df23", "#c0df25", "#bddf26", "#bade28", "#b8de29", "#b5de2b", "#b2dd2d", "#b0dd2f", "#addc30", "#aadc32", "#a8db34", "#a5db36", "#a2da37", "#a0da39", "#9dd93b", "#9bd93c", "#98d83e", "#95d840", "#93d741", "#90d743", "#8ed645", "#8bd646", "#89d548", "#86d549", "#84d44b", "#81d34d", "#7fd34e", "#7cd250", "#7ad151", "#77d153", "#75d054", "#73d056", "#70cf57", "#6ece58", "#6ccd5a", "#69cd5b", "#67cc5c", "#65cb5e", "#63cb5f", "#60ca60", "#5ec962", "#5cc863", "#5ac864", "#58c765", "#56c667", "#54c568", "#52c569", "#50c46a", "#4ec36b", "#4cc26c", "#4ac16d", "#48c16e", "#46c06f", "#44bf70", "#42be71", "#40bd72", "#3fbc73", "#3dbc74", "#3bbb75", "#3aba76", "#38b977", "#37b878", "#35b779", "#34b679", "#32b67a", "#31b57b", "#2fb47c", "#2eb37c", "#2db27d", "#2cb17e", "#2ab07f", "#29af7f", "#28ae80", "#27ad81", "#26ad81", "#25ac82", "#25ab82", "#24aa83", "#23a983", "#22a884", "#22a785", "#21a685", "#21a585", "#20a486", "#20a386", "#1fa287", "#1fa187", "#1fa188", "#1fa088", "#1f9f88", "#1f9e89", "#1e9d89", "#1e9c89", "#1e9b8a", "#1f9a8a", "#1f998a", "#1f988b", "#1f978b", "#1f968b", "#1f958b", "#1f948c", "#20938c", "#20928c", "#20928c", "#21918c", "#21908d", "#218f8d", "#218e8d", "#228d8d", "#228c8d", "#228b8d", "#238a8d", "#23898e", "#23888e", "#24878e", "#24868e", "#25858e", "#25848e", "#25838e", "#26828e", "#26828e", "#26818e", "#27808e", "#277f8e", "#277e8e", "#287d8e", "#287c8e", "#297b8e", "#297a8e", "#29798e", "#2a788e", "#2a778e", "#2a768e", "#2b758e", "#2b748e", "#2c738e", "#2c728e", "#2c718e", "#2d718e", "#2d708e", "#2e6f8e", "#2e6e8e", "#2e6d8e", "#2f6c8e", "#2f6b8e", "#306a8e", "#30698e", "#31688e", "#31678e", "#31668e", "#32658e", "#32648e", "#33638d", "#33628d", "#34618d", "#34608d", "#355f8d", "#355e8d", "#365d8d", "#365c8d", "#375b8d", "#375a8c", "#38598c", "#38588c", "#39568c", "#39558c", "#3a548c", "#3a538b", "#3b528b", "#3b518b", "#3c508b", "#3c4f8a", "#3d4e8a", "#3d4d8a", "#3e4c8a", "#3e4a89", "#3e4989", "#3f4889", "#3f4788", "#404688", "#404588", "#414487", "#414287", "#424186", "#424086", "#423f85", "#433e85", "#433d84", "#443b84", "#443a83", "#443983", "#453882", "#453781", "#453581", "#463480", "#46337f", "#46327e", "#46307e", "#472f7d", "#472e7c", "#472d7b", "#472c7a", "#472a7a", "#482979", "#482878", "#482677", "#482576", "#482475", "#482374", "#482173", "#482071", "#481f70", "#481d6f", "#481c6e", "#481b6d", "#481a6c", "#48186a", "#481769", "#481668", "#481467", "#471365", "#471164", "#471063", "#470e61", "#470d60", "#460b5e", "#460a5d", "#46085c", "#46075a", "#450559", "#450457", "#440256", "#440154"],
+	        // jscs:enable
+
+	        defaultClassBrewer: _underscore2.default.times(20, function (i) {
+	            return 'color20-' + (1 + i);
+	        }),
 
 	        log: function log(msg, type) {
 	            type = type || 'INFO';
@@ -259,8 +271,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return memo.reg(nv[0], nv[1]);
 	}, api.unitsRegistry);
 
-	[['color', _color.ColorScale], ['fill', _fill.FillScale], ['size', _size.SizeScale], ['ordinal', _ordinal.OrdinalScale], ['period', _period.PeriodScale], ['time', _time.TimeScale], ['linear', _linear.LinearScale], ['value', _value.ValueScale]].reduce(function (memo, nv) {
-	    return memo.reg(nv[0], nv[1]);
+	[['color', _color.ColorScale, function (config, settings) {
+	    return _underscore2.default.defaults(config, {
+	        nice: settings.defaultNiceColor,
+	        brewer: config.dimType === 'measure' ? settings.defaultColorBrewer : settings.defaultClassBrewer
+	    });
+	}], ['fill', _fill.FillScale], ['size', _size.SizeScale], ['ordinal', _ordinal.OrdinalScale], ['period', _period.PeriodScale], ['time', _time.TimeScale], ['linear', _linear.LinearScale], ['value', _value.ValueScale]].reduce(function (memo, nv) {
+	    return memo.reg.apply(memo, _toConsumableArray(nv));
 	}, api.scalesRegistry);
 
 	var commonRules = [function (config) {
@@ -717,6 +734,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return deepCopy;
 	}();
 	var chartElement = [_element3.Interval, _element.Point, _element2.Line, _elementInterval.StackedInterval];
+
+	var testColorCode = function testColorCode(x) {
+	    return (/^(#|rgb\(|rgba\()/.test(x)
+	    );
+	};
+
 	var utils = {
 	    clone: function clone(obj) {
 	        return deepClone(obj);
@@ -903,6 +926,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	            last.e = curr.e;
 	            last.ts = curr.ts;
 	        };
+	    },
+
+	    splitEvenly: function splitEvenly(domain, parts) {
+	        var min = domain[0];
+	        var max = domain[1];
+	        var segment = (max - min) / (parts - 1);
+	        var chunks = _underscore2.default.times(parts - 2, function (n) {
+	            return min + segment * (n + 1);
+	        });
+	        return [min].concat(chunks).concat(max);
+	    },
+
+	    extRGBColor: function extRGBColor(x) {
+	        return testColorCode(x) ? x : '';
+	    },
+
+	    extCSSClass: function extCSSClass(x) {
+	        return testColorCode(x) ? '' : x;
 	    }
 	};
 
@@ -1029,8 +1070,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                x: pointModel.xi,
 	                y: pointModel.yi,
 	                size: pointModel.size,
-	                color: pointModel.color,
-	                group: pointModel.group
+	                group: pointModel.group,
+	                color: function color(d) {
+	                    return colorScale.toColor(pointModel.color(d));
+	                },
+	                class: function _class(d) {
+	                    return colorScale.toClass(pointModel.color(d));
+	                }
 	            };
 	        }
 	    }, {
@@ -1064,8 +1110,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                cy: function cy(d) {
 	                    return model.y(d);
 	                },
+	                fill: function fill(d) {
+	                    return model.color(d);
+	                },
 	                class: function _class(d) {
-	                    return prefix + ' ' + model.color(d);
+	                    return prefix + ' ' + model.class(d);
 	                }
 	            };
 
@@ -1648,12 +1697,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
-	                    return groupPref + ' ' + baseModel.color(fiber[0]) + ' frame-' + options.uid;
+	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame-' + options.uid;
 	                }
 	            };
 
 	            baseModel.pathAttributes = {
 	                d: d3Line,
+	                stroke: function stroke(fiber) {
+	                    return baseModel.color(fiber[0]);
+	                },
 	                class: datumClass
 	            };
 
@@ -1667,8 +1719,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                cy: function cy(d) {
 	                    return baseModel.y(d);
 	                },
+	                fill: function fill(d) {
+	                    return baseModel.color(d);
+	                },
 	                class: function _class(d) {
-	                    return pointPref + ' ' + baseModel.color(d);
+	                    return pointPref + ' ' + baseModel.class(d);
 	                }
 	            };
 
@@ -1813,7 +1868,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                y: pathModel.yi,
 	                size: pathModel.size,
 	                group: pathModel.group,
-	                color: pathModel.color,
+	                color: function color(d) {
+	                    return colorScale.toColor(pathModel.color(d));
+	                },
+	                class: function _class(d) {
+	                    return colorScale.toClass(pathModel.color(d));
+	                },
 	                matchRowInCoordinates: function matchRowInCoordinates() {
 	                    throw 'Not implemented';
 	                },
@@ -1985,8 +2045,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                r: function r(d) {
 	                    return filter(d) ? 3 : _this2.config.guide.anchorSize;
 	                },
+	                fill: function fill(d) {
+	                    return _this2.model.color(d);
+	                },
 	                class: function _class(d) {
-	                    return cssClass + ' ' + _this2.model.color(d);
+	                    return cssClass + ' ' + _this2.model.class(d);
 	                }
 	            });
 	        }
@@ -2488,6 +2551,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var barH = _ref.barH;
 	            var barW = _ref.barW;
 	            var barColor = _ref.barColor;
+	            var barClass = _ref.barClass;
 	            var prettify = _ref2.prettify;
 	            var minBarH = _ref2.minBarH;
 	            var minBarW = _ref2.minBarW;
@@ -2533,7 +2597,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return calculateW(d);
 	                },
 	                class: function _class(d) {
-	                    return baseCssClass + ' ' + barColor(d);
+	                    return baseCssClass + ' ' + barClass(d);
+	                },
+	                fill: function fill(d) {
+	                    return barColor(d);
 	                }
 	            };
 	        }
@@ -2545,6 +2612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var barH = _ref3.barH;
 	            var barW = _ref3.barW;
 	            var barColor = _ref3.barColor;
+	            var barClass = _ref3.barClass;
 	            var prettify = _ref4.prettify;
 	            var minBarH = _ref4.minBarH;
 	            var minBarW = _ref4.minBarW;
@@ -2604,7 +2672,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 	                },
 	                class: function _class(d) {
-	                    return baseCssClass + ' ' + barColor(d);
+	                    return baseCssClass + ' ' + barClass(d);
+	                },
+	                fill: function fill(d) {
+	                    return barColor(d);
 	                }
 	            };
 	        }
@@ -2655,7 +2726,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return barModel.size(d);
 	                },
 	                barColor: function barColor(d) {
-	                    return barModel.color(d);
+	                    return colorScale.toColor(barModel.color(d));
+	                },
+	                barClass: function barClass(d) {
+	                    return colorScale.toClass(barModel.color(d));
 	                },
 	                group: function group(d) {
 	                    return d[colorScale.dim];
@@ -3938,7 +4012,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function getScaleFactory() {
 	            var dataSources = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
-	            return new _scalesFactory.ScalesFactory(_scalesRegistry.scalesRegistry, dataSources || this._liveSpec.sources, this._liveSpec.scales);
+	            return new _scalesFactory.ScalesFactory(_scalesRegistry.scalesRegistry.instance(this._liveSpec.settings), dataSources || this._liveSpec.sources, this._liveSpec.scales);
 	        }
 	    }, {
 	        key: 'getScaleInfo',
@@ -5006,21 +5080,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 	var ScalesMap = {};
+	var ConfigMap = {};
 
-	var scalesRegistry = {
-
-	    reg: function reg(scaleType, scaleClass) {
-	        ScalesMap[scaleType] = scaleClass;
-	        return this;
-	    },
-
-	    get: function get(scaleType) {
-	        return ScalesMap[scaleType];
+	var scalesRegistry = exports.scalesRegistry = function () {
+	    function scalesRegistry() {
+	        _classCallCheck(this, scalesRegistry);
 	    }
-	};
 
-	exports.scalesRegistry = scalesRegistry;
+	    _createClass(scalesRegistry, null, [{
+	        key: "reg",
+	        value: function reg(scaleType, scaleClass) {
+	            var configInterceptor = arguments.length <= 2 || arguments[2] === undefined ? function (x) {
+	                return x;
+	            } : arguments[2];
+
+	            ScalesMap[scaleType] = scaleClass;
+	            ConfigMap[scaleType] = configInterceptor;
+	            return this;
+	        }
+	    }, {
+	        key: "get",
+	        value: function get(scaleType) {
+	            return ScalesMap[scaleType];
+	        }
+	    }, {
+	        key: "instance",
+	        value: function instance() {
+	            var settings = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+	            return {
+	                create: function create(scaleType, dataFrame, scaleConfig) {
+	                    var ScaleClass = scalesRegistry.get(scaleType);
+	                    var configFunc = ConfigMap[scaleType];
+	                    return new ScaleClass(dataFrame, configFunc(scaleConfig, settings));
+	                }
+	            };
+	        }
+	    }]);
+
+	    return scalesRegistry;
+	}();
 
 /***/ },
 /* 30 */
@@ -5054,8 +5159,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var dataFrame = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
 
-	            var ScaleClass = this.registry.get(scaleConfig.type);
-
 	            var dim = scaleConfig.dim;
 	            var src = scaleConfig.source;
 
@@ -5066,7 +5169,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            scaleConfig.dimType = type;
 
-	            return new ScaleClass(frame, scaleConfig);
+	            return this.registry.create(scaleConfig.type, frame, scaleConfig);
 	        }
 	    }, {
 	        key: 'createScaleInfoByName',
@@ -5558,6 +5661,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (dims[dimName] && dims[dimName].hasOwnProperty('order')) {
 	                    item.order = dims[dimName].order;
+	                }
+
+	                if (guide.hasOwnProperty('nice')) {
+	                    item.nice = guide.nice;
 	                }
 	            }
 
@@ -9909,11 +10016,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
-	                    return groupPref + ' ' + baseModel.color(fiber[0]) + ' frame-' + options.uid;
+	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame-' + options.uid;
 	                }
 	            };
 
 	            baseModel.pathAttributes = {
+	                fill: function fill(fiber) {
+	                    return baseModel.color(fiber[0]);
+	                },
+	                stroke: function stroke(fiber) {
+	                    return baseModel.color(fiber[0]);
+	                },
 	                points: function points(fiber) {
 	                    return fiber.map(function (d) {
 	                        return [baseModel.x(d), baseModel.y(d)].join(',');
@@ -9931,8 +10044,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                cy: function cy(d) {
 	                    return baseModel.y(d);
 	                },
+	                fill: function fill(d) {
+	                    return baseModel.color(d);
+	                },
 	                class: function _class(d) {
-	                    return pointPref + ' ' + baseModel.color(d);
+	                    return pointPref + ' ' + baseModel.class(d);
 	                }
 	            };
 
@@ -10036,16 +10152,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var d3Line = _d2.default.svg.line();
 
 	            var drawPath = function drawPath() {
-	                this.attr('d', function (row) {
-	                    return d3Line(node.columns.map(function (p) {
-	                        return [xBase(p), scalesMap[p](row[scalesMap[p].dim])];
-	                    }));
+	                this.attr({
+	                    d: function d(row) {
+	                        return d3Line(node.columns.map(function (p) {
+	                            return [xBase(p), scalesMap[p](row[scalesMap[p].dim])];
+	                        }));
+	                    }
 	                });
 	            };
 
 	            var markPath = function markPath() {
-	                this.attr('class', function (row) {
-	                    return _const.CSS_PREFIX + '__line line ' + color(row[color.dim]) + ' foreground';
+	                this.attr({
+	                    stroke: function stroke(row) {
+	                        return color.toColor(color(row[color.dim]));
+	                    },
+	                    class: function _class(row) {
+	                        return _const.CSS_PREFIX + '__line line ' + color.toClass(color(row[color.dim])) + ' foreground';
+	                    }
 	                });
 	            };
 
@@ -10107,6 +10230,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _base = __webpack_require__(54);
 
+	var _utils = __webpack_require__(4);
+
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
@@ -10116,6 +10241,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _d2 = _interopRequireDefault(_d);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -10135,27 +10262,63 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ColorScale).call(this, xSource, scaleConfig));
 
-	        _this.defaultColorClass = _underscore2.default.constant('color-default');
-	        var scaleBrewer = _this.scaleConfig.brewer || _underscore2.default.times(20, function (i) {
-	            return 'color20-' + (1 + i);
-	        });
+	        var discrete = scaleConfig.dimType !== 'measure';
 
-	        _this.addField('scaleType', 'color').addField('brewer', scaleBrewer);
+	        var scaleBrewer = discrete ? _this.scaleConfig.brewer || _underscore2.default.times(20, function (i) {
+	            return 'color20-' + (1 + i);
+	        }) : _this.scaleConfig.brewer || ['#eee', '#000'];
+
+	        var props = _this.scaleConfig;
+
+	        if (!discrete) {
+	            var vars = _d2.default.extent(_this.vars);
+
+	            var isNum = function isNum(num) {
+	                return !isNaN(num) && _underscore2.default.isNumber(num);
+	            };
+	            var min = isNum(props.min) ? props.min : vars[0];
+	            var max = isNum(props.max) ? props.max : vars[1];
+
+	            vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(isNum)))];
+
+	            if (props.nice) {
+
+	                if (vars[0] < 0 && vars[1] > 0) {
+	                    // symmetry
+	                    var maxPart = Math.max.apply(Math, _toConsumableArray(vars.map(Math.abs)));
+	                    vars = [-maxPart, maxPart];
+	                }
+	            }
+
+	            _this.vars = vars;
+	        }
+
+	        _this.addField('scaleType', 'color').addField('discrete', discrete).addField('brewer', scaleBrewer).addField('toColor', _utils.utils.extRGBColor).addField('toClass', _utils.utils.extCSSClass);
 	        return _this;
 	    }
 
 	    _createClass(ColorScale, [{
 	        key: 'create',
 	        value: function create() {
-	            var _this2 = this;
+
+	            var discrete = this.discrete;
 
 	            var varSet = this.vars;
-
 	            var brewer = this.getField('brewer');
+
+	            var func = discrete ? this.createDiscreteScale(varSet, brewer) : this.createContinuesScale(varSet, brewer);
+
+	            return this.toBaseScale(func);
+	        }
+	    }, {
+	        key: 'createDiscreteScale',
+	        value: function createDiscreteScale(varSet, brewer) {
+
+	            var defaultColorClass = _underscore2.default.constant('color-default');
 
 	            var buildArrayGetClass = function buildArrayGetClass(domain, brewer) {
 	                if (domain.length === 0 || domain.length === 1 && domain[0] === null) {
-	                    return _this2.defaultColorClass;
+	                    return defaultColorClass;
 	                } else {
 	                    var fullDomain = domain.map(function (x) {
 	                        return String(x).toString();
@@ -10193,13 +10356,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	                };
 	            } else if (_underscore2.default.isObject(brewer)) {
 
-	                func = buildObjectGetClass(brewer, this.defaultColorClass);
+	                func = buildObjectGetClass(brewer, defaultColorClass);
 	            } else {
 
 	                throw new Error('This brewer is not supported');
 	            }
 
-	            return this.toBaseScale(func);
+	            return func;
+	        }
+	    }, {
+	        key: 'createContinuesScale',
+	        value: function createContinuesScale(varSet, brewer) {
+
+	            var func;
+
+	            if (_underscore2.default.isArray(brewer)) {
+
+	                func = _d2.default.scale.linear().domain(_utils.utils.splitEvenly(varSet, brewer.length)).range(brewer);
+	            } else {
+
+	                throw new Error('This brewer is not supported');
+	            }
+
+	            return func;
 	        }
 	    }]);
 

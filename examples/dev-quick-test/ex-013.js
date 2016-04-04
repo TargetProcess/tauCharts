@@ -17,7 +17,8 @@ window.samples.push({
                 year: [80, 81]
             }
         }),
-        tauCharts.api.plugins.get('parallel-tooltip')(),
+        tauCharts.api.plugins.get('parallel-tooltip')()
+        ,
         tauCharts.api.plugins.get('geomap-legend')()
     ]
 
