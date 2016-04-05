@@ -525,8 +525,8 @@ var SpecEngineTypeMap = {
                     unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
                 }
 
-                var xFontH = xTickWidth + maxXTickH;
-                var yFontW = yTickWidth + maxYTickW;
+                var xAxisPad = xTickWidth + maxXTickH;
+                var yAxisPad = yTickWidth + (Math.cos((unit.guide.y.rotate / 180) * Math.PI) * maxYTickW);
 
                 var xFontLabelHeight = settings.xFontLabelHeight;
                 var yFontLabelHeight = settings.yFontLabelHeight;
@@ -545,21 +545,22 @@ var SpecEngineTypeMap = {
                 var yTickLabelH = Math.min(settings.yAxisTickLabelLimit, koeffLinesCount * maxYTickSize.height);
                 unit.guide.y.density = yTickLabelH + yDensityPadding * 2;
 
-                unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xFontH + distToXAxisLabel) : 0;
-                unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yFontW + distToYAxisLabel) : 0;
+                unit.guide.x.label.padding = (unit.guide.x.label.text) ? (xAxisPad + distToXAxisLabel) : 0;
+                unit.guide.y.label.padding = (unit.guide.y.label.text) ? (yAxisPad + distToYAxisLabel) : 0;
 
                 var xLabelPadding = (unit.guide.x.label.text) ?
                     (unit.guide.x.label.padding + xFontLabelHeight) :
-                    (xFontH);
+                    (xAxisPad);
                 var yLabelPadding = (unit.guide.y.label.text) ?
                     (unit.guide.y.label.padding + yFontLabelHeight) :
-                    (yFontW);
+                    (yAxisPad);
 
-                unit.guide.padding.b = xAxisPadding + xLabelPadding;
-                unit.guide.padding.l = yAxisPadding + yLabelPadding;
-
-                unit.guide.padding.b = (unit.guide.x.hide) ? 0 : unit.guide.padding.b;
-                unit.guide.padding.l = (unit.guide.y.hide) ? 0 : unit.guide.padding.l;
+                unit.guide.padding.b = ((unit.guide.x.hide) ?
+                    (0) :
+                    (xAxisPadding + xLabelPadding));
+                unit.guide.padding.l = ((unit.guide.y.hide) ?
+                    (0) :
+                    (yAxisPadding + yLabelPadding));
 
                 unit.guide.x.tickFontHeight = maxXTickSize.height;
                 unit.guide.y.tickFontHeight = maxYTickSize.height;
