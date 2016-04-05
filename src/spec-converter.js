@@ -200,6 +200,14 @@ export class SpecConverter {
                 item.order = dims[dimName].order;
             }
 
+            if (guide.hasOwnProperty('min')) {
+                item.min = guide.min;
+            }
+
+            if (guide.hasOwnProperty('max')) {
+                item.max = guide.max;
+            }
+
             if (guide.hasOwnProperty('nice')) {
                 item.nice = guide.nice;
             }
