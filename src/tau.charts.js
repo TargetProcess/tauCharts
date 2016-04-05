@@ -116,7 +116,6 @@ var api = {
         ],
 
         fitModel: 'normal',
-        optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
         autoRatio: true,
         defaultSourceMap: [

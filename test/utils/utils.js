@@ -13,7 +13,6 @@ define(function (require) {
         },
 
         fitModel: null, // 'entire-view',
-        optimizeGuideBySize: false,
         layoutEngine: '', // 'EXTRACT'
         autoRatio: true,
 
