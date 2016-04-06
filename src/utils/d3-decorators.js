@@ -228,18 +228,25 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
 
     var angle = guide.rotate;
 
-    var ticks = nodeScale.selectAll('.tick text');
-    ticks
-        .attr('transform', utilsDraw.rotate(angle))
+    var tick = nodeScale.selectAll('.tick text');
+    tick.attr({transform: utilsDraw.rotate(angle)})
         .style('text-anchor', guide.textAnchor);
 
-    if (angle === 90) {
-        var dy = parseFloat(ticks.attr('dy')) / 2;
-        ticks.attr('x', 9).attr('y', 0).attr('dy', `${dy}em`);
+    if ((Math.abs(angle / 90) % 2) > 0) {
+        var k = isHorizontal ? 0.5 : -2;
+        var dy = k * parseFloat(tick.attr('dy'));
+        var attr = {
+            x: 9,
+            y: 0,
+            dx: (isHorizontal) ? null : `${dy}em`,
+            dy: `${dy}em`
+        };
+
+        tick.attr(attr);
     }
 
     if (guide.tickFormatWordWrap) {
-        ticks.call(
+        tick.call(
             wrapText,
             guide.tickFormatWordWrapLimit,
             guide.tickFormatWordWrapLines,
@@ -247,8 +254,7 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
             !isHorizontal
         );
     } else {
-        ticks
-            .call(cutText, guide.tickFormatWordWrapLimit);
+        tick.call(cutText, guide.tickFormatWordWrapLimit);
     }
 };
 
