@@ -180,19 +180,19 @@ define(function (require) {
         it('should support [fit-width] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-width'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 600, 250);
+            checkSizes(chart1, 600, 249);
         });
 
         it('should support [fit-height] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-height'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 183, 800);
+            checkSizes(chart1, 184, 800);
         });
 
         it('should support [minimal] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('minimal'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 183, 250);
+            checkSizes(chart1, 184, 249);
         });
 
         afterEach(function () {

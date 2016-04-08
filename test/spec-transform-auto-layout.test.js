@@ -443,6 +443,7 @@ define(function (require) {
             };
 
             var fullSpec = convSpec(spec, 'COMPACT');
+
             var testSpecEngine = new SpecAutoLayout(fullSpec);
             var full = testSpecEngine.transform(chartAPI(fullSpec));
             var measurer = full.settings;
@@ -477,19 +478,16 @@ define(function (require) {
             expect(y.textAnchor).to.equal('middle');
             expect(y.tickFormat).to.equal(null);
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
-            // expect(y.label.text).to.equal('');
             expect(y.label.text).to.equal('count');
             expect(y.label.cssClass).to.equal('label');
             expect(y.label.dock).to.equal(null);
-            // expect(y.tickFontHeight).to.equal(0);
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
 
-            expect(full.unit.guide.padding.b).to.equal(40);
+            expect(full.unit.guide.padding.b).to.equal(34);
 
             // y is null axis
-            // expect(full.unit.guide.padding.l).to.equal(0);
-            expect(full.unit.guide.padding.l).to.equal(19);
+            expect(full.unit.guide.padding.l).to.equal(15);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 
