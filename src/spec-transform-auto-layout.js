@@ -2,6 +2,8 @@ import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 import {FormatterRegistry} from './formatter-registry';
 
+var sum = ((arr) => arr.reduce((sum, x) => (sum + x), 0));
+
 function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
     guide_dim = guide_dim || {};
@@ -204,108 +206,91 @@ var wrapLine = (box, lineWidthLimit, linesCountLimit) => {
     };
 };
 
-var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
 
-    var dimX = meta.dimension(unit.x);
-    var dimY = meta.dimension(unit.y);
-
-    var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
     var xValues = xMeta.values;
-    var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
     var yValues = yMeta.values;
     var xIsEmptyAxis = (xMeta.isEmpty);
     var yIsEmptyAxis = (yMeta.isEmpty);
 
-    unit.guide.x.tickFormat = shortFormat(unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats));
-    unit.guide.y.tickFormat = shortFormat(unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats));
-
     var maxXTickBox = getMaxTickLabelSize(
         xValues,
-        FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias),
+        FormatterRegistry.get(guide.x.tickFormat, guide.x.tickFormatNullAlias),
         settings.getAxisTickLabelSize,
         settings.xAxisTickLabelLimit);
 
     var maxYTickBox = getMaxTickLabelSize(
         yValues,
-        FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias),
+        FormatterRegistry.get(guide.y.tickFormat, guide.y.tickFormatNullAlias),
         settings.getAxisTickLabelSize,
         settings.yAxisTickLabelLimit);
 
-    var xAxisPadding = settings.xAxisPadding;
-    var yAxisPadding = settings.yAxisPadding;
-
-    var isXVertical = allowXVertical ? !(dimX.dimType === 'measure') : false;
-    var isYVertical = allowYVertical ? !(dimY.dimType === 'measure') : false;
-
-    unit.guide.x.padding = xIsEmptyAxis ? 0 : xAxisPadding;
-    unit.guide.y.padding = yIsEmptyAxis ? 0 : yAxisPadding;
-
-    unit.guide.x.rotate = isXVertical ? 90 : 0;
-    unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
-
-    unit.guide.y.rotate = isYVertical ? -90 : 0;
-    unit.guide.y.textAnchor = isYVertical ? 'middle' : unit.guide.y.textAnchor;
-
     if (maxXTickBox.width > settings.xAxisTickLabelLimit) {
-        unit.guide.x.tickFormatWordWrap = true;
-        unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
+        guide.x.tickFormatWordWrap = true;
+        guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
         maxXTickBox = wrapLine(maxXTickBox, settings.xAxisTickLabelLimit, settings.xTickWordWrapLinesLimit);
     }
 
     if (maxYTickBox.width > settings.yAxisTickLabelLimit) {
-        unit.guide.y.tickFormatWordWrap = true;
-        unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
+        guide.y.tickFormatWordWrap = true;
+        guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
         maxYTickBox = wrapLine(maxYTickBox, settings.yAxisTickLabelLimit, settings.yTickWordWrapLinesLimit);
     }
 
     var kxAxisW = xIsEmptyAxis ? 0 : 1;
     var kyAxisW = yIsEmptyAxis ? 0 : 1;
 
-    var xLabel = unit.guide.x.label;
-    var yLabel = unit.guide.y.label;
-    var kxLabelW = (xLabel.text) ? 1 : 0;
-    var kyLabelW = (yLabel.text) ? 1 : 0;
+    var xLabel = guide.x.label;
+    var yLabel = guide.y.label;
+    var kxLabelW = (xLabel.text && !xLabel.hide) ? 1 : 0;
+    var kyLabelW = (yLabel.text && !yLabel.hide) ? 1 : 0;
 
-    var rotXBox = rotateBox(maxXTickBox, unit.guide.x.rotate);
-    var rotYBox = rotateBox(maxYTickBox, unit.guide.y.rotate);
+    var rotXBox = rotateBox(maxXTickBox, guide.x.rotate);
+    var rotYBox = rotateBox(maxYTickBox, guide.y.rotate);
 
-    if (!inlineLabels) {
-
-        // jscs:disable
-        xLabel.padding = (kxAxisW * (settings.xTickWidth + rotXBox.height) + kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight));
-        yLabel.padding = (kyAxisW * (settings.yTickWidth + rotYBox.width ) + kyLabelW * (settings.distToYAxisLabel));
-        // jscs:enable
-
-    } else {
+    if (inlineLabels) {
 
         xLabel.padding = (-settings.xAxisPadding - settings.xFontLabelHeight) / 2 + settings.xFontLabelHeight;
-        xLabel.cssClass += ' inline';
-        xLabel.dock = 'right';
-        xLabel.textAnchor = 'end';
-
         yLabel.padding = (-settings.yAxisPadding - settings.yFontLabelHeight) / 2;
-        yLabel.cssClass += ' inline';
-        yLabel.dock = 'right';
-        yLabel.textAnchor = 'end';
 
         kxLabelW = 0;
         kyLabelW = 0;
+
+    } else {
+
+        xLabel.padding = sum([
+            (kxAxisW * (settings.xTickWidth + rotXBox.height)),
+            (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight - 2))
+        ]);
+        yLabel.padding = sum([
+            (kyAxisW * (settings.yTickWidth + rotYBox.width)),
+            (kyLabelW * settings.distToYAxisLabel)
+        ]);
     }
 
-    // jscs:disable
-    unit.guide.padding = _.extend(
-        (unit.guide.padding),
+    guide.padding = _.extend(
+        (guide.padding),
         {
-            b: (unit.guide.x.hide) ? 0 : (settings.xAxisPadding + (kxAxisW * (settings.xTickWidth + rotXBox.height) + kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight))),
-            l: (unit.guide.y.hide) ? 0 : (settings.yAxisPadding + (kyAxisW * (settings.yTickWidth + rotYBox.width ) + kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight)))
-        }
-    );
-    // jscs:enable
+            b: (guide.x.hide) ?
+                (0) :
+                sum([
+                    (guide.x.padding),
+                    (kxAxisW * (settings.xTickWidth + rotXBox.height)),
+                    (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight))
+                ]),
+            l: (guide.y.hide) ?
+                (0) :
+                sum([
+                    (guide.y.padding),
+                    (kyAxisW * (settings.yTickWidth + rotYBox.width)),
+                    (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
+                ])
+        });
 
-    unit.guide.x = _.extend(
-        (unit.guide.x),
+    guide.x = _.extend(
+        (guide.x),
         {
-            density: (rotXBox.width + getSettings(settings, 'xDensityPadding', dimX.dimType) * 2),
+            density: (rotXBox.width + getSettings(settings, 'xDensityPadding', xMeta.dimType) * 2),
             tickFontHeight: maxXTickBox.height,
             $minimalDomain: xValues.length,
             $maxTickTextW: maxXTickBox.width,
@@ -313,16 +298,60 @@ var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertic
             tickFormatWordWrapLimit: settings.xAxisTickLabelLimit
         });
 
-    unit.guide.y = _.extend(
-        (unit.guide.y),
+    guide.y = _.extend(
+        (guide.y),
         {
-            density: (rotYBox.height + getSettings(settings, 'yDensityPadding', dimY.dimType) * 2),
+            density: (rotYBox.height + getSettings(settings, 'yDensityPadding', yMeta.dimType) * 2),
             tickFontHeight: maxYTickBox.height,
             $minimalDomain: yValues.length,
             $maxTickTextW: maxYTickBox.width,
             $maxTickTextH: maxYTickBox.height,
             tickFormatWordWrapLimit: settings.yAxisTickLabelLimit
         });
+
+    return guide;
+};
+
+var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+
+    var dimX = meta.dimension(unit.x);
+    var dimY = meta.dimension(unit.y);
+
+    var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
+    var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
+    var xIsEmptyAxis = (xMeta.isEmpty);
+    var yIsEmptyAxis = (yMeta.isEmpty);
+
+    unit.guide.x.tickFormat = shortFormat(unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats));
+    unit.guide.y.tickFormat = shortFormat(unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats));
+
+    var isXVertical = allowXVertical ? !(dimX.dimType === 'measure') : false;
+    var isYVertical = allowYVertical ? !(dimY.dimType === 'measure') : false;
+
+    unit.guide.x.padding = xIsEmptyAxis ? 0 : settings.xAxisPadding;
+    unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
+
+    unit.guide.x.rotate = isXVertical ? 90 : 0;
+    unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
+
+    unit.guide.y.rotate = isYVertical ? -90 : 0;
+    unit.guide.y.textAnchor = isYVertical ? 'middle' : unit.guide.y.textAnchor;
+
+    unit.guide = calcXYGuide(unit.guide, settings, xMeta, yMeta, inlineLabels);
+
+    if (inlineLabels) {
+
+        let xLabel = unit.guide.x.label;
+        let yLabel = unit.guide.y.label;
+
+        xLabel.cssClass += ' inline';
+        xLabel.dock = 'right';
+        xLabel.textAnchor = 'end';
+
+        yLabel.cssClass += ' inline';
+        yLabel.dock = 'right';
+        yLabel.textAnchor = 'end';
+    }
 
     return unit;
 };
@@ -440,103 +469,34 @@ var SpecEngineTypeMap = {
 
                 var isFacetUnit = (!selectorPredicates.isLeaf && !selectorPredicates.isLeafParent);
 
-                var dimX = meta.dimension(unit.x);
-                var dimY = meta.dimension(unit.y);
+                var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
+                var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
 
-                var isXVertical = !isFacetUnit && (Boolean(dimX.dimType) && dimX.dimType !== 'measure');
+                var isXVertical = !isFacetUnit && (Boolean(xMeta.dimType) && xMeta.dimType !== 'measure');
 
                 unit.guide.x.rotate = (isXVertical ? 90 : 0);
                 unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate);
 
-                var xMeta = meta.scaleMeta(unit.x, unit.guide.x);
-                var xValues = xMeta.values;
-                var yMeta = meta.scaleMeta(unit.y, unit.guide.y);
-                var yValues = yMeta.values;
-                var xIsEmptyAxis = (xMeta.isEmpty);
-                var yIsEmptyAxis = (yMeta.isEmpty);
+                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(xMeta, settings.defaultFormats);
+                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(yMeta, settings.defaultFormats);
 
-                unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats);
-                unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats);
+                unit.guide.x.padding = (isFacetUnit ? 0 : settings.xAxisPadding);
+                unit.guide.y.padding = (isFacetUnit ? 0 : settings.yAxisPadding);
 
-                var maxXTickBox = getMaxTickLabelSize(
-                    xValues,
-                    FormatterRegistry.get(unit.guide.x.tickFormat, unit.guide.x.tickFormatNullAlias),
-                    settings.getAxisTickLabelSize,
-                    settings.xAxisTickLabelLimit);
-
-                var maxYTickBox = getMaxTickLabelSize(
-                    yValues,
-                    FormatterRegistry.get(unit.guide.y.tickFormat, unit.guide.y.tickFormatNullAlias),
-                    settings.getAxisTickLabelSize,
-                    settings.yAxisTickLabelLimit);
-
-                if (maxYTickBox.width > settings.yAxisTickLabelLimit) {
-                    unit.guide.y.tickFormatWordWrap = true;
-                    unit.guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
-                    maxYTickBox = wrapLine(maxYTickBox, settings.yAxisTickLabelLimit, settings.yTickWordWrapLinesLimit);
-                }
-
-                if (maxXTickBox.width > settings.xAxisTickLabelLimit) {
-                    unit.guide.x.tickFormatWordWrap = true;
-                    unit.guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
-                    maxXTickBox = wrapLine(maxXTickBox, settings.xAxisTickLabelLimit, settings.xTickWordWrapLinesLimit);
-                }
-
-                var rotXBox = rotateBox(maxXTickBox, unit.guide.x.rotate);
-                var rotYBox = rotateBox(maxYTickBox, unit.guide.y.rotate);
-
-                var xLabel = unit.guide.x.label;
-                var yLabel = unit.guide.y.label;
-
-                var kxAxisW = xIsEmptyAxis ? 0 : 1;
-                var kyAxisW = yIsEmptyAxis ? 0 : 1;
-
-                var kxLabelW = (xLabel.text && !xLabel.hide) ? 1 : 0;
-                var kyLabelW = (yLabel.text && !yLabel.hide) ? 1 : 0;
-
-                // jscs:disable
-                xLabel.padding = (kxAxisW * (settings.xTickWidth + rotXBox.height) + kxLabelW * settings.distToXAxisLabel);
-                yLabel.padding = (kyAxisW * (settings.yTickWidth + rotYBox.width) + kyLabelW * settings.distToYAxisLabel);
-                // jscs:enable
-
-                var xAxisPad = isFacetUnit ? 0 : settings.xAxisPadding;
-                var yAxisPad = isFacetUnit ? 0 : settings.yAxisPadding;
-
-                // jscs:disable
-                unit.guide.padding = _.extend(
-                    (unit.guide.padding),
-                    {
-                        b: ((unit.guide.x.hide) ? (0) : (xAxisPad + xLabel.padding + kxLabelW * settings.xFontLabelHeight)),
-                        l: ((unit.guide.y.hide) ? (0) : (yAxisPad + yLabel.padding + kyLabelW * settings.yFontLabelHeight))
-                    });
-                // jscs:enable
+                unit.guide = calcXYGuide(unit.guide, settings, xMeta, yMeta);
 
                 unit.guide.x = _.extend(
                     (unit.guide.x),
                     {
                         cssClass: (isFacetUnit) ? (unit.guide.x.cssClass + ' facet-axis') : (unit.guide.x.cssClass),
-                        avoidCollisions: (isFacetUnit) ? true : (unit.guide.x.avoidCollisions),
-                        density: (rotXBox.width + getSettings(settings, 'xDensityPadding', dimX.dimType) * 2),
-                        padding: xAxisPad,
-                        tickFontHeight: maxXTickBox.height,
-                        $minimalDomain: xValues.length,
-                        $maxTickTextW: maxXTickBox.width,
-                        $maxTickTextH: maxXTickBox.height,
-                        tickFormatWordWrapLimit: settings.xAxisTickLabelLimit
+                        avoidCollisions: (isFacetUnit) ? true : (unit.guide.x.avoidCollisions)
                     });
 
                 unit.guide.y = _.extend(
                     (unit.guide.y),
                     {
                         cssClass: (isFacetUnit) ? (unit.guide.y.cssClass + ' facet-axis') : (unit.guide.y.cssClass),
-                        avoidCollisions: (isFacetUnit) ? false : (unit.guide.y.avoidCollisions),
-                        density: (rotYBox.height + getSettings(settings, 'yDensityPadding', dimY.dimType) * 2),
-                        padding: yAxisPad,
-                        tickFontHeight: maxYTickBox.height,
-                        $minimalDomain: yValues.length,
-                        $maxTickTextW: maxYTickBox.width,
-                        $maxTickTextH: maxYTickBox.height,
-                        tickFormatWordWrapLimit: settings.yAxisTickLabelLimit
+                        avoidCollisions: (isFacetUnit) ? false : (unit.guide.y.avoidCollisions)
                     });
 
                 unit.guide = _.extend(
@@ -655,7 +615,13 @@ var SpecEngineFactory = {
             scaleMeta: (scaleId) => {
                 var scale = fnCreateScale('pos', scaleId);
                 var values = scale.domain();
+
+                var scaleCfg = srcSpec.scales[scaleId];
+                var dim = srcSpec.sources[scaleCfg.source].dims[scaleCfg.dim] || {};
                 return {
+                    dimName: scaleCfg.dim,
+                    dimType: dim.type,
+                    scaleType: scaleCfg.type,
                     values: values,
                     isEmpty: ((values.filter((x) => !(_.isUndefined(x))).length) === 0)
                 };
