@@ -322,7 +322,7 @@ define(function (require) {
             expect(full.unit.guide.padding.b).to.equal(54);
 
             // y is null axis
-            expect(full.unit.guide.padding.l).to.equal(35);
+            expect(full.unit.guide.padding.l).to.equal(24);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 

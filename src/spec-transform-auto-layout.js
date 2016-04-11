@@ -182,19 +182,35 @@ var rotateBox = ({width, height}, angle) => {
     };
 };
 
-var getTextAnchorByAngle = (angle) => {
+var getTextAnchorByAngle = (angle, xOrY = 'x') => {
 
-    var rules = [
-        [0, 45, 'middle'],
-        [45, 135, 'start'],
-        [135, 225, 'middle'],
-        [225, 315, 'end'],
-        [315, 360, 'middle']
-    ];
+    if (Math.abs(angle) >= 360) {
+        angle = (angle % 360);
+    }
 
-    var i = _.findIndex(rules, (r) => (angle >= r[0] && angle < r[1]));
+    if (angle < 0) {
+        angle = (360 + angle);
+    }
 
-    return rules[i][2];
+    var xRules = (xOrY === 'x') ?
+        ([
+            [0, 45, 'middle'],
+            [45, 135, 'start'],
+            [135, 225, 'middle'],
+            [225, 315, 'end'],
+            [315, 360, 'middle']
+        ]) :
+        ([
+            [0, 90, 'end'],
+            [90, 135, 'middle'],
+            [135, 225, 'start'],
+            [225, 315, 'middle'],
+            [315, 360, 'end']
+        ]);
+
+    var i = _.findIndex(xRules, (r) => (angle >= r[0] && angle < r[1]));
+
+    return xRules[i][2];
 };
 
 var wrapLine = (box, lineWidthLimit, linesCountLimit) => {
@@ -262,6 +278,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
             (kxAxisW * (settings.xTickWidth + rotXBox.height)),
             (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight - 2))
         ]);
+
         yLabel.padding = sum([
             (kyAxisW * (settings.yTickWidth + rotYBox.width)),
             (kyLabelW * settings.distToYAxisLabel)
@@ -332,10 +349,10 @@ var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertic
     unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
 
     unit.guide.x.rotate = isXVertical ? 90 : 0;
-    unit.guide.x.textAnchor = isXVertical ? 'start' : unit.guide.x.textAnchor;
+    unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate, 'x');
 
     unit.guide.y.rotate = isYVertical ? -90 : 0;
-    unit.guide.y.textAnchor = isYVertical ? 'middle' : unit.guide.y.textAnchor;
+    unit.guide.y.textAnchor = getTextAnchorByAngle(unit.guide.y.rotate, 'y');
 
     unit.guide = calcXYGuide(unit.guide, settings, xMeta, yMeta, inlineLabels);
 
@@ -483,7 +500,16 @@ var SpecEngineTypeMap = {
                 unit.guide.x.padding = (isFacetUnit ? 0 : settings.xAxisPadding);
                 unit.guide.y.padding = (isFacetUnit ? 0 : settings.yAxisPadding);
 
-                unit.guide = calcXYGuide(unit.guide, settings, xMeta, yMeta);
+                unit.guide = calcXYGuide(
+                    unit.guide,
+                    _.defaults(
+                        {
+                            distToXAxisLabel: (xMeta.isEmpty) ? settings.xTickWidth : settings.distToXAxisLabel,
+                            distToYAxisLabel: (yMeta.isEmpty) ? settings.yTickWidth : settings.distToYAxisLabel
+                        },
+                        settings),
+                    xMeta,
+                    yMeta);
 
                 unit.guide.x = _.extend(
                     (unit.guide.x),
