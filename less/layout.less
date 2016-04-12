@@ -28,6 +28,7 @@
         &__container {
             .flexbox;
             .flex(@flex-grow: 1);
+            max-height: 100%;
         }
 
         &__footer {
@@ -39,20 +40,19 @@
         }
 
         &__content {
-            .flex(@flex-grow: 1;@flex-shrink:0;);
-
-            div {
-                overflow: auto;
-            }
+            .flex(@flex-grow: 1;@flex-shrink: 1;);
+            padding: 0 17px 17px 0;
+            overflow: auto;
         }
 
         &__sidebar-right {
             position: relative;
+            overflow: auto;
+            padding: 0 17px 17px 0;
             .flex(@flex-shrink:0);
 
             &__wrap {
                 max-height: 100%;
-                overflow-y: auto;
                 box-sizing: border-box;
             }
         }
