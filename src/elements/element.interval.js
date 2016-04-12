@@ -142,7 +142,7 @@ export class Interval extends Element {
             barsGap,
             minSize: this.sizeMin,
             maxSize: this.sizeMax,
-            dataSource: frames[0].full()
+            dataSource: (frames.slice(0, 1).reduce((memo, f) => memo.concat(f.full()), []))
         });
 
         var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
