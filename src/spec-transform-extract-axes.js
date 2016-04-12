@@ -38,8 +38,11 @@ export class SpecTransformExtractAxes {
             return (unitRef.type.indexOf('ELEMENT.') === 0);
         };
 
+        var pad = (x) => (x ? 10 : 0);
+
         var ttl = {l:0, r:10, t:10, b:0};
         var seq = [];
+
         var enterIterator = (unitRef, level) => {
 
             if ((level > 1) || !isCoordsRect(unitRef)) {
@@ -78,7 +81,6 @@ export class SpecTransformExtractAxes {
             return (rects.length === 1);
         };
 
-        var pad = (x) => (x ? 10 : 0);
         var exitIterator = (unitRef) => {
 
             var lvl = seq.pop();
@@ -105,6 +107,5 @@ export class SpecTransformExtractAxes {
         utils.traverseSpec(spec.unit, enterIterator, exitIterator);
 
         spec.unit.guide.padding = ttl;
-        spec.unit.guide.autoLayout = '';
     }
 }

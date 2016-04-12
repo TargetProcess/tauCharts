@@ -22,6 +22,7 @@ export class SpecTransformOptimize {
         enterSpec(root, localSettings.xAxisTickLabelLimit, ((unit, tickTextDelta) => {
             if (unit.guide.autoLayout === 'extract-axes') {
                 root.guide.x.padding += tickTextDelta;
+                root.guide.padding.b += tickTextDelta;
             } else {
                 unit.guide.padding.b += (unit.guide.padding.b > 0) ? tickTextDelta : 0;
                 var tickTextWidth = Math.min(localSettings.xAxisTickLabelLimit, unit.guide.x.$maxTickTextW);

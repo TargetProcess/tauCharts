@@ -180,7 +180,7 @@ define(function (require) {
         it('should support [fit-width] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-width'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 600, 249);
+            checkSizes(chart1, 600, 214);
         });
 
         it('should support [fit-height] model', function () {
