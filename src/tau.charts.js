@@ -146,8 +146,8 @@ var api = {
         xFontLabelHeight: 10,
         yFontLabelHeight: 10,
 
-        xDensityPadding: 0.25,
-        yDensityPadding: 0.25,
+        xDensityPadding: 2,
+        yDensityPadding: 2,
         'xDensityPadding:measure': 8,
         'yDensityPadding:measure': 8,
 

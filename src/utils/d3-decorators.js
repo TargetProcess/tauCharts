@@ -250,7 +250,7 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
             wrapText,
             guide.tickFormatWordWrapLimit,
             guide.tickFormatWordWrapLines,
-            guide.$maxTickTextH,
+            guide.tickFontHeight,
             !isHorizontal
         );
     } else {

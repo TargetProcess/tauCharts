@@ -241,16 +241,19 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
         settings.getAxisTickLabelSize,
         settings.yAxisTickLabelLimit);
 
+    var multiLinesXBox = maxXTickBox;
+    var multiLinesYBox = maxYTickBox;
+
     if (maxXTickBox.width > settings.xAxisTickLabelLimit) {
         guide.x.tickFormatWordWrap = true;
         guide.x.tickFormatWordWrapLines = settings.xTickWordWrapLinesLimit;
-        maxXTickBox = wrapLine(maxXTickBox, settings.xAxisTickLabelLimit, settings.xTickWordWrapLinesLimit);
+        multiLinesXBox = wrapLine(maxXTickBox, settings.xAxisTickLabelLimit, settings.xTickWordWrapLinesLimit);
     }
 
     if (maxYTickBox.width > settings.yAxisTickLabelLimit) {
         guide.y.tickFormatWordWrap = true;
         guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
-        maxYTickBox = wrapLine(maxYTickBox, settings.yAxisTickLabelLimit, settings.yTickWordWrapLinesLimit);
+        multiLinesYBox = wrapLine(maxYTickBox, settings.yAxisTickLabelLimit, settings.yTickWordWrapLinesLimit);
     }
 
     var kxAxisW = xIsEmptyAxis ? 0 : 1;
@@ -261,8 +264,8 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     var kxLabelW = (xLabel.text && !xLabel.hide) ? 1 : 0;
     var kyLabelW = (yLabel.text && !yLabel.hide) ? 1 : 0;
 
-    var rotXBox = rotateBox(maxXTickBox, guide.x.rotate);
-    var rotYBox = rotateBox(maxYTickBox, guide.y.rotate);
+    var rotXBox = rotateBox(multiLinesXBox, guide.x.rotate);
+    var rotYBox = rotateBox(multiLinesYBox, guide.y.rotate);
 
     if (inlineLabels) {
 
@@ -310,8 +313,8 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
             density: (rotXBox.width + getSettings(settings, 'xDensityPadding', xMeta.dimType) * 2),
             tickFontHeight: maxXTickBox.height,
             $minimalDomain: xValues.length,
-            $maxTickTextW: maxXTickBox.width,
-            $maxTickTextH: maxXTickBox.height,
+            $maxTickTextW: multiLinesXBox.width,
+            $maxTickTextH: multiLinesXBox.height,
             tickFormatWordWrapLimit: settings.xAxisTickLabelLimit
         });
 
@@ -321,8 +324,8 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
             density: (rotYBox.height + getSettings(settings, 'yDensityPadding', yMeta.dimType) * 2),
             tickFontHeight: maxYTickBox.height,
             $minimalDomain: yValues.length,
-            $maxTickTextW: maxYTickBox.width,
-            $maxTickTextH: maxYTickBox.height,
+            $maxTickTextW: multiLinesYBox.width,
+            $maxTickTextH: multiLinesYBox.height,
             tickFormatWordWrapLimit: settings.yAxisTickLabelLimit
         });
 
