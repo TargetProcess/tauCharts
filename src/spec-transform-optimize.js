@@ -20,7 +20,7 @@ export class SpecTransformOptimize {
         };
 
         enterSpec(root, localSettings.xAxisTickLabelLimit, ((unit, tickTextDelta) => {
-            if (unit.guide.autoLayout === 'extract-axes') {
+            if ((root !== unit) && (unit.guide.autoLayout === 'extract-axes')) {
                 root.guide.x.padding += tickTextDelta;
                 root.guide.padding.b += tickTextDelta;
             } else {
