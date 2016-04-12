@@ -137,8 +137,8 @@ var api = {
         xTickWidth: 6 + 3,
         yTickWidth: 6 + 3,
 
-        distToXAxisLabel: 20,
-        distToYAxisLabel: 20,
+        distToXAxisLabel: 10,
+        distToYAxisLabel: 10,
 
         xAxisPadding: 20,
         yAxisPadding: 20,

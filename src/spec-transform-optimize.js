@@ -24,11 +24,8 @@ export class SpecTransformOptimize {
                 root.guide.x.padding += tickTextDelta;
                 root.guide.padding.b += tickTextDelta;
             } else {
+                unit.guide.x.label.padding += (unit.guide.x.label.padding > 0) ? tickTextDelta : 0;
                 unit.guide.padding.b += (unit.guide.padding.b > 0) ? tickTextDelta : 0;
-                var tickTextWidth = Math.min(localSettings.xAxisTickLabelLimit, unit.guide.x.$maxTickTextW);
-                if (unit.guide.x.label.padding > (tickTextWidth + localSettings.xAxisPadding)) {
-                    unit.guide.x.label.padding += tickTextDelta;
-                }
             }
         }));
     }
