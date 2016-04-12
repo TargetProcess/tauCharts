@@ -116,7 +116,6 @@ var api = {
         ],
 
         fitModel: 'normal',
-        optimizeGuideBySize: true,
         layoutEngine: 'EXTRACT',
         autoRatio: true,
         defaultSourceMap: [
@@ -129,8 +128,8 @@ var api = {
 
         getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),
 
-        xAxisTickLabelLimit: 100,
-        yAxisTickLabelLimit: 100,
+        xAxisTickLabelLimit: 150,
+        yAxisTickLabelLimit: 150,
 
         xTickWordWrapLinesLimit: 2,
         yTickWordWrapLinesLimit: 2,

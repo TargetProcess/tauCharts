@@ -467,6 +467,10 @@ var utils = {
 
     extCSSClass: function (x) {
         return (testColorCode(x) ? '' : x);
+    },
+
+    toRadian: function (degree) {
+        return (degree / 180) * Math.PI;
     }
 };
 

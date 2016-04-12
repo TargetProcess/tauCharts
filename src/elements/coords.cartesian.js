@@ -309,7 +309,9 @@ export class Cartesian extends Element {
                         d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
                     }
 
-                    d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+                    if (!scale.guide.label.hide) {
+                        d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+                    }
 
                     if (isHorizontal && (scale.scaleType === 'time')) {
                         d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
