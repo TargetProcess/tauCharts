@@ -48,6 +48,7 @@
   -ms-flex: 1 1 auto;
   -webkit-flex: 1 1 auto;
           flex: 1 1 auto;
+  max-height: 100%;
 }
 .graphical-report__layout__footer {
   -ms-flex: 0 1 auto;
@@ -60,22 +61,22 @@
           flex: 0 1 auto;
 }
 .graphical-report__layout__content {
-  -ms-flex: 1 0 auto;
-  -webkit-flex: 1 0 auto;
-          flex: 1 0 auto;
-}
-.graphical-report__layout__content div {
+  -ms-flex: 1 1 auto;
+  -webkit-flex: 1 1 auto;
+          flex: 1 1 auto;
+  padding: 0 17px 17px 0;
   overflow: auto;
 }
 .graphical-report__layout__sidebar-right {
   position: relative;
+  overflow: auto;
+  padding: 0 17px 17px 0;
   -ms-flex: 0 0 auto;
   -webkit-flex: 0 0 auto;
           flex: 0 0 auto;
 }
 .graphical-report__layout__sidebar-right__wrap {
   max-height: 100%;
-  overflow-y: auto;
   box-sizing: border-box;
 }
 .graphical-report__layout text {
