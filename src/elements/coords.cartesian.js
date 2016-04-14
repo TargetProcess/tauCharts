@@ -140,6 +140,32 @@ export class Cartesian extends Element {
             })));
     }
 
+    walkFrames(frames, continuation) {
+
+        var model = this.buildModel({
+            scaleX: this.xScale,
+            scaleY: this.yScale,
+            w: this.W,
+            h: this.H
+        });
+
+        frames.forEach((frame) => {
+
+            var k = frame.key;
+            var options = {
+                left: (model.xi(k) - model.sizeX(k) / 2),
+                top: (model.yi(k) - model.sizeY(k) / 2),
+                width: (model.sizeX(k)),
+                height: (model.sizeY(k))
+            };
+
+            frame.units.forEach((unit) => {
+                unit.options = options;
+                continuation(unit, frame);
+            });
+        });
+    }
+
     drawFrames(frames, continuation) {
 
         var model = this.buildModel({

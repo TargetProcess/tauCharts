@@ -61,4 +61,8 @@ export class Element extends Emitter {
             sel.on(eventName, utils.throttleLastEvent(last, eventName, callback, limit));
         });
     }
+
+    walkFrames() {
+        // do nothing by default
+    }
 }

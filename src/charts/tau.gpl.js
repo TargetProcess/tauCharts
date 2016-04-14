@@ -85,6 +85,13 @@ export class GPL extends Emitter {
             height: size.height
         };
 
+        this._walkUnitsStructure(
+            this.root,
+            this._datify({
+                source: this.root.expression.source,
+                pipe: []
+            }));
+
         this._drawUnitsStructure(
             this.root,
             this._datify({
@@ -182,6 +189,33 @@ export class GPL extends Emitter {
         if (self.onUnitDraw) {
             self.onUnitDraw(unitNode);
         }
+
+        return unitConfig;
+    }
+
+    _walkUnitsStructure(unitConfig, rootFrame, parentUnit = null) {
+
+        var self = this;
+
+        // Rule to cancel parent frame inheritance
+        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
+
+        var UnitClass = self.unitSet.get(unitConfig.type);
+        var unitNode = new UnitClass(unitConfig);
+        unitNode.parentUnit = parentUnit;
+        unitNode
+            .createScales((type, alias, dynamicProps) => {
+                var key = (alias || `${type}:default`);
+                return self
+                    .scalesHub
+                    .createScaleInfo(self.scales[key], passFrame)
+                    .create(dynamicProps);
+            })
+            .walkFrames(unitConfig.frames, (function (rootUnit) {
+                return function (rootConf, rootFrame) {
+                    self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
+                };
+            }(unitNode)));
 
         return unitConfig;
     }

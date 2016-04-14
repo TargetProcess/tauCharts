@@ -95,6 +95,8 @@ export class BaseScale {
             }, func);
 
         scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
+        scaleFn.value = scaleFn;
+        scaleFn.reset = ((fn) => (_.extend(this.scaleConfig, fn(this.scaleConfig))));
 
         return scaleFn;
     }

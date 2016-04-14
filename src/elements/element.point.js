@@ -72,14 +72,9 @@ export class Point extends Element {
             .regScale('color', this.color);
     }
 
-    buildModel({xScale, yScale, sizeScale, colorScale}) {
+    buildModel({colorScale}) {
 
-        var args = {xScale, yScale, sizeScale, colorScale};
-
-        var pointModel = this
-            .decorators
-            .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PointModel()));
+        var pointModel = this.walkFrames();
 
         return {
             x: pointModel.xi,
@@ -89,6 +84,21 @@ export class Point extends Element {
             color: (d) => colorScale.toColor(pointModel.color(d)),
             class: (d) => colorScale.toClass(pointModel.color(d))
         };
+    }
+
+    walkFrames() {
+
+        var args = {
+            xScale: this.xScale,
+            yScale: this.yScale,
+            colorScale: this.color,
+            sizeScale: this.size
+        };
+
+        return this
+            .decorators
+            .filter(x => x)
+            .reduce(((model, transform) => transform(model, args)), (new PointModel()));
     }
 
     drawFrames(frames) {

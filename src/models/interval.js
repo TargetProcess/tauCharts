@@ -6,6 +6,9 @@ export class IntervalModel {
         var createFunc = ((x) => (() => x));
         this.scaleX = model.scaleX || null;
         this.scaleY = model.scaleY || null;
+        this.scaleSize = model.scaleSize || null;
+        this.scaleColor = model.scaleColor || null;
+
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
@@ -27,10 +30,10 @@ export class IntervalModel {
         return IntervalModel.compose(model);
     }
 
-    static decorator_orientation(model, {xScale, yScale, isHorizontal}) {
+    static decorator_orientation(model, {isHorizontal}) {
 
-        var baseScale = (isHorizontal ? yScale : xScale);
-        var valsScale = (isHorizontal ? xScale : yScale);
+        var baseScale = (isHorizontal ? model.scaleY : model.scaleX);
+        var valsScale = (isHorizontal ? model.scaleX : model.scaleY);
 
         var k = (isHorizontal ? (-0.5) : (0.5));
 
@@ -38,19 +41,11 @@ export class IntervalModel {
             scaleX: baseScale,
             scaleY: valsScale,
             y0: (valsScale.discrete ?
-                (() => valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k) :
-                (() => valsScale(Math.max(0, Math.min(...valsScale.domain()))))),
-            yi: ((d) => (valsScale(d[valsScale.dim]))),
-            xi: ((d) => (baseScale(d[baseScale.dim])))
+                (() => valsScale.value(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k) :
+                (() => valsScale.value(Math.max(0, Math.min(...valsScale.domain()))))),
+            yi: ((d) => (valsScale.value(d[valsScale.dim]))),
+            xi: ((d) => (baseScale.value(d[baseScale.dim])))
         });
-    }
-
-    static decorator_size(model, params) {
-        var method = (model.scaleX.discrete ?
-            IntervalModel.___dis___decorator_size :
-            IntervalModel.___con___decorator_size_dynamic);
-
-        return method(model, params);
     }
 
     static decorator_dynamic_size(model, params) {
@@ -61,32 +56,15 @@ export class IntervalModel {
         return method(model, params);
     }
 
-    static ___con___decorator_size_dynamic(model, {sizeScale}) {
+    static ___con___decorator_size_dynamic(model, {}) {
         return IntervalModel.compose(model, {
-            size: ((d) => (model.size(d) * sizeScale(d[sizeScale.dim])))
+            size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
         });
     }
 
-    static ___dis___decorator_size(model, {categories, barsGap}) {
-        var categoriesCount = (categories.length || 1);
-        var space = ((d) => model.scaleX.stepSize(d[model.scaleX.dim]) * (categoriesCount / (1 + categoriesCount)));
-        var fnBarSize = ((d) => (space(d) / categoriesCount));
-        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
-
+    static ___dis___decorator_size_dynamic(model, {}) {
         return IntervalModel.compose(model, {
-            size: ((d) => {
-                var barSize = fnBarSize(d);
-                var gapSize = fnGapSize(barSize);
-                return barSize - 2 * gapSize;
-            })
-        });
-    }
-
-    static ___dis___decorator_size_dynamic(model, {sizeScale, barsGap}) {
-        return IntervalModel.compose(model, {
-            size: ((d) => {
-                return (model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5 * sizeScale(d[sizeScale.dim]) - (2 * barsGap));
-            })
+            size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
         });
     }
 
@@ -98,10 +76,11 @@ export class IntervalModel {
         return method(model, params);
     }
 
-    static decorator_discrete_positioningByColor(model, {colorScale, categories, barsGap}) {
+    static decorator_discrete_positioningByColor(model, {barsGap}) {
         var baseScale = model.scaleX;
+        var categories = model.scaleColor.domain();
         var categoriesCount = (categories.length || 1);
-        var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[colorScale.dim]))); // -1 (not found) to 0
+        var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim]))); // -1 (not found) to 0
         var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
         var fnBarSize = ((d) => (space(d) / categoriesCount));
 
@@ -115,9 +94,31 @@ export class IntervalModel {
         });
     }
 
-    static decorator_color(model, {colorScale}) {
+    static decorator_discrete_share_size_by_color(model, {barsGap}) {
+
+        if (!model.scaleX.discrete) {
+            return model;
+        }
+
+        var baseScale = model.scaleX;
+        var categories = model.scaleColor.domain();
+        var categoriesCount = (categories.length || 1);
+        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
+        var fnBarSize = ((d) => (space(d) / categoriesCount));
+        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
+
         return IntervalModel.compose(model, {
-            color: ((d) => colorScale(d[colorScale.dim]))
+            size: ((d) => {
+                var barSize = fnBarSize(d);
+                var gapSize = fnGapSize(barSize);
+                return barSize - 2 * gapSize;
+            })
+        });
+    }
+
+    static decorator_color(model, {}) {
+        return IntervalModel.compose(model, {
+            color: ((d) => model.scaleColor.value(d[model.scaleColor.dim]))
         });
     }
 
@@ -157,20 +158,25 @@ export class IntervalModel {
         return IntervalModel.compose(model, {
             yi: memoize((d) => {
                 var {isPositive, nextStack, prevStack} = stackYi(d);
-                return (isPositive ? yScale(nextStack) : yScale(prevStack));
+                return yScale.value(isPositive ? nextStack : prevStack);
             }),
             y0: memoize((d) => {
                 var {isPositive, nextStack, prevStack} = stackY0(d);
-                return (isPositive ? yScale(prevStack) : yScale(nextStack));
+                return yScale.value(isPositive ? prevStack : nextStack);
             })
         });
     }
 
-    static decorator_size_distribute_evenly(model, {dataSource, minSize, maxSize}) {
+    static decorator_size_distribute_evenly(model, params) {
 
-        if (model.scaleX.discrete) {
-            return IntervalModel.decorator_identity(model);
-        }
+        var method = (model.scaleX.discrete) ?
+            IntervalModel.___dis___decorator_size_distribute_evenly :
+            IntervalModel.___con___decorator_size_distribute_evenly;
+
+        return method(model, params);
+    }
+
+    static ___con___decorator_size_distribute_evenly(model, {dataSource, minSize, maxSize}) {
 
         var asc = ((a, b) => (a - b));
 
@@ -194,5 +200,103 @@ export class IntervalModel {
         return IntervalModel.compose(model, {
             size: (() => Math.max(minSize, Math.min(maxSize, diff)))
         });
+    }
+
+    static ___dis___decorator_size_distribute_evenly(model, {barsGap}) {
+
+        var space = ((d) => model.scaleX.stepSize(d[model.scaleX.dim]) * (0.5));
+        var fnBarSize = ((d) => (space(d)));
+        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
+
+        return IntervalModel.compose(model, {
+            size: ((d) => {
+                var barSize = fnBarSize(d);
+                var gapSize = fnGapSize(barSize);
+                return barSize - 2 * gapSize;
+            })
+        });
+    }
+
+    static adjustYScale(model, {dataSource}) {
+
+        var minY = Number.MAX_VALUE;
+        var maxY = Number.MIN_VALUE;
+        var trackY = (y) => {
+            minY = (y < minY) ? y : minY;
+            maxY = (y > maxY) ? y : maxY;
+        };
+
+        var scaleY = model.scaleY.value;
+        model.scaleY.value = ((y) => {
+            trackY(y);
+            return scaleY(y);
+        });
+
+        dataSource.forEach((row) => {
+            model.yi(row);
+            model.y0(row);
+        });
+
+        model.scaleY.reset((yScaleConfig) => {
+
+            var newConf = {};
+
+            if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
+                newConf.max = maxY;
+            }
+
+            if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
+                newConf.min = minY;
+            }
+
+            return newConf;
+        });
+
+        return model;
+    }
+
+    static adjustSizeScale(model, {dataSource}) {
+
+        var minS = Number.MAX_VALUE;
+        var maxS = Number.MIN_VALUE;
+        var trackSize = (s) => {
+            minS = (s < minS) ? s : minS;
+            maxS = (s > maxS) ? s : maxS;
+        };
+
+        var trace = IntervalModel.compose(model, {
+            size: ((row) => {
+                var s = model.size(row);
+                trackSize(s);
+                return s;
+            })
+        });
+
+        dataSource.forEach((row) => {
+            trace.size(row);
+        });
+
+        model.scaleSize.reset((sizeScaleConfig) => {
+
+            var newConf = {};
+
+            if (!sizeScaleConfig.fixed) {
+                newConf.fixed = true;
+                newConf.max = maxS;
+                newConf.min = minS;
+            }
+
+            if (sizeScaleConfig.fixed && sizeScaleConfig.max > maxS) {
+                newConf.max = maxS;
+            }
+
+            if (sizeScaleConfig.fixed && sizeScaleConfig.min < minS) {
+                newConf.min = minS;
+            }
+
+            return newConf;
+        });
+
+        return model;
     }
 }

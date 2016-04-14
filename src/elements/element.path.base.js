@@ -71,14 +71,9 @@ export class BasePath extends Element {
             .regScale('text', this.text);
     }
 
-    buildModel({xScale, yScale, sizeScale, colorScale, textScale, dataSource}) {
+    buildModel({colorScale, textScale}) {
 
-        var args = {xScale, yScale, sizeScale, colorScale, dataSource};
-
-        var pathModel = this
-            .decorators
-            .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PathModel()));
+        var pathModel = this.walkFrames();
 
         return {
             scaleX: pathModel.scaleX,
@@ -111,6 +106,22 @@ export class BasePath extends Element {
 
     getDistance(mx, my, rx, ry) {
         return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2));
+    }
+
+    walkFrames() {
+
+        var args = {
+            xScale: this.xScale,
+            yScale: this.yScale,
+            sizeScale: this.size,
+            colorScale: this.color,
+            textScale: this.text
+        };
+
+        return this
+            .decorators
+            .filter(x => x)
+            .reduce(((model, transform) => transform(model, args)), (new PathModel()));
     }
 
     drawFrames(frames) {

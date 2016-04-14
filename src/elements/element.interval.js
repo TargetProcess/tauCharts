@@ -48,9 +48,10 @@ export class Interval extends Element {
         this.decorators = [
             IntervalModel.decorator_orientation,
             enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
-            IntervalModel.decorator_size,
-            IntervalModel.decorator_color,
-            enableColorPositioning && IntervalModel.decorator_positioningByColor
+            enableColorPositioning && IntervalModel.decorator_discrete_share_size_by_color,
+            enableColorPositioning && IntervalModel.decorator_positioningByColor,
+            IntervalModel.decorator_dynamic_size,
+            IntervalModel.decorator_color
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -103,6 +104,46 @@ export class Interval extends Element {
             .regScale('color', this.color);
     }
 
+    walkFrames(frames) {
+
+        var config = this.config;
+        var isHorizontal = config.flip || config.guide.flip;
+        var colorScale = this.color;
+
+        var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
+            memo[x] = i;
+            return memo;
+        }, {});
+
+        var colorIndex = ((row) => {
+            var c = row[colorScale.dim];
+            return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
+        });
+
+        var fullData = frames
+            .slice(0, 1)
+            .reduce(((memo, f) => memo.concat(f.full())), [])
+            .sort((a, b) => (colorIndex(a) - colorIndex(b)));
+
+        var args = {
+            isHorizontal,
+            barsGap: this.barsGap,
+            minSize: this.sizeMin,
+            maxSize: this.sizeMax,
+            dataSource: fullData
+        };
+
+        return this
+            .decorators
+            .filter(x => x)
+            .reduce(((model, transform) => transform(model, args)), (new IntervalModel({
+                scaleX: this.xScale,
+                scaleY: this.yScale,
+                scaleColor: this.color,
+                scaleSize: this.size
+            })));
+    }
+
     drawFrames(frames) {
 
         var self = this;
@@ -112,11 +153,9 @@ export class Interval extends Element {
         var config = this.config;
         var xScale = this.xScale;
         var yScale = this.yScale;
-        var sizeScale = this.size;
         var colorScale = this.color;
         var isHorizontal = config.flip || config.guide.flip;
         var prettify = config.guide.prettify;
-        var barsGap = this.barsGap;
         var baseCssClass = this.baseCssClass;
 
         var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
@@ -134,15 +173,8 @@ export class Interval extends Element {
             .sort((a, b) => (colorIndex(a) - colorIndex(b)));
 
         var barModel = this.buildModel({
-            xScale,
-            yScale,
-            sizeScale,
             colorScale,
-            isHorizontal,
-            barsGap,
-            minSize: this.sizeMin,
-            maxSize: this.sizeMax,
-            dataSource: (frames.slice(0, 1).reduce((memo, f) => memo.concat(f.full()), []))
+            frames: frames
         });
 
         var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
@@ -279,25 +311,9 @@ export class Interval extends Element {
         };
     }
 
-    buildModel({xScale, yScale, isHorizontal, sizeScale, colorScale, barsGap, dataSource, minSize, maxSize}) {
-        var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
-        var args = {
-            xScale,
-            yScale,
-            isHorizontal,
-            sizeScale,
-            colorScale,
-            barsGap,
-            minSize,
-            maxSize,
-            dataSource,
-            categories: (enableColorToBarPosition ? colorScale.domain() : [])
-        };
+    buildModel({colorScale, frames}) {
 
-        var barModel = this
-            .decorators
-            .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new IntervalModel()));
+        var barModel = this.walkFrames(frames);
 
         return {
             barX: ((d) => barModel.xi(d)),
