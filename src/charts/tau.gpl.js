@@ -54,8 +54,6 @@ export class GPL extends Emitter {
 
         this.root = this._expandUnitsStructure(this.config.unit);
 
-        this._adaptSpecToUnitsStructure(this.root, this.config);
-
         this.onUnitsStructureExpanded(this.config);
 
         var xSvg = d3Target.selectAll('svg').data([1]);
@@ -146,22 +144,6 @@ export class GPL extends Emitter {
         return root;
     }
 
-    _adaptSpecToUnitsStructure(root, spec) {
-
-        var UnitClass = this.unitSet.get(root.type);
-        if (UnitClass.embedUnitFrameToSpec) {
-            UnitClass.embedUnitFrameToSpec(root, spec); // static method
-        }
-
-        root.frames.forEach(
-            (f) => (f.units.forEach(
-                (unit) => this._adaptSpecToUnitsStructure(unit, spec)
-            ))
-        );
-
-        return root;
-    }
-
     _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
 
         var self = this;
@@ -201,7 +183,7 @@ export class GPL extends Emitter {
         var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
 
         var UnitClass = self.unitSet.get(unitConfig.type);
-        var unitNode = new UnitClass(unitConfig);
+        var unitNode = new UnitClass(_.extend({adjustPhase: true}, unitConfig));
         unitNode.parentUnit = parentUnit;
         unitNode
             .createScales((type, alias, dynamicProps) => {

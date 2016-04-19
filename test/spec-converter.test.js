@@ -86,11 +86,11 @@ define(function (require) {
                 "scales": {
                     "x_null"        : {"type": "ordinal", "source": "?"},
                     "y_null"        : {"type": "ordinal", "source": "?"},
-                    "size_null"     : {"type": "size", "source": "?", "mid": 5},
+                    "size_null"     : {"type": "size", "source": "?", "mid": 1},
                     "color_null"    : {"type": "color", "source": "?", "brewer": null},
 
                     "pos:default"   : {"type": "ordinal", "source": "?"},
-                    "size:default"  : {"type": "size", "source": "?", "mid": 5},
+                    "size:default"  : {"type": "size", "source": "?", "mid": 1},
                     "text:default"  : {"type": "value", source: "?"},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
 
@@ -255,11 +255,11 @@ define(function (require) {
                 "scales": {
                     "x_null": {"type": "ordinal", "source": "?"},
                     "y_null": {"type": "ordinal", "source": "?"},
-                    "size_null": {"type": "size", "source": "?", "mid": 5},
+                    "size_null": {"type": "size", "source": "?", "mid": 1},
                     "color_null": {"type": "color", "source": "?", "brewer": null},
 
                     "pos:default": {"type": "ordinal", "source": "?"},
-                    "size:default": {"type": "size", "source": "?", "mid": 5},
+                    "size:default": {"type": "size", "source": "?", "mid": 1},
                     "text:default": {"type": "value", source: "?"},
                     "color:default": {"type": "color", "source": "?", "brewer": null},
 

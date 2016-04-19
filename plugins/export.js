@@ -498,9 +498,10 @@
 
                 var data = values
                     .map(function (value) {
-                        var radius = sizeScale(value);
+                        var diameter = sizeScale(value);
+                        var radius = diameter / 2;
                         return {
-                            diameter: doEven(radius * 2 + 2),
+                            diameter: doEven(diameter + 2),
                             radius: radius,
                             value: value,
                             className: configUnit.color ? 'color-definite' : ''

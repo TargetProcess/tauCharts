@@ -48,21 +48,7 @@ export class IntervalModel {
         });
     }
 
-    static decorator_dynamic_size(model, params) {
-        var method = (model.scaleX.discrete ?
-            IntervalModel.___dis___decorator_size_dynamic :
-            IntervalModel.___con___decorator_size_dynamic);
-
-        return method(model, params);
-    }
-
-    static ___con___decorator_size_dynamic(model, {}) {
-        return IntervalModel.compose(model, {
-            size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
-        });
-    }
-
-    static ___dis___decorator_size_dynamic(model, {}) {
+    static decorator_dynamic_size(model, {}) {
         return IntervalModel.compose(model, {
             size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
         });
@@ -76,20 +62,20 @@ export class IntervalModel {
         return method(model, params);
     }
 
-    static decorator_discrete_positioningByColor(model, {barsGap}) {
+    static decorator_discrete_positioningByColor(model, {}) {
         var baseScale = model.scaleX;
         var categories = model.scaleColor.domain();
         var categoriesCount = (categories.length || 1);
         var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim]))); // -1 (not found) to 0
         var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
-        var fnBarSize = ((d) => (space(d) / categoriesCount));
 
         return IntervalModel.compose(model, {
             xi: ((d) => {
-                var absTickStart = (model.xi(d) - (space(d) / 2));
-                var relSegmStart = (colorIndexScale(d) * fnBarSize(d));
-                var absBarOffset = (model.size(d) * 0.5 + barsGap);
-                return absTickStart + relSegmStart + absBarOffset;
+                var availableSpace = space(d);
+                var absTickStart = (model.xi(d) - (availableSpace / 2));
+                var middleStep = (availableSpace / (categoriesCount + 1));
+                var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
+                return absTickStart + relSegmStart;
             })
         });
     }
@@ -176,7 +162,7 @@ export class IntervalModel {
         return method(model, params);
     }
 
-    static ___con___decorator_size_distribute_evenly(model, {dataSource, minSize, maxSize}) {
+    static ___con___decorator_size_distribute_evenly(model, {dataSource}) {
 
         var asc = ((a, b) => (a - b));
 
@@ -198,7 +184,7 @@ export class IntervalModel {
             [0]);
 
         return IntervalModel.compose(model, {
-            size: (() => Math.max(minSize, Math.min(maxSize, diff)))
+            size: (() => diff)
         });
     }
 
@@ -237,7 +223,7 @@ export class IntervalModel {
             model.y0(row);
         });
 
-        model.scaleY.reset((yScaleConfig) => {
+        model.scaleY.fixup((yScaleConfig) => {
 
             var newConf = {};
 
@@ -255,7 +241,7 @@ export class IntervalModel {
         return model;
     }
 
-    static adjustSizeScale(model, {dataSource}) {
+    static adjustSizeScale(model, {dataSource, minLimit, maxLimit, fixedSize}) {
 
         var minS = Number.MAX_VALUE;
         var maxS = Number.MIN_VALUE;
@@ -276,21 +262,27 @@ export class IntervalModel {
             trace.size(row);
         });
 
-        model.scaleSize.reset((sizeScaleConfig) => {
+        minS = fixedSize ? fixedSize : Math.max(minLimit, minS);
+        maxS = fixedSize ? fixedSize : Math.min(maxLimit, maxS);
+
+        model.scaleSize.fixup((sizeScaleConfig) => {
 
             var newConf = {};
 
-            if (!sizeScaleConfig.fixed) {
-                newConf.fixed = true;
-                newConf.max = maxS;
+            if (!sizeScaleConfig.__fixed__) {
+                newConf.__fixed__ = true;
                 newConf.min = minS;
-            }
-
-            if (sizeScaleConfig.fixed && sizeScaleConfig.max > maxS) {
                 newConf.max = maxS;
+                newConf.mid = maxS;
+                return newConf;
             }
 
-            if (sizeScaleConfig.fixed && sizeScaleConfig.min < minS) {
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxS) {
+                newConf.max = maxS;
+                newConf.mid = maxS;
+            }
+
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minS) {
                 newConf.min = minS;
             }
 

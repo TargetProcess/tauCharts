@@ -82,7 +82,7 @@ define(function (require) {
                         size: {
                             min: 5,
                             max: 22,
-                            mid: 27
+                            fixed: 27
                         }
                     }
                 ]
@@ -92,7 +92,7 @@ define(function (require) {
             var dots = d3.select(element).selectAll('.dot');
             assert.equal(dots.size(), 10);
             var radiusArr = dots[0].map((node) => d3.select(node).attr('r'));
-            assert.equal(radiusArr.every(x => x == 27), true, 'all radius are equal');
+            assert.equal(radiusArr.every(x => x == (27 / 2)), true, 'all radius are equal');
         })
     });
 });

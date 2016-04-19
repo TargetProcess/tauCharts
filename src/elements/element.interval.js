@@ -16,24 +16,6 @@ export class Interval extends Element {
                 enableColorToBarPosition: true
             });
 
-        this.config.guide.x = this.config.guide.x || {};
-        this.config.guide.x = _.defaults(
-            this.config.guide.x,
-            {
-                tickFontHeight: 0,
-                density: 20
-            }
-        );
-
-        this.config.guide.y = this.config.guide.y || {};
-        this.config.guide.y = _.defaults(
-            this.config.guide.y,
-            {
-                tickFontHeight: 0,
-                density: 20
-            }
-        );
-
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
@@ -43,15 +25,23 @@ export class Interval extends Element {
         this.barsGap = 1;
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
 
+        var defaultMinLimit = this.config.guide.prettify ? 3 : 0;
+        var defaultMaxLimit = this.config.guide.prettify ? 40 : Number.MAX_VALUE;
+
+        this.minLimit = config.guide.size.min || defaultMinLimit;
+        this.maxLimit = config.guide.size.max || defaultMaxLimit;
+        this.fixedSize = config.guide.size.fixed;
+
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
         this.decorators = [
             IntervalModel.decorator_orientation,
-            enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
-            enableColorPositioning && IntervalModel.decorator_discrete_share_size_by_color,
+            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
+            config.adjustPhase && enableColorPositioning && IntervalModel.decorator_discrete_share_size_by_color,
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
             IntervalModel.decorator_dynamic_size,
-            IntervalModel.decorator_color
+            IntervalModel.decorator_color,
+            config.adjustPhase && IntervalModel.adjustSizeScale
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -63,39 +53,7 @@ export class Interval extends Element {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-
-        var g = config.guide;
-        var isNotZero = (x => x !== 0);
-        const halfPart = 0.5;
-        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
-        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
-
-        var notLessThan = ((lim, val) => Math.max(val, lim));
-
-        var sizeGuide = {};
-        var baseScale = (config.flip ? this.yScale : this.xScale);
-        if (baseScale.discrete) {
-            sizeGuide = {
-                normalize: true,
-                func: 'linear',
-                min: g.size.min || (0),
-                max: g.size.max || notLessThan(1, minTickStep),
-                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-            };
-        } else {
-            let defaultSize = 3;
-            sizeGuide = {
-                normalize: this.config.guide.size.enableDistributeEvenly,
-                func: 'linear',
-                min: g.size.min || defaultSize,
-                max: g.size.max || notLessThan(defaultSize, minTickStep)
-            };
-            sizeGuide.mid = g.size.mid || sizeGuide.min;
-        }
-
-        this.size = fnCreateScale('size', config.size, sizeGuide);
-        this.sizeMin = sizeGuide.min;
-        this.sizeMax = sizeGuide.max;
+        this.size = fnCreateScale('size', config.size, {});
 
         return this
             .regScale('x', this.xScale)
@@ -108,29 +66,13 @@ export class Interval extends Element {
 
         var config = this.config;
         var isHorizontal = config.flip || config.guide.flip;
-        var colorScale = this.color;
-
-        var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
-            memo[x] = i;
-            return memo;
-        }, {});
-
-        var colorIndex = ((row) => {
-            var c = row[colorScale.dim];
-            return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
-        });
-
-        var fullData = frames
-            .slice(0, 1)
-            .reduce(((memo, f) => memo.concat(f.full())), [])
-            .sort((a, b) => (colorIndex(a) - colorIndex(b)));
-
         var args = {
             isHorizontal,
             barsGap: this.barsGap,
-            minSize: this.sizeMin,
-            maxSize: this.sizeMax,
-            dataSource: fullData
+            minLimit: this.minLimit,
+            maxLimit: this.maxLimit,
+            fixedSize: this.fixedSize,
+            dataSource: this.convertFramesToData(frames)
         };
 
         return this
@@ -142,6 +84,26 @@ export class Interval extends Element {
                 scaleColor: this.color,
                 scaleSize: this.size
             })));
+    }
+
+    getColorIndex() {
+        var colorScale = this.color;
+        var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
+            memo[x] = i;
+            return memo;
+        }, {});
+
+        return ((row) => {
+            var c = row[colorScale.dim];
+            return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
+        });
+    }
+
+    convertFramesToData(frames) {
+        var colorIndex = this.getColorIndex();
+        return frames
+            .reduce(((memo, f) => memo.concat(f.part())), [])
+            .sort((a, b) => (colorIndex(a) - colorIndex(b)));
     }
 
     drawFrames(frames) {
@@ -157,20 +119,6 @@ export class Interval extends Element {
         var isHorizontal = config.flip || config.guide.flip;
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
-
-        var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
-            memo[x] = i;
-            return memo;
-        }, {});
-
-        var colorIndex = ((row) => {
-            var c = row[colorScale.dim];
-            return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
-        });
-
-        var fullData = frames
-            .reduce(((memo, f) => memo.concat(f.part())), [])
-            .sort((a, b) => (colorIndex(a) - colorIndex(b)));
 
         var barModel = this.buildModel({
             colorScale,
@@ -199,7 +147,7 @@ export class Interval extends Element {
             self.subscribe(bars);
         };
 
-        var groups = _.groupBy(fullData, barModel.group);
+        var groups = _.groupBy(this.convertFramesToData(frames), barModel.group);
         var fibers = Object
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);
