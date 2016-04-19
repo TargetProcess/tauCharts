@@ -111,17 +111,18 @@ export class BasePath extends Element {
     walkFrames() {
 
         var args = {
-            xScale: this.xScale,
-            yScale: this.yScale,
-            sizeScale: this.size,
-            colorScale: this.color,
             textScale: this.text
         };
 
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PathModel()));
+            .reduce(((model, transform) => transform(model, args)), (new PathModel({
+                scaleX: this.xScale,
+                scaleY: this.yScale,
+                scaleSize: this.size,
+                scaleColor: this.color
+            })));
     }
 
     drawFrames(frames) {
@@ -134,9 +135,6 @@ export class BasePath extends Element {
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
 
         var model = this.buildModel({
-            xScale: this.xScale,
-            yScale: this.yScale,
-            sizeScale: this.size,
             colorScale: this.color,
             textScale: this.text
         });
