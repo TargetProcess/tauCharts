@@ -94,7 +94,7 @@ define(function (require) {
                 'count': {type: 'linear', source: '/', dim: 'count'},
                 'time': {type: 'time', source: '/', dim: 'time'},
                 'catY': {type: 'ordinal', source: '/', dim: 'color'},
-                'size:default': {type: 'size', source: '?', mid: 5},
+                'size:default': {type: 'size', source: '?', mid: 1, min: 0, max: 1},
                 'color': {type: 'color', dim: 'color', source: '/'},
                 'color:default': {type: 'color', source: '?', brewer: null}
             }),
@@ -247,7 +247,7 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 6,
+                            "x": 8.5,
                             "y": 0,
                             "width": 8,
                             "height": 50
@@ -275,7 +275,7 @@ define(function (require) {
                     ],
                     [
                         {
-                            "x": 106,
+                            "x": 103.5,
                             "y": 50,
                             "width": 8,
                             "height": 50
@@ -331,33 +331,33 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 98.5,  // a100
+                            "x": 99.5,  // a100
                             "y": 100,
-                            width: 3,
+                            width: 1,
                             height: 20
                         },
                         {
-                            "x": 73.5,  // b50
+                            "x": 74.5,  // b50
                             "y": 60,
-                            width: 3,
+                            width: 1,
                             height: 60
                         },
                         {
-                            "x": 23.5,  // c-50
+                            "x": 24.5,  // c-50
                             "y": 20,
-                            width: 3,
+                            width: 1,
                             height: 100
                         },
                         {
-                            "x": -1.5,  // c-100
+                            "x": -0.5,  // c-100
                             "y": 20,
-                            width: 3,
+                            width: 1,
                             height: 100
                         },
                         {
-                            "x": 48.5000,// c0
+                            "x": 49.5000,// c0
                             "y": 20,
-                            width: 3,
+                            width: 1,
                             height: 100
                         }
                     ]
@@ -481,7 +481,7 @@ define(function (require) {
                     [
                         {
                             "x": 50,    // 100
-                            "y": 86,
+                            "y": 88.5,
                             height: 8,
                             width: 50
                         }
@@ -503,7 +503,7 @@ define(function (require) {
                     [
                         {
                             "x": 0,     // -100
-                            "y": 26,
+                            "y": 23.5,
                             height: 8,
                             width: 50
                         }
@@ -552,26 +552,26 @@ define(function (require) {
                     [
                         {
                             "x": 0,
-                            "y": 55.5,
-                            height: 3,
+                            "y": 56.5,
+                            height: 1,
                             width: 20
                         },
                         {
                             "x": 0,
-                            "y": 62.5,
-                            height: 3,
+                            "y": 63.5,
+                            height: 1,
                             width: 60
                         },
                         {
                             "x": 0,
-                            "y": -1.5,
-                            height: 3,
+                            "y": -0.5,
+                            height: 1,
                             width: 100
                         },
                         {
                             "x": 0,
-                            "y": 98.5,
-                            height: 3,
+                            "y": 99.5,
+                            height: 1,
                             width: 100
                         }
                     ]
@@ -697,7 +697,7 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 7.2500,
+                            "x": 7.25,
                             "y": 0.0000,
                             "width": 10.5000,
                             "height": 100.0000
@@ -746,7 +746,10 @@ define(function (require) {
                 units: [
                     {
                         flip: true,
-                        guide: {prettify: false}
+                        guide: {
+                            prettify: false,
+                            size: {enableDistributeEvenly: false}
+                        }
                     }
                 ]
             }
@@ -795,7 +798,7 @@ define(function (require) {
                             },
                             {
                                 "x": 0,
-                                "y": 7.2500,
+                                "y": 7.25,
                                 "width": 0,
                                 "height": 10.5000
                             }
@@ -1133,7 +1136,8 @@ define(function (require) {
             y    : 'dim_y',
             color: 'dim_x',
             guide: {
-                padding: {l: 0, r: 0, b: 0, t: 0}
+                padding: {l: 0, r: 0, b: 0, t: 0},
+                prettify: false
             },
             settings: {specEngine: 'none'}
         },
@@ -1189,10 +1193,10 @@ define(function (require) {
                 var svg0 = context.chart.getSVG();
                 var bars = svg0.querySelectorAll('.bar');
                 expect(bars.length).to.equals(4);
-                expect(d3.select(bars[0]).attr('x')).to.equals('21');
-                expect(d3.select(bars[1]).attr('x')).to.equals('261');
-                expect(d3.select(bars[2]).attr('x')).to.equals('501');
-                expect(d3.select(bars[3]).attr('x')).to.equals('741');
+                expect(d3.select(bars[0]).attr('x')).to.equals('33');
+                expect(d3.select(bars[1]).attr('x')).to.equals('265');
+                expect(d3.select(bars[2]).attr('x')).to.equals('497');
+                expect(d3.select(bars[3]).attr('x')).to.equals('729');
 
                 expect(d3.select(bars[0]).attr('width')).to.equals('38');
                 expect(d3.select(bars[1]).attr('width')).to.equals('38');
@@ -1212,7 +1216,7 @@ define(function (require) {
             y    : 'dim_y',
             guide: {
                 padding: {l: 0, r: 0, b: 0, t: 0},
-                size: {min: 22, enableDistributeEvenly: false}
+                size: {fixed: 22, enableDistributeEvenly: false}
             },
             settings: {specEngine: 'none'}
         },

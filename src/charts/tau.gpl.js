@@ -54,8 +54,6 @@ export class GPL extends Emitter {
 
         this.root = this._expandUnitsStructure(this.config.unit);
 
-        this._adaptSpecToUnitsStructure(this.root, this.config);
-
         this.onUnitsStructureExpanded(this.config);
 
         var xSvg = d3Target.selectAll('svg').data([1]);
@@ -84,6 +82,13 @@ export class GPL extends Emitter {
             width: size.width,
             height: size.height
         };
+
+        this._walkUnitsStructure(
+            this.root,
+            this._datify({
+                source: this.root.expression.source,
+                pipe: []
+            }));
 
         this._drawUnitsStructure(
             this.root,
@@ -139,22 +144,6 @@ export class GPL extends Emitter {
         return root;
     }
 
-    _adaptSpecToUnitsStructure(root, spec) {
-
-        var UnitClass = this.unitSet.get(root.type);
-        if (UnitClass.embedUnitFrameToSpec) {
-            UnitClass.embedUnitFrameToSpec(root, spec); // static method
-        }
-
-        root.frames.forEach(
-            (f) => (f.units.forEach(
-                (unit) => this._adaptSpecToUnitsStructure(unit, spec)
-            ))
-        );
-
-        return root;
-    }
-
     _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
 
         var self = this;
@@ -182,6 +171,33 @@ export class GPL extends Emitter {
         if (self.onUnitDraw) {
             self.onUnitDraw(unitNode);
         }
+
+        return unitConfig;
+    }
+
+    _walkUnitsStructure(unitConfig, rootFrame, parentUnit = null) {
+
+        var self = this;
+
+        // Rule to cancel parent frame inheritance
+        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
+
+        var UnitClass = self.unitSet.get(unitConfig.type);
+        var unitNode = new UnitClass(_.extend({adjustPhase: true}, unitConfig));
+        unitNode.parentUnit = parentUnit;
+        unitNode
+            .createScales((type, alias, dynamicProps) => {
+                var key = (alias || `${type}:default`);
+                return self
+                    .scalesHub
+                    .createScaleInfo(self.scales[key], passFrame)
+                    .create(dynamicProps);
+            })
+            .walkFrames(unitConfig.frames, (function (rootUnit) {
+                return function (rootConf, rootFrame) {
+                    self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
+                };
+            }(unitNode)));
 
         return unitConfig;
     }

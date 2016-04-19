@@ -316,10 +316,10 @@
                                 name: title,
                                 items: values
                                     .map(function (value) {
-                                        var radius = sizeScale(value);
+                                        var diameter = sizeScale(value);
                                         return self._itemSizeTemplate({
-                                            diameter: doEven(radius * 2 + 2),
-                                            radius: radius,
+                                            diameter: doEven(diameter + 2),
+                                            radius: diameter / 2,
                                             value: value,
                                             className: firstNode.config.color ? 'color-definite' : 'color-default-size'
                                         });

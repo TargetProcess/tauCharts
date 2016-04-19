@@ -86,34 +86,21 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar on y-measure / x-measure', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {x: 1, y: 0.60},
                 {x: 1, y: 0.30},
                 {x: 1, y: 0.10}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true, nice: false, min: 0, max: 1},
-                        y: {hide: true, nice: false, min: 0, max: 1}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            x: 'x',
-                            y: 'y',
-                            guide: {
-                                prettify: false,
-                                size: {enableDistributeEvenly: false}
-                            }
-                        }
-                    ]
-                }
+            type: 'stacked-bar',
+            x: 'x',
+            y: 'y',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true, nice: false, min: 0, max: 1},
+                y: {hide: true, nice: false, min: 0, max: 1},
+                prettify: false,
+                size: {enableDistributeEvenly: false}
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -127,20 +114,20 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             [
                 [
                     {
-                        "x": 998.5,
-                        width: 3,
+                        "x": 999.5,
+                        width: 1,
                         "y": 400,
                         height: 600
                     },
                     {
-                        "x": 998.5,
-                        width: 3,
+                        "x": 999.5,
+                        width: 1,
                         "y": 100,
                         height: 300
                     },
                     {
-                        "x": 998.5,
-                        width: 3,
+                        "x": 999.5,
+                        width: 1,
                         "y": 0,
                         height: 100
                     }
@@ -150,35 +137,21 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw horizontal stacked bar on y-measure / x-measure', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {y: 1, x: 0.60},
                 {y: 1, x: 0.30},
                 {y: 1, x: 0.10}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true, nice: false, min: 0, max: 1},
-                        y: {hide: true, nice: false, min: 0, max: 1}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            flip: true,
-                            x: 'x',
-                            y: 'y',
-                            guide: {
-                                prettify: false,
-                                size: {enableDistributeEvenly: false}
-                            }
-                        }
-                    ]
-                }
+            type: 'horizontal-stacked-bar',
+            x: 'x',
+            y: 'y',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true, nice: false, min: 0, max: 1},
+                y: {hide: true, nice: false, min: 0, max: 1},
+                prettify: false,
+                size: {enableDistributeEvenly: false}
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -192,20 +165,20 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             [
                 [
                     {
-                        "y": -1.5,
-                        height: 3,
+                        "y": -0.5,
+                        height: 1,
                         "x": 0,
                         width: 600      // 200 * 0.6
                     },
                     {
-                        "y": -1.5,
-                        height: 3,
+                        "y": -0.5,
+                        height: 1,
                         "x": 600,
                         width: 300       // 200 * 0.3
                     },
                     {
-                        "y": -1.5,
-                        height: 3,
+                        "y": -0.5,
+                        height: 1,
                         "x": 900,
                         width: 100       // 200 * 0.1
                     }
@@ -215,7 +188,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar on y-measure / x-category', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {x: 'A', y: 0.60},
                 {x: 'A', y: 0.30},
@@ -224,25 +197,15 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 {x: 'B', y: 0.90},
                 {x: 'B', y: 0.10}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true},
-                        y: {hide: true, nice: false, min: 0, max: 1}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            x: 'x',
-                            y: 'y',
-                            guide: {prettify: false}
-                        }
-                    ]
-                }
+            type: 'stacked-bar',
+            x: 'x',
+            y: 'y',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true},
+                y: {hide: true, nice: false, min: 0, max: 1},
+                prettify: false,
+                size: {enableDistributeEvenly: false}
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -256,33 +219,33 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             [
                 [
                     {
-                        "x": 125,
-                        "width": 250,
+                        "x": 249.5,
+                        "width": 1,
                         "y": 400,
                         "height": 600 // A0.6
                     },
                     {
-                        "x": 125,
-                        "width": 250,
+                        "x": 249.5,
+                        "width": 1,
                         "y": 100,
                         "height": 300 // A0.3
                     },
                     {
-                        "x": 125,
-                        "width": 250,
+                        "x": 249.5,
+                        "width": 1,
                         "y": 0,
                         "height": 100 // A0.1
                     },
 
                     {
-                        "x": 625,
-                        "width": 250,
+                        "x": 749.5,
+                        "width": 1,
                         "y": 100,
                         "height": 900 // B0.9
                     },
                     {
-                        "x": 625,
-                        "width": 250,
+                        "x": 749.5,
+                        "width": 1,
                         "y": 0,
                         "height": 100 // B0.1
                     }
@@ -292,7 +255,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw horizontal stacked bar on y-category / x-measure', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {y: 'A', x: 0.60},
                 {y: 'A', x: 0.30},
@@ -301,26 +264,15 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 {y: 'B', x: 0.90},
                 {y: 'B', x: 0.10}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true},
-                        y: {hide: true, nice: false, min: 0, max: 1}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            flip: true,
-                            x: 'x',
-                            y: 'y',
-                            guide: {prettify: false}
-                        }
-                    ]
-                }
+            type: 'horizontal-stacked-bar',
+            x: 'x',
+            y: 'y',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true},
+                y: {hide: true, nice: false, min: 0, max: 1},
+                prettify: false,
+                size: {enableDistributeEvenly: false}
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -336,32 +288,32 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 545,
-                        "y": 625,
-                        "height": 250
+                        "y": 749.5,
+                        "height": 1
                     },
                     {
                         "x": 545,
                         "width": 273,
-                        "y": 625,
-                        "height": 250
+                        "y": 749.5,
+                        "height": 1
                     },
                     {
                         "x": 818,
                         "width": 91,
-                        "y": 625,
-                        "height": 250
+                        "y": 749.5,
+                        "height": 1
                     },
                     {
                         "x": 0,
                         "width": 818,
-                        "y": 125,
-                        "height": 250
+                        "y": 249.5,
+                        "height": 1
                     },
                     {
                         "x": 818,
                         "width": 91,
-                        "y": 125,
-                        "height": 250
+                        "y": 249.5,
+                        "height": 1
                     }
                 ]
             ]);
@@ -369,34 +321,24 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar with color and size', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {x: 'A', y: 0.60, c: 'C1', s: 100},
                 {x: 'A', y: 0.40, c: 'C2', s: 50},
 
                 {x: 'B', y: 1.00, c: 'C3', s: 0}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true},
-                        y: {hide: true, nice: false, min: 0, max: 1}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            x: 'x',
-                            y: 'y',
-                            color: 'c',
-                            size: 's',
-                            guide: {prettify: false}
-                        }
-                    ]
-                }
+            type: 'stacked-bar',
+            x: 'x',
+            y: 'y',
+            color: 'c',
+            size: 's',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true},
+                y: {hide: true, nice: false, min: 0, max: 1},
+                prettify: false,
+                size: {enableDistributeEvenly: false}
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -410,8 +352,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             [
                 [
                     {
-                        "x": 125,
-                        "width": 250,
+                        "x": 249.5,
+                        "width": 1,
                         "y": 400,
                         "height": 600,
                         "class": "color20-1"
@@ -419,8 +361,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ],
                 [
                     {
-                        "x": 187.5,
-                        "width": 125,
+                        "x": 249.6464,
+                        "width": 0.7071,
                         "y": 0,
                         "height": 400,
                         "class": "color20-2"
@@ -440,34 +382,23 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar with color and size + prettify', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {x: 'A', y: 0.60, c: 'C1', s: 100},
                 {x: 'A', y: 0.40, c: 'C2', s: 50},
 
                 {x: 'B', y: 1.00, c: 'C3', s: 0}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true},
-                        y: {hide: true, nice: false, min: 0, max: 1}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            x: 'x',
-                            y: 'y',
-                            color: 'c',
-                            size: 's',
-                            guide: {prettify: true}
-                        }
-                    ]
-                }
+            type: 'stacked-bar',
+            x: 'x',
+            y: 'y',
+            color: 'c',
+            size: 's',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true},
+                y: {hide: true, nice: false, min: 0, max: 1},
+                prettify: true
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -481,8 +412,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             [
                 [
                     {
-                        "x": 125,
-                        "width": 250,
+                        "x": 230,
+                        "width": 40,
                         "y": 400,
                         "height": 600,
                         "class": "color20-1"
@@ -490,8 +421,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ],
                 [
                     {
-                        "x": 187.5,
-                        "width": 125,
+                        "x": 235.4185,
+                        "width": 29.1630,
                         "y": 0,
                         "height": 400,
                         "class": "color20-2"
@@ -499,8 +430,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ],
                 [
                     {
-                        "x": 749.5,
-                        "width": 1,
+                        "x": 748.5,
+                        "width": 3,
                         "y": 0,
                         "height": 1000,
                         "class": "color20-3"
@@ -511,35 +442,23 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw horizontal stacked bar with color and size + prettify', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new tauCharts.Chart({
             data: [
                 {y: 'A', x: 0.60, c: 'C1', s: 100},
                 {y: 'A', x: 0.40, c: 'C2', s: 50},
 
                 {y: 'B', x: 1.00, c: 'C3', s: 0}
             ],
-            spec: {
-                unit: {
-                    type: 'COORDS.RECT',
-                    x: 'x',
-                    y: 'y',
-                    guide: {
-                        padding: {l: 0, r: 0, t: 0, b: 0},
-                        x: {hide: true, nice: false, min: 0, max: 1},
-                        y: {hide: true}
-                    },
-                    unit: [
-                        {
-                            type: 'ELEMENT.INTERVAL.STACKED',
-                            flip: true,
-                            x: 'x',
-                            y: 'y',
-                            color: 'c',
-                            size: 's',
-                            guide: {prettify: true}
-                        }
-                    ]
-                }
+            type: 'horizontal-stacked-bar',
+            x: 'x',
+            y: 'y',
+            color: 'c',
+            size: 's',
+            guide: {
+                padding: {l: 0, r: 0, t: 0, b: 0},
+                x: {hide: true, nice: false, min: 0, max: 1},
+                y: {hide: true},
+                prettify: true
             },
             settings: {
                 layoutEngine: 'NONE'
@@ -555,8 +474,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 600,
-                        "y": 625,
-                        "height": 250,
+                        "y": 730,
+                        "height": 40,
                         "class": "color20-1"
                     }
                 ],
@@ -564,8 +483,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 600,
                         "width": 400,
-                        "y": 687.5,
-                        "height": 125,
+                        "y": 735.4185,
+                        "height": 29.1630,
                         "class": "color20-2"
                     }
                 ],
@@ -573,8 +492,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 1000,
-                        "y": 249.5,
-                        "height": 1,
+                        "y": 248.5,
+                        "height": 3,
                         "class": "color20-3"
                     }
                 ]
@@ -610,65 +529,6 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         expect(function () {
             plot.renderTo(div, size);
         }).to.throw(TauChartError, /Stacked field \[y\] should be a number/);
-    });
-
-    it('should be available as shortcut alias [stacked-bar]', function () {
-
-        var chart = new tauCharts.Chart({
-            type: 'stacked-bar',
-            data: [
-                {x: 'A', y: 0.60, c: 'C1', s: 100},
-                {x: 'A', y: 0.40, c: 'C2', s: 50},
-                {x: 'B', y: 1.00, c: 'C3', s: 0}
-            ],
-            x: 'x',
-            y: 'y',
-            color: 'c',
-            size: 's',
-            guide: {
-                padding: {l: 0, r: 0, t: 0, b: 0},
-                x: {hide: true},
-                y: {hide: true, nice: false, min: 0, max: 1},
-                prettify: false
-            },
-            settings: {
-                layoutEngine: 'NONE'
-            }
-        });
-        chart.renderTo(div, size);
-
-        expectCoordsElement(
-            div,
-            expect,
-            [
-                [
-                    {
-                        "x": 125,
-                        "width": 250,
-                        "y": 400,
-                        "height": 600,
-                        "class": "color20-1"
-                    }
-                ],
-                [
-                    {
-                        "x": 187.5,
-                        "width": 125,
-                        "y": 0,
-                        "height": 400,
-                        "class": "color20-2"
-                    }
-                ],
-                [
-                    {
-                        "x": 750,
-                        "width": 0,
-                        "y": 0,
-                        "height": 1000,
-                        "class": "color20-3"
-                    }
-                ]
-            ]);
     });
 
     it('should support negative values in [stacked-bar]', function () {
@@ -711,8 +571,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ],
                 [
                     {
-                        "x": 187.5,
-                        "width": 125,
+                        "x": 161.6117,
+                        "width": 176.7767,
                         "y": 800,
                         "height": 200,
                         "class": "color20-2"
@@ -724,64 +584,6 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "width": 0,
                         "y": 0,
                         "height": 500,
-                        "class": "color20-3"
-                    }
-                ]
-            ]);
-    });
-
-    it('should be available as shortcut alias [horizontal-stacked-bar]', function () {
-
-        var chart = new tauCharts.Chart({
-            type: 'horizontal-stacked-bar',
-            data: [
-                {y: 'A', x: 0.60, c: 'C1', s: 100},
-                {y: 'A', x: 0.40, c: 'C2', s: 50},
-                {y: 'B', x: 1.00, c: 'C3', s: 0}
-            ],
-            x: 'x',
-            y: 'y',
-            color: 'c',
-            size: 's',
-            guide: {
-                padding: {l: 0, r: 0, t: 0, b: 0},
-                x: {hide: true, nice: false, min: 0},
-                y: {hide: true}
-            },
-            settings: {
-                layoutEngine: 'NONE'
-            }
-        });
-        chart.renderTo(div, size);
-
-        expectCoordsElement(
-            div,
-            expect,
-            [
-                [
-                    {
-                        "x": 0,
-                        "width": 600,
-                        "y": 625,
-                        "height": 250,
-                        "class": "color20-1"
-                    }
-                ],
-                [
-                    {
-                        "x": 600,
-                        "width": 400,
-                        "y": 687.5,
-                        "height": 125,
-                        "class": "color20-2"
-                    }
-                ],
-                [
-                    {
-                        "x": 0,
-                        "width": 1000,
-                        "y": 249.5,
-                        "height": 1,
                         "class": "color20-3"
                     }
                 ]
@@ -820,8 +622,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 500,
                         "width": 300,
-                        "y": 625,
-                        "height": 250,
+                        "y": 730,
+                        "height": 40,
                         "class": "color20-1"
                     }
                 ],
@@ -829,8 +631,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 800,
                         "width": 200,
-                        "y": 687.5,
-                        "height": 125,
+                        "y": 735.4185,
+                        "height": 29.1630,
                         "class": "color20-2"
                     }
                 ],
@@ -838,8 +640,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 500,
-                        "y": 249.5,
-                        "height": 1,
+                        "y": 248.5,
+                        "height": 3,
                         "class": "color20-3"
                     }
                 ]

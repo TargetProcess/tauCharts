@@ -2,6 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {PointModel} from '../models/point';
 import {default as _} from 'underscore';
+
 export class Point extends Element {
 
     constructor(config) {
@@ -9,34 +10,29 @@ export class Point extends Element {
         super(config);
 
         this.config = config;
-
         this.config.guide = this.config.guide || {};
-
-        this.config.guide.x = this.config.guide.x || {};
-        this.config.guide.x = _.defaults(
-            this.config.guide.x,
-            {
-                tickFontHeight: 0,
-                density: 20
-            }
-        );
-
-        this.config.guide.y = this.config.guide.y || {};
-        this.config.guide.y = _.defaults(
-            this.config.guide.y,
-            {
-                tickFontHeight: 0,
-                density: 20
-            }
-        );
-
         this.config.guide.size = (this.config.guide.size || {});
+
+        // TODO: fix when pass scales to constructor
+        var isEmptySize = (
+            (!this.config.size)
+            || (this.config.size === 'size_undefined')
+            || (this.config.size === 'size_null')
+        );
+
+        var defaultMinLimit = 2;
+        var defaultMaxLimit = isEmptySize ? 10 : 20;
+
+        this.minLimit = config.guide.size.min || defaultMinLimit;
+        this.maxLimit = config.guide.size.max || defaultMaxLimit;
+        this.fixedSize = config.guide.size.fixed;
 
         this.decorators = [
             PointModel.decorator_orientation,
             PointModel.decorator_group,
             PointModel.decorator_size,
-            PointModel.decorator_color
+            PointModel.decorator_color,
+            config.adjustPhase && PointModel.adjustSizeScale
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -49,21 +45,7 @@ export class Point extends Element {
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
-
-        var g = config.guide;
-        var isNotZero = (x => x !== 0);
-        const halfPart = 0.5;
-        var minFontSize = halfPart * _.min([g.x, g.y].map(n => n.tickFontHeight).filter(isNotZero));
-        var minTickStep = halfPart * _.min([g.x, g.y].map(n => n.density).filter(isNotZero));
-        var notLessThan = ((lim, val) => Math.max(val, lim));
-
-        var sizeGuide = {
-            min: g.size.min || (2),
-            max: g.size.max || notLessThan(2, minTickStep),
-            mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-        };
-
-        this.size = fnCreateScale('size', config.size, sizeGuide);
+        this.size = fnCreateScale('size', config.size, {});
 
         return this
             .regScale('x', this.xScale)
@@ -72,14 +54,9 @@ export class Point extends Element {
             .regScale('color', this.color);
     }
 
-    buildModel({xScale, yScale, sizeScale, colorScale}) {
+    buildModel({colorScale}) {
 
-        var args = {xScale, yScale, sizeScale, colorScale};
-
-        var pointModel = this
-            .decorators
-            .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PointModel()));
+        var pointModel = this.walkFrames();
 
         return {
             x: pointModel.xi,
@@ -89,6 +66,30 @@ export class Point extends Element {
             color: (d) => colorScale.toColor(pointModel.color(d)),
             class: (d) => colorScale.toClass(pointModel.color(d))
         };
+    }
+
+    walkFrames() {
+
+        var args = {
+            xScale: this.xScale,
+            yScale: this.yScale,
+            colorScale: this.color,
+            sizeScale: this.size,
+            minLimit: this.minLimit,
+            maxLimit: this.maxLimit,
+            fixedSize: this.fixedSize,
+            dataSource: []
+        };
+
+        return this
+            .decorators
+            .filter(x => x)
+            .reduce(((model, transform) => transform(model, args)), (new PointModel({
+                scaleX: this.xScale,
+                scaleY: this.yScale,
+                scaleColor: this.color,
+                scaleSize: this.size
+            })));
     }
 
     drawFrames(frames) {
@@ -109,7 +110,7 @@ export class Point extends Element {
         });
 
         var attr = {
-            r: ((d) => model.size(d)),
+            r: ((d) => model.size(d) / 2),
             cx: ((d) => model.x(d)),
             cy: ((d) => model.y(d)),
             fill: ((d) => model.color(d)),
