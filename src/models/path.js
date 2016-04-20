@@ -6,6 +6,7 @@ export class PathModel {
         this.scaleY = model.scaleY || null;
         this.scaleSize = model.scaleSize || null;
         this.scaleColor = model.scaleColor || null;
+        this.scaleSplit = model.scaleSplit || null;
 
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
@@ -59,7 +60,7 @@ export class PathModel {
 
     static decorator_group(model, {}) {
         return PathModel.compose(model, {
-            group: ((d) => (d[model.scaleColor.dim]))
+            group: ((d) => (`${d[model.scaleColor.dim]}_${d[model.scaleSplit.dim]}`))
         });
     }
 

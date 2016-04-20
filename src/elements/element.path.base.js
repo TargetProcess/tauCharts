@@ -34,6 +34,7 @@ export class BasePath extends Element {
                 paddingY: 0
             });
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
+        this.config.guide.size = _.defaults(this.config.guide.size || {}, {});
 
         this.decorators = []
             .concat([
@@ -66,12 +67,14 @@ export class BasePath extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
         this.text = fnCreateScale('text', config.text, {});
+        this.split = fnCreateScale('split', config.split, {});
 
         return this
             .regScale('x', this.xScale)
             .regScale('y', this.yScale)
             .regScale('size', this.size)
             .regScale('color', this.color)
+            .regScale('split', this.split)
             .regScale('text', this.text);
     }
 
@@ -120,8 +123,8 @@ export class BasePath extends Element {
 
         var args = {
             textScale: this.text,
-            minLimit: 2,
-            maxLimit: this.isEmptySize ? 6 : 40
+            minLimit: this.config.guide.size.min || 2,
+            maxLimit: this.config.guide.size.max || (this.isEmptySize ? 6 : 40)
         };
 
         return this
@@ -131,7 +134,8 @@ export class BasePath extends Element {
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
-                scaleColor: this.color
+                scaleColor: this.color,
+                scaleSplit: this.split
             })));
     }
 

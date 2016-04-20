@@ -62,7 +62,8 @@ export class Line extends BasePath {
         var widthCss = guide.widthCssClass || getLineClassesByWidth(options.width);
         var countCss = getLineClassesByCount(params.colorScale.domain().length);
 
-        const groupPref = `${CSS_PREFIX}line line i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
+        var tag = this.isEmptySize ? 'line' : 'area';
+        const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
         var d3Line = d3.svg
             .line()
@@ -85,8 +86,6 @@ export class Line extends BasePath {
             ({
                 fill: (fiber) => baseModel.color(fiber[0]),
                 stroke: (fiber) => baseModel.color(fiber[0]),
-                'stroke-opacity': 0.95,
-                opacity: 0.5,
                 points: ((fiber) => {
 
                     var x = baseModel.x;

@@ -88,11 +88,13 @@ define(function (require) {
                     "y_null"        : {"type": "ordinal", "source": "?"},
                     "size_null"     : {"type": "size", "source": "?", "mid": 1},
                     "color_null"    : {"type": "color", "source": "?", "brewer": null},
+                    'split_null': {type: 'value', source: '?'},
 
                     "pos:default"   : {"type": "ordinal", "source": "?"},
                     "size:default"  : {"type": "size", "source": "?", "mid": 1},
                     "text:default"  : {"type": "value", source: "?"},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
+                    'split:default': {type: 'value', source: '?'},
 
                     "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", order: ['alpha', 'beta'], "autoScale": true, "nice":true, "niceInterval":null},
                     "x_date"        : {"type": "time", "source": "/", "dim": "date", "autoScale": true, "nice":true, "niceInterval":null},
@@ -257,11 +259,13 @@ define(function (require) {
                     "y_null": {"type": "ordinal", "source": "?"},
                     "size_null": {"type": "size", "source": "?", "mid": 1},
                     "color_null": {"type": "color", "source": "?", "brewer": null},
+                    'split_null': {type: 'value', source: '?'},
 
                     "pos:default": {"type": "ordinal", "source": "?"},
                     "size:default": {"type": "size", "source": "?", "mid": 1},
                     "text:default": {"type": "value", source: "?"},
                     "color:default": {"type": "color", "source": "?", "brewer": null},
+                    'split:default': {type: 'value', source: '?'},
 
                     "x_week": {"type": "period", "source": "/", "dim": "week", "autoScale": true, "nice":true, "niceInterval":null, "period": "week"},
                     "y_proj": {"type": "ordinal", "source": "/", "dim": "proj.name", "autoScale": true, "nice":true, "niceInterval":null},
