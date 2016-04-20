@@ -9,6 +9,13 @@ export class Element extends Emitter {
         super(config);
         this._elementNameSpace = (config.namespace || 'default');
         this._elementScalesHub = {};
+
+        // TODO: fix when pass scales to constructor
+        this.isEmptySize = (
+            (!config.size)
+            || (config.size === 'size_undefined')
+            || (config.size === 'size_null')
+        );
     }
 
     regScale(paramId, scaleObj) {

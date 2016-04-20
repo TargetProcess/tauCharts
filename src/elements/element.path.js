@@ -16,8 +16,7 @@ export class Path extends BasePath {
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
             // d3.invert doesn't work for ordinal axes
-            var nearest = self
-                .unpackFrameData(rows)
+            var nearest = rows
                 .map((row) => {
                     var rx = baseModel.x(row);
                     var ry = baseModel.y(row);
@@ -38,8 +37,6 @@ export class Path extends BasePath {
         var options = this.config.options;
         var countCss = getLineClassesByCount(params.colorScale.domain().length);
 
-        const datumClass = `i-role-datum`;
-        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
         const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
@@ -49,14 +46,6 @@ export class Path extends BasePath {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => baseModel.color(fiber[0]),
             points: ((fiber) => (fiber.map((d) => [baseModel.x(d), baseModel.y(d)].join(',')).join(' ')))
-        };
-
-        baseModel.dotAttributes = {
-            r: (d) => baseModel.size(d),
-            cx: (d) => baseModel.x(d),
-            cy: (d) => baseModel.y(d),
-            fill: (d) => baseModel.color(d),
-            class: (d) => (`${pointPref} ${baseModel.class(d)}`)
         };
 
         baseModel.pathElement = 'polygon';

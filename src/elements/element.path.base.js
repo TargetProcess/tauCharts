@@ -2,12 +2,13 @@ import {Element} from './element';
 import {PathModel} from '../models/path';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
+import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
 export class BasePath extends Element {
 
-    constructor(config) {
+    constructor(config, decorators) {
 
         super(config);
 
@@ -34,12 +35,15 @@ export class BasePath extends Element {
             });
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
 
-        this.decorators = [
-            PathModel.decorator_orientation,
-            PathModel.decorator_group,
-            PathModel.decorator_size,
-            PathModel.decorator_color
-        ];
+        this.decorators = []
+            .concat([
+                PathModel.decorator_orientation,
+                PathModel.decorator_group,
+                PathModel.decorator_size,
+                PathModel.decorator_color
+            ])
+            .concat(decorators)
+            .concat(PathModel.adjustSizeScale);
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
@@ -75,13 +79,17 @@ export class BasePath extends Element {
 
         var pathModel = this.walkFrames();
 
-        return {
+        const datumClass = `i-role-datum`;
+        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
+
+        var baseModel = {
             scaleX: pathModel.scaleX,
             scaleY: pathModel.scaleY,
             scaleColor: colorScale,
             scaleText: textScale,
             x: pathModel.xi,
             y: pathModel.yi,
+            y0: pathModel.y0,
             size: pathModel.size,
             group: pathModel.group,
             color: (d) => colorScale.toColor(pathModel.color(d)),
@@ -92,16 +100,16 @@ export class BasePath extends Element {
             groupAttributes: {},
             pathAttributes: {},
             pathElement: null,
-            dotAttributes: {}
+            dotAttributes: {
+                r: (d) => baseModel.size(d) / 2,
+                cx: (d) => baseModel.x(d),
+                cy: (d) => baseModel.y(d),
+                fill: (d) => baseModel.color(d),
+                class: (d) => (`${pointPref} ${baseModel.class(d)}`)
+            }
         };
-    }
 
-    packFrameData(rows) {
-        return rows;
-    }
-
-    unpackFrameData(rows) {
-        return rows;
+        return baseModel;
     }
 
     getDistance(mx, my, rx, ry) {
@@ -111,7 +119,9 @@ export class BasePath extends Element {
     walkFrames() {
 
         var args = {
-            textScale: this.text
+            textScale: this.text,
+            minLimit: 2,
+            maxLimit: this.isEmptySize ? 6 : 40
         };
 
         return this
@@ -144,7 +154,7 @@ export class BasePath extends Element {
 
             var path = this
                 .selectAll(model.pathElement)
-                .data((fiber) => [self.packFrameData(fiber)]);
+                .data((fiber) => [fiber]);
             path.exit()
                 .remove();
             path.attr(model.pathAttributes);
@@ -270,7 +280,7 @@ export class BasePath extends Element {
             .container
             .selectAll(`.${cssClass}`)
             .attr({
-                r: (d) => (filter(d) ? 3 : this.config.guide.anchorSize),
+                r: (d) => (filter(d) ? (this.model.size(d) / 2) : this.config.guide.anchorSize),
                 fill: (d) => this.model.color(d),
                 class: (d) => (`${cssClass} ${this.model.class(d)}`)
             });

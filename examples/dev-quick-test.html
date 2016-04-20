@@ -149,30 +149,36 @@
         return spec;
     };
 
-    window.samples.concat(window.drops.map(xdrops)).filter(_.identity).forEach(function (cfg, i) {
-        $('body').append('<div class="cc" id="div' + i + '"></div>');
+    window
+            .samples
+            .concat(window.drops.map(xdrops))
+            .filter(_.identity)
+            .filter(function (r) {
+                // return r.sel === 2;
+                return true;
+            })
+            .forEach(function (cfg, i) {
+                $('body').append('<div class="cc" id="div' + i + '"></div>');
 
-        cfg.settings = cfg.settings || {};
-        // cfg.settings.layoutEngine = 'NONE';
-        cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
+                cfg.settings = cfg.settings || {};
+                // cfg.settings.layoutEngine = 'NONE';
+                cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
-        cfg.plugins = cfg.plugins || [];
-        /*
-        cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
-            cssPaths: [
-                "../css/test-taucharts.css",
-                "../css/test-entitycolors.css"
-            ]
-        }));
-        */
+                cfg.plugins = cfg.plugins || [];
+//                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
+//                    cssPaths: [
+//                        "../css/test-taucharts.css",
+//                        "../css/test-entitycolors.css"
+//                    ]
+//                }));
 
-        var chart = (cfg.hasOwnProperty('type')) ?
-                (new tauCharts.Chart(cfg)) :
-                (new tauCharts.Plot(cfg));
-        chart.renderTo('#div' + i);
+                var chart = (cfg.hasOwnProperty('type')) ?
+                        (new tauCharts.Chart(cfg)) :
+                        (new tauCharts.Plot(cfg));
+                chart.renderTo('#div' + i);
 
-        window.charts.push(chart);
-    });
+                window.charts.push(chart);
+            });
 
 </script>
 
