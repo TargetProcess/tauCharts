@@ -192,4 +192,63 @@ define(function (require) {
                 .equal(str(d3.rgb('#fedcba')));
         });
     });
+
+    describe('line chart with size parameter', function () {
+
+        var element;
+        var chart;
+
+        beforeEach(function () {
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Chart({
+                type: 'line',
+                x: 'xx',
+                y: 'yy',
+                size: 'ss',
+                guide: {
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false, min: 0, max: 4},
+                    size: {min: 0, max: 1000},
+                    padding: {l: 0, r: 0, b: 0, t: 0}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                },
+                data: [
+                    {xx: 0, yy: 2, ss: 0},
+                    {xx: 2, yy: 2, ss: 0},
+                    {xx: 4, yy: 2, ss: 100}
+                ]
+            });
+            chart.renderTo(element, {width: 1000, height: 1000});
+        });
+
+        afterEach(function () {
+            element.parentNode.removeChild(element);
+        });
+
+        it('should render polygon', function () {
+
+            var svgPolygons = d3.selectAll('polygon')[0];
+
+            var act = d3.select(svgPolygons[0]).attr('points');
+            var pairs = act
+                .split(' ')
+                .map((xy) => xy.split(','))
+                .map((xy) => {
+                    return [
+                        Math.round(parseFloat(xy[0])),
+                        Math.round(parseFloat(xy[1]))
+                    ];
+                })
+                .map((xy) => xy.join(','))
+                .join(' ');
+
+            expect(pairs)
+                .to
+                .deep
+                .equal('0,499 500,499 1000,0 1000,1000 500,501 0,501', 'line with size');
+        });
+    });
 });

@@ -296,4 +296,69 @@ define(function (require) {
             expect(testUtils.hasClass(areas[1], 'color20-2')).to.equal(true);
         });
     });
+
+    describe('area chart with split parameter', function () {
+
+        var element;
+        var chart;
+
+        beforeEach(function () {
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Chart({
+                type: 'area',
+                x: 'xx',
+                y: 'yy',
+                split: 'gg',
+                color: 'cc',
+                guide: {
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false},
+                    padding: {l: 0, r: 0, b: 0, t: 0}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                },
+                data: [
+                    {xx: 0, yy: 0, gg:'A', cc: 'Blue'},
+                    {xx: 1, yy: 0, gg:'A', cc: 'Blue'},
+
+                    {xx: 0, yy: 2, gg:'B', cc: 'Blue'},
+                    {xx: 1, yy: 2, gg:'B', cc: 'Blue'},
+
+                    {xx: 0, yy: 4, gg:'B', cc: 'Green'},
+                    {xx: 1, yy: 4, gg:'B', cc: 'Green'}
+                ]
+            });
+            chart.renderTo(element, {width: 1000, height: 1000});
+        });
+
+        afterEach(function () {
+            element.parentNode.removeChild(element);
+        });
+
+        it('should render area elements by split and color', function () {
+
+            var svgPolygons = d3.selectAll('polygon')[0];
+
+            expect(d3.select(svgPolygons[0]).attr('points'))
+                .to
+                .equal('0,1000 1000,1000 1000,1000 0,1000', 'lower line');
+
+            expect(d3.select(svgPolygons[1]).attr('points'))
+                .to
+                .equal('0,500 1000,500 1000,1000 0,1000', 'middle line');
+
+            expect(d3.select(svgPolygons[2]).attr('points'))
+                .to
+                .equal('0,0 1000,0 1000,1000 0,1000', 'high line');
+
+            var areas = getArea();
+            expect(areas.length).to.equal(3, 'should render 3 area elements');
+
+            expect(testUtils.hasClass(areas[0], 'color20-1')).to.equal(true);
+            expect(testUtils.hasClass(areas[1], 'color20-1')).to.equal(true);
+            expect(testUtils.hasClass(areas[2], 'color20-2')).to.equal(true);
+        });
+    });
 });
