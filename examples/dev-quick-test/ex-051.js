@@ -66,7 +66,6 @@ window.samples.push({
         [27.4, 55.6,  33000, 'A', '2'],
         [28.7, 55.5,  33000, 'A', '2'],
         [28.7, 55.5,  33000, 'R', '2'],
-//      [29.2, 54.2,  30000, 'R', '2'],
         [28.5, 54.15, 30000, 'R', '2'],
         [28.3, 54.25, 28000, 'R', '2'],
         [24.0, 55.2,  22000, 'A', '3'],
@@ -99,7 +98,7 @@ window.samples.push({
     split: 'group',
     color: 'direction',
     guide: {
-        showGridLines: '',
+        showGridLines: 'x',
         x: {nice: false, min: 24, max: 38, hide: true},
         y: {nice: false, min: 53.5, max: 56, hide: true},
         size: {
@@ -107,7 +106,6 @@ window.samples.push({
             min: 2,
             max: 25
         },
-        // text: {fontSize: 16},
         color: {
             brewer: {
                 'Place': 'rgba(0,0,0,0)',
@@ -115,6 +113,66 @@ window.samples.push({
                 'Retreat': '#000000'
             }
         }
+    },
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')()
+    ]
+});
+
+window.samples.push({
+
+    sel: 1111,
+
+    data: [
+
+        [37.6,   0, 'Oct 18'],
+        [36.0,   0, 'Oct 24'],
+        [33.2,  -9, 'Nov 9'],
+        [32.0, -21, 'Nov 14'],
+        [29.2, -11, ''],
+        [28.5, -20, 'Nov 28'],
+        [27.2, -24, 'Dec 1'],
+        [26.7, -30, 'Dec 6'],
+        [25.3, -26, 'Dec 7']
+
+    ].map(function (row) {
+
+            return {
+                lon: row[0],
+                temperature: row[1],
+                date: row[2]
+            };
+        }),
+
+    type: 'line',
+    x: 'lon',
+    y: 'temperature',
+    text: 'date',
+    guide: {
+        padding: {l: 0, r: 180, b: 0, t: 60},
+        x: {
+            nice: false,
+            min: 24,
+            max: 38,
+            scaleOrient: 'top',
+            padding: 20,
+            label: {text:'Longitude', padding: -25}
+        },
+        y: {
+            nice: false,
+            min: -33,
+            max: 1,
+            hide: false,
+            scaleOrient: 'right',
+            textAnchor: 'start',
+            padding: 20,
+            label: { padding: -45, text: 'Temperature' }
+        }
+    },
+    settings: {
+        specEngine: 'NONE',
+        layoutEngine: 'NONE'
     },
     plugins: [
         tauCharts.api.plugins.get('legend')(),
