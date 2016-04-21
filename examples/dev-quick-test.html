@@ -49,7 +49,7 @@
         }
         .cc {
             display:inline-block;
-            margin: 10px;
+            margin: 5px;
             float: left;
             width: 100%;
             height: 400px;
@@ -155,7 +155,6 @@
             .concat(window.drops.map(xdrops))
             .filter(_.identity)
             .filter(function (r) {
-                // return r.sel === 2;
                 return true;
             })
             .forEach(function (cfg, i) {
@@ -176,7 +175,7 @@
                 var chart = (cfg.hasOwnProperty('type')) ?
                         (new tauCharts.Chart(cfg)) :
                         (new tauCharts.Plot(cfg));
-                chart.renderTo('#div' + i);
+                chart.renderTo('#div' + i, cfg.xsize);
 
                 window.charts.push(chart);
             });

@@ -2,6 +2,11 @@ window.samples.push({
 
     sel: 1111,
 
+    xsize: {
+        width: 800,
+        height: 380
+    },
+
     data: [
         [24.0, 55.0,   4000, 'P', '0', 'Kowno'],
         [25.3, 54.7,   4000, 'P', '0', 'Wilna'],
@@ -99,8 +104,29 @@ window.samples.push({
     color: 'direction',
     guide: {
         showGridLines: 'x',
-        x: {nice: false, min: 24, max: 38, hide: true},
-        y: {nice: false, min: 53.5, max: 56, hide: true},
+        padding: {l: 45, r: 10, t: 10, b: 10},
+        x: {
+            nice: false,
+            min: 24,
+            max: 38,
+            hide: true
+        },
+        y: {
+            nice: false,
+            min: 53.5,
+            max: 56,
+            hide: false,
+            padding: 20,
+            rotate: 270,
+            textAnchor: 'middle',
+            label: {
+                text: 'Latitude',
+                cssClass: 'label inline',
+                dock: 'right',
+                textAnchor: 'end',
+                padding: -14
+            }
+        },
         size: {
             func: 'linear',
             min: 2,
@@ -114,6 +140,10 @@ window.samples.push({
             }
         }
     },
+    settings: {
+        specEngine: 'NONE',
+        layoutEngine: 'NONE'
+    },
     plugins: [
         tauCharts.api.plugins.get('legend')(),
         tauCharts.api.plugins.get('tooltip')()
@@ -124,50 +154,110 @@ window.samples.push({
 
     sel: 1111,
 
+    xsize: {
+        width: 800,
+        height: 180
+    },
+
     data: [
 
-        [37.6,   0, 'Oct 18'],
-        [36.0,   0, 'Oct 24'],
-        [33.2,  -9, 'Nov 9'],
-        [32.0, -21, 'Nov 14'],
-        [29.2, -11, ''],
-        [28.5, -20, 'Nov 28'],
-        [27.2, -24, 'Dec 1'],
-        [26.7, -30, 'Dec 6'],
-        [25.3, -26, 'Dec 7']
-
-    ].map(function (row) {
+        [37.6, 0, 'Oct 18', 6],
+        [36.0, 0, 'Oct 24', 14],
+        [33.2, -9, 'Nov 9', 5],
+        [32.0, -21, 'Nov 14', 7],
+        [29.2, -11, 'Nov 21', 7],
+        [28.5, -20, 'Nov 28', 4],
+        [27.2, -24, 'Dec 1', 5],
+        [26.7, -30, 'Dec 6', 1],
+        [25.3, -26, 'Dec 7', 0]
+    ]
+        .reduce(function (memo, x, i, list) {
+            var curr = x;
+            var next = (list.length - i > 1) ? list[i + 1] : curr;
+            next = JSON.parse(JSON.stringify(next)); // clone
+            curr.push(i);
+            next.push(i);
+            next[3] = curr[3];
+            return memo.concat([curr, next]);
+        }, [])
+        .map(function (row) {
 
             return {
                 lon: row[0],
                 temperature: row[1],
-                date: row[2]
+                date: row[2],
+                days: row[3],
+                way: row[4]
             };
         }),
+
+    test: [
+
+        [37.6,   0, 'Oct 18',  6, 'Moscow-Mojaisk'],
+        [36.0,   0, 'Oct 24',  6, 'Moscow-Mojaisk'],
+
+        [36.0,   0, 'Oct 24', 14, 'Mojaisk-Wixma'],
+        [33.2,  -9, 'Nov 9',  14, 'Mojaisk-Wixma'],
+
+        [33.2,  -9, 'Nov 9',   5, 'Wixma-Smolensk'],
+        [32.0, -21, 'Nov 14',  5, 'Wixma-Smolensk'],
+
+        [32.0, -21, 'Nov 14',  7, 'Smolensk-Bobr'],
+        [29.2, -11, 'Nov 21',  7, 'Smolensk-Bobr'],
+
+        [29.2, -11, 'Nov 21',  7, 'Bobr-Studienska'],
+        [28.5, -20, 'Nov 28',  7, 'Bobr-Studienska'],
+
+        [28.5, -20, 'Nov 28', 4, 'Studienska-Molodechno'],
+        [27.2, -24, 'Dec 1',  4, 'Studienska-Molodechno'],
+
+        [27.2, -24, 'Dec 1',  5, 'Molodechno-Smorgon'],
+        [26.7, -30, 'Dec 6',  5, 'Molodechno-Smorgon'],
+
+        [26.7, -30, 'Dec 6',  1, 'Smorgon-Wilna'],
+        [25.3, -26, 'Dec 7',  1, 'Smorgon-Wilna']
+
+    ],
 
     type: 'line',
     x: 'lon',
     y: 'temperature',
+    split: 'way',
+    color: 'days',
     text: 'date',
     guide: {
-        padding: {l: 0, r: 180, b: 0, t: 60},
+        showGridLines: 'xy',
+        padding: {l: 45, b: 50, t: 10, r: 10},
         x: {
             nice: false,
             min: 24,
             max: 38,
-            scaleOrient: 'top',
+            hide: false,
             padding: 20,
-            label: {text:'Longitude', padding: -25}
+            label: {
+                text: 'Longitude',
+                cssClass: 'label inline',
+                dock: 'right',
+                textAnchor: 'end',
+                padding: -2
+            }
         },
         y: {
             nice: false,
             min: -33,
-            max: 1,
+            max: 2,
             hide: false,
-            scaleOrient: 'right',
-            textAnchor: 'start',
             padding: 20,
-            label: { padding: -45, text: 'Temperature' }
+            label: {
+                text: 'Temperature',
+                cssClass: 'label inline',
+                dock: 'right',
+                textAnchor: 'end',
+                padding: -14
+            }
+        },
+        color: {
+            brewer: ['#eee', '#000']
         }
     },
     settings: {
