@@ -146,6 +146,16 @@ window.samples.push({
     },
     plugins: [
         tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'lon',
+                    val: [26, 31],
+                    text: 'The territory of modern Belarus',
+                    color: '#2c7fb8'
+                }
+            ]
+        }),
         tauCharts.api.plugins.get('tooltip')()
     ]
 });
@@ -266,6 +276,30 @@ window.samples.push({
     },
     plugins: [
         tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
+        tauCharts.api.plugins.get('tooltip')(),
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'temperature',
+                    val: -10,
+                    text: 'Usual winter',
+                    color: '#2c7fb8'
+                }
+                ,
+                {
+                    dim: 'temperature',
+                    val: -20,
+                    text: 'Really cold...',
+                    color: '#08519C'
+                }
+                ,
+                {
+                    dim: 'temperature',
+                    val: -30,
+                    text: 'Too cold to alive',
+                    color: '#253494'
+                }
+            ]
+        })
     ]
 });
