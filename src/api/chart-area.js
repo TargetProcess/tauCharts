@@ -86,8 +86,6 @@ var ChartArea = (rawConfig) => {
     if (propSortBy.prop !== null) {
         config.data = DataProcessor.sortByDim(data, propSortBy.prop, config.dimensions[propSortBy.prop]);
         config.flip = propSortBy.flip;
-    } else {
-        elementName = 'ELEMENT.PATH';
     }
 
     return transformConfig(elementName, config);

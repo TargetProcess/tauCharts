@@ -106,10 +106,11 @@ window.samples.push({
 
 window.samples.push({
 
-    type: 'area',
+    type: 'line',
     x: ['x'],
     y: ['y'],
     color: 'type',
+    size: 's',
 
     guide: [
         {
@@ -129,11 +130,13 @@ window.samples.push({
                 {
                     x: x,
                     y: Math.sin(x),
+                    s: Math.random(),
                     type: 'sin'
                 },
                 {
                     x: x,
                     y: Math.cos(x),
+                    s: Math.random(),
                     type: 'cos'
                 }
             ]);

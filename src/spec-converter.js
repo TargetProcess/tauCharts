@@ -23,11 +23,13 @@ export class SpecConverter {
                 'y_null': {type: 'ordinal', source: '?'},
                 'size_null':  {type: 'size', source: '?', mid: 1},
                 'color_null': {type: 'color', source: '?', brewer: null},
+                'split_null': {type: 'value', source: '?'},
 
                 'pos:default': {type: 'ordinal', source: '?'},
                 'size:default': {type: 'size', source: '?', mid: 1},
                 'text:default': {type: 'value', source: '?'},
-                'color:default': {type: 'color', source: '?', brewer: null}
+                'color:default': {type: 'color', source: '?', brewer: null},
+                'split:default': {type: 'value', source: '?'}
                 // jscs:enable disallowQuotedKeysInObjects
             },
             settings: spec.settings
@@ -142,7 +144,7 @@ export class SpecConverter {
     ruleCreateScales(srcUnit, gplRoot) {
 
         var guide = srcUnit.guide || {};
-        ['color', 'size', 'text', 'x', 'y'].forEach((p) => {
+        ['color', 'size', 'text', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
             }
@@ -222,9 +224,21 @@ export class SpecConverter {
                 max: 1,
                 mid: 1
             };
+
+            if (guide.hasOwnProperty('func')) {
+                item.func = guide.func;
+            }
         }
 
         if (scaleType === 'text' && dimName !== null) {
+            item = {
+                type: 'value',
+                source: '/',
+                dim: this.ruleInferDim(dimName, guide)
+            };
+        }
+
+        if (scaleType === 'split' && dimName !== null) {
             item = {
                 type: 'value',
                 source: '/',

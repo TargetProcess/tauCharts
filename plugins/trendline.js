@@ -514,6 +514,7 @@
                         var trend = JSON.parse(JSON.stringify(unit));
 
                         trend.type = 'ELEMENT.LINE';
+                        trend.size = 'size_null';
                         trend.namespace = 'trendline';
                         trend.transformation = trend.transformation || [];
                         trend.transformation.push({

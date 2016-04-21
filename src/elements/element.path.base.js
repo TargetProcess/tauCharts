@@ -2,12 +2,13 @@ import {Element} from './element';
 import {PathModel} from '../models/path';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {elementDecoratorShowAnchors} from './decorators/show-anchors';
+import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
 export class BasePath extends Element {
 
-    constructor(config) {
+    constructor(config, decorators) {
 
         super(config);
 
@@ -33,13 +34,17 @@ export class BasePath extends Element {
                 paddingY: 0
             });
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
+        this.config.guide.size = _.defaults(this.config.guide.size || {}, {});
 
-        this.decorators = [
-            PathModel.decorator_orientation,
-            PathModel.decorator_group,
-            PathModel.decorator_size,
-            PathModel.decorator_color
-        ];
+        this.decorators = []
+            .concat([
+                PathModel.decorator_orientation,
+                PathModel.decorator_group,
+                PathModel.decorator_size,
+                PathModel.decorator_color
+            ])
+            .concat(decorators)
+            .concat(PathModel.adjustSizeScale);
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
@@ -62,12 +67,14 @@ export class BasePath extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
         this.text = fnCreateScale('text', config.text, {});
+        this.split = fnCreateScale('split', config.split, {});
 
         return this
             .regScale('x', this.xScale)
             .regScale('y', this.yScale)
             .regScale('size', this.size)
             .regScale('color', this.color)
+            .regScale('split', this.split)
             .regScale('text', this.text);
     }
 
@@ -75,13 +82,17 @@ export class BasePath extends Element {
 
         var pathModel = this.walkFrames();
 
-        return {
+        const datumClass = `i-role-datum`;
+        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
+
+        var baseModel = {
             scaleX: pathModel.scaleX,
             scaleY: pathModel.scaleY,
             scaleColor: colorScale,
             scaleText: textScale,
             x: pathModel.xi,
             y: pathModel.yi,
+            y0: pathModel.y0,
             size: pathModel.size,
             group: pathModel.group,
             color: (d) => colorScale.toColor(pathModel.color(d)),
@@ -92,16 +103,16 @@ export class BasePath extends Element {
             groupAttributes: {},
             pathAttributes: {},
             pathElement: null,
-            dotAttributes: {}
+            dotAttributes: {
+                r: (d) => baseModel.size(d) / 2,
+                cx: (d) => baseModel.x(d),
+                cy: (d) => baseModel.y(d),
+                fill: (d) => baseModel.color(d),
+                class: (d) => (`${pointPref} ${baseModel.class(d)}`)
+            }
         };
-    }
 
-    packFrameData(rows) {
-        return rows;
-    }
-
-    unpackFrameData(rows) {
-        return rows;
+        return baseModel;
     }
 
     getDistance(mx, my, rx, ry) {
@@ -111,7 +122,9 @@ export class BasePath extends Element {
     walkFrames() {
 
         var args = {
-            textScale: this.text
+            textScale: this.text,
+            minLimit: this.config.guide.size.min || 2,
+            maxLimit: this.config.guide.size.max || (this.isEmptySize ? 6 : 40)
         };
 
         return this
@@ -121,7 +134,8 @@ export class BasePath extends Element {
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
-                scaleColor: this.color
+                scaleColor: this.color,
+                scaleSplit: this.split
             })));
     }
 
@@ -140,84 +154,68 @@ export class BasePath extends Element {
         });
         this.model = model;
 
-        var updateArea = function () {
+        var updateGroupContainer = function () {
 
-            var path = this
-                .selectAll(model.pathElement)
-                .data((fiber) => [self.packFrameData(fiber)]);
-            path.exit()
-                .remove();
-            path.attr(model.pathAttributes);
-            path.enter()
-                .append(model.pathElement)
-                .attr(model.pathAttributes);
+            this.attr(model.groupAttributes);
 
-            self.subscribe(path, function (rows) {
-                var m = d3.mouse(this);
-                return model.matchRowInCoordinates(rows, {x: m[0], y: m[1]});
-            });
-        };
-
-        var updatePoints = function () {
-
-            var dots = this
+            var points = this
                 .selectAll('circle')
-                .data((fiber) => fiber);
-            dots.exit()
+                .data((fiber) => (fiber.length <= 1) ? fiber : []);
+            points
+                .exit()
                 .remove();
-            dots.attr(model.dotAttributes);
-            dots.enter()
+            points
+                .attr(model.dotAttributes);
+            points
+                .enter()
                 .append('circle')
                 .attr(model.dotAttributes);
 
-            self.subscribe(dots, (d) => d);
-        };
+            self.subscribe(points, (d) => d);
 
-        var updateGroups = () => {
+            var series = this
+                .selectAll(model.pathElement)
+                .data((fiber) => (fiber.length > 1) ? [fiber] : []);
+            series
+                .exit()
+                .remove();
+            series
+                .attr(model.pathAttributes);
+            series
+                .enter()
+                .append(model.pathElement)
+                .attr(model.pathAttributes);
 
-            return function () {
+            self.subscribe(series, function (rows) {
+                var m = d3.mouse(this);
+                return model.matchRowInCoordinates(rows, {x: m[0], y: m[1]});
+            });
 
-                this.attr(model.groupAttributes)
-                    .call(function (sel) {
+            if (guide.color.fill && !model.scaleColor.dim) {
+                this.style({
+                    fill: guide.color.fill,
+                    stroke: guide.color.fill
+                });
+            }
 
-                        if (sel.empty()) {
-                            return;
-                        }
+            if (guide.showAnchors) {
+                self.subscribe(elementDecoratorShowAnchors({
+                    xScale: model.scaleX,
+                    yScale: model.scaleY,
+                    guide,
+                    container: this
+                }));
+            }
 
-                        var isPlural = (sel.data()[0].length > 1);
-                        if (isPlural) {
-                            updateArea.call(this);
-                        } else {
-                            updatePoints.call(this);
-                        }
-
-                        if (guide.color.fill && !model.scaleColor.dim) {
-                            this.style({
-                                fill: guide.color.fill,
-                                stroke: guide.color.fill
-                            });
-                        }
-
-                        if (guide.showAnchors) {
-                            self.subscribe(elementDecoratorShowAnchors({
-                                xScale: model.scaleX,
-                                yScale: model.scaleY,
-                                guide,
-                                container: this
-                            }));
-                        }
-
-                        if (model.scaleText.dim) {
-                            self.subscribe(elementDecoratorShowText({
-                                guide,
-                                xScale: model.scaleX,
-                                yScale: model.scaleY,
-                                textScale: model.scaleText,
-                                container: this
-                            }));
-                        }
-                    });
-            };
+            if (model.scaleText.dim) {
+                self.subscribe(elementDecoratorShowText({
+                    guide,
+                    xScale: model.scaleX,
+                    yScale: model.scaleY,
+                    textScale: model.scaleText,
+                    container: this
+                }));
+            }
         };
 
         var groups = _.groupBy(fullData, model.group);
@@ -225,23 +223,19 @@ export class BasePath extends Element {
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
-        var drawFrame = (id) => {
-
-            var frameGroups = options.container
-                .selectAll(`.frame-${id}`)
-                .data(fibers);
-            frameGroups
-                .exit()
-                .remove();
-            frameGroups
-                .call(updateGroups(`frame-${id}`));
-            frameGroups
-                .enter()
-                .append('g')
-                .call(updateGroups(`frame-${id}`));
-        };
-
-        drawFrame(options.uid);
+        var frameGroups = options
+            .container
+            .selectAll(`.frame-${options.uid}`)
+            .data(fibers);
+        frameGroups
+            .exit()
+            .remove();
+        frameGroups
+            .call(updateGroupContainer);
+        frameGroups
+            .enter()
+            .append('g')
+            .call(updateGroupContainer);
     }
 
     highlight(filter) {
@@ -270,7 +264,7 @@ export class BasePath extends Element {
             .container
             .selectAll(`.${cssClass}`)
             .attr({
-                r: (d) => (filter(d) ? 3 : this.config.guide.anchorSize),
+                r: (d) => (filter(d) ? (this.model.size(d) / 2) : this.config.guide.anchorSize),
                 fill: (d) => this.model.color(d),
                 class: (d) => (`${cssClass} ${this.model.class(d)}`)
             });

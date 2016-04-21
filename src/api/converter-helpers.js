@@ -14,13 +14,15 @@ var createElement = (type, config) => {
         x: config.x,
         y: config.y,
         color: config.color,
+        split: config.split,
         guide: {
             color: config.colorGuide,
             size: config.sizeGuide,
             flip: config.flip
         },
         flip: config.flip,
-        size: config.size
+        size: config.size,
+        text: config.text
     };
 };
 
@@ -137,7 +139,9 @@ function transformConfig(type, config) {
             spec.unit.push(createElement(type, {
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
+                split: config.split,
                 color: config.color,
+                text: config.text,
                 size: config.size,
                 flip: config.flip,
                 colorGuide: currentGuide.color,

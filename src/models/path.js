@@ -6,9 +6,13 @@ export class PathModel {
         this.scaleY = model.scaleY || null;
         this.scaleSize = model.scaleSize || null;
         this.scaleColor = model.scaleColor || null;
+        this.scaleSplit = model.scaleSplit || null;
 
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
+
+        this.y0 = model.y0 || createFunc(0);
+
         this.size = model.size || createFunc(1);
         this.color = model.color || createFunc('');
         this.group = model.group || createFunc('');
@@ -36,8 +40,9 @@ export class PathModel {
         return PathModel.compose(model, {
             scaleX: baseScale,
             scaleY: valsScale,
+            xi: ((d) => (baseScale.value(d[baseScale.dim]))),
             yi: ((d) => (valsScale.value(d[valsScale.dim]))),
-            xi: ((d) => (baseScale.value(d[baseScale.dim])))
+            y0: ((d) => (valsScale.value(d[valsScale.dim])))
         });
     }
 
@@ -55,7 +60,55 @@ export class PathModel {
 
     static decorator_group(model, {}) {
         return PathModel.compose(model, {
-            group: ((d) => (d[model.scaleColor.dim]))
+            group: ((d) => (`${d[model.scaleColor.dim]}_${d[model.scaleSplit.dim]}`))
         });
+    }
+
+    static decorator_groundY0(model, {}) {
+        var ys = model.scaleY.domain();
+        var min = ys[0];
+        var max = ys[ys.length - 1];
+        // NOTE: max also can be below 0
+        var base = model.scaleY.discrete ?
+            (min) :
+            ((min < 0) ? (Math.min(0, max)) : (min));
+
+        var y0 = model.scaleY.value(base);
+
+        return PathModel.compose(model, {
+            y0: (() => y0)
+        });
+    }
+
+    static adjustSizeScale(model, {minLimit, maxLimit}) {
+
+        var minSize = minLimit;
+        var maxSize = maxLimit;
+
+        model.scaleSize.fixup((sizeScaleConfig) => {
+
+            var newConf = {};
+
+            if (!sizeScaleConfig.__fixed__) {
+                newConf.__fixed__ = true;
+                newConf.min = minSize;
+                newConf.max = maxSize;
+                newConf.mid = maxSize;
+                return newConf;
+            }
+
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxSize) {
+                newConf.max = maxSize;
+                newConf.mid = maxSize;
+            }
+
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minSize) {
+                newConf.min = minSize;
+            }
+
+            return newConf;
+        });
+
+        return model;
     }
 }

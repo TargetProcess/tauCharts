@@ -7,7 +7,15 @@ import {default as d3} from 'd3';
 export class Line extends BasePath {
 
     constructor(config) {
+
         super(config);
+
+        this.config = config;
+        this.config.guide = _.defaults(
+            (this.config.guide || {}),
+            {
+                interpolate: 'linear'
+            });
     }
 
     buildModel(params) {
@@ -51,37 +59,76 @@ export class Line extends BasePath {
 
         var guide = this.config.guide;
         var options = this.config.options;
-        var widthCss = guide.widthCssClass || getLineClassesByWidth(options.width);
+        var widthCss = (this.isEmptySize ?
+            (guide.widthCssClass || getLineClassesByWidth(options.width)) :
+            (''));
         var countCss = getLineClassesByCount(params.colorScale.domain().length);
 
-        const datumClass = `i-role-datum`;
-        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
-        const groupPref = `${CSS_PREFIX}line line i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
+        var tag = this.isEmptySize ? 'line' : 'area';
+        const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
-        var d3Line = d3.svg.line().x(baseModel.x).y(baseModel.y);
-        if (guide.interpolate) {
-            d3Line.interpolate(guide.interpolate);
-        }
+        var d3Line = d3.svg
+            .line()
+            .interpolate(guide.interpolate)
+            .x(baseModel.x)
+            .y(baseModel.y);
 
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
         };
 
-        baseModel.pathAttributes = {
-            d: d3Line,
-            stroke: (fiber) => baseModel.color(fiber[0]),
-            class: datumClass
-        };
+        baseModel.pathElement = this.isEmptySize ? 'path' : 'polygon';
 
-        baseModel.dotAttributes = {
-            r: (d) => baseModel.size(d),
-            cx: (d) => baseModel.x(d),
-            cy: (d) => baseModel.y(d),
-            fill: (d) => baseModel.color(d),
-            class: (d) => (`${pointPref} ${baseModel.class(d)}`)
-        };
+        baseModel.pathAttributes = this.isEmptySize ?
+            ({
+                d: d3Line,
+                stroke: (fiber) => baseModel.color(fiber[0]),
+                class: 'i-role-datum'
+            }) :
+            ({
+                fill: (fiber) => baseModel.color(fiber[0]),
+                points: ((fiber) => {
 
-        baseModel.pathElement = 'path';
+                    var x = baseModel.x;
+                    var y = baseModel.y;
+                    var w = baseModel.size;
+
+                    var xy = ((d) => ([x(d), y(d)]));
+
+                    var ways = fiber
+                        .reduce((memo, d, i, list) => {
+                            var dPrev = list[i - 1];
+                            var dNext = list[i + 1];
+                            var curr = xy(d);
+                            var prev = dPrev ? xy(dPrev) : null;
+                            var next = dNext ? xy(dNext) : null;
+
+                            var width = w(d);
+                            var lAngle = dPrev ? (Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0])) : Math.PI;
+                            var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
+
+                            var gamma = lAngle - rAngle;
+                            var diff = width / 2 / Math.sin(gamma / 2);
+                            var aup = rAngle + gamma / 2;
+                            var adown = aup - Math.PI;
+                            var dxup = diff * Math.cos(aup);
+                            var dyup = diff * Math.sin(aup);
+                            var dxdown = diff * Math.cos(adown);
+                            var dydown = diff * Math.sin(adown);
+
+                            memo.dir.push([curr[0] + dxup, curr[1] - dyup]);
+                            memo.rev.push([curr[0] + dxdown, curr[1] - dydown]);
+
+                            return memo;
+                        },
+                        {
+                            dir: [],
+                            rev: []
+                        });
+
+                    return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
+                })
+            });
 
         return baseModel;
     }
