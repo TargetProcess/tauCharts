@@ -59,7 +59,9 @@ export class Line extends BasePath {
 
         var guide = this.config.guide;
         var options = this.config.options;
-        var widthCss = guide.widthCssClass || getLineClassesByWidth(options.width);
+        var widthCss = (this.isEmptySize ?
+            (guide.widthCssClass || getLineClassesByWidth(options.width)) :
+            (''));
         var countCss = getLineClassesByCount(params.colorScale.domain().length);
 
         var tag = this.isEmptySize ? 'line' : 'area';
@@ -85,7 +87,6 @@ export class Line extends BasePath {
             }) :
             ({
                 fill: (fiber) => baseModel.color(fiber[0]),
-                stroke: (fiber) => baseModel.color(fiber[0]),
                 points: ((fiber) => {
 
                     var x = baseModel.x;

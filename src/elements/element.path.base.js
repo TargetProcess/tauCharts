@@ -154,84 +154,68 @@ export class BasePath extends Element {
         });
         this.model = model;
 
-        var updateArea = function () {
+        var updateGroupContainer = function () {
 
-            var path = this
-                .selectAll(model.pathElement)
-                .data((fiber) => [fiber]);
-            path.exit()
-                .remove();
-            path.attr(model.pathAttributes);
-            path.enter()
-                .append(model.pathElement)
-                .attr(model.pathAttributes);
+            this.attr(model.groupAttributes);
 
-            self.subscribe(path, function (rows) {
-                var m = d3.mouse(this);
-                return model.matchRowInCoordinates(rows, {x: m[0], y: m[1]});
-            });
-        };
-
-        var updatePoints = function () {
-
-            var dots = this
+            var points = this
                 .selectAll('circle')
-                .data((fiber) => fiber);
-            dots.exit()
+                .data((fiber) => (fiber.length <= 1) ? fiber : []);
+            points
+                .exit()
                 .remove();
-            dots.attr(model.dotAttributes);
-            dots.enter()
+            points
+                .attr(model.dotAttributes);
+            points
+                .enter()
                 .append('circle')
                 .attr(model.dotAttributes);
 
-            self.subscribe(dots, (d) => d);
-        };
+            self.subscribe(points, (d) => d);
 
-        var updateGroups = () => {
+            var series = this
+                .selectAll(model.pathElement)
+                .data((fiber) => (fiber.length > 1) ? [fiber] : []);
+            series
+                .exit()
+                .remove();
+            series
+                .attr(model.pathAttributes);
+            series
+                .enter()
+                .append(model.pathElement)
+                .attr(model.pathAttributes);
 
-            return function () {
+            self.subscribe(series, function (rows) {
+                var m = d3.mouse(this);
+                return model.matchRowInCoordinates(rows, {x: m[0], y: m[1]});
+            });
 
-                this.attr(model.groupAttributes)
-                    .call(function (sel) {
+            if (guide.color.fill && !model.scaleColor.dim) {
+                this.style({
+                    fill: guide.color.fill,
+                    stroke: guide.color.fill
+                });
+            }
 
-                        if (sel.empty()) {
-                            return;
-                        }
+            if (guide.showAnchors) {
+                self.subscribe(elementDecoratorShowAnchors({
+                    xScale: model.scaleX,
+                    yScale: model.scaleY,
+                    guide,
+                    container: this
+                }));
+            }
 
-                        var isPlural = (sel.data()[0].length > 1);
-                        if (isPlural) {
-                            updateArea.call(this);
-                        } else {
-                            updatePoints.call(this);
-                        }
-
-                        if (guide.color.fill && !model.scaleColor.dim) {
-                            this.style({
-                                fill: guide.color.fill,
-                                stroke: guide.color.fill
-                            });
-                        }
-
-                        if (guide.showAnchors) {
-                            self.subscribe(elementDecoratorShowAnchors({
-                                xScale: model.scaleX,
-                                yScale: model.scaleY,
-                                guide,
-                                container: this
-                            }));
-                        }
-
-                        if (model.scaleText.dim) {
-                            self.subscribe(elementDecoratorShowText({
-                                guide,
-                                xScale: model.scaleX,
-                                yScale: model.scaleY,
-                                textScale: model.scaleText,
-                                container: this
-                            }));
-                        }
-                    });
-            };
+            if (model.scaleText.dim) {
+                self.subscribe(elementDecoratorShowText({
+                    guide,
+                    xScale: model.scaleX,
+                    yScale: model.scaleY,
+                    textScale: model.scaleText,
+                    container: this
+                }));
+            }
         };
 
         var groups = _.groupBy(fullData, model.group);
@@ -239,23 +223,19 @@ export class BasePath extends Element {
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
-        var drawFrame = (id) => {
-
-            var frameGroups = options.container
-                .selectAll(`.frame-${id}`)
-                .data(fibers);
-            frameGroups
-                .exit()
-                .remove();
-            frameGroups
-                .call(updateGroups(`frame-${id}`));
-            frameGroups
-                .enter()
-                .append('g')
-                .call(updateGroups(`frame-${id}`));
-        };
-
-        drawFrame(options.uid);
+        var frameGroups = options
+            .container
+            .selectAll(`.frame-${options.uid}`)
+            .data(fibers);
+        frameGroups
+            .exit()
+            .remove();
+        frameGroups
+            .call(updateGroupContainer);
+        frameGroups
+            .enter()
+            .append('g')
+            .call(updateGroupContainer);
     }
 
     highlight(filter) {
