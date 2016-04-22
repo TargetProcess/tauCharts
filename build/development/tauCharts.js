@@ -1,4 +1,4 @@
-/*! taucharts - v0.8.3 - 2016-04-13
+/*! taucharts - v0.8.4 - 2016-04-22
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -992,24 +992,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Point).call(this, config));
 
 	        _this.config = config;
-
 	        _this.config.guide = _this.config.guide || {};
-
-	        _this.config.guide.x = _this.config.guide.x || {};
-	        _this.config.guide.x = _underscore2.default.defaults(_this.config.guide.x, {
-	            tickFontHeight: 0,
-	            density: 20
-	        });
-
-	        _this.config.guide.y = _this.config.guide.y || {};
-	        _this.config.guide.y = _underscore2.default.defaults(_this.config.guide.y, {
-	            tickFontHeight: 0,
-	            density: 20
-	        });
-
 	        _this.config.guide.size = _this.config.guide.size || {};
 
-	        _this.decorators = [_point.PointModel.decorator_orientation, _point.PointModel.decorator_group, _point.PointModel.decorator_size, _point.PointModel.decorator_color];
+	        var defaultMinLimit = 2;
+	        // TODO: fix when pass scales to constructor
+	        var defaultMaxLimit = _this.isEmptySize ? 10 : 20;
+
+	        _this.minLimit = config.guide.size.min || defaultMinLimit;
+	        _this.maxLimit = config.guide.size.max || defaultMaxLimit;
+	        _this.fixedSize = config.guide.size.fixed;
+
+	        _this.decorators = [_point.PointModel.decorator_orientation, _point.PointModel.decorator_group, _point.PointModel.decorator_size, _point.PointModel.decorator_color, config.adjustPhase && _point.PointModel.adjustSizeScale];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1026,48 +1020,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
-
-	            var g = config.guide;
-	            var isNotZero = function isNotZero(x) {
-	                return x !== 0;
-	            };
-	            var halfPart = 0.5;
-	            var minFontSize = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
-	                return n.tickFontHeight;
-	            }).filter(isNotZero));
-	            var minTickStep = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
-	                return n.density;
-	            }).filter(isNotZero));
-	            var notLessThan = function notLessThan(lim, val) {
-	                return Math.max(val, lim);
-	            };
-
-	            var sizeGuide = {
-	                min: g.size.min || 2,
-	                max: g.size.max || notLessThan(2, minTickStep),
-	                mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-	            };
-
-	            this.size = fnCreateScale('size', config.size, sizeGuide);
+	            this.size = fnCreateScale('size', config.size, {});
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
 	        }
 	    }, {
 	        key: 'buildModel',
 	        value: function buildModel(_ref) {
-	            var xScale = _ref.xScale;
-	            var yScale = _ref.yScale;
-	            var sizeScale = _ref.sizeScale;
 	            var colorScale = _ref.colorScale;
 
 
-	            var args = { xScale: xScale, yScale: yScale, sizeScale: sizeScale, colorScale: colorScale };
-
-	            var pointModel = this.decorators.filter(function (x) {
-	                return x;
-	            }).reduce(function (model, transform) {
-	                return transform(model, args);
-	            }, new _point.PointModel());
+	            var pointModel = this.walkFrames();
 
 	            return {
 	                x: pointModel.xi,
@@ -1081,6 +1044,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return colorScale.toClass(pointModel.color(d));
 	                }
 	            };
+	        }
+	    }, {
+	        key: 'walkFrames',
+	        value: function walkFrames() {
+
+	            var args = {
+	                xScale: this.xScale,
+	                yScale: this.yScale,
+	                colorScale: this.color,
+	                sizeScale: this.size,
+	                minLimit: this.minLimit,
+	                maxLimit: this.maxLimit,
+	                fixedSize: this.fixedSize,
+	                dataSource: []
+	            };
+
+	            return this.decorators.filter(function (x) {
+	                return x;
+	            }).reduce(function (model, transform) {
+	                return transform(model, args);
+	            }, new _point.PointModel({
+	                scaleX: this.xScale,
+	                scaleY: this.yScale,
+	                scaleColor: this.color,
+	                scaleSize: this.size
+	            }));
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -1105,7 +1094,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var attr = {
 	                r: function r(d) {
-	                    return model.size(d);
+	                    return model.size(d) / 2;
 	                },
 	                cx: function cx(d) {
 	                    return model.x(d);
@@ -1224,6 +1213,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this._elementNameSpace = config.namespace || 'default';
 	        _this._elementScalesHub = {};
+
+	        // TODO: fix when pass scales to constructor
+	        _this.isEmptySize = !config.size || config.size.indexOf('size_undefined') === 0 || config.size.indexOf('size_null') === 0;
 	        return _this;
 	    }
 
@@ -1283,6 +1275,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                sel.on(eventName, _utils.utils.throttleLastEvent(last, eventName, callback, limit));
 	            });
+	        }
+	    }, {
+	        key: 'walkFrames',
+	        value: function walkFrames() {
+	            // do nothing by default
 	        }
 	    }]);
 
@@ -1493,6 +1490,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var PointModel = exports.PointModel = function () {
@@ -1508,6 +1507,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        this.scaleX = model.scaleX || null;
 	        this.scaleY = model.scaleY || null;
+	        this.scaleSize = model.scaleSize || null;
+	        this.scaleColor = model.scaleColor || null;
+
 	        this.yi = model.yi || createFunc(0);
 	        this.xi = model.xi || createFunc(0);
 	        this.size = model.size || createFunc(1);
@@ -1533,58 +1535,93 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'decorator_orientation',
 	        value: function decorator_orientation(model, _ref) {
-	            var xScale = _ref.xScale;
-	            var yScale = _ref.yScale;
 	            var _ref$isHorizontal = _ref.isHorizontal;
 	            var isHorizontal = _ref$isHorizontal === undefined ? false : _ref$isHorizontal;
 
 
-	            var baseScale = isHorizontal ? yScale : xScale;
-	            var valsScale = isHorizontal ? xScale : yScale;
+	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
+	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
 
 	            return PointModel.compose(model, {
 	                scaleX: baseScale,
 	                scaleY: valsScale,
 	                yi: function yi(d) {
-	                    return valsScale(d[valsScale.dim]);
+	                    return valsScale.value(d[valsScale.dim]);
 	                },
 	                xi: function xi(d) {
-	                    return baseScale(d[baseScale.dim]);
+	                    return baseScale.value(d[baseScale.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_size',
 	        value: function decorator_size(model, _ref2) {
-	            var sizeScale = _ref2.sizeScale;
+	            _objectDestructuringEmpty(_ref2);
 
 	            return PointModel.compose(model, {
 	                size: function size(d) {
-	                    return sizeScale(d[sizeScale.dim]);
+	                    return model.scaleSize.value(d[model.scaleSize.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_color',
 	        value: function decorator_color(model, _ref3) {
-	            var colorScale = _ref3.colorScale;
+	            _objectDestructuringEmpty(_ref3);
 
 	            return PointModel.compose(model, {
 	                color: function color(d) {
-	                    return colorScale(d[colorScale.dim]);
+	                    return model.scaleColor.value(d[model.scaleColor.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_group',
 	        value: function decorator_group(model, _ref4) {
-	            var colorScale = _ref4.colorScale;
+	            _objectDestructuringEmpty(_ref4);
 
 	            return PointModel.compose(model, {
 	                group: function group(d) {
-	                    return d[colorScale.dim];
+	                    return d[model.scaleColor.dim];
 	                }
 	            });
+	        }
+	    }, {
+	        key: 'adjustSizeScale',
+	        value: function adjustSizeScale(model, _ref5) {
+	            var minLimit = _ref5.minLimit;
+	            var maxLimit = _ref5.maxLimit;
+	            var fixedSize = _ref5.fixedSize;
+
+
+	            var minSize = fixedSize ? fixedSize : minLimit;
+	            var maxSize = fixedSize ? fixedSize : maxLimit;
+
+	            model.scaleSize.fixup(function (sizeScaleConfig) {
+
+	                var newConf = {};
+
+	                if (!sizeScaleConfig.__fixed__) {
+	                    newConf.__fixed__ = true;
+	                    newConf.min = minSize;
+	                    newConf.max = maxSize;
+	                    newConf.mid = maxSize;
+	                    return newConf;
+	                }
+
+	                if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxSize) {
+	                    newConf.max = maxSize;
+	                    newConf.mid = maxSize;
+	                }
+
+	                if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minSize) {
+	                    newConf.min = minSize;
+	                }
+
+	                return newConf;
+	            });
+
+	            return model;
 	        }
 	    }]);
 
@@ -1634,7 +1671,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Line(config) {
 	        _classCallCheck(this, Line);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Line).call(this, config));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Line).call(this, config));
+
+	        _this.config = config;
+	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
+	            interpolate: 'linear'
+	        });
+	        return _this;
 	    }
 
 	    _createClass(Line, [{
@@ -1686,17 +1729,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var guide = this.config.guide;
 	            var options = this.config.options;
-	            var widthCss = guide.widthCssClass || (0, _cssClassMap.getLineClassesByWidth)(options.width);
+	            var widthCss = this.isEmptySize ? guide.widthCssClass || (0, _cssClassMap.getLineClassesByWidth)(options.width) : '';
 	            var countCss = (0, _cssClassMap.getLineClassesByCount)(params.colorScale.domain().length);
 
-	            var datumClass = 'i-role-datum';
-	            var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-dot ' + datumClass + ' ' + _const.CSS_PREFIX + 'dot ';
-	            var groupPref = _const.CSS_PREFIX + 'line line i-role-path ' + widthCss + ' ' + countCss + ' ' + guide.cssClass + ' ';
+	            var tag = this.isEmptySize ? 'line' : 'area';
+	            var groupPref = '' + _const.CSS_PREFIX + tag + ' ' + tag + ' i-role-path ' + widthCss + ' ' + countCss + ' ' + guide.cssClass + ' ';
 
-	            var d3Line = _d2.default.svg.line().x(baseModel.x).y(baseModel.y);
-	            if (guide.interpolate) {
-	                d3Line.interpolate(guide.interpolate);
-	            }
+	            var d3Line = _d2.default.svg.line().interpolate(guide.interpolate).x(baseModel.x).y(baseModel.y);
 
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
@@ -1704,33 +1743,60 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            };
 
-	            baseModel.pathAttributes = {
+	            baseModel.pathElement = this.isEmptySize ? 'path' : 'polygon';
+
+	            baseModel.pathAttributes = this.isEmptySize ? {
 	                d: d3Line,
 	                stroke: function stroke(fiber) {
 	                    return baseModel.color(fiber[0]);
 	                },
-	                class: datumClass
-	            };
+	                class: 'i-role-datum'
+	            } : {
+	                fill: function fill(fiber) {
+	                    return baseModel.color(fiber[0]);
+	                },
+	                points: function points(fiber) {
 
-	            baseModel.dotAttributes = {
-	                r: function r(d) {
-	                    return baseModel.size(d);
-	                },
-	                cx: function cx(d) {
-	                    return baseModel.x(d);
-	                },
-	                cy: function cy(d) {
-	                    return baseModel.y(d);
-	                },
-	                fill: function fill(d) {
-	                    return baseModel.color(d);
-	                },
-	                class: function _class(d) {
-	                    return pointPref + ' ' + baseModel.class(d);
+	                    var x = baseModel.x;
+	                    var y = baseModel.y;
+	                    var w = baseModel.size;
+
+	                    var xy = function xy(d) {
+	                        return [x(d), y(d)];
+	                    };
+
+	                    var ways = fiber.reduce(function (memo, d, i, list) {
+	                        var dPrev = list[i - 1];
+	                        var dNext = list[i + 1];
+	                        var curr = xy(d);
+	                        var prev = dPrev ? xy(dPrev) : null;
+	                        var next = dNext ? xy(dNext) : null;
+
+	                        var width = w(d);
+	                        var lAngle = dPrev ? Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0]) : Math.PI;
+	                        var rAngle = dNext ? Math.atan2(curr[1] - next[1], next[0] - curr[0]) : 0;
+
+	                        var gamma = lAngle - rAngle;
+	                        var diff = width / 2 / Math.sin(gamma / 2);
+	                        var aup = rAngle + gamma / 2;
+	                        var adown = aup - Math.PI;
+	                        var dxup = diff * Math.cos(aup);
+	                        var dyup = diff * Math.sin(aup);
+	                        var dxdown = diff * Math.cos(adown);
+	                        var dydown = diff * Math.sin(adown);
+
+	                        memo.dir.push([curr[0] + dxup, curr[1] - dyup]);
+	                        memo.rev.push([curr[0] + dxdown, curr[1] - dydown]);
+
+	                        return memo;
+	                    }, {
+	                        dir: [],
+	                        rev: []
+	                    });
+
+	                    return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
 	                }
 	            };
-
-	            baseModel.pathElement = 'path';
 
 	            return baseModel;
 	        }
@@ -1760,6 +1826,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _showAnchors = __webpack_require__(14);
 
+	var _const = __webpack_require__(6);
+
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
@@ -1779,7 +1847,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var BasePath = exports.BasePath = function (_Element) {
 	    _inherits(BasePath, _Element);
 
-	    function BasePath(config) {
+	    function BasePath(config, decorators) {
 	        _classCallCheck(this, BasePath);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BasePath).call(this, config));
@@ -1801,8 +1869,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            paddingY: 0
 	        });
 	        _this.config.guide.color = _underscore2.default.defaults(_this.config.guide.color || {}, { fill: null });
+	        _this.config.guide.size = _underscore2.default.defaults(_this.config.guide.size || {}, {});
 
-	        _this.decorators = [_path.PathModel.decorator_orientation, _path.PathModel.decorator_group, _path.PathModel.decorator_size, _path.PathModel.decorator_color];
+	        _this.decorators = [].concat([_path.PathModel.decorator_orientation, _path.PathModel.decorator_group, _path.PathModel.decorator_size, _path.PathModel.decorator_color]).concat(decorators).concat(_path.PathModel.adjustSizeScale);
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1840,35 +1909,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.color = fnCreateScale('color', config.color, {});
 	            this.size = fnCreateScale('size', config.size, {});
 	            this.text = fnCreateScale('text', config.text, {});
+	            this.split = fnCreateScale('split', config.split, {});
 
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('text', this.text);
+	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('text', this.text);
 	        }
 	    }, {
 	        key: 'buildModel',
 	        value: function buildModel(_ref) {
-	            var xScale = _ref.xScale;
-	            var yScale = _ref.yScale;
-	            var sizeScale = _ref.sizeScale;
 	            var colorScale = _ref.colorScale;
 	            var textScale = _ref.textScale;
-	            var dataSource = _ref.dataSource;
 
 
-	            var args = { xScale: xScale, yScale: yScale, sizeScale: sizeScale, colorScale: colorScale, dataSource: dataSource };
+	            var pathModel = this.walkFrames();
 
-	            var pathModel = this.decorators.filter(function (x) {
-	                return x;
-	            }).reduce(function (model, transform) {
-	                return transform(model, args);
-	            }, new _path.PathModel());
+	            var datumClass = 'i-role-datum';
+	            var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-dot ' + datumClass + ' ' + _const.CSS_PREFIX + 'dot ';
 
-	            return {
+	            var baseModel = {
 	                scaleX: pathModel.scaleX,
 	                scaleY: pathModel.scaleY,
 	                scaleColor: colorScale,
 	                scaleText: textScale,
 	                x: pathModel.xi,
 	                y: pathModel.yi,
+	                y0: pathModel.y0,
 	                size: pathModel.size,
 	                group: pathModel.group,
 	                color: function color(d) {
@@ -1884,23 +1948,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	                groupAttributes: {},
 	                pathAttributes: {},
 	                pathElement: null,
-	                dotAttributes: {}
+	                dotAttributes: {
+	                    r: function r(d) {
+	                        return baseModel.size(d) / 2;
+	                    },
+	                    cx: function cx(d) {
+	                        return baseModel.x(d);
+	                    },
+	                    cy: function cy(d) {
+	                        return baseModel.y(d);
+	                    },
+	                    fill: function fill(d) {
+	                        return baseModel.color(d);
+	                    },
+	                    class: function _class(d) {
+	                        return pointPref + ' ' + baseModel.class(d);
+	                    }
+	                }
 	            };
-	        }
-	    }, {
-	        key: 'packFrameData',
-	        value: function packFrameData(rows) {
-	            return rows;
-	        }
-	    }, {
-	        key: 'unpackFrameData',
-	        value: function unpackFrameData(rows) {
-	            return rows;
+
+	            return baseModel;
 	        }
 	    }, {
 	        key: 'getDistance',
 	        value: function getDistance(mx, my, rx, ry) {
 	            return Math.sqrt(Math.pow(mx - rx, 2) + Math.pow(my - ry, 2));
+	        }
+	    }, {
+	        key: 'walkFrames',
+	        value: function walkFrames() {
+
+	            var args = {
+	                textScale: this.text,
+	                minLimit: this.config.guide.size.min || 2,
+	                maxLimit: this.config.guide.size.max || (this.isEmptySize ? 6 : 40)
+	            };
+
+	            return this.decorators.filter(function (x) {
+	                return x;
+	            }).reduce(function (model, transform) {
+	                return transform(model, args);
+	            }, new _path.PathModel({
+	                scaleX: this.xScale,
+	                scaleY: this.yScale,
+	                scaleSize: this.size,
+	                scaleColor: this.color,
+	                scaleSplit: this.split
+	            }));
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -1916,87 +2010,63 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, []);
 
 	            var model = this.buildModel({
-	                xScale: this.xScale,
-	                yScale: this.yScale,
-	                sizeScale: this.size,
 	                colorScale: this.color,
 	                textScale: this.text
 	            });
 	            this.model = model;
 
-	            var updateArea = function updateArea() {
+	            var updateGroupContainer = function updateGroupContainer() {
 
-	                var path = this.selectAll(model.pathElement).data(function (fiber) {
-	                    return [self.packFrameData(fiber)];
+	                this.attr(model.groupAttributes);
+
+	                var points = this.selectAll('circle').data(function (fiber) {
+	                    return fiber.length <= 1 ? fiber : [];
 	                });
-	                path.exit().remove();
-	                path.attr(model.pathAttributes);
-	                path.enter().append(model.pathElement).attr(model.pathAttributes);
+	                points.exit().remove();
+	                points.attr(model.dotAttributes);
+	                points.enter().append('circle').attr(model.dotAttributes);
 
-	                self.subscribe(path, function (rows) {
+	                self.subscribe(points, function (d) {
+	                    return d;
+	                });
+
+	                var series = this.selectAll(model.pathElement).data(function (fiber) {
+	                    return fiber.length > 1 ? [fiber] : [];
+	                });
+	                series.exit().remove();
+	                series.attr(model.pathAttributes);
+	                series.enter().append(model.pathElement).attr(model.pathAttributes);
+
+	                self.subscribe(series, function (rows) {
 	                    var m = _d2.default.mouse(this);
 	                    return model.matchRowInCoordinates(rows, { x: m[0], y: m[1] });
 	                });
-	            };
 
-	            var updatePoints = function updatePoints() {
-
-	                var dots = this.selectAll('circle').data(function (fiber) {
-	                    return fiber;
-	                });
-	                dots.exit().remove();
-	                dots.attr(model.dotAttributes);
-	                dots.enter().append('circle').attr(model.dotAttributes);
-
-	                self.subscribe(dots, function (d) {
-	                    return d;
-	                });
-	            };
-
-	            var updateGroups = function updateGroups() {
-
-	                return function () {
-
-	                    this.attr(model.groupAttributes).call(function (sel) {
-
-	                        if (sel.empty()) {
-	                            return;
-	                        }
-
-	                        var isPlural = sel.data()[0].length > 1;
-	                        if (isPlural) {
-	                            updateArea.call(this);
-	                        } else {
-	                            updatePoints.call(this);
-	                        }
-
-	                        if (guide.color.fill && !model.scaleColor.dim) {
-	                            this.style({
-	                                fill: guide.color.fill,
-	                                stroke: guide.color.fill
-	                            });
-	                        }
-
-	                        if (guide.showAnchors) {
-	                            self.subscribe((0, _showAnchors.elementDecoratorShowAnchors)({
-	                                xScale: model.scaleX,
-	                                yScale: model.scaleY,
-	                                guide: guide,
-	                                container: this
-	                            }));
-	                        }
-
-	                        if (model.scaleText.dim) {
-	                            self.subscribe((0, _showText.elementDecoratorShowText)({
-	                                guide: guide,
-	                                xScale: model.scaleX,
-	                                yScale: model.scaleY,
-	                                textScale: model.scaleText,
-	                                container: this
-	                            }));
-	                        }
+	                if (guide.color.fill && !model.scaleColor.dim) {
+	                    this.style({
+	                        fill: guide.color.fill,
+	                        stroke: guide.color.fill
 	                    });
-	                };
+	                }
+
+	                if (guide.showAnchors) {
+	                    self.subscribe((0, _showAnchors.elementDecoratorShowAnchors)({
+	                        xScale: model.scaleX,
+	                        yScale: model.scaleY,
+	                        guide: guide,
+	                        container: this
+	                    }));
+	                }
+
+	                if (model.scaleText.dim) {
+	                    self.subscribe((0, _showText.elementDecoratorShowText)({
+	                        guide: guide,
+	                        xScale: model.scaleX,
+	                        yScale: model.scaleY,
+	                        textScale: model.scaleText,
+	                        container: this
+	                    }));
+	                }
 	            };
 
 	            var groups = _underscore2.default.groupBy(fullData, model.group);
@@ -2004,15 +2074,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return memo.concat([groups[k]]);
 	            }, []);
 
-	            var drawFrame = function drawFrame(id) {
-
-	                var frameGroups = options.container.selectAll('.frame-' + id).data(fibers);
-	                frameGroups.exit().remove();
-	                frameGroups.call(updateGroups('frame-' + id));
-	                frameGroups.enter().append('g').call(updateGroups('frame-' + id));
-	            };
-
-	            drawFrame(options.uid);
+	            var frameGroups = options.container.selectAll('.frame-' + options.uid).data(fibers);
+	            frameGroups.exit().remove();
+	            frameGroups.call(updateGroupContainer);
+	            frameGroups.enter().append('g').call(updateGroupContainer);
 	        }
 	    }, {
 	        key: 'highlight',
@@ -2046,7 +2111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var cssClass = 'i-data-anchor';
 	            this.config.options.container.selectAll('.' + cssClass).attr({
 	                r: function r(d) {
-	                    return filter(d) ? 3 : _this2.config.guide.anchorSize;
+	                    return filter(d) ? _this2.model.size(d) / 2 : _this2.config.guide.anchorSize;
 	                },
 	                fill: function fill(d) {
 	                    return _this2.model.color(d);
@@ -2073,6 +2138,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var PathModel = exports.PathModel = function () {
@@ -2088,8 +2155,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        this.scaleX = model.scaleX || null;
 	        this.scaleY = model.scaleY || null;
+	        this.scaleSize = model.scaleSize || null;
+	        this.scaleColor = model.scaleColor || null;
+	        this.scaleSplit = model.scaleSplit || null;
+
 	        this.yi = model.yi || createFunc(0);
 	        this.xi = model.xi || createFunc(0);
+
+	        this.y0 = model.y0 || createFunc(0);
+
 	        this.size = model.size || createFunc(1);
 	        this.color = model.color || createFunc('');
 	        this.group = model.group || createFunc('');
@@ -2113,58 +2187,114 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'decorator_orientation',
 	        value: function decorator_orientation(model, _ref) {
-	            var xScale = _ref.xScale;
-	            var yScale = _ref.yScale;
 	            var _ref$isHorizontal = _ref.isHorizontal;
 	            var isHorizontal = _ref$isHorizontal === undefined ? false : _ref$isHorizontal;
 
 
-	            var baseScale = isHorizontal ? yScale : xScale;
-	            var valsScale = isHorizontal ? xScale : yScale;
+	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
+	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
 
 	            return PathModel.compose(model, {
 	                scaleX: baseScale,
 	                scaleY: valsScale,
-	                yi: function yi(d) {
-	                    return valsScale(d[valsScale.dim]);
-	                },
 	                xi: function xi(d) {
-	                    return baseScale(d[baseScale.dim]);
+	                    return baseScale.value(d[baseScale.dim]);
+	                },
+	                yi: function yi(d) {
+	                    return valsScale.value(d[valsScale.dim]);
+	                },
+	                y0: function y0(d) {
+	                    return valsScale.value(d[valsScale.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_size',
 	        value: function decorator_size(model, _ref2) {
-	            var sizeScale = _ref2.sizeScale;
+	            _objectDestructuringEmpty(_ref2);
 
 	            return PathModel.compose(model, {
 	                size: function size(d) {
-	                    return sizeScale(d[sizeScale.dim]);
+	                    return model.scaleSize.value(d[model.scaleSize.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_color',
 	        value: function decorator_color(model, _ref3) {
-	            var colorScale = _ref3.colorScale;
+	            _objectDestructuringEmpty(_ref3);
 
 	            return PathModel.compose(model, {
 	                color: function color(d) {
-	                    return colorScale(d[colorScale.dim]);
+	                    return model.scaleColor.value(d[model.scaleColor.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_group',
 	        value: function decorator_group(model, _ref4) {
-	            var colorScale = _ref4.colorScale;
+	            _objectDestructuringEmpty(_ref4);
 
 	            return PathModel.compose(model, {
 	                group: function group(d) {
-	                    return d[colorScale.dim];
+	                    return d[model.scaleColor.dim] + '_' + d[model.scaleSplit.dim];
 	                }
 	            });
+	        }
+	    }, {
+	        key: 'decorator_groundY0',
+	        value: function decorator_groundY0(model, _ref5) {
+	            _objectDestructuringEmpty(_ref5);
+
+	            var ys = model.scaleY.domain();
+	            var min = ys[0];
+	            var max = ys[ys.length - 1];
+	            // NOTE: max also can be below 0
+	            var base = model.scaleY.discrete ? min : min < 0 ? Math.min(0, max) : min;
+
+	            var _y = model.scaleY.value(base);
+
+	            return PathModel.compose(model, {
+	                y0: function y0() {
+	                    return _y;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'adjustSizeScale',
+	        value: function adjustSizeScale(model, _ref6) {
+	            var minLimit = _ref6.minLimit;
+	            var maxLimit = _ref6.maxLimit;
+
+
+	            var minSize = minLimit;
+	            var maxSize = maxLimit;
+
+	            model.scaleSize.fixup(function (sizeScaleConfig) {
+
+	                var newConf = {};
+
+	                if (!sizeScaleConfig.__fixed__) {
+	                    newConf.__fixed__ = true;
+	                    newConf.min = minSize;
+	                    newConf.max = maxSize;
+	                    newConf.mid = maxSize;
+	                    return newConf;
+	                }
+
+	                if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxSize) {
+	                    newConf.max = maxSize;
+	                    newConf.mid = maxSize;
+	                }
+
+	                if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minSize) {
+	                    newConf.min = minSize;
+	                }
+
+	                return newConf;
+	            });
+
+	            return model;
 	        }
 	    }]);
 
@@ -2390,18 +2520,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            enableColorToBarPosition: true
 	        });
 
-	        _this.config.guide.x = _this.config.guide.x || {};
-	        _this.config.guide.x = _underscore2.default.defaults(_this.config.guide.x, {
-	            tickFontHeight: 0,
-	            density: 20
-	        });
-
-	        _this.config.guide.y = _this.config.guide.y || {};
-	        _this.config.guide.y = _underscore2.default.defaults(_this.config.guide.y, {
-	            tickFontHeight: 0,
-	            density: 20
-	        });
-
 	        _this.config.guide.size = _underscore2.default.defaults(_this.config.guide.size || {}, {
 	            enableDistributeEvenly: true
 	        });
@@ -2409,9 +2527,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.barsGap = 1;
 	        _this.baseCssClass = 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar';
 
+	        var defaultMinLimit = _this.config.guide.prettify ? 3 : 0;
+	        var defaultMaxLimit = _this.config.guide.prettify ? 40 : Number.MAX_VALUE;
+
+	        _this.minLimit = config.guide.size.min || defaultMinLimit;
+	        _this.maxLimit = config.guide.size.max || defaultMaxLimit;
+	        _this.fixedSize = config.guide.size.fixed;
+
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_interval.IntervalModel.decorator_orientation, enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_size, _interval.IntervalModel.decorator_color, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor];
+	        _this.decorators = [_interval.IntervalModel.decorator_orientation, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, config.adjustPhase && enableColorPositioning && _interval.IntervalModel.decorator_discrete_share_size_by_color, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, config.adjustPhase && _interval.IntervalModel.adjustSizeScale];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2427,49 +2552,59 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
-
-	            var g = config.guide;
-	            var isNotZero = function isNotZero(x) {
-	                return x !== 0;
-	            };
-	            var halfPart = 0.5;
-	            var minFontSize = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
-	                return n.tickFontHeight;
-	            }).filter(isNotZero));
-	            var minTickStep = halfPart * _underscore2.default.min([g.x, g.y].map(function (n) {
-	                return n.density;
-	            }).filter(isNotZero));
-
-	            var notLessThan = function notLessThan(lim, val) {
-	                return Math.max(val, lim);
-	            };
-
-	            var sizeGuide = {};
-	            var baseScale = config.flip ? this.yScale : this.xScale;
-	            if (baseScale.discrete) {
-	                sizeGuide = {
-	                    normalize: true,
-	                    func: 'linear',
-	                    min: g.size.min || 0,
-	                    max: g.size.max || notLessThan(1, minTickStep),
-	                    mid: g.size.mid || notLessThan(1, Math.min(minTickStep, minFontSize))
-	                };
-	            } else {
-	                var defaultSize = 3;
-	                sizeGuide = {
-	                    normalize: this.config.guide.size.enableDistributeEvenly,
-	                    func: 'linear',
-	                    min: g.size.min || defaultSize,
-	                    max: g.size.max || notLessThan(defaultSize, minTickStep)
-	                };
-	                sizeGuide.mid = g.size.mid || sizeGuide.min;
-	            }
-
-	            this.size = fnCreateScale('size', config.size, sizeGuide);
-	            this.sizeMin = sizeGuide.min;
-	            this.sizeMax = sizeGuide.max;
+	            this.size = fnCreateScale('size', config.size, {});
 
 	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
+	        }
+	    }, {
+	        key: 'walkFrames',
+	        value: function walkFrames(frames) {
+
+	            var config = this.config;
+	            var isHorizontal = config.flip || config.guide.flip;
+	            var args = {
+	                isHorizontal: isHorizontal,
+	                barsGap: this.barsGap,
+	                minLimit: this.minLimit,
+	                maxLimit: this.maxLimit,
+	                fixedSize: this.fixedSize,
+	                dataSource: this.convertFramesToData(frames)
+	            };
+
+	            return this.decorators.filter(function (x) {
+	                return x;
+	            }).reduce(function (model, transform) {
+	                return transform(model, args);
+	            }, new _interval.IntervalModel({
+	                scaleX: this.xScale,
+	                scaleY: this.yScale,
+	                scaleColor: this.color,
+	                scaleSize: this.size
+	            }));
+	        }
+	    }, {
+	        key: 'getColorIndex',
+	        value: function getColorIndex() {
+	            var colorScale = this.color;
+	            var colorsOrder = colorScale.domain().reduce(function (memo, x, i) {
+	                memo[x] = i;
+	                return memo;
+	            }, {});
+
+	            return function (row) {
+	                var c = row[colorScale.dim];
+	                return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
+	            };
+	        }
+	    }, {
+	        key: 'convertFramesToData',
+	        value: function convertFramesToData(frames) {
+	            var colorIndex = this.getColorIndex();
+	            return frames.reduce(function (memo, f) {
+	                return memo.concat(f.part());
+	            }, []).sort(function (a, b) {
+	                return colorIndex(a) - colorIndex(b);
+	            });
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -2482,41 +2617,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var config = this.config;
 	            var xScale = this.xScale;
 	            var yScale = this.yScale;
-	            var sizeScale = this.size;
 	            var colorScale = this.color;
 	            var isHorizontal = config.flip || config.guide.flip;
 	            var prettify = config.guide.prettify;
-	            var barsGap = this.barsGap;
 	            var baseCssClass = this.baseCssClass;
 
-	            var colorsOrder = colorScale.domain().reduce(function (memo, x, i) {
-	                memo[x] = i;
-	                return memo;
-	            }, {});
-
-	            var colorIndex = function colorIndex(row) {
-	                var c = row[colorScale.dim];
-	                return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
-	            };
-
-	            var fullData = frames.reduce(function (memo, f) {
-	                return memo.concat(f.part());
-	            }, []).sort(function (a, b) {
-	                return colorIndex(a) - colorIndex(b);
-	            });
-
 	            var barModel = this.buildModel({
-	                xScale: xScale,
-	                yScale: yScale,
-	                sizeScale: sizeScale,
 	                colorScale: colorScale,
-	                isHorizontal: isHorizontal,
-	                barsGap: barsGap,
-	                minSize: this.sizeMin,
-	                maxSize: this.sizeMax,
-	                dataSource: frames.slice(0, 1).reduce(function (memo, f) {
-	                    return memo.concat(f.full());
-	                }, [])
+	                frames: frames
 	            });
 
 	            var params = { prettify: prettify, xScale: xScale, yScale: yScale, minBarH: 1, minBarW: 1, baseCssClass: baseCssClass };
@@ -2538,7 +2646,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                self.subscribe(bars);
 	            };
 
-	            var groups = _underscore2.default.groupBy(fullData, barModel.group);
+	            var groups = _underscore2.default.groupBy(this.convertFramesToData(frames), barModel.group);
 	            var fibers = Object.keys(groups).reduce(function (memo, k) {
 	                return memo.concat([groups[k]]);
 	            }, []);
@@ -2687,35 +2795,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'buildModel',
 	        value: function buildModel(_ref5) {
-	            var xScale = _ref5.xScale;
-	            var yScale = _ref5.yScale;
-	            var isHorizontal = _ref5.isHorizontal;
-	            var sizeScale = _ref5.sizeScale;
 	            var colorScale = _ref5.colorScale;
-	            var barsGap = _ref5.barsGap;
-	            var dataSource = _ref5.dataSource;
-	            var minSize = _ref5.minSize;
-	            var maxSize = _ref5.maxSize;
+	            var frames = _ref5.frames;
 
-	            var enableColorToBarPosition = this.config.guide.enableColorToBarPosition;
-	            var args = {
-	                xScale: xScale,
-	                yScale: yScale,
-	                isHorizontal: isHorizontal,
-	                sizeScale: sizeScale,
-	                colorScale: colorScale,
-	                barsGap: barsGap,
-	                minSize: minSize,
-	                maxSize: maxSize,
-	                dataSource: dataSource,
-	                categories: enableColorToBarPosition ? colorScale.domain() : []
-	            };
 
-	            var barModel = this.decorators.filter(function (x) {
-	                return x;
-	            }).reduce(function (model, transform) {
-	                return transform(model, args);
-	            }, new _interval.IntervalModel());
+	            var barModel = this.walkFrames(frames);
 
 	            return {
 	                barX: function barX(d) {
@@ -2797,6 +2881,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        this.scaleX = model.scaleX || null;
 	        this.scaleY = model.scaleY || null;
+	        this.scaleSize = model.scaleSize || null;
+	        this.scaleColor = model.scaleColor || null;
+
 	        this.y0 = model.y0 || createFunc(0);
 	        this.yi = model.yi || createFunc(0);
 	        this.xi = model.xi || createFunc(0);
@@ -2822,13 +2909,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'decorator_orientation',
 	        value: function decorator_orientation(model, _ref) {
-	            var xScale = _ref.xScale;
-	            var yScale = _ref.yScale;
 	            var isHorizontal = _ref.isHorizontal;
 
 
-	            var baseScale = isHorizontal ? yScale : xScale;
-	            var valsScale = isHorizontal ? xScale : yScale;
+	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
+	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
 
 	            var k = isHorizontal ? -0.5 : 0.5;
 
@@ -2836,52 +2921,76 @@ return /******/ (function(modules) { // webpackBootstrap
 	                scaleX: baseScale,
 	                scaleY: valsScale,
 	                y0: valsScale.discrete ? function () {
-	                    return valsScale(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k;
+	                    return valsScale.value(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k;
 	                } : function () {
-	                    return valsScale(Math.max(0, Math.min.apply(Math, _toConsumableArray(valsScale.domain()))));
+	                    return valsScale.value(Math.max(0, Math.min.apply(Math, _toConsumableArray(valsScale.domain()))));
 	                },
 	                yi: function yi(d) {
-	                    return valsScale(d[valsScale.dim]);
+	                    return valsScale.value(d[valsScale.dim]);
 	                },
 	                xi: function xi(d) {
-	                    return baseScale(d[baseScale.dim]);
+	                    return baseScale.value(d[baseScale.dim]);
 	                }
 	            });
-	        }
-	    }, {
-	        key: 'decorator_size',
-	        value: function decorator_size(model, params) {
-	            var method = model.scaleX.discrete ? IntervalModel.___dis___decorator_size : IntervalModel.___con___decorator_size_dynamic;
-
-	            return method(model, params);
 	        }
 	    }, {
 	        key: 'decorator_dynamic_size',
-	        value: function decorator_dynamic_size(model, params) {
-	            var method = model.scaleX.discrete ? IntervalModel.___dis___decorator_size_dynamic : IntervalModel.___con___decorator_size_dynamic;
-
-	            return method(model, params);
-	        }
-	    }, {
-	        key: '___con___decorator_size_dynamic',
-	        value: function ___con___decorator_size_dynamic(model, _ref2) {
-	            var sizeScale = _ref2.sizeScale;
+	        value: function decorator_dynamic_size(model, _ref2) {
+	            _objectDestructuringEmpty(_ref2);
 
 	            return IntervalModel.compose(model, {
 	                size: function size(d) {
-	                    return model.size(d) * sizeScale(d[sizeScale.dim]);
+	                    return model.size(d) * model.scaleSize.value(d[model.scaleSize.dim]);
 	                }
 	            });
 	        }
 	    }, {
-	        key: '___dis___decorator_size',
-	        value: function ___dis___decorator_size(model, _ref3) {
-	            var categories = _ref3.categories;
-	            var barsGap = _ref3.barsGap;
+	        key: 'decorator_positioningByColor',
+	        value: function decorator_positioningByColor(model, params) {
+	            var method = model.scaleX.discrete ? IntervalModel.decorator_discrete_positioningByColor : IntervalModel.decorator_identity;
 
+	            return method(model, params);
+	        }
+	    }, {
+	        key: 'decorator_discrete_positioningByColor',
+	        value: function decorator_discrete_positioningByColor(model, _ref3) {
+	            _objectDestructuringEmpty(_ref3);
+
+	            var baseScale = model.scaleX;
+	            var categories = model.scaleColor.domain();
+	            var categoriesCount = categories.length || 1;
+	            var colorIndexScale = function colorIndexScale(d) {
+	                return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
+	            }; // -1 (not found) to 0
+	            var space = function space(d) {
+	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
+	            };
+
+	            return IntervalModel.compose(model, {
+	                xi: function xi(d) {
+	                    var availableSpace = space(d);
+	                    var absTickStart = model.xi(d) - availableSpace / 2;
+	                    var middleStep = availableSpace / (categoriesCount + 1);
+	                    var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
+	                    return absTickStart + relSegmStart;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_discrete_share_size_by_color',
+	        value: function decorator_discrete_share_size_by_color(model, _ref4) {
+	            var barsGap = _ref4.barsGap;
+
+
+	            if (!model.scaleX.discrete) {
+	                return model;
+	            }
+
+	            var baseScale = model.scaleX;
+	            var categories = model.scaleColor.domain();
 	            var categoriesCount = categories.length || 1;
 	            var space = function space(d) {
-	                return model.scaleX.stepSize(d[model.scaleX.dim]) * (categoriesCount / (1 + categoriesCount));
+	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
 	            };
 	            var fnBarSize = function fnBarSize(d) {
 	                return space(d) / categoriesCount;
@@ -2899,67 +3008,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }
 	    }, {
-	        key: '___dis___decorator_size_dynamic',
-	        value: function ___dis___decorator_size_dynamic(model, _ref4) {
-	            var sizeScale = _ref4.sizeScale;
-	            var barsGap = _ref4.barsGap;
-
-	            return IntervalModel.compose(model, {
-	                size: function size(d) {
-	                    return model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5 * sizeScale(d[sizeScale.dim]) - 2 * barsGap;
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_positioningByColor',
-	        value: function decorator_positioningByColor(model, params) {
-	            var method = model.scaleX.discrete ? IntervalModel.decorator_discrete_positioningByColor : IntervalModel.decorator_identity;
-
-	            return method(model, params);
-	        }
-	    }, {
-	        key: 'decorator_discrete_positioningByColor',
-	        value: function decorator_discrete_positioningByColor(model, _ref5) {
-	            var colorScale = _ref5.colorScale;
-	            var categories = _ref5.categories;
-	            var barsGap = _ref5.barsGap;
-
-	            var baseScale = model.scaleX;
-	            var categoriesCount = categories.length || 1;
-	            var colorIndexScale = function colorIndexScale(d) {
-	                return Math.max(0, categories.indexOf(d[colorScale.dim]));
-	            }; // -1 (not found) to 0
-	            var space = function space(d) {
-	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
-	            };
-	            var fnBarSize = function fnBarSize(d) {
-	                return space(d) / categoriesCount;
-	            };
-
-	            return IntervalModel.compose(model, {
-	                xi: function xi(d) {
-	                    var absTickStart = model.xi(d) - space(d) / 2;
-	                    var relSegmStart = colorIndexScale(d) * fnBarSize(d);
-	                    var absBarOffset = model.size(d) * 0.5 + barsGap;
-	                    return absTickStart + relSegmStart + absBarOffset;
-	                }
-	            });
-	        }
-	    }, {
 	        key: 'decorator_color',
-	        value: function decorator_color(model, _ref6) {
-	            var colorScale = _ref6.colorScale;
+	        value: function decorator_color(model, _ref5) {
+	            _objectDestructuringEmpty(_ref5);
 
 	            return IntervalModel.compose(model, {
 	                color: function color(d) {
-	                    return colorScale(d[colorScale.dim]);
+	                    return model.scaleColor.value(d[model.scaleColor.dim]);
 	                }
 	            });
 	        }
 	    }, {
 	        key: 'decorator_stack',
-	        value: function decorator_stack(model, _ref7) {
-	            _objectDestructuringEmpty(_ref7);
+	        value: function decorator_stack(model, _ref6) {
+	            _objectDestructuringEmpty(_ref6);
 
 	            var xScale = model.scaleX;
 	            var yScale = model.scaleY;
@@ -3002,7 +3064,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var nextStack = _stackYi.nextStack;
 	                    var prevStack = _stackYi.prevStack;
 
-	                    return isPositive ? yScale(nextStack) : yScale(prevStack);
+	                    return yScale.value(isPositive ? nextStack : prevStack);
 	                }),
 	                y0: memoize(function (d) {
 	                    var _stackY = stackY0(d);
@@ -3011,21 +3073,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var nextStack = _stackY.nextStack;
 	                    var prevStack = _stackY.prevStack;
 
-	                    return isPositive ? yScale(prevStack) : yScale(nextStack);
+	                    return yScale.value(isPositive ? prevStack : nextStack);
 	                })
 	            });
 	        }
 	    }, {
 	        key: 'decorator_size_distribute_evenly',
-	        value: function decorator_size_distribute_evenly(model, _ref8) {
-	            var dataSource = _ref8.dataSource;
-	            var minSize = _ref8.minSize;
-	            var maxSize = _ref8.maxSize;
+	        value: function decorator_size_distribute_evenly(model, params) {
 
+	            var method = model.scaleX.discrete ? IntervalModel.___dis___decorator_size_distribute_evenly : IntervalModel.___con___decorator_size_distribute_evenly;
 
-	            if (model.scaleX.discrete) {
-	                return IntervalModel.decorator_identity(model);
-	            }
+	            return method(model, params);
+	        }
+	    }, {
+	        key: '___con___decorator_size_distribute_evenly',
+	        value: function ___con___decorator_size_distribute_evenly(model, _ref7) {
+	            var dataSource = _ref7.dataSource;
+
 
 	            var asc = function asc(a, b) {
 	                return a - b;
@@ -3046,9 +3110,131 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            return IntervalModel.compose(model, {
 	                size: function size() {
-	                    return Math.max(minSize, Math.min(maxSize, diff));
+	                    return diff;
 	                }
 	            });
+	        }
+	    }, {
+	        key: '___dis___decorator_size_distribute_evenly',
+	        value: function ___dis___decorator_size_distribute_evenly(model, _ref8) {
+	            var barsGap = _ref8.barsGap;
+
+
+	            var space = function space(d) {
+	                return model.scaleX.stepSize(d[model.scaleX.dim]) * 0.5;
+	            };
+	            var fnBarSize = function fnBarSize(d) {
+	                return space(d);
+	            };
+	            var fnGapSize = function fnGapSize(w) {
+	                return w > 2 * barsGap ? barsGap : 0;
+	            };
+
+	            return IntervalModel.compose(model, {
+	                size: function size(d) {
+	                    var barSize = fnBarSize(d);
+	                    var gapSize = fnGapSize(barSize);
+	                    return barSize - 2 * gapSize;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'adjustYScale',
+	        value: function adjustYScale(model, _ref9) {
+	            var dataSource = _ref9.dataSource;
+
+
+	            var minY = Number.MAX_VALUE;
+	            var maxY = Number.MIN_VALUE;
+	            var trackY = function trackY(y) {
+	                minY = y < minY ? y : minY;
+	                maxY = y > maxY ? y : maxY;
+	            };
+
+	            var scaleY = model.scaleY.value;
+	            model.scaleY.value = function (y) {
+	                trackY(y);
+	                return scaleY(y);
+	            };
+
+	            dataSource.forEach(function (row) {
+	                model.yi(row);
+	                model.y0(row);
+	            });
+
+	            model.scaleY.fixup(function (yScaleConfig) {
+
+	                var newConf = {};
+
+	                if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
+	                    newConf.max = maxY;
+	                }
+
+	                if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
+	                    newConf.min = minY;
+	                }
+
+	                return newConf;
+	            });
+
+	            return model;
+	        }
+	    }, {
+	        key: 'adjustSizeScale',
+	        value: function adjustSizeScale(model, _ref10) {
+	            var dataSource = _ref10.dataSource;
+	            var minLimit = _ref10.minLimit;
+	            var maxLimit = _ref10.maxLimit;
+	            var fixedSize = _ref10.fixedSize;
+
+
+	            var minS = Number.MAX_VALUE;
+	            var maxS = Number.MIN_VALUE;
+	            var trackSize = function trackSize(s) {
+	                minS = s < minS ? s : minS;
+	                maxS = s > maxS ? s : maxS;
+	            };
+
+	            var trace = IntervalModel.compose(model, {
+	                size: function size(row) {
+	                    var s = model.size(row);
+	                    trackSize(s);
+	                    return s;
+	                }
+	            });
+
+	            dataSource.forEach(function (row) {
+	                trace.size(row);
+	            });
+
+	            minS = fixedSize ? fixedSize : Math.max(minLimit, minS);
+	            maxS = fixedSize ? fixedSize : Math.min(maxLimit, maxS);
+
+	            model.scaleSize.fixup(function (sizeScaleConfig) {
+
+	                var newConf = {};
+
+	                if (!sizeScaleConfig.__fixed__) {
+	                    newConf.__fixed__ = true;
+	                    newConf.min = minS;
+	                    newConf.max = maxS;
+	                    newConf.mid = maxS;
+	                    return newConf;
+	                }
+
+	                if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxS) {
+	                    newConf.max = maxS;
+	                    newConf.mid = maxS;
+	                }
+
+	                if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minS) {
+	                    newConf.min = minS;
+	                }
+
+	                return newConf;
+	            });
+
+	            return model;
 	        }
 	    }]);
 
@@ -3068,9 +3254,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 	var _const = __webpack_require__(6);
 
@@ -3080,10 +3264,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _error = __webpack_require__(19);
 
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -3092,54 +3272,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var StackedInterval = exports.StackedInterval = function (_Interval) {
 	    _inherits(StackedInterval, _Interval);
-
-	    _createClass(StackedInterval, null, [{
-	        key: 'embedUnitFrameToSpec',
-	        value: function embedUnitFrameToSpec(cfg, spec) {
-
-	            var isHorizontal = cfg.flip;
-
-	            var stackedScaleName = isHorizontal ? cfg.x : cfg.y;
-	            var baseScaleName = isHorizontal ? cfg.y : cfg.x;
-	            var stackScale = spec.scales[stackedScaleName];
-	            var baseScale = spec.scales[baseScaleName];
-	            var baseDim = baseScale.dim;
-
-	            var prop = stackScale.dim;
-
-	            var groupsSums = cfg.frames.reduce(function (groups, f) {
-	                var dataFrame = f.part();
-	                var hasErrors = dataFrame.some(function (d) {
-	                    return typeof d[prop] !== 'number';
-	                });
-	                if (hasErrors) {
-	                    throw new _error.TauChartError('Stacked field [' + prop + '] should be a number', _error.errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART);
-	                }
-
-	                dataFrame.reduce(function (hash, d) {
-	                    var stackedVal = d[prop];
-	                    var baseVal = d[baseDim];
-	                    var ttl = stackedVal >= 0 ? hash.positive : hash.negative;
-	                    ttl[baseVal] = ttl[baseVal] || 0;
-	                    ttl[baseVal] += stackedVal;
-	                    return hash;
-	                }, groups);
-
-	                return groups;
-	            }, { negative: {}, positive: {} });
-
-	            var negativeSum = Math.min.apply(Math, _toConsumableArray(_underscore2.default.values(groupsSums.negative).concat(0)));
-	            var positiveSum = Math.max.apply(Math, _toConsumableArray(_underscore2.default.values(groupsSums.positive).concat(0)));
-
-	            if (!stackScale.hasOwnProperty('max') || stackScale.max < positiveSum) {
-	                stackScale.max = positiveSum;
-	            }
-
-	            if (!stackScale.hasOwnProperty('min') || stackScale.min > negativeSum) {
-	                stackScale.min = negativeSum;
-	            }
-	        }
-	    }]);
 
 	    function StackedInterval(config) {
 	        _classCallCheck(this, StackedInterval);
@@ -3152,9 +3284,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_stack, enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor];
+	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_stack, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, config.adjustPhase && enableColorPositioning && _interval.IntervalModel.decorator_discrete_share_size_by_color, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, config.adjustPhase && _interval.IntervalModel.adjustYScale, config.adjustPhase && _interval.IntervalModel.adjustSizeScale];
 	        return _this;
 	    }
+
+	    _createClass(StackedInterval, [{
+	        key: 'createScales',
+	        value: function createScales(fnCreateScale) {
+
+	            var r = _get(Object.getPrototypeOf(StackedInterval.prototype), 'createScales', this).call(this, fnCreateScale);
+
+	            var stackScale = this.getScale(this.config.flip ? 'x' : 'y');
+	            if (stackScale.discrete) {
+	                throw new _error.TauChartError('Stacked field [' + stackScale.dim + '] should be a number', _error.errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART);
+	            }
+
+	            return r;
+	        }
+	    }]);
 
 	    return StackedInterval;
 	}(_element.Interval);
@@ -3297,8 +3444,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.root = this._expandUnitsStructure(this.config.unit);
 
-	            this._adaptSpecToUnitsStructure(this.root, this.config);
-
 	            this.onUnitsStructureExpanded(this.config);
 
 	            var xSvg = d3Target.selectAll('svg').data([1]);
@@ -3323,6 +3468,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                width: size.width,
 	                height: size.height
 	            };
+
+	            this._walkUnitsStructure(this.root, this._datify({
+	                source: this.root.expression.source,
+	                pipe: []
+	            }));
 
 	            this._drawUnitsStructure(this.root, this._datify({
 	                source: this.root.expression.source,
@@ -3378,24 +3528,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return root;
 	        }
 	    }, {
-	        key: '_adaptSpecToUnitsStructure',
-	        value: function _adaptSpecToUnitsStructure(root, spec) {
-	            var _this3 = this;
-
-	            var UnitClass = this.unitSet.get(root.type);
-	            if (UnitClass.embedUnitFrameToSpec) {
-	                UnitClass.embedUnitFrameToSpec(root, spec); // static method
-	            }
-
-	            root.frames.forEach(function (f) {
-	                return f.units.forEach(function (unit) {
-	                    return _this3._adaptSpecToUnitsStructure(unit, spec);
-	                });
-	            });
-
-	            return root;
-	        }
-	    }, {
 	        key: '_drawUnitsStructure',
 	        value: function _drawUnitsStructure(unitConfig, rootFrame) {
 	            var rootUnit = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
@@ -3425,6 +3557,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return unitConfig;
 	        }
 	    }, {
+	        key: '_walkUnitsStructure',
+	        value: function _walkUnitsStructure(unitConfig, rootFrame) {
+	            var parentUnit = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+
+
+	            var self = this;
+
+	            // Rule to cancel parent frame inheritance
+	            var passFrame = unitConfig.expression.inherit === false ? null : rootFrame;
+
+	            var UnitClass = self.unitSet.get(unitConfig.type);
+	            var unitNode = new UnitClass(_underscore2.default.extend({ adjustPhase: true }, unitConfig));
+	            unitNode.parentUnit = parentUnit;
+	            unitNode.createScales(function (type, alias, dynamicProps) {
+	                var key = alias || type + ':default';
+	                return self.scalesHub.createScaleInfo(self.scales[key], passFrame).create(dynamicProps);
+	            }).walkFrames(unitConfig.frames, function (rootUnit) {
+	                return function (rootConf, rootFrame) {
+	                    self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
+	                };
+	            }(unitNode));
+
+	            return unitConfig;
+	        }
+	    }, {
 	        key: '_datify',
 	        value: function _datify(frame) {
 	            return new _dataFrame.DataFrame(frame, this.sources[frame.source].data, this.transformations);
@@ -3432,7 +3589,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_parseExpression',
 	        value: function _parseExpression(expr, parentPipe) {
-	            var _this4 = this;
+	            var _this3 = this;
 
 	            var funcName = expr.operator || 'none';
 	            var srcAlias = expr.source;
@@ -3445,7 +3602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var dataFn = function dataFn() {
-	                return _this4._datify(frameConfig).part();
+	                return _this3._datify(frameConfig).part();
 	            };
 
 	            var func = _algebra.FramesAlgebra[funcName];
@@ -5480,13 +5637,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // jscs:disable disallowQuotedKeysInObjects
 	                'x_null': { type: 'ordinal', source: '?' },
 	                'y_null': { type: 'ordinal', source: '?' },
-	                'size_null': { type: 'size', source: '?', mid: 5 },
+	                'size_null': { type: 'size', source: '?', mid: 1 },
 	                'color_null': { type: 'color', source: '?', brewer: null },
+	                'split_null': { type: 'value', source: '?' },
 
 	                'pos:default': { type: 'ordinal', source: '?' },
-	                'size:default': { type: 'size', source: '?', mid: 5 },
+	                'size:default': { type: 'size', source: '?', mid: 1 },
 	                'text:default': { type: 'value', source: '?' },
-	                'color:default': { type: 'color', source: '?', brewer: null }
+	                'color:default': { type: 'color', source: '?', brewer: null },
+	                'split:default': { type: 'value', source: '?' }
 	                // jscs:enable disallowQuotedKeysInObjects
 	            },
 	            settings: spec.settings
@@ -5608,7 +5767,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this2 = this;
 
 	            var guide = srcUnit.guide || {};
-	            ['color', 'size', 'text', 'x', 'y'].forEach(function (p) {
+	            ['color', 'size', 'text', 'x', 'y', 'split'].forEach(function (p) {
 	                if (srcUnit.hasOwnProperty(p)) {
 	                    gplRoot[p] = _this2.scalesPool(p, srcUnit[p], guide[p] || {});
 	                }
@@ -5686,13 +5845,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    type: 'size',
 	                    source: '/',
 	                    dim: this.ruleInferDim(dimName, guide),
-	                    min: 2,
-	                    max: 10,
-	                    mid: 5
+	                    min: 0,
+	                    max: 1,
+	                    mid: 1
 	                };
+
+	                if (guide.hasOwnProperty('func')) {
+	                    item.func = guide.func;
+	                }
 	            }
 
 	            if (scaleType === 'text' && dimName !== null) {
+	                item = {
+	                    type: 'value',
+	                    source: '/',
+	                    dim: this.ruleInferDim(dimName, guide)
+	                };
+	            }
+
+	            if (scaleType === 'split' && dimName !== null) {
 	                item = {
 	                    type: 'value',
 	                    source: '/',
@@ -7409,6 +7580,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return args.h;
 	                }
 	            }));
+	        }
+	    }, {
+	        key: 'walkFrames',
+	        value: function walkFrames(frames, continuation) {
+
+	            var model = this.buildModel({
+	                scaleX: this.xScale,
+	                scaleY: this.yScale,
+	                w: this.W,
+	                h: this.H
+	            });
+
+	            frames.forEach(function (frame) {
+
+	                var k = frame.key;
+	                var options = {
+	                    left: model.xi(k) - model.sizeX(k) / 2,
+	                    top: model.yi(k) - model.sizeY(k) / 2,
+	                    width: model.sizeX(k),
+	                    height: model.sizeY(k)
+	                };
+
+	                frame.units.forEach(function (unit) {
+	                    unit.options = options;
+	                    continuation(unit, frame);
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -9851,9 +10049,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _element = __webpack_require__(51);
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _utils = __webpack_require__(4);
+	var _const = __webpack_require__(6);
+
+	var _elementPath = __webpack_require__(11);
+
+	var _cssClassMap = __webpack_require__(15);
+
+	var _path = __webpack_require__(12);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -9861,53 +10065,81 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Area = exports.Area = function (_Path) {
-	    _inherits(Area, _Path);
+	var Area = exports.Area = function (_BasePath) {
+	    _inherits(Area, _BasePath);
 
 	    function Area(config) {
 	        _classCallCheck(this, Area);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config));
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config, [_path.PathModel.decorator_groundY0]));
 	    }
 
 	    _createClass(Area, [{
-	        key: '_assignBase',
-	        value: function _assignBase(scale, rows) {
+	        key: 'buildModel',
+	        value: function buildModel(params) {
 
-	            if (rows.length === 0) {
-	                return [];
-	            }
+	            var self = this;
+	            var baseModel = _get(Object.getPrototypeOf(Area.prototype), 'buildModel', this).call(this, params);
 
-	            var domain = scale.domain();
-	            var dim = scale.dim;
-	            var min = domain[0];
-	            var max = domain[domain.length - 1];
+	            baseModel.matchRowInCoordinates = function (rows, _ref) {
+	                var x = _ref.x;
+	                var y = _ref.y;
 
-	            var head = _utils.utils.clone(rows[0]);
-	            var last = _utils.utils.clone(rows[rows.length - 1]);
 
-	            // NOTE: max also can be below 0
-	            var base = scale.discrete ? min : min < 0 ? Math.min(0, max) : min;
+	                // d3.invert doesn't work for ordinal axes
+	                var nearest = rows.map(function (row) {
+	                    var rx = baseModel.x(row);
+	                    var ry = baseModel.y(row);
+	                    return {
+	                        x: rx,
+	                        y: ry,
+	                        dist: self.getDistance(x, y, rx, ry),
+	                        data: row
+	                    };
+	                }).sort(function (a, b) {
+	                    return a.dist - b.dist;
+	                }) // asc
+	                [0];
 
-	            head[dim] = base;
-	            last[dim] = base;
+	                return nearest.data;
+	            };
 
-	            return [head].concat(rows).concat(last);
-	        }
-	    }, {
-	        key: 'packFrameData',
-	        value: function packFrameData(rows) {
 	            var guide = this.config.guide;
-	            var scale = guide.flip ? this.xScale : this.yScale;
-	            return this._assignBase(scale, rows);
-	        }
-	    }, {
-	        key: 'unpackFrameData',
-	        value: function unpackFrameData(rows) {
-	            var last = rows.length - 1;
-	            return rows.filter(function (r, i) {
-	                return i > 0 && i < last;
-	            });
+	            var options = this.config.options;
+	            var countCss = (0, _cssClassMap.getLineClassesByCount)(params.colorScale.domain().length);
+
+	            var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
+	            baseModel.groupAttributes = {
+	                class: function _class(fiber) {
+	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame-' + options.uid;
+	                }
+	            };
+
+	            baseModel.pathAttributes = {
+	                fill: function fill(fiber) {
+	                    return baseModel.color(fiber[0]);
+	                },
+	                stroke: function stroke(fiber) {
+	                    return baseModel.color(fiber[0]);
+	                },
+	                points: function points(fiber) {
+
+	                    var ways = fiber.reduce(function (memo, d) {
+	                        memo.dir.push([baseModel.x(d), baseModel.y(d)]);
+	                        memo.rev.push([baseModel.x(d), baseModel.y0(d)]);
+	                        return memo;
+	                    }, {
+	                        dir: [],
+	                        rev: []
+	                    });
+
+	                    return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
+	                }
+	            };
+
+	            baseModel.pathElement = 'polygon';
+
+	            return baseModel;
 	        }
 	    }, {
 	        key: 'getDistance',
@@ -9918,7 +10150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }]);
 
 	    return Area;
-	}(_element.Path);
+	}(_elementPath.BasePath);
 
 /***/ },
 /* 51 */
@@ -9969,7 +10201,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	                // d3.invert doesn't work for ordinal axes
-	                var nearest = self.unpackFrameData(rows).map(function (row) {
+	                var nearest = rows.map(function (row) {
 	                    var rx = baseModel.x(row);
 	                    var ry = baseModel.y(row);
 	                    return {
@@ -9990,8 +10222,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var options = this.config.options;
 	            var countCss = (0, _cssClassMap.getLineClassesByCount)(params.colorScale.domain().length);
 
-	            var datumClass = 'i-role-datum';
-	            var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-dot ' + datumClass + ' ' + _const.CSS_PREFIX + 'dot ';
 	            var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
@@ -10010,24 +10240,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return fiber.map(function (d) {
 	                        return [baseModel.x(d), baseModel.y(d)].join(',');
 	                    }).join(' ');
-	                }
-	            };
-
-	            baseModel.dotAttributes = {
-	                r: function r(d) {
-	                    return baseModel.size(d);
-	                },
-	                cx: function cx(d) {
-	                    return baseModel.x(d);
-	                },
-	                cy: function cy(d) {
-	                    return baseModel.y(d);
-	                },
-	                fill: function fill(d) {
-	                    return baseModel.color(d);
-	                },
-	                class: function _class(d) {
-	                    return pointPref + ' ' + baseModel.class(d);
 	                }
 	            };
 
@@ -10492,6 +10704,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            scaleFn.getHash = function () {
 	                return generateHashFunction(_this2.vars, dynamicProps);
+	            };
+	            scaleFn.value = scaleFn;
+	            scaleFn.fixup = function (fn) {
+	                return _underscore2.default.extend(_this2.scaleConfig, fn(_this2.scaleConfig));
 	            };
 
 	            return scaleFn;
@@ -11425,13 +11641,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        x: config.x,
 	        y: config.y,
 	        color: config.color,
+	        split: config.split,
 	        guide: {
 	            color: config.colorGuide,
 	            size: config.sizeGuide,
 	            flip: config.flip
 	        },
 	        flip: config.flip,
-	        size: config.size
+	        size: config.size,
+	        text: config.text
 	    };
 	};
 
@@ -11544,7 +11762,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            spec.unit.push(createElement(type, {
 	                x: convertAxis(currentX),
 	                y: convertAxis(currentY),
+	                split: config.split,
 	                color: config.color,
+	                text: config.text,
 	                size: config.size,
 	                flip: config.flip,
 	                colorGuide: currentGuide.color,
@@ -11778,8 +11998,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (propSortBy.prop !== null) {
 	        config.data = _dataProcessor.DataProcessor.sortByDim(data, propSortBy.prop, config.dimensions[propSortBy.prop]);
 	        config.flip = propSortBy.flip;
-	    } else {
-	        elementName = 'ELEMENT.PATH';
 	    }
 
 	    return (0, _converterHelpers.transformConfig)(elementName, config);

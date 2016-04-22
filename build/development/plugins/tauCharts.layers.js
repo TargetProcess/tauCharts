@@ -359,7 +359,7 @@
                 };
             },
 
-            createSecondaryUnitReducer: function (fullSpec, xLayer, lPad, rPad, totalDif, iLeft, iRight) {
+            createSecondaryUnitReducer: function (fullSpec, xLayer, lPad, rPad, totalDif, iLeft, iRight, layerNum) {
 
                 var self = this;
                 var layerScaleName = self.getScaleName(xLayer.scaleName || xLayer.y);
@@ -378,6 +378,10 @@
                     if (self.isLeafElement(unit, parent)) {
                         unit.type = xLayer.type ? ELEMENT_TYPE[xLayer.type] : unit.type;
                         unit.y = layerScaleName;
+
+                        var sizeScaleName = ('size_null' + layerNum);
+                        fullSpec.addScale(sizeScaleName, {type: 'size', source: '?', mid:1});
+                        unit.size = sizeScaleName;
 
                         var isFullScale = (fullSpec.getScale(unit.color).dim);
                         if (isPrimaryLayer && isFullScale) {
@@ -517,7 +521,7 @@
                 var il = -1;
                 var ir = -1;
 
-                currLayers.reduce(function (specUnitObject, layer) {
+                currLayers.reduce(function (specUnitObject, layer, i) {
 
                     il = (lCheck(layer) ? (il + 1) : il);
                     ir = (rCheck(layer) ? (ir + 1) : ir);
@@ -526,7 +530,7 @@
                         key: {x: 1, y: 1},
                         units: [(cursor = (pluginsSDK
                             .unit(prevUnit.clone())))
-                            .reduce(self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir), cursor)
+                            .reduce(self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir, i), cursor)
                             .value()
                         ]
                     });
