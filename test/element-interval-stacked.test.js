@@ -556,14 +556,17 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         });
         chart.renderTo(div, size);
 
+        var xsize = 1000;
+        var xstep = xsize / 2;
+
         expectCoordsElement(
             div,
             expect,
             [
                 [
                     {
-                        "x": 125,
-                        "width": 250,
+                        "x": (xstep - xstep * Math.sqrt(1)) / 2,
+                        "width": xstep * Math.sqrt(1),
                         "y": 500,
                         "height": 300,
                         "class": "color20-1"
@@ -571,8 +574,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ],
                 [
                     {
-                        "x": 161.6117,
-                        "width": 176.7767,
+                        "x": (xstep - xstep * Math.sqrt(0.5)) / 2,
+                        "width": xstep * Math.sqrt(0.5),
                         "y": 800,
                         "height": 200,
                         "class": "color20-2"
@@ -580,8 +583,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 ],
                 [
                     {
-                        "x": 750,
-                        "width": 0,
+                        "x": xstep + (xstep - xstep * Math.sqrt(0)) / 2,
+                        "width": xstep * Math.sqrt(0),
                         "y": 0,
                         "height": 500,
                         "class": "color20-3"

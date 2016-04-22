@@ -244,40 +244,42 @@ define(function (require) {
 
             it('should contain correct interval elements', function () {
 
+                var barWidth = 7.5;
+
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 8.5,
+                            "x": 8.75,
                             "y": 0,
-                            "width": 8,
+                            "width": barWidth,
                             "height": 50
                         }
                     ],
                     [
                         {
-                            "x": 56,
+                            "x": 56.25,
                             "y": 25,
-                            "width": 8,
+                            "width": barWidth,
                             "height": 25
                         },
                         {
-                            "x": 96,
+                            "x": 96.25,
                             "y": 50,
-                            "width": 8,
+                            "width": barWidth,
                             "height": 0
                         },
                         {
-                            "x": 96,
+                            "x": 96.25,
                             "y": 50,
-                            "width": 8,
+                            "width": barWidth,
                             "height": 25
                         }
                     ],
                     [
                         {
-                            "x": 103.5,
+                            "x": 103.75,
                             "y": 50,
-                            "width": 8,
+                            "width": barWidth,
                             "height": 50
                         }
                     ]
@@ -404,30 +406,33 @@ define(function (require) {
         ],
         function () {
             it('should contain correct interval elements', function () {
+
+                var barWidth = 40;
+
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 11,
+                            "x": 0,
                             "y": 100,
-                            width: 18,
+                            width: barWidth,
                             height: 20
                         },
                         {
-                            "x": 51,
+                            "x": 40,
                             "y": 60,
-                            width: 18,
+                            width: barWidth,
                             height: 60
                         },
                         {
-                            "x": 91,
+                            "x": 80,
                             "y": 20,
-                            width: 18,
+                            width: barWidth,
                             height: 100
                         },
                         {
-                            "x": 91,
+                            "x": 80,
                             "y": 60,
-                            width: 18,
+                            width: barWidth,
                             height: 60
                         }
                     ]
@@ -477,34 +482,37 @@ define(function (require) {
             });
 
             it('should contain correct interval elements', function () {
+
+                var barWidth = 7.5;
+
                 expectCoordsElement(expect, [
                     [
                         {
                             "x": 50,    // 100
-                            "y": 88.5,
-                            height: 8,
+                            "y": 88.75,
+                            height: barWidth,
                             width: 50
                         }
                     ],
                     [
                         {
                             "x": 50,    // 50
-                            "y": 56,
-                            height: 8,
+                            "y": 56.25,
+                            height: barWidth,
                             width: 25
                         },
                         {
                             "x": 50,    // 0
-                            "y": 16,
-                            height: 8,
+                            "y": 16.25,
+                            height: barWidth,
                             width: 0
                         }
                     ],
                     [
                         {
                             "x": 0,     // -100
-                            "y": 23.5,
-                            height: 8,
+                            "y": 23.75,
+                            height: barWidth,
                             width: 50
                         }
                     ]
@@ -612,30 +620,33 @@ define(function (require) {
         ],
         function () {
             it('should contain correct interval elements', function () {
+
+                var barWidth = 40;
+
                 expectCoordsElement(expect, [
                     [
                         {
                             "x": 0,
-                            "y": 91,
-                            height: 18,
+                            "y": 80,
+                            height: barWidth,
                             width: 20
                         },
                         {
                             "x": 0,
-                            "y": 51,
-                            height: 18,
+                            "y": 40,
+                            height: barWidth,
                             width: 60
                         },
                         {
                             "x": 0,
-                            "y": 51,
-                            height: 18,
+                            "y": 40,
+                            height: barWidth,
                             width: 100
                         },
                         {
                             "x": 0,
-                            "y": 11,
-                            height: 18,
+                            "y": 0,
+                            height: barWidth,
                             width: 100
                         }
                     ]
@@ -697,27 +708,27 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 7.25,
+                            "x": 0,
                             "y": 0.0000,
-                            "width": 10.5000,
+                            "width": 25,
                             "height": 100.0000
                         },
                         {
-                            "x": 32.2500,
+                            "x": 25,
                             "y": 50.0000,
-                            "width": 10.5000,
+                            "width": 25,
                             "height": 50
                         },
                         {
-                            "x": 57.2500,
+                            "x": 50,
                             "y": 99.0000,
-                            "width": 10.5000,
+                            "width": 25,
                             "height": 1
                         },
                         {
-                            "x": 82.2500,
+                            "x": 75,
                             "y": 100,
-                            "width": 10.5000,
+                            "width": 25,
                             "height": 0
                         }
                     ]
@@ -780,27 +791,27 @@ define(function (require) {
                         [
                             {
                                 "x": 0,
-                                "y": 82.2500,
+                                "y": 87,
                                 "width": 100,
-                                "height": 10.5000
+                                "height": 1
                             },
                             {
                                 "x": 0,
-                                "y": 57.2500,
+                                "y": 62,
                                 "width": 50,
-                                "height": 10.5000
+                                "height": 1
                             },
                             {
                                 "x": 0,
-                                "y": 32.2500,
+                                "y": 37,
                                 "width": 1,
-                                "height": 10.5000
+                                "height": 1
                             },
                             {
                                 "x": 0,
-                                "y": 7.25,
+                                "y": 12,
                                 "width": 0,
-                                "height": 10.5000
+                                "height": 1
                             }
                         ]
                     ]);
@@ -1153,15 +1164,16 @@ define(function (require) {
                 var svg0 = context.chart.getSVG();
                 var bars = svg0.querySelectorAll('.bar');
                 expect(bars.length).to.equals(4);
-                expect(d3.select(bars[0]).attr('x')).to.equals('51');
-                expect(d3.select(bars[1]).attr('x')).to.equals('251');
-                expect(d3.select(bars[2]).attr('x')).to.equals('451');
-                expect(d3.select(bars[3]).attr('x')).to.equals('651');
+                expect(d3.select(bars[0]).attr('x')).to.equals('0');
+                expect(d3.select(bars[1]).attr('x')).to.equals('200');
+                expect(d3.select(bars[2]).attr('x')).to.equals('400');
+                expect(d3.select(bars[3]).attr('x')).to.equals('600');
 
-                expect(d3.select(bars[0]).attr('width')).to.equals('98');
-                expect(d3.select(bars[1]).attr('width')).to.equals('98');
-                expect(d3.select(bars[2]).attr('width')).to.equals('98');
-                expect(d3.select(bars[3]).attr('width')).to.equals('98');
+                var barWidth = '200';
+                expect(d3.select(bars[0]).attr('width')).to.equals(barWidth);
+                expect(d3.select(bars[1]).attr('width')).to.equals(barWidth);
+                expect(d3.select(bars[2]).attr('width')).to.equals(barWidth);
+                expect(d3.select(bars[3]).attr('width')).to.equals(barWidth);
             });
         },
         {
@@ -1193,15 +1205,16 @@ define(function (require) {
                 var svg0 = context.chart.getSVG();
                 var bars = svg0.querySelectorAll('.bar');
                 expect(bars.length).to.equals(4);
-                expect(d3.select(bars[0]).attr('x')).to.equals('33');
-                expect(d3.select(bars[1]).attr('x')).to.equals('265');
-                expect(d3.select(bars[2]).attr('x')).to.equals('497');
-                expect(d3.select(bars[3]).attr('x')).to.equals('729');
+                expect(d3.select(bars[0]).attr('x')).to.equals('32');
+                expect(d3.select(bars[1]).attr('x')).to.equals('264');
+                expect(d3.select(bars[2]).attr('x')).to.equals('496');
+                expect(d3.select(bars[3]).attr('x')).to.equals('728');
 
-                expect(d3.select(bars[0]).attr('width')).to.equals('38');
-                expect(d3.select(bars[1]).attr('width')).to.equals('38');
-                expect(d3.select(bars[2]).attr('width')).to.equals('38');
-                expect(d3.select(bars[3]).attr('width')).to.equals('38');
+                var barWidth = '40';
+                expect(d3.select(bars[0]).attr('width')).to.equals(barWidth);
+                expect(d3.select(bars[1]).attr('width')).to.equals(barWidth);
+                expect(d3.select(bars[2]).attr('width')).to.equals(barWidth);
+                expect(d3.select(bars[3]).attr('width')).to.equals(barWidth);
             });
         },
         {
