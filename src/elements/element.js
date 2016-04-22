@@ -13,8 +13,8 @@ export class Element extends Emitter {
         // TODO: fix when pass scales to constructor
         this.isEmptySize = (
             (!config.size)
-            || (config.size === 'size_undefined')
-            || (config.size === 'size_null')
+            || (config.size.indexOf('size_undefined') === 0)
+            || (config.size.indexOf('size_null') === 0)
         );
     }
 
