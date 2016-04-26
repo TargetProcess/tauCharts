@@ -407,30 +407,33 @@ define(function (require) {
         function () {
             it('should contain correct interval elements', function () {
 
-                var barWidth = 40;
+                var colorsCount = 3;
+                var stepSize = 120 / colorsCount;
+                var barWidth = stepSize / 2;
+                var xi = (i) => (stepSize * i + (stepSize - barWidth) / 2);
 
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 0,
+                            "x": xi(0),
                             "y": 100,
                             width: barWidth,
                             height: 20
                         },
                         {
-                            "x": 40,
+                            "x": xi(1),
                             "y": 60,
                             width: barWidth,
                             height: 60
                         },
                         {
-                            "x": 80,
+                            "x": xi(2),
                             "y": 20,
                             width: barWidth,
                             height: 100
                         },
                         {
-                            "x": 80,
+                            "x": xi(2),
                             "y": 60,
                             width: barWidth,
                             height: 60
@@ -621,31 +624,34 @@ define(function (require) {
         function () {
             it('should contain correct interval elements', function () {
 
-                var barWidth = 40;
+                var colorsCount = 3;
+                var stepSize = 120 / colorsCount;
+                var barWidth = stepSize / 2;
+                var xi = (i) => (stepSize * i + (stepSize - barWidth) / 2);
 
                 expectCoordsElement(expect, [
                     [
                         {
                             "x": 0,
-                            "y": 80,
+                            "y": xi(2),
                             height: barWidth,
                             width: 20
                         },
                         {
                             "x": 0,
-                            "y": 40,
+                            "y": xi(1), // green
                             height: barWidth,
                             width: 60
                         },
                         {
                             "x": 0,
-                            "y": 40,
+                            "y": xi(1), // green
                             height: barWidth,
                             width: 100
                         },
                         {
                             "x": 0,
-                            "y": 0,
+                            "y": xi(0),
                             height: barWidth,
                             width: 100
                         }
@@ -705,30 +711,35 @@ define(function (require) {
         ],
         function () {
             it('should contain correct interval elements', function () {
+
+                var stepSize = 100 / 4;
+                var barWidth = stepSize / 2;
+                var xi = (i) => String(stepSize * i + (stepSize - barWidth) / 2);
+
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 0,
-                            "y": 0.0000,
-                            "width": 25,
-                            "height": 100.0000
+                            "x": xi(0),
+                            "y": 0,
+                            "width": barWidth,
+                            "height": 100
                         },
                         {
-                            "x": 25,
-                            "y": 50.0000,
-                            "width": 25,
+                            "x": xi(1),
+                            "y": 50,
+                            "width": barWidth,
                             "height": 50
                         },
                         {
-                            "x": 50,
-                            "y": 99.0000,
-                            "width": 25,
+                            "x": xi(2),
+                            "y": 99,
+                            "width": barWidth,
                             "height": 1
                         },
                         {
-                            "x": 75,
+                            "x": xi(3),
                             "y": 100,
-                            "width": 25,
+                            "width": barWidth,
                             "height": 0
                         }
                     ]
@@ -1164,16 +1175,21 @@ define(function (require) {
                 var svg0 = context.chart.getSVG();
                 var bars = svg0.querySelectorAll('.bar');
                 expect(bars.length).to.equals(4);
-                expect(d3.select(bars[0]).attr('x')).to.equals('0');
-                expect(d3.select(bars[1]).attr('x')).to.equals('200');
-                expect(d3.select(bars[2]).attr('x')).to.equals('400');
-                expect(d3.select(bars[3]).attr('x')).to.equals('600');
 
-                var barWidth = '200';
-                expect(d3.select(bars[0]).attr('width')).to.equals(barWidth);
-                expect(d3.select(bars[1]).attr('width')).to.equals(barWidth);
-                expect(d3.select(bars[2]).attr('width')).to.equals(barWidth);
-                expect(d3.select(bars[3]).attr('width')).to.equals(barWidth);
+                var stepSize = 200;
+                var barWidth = 100;
+                var xi = (i) => String(stepSize * i + (stepSize - barWidth) / 2);
+
+                expect(d3.select(bars[0]).attr('x')).to.equals(xi(0));
+                expect(d3.select(bars[1]).attr('x')).to.equals(xi(1));
+                expect(d3.select(bars[2]).attr('x')).to.equals(xi(2));
+                expect(d3.select(bars[3]).attr('x')).to.equals(xi(3));
+
+                var barWidthStr = String(barWidth);
+                expect(d3.select(bars[0]).attr('width')).to.equals(barWidthStr);
+                expect(d3.select(bars[1]).attr('width')).to.equals(barWidthStr);
+                expect(d3.select(bars[2]).attr('width')).to.equals(barWidthStr);
+                expect(d3.select(bars[3]).attr('width')).to.equals(barWidthStr);
             });
         },
         {

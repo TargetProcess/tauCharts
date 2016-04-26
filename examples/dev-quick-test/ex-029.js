@@ -143,7 +143,7 @@
             "y_param2": {"type": "linear", "source": "/", "dim": "param2", "nice": true, "dimType": "measure"},
 
             "color_undefined": {"type": "color", "source": "/"},
-            "size_undefined": {"type": "size", "source": "/", "min": 2, "max": 10, "mid": 5},
+            "size_undefined": {"type": "size", "source": "/", "min": 0, "max": 1, "mid": 1},
 
             "stacked_m1": {
                 "type": "linear",

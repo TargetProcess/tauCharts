@@ -135,7 +135,7 @@ export class IntervalModel {
 
         var asc = ((a, b) => (a - b));
 
-        var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() : Number.MAX_VALUE;
+        var stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
 
         var xs = dataSource
             .map((row) => model.xi(row))
