@@ -91,19 +91,18 @@ export class PathModel {
 
             if (!sizeScaleConfig.__fixed__) {
                 newConf.__fixed__ = true;
-                newConf.min = minSize;
-                newConf.max = maxSize;
-                newConf.mid = maxSize;
+                newConf.minSize = minSize;
+                newConf.maxSize = maxSize;
                 return newConf;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxSize) {
-                newConf.max = maxSize;
-                newConf.mid = maxSize;
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.maxSize > maxSize) {
+                newConf.maxSize = maxSize;
+                newConf.midSize = maxSize;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minSize) {
-                newConf.min = minSize;
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.minSize < minSize) {
+                newConf.minSize = minSize;
             }
 
             return newConf;

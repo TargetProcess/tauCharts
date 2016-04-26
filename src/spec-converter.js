@@ -21,12 +21,12 @@ export class SpecConverter {
                 // jscs:disable disallowQuotedKeysInObjects
                 'x_null': {type: 'ordinal', source: '?'},
                 'y_null': {type: 'ordinal', source: '?'},
-                'size_null':  {type: 'size', source: '?', mid: 1},
+                'size_null':  {type: 'size', source: '?'},
                 'color_null': {type: 'color', source: '?', brewer: null},
                 'split_null': {type: 'value', source: '?'},
 
                 'pos:default': {type: 'ordinal', source: '?'},
-                'size:default': {type: 'size', source: '?', mid: 1},
+                'size:default': {type: 'size', source: '?'},
                 'text:default': {type: 'value', source: '?'},
                 'color:default': {type: 'color', source: '?', brewer: null},
                 'split:default': {type: 'value', source: '?'}
@@ -219,14 +219,27 @@ export class SpecConverter {
             item = {
                 type: 'size',
                 source: '/',
-                dim: this.ruleInferDim(dimName, guide),
-                min: 0,
-                max: 1,
-                mid: 1
+                dim: this.ruleInferDim(dimName, guide)
             };
 
             if (guide.hasOwnProperty('func')) {
                 item.func = guide.func;
+            }
+
+            if (guide.hasOwnProperty('min')) {
+                item.min = guide.min;
+            }
+
+            if (guide.hasOwnProperty('max')) {
+                item.max = guide.max;
+            }
+
+            if (guide.hasOwnProperty('minSize')) {
+                item.minSize = guide.minSize;
+            }
+
+            if (guide.hasOwnProperty('maxSize')) {
+                item.maxSize = guide.maxSize;
             }
         }
 

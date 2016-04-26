@@ -28,8 +28,8 @@ export class Interval extends Element {
         var defaultMinLimit = this.config.guide.prettify ? 3 : 0;
         var defaultMaxLimit = this.config.guide.prettify ? 40 : Number.MAX_VALUE;
 
-        this.minLimit = config.guide.size.min || defaultMinLimit;
-        this.maxLimit = config.guide.size.max || defaultMaxLimit;
+        this.minLimit = config.guide.size.minSize || defaultMinLimit;
+        this.maxLimit = config.guide.size.maxSize || defaultMaxLimit;
         this.fixedSize = config.guide.size.fixed;
 
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;

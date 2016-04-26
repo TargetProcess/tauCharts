@@ -315,9 +315,10 @@ define(function(require) {
         scatterplotSpec,
         [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 10}, {x: 1, y: 1, size: null}, {x: 1, y: 1, size: Infinity}],
         function() {
+
             it("should map Infinity to maximum size", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[3]).to.be.equal(sizes[1]);
+                expect(sizes[3]).to.be.equal(10);
             });
 
             it("should map null to 0 size", function() {

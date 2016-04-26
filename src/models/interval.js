@@ -227,19 +227,17 @@ export class IntervalModel {
 
             if (!sizeScaleConfig.__fixed__) {
                 newConf.__fixed__ = true;
-                newConf.min = minS;
-                newConf.max = maxS;
-                newConf.mid = maxS;
+                newConf.minSize = minS;
+                newConf.maxSize = maxS;
                 return newConf;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxS) {
-                newConf.max = maxS;
-                newConf.mid = maxS;
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.maxSize > maxS) {
+                newConf.maxSize = maxS;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minS) {
-                newConf.min = minS;
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.minSize < minS) {
+                newConf.minSize = minS;
             }
 
             return newConf;

@@ -17,8 +17,8 @@ export class Point extends Element {
         // TODO: fix when pass scales to constructor
         var defaultMaxLimit = this.isEmptySize ? 10 : 20;
 
-        this.minLimit = config.guide.size.min || defaultMinLimit;
-        this.maxLimit = config.guide.size.max || defaultMaxLimit;
+        this.minLimit = config.guide.size.minSize || defaultMinLimit;
+        this.maxLimit = config.guide.size.maxSize || defaultMaxLimit;
         this.fixedSize = config.guide.size.fixed;
 
         this.decorators = [

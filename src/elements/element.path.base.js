@@ -123,8 +123,8 @@ export class BasePath extends Element {
 
         var args = {
             textScale: this.text,
-            minLimit: this.config.guide.size.min || 2,
-            maxLimit: this.config.guide.size.max || (this.isEmptySize ? 6 : 40)
+            minLimit: this.config.guide.size.minSize || 2,
+            maxLimit: this.config.guide.size.maxSize || (this.isEmptySize ? 6 : 40)
         };
 
         return this

@@ -80,8 +80,8 @@ define(function (require) {
                     {},
                     {
                         size: {
-                            min: 5,
-                            max: 22,
+                            minSize: 5,
+                            maxSize: 22,
                             fixed: 27
                         }
                     }
