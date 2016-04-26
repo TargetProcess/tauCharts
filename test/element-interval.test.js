@@ -1245,7 +1245,7 @@ define(function (require) {
             y    : 'dim_y',
             guide: {
                 padding: {l: 0, r: 0, b: 0, t: 0},
-                size: {fixed: 22, enableDistributeEvenly: false}
+                size: {maxSize: 22, enableDistributeEvenly: false}
             },
             settings: {specEngine: 'none'}
         },

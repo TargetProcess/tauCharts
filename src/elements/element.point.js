@@ -11,15 +11,22 @@ export class Point extends Element {
 
         this.config = config;
         this.config.guide = this.config.guide || {};
-        this.config.guide.size = (this.config.guide.size || {});
 
         var defaultMinLimit = 2;
         // TODO: fix when pass scales to constructor
         var defaultMaxLimit = this.isEmptySize ? 10 : 20;
 
-        this.minLimit = config.guide.size.minSize || defaultMinLimit;
-        this.maxLimit = config.guide.size.maxSize || defaultMaxLimit;
-        this.fixedSize = config.guide.size.fixed;
+        this.config.guide.size = _.defaults(
+            (this.config.guide.size || {}),
+            {
+                defMinSize: defaultMinLimit,
+                defMaxSize: defaultMaxLimit
+            });
+
+        this.defMin = config.guide.size.defMinSize;
+        this.defMax = config.guide.size.defMaxSize;
+        this.minLimit = config.guide.size.minSize;
+        this.maxLimit = config.guide.size.maxSize;
 
         this.decorators = [
             PointModel.decorator_orientation,
@@ -69,9 +76,10 @@ export class Point extends Element {
             yScale: this.yScale,
             colorScale: this.color,
             sizeScale: this.size,
+            defMin: this.defMin,
+            defMax: this.defMax,
             minLimit: this.minLimit,
             maxLimit: this.maxLimit,
-            fixedSize: this.fixedSize,
             dataSource: []
         };
 

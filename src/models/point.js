@@ -59,10 +59,10 @@ export class PointModel {
         });
     }
 
-    static adjustSizeScale(model, {minLimit, maxLimit, fixedSize}) {
+    static adjustSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
 
-        var minSize = fixedSize ? fixedSize : minLimit;
-        var maxSize = fixedSize ? fixedSize : maxLimit;
+        var minSize = (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin);
+        var maxSize = (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax);
 
         model.scaleSize.fixup((sizeScaleConfig) => {
 

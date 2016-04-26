@@ -10,7 +10,6 @@ export class StackedInterval extends Interval {
         super(config);
 
         this.config.guide.enableColorToBarPosition = false;
-        this.barsGap = 0;
         this.baseCssClass = `i-role-element i-role-datum bar bar-stack ${CSS_PREFIX}bar-stacked`;
 
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;

@@ -248,7 +248,7 @@ define(function (require) {
             expect(pairs)
                 .to
                 .deep
-                .equal('0,499 500,499 1000,0 1000,1000 500,501 0,501', 'line with size');
+                .equal('0,500 500,500 1000,0 1000,1000 500,500 0,500', 'line with size');
         });
     });
 });
