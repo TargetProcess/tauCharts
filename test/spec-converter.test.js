@@ -86,12 +86,12 @@ define(function (require) {
                 "scales": {
                     "x_null"        : {"type": "ordinal", "source": "?"},
                     "y_null"        : {"type": "ordinal", "source": "?"},
-                    "size_null"     : {"type": "size", "source": "?", "mid": 1},
+                    "size_null"     : {"type": "size", "source": "?"},
                     "color_null"    : {"type": "color", "source": "?", "brewer": null},
                     'split_null': {type: 'value', source: '?'},
 
                     "pos:default"   : {"type": "ordinal", "source": "?"},
-                    "size:default"  : {"type": "size", "source": "?", "mid": 1},
+                    "size:default"  : {"type": "size", "source": "?"},
                     "text:default"  : {"type": "value", source: "?"},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
                     'split:default': {type: 'value', source: '?'},
@@ -257,12 +257,12 @@ define(function (require) {
                 "scales": {
                     "x_null": {"type": "ordinal", "source": "?"},
                     "y_null": {"type": "ordinal", "source": "?"},
-                    "size_null": {"type": "size", "source": "?", "mid": 1},
+                    "size_null": {"type": "size", "source": "?"},
                     "color_null": {"type": "color", "source": "?", "brewer": null},
                     'split_null': {type: 'value', source: '?'},
 
                     "pos:default": {"type": "ordinal", "source": "?"},
-                    "size:default": {"type": "size", "source": "?", "mid": 1},
+                    "size:default": {"type": "size", "source": "?"},
                     "text:default": {"type": "value", source: "?"},
                     "color:default": {"type": "color", "source": "?", "brewer": null},
                     'split:default': {type: 'value', source: '?'},

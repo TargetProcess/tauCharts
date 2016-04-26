@@ -129,8 +129,8 @@ window.samples.push({
         },
         size: {
             func: 'linear',
-            min: 2,
-            max: 25
+            minSize: 2,
+            maxSize: 25
         },
         color: {
             brewer: {

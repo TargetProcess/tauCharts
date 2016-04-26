@@ -33,8 +33,15 @@ export class BasePath extends Element {
                 paddingX: 0,
                 paddingY: 0
             });
+
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
-        this.config.guide.size = _.defaults(this.config.guide.size || {}, {});
+
+        this.config.guide.size = _.defaults(
+            (this.config.guide.size || {}),
+            {
+                defMinSize: 2,
+                defMaxSize: (this.isEmptySize ? 6 : 40)
+            });
 
         this.decorators = []
             .concat([
@@ -123,8 +130,10 @@ export class BasePath extends Element {
 
         var args = {
             textScale: this.text,
-            minLimit: this.config.guide.size.min || 2,
-            maxLimit: this.config.guide.size.max || (this.isEmptySize ? 6 : 40)
+            defMin: this.config.guide.size.defMinSize,
+            defMax: this.config.guide.size.defMaxSize,
+            minLimit: this.config.guide.size.minSize,
+            maxLimit: this.config.guide.size.maxSize
         };
 
         return this

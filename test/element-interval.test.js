@@ -94,7 +94,7 @@ define(function (require) {
                 'count': {type: 'linear', source: '/', dim: 'count'},
                 'time': {type: 'time', source: '/', dim: 'time'},
                 'catY': {type: 'ordinal', source: '/', dim: 'color'},
-                'size:default': {type: 'size', source: '?', mid: 1, min: 0, max: 1},
+                'size:default': {type: 'size', source: '?', minSize: 0, maxSize: 1},
                 'color': {type: 'color', dim: 'color', source: '/'},
                 'color:default': {type: 'color', source: '?', brewer: null}
             }),
@@ -1245,7 +1245,7 @@ define(function (require) {
             y    : 'dim_y',
             guide: {
                 padding: {l: 0, r: 0, b: 0, t: 0},
-                size: {fixed: 22, enableDistributeEvenly: false}
+                size: {maxSize: 22, enableDistributeEvenly: false}
             },
             settings: {specEngine: 'none'}
         },

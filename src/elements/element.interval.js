@@ -16,21 +16,23 @@ export class Interval extends Element {
                 enableColorToBarPosition: true
             });
 
-        this.config.guide.size = _.defaults(
-            (this.config.guide.size || {}),
-            {
-                enableDistributeEvenly: true
-            });
-
-        this.barsGap = 1;
-        this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
-
         var defaultMinLimit = this.config.guide.prettify ? 3 : 0;
         var defaultMaxLimit = this.config.guide.prettify ? 40 : Number.MAX_VALUE;
 
-        this.minLimit = config.guide.size.min || defaultMinLimit;
-        this.maxLimit = config.guide.size.max || defaultMaxLimit;
-        this.fixedSize = config.guide.size.fixed;
+        this.config.guide.size = _.defaults(
+            (this.config.guide.size || {}),
+            {
+                enableDistributeEvenly: true,
+                defMinSize: defaultMinLimit,
+                defMaxSize: defaultMaxLimit
+            });
+
+        this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+
+        this.defMin = config.guide.size.defMinSize;
+        this.defMax = config.guide.size.defMaxSize;
+        this.minLimit = config.guide.size.minSize;
+        this.maxLimit = config.guide.size.maxSize;
 
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
@@ -69,7 +71,8 @@ export class Interval extends Element {
             isHorizontal,
             minLimit: this.minLimit,
             maxLimit: this.maxLimit,
-            fixedSize: this.fixedSize,
+            defMin: this.defMin,
+            defMax: this.defMax,
             dataSource: this.convertFramesToData(frames)
         };
 

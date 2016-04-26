@@ -209,7 +209,7 @@ define(function (require) {
                 guide: {
                     x: {hide: true, nice: false},
                     y: {hide: true, nice: false, min: 0, max: 4},
-                    size: {min: 0, max: 1000},
+                    size: {minSize: 0, maxSize: 1000},
                     padding: {l: 0, r: 0, b: 0, t: 0}
                 },
                 settings: {
@@ -248,7 +248,7 @@ define(function (require) {
             expect(pairs)
                 .to
                 .deep
-                .equal('0,499 500,499 1000,0 1000,1000 500,501 0,501', 'line with size');
+                .equal('0,500 500,500 1000,0 1000,1000 500,500 0,500', 'line with size');
         });
     });
 });

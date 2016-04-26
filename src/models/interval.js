@@ -197,13 +197,13 @@ export class IntervalModel {
         return model;
     }
 
-    static adjustSizeScale(model, {dataSource, minLimit, maxLimit, fixedSize}) {
+    static adjustSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
 
-        var minS = Number.MAX_VALUE;
-        var maxS = Number.MIN_VALUE;
+        var minSize = Number.MAX_VALUE;
+        var maxSize = Number.MIN_VALUE;
         var trackSize = (s) => {
-            minS = (s < minS) ? s : minS;
-            maxS = (s > maxS) ? s : maxS;
+            minSize = (s < minSize) ? s : minSize;
+            maxSize = (s > maxSize) ? s : maxSize;
         };
 
         var trace = IntervalModel.compose(model, {
@@ -218,8 +218,8 @@ export class IntervalModel {
             trace.size(row);
         });
 
-        minS = fixedSize ? fixedSize : Math.max(minLimit, minS);
-        maxS = fixedSize ? fixedSize : Math.min(maxLimit, maxS);
+        minSize = (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin, minSize);
+        maxSize = (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax, maxSize);
 
         model.scaleSize.fixup((sizeScaleConfig) => {
 
@@ -227,19 +227,17 @@ export class IntervalModel {
 
             if (!sizeScaleConfig.__fixed__) {
                 newConf.__fixed__ = true;
-                newConf.min = minS;
-                newConf.max = maxS;
-                newConf.mid = maxS;
+                newConf.minSize = minSize;
+                newConf.maxSize = maxSize;
                 return newConf;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.max > maxS) {
-                newConf.max = maxS;
-                newConf.mid = maxS;
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.maxSize > maxSize) {
+                newConf.maxSize = maxSize;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.min < minS) {
-                newConf.min = minS;
+            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.minSize < minSize) {
+                newConf.minSize = minSize;
             }
 
             return newConf;

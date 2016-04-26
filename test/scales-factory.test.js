@@ -477,11 +477,11 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 'i',
-                    min: 1,
-                    max: 10
+                    minSize: 1,
+                    maxSize: 10
                 }).create();
 
-            expect(scale0.domain()).to.deep.equal([3, 1, 2]);
+            expect(scale0.domain()).to.deep.equal([1, 3]);
 
             expect(scale0(1)).to.equal(6.196152422706632);
             expect(scale0(2)).to.equal(8.348469228349536);
@@ -497,10 +497,8 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 'x',
-                    mid: 5
+                    maxSize: 5
                 }).create();
-
-            expect(scale1.domain()).to.deep.equal(['high', 'low', 'medium']);
 
             expect(scale1('high')).to.equal(5);
             expect(scale1('low')).to.equal(5);
@@ -514,11 +512,11 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 's',
-                    min: 1,
-                    max: 10
+                    minSize: 1,
+                    maxSize: 10
                 }).create();
 
-            expect(scale2.domain()).to.deep.equal([-3, 3, 1]);
+            expect(scale2.domain()).to.deep.equal([-3, 3]);
 
             expect(scale2(3)).to.equal(10);
             expect(scale2(-3)).to.equal(1);
@@ -528,31 +526,15 @@ define(function (require) {
                 {
                     dim: 's',
                     func: 'linear',
-                    min: 0,
-                    max: 100
+                    minSize: 0,
+                    maxSize: 100
                 }).create();
 
-            expect(scale3.domain()).to.deep.equal([-3, 3, 1]);
+            expect(scale3.domain()).to.deep.equal([-3, 3]);
 
             expect(scale3(3)).to.equal(100);
             expect(scale3(0)).to.equal(50);
             expect(scale3(-3)).to.equal(0);
-
-            var scale4 = new SizeScale(
-                xSrc,
-                {
-                    dim: 's',
-                    func: 'linear',
-                    min: 0,
-                    max: 100,
-                    normalize: true
-                }).create();
-
-            expect(scale4.domain()).to.deep.equal([-3, 3, 1]);
-
-            expect(scale4(3)).to.equal(1);
-            expect(scale4(0)).to.equal(0.5);
-            expect(scale4(-3)).to.equal(0);
         });
 
         it('should support [ordinal] scale', function () {
