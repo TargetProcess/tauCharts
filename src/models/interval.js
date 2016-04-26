@@ -80,28 +80,6 @@ export class IntervalModel {
         });
     }
 
-    static decorator_discrete_share_size_by_color(model, {barsGap}) {
-
-        if (!model.scaleX.discrete) {
-            return model;
-        }
-
-        var baseScale = model.scaleX;
-        var categories = model.scaleColor.domain();
-        var categoriesCount = (categories.length || 1);
-        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
-        var fnBarSize = ((d) => (space(d) / categoriesCount));
-        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
-
-        return IntervalModel.compose(model, {
-            size: ((d) => {
-                var barSize = fnBarSize(d);
-                var gapSize = fnGapSize(barSize);
-                return barSize - 2 * gapSize;
-            })
-        });
-    }
-
     static decorator_color(model, {}) {
         return IntervalModel.compose(model, {
             color: ((d) => model.scaleColor.value(d[model.scaleColor.dim]))
@@ -153,18 +131,11 @@ export class IntervalModel {
         });
     }
 
-    static decorator_size_distribute_evenly(model, params) {
-
-        var method = (model.scaleX.discrete) ?
-            IntervalModel.___dis___decorator_size_distribute_evenly :
-            IntervalModel.___con___decorator_size_distribute_evenly;
-
-        return method(model, params);
-    }
-
-    static ___con___decorator_size_distribute_evenly(model, {dataSource}) {
+    static decorator_size_distribute_evenly(model, {dataSource}) {
 
         var asc = ((a, b) => (a - b));
+
+        var stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
 
         var xs = dataSource
             .map((row) => model.xi(row))
@@ -184,22 +155,7 @@ export class IntervalModel {
             [0]);
 
         return IntervalModel.compose(model, {
-            size: (() => diff)
-        });
-    }
-
-    static ___dis___decorator_size_distribute_evenly(model, {barsGap}) {
-
-        var space = ((d) => model.scaleX.stepSize(d[model.scaleX.dim]) * (0.5));
-        var fnBarSize = ((d) => (space(d)));
-        var fnGapSize = ((w) => (w > (2 * barsGap)) ? barsGap : 0);
-
-        return IntervalModel.compose(model, {
-            size: ((d) => {
-                var barSize = fnBarSize(d);
-                var gapSize = fnGapSize(barSize);
-                return barSize - 2 * gapSize;
-            })
+            size: (() => Math.min(diff, stepSize))
         });
     }
 

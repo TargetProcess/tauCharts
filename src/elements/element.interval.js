@@ -36,9 +36,8 @@ export class Interval extends Element {
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
         this.decorators = [
             IntervalModel.decorator_orientation,
-            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
-            config.adjustPhase && enableColorPositioning && IntervalModel.decorator_discrete_share_size_by_color,
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
+            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
             config.adjustPhase && IntervalModel.adjustSizeScale
@@ -68,7 +67,6 @@ export class Interval extends Element {
         var isHorizontal = config.flip || config.guide.flip;
         var args = {
             isHorizontal,
-            barsGap: this.barsGap,
             minLimit: this.minLimit,
             maxLimit: this.maxLimit,
             fixedSize: this.fixedSize,
