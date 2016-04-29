@@ -63,16 +63,23 @@ export class BaseScale {
             .addField('scaleDim', this.scaleConfig.dim)
             .addField('scaleType', this.scaleConfig.type)
             .addField('source', this.scaleConfig.source)
+            .addField('domain', (() => this.vars))
             .addField('isContains', ((x) => this.isInDomain(x)))
-            .addField('domain', (() => this.vars));
+            .addField('fixup', (fn) => {
+                var cfg = this.scaleConfig;
+                cfg.__fixup__ = cfg.__fixup__ || {};
+                cfg.__fixup__ = _.extend(
+                    cfg.__fixup__,
+                    fn(_.extend({}, cfg, cfg.__fixup__)));
+            })
+            .addField('commit', () => {
+                this.scaleConfig = _.extend(this.scaleConfig, this.scaleConfig.__fixup__);
+                delete this.scaleConfig.__fixup__;
+            });
     }
 
     isInDomain(val) {
         return (this.domain().indexOf(val) >= 0);
-    }
-
-    domain() {
-        return this.vars;
     }
 
     addField(key, val) {
@@ -96,7 +103,6 @@ export class BaseScale {
 
         scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
         scaleFn.value = scaleFn;
-        scaleFn.fixup = ((fn) => (_.extend(this.scaleConfig, fn(this.scaleConfig))));
 
         return scaleFn;
     }
