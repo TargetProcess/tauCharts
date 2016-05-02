@@ -31,7 +31,8 @@ export class StackedInterval extends Interval {
         var r = super.createScales(fnCreateScale);
 
         var stackScale = this.getScale(this.config.flip ? 'x' : 'y');
-        if (stackScale.discrete) {
+
+        if (stackScale.discrete || (stackScale.domain().some((x) => typeof (x) !== 'number'))) {
             throw new Error(
                 `Stacked field [${stackScale.dim}] should be a number`,
                 errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART
