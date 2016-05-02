@@ -218,29 +218,33 @@ export class IntervalModel {
             trace.size(row);
         });
 
-        minSize = (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin, minSize);
-        maxSize = (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax, maxSize);
+        var curr = {
+            minSize: (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin, minSize),
+            maxSize: (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax, maxSize)
+        };
 
-        model.scaleSize.fixup((sizeScaleConfig) => {
+        model.scaleSize.fixup((prev) => {
 
-            var newConf = {};
+            var next = {};
 
-            if (!sizeScaleConfig.__fixed__) {
-                newConf.__fixed__ = true;
-                newConf.minSize = minSize;
-                newConf.maxSize = maxSize;
-                return newConf;
+            if (!prev.fixed) {
+
+                next.fixed = true;
+                next.minSize = curr.minSize;
+                next.maxSize = curr.maxSize;
+
+            } else {
+
+                if (prev.maxSize > curr.maxSize) {
+                    next.maxSize = curr.maxSize;
+                }
+
+                if (prev.minSize < curr.minSize) {
+                    next.minSize = curr.minSize;
+                }
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.maxSize > maxSize) {
-                newConf.maxSize = maxSize;
-            }
-
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.minSize < minSize) {
-                newConf.minSize = minSize;
-            }
-
-            return newConf;
+            return next;
         });
 
         return model;

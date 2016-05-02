@@ -17,9 +17,8 @@ export class StackedInterval extends Interval {
         this.decorators = [
             IntervalModel.decorator_orientation,
             IntervalModel.decorator_stack,
-            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
-            config.adjustPhase && enableColorPositioning && IntervalModel.decorator_discrete_share_size_by_color,
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
+            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
             config.adjustPhase && IntervalModel.adjustYScale,

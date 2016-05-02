@@ -90,6 +90,10 @@ export class GPL extends Emitter {
                 pipe: []
             }));
 
+        Object
+            .keys(this.scales)
+            .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
+
         this._drawUnitsStructure(
             this.root,
             this._datify({
