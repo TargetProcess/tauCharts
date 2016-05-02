@@ -12,15 +12,16 @@ export class Point extends Element {
         this.config = config;
         this.config.guide = this.config.guide || {};
 
-        var defaultMinLimit = 2;
+        var defaultMinLimit = 10;
         // TODO: fix when pass scales to constructor
-        var defaultMaxLimit = this.isEmptySize ? 10 : 20;
+        var defaultMaxLimit = this.isEmptySize ? 15 : 40;
 
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
                 defMinSize: defaultMinLimit,
-                defMaxSize: defaultMaxLimit
+                defMaxSize: defaultMaxLimit,
+                enableDistributeEvenly: false
             });
 
         this.defMin = config.guide.size.defMinSize;
@@ -28,12 +29,18 @@ export class Point extends Element {
         this.minLimit = config.guide.size.minSize;
         this.maxLimit = config.guide.size.maxSize;
 
+        this.isHorizontal = false;
+
+        var distributeEvenly = config.guide.size.enableDistributeEvenly;
         this.decorators = [
             PointModel.decorator_orientation,
             PointModel.decorator_group,
-            PointModel.decorator_size,
+            config.adjustPhase && distributeEvenly && PointModel.decorator_size_distribute_evenly,
+            PointModel.decorator_dynamic_size,
             PointModel.decorator_color,
-            config.adjustPhase && PointModel.adjustSizeScale
+            config.adjustPhase && (distributeEvenly ?
+                PointModel.adjustEvenlyDistributedSizeScale :
+                PointModel.adjustSizeScale)
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -48,6 +55,14 @@ export class Point extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
 
+        var sortDesc = ((a, b) => {
+            var discreteA = a.discrete ? 1 : 0;
+            var discreteB = b.discrete ? 1 : 0;
+            return (discreteB * b.domain().length) - (discreteA * a.domain().length);
+        });
+
+        this.isHorizontal = (this.yScale === [this.xScale, this.yScale].sort(sortDesc)[0]);
+
         return this
             .regScale('x', this.xScale)
             .regScale('y', this.yScale)
@@ -55,13 +70,13 @@ export class Point extends Element {
             .regScale('color', this.color);
     }
 
-    buildModel({colorScale}) {
+    buildModel({colorScale, frames}) {
 
-        var pointModel = this.walkFrames();
+        var pointModel = this.walkFrames(frames);
 
         return {
-            x: pointModel.xi,
-            y: pointModel.yi,
+            x: this.isHorizontal ? pointModel.yi : pointModel.xi,
+            y: this.isHorizontal ? pointModel.xi : pointModel.yi,
             size: pointModel.size,
             group: pointModel.group,
             color: (d) => colorScale.toColor(pointModel.color(d)),
@@ -69,18 +84,15 @@ export class Point extends Element {
         };
     }
 
-    walkFrames() {
+    walkFrames(frames) {
 
         var args = {
-            xScale: this.xScale,
-            yScale: this.yScale,
-            colorScale: this.color,
-            sizeScale: this.size,
             defMin: this.defMin,
             defMax: this.defMax,
             minLimit: this.minLimit,
             maxLimit: this.maxLimit,
-            dataSource: []
+            isHorizontal: this.isHorizontal,
+            dataSource: frames.reduce(((memo, f) => memo.concat(f.part())), [])
         };
 
         return this
@@ -105,6 +117,7 @@ export class Point extends Element {
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
 
         var model = this.buildModel({
+            frames: frames,
             xScale: this.xScale,
             yScale: this.yScale,
             colorScale: this.color,

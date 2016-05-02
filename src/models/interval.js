@@ -154,8 +154,10 @@ export class IntervalModel {
             .concat(Number.MAX_VALUE)
             [0]);
 
+        var minDiff = Math.min(diff, stepSize);
+
         return IntervalModel.compose(model, {
-            size: (() => Math.min(diff, stepSize))
+            size: (() => minDiff)
         });
     }
 
