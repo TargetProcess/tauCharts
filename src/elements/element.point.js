@@ -14,7 +14,7 @@ export class Point extends Element {
 
         var defaultMinLimit = 10;
         // TODO: fix when pass scales to constructor
-        var defaultMaxLimit = this.isEmptySize ? 15 : 40;
+        var defaultMaxLimit = this.isEmptySize ? 10 : 40;
 
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
@@ -31,7 +31,7 @@ export class Point extends Element {
 
         this.isHorizontal = false;
 
-        var distributeEvenly = config.guide.size.enableDistributeEvenly;
+        var distributeEvenly = !this.isEmptySize && config.guide.size.enableDistributeEvenly;
         this.decorators = [
             PointModel.decorator_orientation,
             PointModel.decorator_group,

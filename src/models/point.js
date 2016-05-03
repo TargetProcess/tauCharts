@@ -74,15 +74,16 @@ export class PointModel {
                 return diff;
             })
             .filter(diff => (diff > 0))
-            .sort(asc));
+            .sort(asc)
+            .concat(Number.MAX_VALUE)
+            [0]);
 
-        var n = diffX.length - 1;
-        var minDiff = ((model.scaleX.discrete) ?
-            (Math.min(diffX[0], model.scaleX.stepSize() / 2)) :
-            (Math.min(diffX[n], Math.log10(1 + diffX[0]) * diffX[n])));
+        var minimalSlot = ((model.scaleX.discrete) ?
+            (Math.min(diffX, model.scaleX.stepSize() / 2)) :
+            (diffX));
 
         return PointModel.compose(model, {
-            size: (() => minDiff)
+            size: (() => minimalSlot)
         });
     }
 
@@ -107,9 +108,21 @@ export class PointModel {
             trace.size(row);
         });
 
+        var minSizeLimit = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        var maxSizeLimit = (typeof (maxLimit) === 'number') ? maxLimit : defMax;
+
+        var sigma = (x) => {
+            var Ab = (minSizeLimit + maxSizeLimit) / 2;
+            var At = maxSizeLimit;
+            var X0 = minSizeLimit;
+            var Wx = 0.5;
+
+            return Math.round(Ab + (At - Ab) / (1 + Math.exp(-(x - X0) / Wx)));
+        };
+
         var curr = {
-            minSize: (typeof (minLimit) === 'number') ? minLimit : Math.min(defMax, Math.max(defMin, minSize)),
-            maxSize: (typeof (maxLimit) === 'number') ? maxLimit : Math.max(defMin, Math.min(defMax, maxSize))
+            minSize: Math.max(minSizeLimit, minSize),
+            maxSize: Math.min(maxSizeLimit, sigma(maxSize))
         };
 
         model.scaleSize.fixup((prev) => {
