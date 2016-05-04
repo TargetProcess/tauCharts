@@ -21,8 +21,7 @@ export class StackedInterval extends Interval {
             config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
-            config.adjustPhase && IntervalModel.adjustYScale,
-            config.adjustPhase && IntervalModel.adjustSizeScale
+            config.adjustPhase && IntervalModel.adjustYScale
         ];
     }
 

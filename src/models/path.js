@@ -92,20 +92,9 @@ export class PathModel {
             var next = {};
 
             if (!prev.fixed) {
-
                 next.fixed = true;
                 next.minSize = curr.minSize;
                 next.maxSize = curr.maxSize;
-
-            } else {
-
-                if (prev.maxSize < curr.maxSize) {
-                    next.maxSize = curr.maxSize;
-                }
-
-                if (prev.minSize > curr.minSize) {
-                    next.minSize = curr.minSize;
-                }
             }
 
             return next;

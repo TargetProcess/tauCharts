@@ -59,7 +59,7 @@ export class PointModel {
         });
     }
 
-    static decorator_size_distribute_evenly(model, {dataSource}) {
+    static adjustFlexSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
 
         var asc = ((a, b) => (a - b));
 
@@ -78,51 +78,25 @@ export class PointModel {
             .concat(Number.MAX_VALUE)
             [0]);
 
-        var minimalSlot = ((model.scaleX.discrete) ?
-            (Math.min(diffX, model.scaleX.stepSize() / 2)) :
-            (diffX));
+        var stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
 
-        return PointModel.compose(model, {
-            size: (() => minimalSlot)
-        });
-    }
+        var maxSize = Math.min(diffX, stepSize);
 
-    static adjustEvenlyDistributedSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
-
-        var minSize = Number.MAX_VALUE;
-        var maxSize = Number.MIN_VALUE;
-        var trackSize = (s) => {
-            minSize = (s < minSize) ? s : minSize;
-            maxSize = (s > maxSize) ? s : maxSize;
-        };
-
-        var trace = PointModel.compose(model, {
-            size: ((row) => {
-                var s = model.size(row);
-                trackSize(s);
-                return s;
-            })
-        });
-
-        dataSource.forEach((row) => {
-            trace.size(row);
-        });
-
-        var minSizeLimit = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        var currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
         var maxSizeLimit = (typeof (maxLimit) === 'number') ? maxLimit : defMax;
 
         var sigma = (x) => {
-            var Ab = (minSizeLimit + maxSizeLimit) / 2;
+            var Ab = (currMinSize + maxSizeLimit) / 2;
             var At = maxSizeLimit;
-            var X0 = minSizeLimit;
+            var X0 = currMinSize;
             var Wx = 0.5;
 
             return Math.round(Ab + (At - Ab) / (1 + Math.exp(-(x - X0) / Wx)));
         };
 
         var curr = {
-            minSize: Math.max(minSizeLimit, minSize),
-            maxSize: Math.min(maxSizeLimit, sigma(maxSize))
+            minSize: currMinSize,
+            maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigma(maxSize)))
         };
 
         model.scaleSize.fixup((prev) => {
@@ -130,19 +104,12 @@ export class PointModel {
             var next = {};
 
             if (!prev.fixed) {
-
                 next.fixed = true;
                 next.minSize = curr.minSize;
                 next.maxSize = curr.maxSize;
-
             } else {
-
-                if (prev.maxSize < curr.maxSize) {
+                if (prev.maxSize > curr.maxSize) {
                     next.maxSize = curr.maxSize;
-                }
-
-                if (prev.minSize > curr.minSize) {
-                    next.minSize = curr.minSize;
                 }
             }
 
@@ -152,7 +119,7 @@ export class PointModel {
         return model;
     }
 
-    static adjustSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
+    static adjustStaticSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
 
         var curr = {
             minSize: (typeof (minLimit) === 'number') ? minLimit : defMin,
@@ -164,20 +131,9 @@ export class PointModel {
             var next = {};
 
             if (!prev.fixed) {
-
                 next.fixed = true;
                 next.minSize = curr.minSize;
                 next.maxSize = curr.maxSize;
-
-            } else {
-
-                if (prev.maxSize < curr.maxSize) {
-                    next.maxSize = curr.maxSize;
-                }
-
-                if (prev.minSize > curr.minSize) {
-                    next.minSize = curr.minSize;
-                }
             }
 
             return next;

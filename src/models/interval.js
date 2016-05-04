@@ -131,7 +131,7 @@ export class IntervalModel {
         });
     }
 
-    static decorator_size_distribute_evenly(model, {dataSource}) {
+    static decorator_size_distribute_evenly(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
 
         var asc = ((a, b) => (a - b));
 
@@ -156,9 +156,30 @@ export class IntervalModel {
 
         var minDiff = Math.min(diff, stepSize);
 
-        return IntervalModel.compose(model, {
-            size: (() => minDiff)
+        var currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        var curr = {
+            minSize: currMinSize,
+            maxSize: (typeof (maxLimit) === 'number') ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
+        };
+
+        model.scaleSize.fixup((prev) => {
+
+            var next = {};
+
+            if (!prev.fixed) {
+                next.fixed = true;
+                next.minSize = curr.minSize;
+                next.maxSize = curr.maxSize;
+            } else {
+                if (prev.maxSize > curr.maxSize) {
+                    next.maxSize = curr.maxSize;
+                }
+            }
+
+            return next;
         });
+
+        return model;
     }
 
     static adjustYScale(model, {dataSource}) {
@@ -194,59 +215,6 @@ export class IntervalModel {
             }
 
             return newConf;
-        });
-
-        return model;
-    }
-
-    static adjustSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
-
-        var minSize = Number.MAX_VALUE;
-        var maxSize = Number.MIN_VALUE;
-        var trackSize = (s) => {
-            minSize = (s < minSize) ? s : minSize;
-            maxSize = (s > maxSize) ? s : maxSize;
-        };
-
-        var trace = IntervalModel.compose(model, {
-            size: ((row) => {
-                var s = model.size(row);
-                trackSize(s);
-                return s;
-            })
-        });
-
-        dataSource.forEach((row) => {
-            trace.size(row);
-        });
-
-        var curr = {
-            minSize: (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin, minSize),
-            maxSize: (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax, maxSize)
-        };
-
-        model.scaleSize.fixup((prev) => {
-
-            var next = {};
-
-            if (!prev.fixed) {
-
-                next.fixed = true;
-                next.minSize = curr.minSize;
-                next.maxSize = curr.maxSize;
-
-            } else {
-
-                if (prev.maxSize > curr.maxSize) {
-                    next.maxSize = curr.maxSize;
-                }
-
-                if (prev.minSize < curr.minSize) {
-                    next.minSize = curr.minSize;
-                }
-            }
-
-            return next;
         });
 
         return model;

@@ -21,7 +21,7 @@ export class Point extends Element {
             {
                 defMinSize: defaultMinLimit,
                 defMaxSize: defaultMaxLimit,
-                enableDistributeEvenly: false
+                enableDistributeEvenly: true
             });
 
         this.defMin = config.guide.size.defMinSize;
@@ -35,12 +35,11 @@ export class Point extends Element {
         this.decorators = [
             PointModel.decorator_orientation,
             PointModel.decorator_group,
-            config.adjustPhase && distributeEvenly && PointModel.decorator_size_distribute_evenly,
             PointModel.decorator_dynamic_size,
             PointModel.decorator_color,
             config.adjustPhase && (distributeEvenly ?
-                PointModel.adjustEvenlyDistributedSizeScale :
-                PointModel.adjustSizeScale)
+                PointModel.adjustFlexSizeScale :
+                PointModel.adjustStaticSizeScale)
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
