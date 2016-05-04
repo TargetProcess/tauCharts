@@ -124,8 +124,9 @@ export class Point extends Element {
             sizeScale: this.size
         });
 
+        var kRound = 10000;
         var attr = {
-            r: ((d) => model.size(d) / 2),
+            r: ((d) => (Math.round(kRound * model.size(d) / 2) / kRound)),
             cx: ((d) => model.x(d)),
             cy: ((d) => model.y(d)),
             fill: ((d) => model.color(d)),
