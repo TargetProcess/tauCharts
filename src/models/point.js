@@ -41,9 +41,9 @@ export class PointModel {
         });
     }
 
-    static decorator_size(model, {}) {
+    static decorator_dynamic_size(model, {}) {
         return PointModel.compose(model, {
-            size: ((d) => (model.scaleSize.value(d[model.scaleSize.dim])))
+            size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
         });
     }
 
@@ -59,31 +59,84 @@ export class PointModel {
         });
     }
 
-    static adjustSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
+    static adjustFlexSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
 
-        var minSize = (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin);
-        var maxSize = (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax);
+        var asc = ((a, b) => (a - b));
 
-        model.scaleSize.fixup((sizeScaleConfig) => {
+        var xs = dataSource.map(((row) => model.xi(row))).sort(asc);
 
-            var newConf = {};
+        var prev = xs[0];
+        var diffX = (xs
+            .slice(1)
+            .map((curr) => {
+                var diff = (curr - prev);
+                prev = curr;
+                return diff;
+            })
+            .filter(diff => (diff > 0))
+            .sort(asc)
+            .concat(Number.MAX_VALUE)
+            [0]);
 
-            if (!sizeScaleConfig.__fixed__) {
-                newConf.__fixed__ = true;
-                newConf.minSize = minSize;
-                newConf.maxSize = maxSize;
-                return newConf;
+        var stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
+
+        var maxSize = Math.min(diffX, stepSize);
+
+        var currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        var maxSizeLimit = (typeof (maxLimit) === 'number') ? maxLimit : defMax;
+
+        var sigma = (x) => {
+            var Ab = (currMinSize + maxSizeLimit) / 2;
+            var At = maxSizeLimit;
+            var X0 = currMinSize;
+            var Wx = 0.5;
+
+            return Math.round(Ab + (At - Ab) / (1 + Math.exp(-(x - X0) / Wx)));
+        };
+
+        var curr = {
+            minSize: currMinSize,
+            maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigma(maxSize)))
+        };
+
+        model.scaleSize.fixup((prev) => {
+
+            var next = {};
+
+            if (!prev.fixed) {
+                next.fixed = true;
+                next.minSize = curr.minSize;
+                next.maxSize = curr.maxSize;
+            } else {
+                if (prev.maxSize > curr.maxSize) {
+                    next.maxSize = curr.maxSize;
+                }
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.maxSize > maxSize) {
-                newConf.maxSize = maxSize;
+            return next;
+        });
+
+        return model;
+    }
+
+    static adjustStaticSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
+
+        var curr = {
+            minSize: (typeof (minLimit) === 'number') ? minLimit : defMin,
+            maxSize: (typeof (maxLimit) === 'number') ? maxLimit : defMax
+        };
+
+        model.scaleSize.fixup((prev) => {
+
+            var next = {};
+
+            if (!prev.fixed) {
+                next.fixed = true;
+                next.minSize = curr.minSize;
+                next.maxSize = curr.maxSize;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.minSize < minSize) {
-                newConf.minSize = minSize;
-            }
-
-            return newConf;
+            return next;
         });
 
         return model;

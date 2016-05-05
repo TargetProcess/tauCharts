@@ -750,4 +750,35 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         var actualOrder = tempOrder.sort((a, b) => b.y - a.y).map((x) => x.c);
         expect(actualOrder).to.deep.equal(['C3', 'C1', 'C2'], 'specified order');
     });
+
+    it('should have valid size in facet', function () {
+
+        var chart0 = new tauCharts.Chart({
+            type: 'stacked-bar',
+            data: [
+                {f: 'Volleyball', x: '20-25', y: 1, s: 100},
+                {f: 'Volleyball', x: '15-20', y: 1, s: 0},
+
+                {f: 'Hockey',     x: '15-20', y: 1, s: 0},
+                {f: 'Hockey',     x: '20-25', y: 1, s: 0},
+
+                {f: 'Swimming',   x: '15-20', y: 1, s: 0},
+                {f: 'Swimming',   x: '20-25', y: 1, s: 0}
+            ],
+            x: ['f', 'x'],
+            y: 'y',
+            size: 's'
+        });
+        chart0.renderTo(div, size);
+
+        var svg0 = chart0.getSVG();
+        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(6);
+        var ws = [];
+        d3.select(svg0).selectAll('.bar-stack')[0].forEach(function (rect) {
+            var d3Rect = d3.select(rect);
+            var w = d3Rect.attr('width');
+            ws.push(w);
+        });
+        expect(ws).to.deep.equal(['40', '3', '3', '3', '3', '3'], 'keeps right size across facet');
+    });
 });

@@ -82,29 +82,22 @@ export class PathModel {
 
     static adjustSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
 
-        var minSize = (typeof (minLimit) === 'number') ? minLimit : Math.max(defMin);
-        var maxSize = (typeof (maxLimit) === 'number') ? maxLimit : Math.min(defMax);
+        var curr = {
+            minSize: (typeof (minLimit) === 'number') ? minLimit : defMin,
+            maxSize: (typeof (maxLimit) === 'number') ? maxLimit : defMax
+        };
 
-        model.scaleSize.fixup((sizeScaleConfig) => {
+        model.scaleSize.fixup((prev) => {
 
-            var newConf = {};
+            var next = {};
 
-            if (!sizeScaleConfig.__fixed__) {
-                newConf.__fixed__ = true;
-                newConf.minSize = minSize;
-                newConf.maxSize = maxSize;
-                return newConf;
+            if (!prev.fixed) {
+                next.fixed = true;
+                next.minSize = curr.minSize;
+                next.maxSize = curr.maxSize;
             }
 
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.maxSize > maxSize) {
-                newConf.maxSize = maxSize;
-            }
-
-            if (sizeScaleConfig.__fixed__ && sizeScaleConfig.minSize < minSize) {
-                newConf.minSize = minSize;
-            }
-
-            return newConf;
+            return next;
         });
 
         return model;

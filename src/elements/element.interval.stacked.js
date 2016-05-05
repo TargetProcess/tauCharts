@@ -21,8 +21,7 @@ export class StackedInterval extends Interval {
             config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
-            config.adjustPhase && IntervalModel.adjustYScale,
-            config.adjustPhase && IntervalModel.adjustSizeScale
+            config.adjustPhase && IntervalModel.adjustYScale
         ];
     }
 
@@ -31,7 +30,8 @@ export class StackedInterval extends Interval {
         var r = super.createScales(fnCreateScale);
 
         var stackScale = this.getScale(this.config.flip ? 'x' : 'y');
-        if (stackScale.discrete) {
+
+        if (stackScale.discrete || (stackScale.domain().some((x) => typeof (x) !== 'number'))) {
             throw new Error(
                 `Stacked field [${stackScale.dim}] should be a number`,
                 errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART

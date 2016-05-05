@@ -1,7 +1,6 @@
 import {Element} from './element';
 import {PathModel} from '../models/path';
 import {elementDecoratorShowText} from './decorators/show-text';
-import {elementDecoratorShowAnchors} from './decorators/show-anchors';
 import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -14,6 +13,7 @@ export class BasePath extends Element {
 
         this.config = config;
         this.config.guide = this.config.guide || {};
+
         this.config.guide = _.defaults(
             this.config.guide,
             {
@@ -92,6 +92,7 @@ export class BasePath extends Element {
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
 
+        var kRound = 10000;
         var baseModel = {
             scaleX: pathModel.scaleX,
             scaleY: pathModel.scaleY,
@@ -111,7 +112,7 @@ export class BasePath extends Element {
             pathAttributes: {},
             pathElement: null,
             dotAttributes: {
-                r: (d) => baseModel.size(d) / 2,
+                r: ((d) => (Math.round(kRound * baseModel.size(d) / 2) / kRound)),
                 cx: (d) => baseModel.x(d),
                 cy: (d) => baseModel.y(d),
                 fill: (d) => baseModel.color(d),
@@ -208,12 +209,25 @@ export class BasePath extends Element {
             }
 
             if (guide.showAnchors) {
-                self.subscribe(elementDecoratorShowAnchors({
-                    xScale: model.scaleX,
-                    yScale: model.scaleY,
-                    guide,
-                    container: this
-                }));
+
+                let attr = {
+                    r: () => guide.anchorSize,
+                    cx: (d) => model.x(d),
+                    cy: (d) => model.y(d),
+                    class: 'i-data-anchor'
+                };
+
+                let dots = this
+                    .selectAll('.i-data-anchor')
+                    .data((fiber) => fiber);
+                dots.exit()
+                    .remove();
+                dots.attr(attr);
+                dots.enter()
+                    .append('circle')
+                    .attr(attr);
+
+                self.subscribe(dots);
             }
 
             if (model.scaleText.dim) {

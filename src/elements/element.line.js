@@ -95,6 +95,21 @@ export class Line extends BasePath {
 
                     var xy = ((d) => ([x(d), y(d)]));
 
+                    var lim = ((x) => {
+
+                        var k = 1000;
+                        var n = Math.round(x * k) / k;
+                        if (n < (-1e+10)) {
+                            return -1e+10;
+                        }
+
+                        if (n > (1e+10)) {
+                            return 1e+10;
+                        }
+
+                        return n;
+                    });
+
                     var ways = fiber
                         .reduce((memo, d, i, list) => {
                             var dPrev = list[i - 1];
@@ -108,6 +123,12 @@ export class Line extends BasePath {
                             var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
 
                             var gamma = lAngle - rAngle;
+
+                            if (gamma === 0) {
+                                // Avoid divide be zero
+                                return memo;
+                            }
+
                             var diff = width / 2 / Math.sin(gamma / 2);
                             var aup = rAngle + gamma / 2;
                             var adown = aup - Math.PI;
@@ -116,8 +137,8 @@ export class Line extends BasePath {
                             var dxdown = diff * Math.cos(adown);
                             var dydown = diff * Math.sin(adown);
 
-                            memo.dir.push([curr[0] + dxup, curr[1] - dyup]);
-                            memo.rev.push([curr[0] + dxdown, curr[1] - dydown]);
+                            memo.dir.push([curr[0] + dxup, curr[1] - dyup].map(lim));
+                            memo.rev.push([curr[0] + dxdown, curr[1] - dydown].map(lim));
 
                             return memo;
                         },

@@ -41,8 +41,7 @@ export class Interval extends Element {
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
             config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
-            IntervalModel.decorator_color,
-            config.adjustPhase && IntervalModel.adjustSizeScale
+            IntervalModel.decorator_color
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
