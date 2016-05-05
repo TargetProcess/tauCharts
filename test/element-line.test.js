@@ -251,4 +251,64 @@ define(function (require) {
                 .equal('0,500 500,500 1000,0 1000,1000 500,500 0,500', 'line with size');
         });
     });
+
+    describe('broken line chart with size parameter', function () {
+
+        var element;
+        var chart;
+
+        beforeEach(function () {
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Chart({
+                type: 'line',
+                x: 'x',
+                y: 'y',
+                size: 's',
+                data: [
+                    {x: 1, y: 1, s: 0},
+                    {x: 2, y: 1, s: 10},
+                    {x: 2, y: 2, s: 100},
+                    {x: 2, y: 0, s: 1000},
+                    {x: 3, y: 1, s: 10000}
+                ],
+                guide: {
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false},
+                    padding: {l: 0, r: 0, b: 0, t: 0}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            chart.renderTo(element, {width: 1000, height: 1000});
+        });
+
+        afterEach(function () {
+            element.parentNode.removeChild(element);
+        });
+
+        it('should be limited by canvas borders', function () {
+
+            var svgPolygons = d3.selectAll('polygon')[0];
+
+            var act = d3.select(svgPolygons[0]).attr('points');
+            var pairs = act
+                .split(' ')
+                .map((xy) => xy.split(','))
+                .map((xy) => {
+                    return [
+                        Math.round(parseFloat(xy[0])),
+                        Math.round(parseFloat(xy[1]))
+                    ];
+                })
+                .map((xy) => xy.join(','))
+                .join(' ');
+
+            expect(pairs)
+                .to
+                .deep
+                .equal('0,499 498,498 501,0 507,983 992,480 1000,520 493,1000 501,1000 502,502 0,501', 'line with size');
+        });
+    });
 });
