@@ -236,6 +236,29 @@ define(function (require) {
             expect(scale2.stepSize()).to.equal(0);
         });
 
+        it('time scale with single value domain should add 1 hour range around it when nice is applied', function () {
+            var myDate = new Date('2015-04-17');
+            var singleRow = {i: 3, s: -3, x: 'high', t: myDate.getTime()};
+            var scaleSingleValue = new TimeScale(
+                {
+                    part: () => [singleRow],
+                    full: () => [singleRow]
+                },
+                {
+                    dim: 't',
+                    nice: true
+                }).create([0, 100]);
+
+            var hours1 = 60 * 60 * 1000;
+            expect(scaleSingleValue.domain().map(x => x.getTime()))
+                .to
+                .deep
+                .equal([
+                    (myDate.getTime() - hours1),
+                    (myDate.getTime() + hours1)
+                ]);
+        });
+
         it('should support [period] scale', function () {
 
             var scale0 = new PeriodScale(

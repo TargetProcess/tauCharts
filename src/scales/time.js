@@ -33,6 +33,14 @@ export class TimeScale extends BaseScale {
                 this.niceIntervalFn = null;
             }
 
+            if ((vars[0] - vars[1]) === 0) {
+                var oneHour = 60 * 60 * 1000;
+                vars = [
+                    new Date(vars[0].getTime() - oneHour),
+                    new Date(vars[1].getTime() + oneHour)
+                ];
+            }
+
             this.vars = d3.time.scale().domain(vars).nice(this.niceIntervalFn).domain();
 
         } else {
