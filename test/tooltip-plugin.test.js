@@ -70,12 +70,12 @@ chartType.forEach(function (item) {
             },
             {
                 x: 2,
-                y: 1,
+                y: 10,
                 color: 'green'
             },
             {
                 x: 6,
-                y: 1,
+                y: 10,
                 color: 'green'
             }
         ],
@@ -113,7 +113,7 @@ chartType.forEach(function (item) {
                         expect(expected).to.be.eql([
                             {
                                 x: 2,
-                                y: 1,
+                                y: 10,
                                 color: 'green'
                             },
                             {
@@ -128,7 +128,7 @@ chartType.forEach(function (item) {
                             },
                             {
                                 x: 6,
-                                y: 1,
+                                y: 10,
                                 color: 'green'
                             }
                         ]);

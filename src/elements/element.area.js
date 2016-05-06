@@ -7,7 +7,7 @@ export class Area extends BasePath {
 
     constructor(config) {
         super(config, [
-            // PathModel.decorator_groupOrderByAvg,
+            PathModel.decorator_groupOrderByAvg,
             PathModel.decorator_groundY0
         ]);
     }

@@ -1,5 +1,7 @@
 import {default as _} from 'underscore';
 
+const delimiter = '(@taucharts@)';
+
 export class IntervalModel {
 
     constructor(model = {}) {
@@ -8,12 +10,15 @@ export class IntervalModel {
         this.scaleY = model.scaleY || null;
         this.scaleSize = model.scaleSize || null;
         this.scaleColor = model.scaleColor || null;
+        this.scaleSplit = model.scaleSplit || null;
 
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
         this.size = model.size || createFunc(1);
         this.color = model.color || createFunc('');
+        this.group = model.group || createFunc('');
+        this.order = model.order || createFunc(0);
     }
 
     static compose(prev, updates = {}) {
@@ -83,6 +88,25 @@ export class IntervalModel {
     static decorator_color(model, {}) {
         return IntervalModel.compose(model, {
             color: ((d) => model.scaleColor.value(d[model.scaleColor.dim]))
+        });
+    }
+
+    static decorator_group(model, {}) {
+        return IntervalModel.compose(model, {
+            group: ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`))
+        });
+    }
+
+    static decorator_groupOrderByColor(model, {}) {
+
+        var order = model.scaleColor.domain();
+
+        return IntervalModel.compose(model, {
+            order: ((group) => {
+                var color = group.split(delimiter)[0];
+                var i = order.indexOf(color);
+                return ((i < 0) ? Number.MAX_VALUE : i);
+            })
         });
     }
 

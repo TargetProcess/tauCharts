@@ -164,15 +164,15 @@ define(function (require) {
 
             var svgPolygons = d3.selectAll('polygon')[0];
 
-            // "bantik" :)
+            // down triangle
             expect(d3.select(svgPolygons[0]).attr('points'))
                 .to
-                .equal('0,0 1000,1000 1000,500 0,500', 'bantik');
+                .equal('0,0 1000,500 1000,500 0,500', 'down triangle');
 
-            // down triangle
+            // "bantik" :)
             expect(d3.select(svgPolygons[1]).attr('points'))
                 .to
-                .equal('0,0 1000,500 1000,500 0,500', 'down triangle');
+                .equal('0,0 1000,1000 1000,500 0,500', 'bantik');
         });
     });
 
@@ -341,7 +341,7 @@ define(function (require) {
 
             var svgPolygons = d3.selectAll('polygon')[0];
 
-            expect(d3.select(svgPolygons[0]).attr('points'))
+            expect(d3.select(svgPolygons[2]).attr('points'))
                 .to
                 .equal('0,1000 1000,1000 1000,1000 0,1000', 'lower line');
 
@@ -349,16 +349,16 @@ define(function (require) {
                 .to
                 .equal('0,500 1000,500 1000,1000 0,1000', 'middle line');
 
-            expect(d3.select(svgPolygons[2]).attr('points'))
+            expect(d3.select(svgPolygons[0]).attr('points'))
                 .to
                 .equal('0,0 1000,0 1000,1000 0,1000', 'high line');
 
             var areas = getArea();
             expect(areas.length).to.equal(3, 'should render 3 area elements');
 
-            expect(testUtils.hasClass(areas[0], 'color20-1')).to.equal(true);
+            expect(testUtils.hasClass(areas[2], 'color20-1')).to.equal(true);
             expect(testUtils.hasClass(areas[1], 'color20-1')).to.equal(true);
-            expect(testUtils.hasClass(areas[2], 'color20-2')).to.equal(true);
+            expect(testUtils.hasClass(areas[0], 'color20-2')).to.equal(true);
         });
     });
 });
