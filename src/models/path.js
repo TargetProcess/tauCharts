@@ -16,6 +16,7 @@ export class PathModel {
         this.size = model.size || createFunc(1);
         this.color = model.color || createFunc('');
         this.group = model.group || createFunc('');
+        this.order = model.order || createFunc(0);
     }
 
     static compose(prev, updates = {}) {
@@ -61,6 +62,33 @@ export class PathModel {
     static decorator_group(model, {}) {
         return PathModel.compose(model, {
             group: ((d) => (`${d[model.scaleColor.dim]}_${d[model.scaleSplit.dim]}`))
+        });
+    }
+
+    static decorator_groupOrderByAvg(model, {dataSource}) {
+
+        var avg = (arr) => {
+            return arr.map(model.yi).reduce(((sum, i) => (sum + i)), 0) / arr.length;
+        };
+
+        var groups = dataSource.reduce((memo, row) => {
+            var k = model.group(row);
+            memo[k] = memo[k] || [];
+            memo[k].push(row);
+            return memo;
+        }, {});
+
+        var order = Object
+            .keys(groups)
+            .map((k) => ([k, avg(groups[k])]))
+            .sort((a, b) => (a[1] - b[1]))
+            .map((r) => r[0]);
+
+        return PathModel.compose(model, {
+            order: ((group) => {
+                var i = order.indexOf(group);
+                return ((i < 0) ? Number.MAX_VALUE : i);
+            })
         });
     }
 
