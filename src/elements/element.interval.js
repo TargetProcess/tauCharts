@@ -2,6 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {IntervalModel} from '../models/interval';
 import {default as _} from 'underscore';
+
 export class Interval extends Element {
 
     constructor(config) {
@@ -38,6 +39,8 @@ export class Interval extends Element {
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
         this.decorators = [
             IntervalModel.decorator_orientation,
+            IntervalModel.decorator_group,
+            IntervalModel.decorator_groupOrderByColor,
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
             config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
@@ -54,12 +57,16 @@ export class Interval extends Element {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
+        this.split = fnCreateScale('split', config.split, {});
+        this.text = fnCreateScale('text', config.text, {});
 
         return this
             .regScale('x', this.xScale)
             .regScale('y', this.yScale)
             .regScale('size', this.size)
-            .regScale('color', this.color);
+            .regScale('color', this.color)
+            .regScale('split', this.split)
+            .regScale('text', this.text);
     }
 
     walkFrames(frames) {
@@ -81,29 +88,14 @@ export class Interval extends Element {
             .reduce(((model, transform) => transform(model, args)), (new IntervalModel({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
+                scaleSize: this.size,
                 scaleColor: this.color,
-                scaleSize: this.size
+                scaleSplit: this.split
             })));
     }
 
-    getColorIndex() {
-        var colorScale = this.color;
-        var colorsOrder = colorScale.domain().reduce((memo, x, i) => {
-            memo[x] = i;
-            return memo;
-        }, {});
-
-        return ((row) => {
-            var c = row[colorScale.dim];
-            return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
-        });
-    }
-
     convertFramesToData(frames) {
-        var colorIndex = this.getColorIndex();
-        return frames
-            .reduce(((memo, f) => memo.concat(f.part())), [])
-            .sort((a, b) => (colorIndex(a) - colorIndex(b)));
+        return frames.reduce(((memo, f) => memo.concat(f.part())), []);
     }
 
     drawFrames(frames) {
@@ -150,6 +142,7 @@ export class Interval extends Element {
         var groups = _.groupBy(this.convertFramesToData(frames), barModel.group);
         var fibers = Object
             .keys(groups)
+            .sort((a, b) => barModel.order(a) - barModel.order(b))
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var elements = options
@@ -270,7 +263,8 @@ export class Interval extends Element {
             barW: ((d) => barModel.size(d)),
             barColor: ((d) => colorScale.toColor(barModel.color(d))),
             barClass: ((d) => colorScale.toClass(barModel.color(d))),
-            group: ((d) => d[colorScale.dim])
+            group: ((d) => barModel.group(d)),
+            order: ((d) => barModel.order(d))
         };
     }
 

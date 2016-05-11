@@ -16,11 +16,13 @@ export class StackedInterval extends Interval {
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
         this.decorators = [
             IntervalModel.decorator_orientation,
+            IntervalModel.decorator_group,
+            IntervalModel.decorator_groupOrderByColor,
             IntervalModel.decorator_stack,
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
-            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
             IntervalModel.decorator_color,
+            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             config.adjustPhase && IntervalModel.adjustYScale
         ];
     }

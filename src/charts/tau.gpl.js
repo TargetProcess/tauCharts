@@ -14,6 +14,15 @@ export class GPL extends Emitter {
 
         super();
 
+        // jscs:disable
+        _.defaults(config.scales, {
+            'split_null': {type: 'value', source: '?'},
+            'text_null': {type: 'value', source: '?'},
+            'split:default': {type: 'value', source: '?'},
+            'text:default': {type: 'value', source: '?'}
+        });
+        // jscs:enable
+
         this.config = config;
 
         this.config.settings = this.config.settings || {};

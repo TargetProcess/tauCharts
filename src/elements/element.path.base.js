@@ -51,7 +51,7 @@ export class BasePath extends Element {
                 PathModel.decorator_color
             ])
             .concat(decorators)
-            .concat(PathModel.adjustSizeScale);
+            .concat(config.adjustPhase && PathModel.adjustSizeScale);
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
@@ -85,9 +85,9 @@ export class BasePath extends Element {
             .regScale('text', this.text);
     }
 
-    buildModel({colorScale, textScale}) {
+    buildModel({colorScale, textScale, frames}) {
 
-        var pathModel = this.walkFrames();
+        var pathModel = this.walkFrames(frames);
 
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
@@ -103,6 +103,7 @@ export class BasePath extends Element {
             y0: pathModel.y0,
             size: pathModel.size,
             group: pathModel.group,
+            order: pathModel.order,
             color: (d) => colorScale.toColor(pathModel.color(d)),
             class: (d) => colorScale.toClass(pathModel.color(d)),
             matchRowInCoordinates() {
@@ -127,14 +128,15 @@ export class BasePath extends Element {
         return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2));
     }
 
-    walkFrames() {
+    walkFrames(frames) {
 
         var args = {
             textScale: this.text,
             defMin: this.config.guide.size.defMinSize,
             defMax: this.config.guide.size.defMaxSize,
             minLimit: this.config.guide.size.minSize,
-            maxLimit: this.config.guide.size.maxSize
+            maxLimit: this.config.guide.size.maxSize,
+            dataSource: frames.reduce(((memo, f) => memo.concat(f.part())), [])
         };
 
         return this
@@ -160,7 +162,8 @@ export class BasePath extends Element {
 
         var model = this.buildModel({
             colorScale: this.color,
-            textScale: this.text
+            textScale: this.text,
+            frames: frames
         });
         this.model = model;
 
@@ -244,6 +247,7 @@ export class BasePath extends Element {
         var groups = _.groupBy(fullData, model.group);
         var fibers = Object
             .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b))
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var frameGroups = options
