@@ -158,7 +158,7 @@ define(function (require) {
             chart.renderTo(element, {width: 800, height: 800});
 
             expect(chart.getSVG().querySelectorAll('.dot').length).to.equal(5);
-            expect(chart.getSVG().querySelectorAll('.bar-stack').length).to.equal(4);
+            expect(chart.getSVG().querySelectorAll('.bar').length).to.equal(4);
         });
 
         it('should keep setData() / getData() / getChartModelData() consistent', function () {

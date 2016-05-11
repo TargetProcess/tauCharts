@@ -670,7 +670,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         chart.renderTo(div, size);
 
         var svg0 = chart.getSVG();
-        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg0.querySelectorAll('.bar').length).to.equals(3);
         expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
         expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
 
@@ -678,14 +678,14 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         intervalNode.fire('highlight', ((row) => (row.s > 0)));
 
         var svg1 = chart.getSVG();
-        expect(svg1.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg1.querySelectorAll('.bar').length).to.equals(3);
         expect(svg1.querySelectorAll('.graphical-report__highlighted').length).to.equals(2);
         expect(svg1.querySelectorAll('.graphical-report__dimmed').length).to.equals(1);
 
         intervalNode.fire('highlight', ((row) => (null)));
 
         var svg2 = chart.getSVG();
-        expect(svg2.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg2.querySelectorAll('.bar').length).to.equals(3);
         expect(svg2.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
         expect(svg2.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
     });
@@ -706,9 +706,9 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         chart0.renderTo(div, size);
 
         var svg0 = chart0.getSVG();
-        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg0.querySelectorAll('.bar').length).to.equals(3);
         var tempOrder = [];
-        d3.select(svg0).selectAll('.bar-stack')[0].forEach(function (rect) {
+        d3.select(svg0).selectAll('.bar')[0].forEach(function (rect) {
             var d3Rect = d3.select(rect);
             var d = d3Rect.data()[0];
             var y = d3Rect.attr('y');
@@ -739,9 +739,9 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         chart0.renderTo(div, size);
 
         var svg0 = chart0.getSVG();
-        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(3);
+        expect(svg0.querySelectorAll('.bar').length).to.equals(3);
         var tempOrder = [];
-        d3.select(svg0).selectAll('.bar-stack')[0].forEach(function (rect) {
+        d3.select(svg0).selectAll('.bar')[0].forEach(function (rect) {
             var d3Rect = d3.select(rect);
             var d = d3Rect.data()[0];
             var y = d3Rect.attr('y');
@@ -772,9 +772,9 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         chart0.renderTo(div, size);
 
         var svg0 = chart0.getSVG();
-        expect(svg0.querySelectorAll('.bar-stack').length).to.equals(6);
+        expect(svg0.querySelectorAll('.bar').length).to.equals(6);
         var ws = [];
-        d3.select(svg0).selectAll('.bar-stack')[0].forEach(function (rect) {
+        d3.select(svg0).selectAll('.bar')[0].forEach(function (rect) {
             var d3Rect = d3.select(rect);
             var w = d3Rect.attr('width');
             ws.push(w);
