@@ -9,21 +9,27 @@ export class Area extends BasePath {
 
         super(config);
 
+        // this.config.guide.stack = true;
+
+        var enableStack = this.config.guide.stack;
+
         this.decorators = [
             CartesianGrammar.decorator_orientation,
             CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_group,
             CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && CartesianGrammar.decorator_stack,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
-            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
     }
 
-    buildModel(params) {
+    buildModel(modelGoG, params) {
 
         var self = this;
-        var baseModel = super.buildModel(params);
+        var baseModel = super.buildModel(modelGoG, params);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 

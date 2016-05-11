@@ -371,4 +371,44 @@ export class CartesianGrammar {
 
         return model;
     }
+
+    static toFibers(data, model) {
+        var groups = _.groupBy(data, model.group);
+        return (Object
+            .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b))
+            .reduce((memo, k) => memo.concat([groups[k]]), []));
+    }
+
+    static toNormalizedFibers(data, model) {
+
+        var dx = model.scaleX.dim;
+        var dy = model.scaleY.dim;
+        var dc = model.scaleColor.dim;
+        var ds = model.scaleSplit.dim;
+
+        var sortedData = data.sort((a, b) => model.xi(a) - model.xi(b));
+
+        var xs = _.uniq(sortedData.map((row) => row[dx]), true);
+
+        var gen = (x, fi) => {
+            var r = {};
+            r[dx] = x;
+            r[dy] = 0;
+            r[ds] = fi[ds];
+            r[dc] = fi[dc];
+            return r;
+        };
+
+        var merge = (templateSorted, fiberSorted) => {
+            var fiberGroups = _.groupBy(fiberSorted, (row) => row[dx]);
+            return templateSorted.reduce((memo, k) => memo.concat((fiberGroups[k] || (gen(k, fiberSorted[0])))), []);
+        };
+
+        var groups = _.groupBy(sortedData, model.group);
+        return (Object
+            .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b))
+            .reduce((memo, k) => memo.concat([merge(xs, groups[k])]), []));
+    }
 }

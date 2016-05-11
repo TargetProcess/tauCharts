@@ -27,7 +27,7 @@ export class Line extends BasePath {
         ];
     }
 
-    buildModel(params) {
+    buildModel(pathModel, params) {
 
         var wMax = this.config.options.width;
         var hMax = this.config.options.height;
@@ -48,7 +48,7 @@ export class Line extends BasePath {
             return n;
         };
 
-        var baseModel = super.buildModel(params);
+        var baseModel = super.buildModel(pathModel, params);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
             var by = ((prop) => ((a, b) => (a[prop] - b[prop])));

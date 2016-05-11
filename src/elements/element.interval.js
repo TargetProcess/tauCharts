@@ -52,7 +52,7 @@ export class Interval extends Element {
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
             config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
-            config.adjustPhase && CartesianGrammar.adjustYScale
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -120,10 +120,8 @@ export class Interval extends Element {
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
 
-        var barModel = this.buildModel({
-            colorScale,
-            frames: frames
-        });
+        var modelGoG = this.walkFrames(frames);
+        var barModel = this.buildModel(modelGoG, {colorScale});
 
         var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
         var d3Attrs = (isHorizontal ?
@@ -147,11 +145,9 @@ export class Interval extends Element {
             self.subscribe(bars);
         };
 
-        var groups = _.groupBy(this.convertFramesToData(frames), barModel.group);
-        var fibers = Object
-            .keys(groups)
-            .sort((a, b) => barModel.order(a) - barModel.order(b))
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
+        var data = this.convertFramesToData(frames);
+
+        var fibers = CartesianGrammar.toFibers(data, modelGoG);
 
         var elements = options
             .container
@@ -260,19 +256,17 @@ export class Interval extends Element {
         };
     }
 
-    buildModel({colorScale, frames}) {
-
-        var barModel = this.walkFrames(frames);
+    buildModel(modelGoG, {colorScale}) {
 
         return {
-            barX: ((d) => barModel.xi(d)),
-            barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
-            barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
-            barW: ((d) => barModel.size(d)),
-            barColor: ((d) => colorScale.toColor(barModel.color(d))),
-            barClass: ((d) => colorScale.toClass(barModel.color(d))),
-            group: ((d) => barModel.group(d)),
-            order: ((d) => barModel.order(d))
+            barX: ((d) => modelGoG.xi(d)),
+            barY: ((d) => Math.min(modelGoG.y0(d), modelGoG.yi(d))),
+            barH: ((d) => Math.abs(modelGoG.yi(d) - modelGoG.y0(d))),
+            barW: ((d) => modelGoG.size(d)),
+            barColor: ((d) => colorScale.toColor(modelGoG.color(d))),
+            barClass: ((d) => colorScale.toClass(modelGoG.color(d))),
+            group: ((d) => modelGoG.group(d)),
+            order: ((d) => modelGoG.order(d))
         };
     }
 

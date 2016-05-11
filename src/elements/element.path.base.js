@@ -77,9 +77,7 @@ export class BasePath extends Element {
             .regScale('text', this.text);
     }
 
-    buildModel({colorScale, textScale, frames}) {
-
-        var pathModel = this.walkFrames(frames);
+    buildModel(pathModel, {colorScale, textScale}) {
 
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
@@ -151,12 +149,13 @@ export class BasePath extends Element {
         var options = this.config.options;
 
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
-
-        var model = this.buildModel({
-            colorScale: this.color,
-            textScale: this.text,
-            frames: frames
-        });
+        var pathModel = this.walkFrames(frames);
+        var model = this.buildModel(
+            pathModel,
+            {
+                colorScale: this.color,
+                textScale: this.text
+            });
         this.model = model;
 
         var updateGroupContainer = function () {
@@ -236,11 +235,9 @@ export class BasePath extends Element {
             }
         };
 
-        var groups = _.groupBy(fullData, model.group);
-        var fibers = Object
-            .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
+        var fibers = this.config.guide.stack ?
+            CartesianGrammar.toNormalizedFibers(fullData, pathModel) :
+            CartesianGrammar.toFibers(fullData, pathModel);
 
         var frameGroups = options
             .container

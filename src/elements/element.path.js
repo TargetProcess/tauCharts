@@ -17,10 +17,10 @@ export class Path extends BasePath {
         ];
     }
 
-    buildModel(params) {
+    buildModel(pathModel, params) {
 
         var self = this;
-        var baseModel = super.buildModel(params);
+        var baseModel = super.buildModel(pathModel, params);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
