@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
-import {PathModel} from '../models/path';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -19,11 +19,11 @@ export class Line extends BasePath {
             });
 
         this.decorators = [
-            PathModel.decorator_orientation,
-            PathModel.decorator_group,
-            PathModel.decorator_size,
-            PathModel.decorator_color,
-            config.adjustPhase && PathModel.adjustSizeScale
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
         ];
     }
 

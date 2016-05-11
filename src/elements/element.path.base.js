@@ -1,5 +1,5 @@
 import {Element} from './element';
-import {PathModel} from '../models/path';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
@@ -134,7 +134,7 @@ export class BasePath extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PathModel({
+            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,

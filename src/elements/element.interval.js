@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {IntervalModel} from '../models/interval';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {default as _} from 'underscore';
 
 export class Interval extends Element {
@@ -43,15 +43,16 @@ export class Interval extends Element {
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
 
         this.decorators = [
-            IntervalModel.decorator_orientation,
-            IntervalModel.decorator_group,
-            IntervalModel.decorator_groupOrderByColor,
-            enableStack && IntervalModel.decorator_stack,
-            enableColorPositioning && IntervalModel.decorator_positioningByColor,
-            IntervalModel.decorator_dynamic_size,
-            IntervalModel.decorator_color,
-            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
-            config.adjustPhase && IntervalModel.adjustYScale
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByColor,
+            enableStack && CartesianGrammar.decorator_stack,
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
+            config.adjustPhase && CartesianGrammar.adjustYScale
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -92,7 +93,7 @@ export class Interval extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new IntervalModel({
+            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,

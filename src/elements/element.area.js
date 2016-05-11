@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
-import {PathModel} from '../models/path';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 
 export class Area extends BasePath {
 
@@ -10,13 +10,13 @@ export class Area extends BasePath {
         super(config);
 
         this.decorators = [
-            PathModel.decorator_orientation,
-            PathModel.decorator_group,
-            PathModel.decorator_groupOrderByAvg,
-            PathModel.decorator_size,
-            PathModel.decorator_color,
-            PathModel.decorator_groundY0,
-            config.adjustPhase && PathModel.adjustSizeScale
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByAvg,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
         ];
     }
 

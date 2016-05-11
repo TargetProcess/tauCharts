@@ -1,5 +1,5 @@
 import {CSS_PREFIX} from '../const';
-import {PathModel} from '../models/path';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 
@@ -9,11 +9,11 @@ export class Path extends BasePath {
         super(config);
 
         this.decorators = [
-            PathModel.decorator_orientation,
-            PathModel.decorator_group,
-            PathModel.decorator_size,
-            PathModel.decorator_color,
-            config.adjustPhase && PathModel.adjustSizeScale
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
         ];
     }
 
