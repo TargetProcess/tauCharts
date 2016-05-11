@@ -7,7 +7,7 @@ import {default as d3} from 'd3';
 
 export class BasePath extends Element {
 
-    constructor(config, decorators) {
+    constructor(config) {
 
         super(config);
 
@@ -43,15 +43,7 @@ export class BasePath extends Element {
                 defMaxSize: (this.isEmptySize ? 6 : 40)
             });
 
-        this.decorators = []
-            .concat([
-                PathModel.decorator_orientation,
-                PathModel.decorator_group,
-                PathModel.decorator_size,
-                PathModel.decorator_color
-            ])
-            .concat(decorators)
-            .concat(config.adjustPhase && PathModel.adjustSizeScale);
+        this.decorators = [];
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));

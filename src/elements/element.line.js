@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
+import {PathModel} from '../models/path';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -16,6 +17,14 @@ export class Line extends BasePath {
             {
                 interpolate: 'linear'
             });
+
+        this.decorators = [
+            PathModel.decorator_orientation,
+            PathModel.decorator_group,
+            PathModel.decorator_size,
+            PathModel.decorator_color,
+            config.adjustPhase && PathModel.adjustSizeScale
+        ];
     }
 
     buildModel(params) {

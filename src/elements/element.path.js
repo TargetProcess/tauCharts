@@ -1,4 +1,5 @@
 import {CSS_PREFIX} from '../const';
+import {PathModel} from '../models/path';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 
@@ -6,6 +7,14 @@ export class Path extends BasePath {
 
     constructor(config) {
         super(config);
+
+        this.decorators = [
+            PathModel.decorator_orientation,
+            PathModel.decorator_group,
+            PathModel.decorator_size,
+            PathModel.decorator_color,
+            config.adjustPhase && PathModel.adjustSizeScale
+        ];
     }
 
     buildModel(params) {

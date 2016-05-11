@@ -6,10 +6,18 @@ import {PathModel} from '../models/path';
 export class Area extends BasePath {
 
     constructor(config) {
-        super(config, [
+
+        super(config);
+
+        this.decorators = [
+            PathModel.decorator_orientation,
+            PathModel.decorator_group,
             PathModel.decorator_groupOrderByAvg,
-            PathModel.decorator_groundY0
-        ]);
+            PathModel.decorator_size,
+            PathModel.decorator_color,
+            PathModel.decorator_groundY0,
+            config.adjustPhase && PathModel.adjustSizeScale
+        ];
     }
 
     buildModel(params) {
