@@ -10,18 +10,20 @@ export class Point extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = this.config.guide || {};
 
-        var defaultMinLimit = 10;
-        // TODO: fix when pass scales to constructor
-        var defaultMaxLimit = this.isEmptySize ? 10 : 40;
+        this.config.guide = _.defaults(
+            (this.config.guide || {}),
+            {
+                prettify: true,
+                enableColorToBarPosition: false
+            });
 
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
-                defMinSize: defaultMinLimit,
-                defMaxSize: defaultMaxLimit,
-                enableDistributeEvenly: true
+                defMinSize: 10,
+                defMaxSize: this.isEmptySize ? 10 : 40, // TODO: fix when pass scales to constructor
+                enableDistributeEvenly: !this.isEmptySize
             });
 
         this.defMin = config.guide.size.defMinSize;
@@ -31,13 +33,20 @@ export class Point extends Element {
 
         this.isHorizontal = false;
 
-        var distributeEvenly = !this.isEmptySize && config.guide.size.enableDistributeEvenly;
+        var enableStack = this.config.guide.stack;
+        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+
         this.decorators = [
             CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_group,
+            enableStack && CartesianGrammar.decorator_stack,
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
-            config.adjustPhase && (distributeEvenly ?
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
+            config.adjustPhase && (enableDistributeEvenly ?
                 CartesianGrammar.adjustSigmaSizeScale :
                 CartesianGrammar.adjustStaticSizeScale)
         ];

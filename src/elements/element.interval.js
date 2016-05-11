@@ -12,7 +12,6 @@ export class Interval extends Element {
         this.config = config;
 
         this.config.guide = (this.config.guide || {});
-
         this.config.guide = _.defaults(
             (this.config.guide),
             {
@@ -20,15 +19,12 @@ export class Interval extends Element {
                 enableColorToBarPosition: this.config.guide.stack ? false : true
             });
 
-        var defaultMinLimit = this.config.guide.prettify ? 3 : 0;
-        var defaultMaxLimit = this.config.guide.prettify ? 40 : Number.MAX_VALUE;
-
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
                 enableDistributeEvenly: true,
-                defMinSize: defaultMinLimit,
-                defMaxSize: defaultMaxLimit
+                defMinSize: this.config.guide.prettify ? 3 : 0,
+                defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
             });
 
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
