@@ -10,11 +10,14 @@ export class Interval extends Element {
         super(config);
 
         this.config = config;
+
+        this.config.guide = (this.config.guide || {});
+
         this.config.guide = _.defaults(
-            (this.config.guide || {}),
+            (this.config.guide),
             {
                 prettify: true,
-                enableColorToBarPosition: true
+                enableColorToBarPosition: this.config.guide.stack ? false : true
             });
 
         var defaultMinLimit = this.config.guide.prettify ? 3 : 0;
@@ -35,16 +38,20 @@ export class Interval extends Element {
         this.minLimit = config.guide.size.minSize;
         this.maxLimit = config.guide.size.maxSize;
 
+        var enableStack = this.config.guide.stack;
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+
         this.decorators = [
             IntervalModel.decorator_orientation,
             IntervalModel.decorator_group,
             IntervalModel.decorator_groupOrderByColor,
+            enableStack && IntervalModel.decorator_stack,
             enableColorPositioning && IntervalModel.decorator_positioningByColor,
-            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
             IntervalModel.decorator_dynamic_size,
-            IntervalModel.decorator_color
+            IntervalModel.decorator_color,
+            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
+            config.adjustPhase && IntervalModel.adjustYScale
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));

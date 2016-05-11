@@ -1,4 +1,5 @@
 import {default as _} from 'underscore';
+import {TauChartError as Error, errorCodes} from './../error';
 
 const delimiter = '(@taucharts@)';
 
@@ -114,6 +115,13 @@ export class IntervalModel {
 
         var xScale = model.scaleX;
         var yScale = model.scaleY;
+
+        if (yScale.discrete || (yScale.domain().some((x) => typeof (x) !== 'number'))) {
+            throw new Error(
+                `Stacked field [${yScale.dim}] should be a number`,
+                errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART
+            );
+        }
 
         var createFnStack = (totalState) => {
             return ((d) => {
