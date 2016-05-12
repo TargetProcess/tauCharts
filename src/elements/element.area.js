@@ -66,7 +66,7 @@ export class Area extends BasePath {
                 var ways = fiber
                     .reduce((memo, d) => {
                         memo.dir.push([baseModel.x(d), baseModel.y(d)]);
-                        memo.rev.push([baseModel.x(d), baseModel.y0(d)]);
+                        memo.rev.push([baseModel.x0(d), baseModel.y0(d)]);
                         return memo;
                     },
                     {

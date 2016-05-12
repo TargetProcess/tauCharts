@@ -191,6 +191,7 @@
                                     y: "x_product_name",
                                     x: "y_param1",
                                     color: "color_undefined",
+                                    flip: true,
                                     expression: {
                                         inherit: false,
                                         operator: "none",
@@ -198,7 +199,6 @@
                                         source: "/"
                                     },
                                     guide: {
-                                        flip: true,
                                         anchors: false,
                                         cssClass: "i-role-datum",
                                         showGridLines: "xy",
@@ -232,6 +232,7 @@
                                     type: "ELEMENT.INTERVAL",
                                     y: "x_product_name",
                                     x: "y_param2",
+                                    flip: true,
                                     color: "color_undefined",
                                     expression: {
                                         inherit: false,
@@ -240,7 +241,6 @@
                                         source: "/"
                                     },
                                     guide: {
-                                        flip: true,
                                         anchors: false,
                                         cssClass: "i-role-datum",
                                         showGridLines: "xy",
@@ -284,7 +284,6 @@
                                         source: "STACKED"
                                     },
                                     guide: {
-                                        flip: true,
                                         anchors: false,
                                         cssClass: "i-role-datum",
                                         showGridLines: "xy",

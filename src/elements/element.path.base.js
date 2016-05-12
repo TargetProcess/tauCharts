@@ -82,15 +82,18 @@ export class BasePath extends Element {
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
 
+        var flip = this.config.flip;
+        var choose = ((statement, yes, no) => statement ? yes : no);
         var kRound = 10000;
         var baseModel = {
             scaleX: pathModel.scaleX,
             scaleY: pathModel.scaleY,
             scaleColor: colorScale,
             scaleText: textScale,
-            x: pathModel.xi,
-            y: pathModel.yi,
-            y0: pathModel.y0,
+            x: choose(flip, pathModel.yi, pathModel.xi),
+            x0: choose(flip, pathModel.y0, pathModel.xi),
+            y: choose(flip, pathModel.xi, pathModel.yi),
+            y0: choose(flip, pathModel.xi, pathModel.y0),
             size: pathModel.size,
             group: pathModel.group,
             order: pathModel.order,
