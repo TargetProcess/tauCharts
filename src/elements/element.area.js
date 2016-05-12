@@ -9,9 +9,7 @@ export class Area extends BasePath {
 
         super(config);
 
-        // this.config.guide.stack = true;
-
-        var enableStack = this.config.guide.stack;
+        var enableStack = this.config.stack;
 
         this.decorators = [
             CartesianGrammar.decorator_orientation,
@@ -86,7 +84,6 @@ export class Area extends BasePath {
     }
 
     getDistance(mx, my, rx, ry) {
-        var guide = this.config.guide;
-        return (guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx));
+        return (this.config.flip ? Math.abs(my - ry) : Math.abs(mx - rx));
     }
 }

@@ -514,7 +514,8 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     y: 'y',
                     unit: [
                         {
-                            type: 'ELEMENT.INTERVAL.STACKED',
+                            type: 'ELEMENT.INTERVAL',
+                            stack: true,
                             x: 'x',
                             y: 'y'
                         }
@@ -674,7 +675,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
         expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
 
-        var intervalNode = chart.select((n) => n.config.type === 'ELEMENT.INTERVAL.STACKED')[0];
+        var intervalNode = chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
         intervalNode.fire('highlight', ((row) => (row.s > 0)));
 
         var svg1 = chart.getSVG();

@@ -17,10 +17,10 @@ var createElement = (type, config) => {
         split: config.split,
         guide: {
             color: config.colorGuide,
-            size: config.sizeGuide,
-            flip: config.flip
+            size: config.sizeGuide
         },
         flip: config.flip,
+        stack: config.stack,
         size: config.size,
         text: config.text
     };
@@ -144,6 +144,7 @@ function transformConfig(type, config) {
                 text: config.text,
                 size: config.size,
                 flip: config.flip,
+                stack: config.stack,
                 colorGuide: currentGuide.color,
                 sizeGuide: currentGuide.size
             }));

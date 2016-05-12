@@ -50,7 +50,7 @@ define(function (require) {
                 .deep
                 .equal(['A2', 'B1', 'A1', 'B2', 'A0', 'B0']);
             expect(spec.unit.units[0].type).to.equal('ELEMENT.AREA');
-            expect(spec.unit.units[0].guide.flip).to.equal(false);
+            expect(spec.unit.units[0].flip).to.equal(false);
         });
 
         it('should sort data by Y if there is a func relation', function () {
@@ -76,7 +76,7 @@ define(function (require) {
                 .deep
                 .equal(['A2', 'B1', 'A1', 'B2', 'A0', 'B0']);
             expect(spec.unit.units[0].type).to.equal('ELEMENT.AREA');
-            expect(spec.unit.units[0].guide.flip).to.equal(true);
+            expect(spec.unit.units[0].flip).to.equal(true);
         });
 
         it('should sort data by X if [flip = false]', function () {
@@ -103,7 +103,7 @@ define(function (require) {
                 .deep
                 .equal(['A0', 'A2', 'B0', 'B1', 'A1', 'B2']);
             expect(spec.unit.units[0].type).to.equal('ELEMENT.AREA');
-            expect(spec.unit.units[0].guide.flip).to.equal(false);
+            expect(spec.unit.units[0].flip).to.equal(false);
         });
 
         it('should sort data by Y if [flip = true]', function () {

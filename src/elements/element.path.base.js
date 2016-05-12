@@ -121,7 +121,7 @@ export class BasePath extends Element {
     walkFrames(frames) {
 
         var args = {
-            textScale: this.text,
+            isHorizontal: this.config.flip,
             defMin: this.config.guide.size.defMinSize,
             defMax: this.config.guide.size.defMaxSize,
             minLimit: this.config.guide.size.minSize,
@@ -235,7 +235,7 @@ export class BasePath extends Element {
             }
         };
 
-        var fibers = this.config.guide.stack ?
+        var fibers = this.config.stack ?
             CartesianGrammar.toNormalizedFibers(fullData, pathModel) :
             CartesianGrammar.toFibers(fullData, pathModel);
 

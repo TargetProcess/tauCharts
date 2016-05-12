@@ -270,7 +270,8 @@
                             guide: createSampleGuide('C1', 'Product name'),
                             units: [
                                 {
-                                    type: "ELEMENT.INTERVAL.STACKED",
+                                    type: "ELEMENT.INTERVAL",
+                                    stack: true,
                                     flip: true,
                                     y: "x_product_name",
                                     x: "stacked_m1",

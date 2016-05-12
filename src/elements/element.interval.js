@@ -11,12 +11,13 @@ export class Interval extends Element {
 
         this.config = config;
 
+        var enableStack = this.config.stack;
         this.config.guide = (this.config.guide || {});
         this.config.guide = _.defaults(
             (this.config.guide),
             {
                 prettify: true,
-                enableColorToBarPosition: this.config.guide.stack ? false : true
+                enableColorToBarPosition: !enableStack
             });
 
         this.config.guide.size = _.defaults(
@@ -34,7 +35,6 @@ export class Interval extends Element {
         this.minLimit = config.guide.size.minSize;
         this.maxLimit = config.guide.size.maxSize;
 
-        var enableStack = this.config.guide.stack;
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
 
@@ -75,10 +75,8 @@ export class Interval extends Element {
 
     walkFrames(frames) {
 
-        var config = this.config;
-        var isHorizontal = config.flip || config.guide.flip;
         var args = {
-            isHorizontal,
+            isHorizontal: this.config.flip,
             minLimit: this.minLimit,
             maxLimit: this.maxLimit,
             defMin: this.defMin,
@@ -112,7 +110,7 @@ export class Interval extends Element {
         var xScale = this.xScale;
         var yScale = this.yScale;
         var colorScale = this.color;
-        var isHorizontal = config.flip || config.guide.flip;
+        var isHorizontal = config.flip;
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
 

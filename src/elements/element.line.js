@@ -11,7 +11,8 @@ export class Line extends BasePath {
 
         super(config);
 
-        this.config = config;
+        var enableStack = this.config.stack;
+
         this.config.guide = _.defaults(
             (this.config.guide || {}),
             {
@@ -20,10 +21,14 @@ export class Line extends BasePath {
 
         this.decorators = [
             CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && CartesianGrammar.decorator_stack,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
-            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
     }
 
