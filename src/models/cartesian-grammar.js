@@ -6,13 +6,13 @@ const synthetic = 'taucharts_synthetic_record';
 
 export class CartesianGrammar {
 
-    constructor(model = {}) {
+    constructor(model) {
         var createFunc = ((x) => (() => x));
-        this.scaleX = model.scaleX || null;
-        this.scaleY = model.scaleY || null;
-        this.scaleSize = model.scaleSize || null;
-        this.scaleColor = model.scaleColor || null;
-        this.scaleSplit = model.scaleSplit || null;
+        this.scaleX = model.scaleX;
+        this.scaleY = model.scaleY;
+        this.scaleSize = model.scaleSize;
+        this.scaleColor = model.scaleColor;
+        this.scaleSplit = model.scaleSplit;
 
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
@@ -166,7 +166,7 @@ export class CartesianGrammar {
                 var x = d[xScale.dim];
                 var y = d[yScale.dim];
 
-                var isPositive = (y >= 0);
+                var isPositive = d[synthetic] ? (d[synthetic + 'sign'] === 'positive') : (y >= 0);
                 var state = (isPositive ? totalState.positive : totalState.negative);
 
                 let prevStack = (state[x] || 0);
@@ -390,27 +390,33 @@ export class CartesianGrammar {
 
         var xs = _.uniq(sortedData.map((row) => row[dx]), true);
 
-        var sign = ((row) => (row[dy] >= 0 ? 'pos' : 'neg'));
+        var sign = ((row) => ((row[dy] >= 0) ? 'positive' : 'negative'));
 
-        var gen = (x, fi) => {
+        var gen = (x, fi, sign) => {
             var r = {};
             r[dx] = x;
             r[dy] = 0;
             r[ds] = fi[ds];
             r[dc] = fi[dc];
             r[synthetic] = true;
+            r[synthetic + 'sign'] = sign; // positive / negative
             return r;
         };
 
-        var merge = (templateSorted, fiberSorted) => {
-            var fiberGroups = _.groupBy(fiberSorted, (row) => row[dx]);
-            return templateSorted.reduce((memo, k) => memo.concat((fiberGroups[k] || (gen(k, fiberSorted[0])))), []);
+        var merge = (templateSorted, fiberSorted, sign) => {
+            var groups = _.groupBy(fiberSorted, (row) => row[dx]);
+            var sample = fiberSorted[0];
+            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
         };
 
-        var groups = _.groupBy(sortedData, (r) => `${model.group(r)}/${sign(r)}`);
+        var groups = _.groupBy(sortedData, model.group);
         return (Object
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => memo.concat([merge(xs, groups[k])]), []));
+            .reduce((memo, k) => {
+                var bySign = _.groupBy(groups[k], sign);
+                return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
+            },
+            []));
     }
 }

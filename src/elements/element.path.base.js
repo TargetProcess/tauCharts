@@ -263,18 +263,21 @@ export class BasePath extends Element {
 
         var container = this.config.options.container;
 
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
         container
             .selectAll('.i-role-path')
             .classed({
-                'graphical-report__highlighted': ((fiber) => filter(fiber[0]) === true),
-                'graphical-report__dimmed': ((fiber) => filter(fiber[0]) === false)
+                [x]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === true),
+                [_]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === false)
             });
 
         container
             .selectAll('.i-role-dot')
             .classed({
-                'graphical-report__highlighted': ((d) => filter(d) === true),
-                'graphical-report__dimmed': ((d) => filter(d) === false)
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
             });
     }
 

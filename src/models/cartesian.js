@@ -1,12 +1,11 @@
 export class CartesianModel {
 
-    constructor(model = {}) {
+    constructor(model) {
         var createFunc = ((x) => (() => x));
-        this.scaleX = model.scaleX || null;
-        this.scaleY = model.scaleY || null;
+        this.scaleX = model.scaleX;
+        this.scaleY = model.scaleY;
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
-        this.color = model.color || createFunc('');
         this.sizeX = model.sizeX || createFunc(0);
         this.sizeY = model.sizeY || createFunc(0);
     }
@@ -21,10 +20,6 @@ export class CartesianModel {
             (new CartesianModel(prev))));
     }
 
-    static decorator_identity(model) {
-        return CartesianModel.compose(model);
-    }
-
     static decorator_size(model, {}) {
         var sx = model.scaleX;
         var sy = model.scaleY;
@@ -34,10 +29,5 @@ export class CartesianModel {
             sizeX: ((d) => (!d ? model.sizeX(d) : sx.stepSize(d[sx.dim]))),
             sizeY: ((d) => (!d ? model.sizeY(d) : sy.stepSize(d[sy.dim])))
         });
-    }
-
-    static decorator_color(model, {}) {
-        // TODO: point to implement colored coordinates
-        return CartesianModel.compose(model, {});
     }
 }
