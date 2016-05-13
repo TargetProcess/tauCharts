@@ -2,6 +2,7 @@ import {default as _} from 'underscore';
 import {TauChartError as Error, errorCodes} from './../error';
 
 const delimiter = '(@taucharts@)';
+const synthetic = 'taucharts_synthetic_record';
 
 export class CartesianGrammar {
 
@@ -374,7 +375,11 @@ export class CartesianGrammar {
             .reduce((memo, k) => memo.concat([groups[k]]), []));
     }
 
-    static toNormalizedFibers(data, model) {
+    static isNonSyntheticRecord(row) {
+        return row[synthetic] !== true;
+    }
+
+    static toStackedFibers(data, model) {
 
         var dx = model.scaleX.dim;
         var dy = model.scaleY.dim;
@@ -385,12 +390,15 @@ export class CartesianGrammar {
 
         var xs = _.uniq(sortedData.map((row) => row[dx]), true);
 
+        var sign = ((row) => (row[dy] >= 0 ? 'pos' : 'neg'));
+
         var gen = (x, fi) => {
             var r = {};
             r[dx] = x;
             r[dy] = 0;
             r[ds] = fi[ds];
             r[dc] = fi[dc];
+            r[synthetic] = true;
             return r;
         };
 
@@ -399,7 +407,7 @@ export class CartesianGrammar {
             return templateSorted.reduce((memo, k) => memo.concat((fiberGroups[k] || (gen(k, fiberSorted[0])))), []);
         };
 
-        var groups = _.groupBy(sortedData, model.group);
+        var groups = _.groupBy(sortedData, (r) => `${model.group(r)}/${sign(r)}`);
         return (Object
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))

@@ -72,6 +72,10 @@ export class Line extends BasePath {
                     };
                 });
 
+            // double for consistency in case of
+            // (vertices.length === 1)
+            vertices.push(vertices[0]);
+
             var pair = _
                 .times((vertices.length - 1), (i) => i)
                 .map((edge) => {

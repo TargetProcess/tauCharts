@@ -195,7 +195,9 @@ export class BasePath extends Element {
 
             self.subscribe(series, function (rows) {
                 var m = d3.mouse(this);
-                return model.matchRowInCoordinates(rows, {x: m[0], y: m[1]});
+                return model.matchRowInCoordinates(
+                    rows.filter(CartesianGrammar.isNonSyntheticRecord),
+                    {x: m[0], y: m[1]});
             });
 
             if (guide.color.fill && !model.scaleColor.dim) {
@@ -216,7 +218,7 @@ export class BasePath extends Element {
 
                 let dots = this
                     .selectAll('.i-data-anchor')
-                    .data((fiber) => fiber);
+                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord));
                 dots.exit()
                     .remove();
                 dots.attr(attr);
@@ -239,7 +241,7 @@ export class BasePath extends Element {
         };
 
         var fibers = this.config.stack ?
-            CartesianGrammar.toNormalizedFibers(fullData, pathModel) :
+            CartesianGrammar.toStackedFibers(fullData, pathModel) :
             CartesianGrammar.toFibers(fullData, pathModel);
 
         var frameGroups = options
