@@ -189,14 +189,8 @@ export class CartesianGrammar {
         })));
 
         return CartesianGrammar.compose(model, {
-            yi: memoize((d) => {
-                var {isPositive, nextStack, prevStack} = stackYi(d);
-                return yScale.value(isPositive ? nextStack : prevStack);
-            }),
-            y0: memoize((d) => {
-                var {isPositive, nextStack, prevStack} = stackY0(d);
-                return yScale.value(isPositive ? prevStack : nextStack);
-            })
+            yi: memoize((d) => yScale.value(stackYi(d).nextStack)),
+            y0: memoize((d) => yScale.value(stackY0(d).prevStack))
         });
     }
 
