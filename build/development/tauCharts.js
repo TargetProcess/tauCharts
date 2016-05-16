@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.1-beta.0 - 2016-05-05
+/*! taucharts - v0.9.1-beta.1 - 2016-05-16
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -1985,7 +1985,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            defMaxSize: _this.isEmptySize ? 6 : 40
 	        });
 
-	        _this.decorators = [].concat([_path.PathModel.decorator_orientation, _path.PathModel.decorator_group, _path.PathModel.decorator_size, _path.PathModel.decorator_color]).concat(decorators).concat(_path.PathModel.adjustSizeScale);
+	        _this.decorators = [].concat([_path.PathModel.decorator_orientation, _path.PathModel.decorator_group, _path.PathModel.decorator_size, _path.PathModel.decorator_color]).concat(decorators).concat(config.adjustPhase && _path.PathModel.adjustSizeScale);
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2032,9 +2032,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function buildModel(_ref) {
 	            var colorScale = _ref.colorScale;
 	            var textScale = _ref.textScale;
+	            var frames = _ref.frames;
 
 
-	            var pathModel = this.walkFrames();
+	            var pathModel = this.walkFrames(frames);
 
 	            var datumClass = 'i-role-datum';
 	            var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-dot ' + datumClass + ' ' + _const.CSS_PREFIX + 'dot ';
@@ -2050,6 +2051,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                y0: pathModel.y0,
 	                size: pathModel.size,
 	                group: pathModel.group,
+	                order: pathModel.order,
 	                color: function color(d) {
 	                    return colorScale.toColor(pathModel.color(d));
 	                },
@@ -2091,14 +2093,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'walkFrames',
-	        value: function walkFrames() {
+	        value: function walkFrames(frames) {
 
 	            var args = {
 	                textScale: this.text,
 	                defMin: this.config.guide.size.defMinSize,
 	                defMax: this.config.guide.size.defMaxSize,
 	                minLimit: this.config.guide.size.minSize,
-	                maxLimit: this.config.guide.size.maxSize
+	                maxLimit: this.config.guide.size.maxSize,
+	                dataSource: frames.reduce(function (memo, f) {
+	                    return memo.concat(f.part());
+	                }, [])
 	            };
 
 	            return this.decorators.filter(function (x) {
@@ -2128,7 +2133,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var model = this.buildModel({
 	                colorScale: this.color,
-	                textScale: this.text
+	                textScale: this.text,
+	                frames: frames
 	            });
 	            this.model = model;
 
@@ -2203,7 +2209,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var groups = _underscore2.default.groupBy(fullData, model.group);
-	            var fibers = Object.keys(groups).reduce(function (memo, k) {
+	            var fibers = Object.keys(groups).sort(function (a, b) {
+	                return model.order(a) - model.order(b);
+	            }).reduce(function (memo, k) {
 	                return memo.concat([groups[k]]);
 	            }, []);
 
@@ -2300,6 +2308,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.size = model.size || createFunc(1);
 	        this.color = model.color || createFunc('');
 	        this.group = model.group || createFunc('');
+	        this.order = model.order || createFunc(0);
 	    }
 
 	    _createClass(PathModel, null, [{
@@ -2375,9 +2384,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }
 	    }, {
+	        key: 'decorator_groupOrderByAvg',
+	        value: function decorator_groupOrderByAvg(model, _ref5) {
+	            var dataSource = _ref5.dataSource;
+
+
+	            var avg = function avg(arr) {
+	                return arr.map(model.yi).reduce(function (sum, i) {
+	                    return sum + i;
+	                }, 0) / arr.length;
+	            };
+
+	            var groups = dataSource.reduce(function (memo, row) {
+	                var k = model.group(row);
+	                memo[k] = memo[k] || [];
+	                memo[k].push(row);
+	                return memo;
+	            }, {});
+
+	            var _order = Object.keys(groups).map(function (k) {
+	                return [k, avg(groups[k])];
+	            }).sort(function (a, b) {
+	                return a[1] - b[1];
+	            }).map(function (r) {
+	                return r[0];
+	            });
+
+	            return PathModel.compose(model, {
+	                order: function order(group) {
+	                    var i = _order.indexOf(group);
+	                    return i < 0 ? Number.MAX_VALUE : i;
+	                }
+	            });
+	        }
+	    }, {
 	        key: 'decorator_groundY0',
-	        value: function decorator_groundY0(model, _ref5) {
-	            _objectDestructuringEmpty(_ref5);
+	        value: function decorator_groundY0(model, _ref6) {
+	            _objectDestructuringEmpty(_ref6);
 
 	            var ys = model.scaleY.domain();
 	            var min = ys[0];
@@ -2395,11 +2438,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'adjustSizeScale',
-	        value: function adjustSizeScale(model, _ref6) {
-	            var minLimit = _ref6.minLimit;
-	            var maxLimit = _ref6.maxLimit;
-	            var defMin = _ref6.defMin;
-	            var defMax = _ref6.defMax;
+	        value: function adjustSizeScale(model, _ref7) {
+	            var minLimit = _ref7.minLimit;
+	            var maxLimit = _ref7.maxLimit;
+	            var defMin = _ref7.defMin;
+	            var defMax = _ref7.defMax;
 
 
 	            var curr = {
@@ -2624,7 +2667,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_interval.IntervalModel.decorator_orientation, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color];
+	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_group, _interval.IntervalModel.decorator_groupOrderByColor, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2641,8 +2684,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
 	            this.color = fnCreateScale('color', config.color, {});
 	            this.size = fnCreateScale('size', config.size, {});
+	            this.split = fnCreateScale('split', config.split, {});
+	            this.text = fnCreateScale('text', config.text, {});
 
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
+	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('text', this.text);
 	        }
 	    }, {
 	        key: 'walkFrames',
@@ -2666,33 +2711,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, new _interval.IntervalModel({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
+	                scaleSize: this.size,
 	                scaleColor: this.color,
-	                scaleSize: this.size
+	                scaleSplit: this.split
 	            }));
-	        }
-	    }, {
-	        key: 'getColorIndex',
-	        value: function getColorIndex() {
-	            var colorScale = this.color;
-	            var colorsOrder = colorScale.domain().reduce(function (memo, x, i) {
-	                memo[x] = i;
-	                return memo;
-	            }, {});
-
-	            return function (row) {
-	                var c = row[colorScale.dim];
-	                return colorsOrder.hasOwnProperty(c) ? colorsOrder[c] : Number.MAX_VALUE;
-	            };
 	        }
 	    }, {
 	        key: 'convertFramesToData',
 	        value: function convertFramesToData(frames) {
-	            var colorIndex = this.getColorIndex();
 	            return frames.reduce(function (memo, f) {
 	                return memo.concat(f.part());
-	            }, []).sort(function (a, b) {
-	                return colorIndex(a) - colorIndex(b);
-	            });
+	            }, []);
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -2735,7 +2764,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var groups = _underscore2.default.groupBy(this.convertFramesToData(frames), barModel.group);
-	            var fibers = Object.keys(groups).reduce(function (memo, k) {
+	            var fibers = Object.keys(groups).sort(function (a, b) {
+	                return barModel.order(a) - barModel.order(b);
+	            }).reduce(function (memo, k) {
 	                return memo.concat([groups[k]]);
 	            }, []);
 
@@ -2909,7 +2940,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return colorScale.toClass(barModel.color(d));
 	                },
 	                group: function group(d) {
-	                    return d[colorScale.dim];
+	                    return barModel.group(d);
+	                },
+	                order: function order(d) {
+	                    return barModel.order(d);
 	                }
 	            };
 	        }
@@ -2956,6 +2990,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+	var delimiter = '(@taucharts@)';
+
 	var IntervalModel = exports.IntervalModel = function () {
 	    function IntervalModel() {
 	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -2971,12 +3007,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.scaleY = model.scaleY || null;
 	        this.scaleSize = model.scaleSize || null;
 	        this.scaleColor = model.scaleColor || null;
+	        this.scaleSplit = model.scaleSplit || null;
 
 	        this.y0 = model.y0 || createFunc(0);
 	        this.yi = model.yi || createFunc(0);
 	        this.xi = model.xi || createFunc(0);
 	        this.size = model.size || createFunc(1);
 	        this.color = model.color || createFunc('');
+	        this.group = model.group || createFunc('');
+	        this.order = model.order || createFunc(0);
 	    }
 
 	    _createClass(IntervalModel, null, [{
@@ -3076,9 +3115,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }
 	    }, {
-	        key: 'decorator_stack',
-	        value: function decorator_stack(model, _ref5) {
+	        key: 'decorator_group',
+	        value: function decorator_group(model, _ref5) {
 	            _objectDestructuringEmpty(_ref5);
+
+	            return IntervalModel.compose(model, {
+	                group: function group(d) {
+	                    return '' + d[model.scaleColor.dim] + delimiter + d[model.scaleSplit.dim];
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_groupOrderByColor',
+	        value: function decorator_groupOrderByColor(model, _ref6) {
+	            _objectDestructuringEmpty(_ref6);
+
+	            var _order = model.scaleColor.domain();
+
+	            return IntervalModel.compose(model, {
+	                order: function order(group) {
+	                    var color = group.split(delimiter)[0];
+	                    var i = _order.indexOf(color);
+	                    return i < 0 ? Number.MAX_VALUE : i;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_stack',
+	        value: function decorator_stack(model, _ref7) {
+	            _objectDestructuringEmpty(_ref7);
 
 	            var xScale = model.scaleX;
 	            var yScale = model.scaleY;
@@ -3136,12 +3201,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'decorator_size_distribute_evenly',
-	        value: function decorator_size_distribute_evenly(model, _ref6) {
-	            var dataSource = _ref6.dataSource;
-	            var minLimit = _ref6.minLimit;
-	            var maxLimit = _ref6.maxLimit;
-	            var defMin = _ref6.defMin;
-	            var defMax = _ref6.defMax;
+	        value: function decorator_size_distribute_evenly(model, _ref8) {
+	            var dataSource = _ref8.dataSource;
+	            var minLimit = _ref8.minLimit;
+	            var maxLimit = _ref8.maxLimit;
+	            var defMin = _ref8.defMin;
+	            var defMax = _ref8.defMax;
 
 
 	            var asc = function asc(a, b) {
@@ -3192,8 +3257,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'adjustYScale',
-	        value: function adjustYScale(model, _ref7) {
-	            var dataSource = _ref7.dataSource;
+	        value: function adjustYScale(model, _ref9) {
+	            var dataSource = _ref9.dataSource;
 
 
 	            var minY = Number.MAX_VALUE;
@@ -3278,7 +3343,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_stack, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, config.adjustPhase && _interval.IntervalModel.adjustYScale];
+	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_group, _interval.IntervalModel.decorator_groupOrderByColor, _interval.IntervalModel.decorator_stack, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, config.adjustPhase && _interval.IntervalModel.adjustYScale];
 	        return _this;
 	    }
 
@@ -3397,7 +3462,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function GPL(config, scalesRegistryInstance, unitsRegistry) {
 	        _classCallCheck(this, GPL);
 
+	        // jscs:disable
+
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GPL).call(this));
+
+	        _underscore2.default.defaults(config.scales, {
+	            'split_null': { type: 'value', source: '?' },
+	            'text_null': { type: 'value', source: '?' },
+	            'split:default': { type: 'value', source: '?' },
+	            'text:default': { type: 'value', source: '?' }
+	        });
+	        // jscs:enable
 
 	        _this.config = config;
 
@@ -10099,7 +10174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Area(config) {
 	        _classCallCheck(this, Area);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config, [_path.PathModel.decorator_groundY0]));
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config, [_path.PathModel.decorator_groupOrderByAvg, _path.PathModel.decorator_groundY0]));
 	    }
 
 	    _createClass(Area, [{
@@ -11192,8 +11267,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            if (vars[0] - vars[1] === 0) {
-	                var oneHour = 60 * 60 * 1000;
-	                vars = [new Date(vars[0].getTime() - oneHour), new Date(vars[1].getTime() + oneHour)];
+	                var oneDay = 24 * 60 * 60 * 1000;
+	                vars = [new Date(vars[0].getTime() - oneDay), new Date(vars[1].getTime() + oneDay)];
 	            }
 
 	            _this.vars = _d2.default.time.scale().domain(vars).nice(_this.niceIntervalFn).domain();
