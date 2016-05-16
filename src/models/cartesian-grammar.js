@@ -157,7 +157,8 @@ export class CartesianGrammar {
         if (yScale.discrete || (yScale.domain().some((x) => typeof (x) !== 'number'))) {
             throw new Error(
                 `Stacked field [${yScale.dim}] should be a number`,
-                errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART
+                errorCodes.STACKED_FIELD_NOT_NUMBER,
+                {field: yScale.dim}
             );
         }
 

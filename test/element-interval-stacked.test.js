@@ -530,6 +530,16 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         expect(function () {
             plot.renderTo(div, size);
         }).to.throw(TauChartError, /Stacked field \[y\] should be a number/);
+
+        var err;
+        try {
+            plot.renderTo(div, size);
+        } catch (ex) {
+            err = ex;
+        }
+
+        expect(err.errorCode).to.equals(tauCharts.api.errorCodes.STACKED_FIELD_NOT_NUMBER);
+        expect(err.errorArgs.field).to.equals('y');
     });
 
     it('should support negative values in [stacked-bar]', function () {
