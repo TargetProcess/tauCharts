@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {PointModel} from '../models/point';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {default as _} from 'underscore';
 
 export class Point extends Element {
@@ -10,18 +10,20 @@ export class Point extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = this.config.guide || {};
 
-        var defaultMinLimit = 10;
-        // TODO: fix when pass scales to constructor
-        var defaultMaxLimit = this.isEmptySize ? 10 : 40;
+        this.config.guide = _.defaults(
+            (this.config.guide || {}),
+            {
+                prettify: true,
+                enableColorToBarPosition: false
+            });
 
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
-                defMinSize: defaultMinLimit,
-                defMaxSize: defaultMaxLimit,
-                enableDistributeEvenly: true
+                defMinSize: 10,
+                defMaxSize: this.isEmptySize ? 10 : 40, // TODO: fix when pass scales to constructor
+                enableDistributeEvenly: !this.isEmptySize
             });
 
         this.defMin = config.guide.size.defMinSize;
@@ -31,15 +33,22 @@ export class Point extends Element {
 
         this.isHorizontal = false;
 
-        var distributeEvenly = !this.isEmptySize && config.guide.size.enableDistributeEvenly;
+        var enableStack = this.config.guide.stack;
+        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+
         this.decorators = [
-            PointModel.decorator_orientation,
-            PointModel.decorator_group,
-            PointModel.decorator_dynamic_size,
-            PointModel.decorator_color,
-            config.adjustPhase && (distributeEvenly ?
-                PointModel.adjustFlexSizeScale :
-                PointModel.adjustStaticSizeScale)
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
+            CartesianGrammar.decorator_group,
+            enableStack && CartesianGrammar.decorator_stack,
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
+            config.adjustPhase && (enableDistributeEvenly ?
+                CartesianGrammar.adjustSigmaSizeScale :
+                CartesianGrammar.adjustStaticSizeScale)
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -53,6 +62,8 @@ export class Point extends Element {
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
         this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
+        this.split = fnCreateScale('split', config.split, {});
+        this.text = fnCreateScale('text', config.text, {});
 
         var sortDesc = ((a, b) => {
             var discreteA = a.discrete ? 1 : 0;
@@ -66,7 +77,9 @@ export class Point extends Element {
             .regScale('x', this.xScale)
             .regScale('y', this.yScale)
             .regScale('size', this.size)
-            .regScale('color', this.color);
+            .regScale('color', this.color)
+            .regScale('split', this.split)
+            .regScale('text', this.text);
     }
 
     buildModel({colorScale, frames}) {
@@ -97,11 +110,12 @@ export class Point extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PointModel({
+            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
+                scaleSize: this.size,
                 scaleColor: this.color,
-                scaleSize: this.size
+                scaleSplit: this.split
             })));
     }
 

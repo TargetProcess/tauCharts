@@ -1,5 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -10,15 +11,28 @@ export class Line extends BasePath {
 
         super(config);
 
-        this.config = config;
+        var enableStack = this.config.stack;
+
         this.config.guide = _.defaults(
             (this.config.guide || {}),
             {
                 interpolate: 'linear'
             });
+
+        this.decorators = [
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && CartesianGrammar.decorator_stack,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
+        ];
     }
 
-    buildModel(params) {
+    buildModel(pathModel, params) {
 
         var wMax = this.config.options.width;
         var hMax = this.config.options.height;
@@ -39,7 +53,7 @@ export class Line extends BasePath {
             return n;
         };
 
-        var baseModel = super.buildModel(params);
+        var baseModel = super.buildModel(pathModel, params);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
             var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
@@ -57,6 +71,10 @@ export class Line extends BasePath {
                         data: row
                     };
                 });
+
+            // double for consistency in case of
+            // (vertices.length === 1)
+            vertices.push(vertices[0]);
 
             var pair = _
                 .times((vertices.length - 1), (i) => i)

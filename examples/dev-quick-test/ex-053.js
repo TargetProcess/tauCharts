@@ -25,6 +25,7 @@ window.drops.push({
     },
     "spec": {
         "type": "area",
+        stack: true,
         "trendline": null,
         "dimensions": {
             "date_1_36": {"type": "measure", "scale": "time"},

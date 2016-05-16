@@ -1,4 +1,5 @@
 import {CSS_PREFIX} from '../const';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 
@@ -6,12 +7,20 @@ export class Path extends BasePath {
 
     constructor(config) {
         super(config);
+
+        this.decorators = [
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
+        ];
     }
 
-    buildModel(params) {
+    buildModel(pathModel, params) {
 
         var self = this;
-        var baseModel = super.buildModel(params);
+        var baseModel = super.buildModel(pathModel, params);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 

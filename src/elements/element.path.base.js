@@ -1,5 +1,5 @@
 import {Element} from './element';
-import {PathModel} from '../models/path';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {elementDecoratorShowText} from './decorators/show-text';
 import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
@@ -7,7 +7,7 @@ import {default as d3} from 'd3';
 
 export class BasePath extends Element {
 
-    constructor(config, decorators) {
+    constructor(config) {
 
         super(config);
 
@@ -43,15 +43,7 @@ export class BasePath extends Element {
                 defMaxSize: (this.isEmptySize ? 6 : 40)
             });
 
-        this.decorators = []
-            .concat([
-                PathModel.decorator_orientation,
-                PathModel.decorator_group,
-                PathModel.decorator_size,
-                PathModel.decorator_color
-            ])
-            .concat(decorators)
-            .concat(config.adjustPhase && PathModel.adjustSizeScale);
+        this.decorators = [];
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
@@ -85,22 +77,23 @@ export class BasePath extends Element {
             .regScale('text', this.text);
     }
 
-    buildModel({colorScale, textScale, frames}) {
-
-        var pathModel = this.walkFrames(frames);
+    buildModel(pathModel, {colorScale, textScale}) {
 
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
 
+        var flip = this.config.flip;
+        var choose = ((statement, yes, no) => statement ? yes : no);
         var kRound = 10000;
         var baseModel = {
             scaleX: pathModel.scaleX,
             scaleY: pathModel.scaleY,
             scaleColor: colorScale,
             scaleText: textScale,
-            x: pathModel.xi,
-            y: pathModel.yi,
-            y0: pathModel.y0,
+            x: choose(flip, pathModel.yi, pathModel.xi),
+            x0: choose(flip, pathModel.y0, pathModel.xi),
+            y: choose(flip, pathModel.xi, pathModel.yi),
+            y0: choose(flip, pathModel.xi, pathModel.y0),
             size: pathModel.size,
             group: pathModel.group,
             order: pathModel.order,
@@ -131,7 +124,7 @@ export class BasePath extends Element {
     walkFrames(frames) {
 
         var args = {
-            textScale: this.text,
+            isHorizontal: this.config.flip,
             defMin: this.config.guide.size.defMinSize,
             defMax: this.config.guide.size.defMaxSize,
             minLimit: this.config.guide.size.minSize,
@@ -142,7 +135,7 @@ export class BasePath extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new PathModel({
+            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
@@ -159,12 +152,13 @@ export class BasePath extends Element {
         var options = this.config.options;
 
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
-
-        var model = this.buildModel({
-            colorScale: this.color,
-            textScale: this.text,
-            frames: frames
-        });
+        var pathModel = this.walkFrames(frames);
+        var model = this.buildModel(
+            pathModel,
+            {
+                colorScale: this.color,
+                textScale: this.text
+            });
         this.model = model;
 
         var updateGroupContainer = function () {
@@ -201,7 +195,9 @@ export class BasePath extends Element {
 
             self.subscribe(series, function (rows) {
                 var m = d3.mouse(this);
-                return model.matchRowInCoordinates(rows, {x: m[0], y: m[1]});
+                return model.matchRowInCoordinates(
+                    rows.filter(CartesianGrammar.isNonSyntheticRecord),
+                    {x: m[0], y: m[1]});
             });
 
             if (guide.color.fill && !model.scaleColor.dim) {
@@ -222,7 +218,7 @@ export class BasePath extends Element {
 
                 let dots = this
                     .selectAll('.i-data-anchor')
-                    .data((fiber) => fiber);
+                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord));
                 dots.exit()
                     .remove();
                 dots.attr(attr);
@@ -244,11 +240,9 @@ export class BasePath extends Element {
             }
         };
 
-        var groups = _.groupBy(fullData, model.group);
-        var fibers = Object
-            .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
+        var fibers = this.config.stack ?
+            CartesianGrammar.toStackedFibers(fullData, pathModel) :
+            CartesianGrammar.toFibers(fullData, pathModel);
 
         var frameGroups = options
             .container
@@ -269,18 +263,21 @@ export class BasePath extends Element {
 
         var container = this.config.options.container;
 
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
         container
             .selectAll('.i-role-path')
             .classed({
-                'graphical-report__highlighted': ((fiber) => filter(fiber[0]) === true),
-                'graphical-report__dimmed': ((fiber) => filter(fiber[0]) === false)
+                [x]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === true),
+                [_]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === false)
             });
 
         container
             .selectAll('.i-role-dot')
             .classed({
-                'graphical-report__highlighted': ((d) => filter(d) === true),
-                'graphical-report__dimmed': ((d) => filter(d) === false)
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
             });
     }
 

@@ -34,7 +34,6 @@ import {ChartInterval}          from './api/chart-interval';
 import {ChartScatterplot}       from './api/chart-scatterplot';
 import {ChartLine}              from './api/chart-line';
 import {ChartArea}              from './api/chart-area';
-import {ChartIntervalStacked}   from './api/chart-interval-stacked';
 import {ChartParallel}          from './api/chart-parallel';
 
 import {errorCodes} from './error';
@@ -202,12 +201,16 @@ var commonRules = [
 ];
 
 api.chartTypesRegistry = chartTypesRegistry
+
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', ChartLine, commonRules)
     .add('area', ChartArea, commonRules)
-    .add('bar', (cfg) => ChartInterval(_.defaults({flip: false}, cfg)), commonRules)
+    .add('bar', (cfg) => ChartInterval(_.defaults(cfg, {flip: false})), commonRules)
+
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
+    .add('stacked-bar', (cfg) => ChartInterval(_.defaults({flip: false, stack: true}, cfg)), commonRules)
+    .add('horizontal-stacked-bar', (cfg) => ChartInterval(_.defaults({flip: true, stack: true}, cfg)), commonRules)
     .add('map', ChartMap, commonRules.concat([
         (config) => {
             var shouldSpecifyFillWithCode = (config.fill && config.code);
@@ -222,8 +225,6 @@ api.chartTypesRegistry = chartTypesRegistry
             }
         }
     ]))
-    .add('stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip: false}, cfg)), commonRules)
-    .add('horizontal-stacked-bar', (cfg) => ChartIntervalStacked(_.defaults({flip: true}, cfg)), commonRules)
     .add('parallel', ChartParallel, commonRules.concat([
         (config) => {
             var shouldSpecifyColumns = (config.columns && config.columns.length > 1);

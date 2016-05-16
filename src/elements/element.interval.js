@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {IntervalModel} from '../models/interval';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 import {default as _} from 'underscore';
 
 export class Interval extends Element {
@@ -10,22 +10,22 @@ export class Interval extends Element {
         super(config);
 
         this.config = config;
+
+        var enableStack = this.config.stack;
+        this.config.guide = (this.config.guide || {});
         this.config.guide = _.defaults(
-            (this.config.guide || {}),
+            (this.config.guide),
             {
                 prettify: true,
-                enableColorToBarPosition: true
+                enableColorToBarPosition: !enableStack
             });
-
-        var defaultMinLimit = this.config.guide.prettify ? 3 : 0;
-        var defaultMaxLimit = this.config.guide.prettify ? 40 : Number.MAX_VALUE;
 
         this.config.guide.size = _.defaults(
             (this.config.guide.size || {}),
             {
                 enableDistributeEvenly: true,
-                defMinSize: defaultMinLimit,
-                defMaxSize: defaultMaxLimit
+                defMinSize: this.config.guide.prettify ? 3 : 0,
+                defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
             });
 
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
@@ -37,14 +37,18 @@ export class Interval extends Element {
 
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+
         this.decorators = [
-            IntervalModel.decorator_orientation,
-            IntervalModel.decorator_group,
-            IntervalModel.decorator_groupOrderByColor,
-            enableColorPositioning && IntervalModel.decorator_positioningByColor,
-            config.adjustPhase && enableDistributeEvenly && IntervalModel.decorator_size_distribute_evenly,
-            IntervalModel.decorator_dynamic_size,
-            IntervalModel.decorator_color
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByColor,
+            enableStack && CartesianGrammar.decorator_stack,
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
 
         this.on('highlight', (sender, e) => this.highlight(e));
@@ -71,10 +75,8 @@ export class Interval extends Element {
 
     walkFrames(frames) {
 
-        var config = this.config;
-        var isHorizontal = config.flip || config.guide.flip;
         var args = {
-            isHorizontal,
+            isHorizontal: this.config.flip,
             minLimit: this.minLimit,
             maxLimit: this.maxLimit,
             defMin: this.defMin,
@@ -85,7 +87,7 @@ export class Interval extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new IntervalModel({
+            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
@@ -108,14 +110,12 @@ export class Interval extends Element {
         var xScale = this.xScale;
         var yScale = this.yScale;
         var colorScale = this.color;
-        var isHorizontal = config.flip || config.guide.flip;
+        var isHorizontal = config.flip;
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
 
-        var barModel = this.buildModel({
-            colorScale,
-            frames: frames
-        });
+        var modelGoG = this.walkFrames(frames);
+        var barModel = this.buildModel(modelGoG, {colorScale});
 
         var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
         var d3Attrs = (isHorizontal ?
@@ -139,11 +139,9 @@ export class Interval extends Element {
             self.subscribe(bars);
         };
 
-        var groups = _.groupBy(this.convertFramesToData(frames), barModel.group);
-        var fibers = Object
-            .keys(groups)
-            .sort((a, b) => barModel.order(a) - barModel.order(b))
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
+        var data = this.convertFramesToData(frames);
+
+        var fibers = CartesianGrammar.toFibers(data, modelGoG);
 
         var elements = options
             .container
@@ -252,19 +250,17 @@ export class Interval extends Element {
         };
     }
 
-    buildModel({colorScale, frames}) {
-
-        var barModel = this.walkFrames(frames);
+    buildModel(modelGoG, {colorScale}) {
 
         return {
-            barX: ((d) => barModel.xi(d)),
-            barY: ((d) => Math.min(barModel.y0(d), barModel.yi(d))),
-            barH: ((d) => Math.abs(barModel.yi(d) - barModel.y0(d))),
-            barW: ((d) => barModel.size(d)),
-            barColor: ((d) => colorScale.toColor(barModel.color(d))),
-            barClass: ((d) => colorScale.toClass(barModel.color(d))),
-            group: ((d) => barModel.group(d)),
-            order: ((d) => barModel.order(d))
+            barX: ((d) => modelGoG.xi(d)),
+            barY: ((d) => Math.min(modelGoG.y0(d), modelGoG.yi(d))),
+            barH: ((d) => Math.abs(modelGoG.yi(d) - modelGoG.y0(d))),
+            barW: ((d) => modelGoG.size(d)),
+            barColor: ((d) => colorScale.toColor(modelGoG.color(d))),
+            barClass: ((d) => colorScale.toClass(modelGoG.color(d))),
+            group: ((d) => modelGoG.group(d)),
+            order: ((d) => modelGoG.order(d))
         };
     }
 

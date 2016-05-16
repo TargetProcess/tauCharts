@@ -357,20 +357,11 @@
             _getNearestDataCoordinates: function (sender, e) {
 
                 var data = e.data;
-                var xLocal;
-                var yLocal;
-
                 var xScale = sender.getScale('x');
                 var yScale = sender.getScale('y');
 
-                if (sender.config.type === 'ELEMENT.INTERVAL.STACKED') {
-                    var view = e.event.chartElementViewModel;
-                    xLocal = xScale(view.x);
-                    yLocal = yScale(view.y);
-                } else {
-                    xLocal = xScale(data[xScale.dim]);
-                    yLocal = yScale(data[yScale.dim]);
-                }
+                var xLocal = xScale(data[xScale.dim]);
+                var yLocal = yScale(data[yScale.dim]);
 
                 var g = e.event.target.parentNode;
                 var c = this._appendFocus(g, xLocal, yLocal);

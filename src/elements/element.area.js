@@ -1,21 +1,33 @@
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
-import {PathModel} from '../models/path';
+import {CartesianGrammar} from '../models/cartesian-grammar';
 
 export class Area extends BasePath {
 
     constructor(config) {
-        super(config, [
-            PathModel.decorator_groupOrderByAvg,
-            PathModel.decorator_groundY0
-        ]);
+
+        super(config);
+
+        var enableStack = this.config.stack;
+
+        this.decorators = [
+            CartesianGrammar.decorator_orientation,
+            CartesianGrammar.decorator_groundY0,
+            CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && CartesianGrammar.decorator_stack,
+            CartesianGrammar.decorator_dynamic_size,
+            CartesianGrammar.decorator_color,
+            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
+            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
+        ];
     }
 
-    buildModel(params) {
+    buildModel(modelGoG, params) {
 
         var self = this;
-        var baseModel = super.buildModel(params);
+        var baseModel = super.buildModel(modelGoG, params);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
@@ -54,7 +66,7 @@ export class Area extends BasePath {
                 var ways = fiber
                     .reduce((memo, d) => {
                         memo.dir.push([baseModel.x(d), baseModel.y(d)]);
-                        memo.rev.push([baseModel.x(d), baseModel.y0(d)]);
+                        memo.rev.push([baseModel.x0(d), baseModel.y0(d)]);
                         return memo;
                     },
                     {
@@ -72,7 +84,6 @@ export class Area extends BasePath {
     }
 
     getDistance(mx, my, rx, ry) {
-        var guide = this.config.guide;
-        return (guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx));
+        return (this.config.flip ? Math.abs(my - ry) : Math.abs(mx - rx));
     }
 }
