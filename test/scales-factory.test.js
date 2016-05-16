@@ -249,14 +249,18 @@ define(function (require) {
                     nice: true
                 }).create([0, 100]);
 
-            var hours1 = 60 * 60 * 1000;
+            var oneDay = 24 * 60 * 60 * 1000;
+
+            var interval = [
+                (myDate.getTime() - oneDay),
+                (myDate.getTime() + oneDay)
+            ];
+            var expectedRange = d3.time.scale().domain(interval).nice().domain();
+
             expect(scaleSingleValue.domain().map(x => x.getTime()))
                 .to
                 .deep
-                .equal([
-                    (myDate.getTime() - hours1),
-                    (myDate.getTime() + hours1)
-                ]);
+                .equal(expectedRange.map(x => x.getTime()));
         });
 
         it('should support [period] scale', function () {

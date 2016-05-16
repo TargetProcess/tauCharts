@@ -34,10 +34,10 @@ export class TimeScale extends BaseScale {
             }
 
             if ((vars[0] - vars[1]) === 0) {
-                var oneHour = 60 * 60 * 1000;
+                var oneDay = 24 * 60 * 60 * 1000;
                 vars = [
-                    new Date(vars[0].getTime() - oneHour),
-                    new Date(vars[1].getTime() + oneHour)
+                    new Date(vars[0].getTime() - oneDay),
+                    new Date(vars[1].getTime() + oneDay)
                 ];
             }
 
