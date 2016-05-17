@@ -1,4 +1,5 @@
 define(function (require) {
+    var tauCharts = require('src/tau.charts');
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var Converter = require('src/spec-converter').SpecConverter;
@@ -343,6 +344,51 @@ define(function (require) {
 
             expect(JSON.stringify(spec.unit)).to.deep.equal(JSON.stringify(x.unit));
             expect(JSON.stringify(spec.scales)).to.deep.equal(JSON.stringify(x.scales));
+        });
+
+        it('should change scale type from time to period when tickPeriod is specified', function () {
+
+            var c1 = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x1',
+                y: 'y1',
+                data: [
+                    {x1: new Date(), y1: 1}
+                ]
+            });
+
+            var spec1 = c1.getSpec();
+
+            var x1TimeScale = Object
+                .keys(spec1.scales)
+                .map((s) => spec1.scales[s])
+                .filter((s) => s.dim === 'x1')
+                [0];
+
+            expect(x1TimeScale.type).to.equals('time');
+
+            var c2 = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x1',
+                y: 'y1',
+                guide: {
+                    x: {tickPeriod: 'month'}
+                },
+                data: [
+                    {x1: new Date(), y1: 1}
+                ]
+            });
+
+            var spec2 = c2.getSpec();
+
+            var x1PeriodScale = Object
+                .keys(spec2.scales)
+                .map((s) => spec2.scales[s])
+                .filter((s) => s.dim === 'x1')
+                [0];
+
+            expect(x1PeriodScale.type).to.equals('period');
+            expect(x1PeriodScale.period).to.equals('month');
         });
     });
 });

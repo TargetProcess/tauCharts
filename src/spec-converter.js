@@ -300,6 +300,7 @@ export class SpecConverter {
 
             if (guide.hasOwnProperty('tickPeriod')) {
                 item.period = guide.tickPeriod;
+                item.type = 'period';
             }
 
             item.fitToFrameByDims = guide.fitToFrameByDims;
