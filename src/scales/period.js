@@ -23,7 +23,8 @@ export class PeriodScale extends BaseScale {
             new Date(Math.max(max, domain[1]))
         ];
 
-        if (props.fitToFrameByDims) {
+        var periodGenerator = UnitDomainPeriodGenerator.get(props.period);
+        if (props.fitToFrameByDims || (periodGenerator === null)) {
             this.vars = _(vars).chain()
                 .uniq((x) => new Date(x).getTime())
                 .map((x) => new Date(x))

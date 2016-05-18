@@ -126,8 +126,8 @@ export class SpecConverter {
 
         var walkStructure = (srcUnit) => {
             var gplRoot = utils.clone(_.omit(srcUnit, 'unit'));
-            gplRoot.expression = this.ruleInferExpression(srcUnit);
             this.ruleCreateScales(srcUnit, gplRoot);
+            gplRoot.expression = this.ruleInferExpression(srcUnit);
 
             if (srcUnit.unit) {
                 gplRoot.units = srcUnit.unit.map(walkStructure);
@@ -300,6 +300,7 @@ export class SpecConverter {
 
             if (guide.hasOwnProperty('tickPeriod')) {
                 item.period = guide.tickPeriod;
+                item.type = 'period';
             }
 
             item.fitToFrameByDims = guide.fitToFrameByDims;
@@ -312,6 +313,11 @@ export class SpecConverter {
         return k;
     }
 
+    getScaleConfig(scaleType, dimName) {
+        var k = `${scaleType}_${dimName}`;
+        return this.dist.scales[k];
+    }
+
     ruleInferExpression(srcUnit) {
 
         var expr = {
@@ -322,6 +328,9 @@ export class SpecConverter {
         var g = srcUnit.guide || {};
         var gx = g.x || {};
         var gy = g.y || {};
+
+        var scaleX = this.getScaleConfig('x', srcUnit.x);
+        var scaleY = this.getScaleConfig('y', srcUnit.y);
 
         if (srcUnit.type.indexOf('ELEMENT.') === 0) {
 
@@ -340,14 +349,14 @@ export class SpecConverter {
 
                 // jshint ignore:start
                 // jscs:disable requireDotNotation
-                if (gx['tickPeriod'] || gy['tickPeriod']) {
+                if (scaleX.period || scaleY.period) {
                     expr = {
                         operator: 'cross_period',
                         params: [
                             this.ruleInferDim(srcUnit.x, gx),
                             this.ruleInferDim(srcUnit.y, gy),
-                            gx['tickPeriod'],
-                            gy['tickPeriod']
+                            scaleX.period,
+                            scaleY.period
                         ]
                     };
                 } else {
