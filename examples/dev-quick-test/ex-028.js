@@ -1,5 +1,4 @@
 window.samples.push({
-
     "type": "horizontalBar",
     "color": null,
     "size": null,
@@ -9,7 +8,7 @@ window.samples.push({
         {
             "y": {
                 "label": "Create Date By Day",
-                // "tickPeriod": "day",
+                "tickPeriod": null,
                 "tickFormat": "day"
             }
         },
@@ -35,8 +34,8 @@ window.samples.push({
         {"x1": 2, "y1": 1419368400000, "y2": "Integrate Twitter feed"},
         {"x1": 2, "y1": 1419368400000, "y2": "Put RSS Feeds on Home page"},
         {"x1": 2, "y1": 1418590800000, "y2": "Support page"}
-    ],
-
+    ]
+    ,
     "dimensions": {
         "x1": {
             "type": "measure",

@@ -390,5 +390,31 @@ define(function (require) {
             expect(x1PeriodScale.type).to.equals('period');
             expect(x1PeriodScale.period).to.equals('month');
         });
+
+        it('should not fail when unknown tickPeriod is specified', function () {
+
+            var c2 = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x1',
+                y: 'y1',
+                guide: {
+                    x: {tickPeriod: 'some-unknown-period'}
+                },
+                data: [
+                    {x1: new Date(), y1: 1}
+                ]
+            });
+
+            var spec2 = c2.getSpec();
+
+            var x1PeriodScale = Object
+                .keys(spec2.scales)
+                .map((s) => spec2.scales[s])
+                .filter((s) => s.dim === 'x1')
+                [0];
+
+            expect(x1PeriodScale.type).to.equals('period');
+            expect(x1PeriodScale.period).to.equals(null);
+        });
     });
 });

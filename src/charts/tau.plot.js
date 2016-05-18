@@ -35,11 +35,11 @@ export class Plot extends Emitter {
             this.configGPL = new SpecConverter(this.setupConfig(config)).convert();
         }
 
+        this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
+
         this.configGPL = Plot.setupPeriodData(this.configGPL);
 
         var plugins = (config.plugins || []);
-
-        this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
         this.transformers = [
             SpecTransformApplyRatio,
@@ -108,21 +108,38 @@ export class Plot extends Emitter {
 
     static setupPeriodData(spec) {
         var tickPeriod = Plot.__api__.tickPeriod;
-        var dims = Object
+        var log = spec.settings.log;
+
+        var scales = Object
             .keys(spec.scales)
-            .map(s => spec.scales[s])
-            .filter(s => s.type === 'period')
-            .map(s => ({source: s.source, dim: s.dim, period: s.period}));
+            .map(s => spec.scales[s]);
+
+        var workPlan = scales
+            .filter(s => (s.type === 'period'))
+            .reduce((memo, scaleRef) => {
+                var periodCaster = tickPeriod.get(scaleRef.period);
+                if (periodCaster) {
+                    memo.push({source: scaleRef.source, dim: scaleRef.dim, period: periodCaster});
+                } else {
+                    log([
+                        `Unknown period "${scaleRef.period}".`,
+                        `Docs: http://api.taucharts.com/plugins/customticks.html#how-to-add-custom-tick-period`
+                    ], 'WARN');
+                    scaleRef.period = null;
+                }
+
+                return memo;
+            }, []);
 
         var isNullOrUndefined = ((x) => ((x === null) || (typeof(x) === 'undefined')));
 
-        var reducer = (refSources, d) => {
-            refSources[d.source].data = refSources[d.source]
+        var reducer = (refSources, metaDim) => {
+            refSources[metaDim.source].data = refSources[metaDim.source]
                 .data
                 .map(row => {
-                    var val = row[d.dim];
-                    if (!isNullOrUndefined(val) && d.period) {
-                        row[d.dim] = tickPeriod.get(d.period).cast(val);
+                    var val = row[metaDim.dim];
+                    if (!isNullOrUndefined(val)) {
+                        row[metaDim.dim] = metaDim.period.cast(val);
                     }
                     return row;
                 });
@@ -130,7 +147,7 @@ export class Plot extends Emitter {
             return refSources;
         };
 
-        spec.sources = dims.reduce(reducer, spec.sources);
+        spec.sources = workPlan.reduce(reducer, spec.sources);
 
         return spec;
     }
