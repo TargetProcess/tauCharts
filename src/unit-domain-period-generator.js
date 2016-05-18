@@ -78,11 +78,14 @@ var UnitDomainPeriodGenerator = {
         return this;
     },
 
-    get: (periodAlias) => PERIODS_MAP[periodAlias.toLowerCase()],
+    get: (periodAlias) => {
+        var alias = periodAlias || '';
+        return PERIODS_MAP[alias.toLowerCase()] || null;
+    },
 
     generate: (lTick, rTick, periodAlias) => {
         var r = [];
-        var period = PERIODS_MAP[periodAlias.toLowerCase()];
+        var period = UnitDomainPeriodGenerator.get(periodAlias);
         if (period) {
             var last = period.cast(new Date(rTick));
             var curr = period.cast(new Date(lTick));
