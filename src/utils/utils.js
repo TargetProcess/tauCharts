@@ -1,5 +1,6 @@
 import {Point}      from '../elements/element.point';
 import {Line}       from '../elements/element.line';
+import {Area}       from '../elements/element.area';
 import {Interval}   from '../elements/element.interval';
 import {StackedInterval} from '../elements/element.interval.stacked';
 import {default as _} from 'underscore';
@@ -262,6 +263,7 @@ var chartElement = [
     Interval,
     Point,
     Line,
+    Area,
     StackedInterval
 ];
 
