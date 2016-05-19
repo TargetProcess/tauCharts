@@ -1,6 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
+import {LayerTitles} from './decorators/layer-titles';
 import {default as _} from 'underscore';
 
 export class Interval extends Element {
@@ -47,6 +48,7 @@ export class Interval extends Element {
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
+            CartesianGrammar.decorator_text,
             config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
@@ -90,6 +92,7 @@ export class Interval extends Element {
             .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
+                scaleText: this.text,
                 scaleSize: this.size,
                 scaleColor: this.color,
                 scaleSplit: this.split
@@ -156,6 +159,8 @@ export class Interval extends Element {
             .enter()
             .append('g')
             .call(updateBarContainer);
+
+        (new LayerTitles(options.container, modelGoG)).draw(fibers);
     }
 
     toVerticalDrawMethod(

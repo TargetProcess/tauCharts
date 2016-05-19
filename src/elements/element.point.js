@@ -1,6 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
+import {LayerTitles} from './decorators/layer-titles';
 import {default as _} from 'underscore';
 
 export class Point extends Element {
@@ -45,6 +46,7 @@ export class Point extends Element {
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
+            CartesianGrammar.decorator_text,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
             config.adjustPhase && (enableDistributeEvenly ?
                 CartesianGrammar.adjustSigmaSizeScale :
@@ -82,17 +84,15 @@ export class Point extends Element {
             .regScale('text', this.text);
     }
 
-    buildModel({colorScale, frames}) {
-
-        var pointModel = this.walkFrames(frames);
+    buildModel(modelGoG, {colorScale}) {
 
         return {
-            x: this.isHorizontal ? pointModel.yi : pointModel.xi,
-            y: this.isHorizontal ? pointModel.xi : pointModel.yi,
-            size: pointModel.size,
-            group: pointModel.group,
-            color: (d) => colorScale.toColor(pointModel.color(d)),
-            class: (d) => colorScale.toClass(pointModel.color(d))
+            x: this.isHorizontal ? modelGoG.yi : modelGoG.xi,
+            y: this.isHorizontal ? modelGoG.xi : modelGoG.yi,
+            size: modelGoG.size,
+            group: modelGoG.group,
+            color: (d) => colorScale.toColor(modelGoG.color(d)),
+            class: (d) => colorScale.toClass(modelGoG.color(d))
         };
     }
 
@@ -113,6 +113,7 @@ export class Point extends Element {
             .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
+                scaleText: this.text,
                 scaleSize: this.size,
                 scaleColor: this.color,
                 scaleSplit: this.split
@@ -129,13 +130,8 @@ export class Point extends Element {
 
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
 
-        var model = this.buildModel({
-            frames: frames,
-            xScale: this.xScale,
-            yScale: this.yScale,
-            colorScale: this.color,
-            sizeScale: this.size
-        });
+        var modelGoG = this.walkFrames(frames);
+        var model = this.buildModel(modelGoG, {colorScale: this.color});
 
         var kRound = 10000;
         var attr = {
@@ -189,6 +185,8 @@ export class Point extends Element {
             .enter()
             .append('g')
             .call(updateGroups);
+
+        (new LayerTitles(options.container, modelGoG)).draw(fibers);
 
         return [];
     }

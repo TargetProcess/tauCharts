@@ -13,6 +13,7 @@ export class Path extends BasePath {
             CartesianGrammar.decorator_group,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
+            CartesianGrammar.decorator_text,
             config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
         ];
     }

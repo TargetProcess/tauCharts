@@ -1,6 +1,7 @@
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {elementDecoratorShowText} from './decorators/show-text';
+import {LayerTitles} from './decorators/layer-titles';
 import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -138,6 +139,7 @@ export class BasePath extends Element {
             .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
+                scaleText: this.text,
                 scaleSize: this.size,
                 scaleColor: this.color,
                 scaleSplit: this.split
@@ -228,16 +230,6 @@ export class BasePath extends Element {
 
                 self.subscribe(dots);
             }
-
-            if (model.scaleText.dim) {
-                self.subscribe(elementDecoratorShowText({
-                    guide,
-                    xScale: model.scaleX,
-                    yScale: model.scaleY,
-                    textScale: model.scaleText,
-                    container: this
-                }));
-            }
         };
 
         var fibers = this.config.stack ?
@@ -257,6 +249,8 @@ export class BasePath extends Element {
             .enter()
             .append('g')
             .call(updateGroupContainer);
+
+        (new LayerTitles(options.container, pathModel)).draw(fibers);
     }
 
     highlight(filter) {

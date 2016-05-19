@@ -10,6 +10,7 @@ export class CartesianGrammar {
         var createFunc = ((x) => (() => x));
         this.scaleX = model.scaleX;
         this.scaleY = model.scaleY;
+        this.scaleText = model.scaleText;
         this.scaleSize = model.scaleSize;
         this.scaleColor = model.scaleColor;
         this.scaleSplit = model.scaleSplit;
@@ -18,6 +19,7 @@ export class CartesianGrammar {
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
         this.size = model.size || createFunc(1);
+        this.text = model.text || createFunc('');
         this.color = model.color || createFunc('');
         this.group = model.group || createFunc('');
         this.order = model.order || createFunc(0);
@@ -100,6 +102,12 @@ export class CartesianGrammar {
     static decorator_color(model, {}) {
         return CartesianGrammar.compose(model, {
             color: ((d) => model.scaleColor.value(d[model.scaleColor.dim]))
+        });
+    }
+
+    static decorator_text(model, {}) {
+        return CartesianGrammar.compose(model, {
+            text: ((d) => model.scaleText.value(d[model.scaleText.dim]))
         });
     }
 
