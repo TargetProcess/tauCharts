@@ -27,6 +27,12 @@ export class Point extends Element {
                 enableDistributeEvenly: !this.isEmptySize
             });
 
+        this.config.guide.text = _.defaults(
+            (this.config.guide.text || {}),
+            {
+                position: ['keep-within-diameter-or-top']
+            });
+
         this.defMin = config.guide.size.defMinSize;
         this.defMax = config.guide.size.defMaxSize;
         this.minLimit = config.guide.size.minSize;
@@ -186,7 +192,8 @@ export class Point extends Element {
             .append('g')
             .call(updateGroups);
 
-        (new LayerTitles(options.container, modelGoG)).draw(fibers);
+        (new LayerTitles(options.container, modelGoG, this.config.flip, this.config.guide.text, options))
+            .draw(fibers);
 
         return [];
     }

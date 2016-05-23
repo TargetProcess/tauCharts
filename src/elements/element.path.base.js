@@ -1,6 +1,5 @@
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
-import {elementDecoratorShowText} from './decorators/show-text';
 import {LayerTitles} from './decorators/layer-titles';
 import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
@@ -32,7 +31,8 @@ export class BasePath extends Element {
             {
                 fontSize: 11,
                 paddingX: 0,
-                paddingY: 0
+                paddingY: 0,
+                position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
             });
 
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
@@ -250,7 +250,8 @@ export class BasePath extends Element {
             .append('g')
             .call(updateGroupContainer);
 
-        (new LayerTitles(options.container, pathModel)).draw(fibers);
+        (new LayerTitles(options.container, pathModel, this.config.flip, this.config.guide.text, options))
+            .draw(fibers);
     }
 
     highlight(filter) {

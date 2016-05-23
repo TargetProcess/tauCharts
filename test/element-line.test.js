@@ -184,7 +184,7 @@ define(function (require) {
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')));
-            var labels = d3.selectAll('.caption');
+            var labels = d3.selectAll('.title');
             expect(labels[0].length).to.be.equal(5);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to

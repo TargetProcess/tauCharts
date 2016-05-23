@@ -107,11 +107,7 @@ export class CartesianGrammar {
 
     static decorator_text(model, {}) {
         return CartesianGrammar.compose(model, {
-            text: ((d) => {
-                var raw = model.scaleText.value(d[model.scaleText.dim]);
-                var str = ((typeof (raw) === 'undefined') || (raw === null)) ? '' : raw;
-                return String(str);
-            })
+            text: ((d) => model.scaleText.value(d[model.scaleText.dim]))
         });
     }
 

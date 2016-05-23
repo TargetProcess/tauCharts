@@ -187,8 +187,7 @@
                         },
                         text: {
                             fontColor: noteItem.color,
-                            paddingX: ((axes[0] === 'x') ? 5 : -5),
-                            paddingY: ((axes[0] === 'x') ? 5 : 15)
+                            position: ['r', 'b']
                         }
                     }
                 };
@@ -248,8 +247,7 @@
                         },
                         text: {
                             fontColor: noteItem.color,
-                            paddingX: ((axes[0] === 'x') ? 5 : -5),
-                            paddingY: ((axes[0] === 'x') ? 5 : -5)
+                            position: ['r', 'b']
                         }
                     }
                 };

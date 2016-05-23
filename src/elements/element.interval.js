@@ -29,6 +29,12 @@ export class Interval extends Element {
                 defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
             });
 
+        this.config.guide.text = _.defaults(
+            (this.config.guide.text || {}),
+            {
+                position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
+            });
+
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
 
         this.defMin = config.guide.size.defMinSize;
@@ -160,7 +166,8 @@ export class Interval extends Element {
             .append('g')
             .call(updateBarContainer);
 
-        (new LayerTitles(options.container, modelGoG)).draw(fibers);
+        (new LayerTitles(options.container, modelGoG, isHorizontal, config.guide.text, options))
+            .draw(fibers);
     }
 
     toVerticalDrawMethod(
