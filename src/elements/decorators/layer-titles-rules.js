@@ -32,7 +32,7 @@ var alignByX = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.x(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + 1.5 * k;
+                return prev.x(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2);
             }
         };
     };

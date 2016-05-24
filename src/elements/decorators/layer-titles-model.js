@@ -12,8 +12,9 @@ export class LayerTitlesModel {
         this.color = prev.color || createFunc('');
     }
 
-    static seed(model, {fontSize, fontColor, flip, formatter}) {
-        var charSize = fontSize / 1.7;
+    static seed(model, {fontSize, fontColor, flip, formatter, textSize, textPad = 1.5}) {
+
+        var fnTextSize = textSize || ((str) => str.length * fontSize * 0.6);
 
         var x = flip ? model.yi : model.xi;
         var y = flip ? model.xi : model.yi;
@@ -23,8 +24,8 @@ export class LayerTitlesModel {
         return new LayerTitlesModel({
             model: model,
             x: (row) => x(row),
-            y: (row) => y(row) + (fontSize / 2) - 1.5,
-            w: (row) => text(row).length * charSize,
+            y: (row) => y(row) + (fontSize / 2) - textPad,
+            w: (row) => fnTextSize(text(row)),
             h: () => fontSize,
             text: text,
             color: () => fontColor
