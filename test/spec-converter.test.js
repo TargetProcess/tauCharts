@@ -93,9 +93,9 @@ define(function (require) {
 
                     "pos:default"   : {"type": "ordinal", "source": "?"},
                     "size:default"  : {"type": "size", "source": "?"},
-                    "text:default"  : {"type": "value", source: "?"},
+                    "label:default" : {"type": "value", source: "?"},
                     "color:default" : {"type": "color", "source": "?", "brewer": null},
-                    'split:default': {type: 'value', source: '?'},
+                    'split:default' : {type: 'value', source: '?'},
 
                     "y_team"        : {"type": "ordinal", "source": "/", "dim": "team", order: ['alpha', 'beta'], "autoScale": true, "nice":true, "niceInterval":null},
                     "x_date"        : {"type": "time", "source": "/", "dim": "date", "autoScale": true, "nice":true, "niceInterval":null},
@@ -264,7 +264,7 @@ define(function (require) {
 
                     "pos:default": {"type": "ordinal", "source": "?"},
                     "size:default": {"type": "size", "source": "?"},
-                    "text:default": {"type": "value", source: "?"},
+                    "label:default": {"type": "value", source: "?"},
                     "color:default": {"type": "color", "source": "?", "brewer": null},
                     'split:default': {type: 'value', source: '?'},
 

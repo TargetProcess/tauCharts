@@ -1,6 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
+import {LayerLabels} from './decorators/layer-labels';
 import {default as _} from 'underscore';
 
 export class Point extends Element {
@@ -26,6 +27,12 @@ export class Point extends Element {
                 enableDistributeEvenly: !this.isEmptySize
             });
 
+        this.config.guide.label = _.defaults(
+            (this.config.guide.label || {}),
+            {
+                position: ['keep-within-diameter-or-top']
+            });
+
         this.defMin = config.guide.size.defMinSize;
         this.defMax = config.guide.size.defMaxSize;
         this.minLimit = config.guide.size.minSize;
@@ -45,6 +52,7 @@ export class Point extends Element {
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
+            CartesianGrammar.decorator_label,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
             config.adjustPhase && (enableDistributeEvenly ?
                 CartesianGrammar.adjustSigmaSizeScale :
@@ -60,10 +68,10 @@ export class Point extends Element {
 
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
+        this.color = fnCreateScale('color', config.color, {});
         this.split = fnCreateScale('split', config.split, {});
-        this.text = fnCreateScale('text', config.text, {});
+        this.label = fnCreateScale('label', config.label, {});
 
         var sortDesc = ((a, b) => {
             var discreteA = a.discrete ? 1 : 0;
@@ -79,20 +87,18 @@ export class Point extends Element {
             .regScale('size', this.size)
             .regScale('color', this.color)
             .regScale('split', this.split)
-            .regScale('text', this.text);
+            .regScale('label', this.label);
     }
 
-    buildModel({colorScale, frames}) {
-
-        var pointModel = this.walkFrames(frames);
+    buildModel(modelGoG, {colorScale}) {
 
         return {
-            x: this.isHorizontal ? pointModel.yi : pointModel.xi,
-            y: this.isHorizontal ? pointModel.xi : pointModel.yi,
-            size: pointModel.size,
-            group: pointModel.group,
-            color: (d) => colorScale.toColor(pointModel.color(d)),
-            class: (d) => colorScale.toClass(pointModel.color(d))
+            x: this.isHorizontal ? modelGoG.yi : modelGoG.xi,
+            y: this.isHorizontal ? modelGoG.xi : modelGoG.yi,
+            size: modelGoG.size,
+            group: modelGoG.group,
+            color: (d) => colorScale.toColor(modelGoG.color(d)),
+            class: (d) => colorScale.toClass(modelGoG.color(d))
         };
     }
 
@@ -114,6 +120,7 @@ export class Point extends Element {
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
+                scaleLabel: this.label,
                 scaleColor: this.color,
                 scaleSplit: this.split
             })));
@@ -129,13 +136,8 @@ export class Point extends Element {
 
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
 
-        var model = this.buildModel({
-            frames: frames,
-            xScale: this.xScale,
-            yScale: this.yScale,
-            colorScale: this.color,
-            sizeScale: this.size
-        });
+        var modelGoG = this.walkFrames(frames);
+        var model = this.buildModel(modelGoG, {colorScale: this.color});
 
         var kRound = 10000;
         var attr = {
@@ -190,17 +192,21 @@ export class Point extends Element {
             .append('g')
             .call(updateGroups);
 
-        return [];
+        self.subscribe(new LayerLabels(modelGoG, this.config.flip, this.config.guide.label, options).draw(fibers));
     }
 
     highlight(filter) {
+
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
         this.config
             .options
             .container
             .selectAll('.dot')
             .classed({
-                'graphical-report__highlighted': ((d) => filter(d) === true),
-                'graphical-report__dimmed': ((d) => filter(d) === false)
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
             });
     }
 }

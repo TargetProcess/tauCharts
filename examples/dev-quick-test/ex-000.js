@@ -5,6 +5,13 @@ window.samples.push({
     type: 'line',
     x: ['x'],
     y: ['y'],
+    label: 'y',
+    guide: {
+        anchorSize: 1.5,
+        label: {
+            tickFormat: '.4r'
+        }
+    },
 
     data: _.times(100, _.identity)
         .reduce(function (memo, i) {

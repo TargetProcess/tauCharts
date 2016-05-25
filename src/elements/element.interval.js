@@ -1,6 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
+import {LayerLabels} from './decorators/layer-labels';
 import {default as _} from 'underscore';
 
 export class Interval extends Element {
@@ -28,6 +29,12 @@ export class Interval extends Element {
                 defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
             });
 
+        this.config.guide.label = _.defaults(
+            (this.config.guide.label || {}),
+            {
+                position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
+            });
+
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
 
         this.defMin = config.guide.size.defMinSize;
@@ -47,6 +54,7 @@ export class Interval extends Element {
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
+            CartesianGrammar.decorator_label,
             config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
@@ -59,10 +67,10 @@ export class Interval extends Element {
         var config = this.config;
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
+        this.color = fnCreateScale('color', config.color, {});
         this.split = fnCreateScale('split', config.split, {});
-        this.text = fnCreateScale('text', config.text, {});
+        this.label = fnCreateScale('label', config.label, {});
 
         return this
             .regScale('x', this.xScale)
@@ -70,7 +78,7 @@ export class Interval extends Element {
             .regScale('size', this.size)
             .regScale('color', this.color)
             .regScale('split', this.split)
-            .regScale('text', this.text);
+            .regScale('label', this.label);
     }
 
     walkFrames(frames) {
@@ -91,6 +99,7 @@ export class Interval extends Element {
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
+                scaleLabel: this.label,
                 scaleColor: this.color,
                 scaleSplit: this.split
             })));
@@ -156,6 +165,8 @@ export class Interval extends Element {
             .enter()
             .append('g')
             .call(updateBarContainer);
+
+        self.subscribe(new LayerLabels(modelGoG, isHorizontal, config.guide.label, options).draw(fibers));
     }
 
     toVerticalDrawMethod(
@@ -266,13 +277,16 @@ export class Interval extends Element {
 
     highlight(filter) {
 
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
         this.config
             .options
             .container
             .selectAll('.bar')
             .classed({
-                'graphical-report__highlighted': ((d) => filter(d) === true),
-                'graphical-report__dimmed': ((d) => filter(d) === false)
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
             });
     }
 }

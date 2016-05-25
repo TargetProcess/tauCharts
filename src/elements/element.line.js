@@ -27,6 +27,7 @@ export class Line extends BasePath {
             enableStack && CartesianGrammar.decorator_stack,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
+            CartesianGrammar.decorator_label,
             config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];

@@ -161,12 +161,13 @@ define(function (require) {
                                 type: 'ELEMENT.PATH',
                                 x: 'x',
                                 y: 'y',
-                                text: 'letter',
+                                label: 'letter',
+                                color: 0,
                                 guide: {
                                     color: {
-                                        fill: '#abcdef' // rgb(171, 205, 239)
+                                        brewer: ['#abcdef'] // rgb(171, 205, 239)
                                     },
-                                    text: {
+                                    label: {
                                         fontColor: '#fedcba'
                                     }
                                 }
@@ -187,11 +188,12 @@ define(function (require) {
         it("should render polygon with text on each angle", function () {
             var area = d3.selectAll('.area');
             expect(area[0].length).to.be.equal(1);
-            expect(str(d3.rgb(area.style('fill'))))
+            var polygon = area.select('polygon');
+            expect(str(d3.rgb(polygon.attr('fill'))))
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')));
-            var labels = d3.selectAll('.caption');
+            var labels = d3.selectAll('.t-label');
             expect(labels[0].length).to.be.equal(4);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to
