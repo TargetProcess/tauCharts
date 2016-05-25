@@ -155,9 +155,10 @@ define(function (require) {
                                 x: 'x',
                                 y: 'y',
                                 label: 'letter',
+                                color: 0,
                                 guide: {
                                     color: {
-                                        fill: '#abcdef' // rgb(171, 205, 239)
+                                        brewer: ['#abcdef'] // rgb(171, 205, 239)
                                     },
                                     label: {
                                         fontColor: '#fedcba'
@@ -180,11 +181,12 @@ define(function (require) {
         it("should render line with text on each dot", function () {
             var lines = d3.selectAll('.line');
             expect(lines[0].length).to.be.equal(1);
-            expect(str(d3.rgb(lines.style('fill'))))
+            var path = lines.select('path');
+            expect(str(d3.rgb(path.attr('stroke'))))
                 .to
                 .be
-                .equal(str(d3.rgb('rgb(171, 205, 239)')));
-            var labels = d3.selectAll('.title');
+                .equal(str(d3.rgb('rgb(171, 205, 239)')), 'stroke');
+            var labels = d3.selectAll('.t-label');
             expect(labels[0].length).to.be.equal(5);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to

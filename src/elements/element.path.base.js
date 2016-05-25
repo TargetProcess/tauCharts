@@ -30,8 +30,6 @@ export class BasePath extends Element {
             this.config.guide.label,
             {
                 fontSize: 11,
-                paddingX: 0,
-                paddingY: 0,
                 position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
             });
 
@@ -201,13 +199,6 @@ export class BasePath extends Element {
                     rows.filter(CartesianGrammar.isNonSyntheticRecord),
                     {x: m[0], y: m[1]});
             });
-
-            if (guide.color.fill && !model.scaleColor.dim) {
-                this.style({
-                    fill: guide.color.fill,
-                    stroke: guide.color.fill
-                });
-            }
 
             if (guide.showAnchors) {
 

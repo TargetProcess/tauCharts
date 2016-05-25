@@ -54,14 +54,14 @@ export class LayerLabels {
 
         var text = this
             .container
-            .selectAll('.title')
+            .selectAll('.t-label')
             .data(fullData);
         text.exit()
             .remove();
         text.call(update);
         text.enter()
             .append('text')
-            .attr('class', 'title')
+            .attr('class', 't-label')
             .call(update);
 
         return text;

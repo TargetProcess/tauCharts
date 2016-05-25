@@ -485,7 +485,11 @@
                                     var item = {};
                                     item[x] = xMapper(p[0]);
                                     item[y] = yMapper(p[1]);
-                                    item[g] = k;
+
+                                    if (g) {
+                                        item[g] = k;
+                                    }
+
                                     return item;
                                 })
                                 .value();

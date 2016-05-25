@@ -13,6 +13,7 @@
 
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
+    var pluginsSDK = tauCharts.api.pluginsSDK;
 
     var addToUnits = function (units, newUnit, position) {
         if (position === 'front') {
@@ -158,7 +159,7 @@
                     namespace: 'annotations',
                     x: coordsUnit.x,
                     y: coordsUnit.y,
-                    color: 'color:default',
+                    color: noteItem.colorScaleName,
                     label: textScaleName,
                     expression: {
                         inherit: false,
@@ -182,9 +183,6 @@
                     guide: {
                         showAnchors: false,
                         cssClass: 'graphical-report__annotation-area',
-                        color: {
-                            fill: noteItem.color
-                        },
                         label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b']
@@ -220,7 +218,7 @@
                     x: coordsUnit.x,
                     y: coordsUnit.y,
                     label: textScaleName,
-                    color: 'color:default',
+                    color: noteItem.colorScaleName,
                     expression: {
                         inherit: false,
                         operator: 'none',
@@ -242,9 +240,6 @@
                         showAnchors: false,
                         widthCssClass: 'graphical-report__line-width-2',
                         cssClass: 'graphical-report__annotation-line',
-                        color: {
-                            fill: noteItem.color
-                        },
                         label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b']
@@ -265,18 +260,46 @@
                     }
                 });
 
+                var specApi = pluginsSDK.spec(specRef);
+
                 units.forEach(function (coordsUnit) {
 
-                    settings.items.forEach(function (item) {
+                    settings
+                        .items
+                        .map(function (item, i) {
 
-                        item.color = item.color || '#BD10E0'; // #4300FF / #FFAB00
+                            var color = (item.color || '#BD10E0').toLowerCase();
+                            var rgbCode = d3.rgb(color).toString().toUpperCase();
+                            if ((color !== 'black') && (rgbCode === '#000000')) {
+                                rgbCode = null;
+                            }
+                            var colorStr = rgbCode || color;
 
-                        if (_.isArray(item.val)) {
-                            self.addAreaNote(specRef, coordsUnit, item);
-                        } else {
-                            self.addLineNote(specRef, coordsUnit, item);
-                        }
-                    });
+                            var colorScaleName = 'annotation_color_' + i;
+                            specApi.addScale(
+                                colorScaleName,
+                                {
+                                    type: 'color',
+                                    source: '?',
+                                    brewer: [colorStr]
+                                });
+
+                            return {
+                                dim: item.dim,
+                                val: item.val,
+                                text: item.text,
+                                color: colorStr,
+                                position: item.position,
+                                colorScaleName: colorScaleName
+                            };
+                        })
+                        .forEach(function (item) {
+                            if (_.isArray(item.val)) {
+                                self.addAreaNote(specRef, coordsUnit, item);
+                            } else {
+                                self.addLineNote(specRef, coordsUnit, item);
+                            }
+                        });
                 });
             }
         };
