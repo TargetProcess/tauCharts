@@ -27,7 +27,7 @@ export class SpecConverter {
 
                 'pos:default': {type: 'ordinal', source: '?'},
                 'size:default': {type: 'size', source: '?'},
-                'text:default': {type: 'value', source: '?'},
+                'label:default': {type: 'value', source: '?'},
                 'color:default': {type: 'color', source: '?', brewer: null},
                 'split:default': {type: 'value', source: '?'}
                 // jscs:enable disallowQuotedKeysInObjects
@@ -144,7 +144,7 @@ export class SpecConverter {
     ruleCreateScales(srcUnit, gplRoot) {
 
         var guide = srcUnit.guide || {};
-        ['color', 'size', 'text', 'x', 'y', 'split'].forEach((p) => {
+        ['color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
             }
@@ -243,7 +243,7 @@ export class SpecConverter {
             }
         }
 
-        if (scaleType === 'text' && dimName !== null) {
+        if (scaleType === 'label' && dimName !== null) {
             item = {
                 type: 'value',
                 source: '/',

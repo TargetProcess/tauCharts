@@ -161,12 +161,12 @@ define(function (require) {
                                 type: 'ELEMENT.PATH',
                                 x: 'x',
                                 y: 'y',
-                                text: 'letter',
+                                label: 'letter',
                                 guide: {
                                     color: {
                                         fill: '#abcdef' // rgb(171, 205, 239)
                                     },
-                                    text: {
+                                    label: {
                                         fontColor: '#fedcba'
                                     }
                                 }

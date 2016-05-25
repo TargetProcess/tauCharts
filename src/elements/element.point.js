@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
-import {LayerTitles} from './decorators/layer-titles';
+import {LayerLabels} from './decorators/layer-labels';
 import {default as _} from 'underscore';
 
 export class Point extends Element {
@@ -27,8 +27,8 @@ export class Point extends Element {
                 enableDistributeEvenly: !this.isEmptySize
             });
 
-        this.config.guide.text = _.defaults(
-            (this.config.guide.text || {}),
+        this.config.guide.label = _.defaults(
+            (this.config.guide.label || {}),
             {
                 position: ['keep-within-diameter-or-top']
             });
@@ -52,7 +52,7 @@ export class Point extends Element {
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_text,
+            CartesianGrammar.decorator_label,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
             config.adjustPhase && (enableDistributeEvenly ?
                 CartesianGrammar.adjustSigmaSizeScale :
@@ -68,10 +68,10 @@ export class Point extends Element {
 
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
+        this.color = fnCreateScale('color', config.color, {});
         this.split = fnCreateScale('split', config.split, {});
-        this.text = fnCreateScale('text', config.text, {});
+        this.label = fnCreateScale('label', config.label, {});
 
         var sortDesc = ((a, b) => {
             var discreteA = a.discrete ? 1 : 0;
@@ -87,7 +87,7 @@ export class Point extends Element {
             .regScale('size', this.size)
             .regScale('color', this.color)
             .regScale('split', this.split)
-            .regScale('text', this.text);
+            .regScale('label', this.label);
     }
 
     buildModel(modelGoG, {colorScale}) {
@@ -119,8 +119,8 @@ export class Point extends Element {
             .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
-                scaleText: this.text,
                 scaleSize: this.size,
+                scaleLabel: this.label,
                 scaleColor: this.color,
                 scaleSplit: this.split
             })));
@@ -192,20 +192,21 @@ export class Point extends Element {
             .append('g')
             .call(updateGroups);
 
-        (new LayerTitles(options.container, modelGoG, this.config.flip, this.config.guide.text, options))
-            .draw(fibers);
-
-        return [];
+        self.subscribe(new LayerLabels(modelGoG, this.config.flip, this.config.guide.label, options).draw(fibers));
     }
 
     highlight(filter) {
+
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
         this.config
             .options
             .container
             .selectAll('.dot')
             .classed({
-                'graphical-report__highlighted': ((d) => filter(d) === true),
-                'graphical-report__dimmed': ((d) => filter(d) === false)
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
             });
     }
 }

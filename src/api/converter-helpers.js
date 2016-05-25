@@ -13,16 +13,16 @@ var createElement = (type, config) => {
         type: type,
         x: config.x,
         y: config.y,
+        size: config.size,
         color: config.color,
         split: config.split,
+        label: config.label,
         guide: {
             color: config.colorGuide,
             size: config.sizeGuide
         },
         flip: config.flip,
-        stack: config.stack,
-        size: config.size,
-        text: config.text
+        stack: config.stack
     };
 };
 
@@ -141,7 +141,7 @@ function transformConfig(type, config) {
                 y: convertAxis(currentY),
                 split: config.split,
                 color: config.color,
-                text: config.text,
+                label: config.label,
                 size: config.size,
                 flip: config.flip,
                 stack: config.stack,

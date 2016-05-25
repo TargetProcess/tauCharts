@@ -159,7 +159,7 @@
                     x: coordsUnit.x,
                     y: coordsUnit.y,
                     color: 'color:default',
-                    text: textScaleName,
+                    label: textScaleName,
                     expression: {
                         inherit: false,
                         operator: 'none',
@@ -185,7 +185,7 @@
                         color: {
                             fill: noteItem.color
                         },
-                        text: {
+                        label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b']
                         }
@@ -219,7 +219,7 @@
                     namespace: 'annotations',
                     x: coordsUnit.x,
                     y: coordsUnit.y,
-                    text: textScaleName,
+                    label: textScaleName,
                     color: 'color:default',
                     expression: {
                         inherit: false,
@@ -245,7 +245,7 @@
                         color: {
                             fill: noteItem.color
                         },
-                        text: {
+                        label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b']
                         }

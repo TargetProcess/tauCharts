@@ -1,6 +1,6 @@
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
-import {LayerTitles} from './decorators/layer-titles';
+import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -22,12 +22,12 @@ export class BasePath extends Element {
                 showAnchors: true,
                 anchorSize: 0.1,
                 color: {},
-                text: {}
+                label: {}
             }
         );
 
-        this.config.guide.text = _.defaults(
-            this.config.guide.text,
+        this.config.guide.label = _.defaults(
+            this.config.guide.label,
             {
                 fontSize: 11,
                 paddingX: 0,
@@ -64,9 +64,9 @@ export class BasePath extends Element {
 
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
-        this.text = fnCreateScale('text', config.text, {});
+        this.color = fnCreateScale('color', config.color, {});
+        this.label = fnCreateScale('label', config.label, {});
         this.split = fnCreateScale('split', config.split, {});
 
         return this
@@ -75,10 +75,10 @@ export class BasePath extends Element {
             .regScale('size', this.size)
             .regScale('color', this.color)
             .regScale('split', this.split)
-            .regScale('text', this.text);
+            .regScale('label', this.label);
     }
 
-    buildModel(pathModel, {colorScale, textScale}) {
+    buildModel(pathModel, {colorScale, labelScale}) {
 
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
@@ -90,7 +90,7 @@ export class BasePath extends Element {
             scaleX: pathModel.scaleX,
             scaleY: pathModel.scaleY,
             scaleColor: colorScale,
-            scaleText: textScale,
+            scaleLabel: labelScale,
             x: choose(flip, pathModel.yi, pathModel.xi),
             x0: choose(flip, pathModel.y0, pathModel.xi),
             y: choose(flip, pathModel.xi, pathModel.yi),
@@ -139,8 +139,8 @@ export class BasePath extends Element {
             .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
-                scaleText: this.text,
                 scaleSize: this.size,
+                scaleLabel: this.label,
                 scaleColor: this.color,
                 scaleSplit: this.split
             })));
@@ -159,7 +159,7 @@ export class BasePath extends Element {
             pathModel,
             {
                 colorScale: this.color,
-                textScale: this.text
+                labelScale: this.label
             });
         this.model = model;
 
@@ -250,8 +250,7 @@ export class BasePath extends Element {
             .append('g')
             .call(updateGroupContainer);
 
-        (new LayerTitles(options.container, pathModel, this.config.flip, this.config.guide.text, options))
-            .draw(fibers);
+        self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(fibers));
     }
 
     highlight(filter) {

@@ -1,6 +1,6 @@
 var rules = {};
 
-export class LayerTitlesRules {
+export class LayerLabelsRules {
 
     static regRule(alias, func) {
         rules[alias] = func;
@@ -62,7 +62,7 @@ var alignByY = (exp) => {
     };
 };
 
-LayerTitlesRules
+LayerLabelsRules
     .regRule('l', alignByX(['l', -1, null]))
     .regRule('L', alignByX(['L', -1, null]))
     .regRule('l+', alignByX(['l', -1, '+']))

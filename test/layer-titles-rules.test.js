@@ -1,16 +1,16 @@
 define(function (require) {
     var expect = require('chai').expect;
-    var LayerTitlesModel = require('src/elements/decorators/layer-titles-model').LayerTitlesModel;
-    var LayerTitlesRules = require('src/elements/decorators/layer-titles-rules').LayerTitlesRules;
+    var LayerLabelsModel = require('src/elements/decorators/layer-labels-model').LayerLabelsModel;
+    var LayerLabelsRules = require('src/elements/decorators/layer-labels-rules').LayerLabelsRules;
 
-    describe('LayerTitlesRules', function () {
+    describe('LayerLabelsRules', function () {
 
         var fontSize = 10;
         var seedModel;
         var createModel = (rules, seed, args = {}) => {
             return rules
-                .map(LayerTitlesRules.getRule)
-                .reduce((prev, rule) => LayerTitlesModel.compose(prev, rule(prev, args)), seed);
+                .map(LayerLabelsRules.getRule)
+                .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
         };
 
         beforeEach(function () {
@@ -19,14 +19,14 @@ define(function (require) {
                 xi: (row) => 100,
                 yi: (row) => 100,
                 size: (row) => 10,
-                text: (row) => row.text,
+                label: (row) => row.text,
                 scaleY: {
                     discrete: false,
                     dim: 'y'
                 }
             };
 
-            seedModel = LayerTitlesModel.seed(
+            seedModel = LayerLabelsModel.seed(
                 gogModel,
                 {
                     fontSize: fontSize,

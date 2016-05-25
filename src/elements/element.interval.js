@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
-import {LayerTitles} from './decorators/layer-titles';
+import {LayerLabels} from './decorators/layer-labels';
 import {default as _} from 'underscore';
 
 export class Interval extends Element {
@@ -29,8 +29,8 @@ export class Interval extends Element {
                 defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
             });
 
-        this.config.guide.text = _.defaults(
-            (this.config.guide.text || {}),
+        this.config.guide.label = _.defaults(
+            (this.config.guide.label || {}),
             {
                 position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
             });
@@ -54,7 +54,7 @@ export class Interval extends Element {
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_text,
+            CartesianGrammar.decorator_label,
             config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ];
@@ -67,10 +67,10 @@ export class Interval extends Element {
         var config = this.config;
         this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
         this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
         this.size = fnCreateScale('size', config.size, {});
+        this.color = fnCreateScale('color', config.color, {});
         this.split = fnCreateScale('split', config.split, {});
-        this.text = fnCreateScale('text', config.text, {});
+        this.label = fnCreateScale('label', config.label, {});
 
         return this
             .regScale('x', this.xScale)
@@ -78,7 +78,7 @@ export class Interval extends Element {
             .regScale('size', this.size)
             .regScale('color', this.color)
             .regScale('split', this.split)
-            .regScale('text', this.text);
+            .regScale('label', this.label);
     }
 
     walkFrames(frames) {
@@ -98,8 +98,8 @@ export class Interval extends Element {
             .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
-                scaleText: this.text,
                 scaleSize: this.size,
+                scaleLabel: this.label,
                 scaleColor: this.color,
                 scaleSplit: this.split
             })));
@@ -166,8 +166,7 @@ export class Interval extends Element {
             .append('g')
             .call(updateBarContainer);
 
-        (new LayerTitles(options.container, modelGoG, isHorizontal, config.guide.text, options))
-            .draw(fibers);
+        self.subscribe(new LayerLabels(modelGoG, isHorizontal, config.guide.label, options).draw(fibers));
     }
 
     toVerticalDrawMethod(
@@ -278,13 +277,16 @@ export class Interval extends Element {
 
     highlight(filter) {
 
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
         this.config
             .options
             .container
             .selectAll('.bar')
             .classed({
-                'graphical-report__highlighted': ((d) => filter(d) === true),
-                'graphical-report__dimmed': ((d) => filter(d) === false)
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
             });
     }
 }

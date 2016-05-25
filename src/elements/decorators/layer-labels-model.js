@@ -1,6 +1,6 @@
 var createFunc = ((x) => (() => x));
 
-export class LayerTitlesModel {
+export class LayerLabelsModel {
 
     constructor(prev) {
         this.model = prev.model;
@@ -8,7 +8,7 @@ export class LayerTitlesModel {
         this.y = prev.y || createFunc(0);
         this.w = prev.w || createFunc(0);
         this.h = prev.h || createFunc(0);
-        this.text = prev.text || createFunc('');
+        this.label = prev.label || createFunc('');
         this.color = prev.color || createFunc('');
     }
 
@@ -19,15 +19,15 @@ export class LayerTitlesModel {
         var x = flip ? model.yi : model.xi;
         var y = flip ? model.xi : model.yi;
 
-        var text = (row) => formatter(model.text(row));
+        var label = (row) => formatter(model.label(row));
 
-        return new LayerTitlesModel({
+        return new LayerLabelsModel({
             model: model,
             x: (row) => x(row),
             y: (row) => y(row) + (fontSize / 2) - textPad,
-            w: (row) => fnTextSize(text(row)),
+            w: (row) => fnTextSize(label(row)),
             h: () => fontSize,
-            text: text,
+            label: label,
             color: () => fontColor
         });
     }
@@ -39,6 +39,6 @@ export class LayerTitlesModel {
                 memo[propName] = updates[propName];
                 return memo;
             },
-            (new LayerTitlesModel(prev))));
+            (new LayerLabelsModel(prev))));
     }
 }

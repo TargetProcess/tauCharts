@@ -1,14 +1,14 @@
 import {default as _} from 'underscore';
-import {LayerTitlesModel} from './layer-titles-model';
-import {LayerTitlesRules} from './layer-titles-rules';
+import {LayerLabelsModel} from './layer-labels-model';
+import {LayerLabelsRules} from './layer-labels-rules';
 import {FormatterRegistry} from '../../formatter-registry';
 
-export class LayerTitles {
+export class LayerLabels {
 
-    constructor(container, model, isHorizontal, textGuide, {width, height}) {
+    constructor(model, isHorizontal, labelGuide, {width, height, container}) {
         this.container = container;
         var guide = _.defaults(
-            (textGuide || {}),
+            (labelGuide || {}),
             {
                 fontSize: 10,
                 fontColor: '#000',
@@ -19,7 +19,7 @@ export class LayerTitles {
 
         var formatter = FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias);
 
-        var seed = LayerTitlesModel.seed(
+        var seed = LayerLabelsModel.seed(
             model,
             {
                 fontSize: guide.fontSize,
@@ -33,15 +33,15 @@ export class LayerTitles {
         this.textModel = guide
             .position
             .concat('keep-in-box')
-            .map(LayerTitlesRules.getRule)
-            .reduce((prev, rule) => LayerTitlesModel.compose(prev, rule(prev, args)), seed);
+            .map(LayerLabelsRules.getRule)
+            .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
     }
 
     draw(fibers) {
 
         var m = this.textModel;
 
-        var fullData = fibers.reduce((m, f) => m.concat(f), []).filter(m.text);
+        var fullData = fibers.reduce((m, f) => m.concat(f), []).filter(m.label);
 
         var update = function () {
             this.style('fill', m.color)
@@ -49,7 +49,7 @@ export class LayerTitles {
                 .attr('text-anchor', 'middle')
                 .attr('x', m.x)
                 .attr('y', m.y)
-                .text(m.text);
+                .text(m.label);
         };
 
         var text = this
@@ -63,5 +63,7 @@ export class LayerTitles {
             .append('text')
             .attr('class', 'title')
             .call(update);
+
+        return text;
     }
 }
