@@ -98,8 +98,8 @@ window.samples.push({
     type: 'line',
     x: 'lon',
     y: 'lat',
-    text: 'place',
     size: 'survivors',
+    label: 'place',
     split: 'group',
     color: 'direction',
     guide: {
@@ -234,7 +234,7 @@ window.samples.push({
     y: 'temperature',
     split: 'way',
     color: 'days',
-    text: 'date',
+    label: 'date',
     guide: {
         showGridLines: 'xy',
         padding: {l: 45, b: 50, t: 10, r: 10},

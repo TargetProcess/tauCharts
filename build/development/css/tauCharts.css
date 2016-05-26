@@ -291,7 +291,6 @@
   /* Scatterplot  */
   /* Linechart  */
   /*  Bar  */
-  /*  Bar  */
   /* TODO: fix to avoid conflict on "stroke" with color brewer */
   /* TODO: remove this when CSS for color brewer is fixed */
   /*  PLUGINS  */
@@ -447,19 +446,6 @@
 .graphical-report__svg .background {
   stroke: #f2f2f2;
 }
-.graphical-report__svg .caption {
-  stroke-width: 0.1;
-  font-size: 11px;
-  text-anchor: middle;
-}
-.graphical-report__svg .caption.caption-left-edge,
-.graphical-report__svg .caption.caption-top-edge,
-.graphical-report__svg .caption.caption-bottom-edge {
-  text-anchor: start;
-}
-.graphical-report__svg .caption.caption-right-edge {
-  text-anchor: end;
-}
 .graphical-report__dot {
   opacity: 0.7;
   transition: stroke-width 0.1s ease, opacity 0.1s ease;
@@ -479,20 +465,13 @@
   stroke-opacity: 0.5;
   stroke-width: 1;
   stroke: #fff;
-}
-.graphical-report__bar-stacked {
-  shape-rendering: auto;
-  transition: opacity 0.2s ease;
-  stroke-opacity: 0.5;
-  stroke-width: 1;
-  stroke: #fff;
+  opacity: 0.7;
 }
 .graphical-report__area polygon {
   opacity: 0.55;
   transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
 }
-.graphical-report__svg .graphical-report__bar,
-.graphical-report__svg .graphical-report__bar-stacked {
+.graphical-report__svg .graphical-report__bar {
   stroke: #fff;
 }
 .graphical-report__dot.graphical-report__highlighted {
@@ -510,13 +489,11 @@
   stroke-opacity: 0.2;
 }
 .graphical-report__area.graphical-report__highlighted,
-.graphical-report__bar.graphical-report__highlighted,
-.graphical-report__bar-stacked.graphical-report__highlighted {
+.graphical-report__bar.graphical-report__highlighted {
   stroke-opacity: 1;
   opacity: 1;
 }
 .graphical-report__area.graphical-report__dimmed,
-.graphical-report__bar.graphical-report__dimmed,
-.graphical-report__bar-stacked.graphical-report__dimmed {
+.graphical-report__bar.graphical-report__dimmed {
   opacity: 0.2;
 }

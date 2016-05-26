@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.1 - 2016-05-19
+/*! taucharts - v0.9.2-beta.0 - 2016-05-26
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -68,19 +68,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(4);
 
-	var _tau = __webpack_require__(20);
+	var _tau = __webpack_require__(21);
 
-	var _tau2 = __webpack_require__(24);
+	var _tau2 = __webpack_require__(25);
 
 	var _tau3 = __webpack_require__(40);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(22);
+	var _unitDomainPeriodGenerator = __webpack_require__(23);
 
-	var _formatterRegistry = __webpack_require__(35);
+	var _formatterRegistry = __webpack_require__(14);
 
-	var _unitsRegistry = __webpack_require__(28);
+	var _unitsRegistry = __webpack_require__(29);
 
-	var _scalesRegistry = __webpack_require__(29);
+	var _scalesRegistry = __webpack_require__(30);
 
 	var _coords = __webpack_require__(42);
 
@@ -90,15 +90,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(5);
 
-	var _element2 = __webpack_require__(15);
+	var _element2 = __webpack_require__(18);
 
 	var _element3 = __webpack_require__(50);
 
-	var _element4 = __webpack_require__(10);
+	var _element4 = __webpack_require__(15);
 
-	var _element5 = __webpack_require__(16);
+	var _element5 = __webpack_require__(19);
 
-	var _elementInterval = __webpack_require__(18);
+	var _elementInterval = __webpack_require__(20);
 
 	var _elementParallel = __webpack_require__(51);
 
@@ -130,13 +130,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _chartArea = __webpack_require__(66);
 
-	var _chartIntervalStacked = __webpack_require__(67);
+	var _chartParallel = __webpack_require__(67);
 
-	var _chartParallel = __webpack_require__(68);
+	var _error = __webpack_require__(10);
 
-	var _error = __webpack_require__(19);
-
-	var _pluginsSdk = __webpack_require__(69);
+	var _pluginsSdk = __webpack_require__(68);
 
 	var _underscore = __webpack_require__(3);
 
@@ -284,11 +282,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	}];
 
 	api.chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry.add('scatterplot', _chartScatterplot.ChartScatterplot, commonRules).add('line', _chartLine.ChartLine, commonRules).add('area', _chartArea.ChartArea, commonRules).add('bar', function (cfg) {
-	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults({ flip: false }, cfg));
+	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults(cfg, { flip: false }));
 	}, commonRules).add('horizontalBar', function (cfg) {
 	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults({ flip: true }, cfg));
 	}, commonRules).add('horizontal-bar', function (cfg) {
 	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults({ flip: true }, cfg));
+	}, commonRules).add('stacked-bar', function (cfg) {
+	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults({ flip: false, stack: true }, cfg));
+	}, commonRules).add('horizontal-stacked-bar', function (cfg) {
+	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults({ flip: true, stack: true }, cfg));
 	}, commonRules).add('map', _chartMap.ChartMap, commonRules.concat([function (config) {
 	    var shouldSpecifyFillWithCode = config.fill && config.code;
 	    if (config.fill && !shouldSpecifyFillWithCode) {
@@ -299,11 +301,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if ((config.latitude || config.longitude) && !shouldSpecifyBothLatLong) {
 	        return '[latitude] and [longitude] both must be specified';
 	    }
-	}])).add('stacked-bar', function (cfg) {
-	    return (0, _chartIntervalStacked.ChartIntervalStacked)(_underscore2.default.defaults({ flip: false }, cfg));
-	}, commonRules).add('horizontal-stacked-bar', function (cfg) {
-	    return (0, _chartIntervalStacked.ChartIntervalStacked)(_underscore2.default.defaults({ flip: true }, cfg));
-	}, commonRules).add('parallel', _chartParallel.ChartParallel, commonRules.concat([function (config) {
+	}])).add('parallel', _chartParallel.ChartParallel, commonRules.concat([function (config) {
 	    var shouldSpecifyColumns = config.columns && config.columns.length > 1;
 	    if (!shouldSpecifyColumns) {
 	        return '[columns] property must contain at least 2 dimensions';
@@ -464,13 +462,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(5);
 
-	var _element2 = __webpack_require__(10);
+	var _element2 = __webpack_require__(15);
 
-	var _element3 = __webpack_require__(15);
+	var _element3 = __webpack_require__(18);
 
-	var _element4 = __webpack_require__(16);
+	var _element4 = __webpack_require__(19);
 
-	var _elementInterval = __webpack_require__(18);
+	var _elementInterval = __webpack_require__(20);
 
 	var _underscore = __webpack_require__(3);
 
@@ -971,13 +969,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(7);
 
-	var _point = __webpack_require__(9);
+	var _cartesianGrammar = __webpack_require__(9);
+
+	var _layerLabels = __webpack_require__(11);
 
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -994,16 +996,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Point).call(this, config));
 
 	        _this.config = config;
-	        _this.config.guide = _this.config.guide || {};
 
-	        var defaultMinLimit = 10;
-	        // TODO: fix when pass scales to constructor
-	        var defaultMaxLimit = _this.isEmptySize ? 10 : 40;
+	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
+	            prettify: true,
+	            enableColorToBarPosition: false
+	        });
 
 	        _this.config.guide.size = _underscore2.default.defaults(_this.config.guide.size || {}, {
-	            defMinSize: defaultMinLimit,
-	            defMaxSize: defaultMaxLimit,
-	            enableDistributeEvenly: true
+	            defMinSize: 10,
+	            defMaxSize: _this.isEmptySize ? 10 : 40, // TODO: fix when pass scales to constructor
+	            enableDistributeEvenly: !_this.isEmptySize
+	        });
+
+	        _this.config.guide.label = _underscore2.default.defaults(_this.config.guide.label || {}, {
+	            position: ['keep-within-diameter-or-top']
 	        });
 
 	        _this.defMin = config.guide.size.defMinSize;
@@ -1013,8 +1019,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.isHorizontal = false;
 
-	        var distributeEvenly = !_this.isEmptySize && config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_point.PointModel.decorator_orientation, _point.PointModel.decorator_group, _point.PointModel.decorator_dynamic_size, _point.PointModel.decorator_color, config.adjustPhase && (distributeEvenly ? _point.PointModel.adjustFlexSizeScale : _point.PointModel.adjustStaticSizeScale)];
+	        var enableStack = _this.config.guide.stack;
+	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
+	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
+
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale, config.adjustPhase && (enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale)];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1030,8 +1039,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-	            this.color = fnCreateScale('color', config.color, {});
 	            this.size = fnCreateScale('size', config.size, {});
+	            this.color = fnCreateScale('color', config.color, {});
+	            this.split = fnCreateScale('split', config.split, {});
+	            this.label = fnCreateScale('label', config.label, {});
 
 	            var sortDesc = function sortDesc(a, b) {
 	                var discreteA = a.discrete ? 1 : 0;
@@ -1041,27 +1052,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.isHorizontal = this.yScale === [this.xScale, this.yScale].sort(sortDesc)[0];
 
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color);
+	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('label', this.label);
 	        }
 	    }, {
 	        key: 'buildModel',
-	        value: function buildModel(_ref) {
+	        value: function buildModel(modelGoG, _ref) {
 	            var colorScale = _ref.colorScale;
-	            var frames = _ref.frames;
 
-
-	            var pointModel = this.walkFrames(frames);
 
 	            return {
-	                x: this.isHorizontal ? pointModel.yi : pointModel.xi,
-	                y: this.isHorizontal ? pointModel.xi : pointModel.yi,
-	                size: pointModel.size,
-	                group: pointModel.group,
+	                x: this.isHorizontal ? modelGoG.yi : modelGoG.xi,
+	                y: this.isHorizontal ? modelGoG.xi : modelGoG.yi,
+	                size: modelGoG.size,
+	                group: modelGoG.group,
 	                color: function color(d) {
-	                    return colorScale.toColor(pointModel.color(d));
+	                    return colorScale.toColor(modelGoG.color(d));
 	                },
 	                class: function _class(d) {
-	                    return colorScale.toClass(pointModel.color(d));
+	                    return colorScale.toClass(modelGoG.color(d));
 	                }
 	            };
 	        }
@@ -1084,11 +1092,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return x;
 	            }).reduce(function (model, transform) {
 	                return transform(model, args);
-	            }, new _point.PointModel({
+	            }, new _cartesianGrammar.CartesianGrammar({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
+	                scaleSize: this.size,
+	                scaleLabel: this.label,
 	                scaleColor: this.color,
-	                scaleSize: this.size
+	                scaleSplit: this.split
 	            }));
 	        }
 	    }, {
@@ -1105,13 +1115,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return memo.concat(f.part());
 	            }, []);
 
-	            var model = this.buildModel({
-	                frames: frames,
-	                xScale: this.xScale,
-	                yScale: this.yScale,
-	                colorScale: this.color,
-	                sizeScale: this.size
-	            });
+	            var modelGoG = this.walkFrames(frames);
+	            var model = this.buildModel(modelGoG, { colorScale: this.color });
 
 	            var kRound = 10000;
 	            var attr = {
@@ -1164,19 +1169,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            frameGroups.call(updateGroups);
 	            frameGroups.enter().append('g').call(updateGroups);
 
-	            return [];
+	            self.subscribe(new _layerLabels.LayerLabels(modelGoG, this.config.flip, this.config.guide.label, options).draw(fibers));
 	        }
 	    }, {
 	        key: 'highlight',
 	        value: function highlight(filter) {
-	            this.config.options.container.selectAll('.dot').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(d) {
-	                    return filter(d) === true;
-	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(d) {
-	                    return filter(d) === false;
-	                }
-	            });
+	            var _config$options$conta;
+
+	            var x = 'graphical-report__highlighted';
+	            var _ = 'graphical-report__dimmed';
+
+	            this.config.options.container.selectAll('.dot').classed((_config$options$conta = {}, _defineProperty(_config$options$conta, x, function (d) {
+	                return filter(d) === true;
+	            }), _defineProperty(_config$options$conta, _, function (d) {
+	                return filter(d) === false;
+	            }), _config$options$conta));
 	        }
 	    }]);
 
@@ -1502,44 +1509,61 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 9 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.CartesianGrammar = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
+	var _error = __webpack_require__(10);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var PointModel = exports.PointModel = function () {
-	    function PointModel() {
-	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	var delimiter = '(@taucharts@)';
+	var synthetic = 'taucharts_synthetic_record';
 
-	        _classCallCheck(this, PointModel);
+	var CartesianGrammar = exports.CartesianGrammar = function () {
+	    function CartesianGrammar(model) {
+	        _classCallCheck(this, CartesianGrammar);
 
 	        var createFunc = function createFunc(x) {
 	            return function () {
 	                return x;
 	            };
 	        };
-	        this.scaleX = model.scaleX || null;
-	        this.scaleY = model.scaleY || null;
-	        this.scaleSize = model.scaleSize || null;
-	        this.scaleColor = model.scaleColor || null;
+	        this.scaleX = model.scaleX;
+	        this.scaleY = model.scaleY;
+	        this.scaleSize = model.scaleSize;
+	        this.scaleLabel = model.scaleLabel;
+	        this.scaleColor = model.scaleColor;
+	        this.scaleSplit = model.scaleSplit;
 
+	        this.y0 = model.y0 || createFunc(0);
 	        this.yi = model.yi || createFunc(0);
 	        this.xi = model.xi || createFunc(0);
 	        this.size = model.size || createFunc(1);
+	        this.label = model.label || createFunc('');
 	        this.color = model.color || createFunc('');
 	        this.group = model.group || createFunc('');
+	        this.order = model.order || createFunc(0);
 	    }
 
-	    _createClass(PointModel, null, [{
+	    _createClass(CartesianGrammar, null, [{
 	        key: 'compose',
 	        value: function compose(prev) {
 	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -1547,24 +1571,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return Object.keys(updates).reduce(function (memo, propName) {
 	                memo[propName] = updates[propName];
 	                return memo;
-	            }, new PointModel(prev));
+	            }, new CartesianGrammar(prev));
 	        }
 	    }, {
 	        key: 'decorator_identity',
 	        value: function decorator_identity(model) {
-	            return PointModel.compose(model);
+	            return CartesianGrammar.compose(model);
 	        }
 	    }, {
 	        key: 'decorator_orientation',
 	        value: function decorator_orientation(model, _ref) {
-	            var _ref$isHorizontal = _ref.isHorizontal;
-	            var isHorizontal = _ref$isHorizontal === undefined ? false : _ref$isHorizontal;
+	            var isHorizontal = _ref.isHorizontal;
 
 
 	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
 	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
 
-	            return PointModel.compose(model, {
+	            return CartesianGrammar.compose(model, {
 	                scaleX: baseScale,
 	                scaleY: valsScale,
 	                yi: function yi(d) {
@@ -1576,46 +1599,335 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }
 	    }, {
-	        key: 'decorator_dynamic_size',
-	        value: function decorator_dynamic_size(model, _ref2) {
-	            _objectDestructuringEmpty(_ref2);
+	        key: 'decorator_groundY0',
+	        value: function decorator_groundY0(model, _ref2) {
+	            var isHorizontal = _ref2.isHorizontal;
 
-	            return PointModel.compose(model, {
+	            var k = isHorizontal ? -0.5 : 0.5;
+	            var ys = model.scaleY.domain();
+	            var min = ys[0];
+
+	            // NOTE: max also can be below 0
+	            var _y = model.scaleY.discrete ? model.scaleY.value(min) + model.scaleY.stepSize(min) * k : model.scaleY.value(Math.max(0, Math.min.apply(Math, _toConsumableArray(ys))));
+
+	            return CartesianGrammar.compose(model, {
+	                y0: function y0() {
+	                    return _y;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_dynamic_size',
+	        value: function decorator_dynamic_size(model, _ref3) {
+	            _objectDestructuringEmpty(_ref3);
+
+	            return CartesianGrammar.compose(model, {
 	                size: function size(d) {
 	                    return model.size(d) * model.scaleSize.value(d[model.scaleSize.dim]);
 	                }
 	            });
 	        }
 	    }, {
-	        key: 'decorator_color',
-	        value: function decorator_color(model, _ref3) {
-	            _objectDestructuringEmpty(_ref3);
+	        key: 'decorator_positioningByColor',
+	        value: function decorator_positioningByColor(model, params) {
+	            var method = model.scaleX.discrete ? CartesianGrammar.decorator_discrete_positioningByColor : CartesianGrammar.decorator_identity;
 
-	            return PointModel.compose(model, {
+	            return method(model, params);
+	        }
+	    }, {
+	        key: 'decorator_discrete_positioningByColor',
+	        value: function decorator_discrete_positioningByColor(model, _ref4) {
+	            _objectDestructuringEmpty(_ref4);
+
+	            var baseScale = model.scaleX;
+	            var categories = model.scaleColor.domain();
+	            var categoriesCount = categories.length || 1;
+	            var colorIndexScale = function colorIndexScale(d) {
+	                return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
+	            }; // -1 (not found) to 0
+	            var space = function space(d) {
+	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
+	            };
+
+	            return CartesianGrammar.compose(model, {
+	                xi: function xi(d) {
+	                    var availableSpace = space(d);
+	                    var absTickStart = model.xi(d) - availableSpace / 2;
+	                    var middleStep = availableSpace / (categoriesCount + 1);
+	                    var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
+	                    return absTickStart + relSegmStart;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_color',
+	        value: function decorator_color(model, _ref5) {
+	            _objectDestructuringEmpty(_ref5);
+
+	            return CartesianGrammar.compose(model, {
 	                color: function color(d) {
 	                    return model.scaleColor.value(d[model.scaleColor.dim]);
 	                }
 	            });
 	        }
 	    }, {
-	        key: 'decorator_group',
-	        value: function decorator_group(model, _ref4) {
-	            _objectDestructuringEmpty(_ref4);
+	        key: 'decorator_label',
+	        value: function decorator_label(model, _ref6) {
+	            _objectDestructuringEmpty(_ref6);
 
-	            return PointModel.compose(model, {
-	                group: function group(d) {
-	                    return d[model.scaleColor.dim];
+	            return CartesianGrammar.compose(model, {
+	                label: function label(d) {
+	                    return model.scaleLabel.value(d[model.scaleLabel.dim]);
 	                }
 	            });
 	        }
 	    }, {
-	        key: 'adjustFlexSizeScale',
-	        value: function adjustFlexSizeScale(model, _ref5) {
-	            var dataSource = _ref5.dataSource;
-	            var minLimit = _ref5.minLimit;
-	            var maxLimit = _ref5.maxLimit;
-	            var defMin = _ref5.defMin;
-	            var defMax = _ref5.defMax;
+	        key: 'decorator_group',
+	        value: function decorator_group(model, _ref7) {
+	            _objectDestructuringEmpty(_ref7);
+
+	            return CartesianGrammar.compose(model, {
+	                group: function group(d) {
+	                    return '' + d[model.scaleColor.dim] + delimiter + d[model.scaleSplit.dim];
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_groupOrderByColor',
+	        value: function decorator_groupOrderByColor(model, _ref8) {
+	            _objectDestructuringEmpty(_ref8);
+
+	            var _order = model.scaleColor.domain();
+
+	            return CartesianGrammar.compose(model, {
+	                order: function order(group) {
+	                    var color = group.split(delimiter)[0];
+	                    var i = _order.indexOf(color);
+	                    return i < 0 ? Number.MAX_VALUE : i;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_groupOrderByAvg',
+	        value: function decorator_groupOrderByAvg(model, _ref9) {
+	            var dataSource = _ref9.dataSource;
+
+
+	            var avg = function avg(arr) {
+	                return arr.map(model.yi).reduce(function (sum, i) {
+	                    return sum + i;
+	                }, 0) / arr.length;
+	            };
+
+	            var groups = dataSource.reduce(function (memo, row) {
+	                var k = model.group(row);
+	                memo[k] = memo[k] || [];
+	                memo[k].push(row);
+	                return memo;
+	            }, {});
+
+	            var _order2 = Object.keys(groups).map(function (k) {
+	                return [k, avg(groups[k])];
+	            }).sort(function (a, b) {
+	                return a[1] - b[1];
+	            }).map(function (r) {
+	                return r[0];
+	            });
+
+	            return CartesianGrammar.compose(model, {
+	                order: function order(group) {
+	                    var i = _order2.indexOf(group);
+	                    return i < 0 ? Number.MAX_VALUE : i;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'decorator_stack',
+	        value: function decorator_stack(model, _ref10) {
+	            _objectDestructuringEmpty(_ref10);
+
+	            var xScale = model.scaleX;
+	            var yScale = model.scaleY;
+
+	            if (yScale.discrete || yScale.domain().some(function (x) {
+	                return typeof x !== 'number';
+	            })) {
+	                throw new _error.TauChartError('Stacked field [' + yScale.dim + '] should be a number', _error.errorCodes.STACKED_FIELD_NOT_NUMBER, { field: yScale.dim });
+	            }
+
+	            var createFnStack = function createFnStack(totalState) {
+	                return function (d) {
+	                    var x = d[xScale.dim];
+	                    var y = d[yScale.dim];
+
+	                    var isPositive = d[synthetic] ? d[synthetic + 'sign'] === 'positive' : y >= 0;
+	                    var state = isPositive ? totalState.positive : totalState.negative;
+
+	                    var prevStack = state[x] || 0;
+	                    var nextStack = prevStack + y;
+	                    state[x] = nextStack;
+
+	                    return { isPositive: isPositive, nextStack: nextStack, prevStack: prevStack };
+	                };
+	            };
+
+	            var stackYi = createFnStack({ positive: {}, negative: {} });
+	            var stackY0 = createFnStack({ positive: {}, negative: {} });
+
+	            var seq = [];
+	            var memoize = function memoize(fn) {
+	                return _underscore2.default.memoize(fn, function (d) {
+	                    var i = seq.indexOf(d);
+	                    if (i < 0) {
+	                        i = seq.push(d) - 1;
+	                    }
+	                    return i;
+	                });
+	            };
+
+	            return CartesianGrammar.compose(model, {
+	                yi: memoize(function (d) {
+	                    return yScale.value(stackYi(d).nextStack);
+	                }),
+	                y0: memoize(function (d) {
+	                    return yScale.value(stackY0(d).prevStack);
+	                })
+	            });
+	        }
+	    }, {
+	        key: 'decorator_size_distribute_evenly',
+	        value: function decorator_size_distribute_evenly(model, _ref11) {
+	            var dataSource = _ref11.dataSource;
+	            var minLimit = _ref11.minLimit;
+	            var maxLimit = _ref11.maxLimit;
+	            var defMin = _ref11.defMin;
+	            var defMax = _ref11.defMax;
+
+
+	            var asc = function asc(a, b) {
+	                return a - b;
+	            };
+
+	            var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() / 2 : Number.MAX_VALUE;
+
+	            var xs = dataSource.map(function (row) {
+	                return model.xi(row);
+	            }).sort(asc);
+
+	            var prev = xs[0];
+	            var diff = xs.slice(1).map(function (curr) {
+	                var diff = curr - prev;
+	                prev = curr;
+	                return diff;
+	            }).filter(function (diff) {
+	                return diff > 0;
+	            }).sort(asc).concat(Number.MAX_VALUE)[0];
+
+	            var minDiff = Math.min(diff, stepSize);
+
+	            var currMinSize = typeof minLimit === 'number' ? minLimit : defMin;
+	            var curr = {
+	                minSize: currMinSize,
+	                maxSize: typeof maxLimit === 'number' ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
+	            };
+
+	            model.scaleSize.fixup(function (prev) {
+
+	                var next = {};
+
+	                if (!prev.fixed) {
+	                    next.fixed = true;
+	                    next.minSize = curr.minSize;
+	                    next.maxSize = curr.maxSize;
+	                } else {
+	                    if (prev.maxSize > curr.maxSize) {
+	                        next.maxSize = curr.maxSize;
+	                    }
+	                }
+
+	                return next;
+	            });
+
+	            return model;
+	        }
+	    }, {
+	        key: 'adjustYScale',
+	        value: function adjustYScale(model, _ref12) {
+	            var dataSource = _ref12.dataSource;
+
+
+	            var minY = Number.MAX_VALUE;
+	            var maxY = Number.MIN_VALUE;
+	            var trackY = function trackY(y) {
+	                minY = y < minY ? y : minY;
+	                maxY = y > maxY ? y : maxY;
+	            };
+
+	            var scaleY = model.scaleY.value;
+	            model.scaleY.value = function (y) {
+	                trackY(y);
+	                return scaleY(y);
+	            };
+
+	            dataSource.forEach(function (row) {
+	                model.yi(row);
+	                model.y0(row);
+	            });
+
+	            model.scaleY.fixup(function (yScaleConfig) {
+
+	                var newConf = {};
+
+	                if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
+	                    newConf.max = maxY;
+	                }
+
+	                if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
+	                    newConf.min = minY;
+	                }
+
+	                return newConf;
+	            });
+
+	            return model;
+	        }
+	    }, {
+	        key: 'adjustStaticSizeScale',
+	        value: function adjustStaticSizeScale(model, _ref13) {
+	            var minLimit = _ref13.minLimit;
+	            var maxLimit = _ref13.maxLimit;
+	            var defMin = _ref13.defMin;
+	            var defMax = _ref13.defMax;
+
+
+	            var curr = {
+	                minSize: typeof minLimit === 'number' ? minLimit : defMin,
+	                maxSize: typeof maxLimit === 'number' ? maxLimit : defMax
+	            };
+
+	            model.scaleSize.fixup(function (prev) {
+
+	                var next = {};
+
+	                if (!prev.fixed) {
+	                    next.fixed = true;
+	                    next.minSize = curr.minSize;
+	                    next.maxSize = curr.maxSize;
+	                }
+
+	                return next;
+	            });
+
+	            return model;
+	        }
+	    }, {
+	        key: 'adjustSigmaSizeScale',
+	        value: function adjustSigmaSizeScale(model, _ref14) {
+	            var dataSource = _ref14.dataSource;
+	            var minLimit = _ref14.minLimit;
+	            var maxLimit = _ref14.maxLimit;
+	            var defMin = _ref14.defMin;
+	            var defMax = _ref14.defMax;
 
 
 	            var asc = function asc(a, b) {
@@ -1676,41 +1988,555 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return model;
 	        }
 	    }, {
-	        key: 'adjustStaticSizeScale',
-	        value: function adjustStaticSizeScale(model, _ref6) {
-	            var minLimit = _ref6.minLimit;
-	            var maxLimit = _ref6.maxLimit;
-	            var defMin = _ref6.defMin;
-	            var defMax = _ref6.defMax;
+	        key: 'toFibers',
+	        value: function toFibers(data, model) {
+	            var groups = _underscore2.default.groupBy(data, model.group);
+	            return Object.keys(groups).sort(function (a, b) {
+	                return model.order(a) - model.order(b);
+	            }).reduce(function (memo, k) {
+	                return memo.concat([groups[k]]);
+	            }, []);
+	        }
+	    }, {
+	        key: 'isNonSyntheticRecord',
+	        value: function isNonSyntheticRecord(row) {
+	            return row[synthetic] !== true;
+	        }
+	    }, {
+	        key: 'toStackedFibers',
+	        value: function toStackedFibers(data, model) {
 
+	            var dx = model.scaleX.dim;
+	            var dy = model.scaleY.dim;
+	            var dc = model.scaleColor.dim;
+	            var ds = model.scaleSplit.dim;
 
-	            var curr = {
-	                minSize: typeof minLimit === 'number' ? minLimit : defMin,
-	                maxSize: typeof maxLimit === 'number' ? maxLimit : defMax
-	            };
-
-	            model.scaleSize.fixup(function (prev) {
-
-	                var next = {};
-
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.minSize = curr.minSize;
-	                    next.maxSize = curr.maxSize;
-	                }
-
-	                return next;
+	            var sortedData = data.sort(function (a, b) {
+	                return model.xi(a) - model.xi(b);
 	            });
 
-	            return model;
+	            var xs = _underscore2.default.uniq(sortedData.map(function (row) {
+	                return row[dx];
+	            }), true);
+
+	            var sign = function sign(row) {
+	                return row[dy] >= 0 ? 'positive' : 'negative';
+	            };
+
+	            var gen = function gen(x, fi, sign) {
+	                var r = {};
+	                r[dx] = x;
+	                r[dy] = 0;
+	                r[ds] = fi[ds];
+	                r[dc] = fi[dc];
+	                r[synthetic] = true;
+	                r[synthetic + 'sign'] = sign; // positive / negative
+	                return r;
+	            };
+
+	            var merge = function merge(templateSorted, fiberSorted, sign) {
+	                var groups = _underscore2.default.groupBy(fiberSorted, function (row) {
+	                    return row[dx];
+	                });
+	                var sample = fiberSorted[0];
+	                return templateSorted.reduce(function (memo, k) {
+	                    return memo.concat(groups[k] || gen(k, sample, sign));
+	                }, []);
+	            };
+
+	            var groups = _underscore2.default.groupBy(sortedData, model.group);
+	            return Object.keys(groups).sort(function (a, b) {
+	                return model.order(a) - model.order(b);
+	            }).reduce(function (memo, k) {
+	                var bySign = _underscore2.default.groupBy(groups[k], sign);
+	                return Object.keys(bySign).reduce(function (memo, s) {
+	                    return memo.concat([merge(xs, bySign[s], s)]);
+	                }, memo);
+	            }, []);
 	        }
 	    }]);
 
-	    return PointModel;
+	    return CartesianGrammar;
 	}();
 
 /***/ },
 /* 10 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var TauChartError = function (_Error) {
+	    _inherits(TauChartError, _Error);
+
+	    function TauChartError(message, errorCode, errorArgs) {
+	        _classCallCheck(this, TauChartError);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TauChartError).call(this));
+
+	        _this.name = 'TauChartError';
+	        _this.message = message;
+	        _this.errorCode = errorCode;
+	        _this.errorArgs = errorArgs;
+	        return _this;
+	    }
+
+	    return TauChartError;
+	}(Error);
+
+	var errorCodes = {
+	    STACKED_FIELD_NOT_NUMBER: 'STACKED_FIELD_NOT_NUMBER',
+	    NO_DATA: 'NO_DATA',
+	    NOT_SUPPORTED_TYPE_CHART: 'NOT_SUPPORTED_TYPE_CHART',
+	    UNKNOWN_UNIT_TYPE: 'UNKNOWN_UNIT_TYPE'
+	};
+
+	exports.TauChartError = TauChartError;
+	exports.errorCodes = errorCodes;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.LayerLabels = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
+	var _layerLabelsModel = __webpack_require__(12);
+
+	var _layerLabelsRules = __webpack_require__(13);
+
+	var _formatterRegistry = __webpack_require__(14);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var LayerLabels = exports.LayerLabels = function () {
+	    function LayerLabels(model, isHorizontal, labelGuide, _ref) {
+	        var width = _ref.width;
+	        var height = _ref.height;
+	        var container = _ref.container;
+
+	        _classCallCheck(this, LayerLabels);
+
+	        this.container = container;
+	        var guide = _underscore2.default.defaults(labelGuide || {}, {
+	            fontSize: 10,
+	            fontColor: '#000',
+	            position: [],
+	            tickFormat: null,
+	            tickFormatNullAlias: ''
+	        });
+
+	        var formatter = _formatterRegistry.FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias);
+
+	        var seed = _layerLabelsModel.LayerLabelsModel.seed(model, {
+	            fontSize: guide.fontSize,
+	            fontColor: guide.fontColor,
+	            flip: isHorizontal,
+	            formatter: formatter
+	        });
+
+	        var args = { maxWidth: width, maxHeight: height };
+
+	        this.textModel = guide.position.concat('keep-in-box').map(_layerLabelsRules.LayerLabelsRules.getRule).reduce(function (prev, rule) {
+	            return _layerLabelsModel.LayerLabelsModel.compose(prev, rule(prev, args));
+	        }, seed);
+	    }
+
+	    _createClass(LayerLabels, [{
+	        key: 'draw',
+	        value: function draw(fibers) {
+
+	            var m = this.textModel;
+
+	            var fullData = fibers.reduce(function (m, f) {
+	                return m.concat(f);
+	            }, []).filter(m.label);
+
+	            var update = function update() {
+	                this.style('fill', m.color).style('font-size', m.h).attr('text-anchor', 'middle').attr('x', m.x).attr('y', m.y).text(m.label);
+	            };
+
+	            var text = this.container.selectAll('.t-label').data(fullData);
+	            text.exit().remove();
+	            text.call(update);
+	            text.enter().append('text').attr('class', 't-label').call(update);
+
+	            return text;
+	        }
+	    }]);
+
+	    return LayerLabels;
+	}();
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var createFunc = function createFunc(x) {
+	    return function () {
+	        return x;
+	    };
+	};
+
+	var LayerLabelsModel = exports.LayerLabelsModel = function () {
+	    function LayerLabelsModel(prev) {
+	        _classCallCheck(this, LayerLabelsModel);
+
+	        this.model = prev.model;
+	        this.x = prev.x || createFunc(0);
+	        this.y = prev.y || createFunc(0);
+	        this.w = prev.w || createFunc(0);
+	        this.h = prev.h || createFunc(0);
+	        this.label = prev.label || createFunc('');
+	        this.color = prev.color || createFunc('');
+	    }
+
+	    _createClass(LayerLabelsModel, null, [{
+	        key: 'seed',
+	        value: function seed(model, _ref) {
+	            var fontSize = _ref.fontSize;
+	            var fontColor = _ref.fontColor;
+	            var flip = _ref.flip;
+	            var formatter = _ref.formatter;
+	            var textSize = _ref.textSize;
+	            var _ref$textPad = _ref.textPad;
+	            var textPad = _ref$textPad === undefined ? 1.5 : _ref$textPad;
+
+
+	            var fnTextSize = textSize || function (str) {
+	                return str.length * fontSize * 0.6;
+	            };
+
+	            var _x = flip ? model.yi : model.xi;
+	            var _y = flip ? model.xi : model.yi;
+
+	            var label = function label(row) {
+	                return formatter(model.label(row));
+	            };
+
+	            return new LayerLabelsModel({
+	                model: model,
+	                x: function x(row) {
+	                    return _x(row);
+	                },
+	                y: function y(row) {
+	                    return _y(row) + fontSize / 2 - textPad;
+	                },
+	                w: function w(row) {
+	                    return fnTextSize(label(row));
+	                },
+	                h: function h() {
+	                    return fontSize;
+	                },
+	                label: label,
+	                color: function color() {
+	                    return fontColor;
+	                }
+	            });
+	        }
+	    }, {
+	        key: 'compose',
+	        value: function compose(prev) {
+	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	            return Object.keys(updates).reduce(function (memo, propName) {
+	                memo[propName] = updates[propName];
+	                return memo;
+	            }, new LayerLabelsModel(prev));
+	        }
+	    }]);
+
+	    return LayerLabelsModel;
+	}();
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var rules = {};
+
+	var LayerLabelsRules = exports.LayerLabelsRules = function () {
+	    function LayerLabelsRules() {
+	        _classCallCheck(this, LayerLabelsRules);
+	    }
+
+	    _createClass(LayerLabelsRules, null, [{
+	        key: 'regRule',
+	        value: function regRule(alias, func) {
+	            rules[alias] = func;
+	            return this;
+	        }
+	    }, {
+	        key: 'getRule',
+	        value: function getRule(alias) {
+	            return rules[alias];
+	        }
+	    }]);
+
+	    return LayerLabelsRules;
+	}();
+
+	var isPositive = function isPositive(scale, row) {
+	    return scale.discrete || !scale.discrete && row[scale.dim] >= 0;
+	};
+	var isNegative = function isNegative(scale, row) {
+	    return !scale.discrete && row[scale.dim] < 0;
+	};
+	var alignByX = function alignByX(exp) {
+	    return function (prev) {
+	        return {
+	            x: function x(row) {
+
+	                var ordinateScale = prev.model.scaleY;
+
+	                if (exp[2] === '+' && !isPositive(ordinateScale, row)) {
+	                    return prev.x(row);
+	                }
+
+	                if (exp[2] === '-' && !isNegative(ordinateScale, row)) {
+	                    return prev.x(row);
+	                }
+
+	                var k = exp[1];
+	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
+
+	                return prev.x(row) + k * (prev.w(row) / 2) + k * u * prev.model.size(row) / 2;
+	            }
+	        };
+	    };
+	};
+
+	var alignByY = function alignByY(exp) {
+	    return function (prev) {
+	        return {
+	            y: function y(row) {
+
+	                var ordinateScale = prev.model.scaleY;
+
+	                if (exp[2] === '+' && !isPositive(ordinateScale, row)) {
+	                    return prev.y(row);
+	                }
+
+	                if (exp[2] === '-' && !isNegative(ordinateScale, row)) {
+	                    return prev.y(row);
+	                }
+
+	                var k = exp[1];
+	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
+
+	                return prev.y(row) + k * (prev.h(row) / 2) + k * u * prev.model.size(row) / 2;
+	            }
+	        };
+	    };
+	};
+
+	LayerLabelsRules.regRule('l', alignByX(['l', -1, null])).regRule('L', alignByX(['L', -1, null])).regRule('l+', alignByX(['l', -1, '+'])).regRule('l-', alignByX(['l', -1, '-'])).regRule('L+', alignByX(['L', -1, '+'])).regRule('L-', alignByX(['L', -1, '-'])).regRule('r', alignByX(['r', 1, null])).regRule('R', alignByX(['R', 1, null])).regRule('r+', alignByX(['r', 1, '+'])).regRule('r-', alignByX(['r', 1, '-'])).regRule('R+', alignByX(['R', 1, '+'])).regRule('R-', alignByX(['R', 1, '-'])).regRule('t', alignByY(['t', -1, null])).regRule('T', alignByY(['T', -1, null])).regRule('t+', alignByY(['t', -1, '+'])).regRule('t-', alignByY(['t', -1, '-'])).regRule('T+', alignByY(['T', -1, '+'])).regRule('T-', alignByY(['T', -1, '-'])).regRule('b', alignByY(['b', 1, null])).regRule('B', alignByY(['B', 1, null])).regRule('b+', alignByY(['b', 1, '+'])).regRule('b-', alignByY(['b', 1, '-'])).regRule('B+', alignByY(['B', 1, '+'])).regRule('B-', alignByY(['B', 1, '-'])).regRule('keep-within-diameter-or-top', function (prev) {
+	    return {
+	        y: function y(row) {
+
+	            if (prev.model.size(row) / prev.w(row) < 1) {
+	                return prev.y(row) - prev.h(row) / 2 - prev.model.size(row) / 2;
+	            }
+
+	            return prev.y(row);
+	        }
+	    };
+	}).regRule('keep-in-box', function (prev, _ref) {
+	    var maxWidth = _ref.maxWidth;
+	    var maxHeight = _ref.maxHeight;
+
+	    return {
+	        x: function x(row) {
+	            var x = prev.x(row);
+	            var w = prev.w(row);
+	            var l = x - w / 2;
+	            var r = x + w / 2;
+
+	            var dl = 0 - l;
+	            if (dl > 0) {
+	                return 0;
+	            }
+
+	            var dr = r - maxWidth;
+	            if (dr > 0) {
+	                return x - dr;
+	            }
+
+	            return x;
+	        },
+	        y: function y(row) {
+	            var y = prev.y(row);
+	            var h = prev.h(row);
+	            var t = y - h / 2;
+	            var b = y + h / 2;
+
+	            var dt = 0 - t;
+	            if (dt > 0) {
+	                return 0;
+	            }
+
+	            var db = b - maxHeight;
+	            if (db > 0) {
+	                return y - db;
+	            }
+
+	            return y;
+	        }
+	    };
+	});
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.FormatterRegistry = undefined;
+
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/* jshint ignore:end */
+	/* jshint ignore:start */
+	var FORMATS_MAP = {
+
+	    'x-num-auto': function xNumAuto(x) {
+	        var v = parseFloat(x.toFixed(2));
+	        return Math.abs(v) < 1 ? v.toString() : _d2.default.format('s')(v);
+	    },
+
+	    percent: function percent(x) {
+	        var v = parseFloat((x * 100).toFixed(2));
+	        return v.toString() + '%';
+	    },
+
+	    day: _d2.default.time.format('%d-%b-%Y'),
+
+	    'day-short': _d2.default.time.format('%d-%b'),
+
+	    week: _d2.default.time.format('%d-%b-%Y'),
+
+	    'week-short': _d2.default.time.format('%d-%b'),
+
+	    month: function month(x) {
+	        var d = new Date(x);
+	        var m = d.getMonth();
+	        var formatSpec = m === 0 ? '%B, %Y' : '%B';
+	        return _d2.default.time.format(formatSpec)(x);
+	    },
+
+	    'month-short': function monthShort(x) {
+	        var d = new Date(x);
+	        var m = d.getMonth();
+	        var formatSpec = m === 0 ? '%b \'%y' : '%b';
+	        return _d2.default.time.format(formatSpec)(x);
+	    },
+
+	    'month-year': _d2.default.time.format('%B, %Y'),
+
+	    quarter: function quarter(x) {
+	        var d = new Date(x);
+	        var m = d.getMonth();
+	        var q = (m - m % 3) / 3;
+	        return 'Q' + (q + 1) + ' ' + d.getFullYear();
+	    },
+
+	    year: _d2.default.time.format('%Y'),
+
+	    'x-time-auto': null
+	};
+
+	var FormatterRegistry = {
+
+	    get: function get(formatAlias, nullOrUndefinedAlias) {
+
+	        var nullAlias = nullOrUndefinedAlias || '';
+
+	        var identity = function identity(x) {
+	            return (x === null || typeof x === 'undefined' ? nullAlias : x).toString();
+	        };
+
+	        var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
+	        var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
+
+	        if (hasFormat) {
+	            formatter = FORMATS_MAP[formatAlias];
+	        }
+
+	        if (!hasFormat && formatAlias) {
+	            formatter = function formatter(v) {
+	                var f = _underscore2.default.isDate(v) ? _d2.default.time.format(formatAlias) : _d2.default.format(formatAlias);
+	                return f(v);
+	            };
+	        }
+
+	        if (!hasFormat && !formatAlias) {
+	            formatter = identity;
+	        }
+
+	        return formatter;
+	    },
+
+	    add: function add(formatAlias, formatter) {
+	        FORMATS_MAP[formatAlias] = formatter;
+	    }
+	};
+
+	exports.FormatterRegistry = FormatterRegistry;
+
+/***/ },
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1726,9 +2552,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _elementPath = __webpack_require__(11);
+	var _elementPath = __webpack_require__(16);
 
-	var _cssClassMap = __webpack_require__(14);
+	var _cartesianGrammar = __webpack_require__(9);
+
+	var _cssClassMap = __webpack_require__(17);
 
 	var _underscore = __webpack_require__(3);
 
@@ -1754,16 +2582,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Line).call(this, config));
 
-	        _this.config = config;
+	        var enableStack = _this.config.stack;
+
 	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
 	            interpolate: 'linear'
 	        });
+
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale];
 	        return _this;
 	    }
 
 	    _createClass(Line, [{
 	        key: 'buildModel',
-	        value: function buildModel(params) {
+	        value: function buildModel(pathModel, params) {
 
 	            var wMax = this.config.options.width;
 	            var hMax = this.config.options.height;
@@ -1784,7 +2615,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return n;
 	            };
 
-	            var baseModel = _get(Object.getPrototypeOf(Line.prototype), 'buildModel', this).call(this, params);
+	            var baseModel = _get(Object.getPrototypeOf(Line.prototype), 'buildModel', this).call(this, pathModel, params);
 
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
@@ -1810,6 +2641,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        data: row
 	                    };
 	                });
+
+	                // double for consistency in case of
+	                // (vertices.length === 1)
+	                vertices.push(vertices[0]);
 
 	                var pair = _underscore2.default.times(vertices.length - 1, function (i) {
 	                    return i;
@@ -1918,7 +2753,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_elementPath.BasePath);
 
 /***/ },
-/* 11 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1932,9 +2767,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(7);
 
-	var _path = __webpack_require__(12);
+	var _cartesianGrammar = __webpack_require__(9);
 
-	var _showText = __webpack_require__(13);
+	var _layerLabels = __webpack_require__(11);
 
 	var _const = __webpack_require__(6);
 
@@ -1948,6 +2783,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -1957,7 +2794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var BasePath = exports.BasePath = function (_Element) {
 	    _inherits(BasePath, _Element);
 
-	    function BasePath(config, decorators) {
+	    function BasePath(config) {
 	        _classCallCheck(this, BasePath);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BasePath).call(this, config));
@@ -1971,13 +2808,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            showAnchors: true,
 	            anchorSize: 0.1,
 	            color: {},
-	            text: {}
+	            label: {}
 	        });
 
-	        _this.config.guide.text = _underscore2.default.defaults(_this.config.guide.text, {
+	        _this.config.guide.label = _underscore2.default.defaults(_this.config.guide.label, {
 	            fontSize: 11,
-	            paddingX: 0,
-	            paddingY: 0
+	            position: _this.config.flip ? ['r+', 'l-'] : ['t+', 'b-']
 	        });
 
 	        _this.config.guide.color = _underscore2.default.defaults(_this.config.guide.color || {}, { fill: null });
@@ -1987,7 +2823,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            defMaxSize: _this.isEmptySize ? 6 : 40
 	        });
 
-	        _this.decorators = [].concat([_path.PathModel.decorator_orientation, _path.PathModel.decorator_group, _path.PathModel.decorator_size, _path.PathModel.decorator_color]).concat(decorators).concat(config.adjustPhase && _path.PathModel.adjustSizeScale);
+	        _this.decorators = [];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2022,35 +2858,37 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-	            this.color = fnCreateScale('color', config.color, {});
 	            this.size = fnCreateScale('size', config.size, {});
-	            this.text = fnCreateScale('text', config.text, {});
+	            this.color = fnCreateScale('color', config.color, {});
+	            this.label = fnCreateScale('label', config.label, {});
 	            this.split = fnCreateScale('split', config.split, {});
 
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('text', this.text);
+	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('label', this.label);
 	        }
 	    }, {
 	        key: 'buildModel',
-	        value: function buildModel(_ref) {
+	        value: function buildModel(pathModel, _ref) {
 	            var colorScale = _ref.colorScale;
-	            var textScale = _ref.textScale;
-	            var frames = _ref.frames;
+	            var labelScale = _ref.labelScale;
 
-
-	            var pathModel = this.walkFrames(frames);
 
 	            var datumClass = 'i-role-datum';
 	            var pointPref = _const.CSS_PREFIX + 'dot-line dot-line i-role-dot ' + datumClass + ' ' + _const.CSS_PREFIX + 'dot ';
 
+	            var flip = this.config.flip;
+	            var choose = function choose(statement, yes, no) {
+	                return statement ? yes : no;
+	            };
 	            var kRound = 10000;
 	            var baseModel = {
 	                scaleX: pathModel.scaleX,
 	                scaleY: pathModel.scaleY,
 	                scaleColor: colorScale,
-	                scaleText: textScale,
-	                x: pathModel.xi,
-	                y: pathModel.yi,
-	                y0: pathModel.y0,
+	                scaleLabel: labelScale,
+	                x: choose(flip, pathModel.yi, pathModel.xi),
+	                x0: choose(flip, pathModel.y0, pathModel.xi),
+	                y: choose(flip, pathModel.xi, pathModel.yi),
+	                y0: choose(flip, pathModel.xi, pathModel.y0),
 	                size: pathModel.size,
 	                group: pathModel.group,
 	                order: pathModel.order,
@@ -2098,7 +2936,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function walkFrames(frames) {
 
 	            var args = {
-	                textScale: this.text,
+	                isHorizontal: this.config.flip,
 	                defMin: this.config.guide.size.defMinSize,
 	                defMax: this.config.guide.size.defMaxSize,
 	                minLimit: this.config.guide.size.minSize,
@@ -2112,10 +2950,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return x;
 	            }).reduce(function (model, transform) {
 	                return transform(model, args);
-	            }, new _path.PathModel({
+	            }, new _cartesianGrammar.CartesianGrammar({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
 	                scaleSize: this.size,
+	                scaleLabel: this.label,
 	                scaleColor: this.color,
 	                scaleSplit: this.split
 	            }));
@@ -2132,11 +2971,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var fullData = frames.reduce(function (memo, f) {
 	                return memo.concat(f.part());
 	            }, []);
-
-	            var model = this.buildModel({
+	            var pathModel = this.walkFrames(frames);
+	            var model = this.buildModel(pathModel, {
 	                colorScale: this.color,
-	                textScale: this.text,
-	                frames: frames
+	                labelScale: this.label
 	            });
 	            this.model = model;
 
@@ -2164,15 +3002,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                self.subscribe(series, function (rows) {
 	                    var m = _d2.default.mouse(this);
-	                    return model.matchRowInCoordinates(rows, { x: m[0], y: m[1] });
+	                    return model.matchRowInCoordinates(rows.filter(_cartesianGrammar.CartesianGrammar.isNonSyntheticRecord), { x: m[0], y: m[1] });
 	                });
-
-	                if (guide.color.fill && !model.scaleColor.dim) {
-	                    this.style({
-	                        fill: guide.color.fill,
-	                        stroke: guide.color.fill
-	                    });
-	                }
 
 	                if (guide.showAnchors) {
 
@@ -2190,7 +3021,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    };
 
 	                    var dots = this.selectAll('.i-data-anchor').data(function (fiber) {
-	                        return fiber;
+	                        return fiber.filter(_cartesianGrammar.CartesianGrammar.isNonSyntheticRecord);
 	                    });
 	                    dots.exit().remove();
 	                    dots.attr(attr);
@@ -2198,53 +3029,38 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                    self.subscribe(dots);
 	                }
-
-	                if (model.scaleText.dim) {
-	                    self.subscribe((0, _showText.elementDecoratorShowText)({
-	                        guide: guide,
-	                        xScale: model.scaleX,
-	                        yScale: model.scaleY,
-	                        textScale: model.scaleText,
-	                        container: this
-	                    }));
-	                }
 	            };
 
-	            var groups = _underscore2.default.groupBy(fullData, model.group);
-	            var fibers = Object.keys(groups).sort(function (a, b) {
-	                return model.order(a) - model.order(b);
-	            }).reduce(function (memo, k) {
-	                return memo.concat([groups[k]]);
-	            }, []);
+	            var fibers = this.config.stack ? _cartesianGrammar.CartesianGrammar.toStackedFibers(fullData, pathModel) : _cartesianGrammar.CartesianGrammar.toFibers(fullData, pathModel);
 
 	            var frameGroups = options.container.selectAll('.frame-' + options.uid).data(fibers);
 	            frameGroups.exit().remove();
 	            frameGroups.call(updateGroupContainer);
 	            frameGroups.enter().append('g').call(updateGroupContainer);
+
+	            self.subscribe(new _layerLabels.LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(fibers));
 	        }
 	    }, {
 	        key: 'highlight',
 	        value: function highlight(filter) {
+	            var _container$selectAll$, _container$selectAll$2;
 
 	            var container = this.config.options.container;
 
-	            container.selectAll('.i-role-path').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(fiber) {
-	                    return filter(fiber[0]) === true;
-	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(fiber) {
-	                    return filter(fiber[0]) === false;
-	                }
-	            });
+	            var x = 'graphical-report__highlighted';
+	            var _ = 'graphical-report__dimmed';
 
-	            container.selectAll('.i-role-dot').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(d) {
-	                    return filter(d) === true;
-	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(d) {
-	                    return filter(d) === false;
-	                }
-	            });
+	            container.selectAll('.i-role-path').classed((_container$selectAll$ = {}, _defineProperty(_container$selectAll$, x, function (fiber) {
+	                return filter(fiber.filter(_cartesianGrammar.CartesianGrammar.isNonSyntheticRecord)[0]) === true;
+	            }), _defineProperty(_container$selectAll$, _, function (fiber) {
+	                return filter(fiber.filter(_cartesianGrammar.CartesianGrammar.isNonSyntheticRecord)[0]) === false;
+	            }), _container$selectAll$));
+
+	            container.selectAll('.i-role-dot').classed((_container$selectAll$2 = {}, _defineProperty(_container$selectAll$2, x, function (d) {
+	                return filter(d) === true;
+	            }), _defineProperty(_container$selectAll$2, _, function (d) {
+	                return filter(d) === false;
+	            }), _container$selectAll$2));
 	        }
 	    }, {
 	        key: 'highlightDataPoints',
@@ -2270,305 +3086,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_element.Element);
 
 /***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var PathModel = exports.PathModel = function () {
-	    function PathModel() {
-	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-	        _classCallCheck(this, PathModel);
-
-	        var createFunc = function createFunc(x) {
-	            return function () {
-	                return x;
-	            };
-	        };
-	        this.scaleX = model.scaleX || null;
-	        this.scaleY = model.scaleY || null;
-	        this.scaleSize = model.scaleSize || null;
-	        this.scaleColor = model.scaleColor || null;
-	        this.scaleSplit = model.scaleSplit || null;
-
-	        this.yi = model.yi || createFunc(0);
-	        this.xi = model.xi || createFunc(0);
-
-	        this.y0 = model.y0 || createFunc(0);
-
-	        this.size = model.size || createFunc(1);
-	        this.color = model.color || createFunc('');
-	        this.group = model.group || createFunc('');
-	        this.order = model.order || createFunc(0);
-	    }
-
-	    _createClass(PathModel, null, [{
-	        key: 'compose',
-	        value: function compose(prev) {
-	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-	            return Object.keys(updates).reduce(function (memo, propName) {
-	                memo[propName] = updates[propName];
-	                return memo;
-	            }, new PathModel(prev));
-	        }
-	    }, {
-	        key: 'decorator_identity',
-	        value: function decorator_identity(model) {
-	            return PathModel.compose(model);
-	        }
-	    }, {
-	        key: 'decorator_orientation',
-	        value: function decorator_orientation(model, _ref) {
-	            var _ref$isHorizontal = _ref.isHorizontal;
-	            var isHorizontal = _ref$isHorizontal === undefined ? false : _ref$isHorizontal;
-
-
-	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
-	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
-
-	            return PathModel.compose(model, {
-	                scaleX: baseScale,
-	                scaleY: valsScale,
-	                xi: function xi(d) {
-	                    return baseScale.value(d[baseScale.dim]);
-	                },
-	                yi: function yi(d) {
-	                    return valsScale.value(d[valsScale.dim]);
-	                },
-	                y0: function y0(d) {
-	                    return valsScale.value(d[valsScale.dim]);
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_size',
-	        value: function decorator_size(model, _ref2) {
-	            _objectDestructuringEmpty(_ref2);
-
-	            return PathModel.compose(model, {
-	                size: function size(d) {
-	                    return model.scaleSize.value(d[model.scaleSize.dim]);
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_color',
-	        value: function decorator_color(model, _ref3) {
-	            _objectDestructuringEmpty(_ref3);
-
-	            return PathModel.compose(model, {
-	                color: function color(d) {
-	                    return model.scaleColor.value(d[model.scaleColor.dim]);
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_group',
-	        value: function decorator_group(model, _ref4) {
-	            _objectDestructuringEmpty(_ref4);
-
-	            return PathModel.compose(model, {
-	                group: function group(d) {
-	                    return d[model.scaleColor.dim] + '_' + d[model.scaleSplit.dim];
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_groupOrderByAvg',
-	        value: function decorator_groupOrderByAvg(model, _ref5) {
-	            var dataSource = _ref5.dataSource;
-
-
-	            var avg = function avg(arr) {
-	                return arr.map(model.yi).reduce(function (sum, i) {
-	                    return sum + i;
-	                }, 0) / arr.length;
-	            };
-
-	            var groups = dataSource.reduce(function (memo, row) {
-	                var k = model.group(row);
-	                memo[k] = memo[k] || [];
-	                memo[k].push(row);
-	                return memo;
-	            }, {});
-
-	            var _order = Object.keys(groups).map(function (k) {
-	                return [k, avg(groups[k])];
-	            }).sort(function (a, b) {
-	                return a[1] - b[1];
-	            }).map(function (r) {
-	                return r[0];
-	            });
-
-	            return PathModel.compose(model, {
-	                order: function order(group) {
-	                    var i = _order.indexOf(group);
-	                    return i < 0 ? Number.MAX_VALUE : i;
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_groundY0',
-	        value: function decorator_groundY0(model, _ref6) {
-	            _objectDestructuringEmpty(_ref6);
-
-	            var ys = model.scaleY.domain();
-	            var min = ys[0];
-	            var max = ys[ys.length - 1];
-	            // NOTE: max also can be below 0
-	            var base = model.scaleY.discrete ? min : min < 0 ? Math.min(0, max) : min;
-
-	            var _y = model.scaleY.value(base);
-
-	            return PathModel.compose(model, {
-	                y0: function y0() {
-	                    return _y;
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'adjustSizeScale',
-	        value: function adjustSizeScale(model, _ref7) {
-	            var minLimit = _ref7.minLimit;
-	            var maxLimit = _ref7.maxLimit;
-	            var defMin = _ref7.defMin;
-	            var defMax = _ref7.defMax;
-
-
-	            var curr = {
-	                minSize: typeof minLimit === 'number' ? minLimit : defMin,
-	                maxSize: typeof maxLimit === 'number' ? maxLimit : defMax
-	            };
-
-	            model.scaleSize.fixup(function (prev) {
-
-	                var next = {};
-
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.minSize = curr.minSize;
-	                    next.maxSize = curr.maxSize;
-	                }
-
-	                return next;
-	            });
-
-	            return model;
-	        }
-	    }]);
-
-	    return PathModel;
-	}();
-
-/***/ },
-/* 13 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.elementDecoratorShowText = elementDecoratorShowText;
-	function elementDecoratorShowText(_ref) {
-	    var container = _ref.container;
-	    var guide = _ref.guide;
-	    var xScale = _ref.xScale;
-	    var yScale = _ref.yScale;
-	    var textScale = _ref.textScale;
-
-
-	    var xDomain = xScale.domain();
-	    var yDomain = yScale.domain();
-
-	    var isMostLeft = function isMostLeft(d) {
-	        return xScale(d[xScale.dim]) === xScale(xDomain[0]);
-	    };
-	    var isMostRight = function isMostRight(d) {
-	        return xScale(d[xScale.dim]) === xScale(xDomain[xDomain.length - 1]);
-	    };
-	    var isMostTop = function isMostTop(d) {
-	        return yScale(d[yScale.dim]) === yScale(yDomain[yDomain.length - 1]);
-	    };
-	    var isMostBottom = function isMostBottom(d) {
-	        return yScale(d[yScale.dim]) === yScale(yDomain[0]);
-	    };
-
-	    var fnAnchor = function fnAnchor(d) {
-
-	        if (isMostLeft(d)) {
-	            return 'caption-left-edge';
-	        }
-
-	        if (isMostRight(d)) {
-	            return 'caption-right-edge';
-	        }
-
-	        if (isMostBottom(d)) {
-	            return 'caption-bottom-edge';
-	        }
-
-	        if (isMostTop(d)) {
-	            return 'caption-top-edge';
-	        }
-
-	        return '';
-	    };
-
-	    var fontSize = guide.text.fontSize;
-
-	    var captionUpdate = function captionUpdate() {
-
-	        if (guide.text.fontColor) {
-	            this.style('fill', guide.text.fontColor);
-	        }
-
-	        this.attr('class', function (d) {
-	            return 'caption ' + fnAnchor(d);
-	        }).attr('transform', function (d) {
-
-	            var t = isMostTop(d);
-	            var r = isMostRight(d);
-	            var b = isMostBottom(d);
-
-	            var offsetY = t ? fontSize : 0;
-	            var offsetX = !r && (t || b) ? 2 : 0;
-
-	            var cx = xScale(d[xScale.dim]) + offsetX + guide.text.paddingX;
-	            var cy = yScale(d[yScale.dim]) + offsetY + guide.text.paddingY;
-
-	            return 'translate(' + [cx, cy] + ')';
-	        }).text(function (d) {
-	            return textScale(d[textScale.dim]);
-	        });
-	    };
-
-	    var text = container.selectAll('.caption').data(function (fiber) {
-	        return fiber.filter(function (d) {
-	            return d[textScale.dim];
-	        });
-	    });
-	    text.exit().remove();
-	    text.call(captionUpdate);
-	    text.enter().append('text').call(captionUpdate);
-
-	    return text;
-	}
-
-/***/ },
-/* 14 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2607,7 +3125,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getLineClassesByCount = getLineClassesByCount;
 
 /***/ },
-/* 15 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2623,11 +3141,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _elementPath = __webpack_require__(11);
+	var _elementPath = __webpack_require__(16);
 
-	var _cssClassMap = __webpack_require__(14);
+	var _cssClassMap = __webpack_require__(17);
 
-	var _path = __webpack_require__(12);
+	var _cartesianGrammar = __webpack_require__(9);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2641,15 +3159,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Area(config) {
 	        _classCallCheck(this, Area);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config, [_path.PathModel.decorator_groupOrderByAvg, _path.PathModel.decorator_groundY0]));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config));
+
+	        var enableStack = _this.config.stack;
+
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale];
+	        return _this;
 	    }
 
 	    _createClass(Area, [{
 	        key: 'buildModel',
-	        value: function buildModel(params) {
+	        value: function buildModel(modelGoG, params) {
 
 	            var self = this;
-	            var baseModel = _get(Object.getPrototypeOf(Area.prototype), 'buildModel', this).call(this, params);
+	            var baseModel = _get(Object.getPrototypeOf(Area.prototype), 'buildModel', this).call(this, modelGoG, params);
 
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
@@ -2696,7 +3219,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                    var ways = fiber.reduce(function (memo, d) {
 	                        memo.dir.push([baseModel.x(d), baseModel.y(d)]);
-	                        memo.rev.push([baseModel.x(d), baseModel.y0(d)]);
+	                        memo.rev.push([baseModel.x0(d), baseModel.y0(d)]);
 	                        return memo;
 	                    }, {
 	                        dir: [],
@@ -2714,8 +3237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDistance',
 	        value: function getDistance(mx, my, rx, ry) {
-	            var guide = this.config.guide;
-	            return guide.flip ? Math.abs(my - ry) : Math.abs(mx - rx);
+	            return this.config.flip ? Math.abs(my - ry) : Math.abs(mx - rx);
 	        }
 	    }]);
 
@@ -2723,7 +3245,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_elementPath.BasePath);
 
 /***/ },
-/* 16 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2739,13 +3261,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(7);
 
-	var _interval = __webpack_require__(17);
+	var _cartesianGrammar = __webpack_require__(9);
+
+	var _layerLabels = __webpack_require__(11);
 
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2762,18 +3288,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Interval).call(this, config));
 
 	        _this.config = config;
-	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
-	            prettify: true,
-	            enableColorToBarPosition: true
-	        });
 
-	        var defaultMinLimit = _this.config.guide.prettify ? 3 : 0;
-	        var defaultMaxLimit = _this.config.guide.prettify ? 40 : Number.MAX_VALUE;
+	        var enableStack = _this.config.stack;
+	        _this.config.guide = _this.config.guide || {};
+	        _this.config.guide = _underscore2.default.defaults(_this.config.guide, {
+	            prettify: true,
+	            enableColorToBarPosition: !enableStack
+	        });
 
 	        _this.config.guide.size = _underscore2.default.defaults(_this.config.guide.size || {}, {
 	            enableDistributeEvenly: true,
-	            defMinSize: defaultMinLimit,
-	            defMaxSize: defaultMaxLimit
+	            defMinSize: _this.config.guide.prettify ? 3 : 0,
+	            defMaxSize: _this.config.guide.prettify ? 40 : Number.MAX_VALUE
+	        });
+
+	        _this.config.guide.label = _underscore2.default.defaults(_this.config.guide.label || {}, {
+	            position: _this.config.flip ? ['r+', 'l-'] : ['t+', 'b-']
 	        });
 
 	        _this.baseCssClass = 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar';
@@ -2785,7 +3315,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_group, _interval.IntervalModel.decorator_groupOrderByColor, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color];
+
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableDistributeEvenly && _cartesianGrammar.CartesianGrammar.decorator_size_distribute_evenly, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale];
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -2800,21 +3331,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var config = this.config;
 	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
 	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-	            this.color = fnCreateScale('color', config.color, {});
 	            this.size = fnCreateScale('size', config.size, {});
+	            this.color = fnCreateScale('color', config.color, {});
 	            this.split = fnCreateScale('split', config.split, {});
-	            this.text = fnCreateScale('text', config.text, {});
+	            this.label = fnCreateScale('label', config.label, {});
 
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('text', this.text);
+	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('label', this.label);
 	        }
 	    }, {
 	        key: 'walkFrames',
 	        value: function walkFrames(frames) {
 
-	            var config = this.config;
-	            var isHorizontal = config.flip || config.guide.flip;
 	            var args = {
-	                isHorizontal: isHorizontal,
+	                isHorizontal: this.config.flip,
 	                minLimit: this.minLimit,
 	                maxLimit: this.maxLimit,
 	                defMin: this.defMin,
@@ -2826,10 +3355,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return x;
 	            }).reduce(function (model, transform) {
 	                return transform(model, args);
-	            }, new _interval.IntervalModel({
+	            }, new _cartesianGrammar.CartesianGrammar({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
 	                scaleSize: this.size,
+	                scaleLabel: this.label,
 	                scaleColor: this.color,
 	                scaleSplit: this.split
 	            }));
@@ -2853,14 +3383,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var xScale = this.xScale;
 	            var yScale = this.yScale;
 	            var colorScale = this.color;
-	            var isHorizontal = config.flip || config.guide.flip;
+	            var isHorizontal = config.flip;
 	            var prettify = config.guide.prettify;
 	            var baseCssClass = this.baseCssClass;
 
-	            var barModel = this.buildModel({
-	                colorScale: colorScale,
-	                frames: frames
-	            });
+	            var modelGoG = this.walkFrames(frames);
+	            var barModel = this.buildModel(modelGoG, { colorScale: colorScale });
 
 	            var params = { prettify: prettify, xScale: xScale, yScale: yScale, minBarH: 1, minBarW: 1, baseCssClass: baseCssClass };
 	            var d3Attrs = isHorizontal ? this.toHorizontalDrawMethod(barModel, params) : this.toVerticalDrawMethod(barModel, params);
@@ -2881,17 +3409,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                self.subscribe(bars);
 	            };
 
-	            var groups = _underscore2.default.groupBy(this.convertFramesToData(frames), barModel.group);
-	            var fibers = Object.keys(groups).sort(function (a, b) {
-	                return barModel.order(a) - barModel.order(b);
-	            }).reduce(function (memo, k) {
-	                return memo.concat([groups[k]]);
-	            }, []);
+	            var data = this.convertFramesToData(frames);
+
+	            var fibers = _cartesianGrammar.CartesianGrammar.toFibers(data, modelGoG);
 
 	            var elements = options.container.selectAll('.frame-id-' + uid).data(fibers);
 	            elements.exit().remove();
 	            elements.call(updateBarContainer);
 	            elements.enter().append('g').call(updateBarContainer);
+
+	            self.subscribe(new _layerLabels.LayerLabels(modelGoG, isHorizontal, config.guide.label, options).draw(fibers));
 	        }
 	    }, {
 	        key: 'toVerticalDrawMethod',
@@ -3031,52 +3558,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'buildModel',
-	        value: function buildModel(_ref5) {
+	        value: function buildModel(modelGoG, _ref5) {
 	            var colorScale = _ref5.colorScale;
-	            var frames = _ref5.frames;
 
-
-	            var barModel = this.walkFrames(frames);
 
 	            return {
 	                barX: function barX(d) {
-	                    return barModel.xi(d);
+	                    return modelGoG.xi(d);
 	                },
 	                barY: function barY(d) {
-	                    return Math.min(barModel.y0(d), barModel.yi(d));
+	                    return Math.min(modelGoG.y0(d), modelGoG.yi(d));
 	                },
 	                barH: function barH(d) {
-	                    return Math.abs(barModel.yi(d) - barModel.y0(d));
+	                    return Math.abs(modelGoG.yi(d) - modelGoG.y0(d));
 	                },
 	                barW: function barW(d) {
-	                    return barModel.size(d);
+	                    return modelGoG.size(d);
 	                },
 	                barColor: function barColor(d) {
-	                    return colorScale.toColor(barModel.color(d));
+	                    return colorScale.toColor(modelGoG.color(d));
 	                },
 	                barClass: function barClass(d) {
-	                    return colorScale.toClass(barModel.color(d));
+	                    return colorScale.toClass(modelGoG.color(d));
 	                },
 	                group: function group(d) {
-	                    return barModel.group(d);
+	                    return modelGoG.group(d);
 	                },
 	                order: function order(d) {
-	                    return barModel.order(d);
+	                    return modelGoG.order(d);
 	                }
 	            };
 	        }
 	    }, {
 	        key: 'highlight',
 	        value: function highlight(filter) {
+	            var _config$options$conta;
 
-	            this.config.options.container.selectAll('.bar').classed({
-	                'graphical-report__highlighted': function graphicalReport__highlighted(d) {
-	                    return filter(d) === true;
-	                },
-	                'graphical-report__dimmed': function graphicalReport__dimmed(d) {
-	                    return filter(d) === false;
-	                }
-	            });
+	            var x = 'graphical-report__highlighted';
+	            var _ = 'graphical-report__dimmed';
+
+	            this.config.options.container.selectAll('.bar').classed((_config$options$conta = {}, _defineProperty(_config$options$conta, x, function (d) {
+	                return filter(d) === true;
+	            }), _defineProperty(_config$options$conta, _, function (d) {
+	                return filter(d) === false;
+	            }), _config$options$conta));
 	        }
 	    }]);
 
@@ -3084,343 +3609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_element.Element);
 
 /***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.IntervalModel = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var delimiter = '(@taucharts@)';
-
-	var IntervalModel = exports.IntervalModel = function () {
-	    function IntervalModel() {
-	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-	        _classCallCheck(this, IntervalModel);
-
-	        var createFunc = function createFunc(x) {
-	            return function () {
-	                return x;
-	            };
-	        };
-	        this.scaleX = model.scaleX || null;
-	        this.scaleY = model.scaleY || null;
-	        this.scaleSize = model.scaleSize || null;
-	        this.scaleColor = model.scaleColor || null;
-	        this.scaleSplit = model.scaleSplit || null;
-
-	        this.y0 = model.y0 || createFunc(0);
-	        this.yi = model.yi || createFunc(0);
-	        this.xi = model.xi || createFunc(0);
-	        this.size = model.size || createFunc(1);
-	        this.color = model.color || createFunc('');
-	        this.group = model.group || createFunc('');
-	        this.order = model.order || createFunc(0);
-	    }
-
-	    _createClass(IntervalModel, null, [{
-	        key: 'compose',
-	        value: function compose(prev) {
-	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-	            return Object.keys(updates).reduce(function (memo, propName) {
-	                memo[propName] = updates[propName];
-	                return memo;
-	            }, new IntervalModel(prev));
-	        }
-	    }, {
-	        key: 'decorator_identity',
-	        value: function decorator_identity(model) {
-	            return IntervalModel.compose(model);
-	        }
-	    }, {
-	        key: 'decorator_orientation',
-	        value: function decorator_orientation(model, _ref) {
-	            var isHorizontal = _ref.isHorizontal;
-
-
-	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
-	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
-
-	            var k = isHorizontal ? -0.5 : 0.5;
-
-	            return IntervalModel.compose(model, {
-	                scaleX: baseScale,
-	                scaleY: valsScale,
-	                y0: valsScale.discrete ? function () {
-	                    return valsScale.value(valsScale.domain()[0]) + valsScale.stepSize(valsScale.domain()[0]) * k;
-	                } : function () {
-	                    return valsScale.value(Math.max(0, Math.min.apply(Math, _toConsumableArray(valsScale.domain()))));
-	                },
-	                yi: function yi(d) {
-	                    return valsScale.value(d[valsScale.dim]);
-	                },
-	                xi: function xi(d) {
-	                    return baseScale.value(d[baseScale.dim]);
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_dynamic_size',
-	        value: function decorator_dynamic_size(model, _ref2) {
-	            _objectDestructuringEmpty(_ref2);
-
-	            return IntervalModel.compose(model, {
-	                size: function size(d) {
-	                    return model.size(d) * model.scaleSize.value(d[model.scaleSize.dim]);
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_positioningByColor',
-	        value: function decorator_positioningByColor(model, params) {
-	            var method = model.scaleX.discrete ? IntervalModel.decorator_discrete_positioningByColor : IntervalModel.decorator_identity;
-
-	            return method(model, params);
-	        }
-	    }, {
-	        key: 'decorator_discrete_positioningByColor',
-	        value: function decorator_discrete_positioningByColor(model, _ref3) {
-	            _objectDestructuringEmpty(_ref3);
-
-	            var baseScale = model.scaleX;
-	            var categories = model.scaleColor.domain();
-	            var categoriesCount = categories.length || 1;
-	            var colorIndexScale = function colorIndexScale(d) {
-	                return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
-	            }; // -1 (not found) to 0
-	            var space = function space(d) {
-	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
-	            };
-
-	            return IntervalModel.compose(model, {
-	                xi: function xi(d) {
-	                    var availableSpace = space(d);
-	                    var absTickStart = model.xi(d) - availableSpace / 2;
-	                    var middleStep = availableSpace / (categoriesCount + 1);
-	                    var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
-	                    return absTickStart + relSegmStart;
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_color',
-	        value: function decorator_color(model, _ref4) {
-	            _objectDestructuringEmpty(_ref4);
-
-	            return IntervalModel.compose(model, {
-	                color: function color(d) {
-	                    return model.scaleColor.value(d[model.scaleColor.dim]);
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_group',
-	        value: function decorator_group(model, _ref5) {
-	            _objectDestructuringEmpty(_ref5);
-
-	            return IntervalModel.compose(model, {
-	                group: function group(d) {
-	                    return '' + d[model.scaleColor.dim] + delimiter + d[model.scaleSplit.dim];
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_groupOrderByColor',
-	        value: function decorator_groupOrderByColor(model, _ref6) {
-	            _objectDestructuringEmpty(_ref6);
-
-	            var _order = model.scaleColor.domain();
-
-	            return IntervalModel.compose(model, {
-	                order: function order(group) {
-	                    var color = group.split(delimiter)[0];
-	                    var i = _order.indexOf(color);
-	                    return i < 0 ? Number.MAX_VALUE : i;
-	                }
-	            });
-	        }
-	    }, {
-	        key: 'decorator_stack',
-	        value: function decorator_stack(model, _ref7) {
-	            _objectDestructuringEmpty(_ref7);
-
-	            var xScale = model.scaleX;
-	            var yScale = model.scaleY;
-
-	            var createFnStack = function createFnStack(totalState) {
-	                return function (d) {
-	                    var x = d[xScale.dim];
-	                    var y = d[yScale.dim];
-
-	                    var isPositive = y >= 0;
-	                    var state = isPositive ? totalState.positive : totalState.negative;
-
-	                    var prevStack = state[x] || 0;
-	                    var nextStack = prevStack + y;
-	                    state[x] = nextStack;
-
-	                    return { isPositive: isPositive, nextStack: nextStack, prevStack: prevStack };
-	                };
-	            };
-
-	            var stackYi = createFnStack({ positive: {}, negative: {} });
-	            var stackY0 = createFnStack({ positive: {}, negative: {} });
-
-	            var seq = [];
-	            var memoize = function memoize(fn) {
-	                return _underscore2.default.memoize(fn, function (d) {
-	                    var i = seq.indexOf(d);
-	                    if (i < 0) {
-	                        i = seq.push(d) - 1;
-	                    }
-	                    return i;
-	                });
-	            };
-
-	            return IntervalModel.compose(model, {
-	                yi: memoize(function (d) {
-	                    var _stackYi = stackYi(d);
-
-	                    var isPositive = _stackYi.isPositive;
-	                    var nextStack = _stackYi.nextStack;
-	                    var prevStack = _stackYi.prevStack;
-
-	                    return yScale.value(isPositive ? nextStack : prevStack);
-	                }),
-	                y0: memoize(function (d) {
-	                    var _stackY = stackY0(d);
-
-	                    var isPositive = _stackY.isPositive;
-	                    var nextStack = _stackY.nextStack;
-	                    var prevStack = _stackY.prevStack;
-
-	                    return yScale.value(isPositive ? prevStack : nextStack);
-	                })
-	            });
-	        }
-	    }, {
-	        key: 'decorator_size_distribute_evenly',
-	        value: function decorator_size_distribute_evenly(model, _ref8) {
-	            var dataSource = _ref8.dataSource;
-	            var minLimit = _ref8.minLimit;
-	            var maxLimit = _ref8.maxLimit;
-	            var defMin = _ref8.defMin;
-	            var defMax = _ref8.defMax;
-
-
-	            var asc = function asc(a, b) {
-	                return a - b;
-	            };
-
-	            var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() / 2 : Number.MAX_VALUE;
-
-	            var xs = dataSource.map(function (row) {
-	                return model.xi(row);
-	            }).sort(asc);
-
-	            var prev = xs[0];
-	            var diff = xs.slice(1).map(function (curr) {
-	                var diff = curr - prev;
-	                prev = curr;
-	                return diff;
-	            }).filter(function (diff) {
-	                return diff > 0;
-	            }).sort(asc).concat(Number.MAX_VALUE)[0];
-
-	            var minDiff = Math.min(diff, stepSize);
-
-	            var currMinSize = typeof minLimit === 'number' ? minLimit : defMin;
-	            var curr = {
-	                minSize: currMinSize,
-	                maxSize: typeof maxLimit === 'number' ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
-	            };
-
-	            model.scaleSize.fixup(function (prev) {
-
-	                var next = {};
-
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.minSize = curr.minSize;
-	                    next.maxSize = curr.maxSize;
-	                } else {
-	                    if (prev.maxSize > curr.maxSize) {
-	                        next.maxSize = curr.maxSize;
-	                    }
-	                }
-
-	                return next;
-	            });
-
-	            return model;
-	        }
-	    }, {
-	        key: 'adjustYScale',
-	        value: function adjustYScale(model, _ref9) {
-	            var dataSource = _ref9.dataSource;
-
-
-	            var minY = Number.MAX_VALUE;
-	            var maxY = Number.MIN_VALUE;
-	            var trackY = function trackY(y) {
-	                minY = y < minY ? y : minY;
-	                maxY = y > maxY ? y : maxY;
-	            };
-
-	            var scaleY = model.scaleY.value;
-	            model.scaleY.value = function (y) {
-	                trackY(y);
-	                return scaleY(y);
-	            };
-
-	            dataSource.forEach(function (row) {
-	                model.yi(row);
-	                model.y0(row);
-	            });
-
-	            model.scaleY.fixup(function (yScaleConfig) {
-
-	                var newConf = {};
-
-	                if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
-	                    newConf.max = maxY;
-	                }
-
-	                if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
-	                    newConf.min = minY;
-	                }
-
-	                return newConf;
-	            });
-
-	            return model;
-	        }
-	    }]);
-
-	    return IntervalModel;
-	}();
-
-/***/ },
-/* 18 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3430,17 +3619,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.StackedInterval = undefined;
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	var _const = __webpack_require__(6);
-
-	var _element = __webpack_require__(16);
-
-	var _interval = __webpack_require__(17);
-
-	var _error = __webpack_require__(19);
+	var _element = __webpack_require__(19);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3454,83 +3633,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function StackedInterval(config) {
 	        _classCallCheck(this, StackedInterval);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StackedInterval).call(this, config));
-
-	        _this.config.guide.enableColorToBarPosition = false;
-	        _this.baseCssClass = 'i-role-element i-role-datum bar bar-stack ' + _const.CSS_PREFIX + 'bar-stacked';
-
-	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
-	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
-	        _this.decorators = [_interval.IntervalModel.decorator_orientation, _interval.IntervalModel.decorator_group, _interval.IntervalModel.decorator_groupOrderByColor, _interval.IntervalModel.decorator_stack, enableColorPositioning && _interval.IntervalModel.decorator_positioningByColor, _interval.IntervalModel.decorator_dynamic_size, _interval.IntervalModel.decorator_color, config.adjustPhase && enableDistributeEvenly && _interval.IntervalModel.decorator_size_distribute_evenly, config.adjustPhase && _interval.IntervalModel.adjustYScale];
-	        return _this;
+	        config.stack = true;
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(StackedInterval).call(this, config));
 	    }
-
-	    _createClass(StackedInterval, [{
-	        key: 'createScales',
-	        value: function createScales(fnCreateScale) {
-
-	            var r = _get(Object.getPrototypeOf(StackedInterval.prototype), 'createScales', this).call(this, fnCreateScale);
-
-	            var stackScale = this.getScale(this.config.flip ? 'x' : 'y');
-
-	            if (stackScale.discrete || stackScale.domain().some(function (x) {
-	                return typeof x !== 'number';
-	            })) {
-	                throw new _error.TauChartError('Stacked field [' + stackScale.dim + '] should be a number', _error.errorCodes.INVALID_DATA_TO_STACKED_BAR_CHART);
-	            }
-
-	            return r;
-	        }
-	    }]);
 
 	    return StackedInterval;
 	}(_element.Interval);
 
 /***/ },
-/* 19 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var TauChartError = function (_Error) {
-	    _inherits(TauChartError, _Error);
-
-	    function TauChartError(message, errorCode) {
-	        _classCallCheck(this, TauChartError);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TauChartError).call(this));
-
-	        _this.name = 'TauChartError';
-	        _this.message = message;
-	        _this.errorCode = errorCode;
-	        return _this;
-	    }
-
-	    return TauChartError;
-	}(Error);
-
-	var errorCodes = {
-	    INVALID_DATA_TO_STACKED_BAR_CHART: 'INVALID_DATA_TO_STACKED_BAR_CHART',
-	    NO_DATA: 'NO_DATA',
-	    NOT_SUPPORTED_TYPE_CHART: 'NOT_SUPPORTED_TYPE_CHART',
-	    UNKNOWN_UNIT_TYPE: 'UNKNOWN_UNIT_TYPE'
-	};
-
-	exports.TauChartError = TauChartError;
-	exports.errorCodes = errorCodes;
-
-/***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3550,9 +3661,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _algebra = __webpack_require__(21);
+	var _algebra = __webpack_require__(22);
 
-	var _dataFrame = __webpack_require__(23);
+	var _dataFrame = __webpack_require__(24);
 
 	var _underscore = __webpack_require__(3);
 
@@ -3586,9 +3697,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _underscore2.default.defaults(config.scales, {
 	            'split_null': { type: 'value', source: '?' },
-	            'text_null': { type: 'value', source: '?' },
+	            'label_null': { type: 'value', source: '?' },
 	            'split:default': { type: 'value', source: '?' },
-	            'text:default': { type: 'value', source: '?' }
+	            'label:default': { type: 'value', source: '?' }
 	        });
 	        // jscs:enable
 
@@ -3830,7 +3941,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_event.Emitter);
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3844,7 +3955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(22);
+	var _unitDomainPeriodGenerator = __webpack_require__(23);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3933,10 +4044,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.FramesAlgebra = FramesAlgebra;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -4023,12 +4134,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    get: function get(periodAlias) {
-	        return PERIODS_MAP[periodAlias.toLowerCase()];
+	        var alias = periodAlias || '';
+	        return PERIODS_MAP[alias.toLowerCase()] || null;
 	    },
 
 	    generate: function generate(lTick, rTick, periodAlias) {
 	        var r = [];
-	        var period = PERIODS_MAP[periodAlias.toLowerCase()];
+	        var period = UnitDomainPeriodGenerator.get(periodAlias);
 	        if (period) {
 	            var last = period.cast(new Date(rTick));
 	            var curr = period.cast(new Date(lTick));
@@ -4044,7 +4156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.UnitDomainPeriodGenerator = UnitDomainPeriodGenerator;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4109,7 +4221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4123,29 +4235,29 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _balloon = __webpack_require__(25);
+	var _balloon = __webpack_require__(26);
 
 	var _event = __webpack_require__(8);
 
-	var _plugins = __webpack_require__(27);
+	var _plugins = __webpack_require__(28);
 
 	var _utils = __webpack_require__(4);
 
 	var _utilsDom = __webpack_require__(1);
 
-	var _unitsRegistry = __webpack_require__(28);
+	var _unitsRegistry = __webpack_require__(29);
 
-	var _scalesRegistry = __webpack_require__(29);
+	var _scalesRegistry = __webpack_require__(30);
 
-	var _scalesFactory = __webpack_require__(30);
+	var _scalesFactory = __webpack_require__(31);
 
-	var _dataProcessor = __webpack_require__(31);
+	var _dataProcessor = __webpack_require__(32);
 
-	var _layuotTemplate = __webpack_require__(32);
+	var _layuotTemplate = __webpack_require__(33);
 
-	var _specConverter = __webpack_require__(33);
+	var _specConverter = __webpack_require__(34);
 
-	var _specTransformAutoLayout = __webpack_require__(34);
+	var _specTransformAutoLayout = __webpack_require__(35);
 
 	var _specTransformCalcSize = __webpack_require__(36);
 
@@ -4153,7 +4265,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _specTransformExtractAxes = __webpack_require__(39);
 
-	var _tau = __webpack_require__(20);
+	var _tau = __webpack_require__(21);
 
 	var _underscore = __webpack_require__(3);
 
@@ -4195,11 +4307,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this.configGPL = new _specConverter.SpecConverter(_this.setupConfig(config)).convert();
 	        }
 
+	        _this.configGPL.settings = Plot.setupSettings(_this.configGPL.settings);
+
 	        _this.configGPL = Plot.setupPeriodData(_this.configGPL);
 
 	        var plugins = config.plugins || [];
-
-	        _this.configGPL.settings = Plot.setupSettings(_this.configGPL.settings);
 
 	        _this.transformers = [_specTransformApplyRatio.SpecTransformApplyRatio, _specTransformAutoLayout.SpecTransformAutoLayout];
 
@@ -4550,23 +4662,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'setupPeriodData',
 	        value: function setupPeriodData(spec) {
 	            var tickPeriod = Plot.__api__.tickPeriod;
-	            var dims = Object.keys(spec.scales).map(function (s) {
+	            var log = spec.settings.log;
+
+	            var scales = Object.keys(spec.scales).map(function (s) {
 	                return spec.scales[s];
-	            }).filter(function (s) {
-	                return s.type === 'period';
-	            }).map(function (s) {
-	                return { source: s.source, dim: s.dim, period: s.period };
 	            });
+
+	            var workPlan = scales.filter(function (s) {
+	                return s.type === 'period';
+	            }).reduce(function (memo, scaleRef) {
+	                var periodCaster = tickPeriod.get(scaleRef.period);
+	                if (periodCaster) {
+	                    memo.push({ source: scaleRef.source, dim: scaleRef.dim, period: periodCaster });
+	                } else {
+	                    log(['Unknown period "' + scaleRef.period + '".', 'Docs: http://api.taucharts.com/plugins/customticks.html#how-to-add-custom-tick-period'], 'WARN');
+	                    scaleRef.period = null;
+	                }
+
+	                return memo;
+	            }, []);
 
 	            var isNullOrUndefined = function isNullOrUndefined(x) {
 	                return x === null || typeof x === 'undefined';
 	            };
 
-	            var reducer = function reducer(refSources, d) {
-	                refSources[d.source].data = refSources[d.source].data.map(function (row) {
-	                    var val = row[d.dim];
-	                    if (!isNullOrUndefined(val) && d.period) {
-	                        row[d.dim] = tickPeriod.get(d.period).cast(val);
+	            var reducer = function reducer(refSources, metaDim) {
+	                refSources[metaDim.source].data = refSources[metaDim.source].data.map(function (row) {
+	                    var val = row[metaDim.dim];
+	                    if (!isNullOrUndefined(val)) {
+	                        row[metaDim.dim] = metaDim.period.cast(val);
 	                    }
 	                    return row;
 	                });
@@ -4574,7 +4698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return refSources;
 	            };
 
-	            spec.sources = dims.reduce(reducer, spec.sources);
+	            spec.sources = workPlan.reduce(reducer, spec.sources);
 
 	            return spec;
 	        }
@@ -4607,7 +4731,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_event.Emitter);
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4619,13 +4743,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _tauTooltip = __webpack_require__(26);
+	var _tauTooltip = __webpack_require__(27);
 
 	_tauTooltip.Tooltip.defaults.baseClass = _const.CSS_PREFIX + 'tooltip';
 	exports.Tooltip = _tauTooltip.Tooltip;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function webpackUniversalModuleDefinition(root, factory) {
@@ -5342,7 +5466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	;
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5395,7 +5519,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Plugins = Plugins;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5405,7 +5529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.unitsRegistry = undefined;
 
-	var _error = __webpack_require__(19);
+	var _error = __webpack_require__(10);
 
 	var UnitsMap = {};
 
@@ -5429,7 +5553,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.unitsRegistry = unitsRegistry;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5485,7 +5609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5497,7 +5621,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _dataFrame = __webpack_require__(23);
+	var _dataFrame = __webpack_require__(24);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5541,7 +5665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5743,7 +5867,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.DataProcessor = DataProcessor;
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5789,7 +5913,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getLayout = getLayout;
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5838,7 +5962,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                'pos:default': { type: 'ordinal', source: '?' },
 	                'size:default': { type: 'size', source: '?' },
-	                'text:default': { type: 'value', source: '?' },
+	                'label:default': { type: 'value', source: '?' },
 	                'color:default': { type: 'color', source: '?', brewer: null },
 	                'split:default': { type: 'value', source: '?' }
 	                // jscs:enable disallowQuotedKeysInObjects
@@ -5942,8 +6066,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var walkStructure = function walkStructure(srcUnit) {
 	                var gplRoot = _utils.utils.clone(_underscore2.default.omit(srcUnit, 'unit'));
-	                gplRoot.expression = _this.ruleInferExpression(srcUnit);
 	                _this.ruleCreateScales(srcUnit, gplRoot);
+	                gplRoot.expression = _this.ruleInferExpression(srcUnit);
 
 	                if (srcUnit.unit) {
 	                    gplRoot.units = srcUnit.unit.map(walkStructure);
@@ -5962,7 +6086,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this2 = this;
 
 	            var guide = srcUnit.guide || {};
-	            ['color', 'size', 'text', 'x', 'y', 'split'].forEach(function (p) {
+	            ['color', 'size', 'label', 'x', 'y', 'split'].forEach(function (p) {
 	                if (srcUnit.hasOwnProperty(p)) {
 	                    gplRoot[p] = _this2.scalesPool(p, srcUnit[p], guide[p] || {});
 	                }
@@ -6063,7 +6187,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 
-	            if (scaleType === 'text' && dimName !== null) {
+	            if (scaleType === 'label' && dimName !== null) {
 	                item = {
 	                    type: 'value',
 	                    source: '/',
@@ -6120,6 +6244,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (guide.hasOwnProperty('tickPeriod')) {
 	                    item.period = guide.tickPeriod;
+	                    item.type = 'period';
 	                }
 
 	                item.fitToFrameByDims = guide.fitToFrameByDims;
@@ -6130,6 +6255,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.dist.scales[k] = item;
 
 	            return k;
+	        }
+	    }, {
+	        key: 'getScaleConfig',
+	        value: function getScaleConfig(scaleType, dimName) {
+	            var k = scaleType + '_' + dimName;
+	            return this.dist.scales[k];
 	        }
 	    }, {
 	        key: 'ruleInferExpression',
@@ -6143,6 +6274,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var g = srcUnit.guide || {};
 	            var gx = g.x || {};
 	            var gy = g.y || {};
+
+	            var scaleX = this.getScaleConfig('x', srcUnit.x);
+	            var scaleY = this.getScaleConfig('y', srcUnit.y);
 
 	            if (srcUnit.type.indexOf('ELEMENT.') === 0) {
 
@@ -6158,10 +6292,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                    // jshint ignore:start
 	                    // jscs:disable requireDotNotation
-	                    if (gx['tickPeriod'] || gy['tickPeriod']) {
+	                    if (scaleX.period || scaleY.period) {
 	                        expr = {
 	                            operator: 'cross_period',
-	                            params: [this.ruleInferDim(srcUnit.x, gx), this.ruleInferDim(srcUnit.y, gy), gx['tickPeriod'], gy['tickPeriod']]
+	                            params: [this.ruleInferDim(srcUnit.x, gx), this.ruleInferDim(srcUnit.y, gy), scaleX.period, scaleY.period]
 	                        };
 	                    } else {
 	                        expr = {
@@ -6182,7 +6316,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6200,7 +6334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(4);
 
-	var _formatterRegistry = __webpack_require__(35);
+	var _formatterRegistry = __webpack_require__(14);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -6811,115 +6945,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.FormatterRegistry = undefined;
-
-	var _d = __webpack_require__(2);
-
-	var _d2 = _interopRequireDefault(_d);
-
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	/* jshint ignore:end */
-	/* jshint ignore:start */
-	var FORMATS_MAP = {
-
-	    'x-num-auto': function xNumAuto(x) {
-	        var v = parseFloat(x.toFixed(2));
-	        return Math.abs(v) < 1 ? v.toString() : _d2.default.format('s')(v);
-	    },
-
-	    percent: function percent(x) {
-	        var v = parseFloat((x * 100).toFixed(2));
-	        return v.toString() + '%';
-	    },
-
-	    day: _d2.default.time.format('%d-%b-%Y'),
-
-	    'day-short': _d2.default.time.format('%d-%b'),
-
-	    week: _d2.default.time.format('%d-%b-%Y'),
-
-	    'week-short': _d2.default.time.format('%d-%b'),
-
-	    month: function month(x) {
-	        var d = new Date(x);
-	        var m = d.getMonth();
-	        var formatSpec = m === 0 ? '%B, %Y' : '%B';
-	        return _d2.default.time.format(formatSpec)(x);
-	    },
-
-	    'month-short': function monthShort(x) {
-	        var d = new Date(x);
-	        var m = d.getMonth();
-	        var formatSpec = m === 0 ? '%b \'%y' : '%b';
-	        return _d2.default.time.format(formatSpec)(x);
-	    },
-
-	    'month-year': _d2.default.time.format('%B, %Y'),
-
-	    quarter: function quarter(x) {
-	        var d = new Date(x);
-	        var m = d.getMonth();
-	        var q = (m - m % 3) / 3;
-	        return 'Q' + (q + 1) + ' ' + d.getFullYear();
-	    },
-
-	    year: _d2.default.time.format('%Y'),
-
-	    'x-time-auto': null
-	};
-
-	var FormatterRegistry = {
-
-	    get: function get(formatAlias, nullOrUndefinedAlias) {
-
-	        var nullAlias = nullOrUndefinedAlias || '';
-
-	        var identity = function identity(x) {
-	            return (x === null || typeof x === 'undefined' ? nullAlias : x).toString();
-	        };
-
-	        var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
-	        var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
-
-	        if (hasFormat) {
-	            formatter = FORMATS_MAP[formatAlias];
-	        }
-
-	        if (!hasFormat && formatAlias) {
-	            formatter = function formatter(v) {
-	                var f = _underscore2.default.isDate(v) ? _d2.default.time.format(formatAlias) : _d2.default.format(formatAlias);
-	                return f(v);
-	            };
-	        }
-
-	        if (!hasFormat && !formatAlias) {
-	            formatter = identity;
-	        }
-
-	        return formatter;
-	    },
-
-	    add: function add(formatAlias, formatter) {
-	        FORMATS_MAP[formatAlias] = formatter;
-	    }
-	};
-
-	exports.FormatterRegistry = FormatterRegistry;
-
-/***/ },
 /* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -7473,7 +7498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _tau = __webpack_require__(24);
+	var _tau = __webpack_require__(25);
 
 	var _chartAliasRegistry = __webpack_require__(41);
 
@@ -7569,7 +7594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.chartTypesRegistry = undefined;
 
-	var _error = __webpack_require__(19);
+	var _error = __webpack_require__(10);
 
 	var _underscore = __webpack_require__(3);
 
@@ -7652,7 +7677,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _formatterRegistry = __webpack_require__(35);
+	var _formatterRegistry = __webpack_require__(14);
 
 	var _d3Decorators = __webpack_require__(45);
 
@@ -8044,7 +8069,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 43 */
 /***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -8057,9 +8082,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var CartesianModel = exports.CartesianModel = function () {
-	    function CartesianModel() {
-	        var model = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
+	    function CartesianModel(model) {
 	        _classCallCheck(this, CartesianModel);
 
 	        var createFunc = function createFunc(x) {
@@ -8067,17 +8090,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return x;
 	            };
 	        };
-	        this.scaleX = model.scaleX || null;
-	        this.scaleY = model.scaleY || null;
+	        this.scaleX = model.scaleX;
+	        this.scaleY = model.scaleY;
 	        this.yi = model.yi || createFunc(0);
 	        this.xi = model.xi || createFunc(0);
-	        this.color = model.color || createFunc('');
 	        this.sizeX = model.sizeX || createFunc(0);
 	        this.sizeY = model.sizeY || createFunc(0);
 	    }
 
 	    _createClass(CartesianModel, null, [{
-	        key: 'compose',
+	        key: "compose",
 	        value: function compose(prev) {
 	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
@@ -8087,12 +8109,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, new CartesianModel(prev));
 	        }
 	    }, {
-	        key: 'decorator_identity',
-	        value: function decorator_identity(model) {
-	            return CartesianModel.compose(model);
-	        }
-	    }, {
-	        key: 'decorator_size',
+	        key: "decorator_size",
 	        value: function decorator_size(model, _ref) {
 	            _objectDestructuringEmpty(_ref);
 
@@ -8112,14 +8129,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return !d ? model.sizeY(d) : sy.stepSize(d[sy.dim]);
 	                }
 	            });
-	        }
-	    }, {
-	        key: 'decorator_color',
-	        value: function decorator_color(model, _ref2) {
-	            _objectDestructuringEmpty(_ref2);
-
-	            // TODO: point to implement colored coordinates
-	            return CartesianModel.compose(model, {});
 	        }
 	    }]);
 
@@ -8546,7 +8555,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _formatterRegistry = __webpack_require__(35);
+	var _formatterRegistry = __webpack_require__(14);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -10274,9 +10283,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _const = __webpack_require__(6);
 
-	var _elementPath = __webpack_require__(11);
+	var _cartesianGrammar = __webpack_require__(9);
 
-	var _cssClassMap = __webpack_require__(14);
+	var _elementPath = __webpack_require__(16);
+
+	var _cssClassMap = __webpack_require__(17);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -10290,15 +10301,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Path(config) {
 	        _classCallCheck(this, Path);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Path).call(this, config));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Path).call(this, config));
+
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale];
+	        return _this;
 	    }
 
 	    _createClass(Path, [{
 	        key: 'buildModel',
-	        value: function buildModel(params) {
+	        value: function buildModel(pathModel, params) {
 
 	            var self = this;
-	            var baseModel = _get(Object.getPrototypeOf(Path.prototype), 'buildModel', this).call(this, params);
+	            var baseModel = _get(Object.getPrototypeOf(Path.prototype), 'buildModel', this).call(this, pathModel, params);
 
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
@@ -11071,7 +11085,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _base = __webpack_require__(53);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(22);
+	var _unitDomainPeriodGenerator = __webpack_require__(23);
 
 	var _underscore = __webpack_require__(3);
 
@@ -11112,7 +11126,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var range = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
 
-	        if (props.fitToFrameByDims) {
+	        var periodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(props.period);
+	        if (props.fitToFrameByDims || periodGenerator === null) {
 	            _this.vars = (0, _underscore2.default)(vars).chain().uniq(function (x) {
 	                return new Date(x).getTime();
 	            }).map(function (x) {
@@ -11754,16 +11769,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        type: type,
 	        x: config.x,
 	        y: config.y,
+	        size: config.size,
 	        color: config.color,
 	        split: config.split,
+	        label: config.label,
 	        guide: {
 	            color: config.colorGuide,
-	            size: config.sizeGuide,
-	            flip: config.flip
+	            size: config.sizeGuide
 	        },
 	        flip: config.flip,
-	        size: config.size,
-	        text: config.text
+	        stack: config.stack
 	    };
 	};
 
@@ -11878,9 +11893,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                y: convertAxis(currentY),
 	                split: config.split,
 	                color: config.color,
-	                text: config.text,
+	                label: config.label,
 	                size: config.size,
 	                flip: config.flip,
+	                stack: config.stack,
 	                colorGuide: currentGuide.color,
 	                sizeGuide: currentGuide.size
 	            }));
@@ -11943,7 +11959,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartLine = undefined;
 
-	var _dataProcessor = __webpack_require__(31);
+	var _dataProcessor = __webpack_require__(32);
 
 	var _converterHelpers = __webpack_require__(63);
 
@@ -12031,7 +12047,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartArea = undefined;
 
-	var _dataProcessor = __webpack_require__(31);
+	var _dataProcessor = __webpack_require__(32);
 
 	var _converterHelpers = __webpack_require__(63);
 
@@ -12128,26 +12144,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.ChartIntervalStacked = undefined;
-
-	var _converterHelpers = __webpack_require__(63);
-
-	var ChartIntervalStacked = function ChartIntervalStacked(rawConfig) {
-	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
-	    return (0, _converterHelpers.transformConfig)('ELEMENT.INTERVAL.STACKED', config);
-	};
-
-	exports.ChartIntervalStacked = ChartIntervalStacked;
-
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
 	exports.ChartParallel = undefined;
 
 	var _underscore = __webpack_require__(3);
@@ -12226,7 +12222,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartParallel = ChartParallel;
 
 /***/ },
-/* 69 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12242,11 +12238,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
-	var _formatterRegistry = __webpack_require__(35);
+	var _formatterRegistry = __webpack_require__(14);
 
-	var _unit = __webpack_require__(70);
+	var _unit = __webpack_require__(69);
 
-	var _spec = __webpack_require__(71);
+	var _spec = __webpack_require__(70);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -12424,7 +12420,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.PluginsSDK = PluginsSDK;
 
 /***/ },
-/* 70 */
+/* 69 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -12527,7 +12523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Unit = Unit;
 
 /***/ },
-/* 71 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12539,7 +12535,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _unit = __webpack_require__(70);
+	var _unit = __webpack_require__(69);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 

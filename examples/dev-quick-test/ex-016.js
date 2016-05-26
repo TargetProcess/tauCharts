@@ -1,10 +1,13 @@
 window.samples.push({
 
-    "type": "bar",
+    z: 33,
+    "type": "horizontal-bar",
+    stack: true,
     "color": null,
-    "size": null,
-    "x": ["x1", "x2"],
-    "y": ["y1"],
+    // "size": 'y1',
+    "label": 'y1',
+    "y": ["x1", "x2"],
+    "x": ["y1"],
     "guide": [
         {
             "x": {
@@ -22,7 +25,9 @@ window.samples.push({
     ],
     data: [
 
-        {"p":"A", "x1": "TP3 Project Highlight", "x2": "B0", "y1": 2231},
+        {"p":"A", "x1": "TP3 Project Highlight", "x2": "B0", "y1": -2231},
+        {"p":"A", "x1": "TP3 Project Highlight", "x2": "B0", "y1": -3231},
+
         {"p":"A", "x1": "TP3 Project Highlight", "x2": "B1", "y1": 3231},
         {"p":"A", "x1": "TP3 Project Highlight", "x2": "B2", "y1": 3231},
         {"p":"A", "x1": "TP3 Project Highlight", "x2": "B3", "y1": 3231},
@@ -46,6 +51,7 @@ window.samples.push({
     ],
 
     plugins: [
+        tauCharts.api.plugins.get('tooltip')(),
         tauCharts.api.plugins.get('settings')()
     ]
 
