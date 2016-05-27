@@ -40,7 +40,7 @@ export class Point extends Element {
 
         this.isHorizontal = false;
 
-        var enableStack = this.config.guide.stack;
+        var enableStack = this.config.stack;
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
         var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
 
@@ -192,7 +192,7 @@ export class Point extends Element {
             .append('g')
             .call(updateGroups);
 
-        self.subscribe(new LayerLabels(modelGoG, this.config.flip, this.config.guide.label, options).draw(fibers));
+        self.subscribe(new LayerLabels(modelGoG, this.isHorizontal, this.config.guide.label, options).draw(fibers));
     }
 
     highlight(filter) {
