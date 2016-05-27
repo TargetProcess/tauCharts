@@ -286,8 +286,8 @@ var utils = {
 
         var m = 10;
 
-        var low = Math.min.apply(null, domain);
-        var top = Math.max.apply(null, domain);
+        var low = parseFloat(Math.min.apply(null, domain).toFixed(15));
+        var top = parseFloat(Math.max.apply(null, domain).toFixed(15));
 
         if (low === top) {
             let k = (top >= 0) ? -1 : 1;
