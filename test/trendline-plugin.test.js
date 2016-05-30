@@ -10,6 +10,37 @@ define(function (require) {
         'trendline plugin',
         {
             type: 'scatterplot',
+            stack: true,
+            x: 'x',
+            y: 'y',
+            plugins: [trendline()]
+        },
+        [
+            {x: 0, y: 0},
+            {x: 10, y: 10},
+            {x: 100, y: 100}
+        ],
+        function (context) {
+
+            it('should not be applied if element is stacked', function () {
+
+                var chart = context.chart;
+
+                var selector = '.graphical-report__trendline';
+                var d3Lines = chart.getSVG().querySelectorAll(selector);
+
+                expect(d3Lines.length).to.equal(0);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+
+    describeChart(
+        'trendline plugin',
+        {
+            type: 'scatterplot',
             x: 'x',
             y: 'y',
             plugins: [trendline()]
