@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.2-beta.0 - 2016-05-26
+/*! taucharts - v0.9.2-beta.1 - 2016-05-30
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -758,8 +758,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var m = 10;
 
-	        var low = Math.min.apply(null, domain);
-	        var top = Math.max.apply(null, domain);
+	        var low = parseFloat(Math.min.apply(null, domain).toFixed(15));
+	        var top = parseFloat(Math.max.apply(null, domain).toFixed(15));
 
 	        if (low === top) {
 	            var k = top >= 0 ? -1 : 1;
@@ -1019,7 +1019,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.isHorizontal = false;
 
-	        var enableStack = _this.config.guide.stack;
+	        var enableStack = _this.config.stack;
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
 
@@ -1169,7 +1169,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            frameGroups.call(updateGroups);
 	            frameGroups.enter().append('g').call(updateGroups);
 
-	            self.subscribe(new _layerLabels.LayerLabels(modelGoG, this.config.flip, this.config.guide.label, options).draw(fibers));
+	            self.subscribe(new _layerLabels.LayerLabels(modelGoG, this.isHorizontal, this.config.guide.label, options).draw(fibers));
 	        }
 	    }, {
 	        key: 'highlight',

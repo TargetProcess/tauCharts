@@ -417,7 +417,7 @@
                     return false;
                 }
 
-                if (this._applicableElements.indexOf(unit.type) === -1) {
+                if ((this._applicableElements.indexOf(unit.type) === -1) || (unit.stack)) {
                     return false;
                 }
 
