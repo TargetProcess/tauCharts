@@ -30,7 +30,7 @@ export class BasePath extends Element {
             this.config.guide.label,
             {
                 fontSize: 11,
-                position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
+                position: (this.config.flip ? ['R+', 'L-'] : ['T+', 'B-'])
             });
 
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
@@ -241,7 +241,8 @@ export class BasePath extends Element {
             .append('g')
             .call(updateGroupContainer);
 
-        self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(fibers));
+        var dataFibers = CartesianGrammar.toFibers(fullData, pathModel);
+        self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(dataFibers));
     }
 
     highlight(filter) {

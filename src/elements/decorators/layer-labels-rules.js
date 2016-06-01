@@ -114,7 +114,7 @@ LayerLabelsRules
 
                 var dl = 0 - l;
                 if (dl > 0) {
-                    return 0;
+                    return x + dl;
                 }
 
                 var dr = r - maxWidth;

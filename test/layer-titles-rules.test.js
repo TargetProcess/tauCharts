@@ -29,25 +29,27 @@ define(function (require) {
             seedModel = LayerLabelsModel.seed(
                 gogModel,
                 {
-                    fontSize: fontSize,
                     fontColor: '#000',
                     flip: false,
                     formatter: ((str) => String(str)),
-                    textSize: ((str) => str.length * 2),
-                    textPad: 0
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
                 });
         });
 
         it('should be centered by default', function () {
+            var r = {text: 'text'};
             var m = createModel([], seedModel);
-            expect(m.x()).to.equal(100, 'x');
-            expect(m.y()).to.equal(100 + fontSize / 2, 'y');
+            expect(m.x(r)).to.equal(100, 'x');
+            expect(m.y(r)).to.equal(100 + fontSize / 2, 'y');
         });
 
         it('should support [t] as top', function () {
+            var r = {text: 'text'};
             var m = createModel(['t'], seedModel);
-            expect(m.x()).to.equal(100);
-            expect(m.y()).to.equal(100);
+            expect(m.x(r)).to.equal(100);
+            expect(m.y(r)).to.equal(100);
         });
 
         it('should support [t+] as top for positive ordinate value', function () {
@@ -65,22 +67,24 @@ define(function (require) {
         });
 
         it('should support [T] as top with radius', function () {
+            var r = {text: 'text'};
             var m = createModel(['T'], seedModel);
-            expect(m.x()).to.equal(100);
-            expect(m.y()).to.equal(95);
+            expect(m.x(r)).to.equal(100);
+            expect(m.y(r)).to.equal(95);
         });
 
         it('should support [b] as bottom', function () {
+            var r = {text: 'text'};
             var m = createModel(['b'], seedModel);
-            expect(m.x()).to.equal(100);
-            expect(m.y()).to.equal(100 + fontSize);
+            expect(m.x(r)).to.equal(100);
+            expect(m.y(r)).to.equal(100 + fontSize);
         });
 
         it('should support [l] as left', function () {
             var m = createModel(['l'], seedModel);
-            var s = 'ABCDE';
-            expect(m.x({text: s})).to.equal(95);
-            expect(m.y()).to.equal(100 + fontSize / 2);
+            var r = {text:'ABCDE'};
+            expect(m.x(r)).to.equal(95);
+            expect(m.y(r)).to.equal(100 + fontSize / 2);
         });
 
         it('should support [l+] as left for positive ordinate value', function () {
@@ -101,16 +105,25 @@ define(function (require) {
 
         it('should support [L] as left with radius', function () {
             var m = createModel(['L'], seedModel);
-            var s = 'ABCDE';
-            expect(m.x({text: s})).to.equal(90);
-            expect(m.y()).to.equal(100 + fontSize / 2);
+            var r = {text:'ABCDE'};
+            expect(m.x(r)).to.equal(90);
+            expect(m.y(r)).to.equal(100 + fontSize / 2);
+        });
+
+        it('should support [L+] as left with radius for positive value', function () {
+            var m = createModel(['L+'], seedModel);
+            expect(m.x({text:'ABCDE', x: 1, y: 1})).to.equal(90);
+            expect(m.y({text:'ABCDE', x: 1, y: 1})).to.equal(100 + fontSize / 2);
+
+            expect(m.x({text:'ABCDE', x: -1, y: -1})).to.equal(100);
+            expect(m.y({text:'ABCDE', x: -1, y: -1})).to.equal(100 + fontSize / 2);
         });
 
         it('should support [r] as right', function () {
             var m = createModel(['r'], seedModel);
-            var s = 'ABCDE';
-            expect(m.x({text: s})).to.equal(105);
-            expect(m.y()).to.equal(100 + fontSize / 2);
+            var r = {text:'ABCDE'};
+            expect(m.x(r)).to.equal(105);
+            expect(m.y(r)).to.equal(100 + fontSize / 2);
         });
 
         it('should support [keep-within-diameter-or-top] rule', function () {
