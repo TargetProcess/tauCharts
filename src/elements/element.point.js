@@ -30,7 +30,12 @@ export class Point extends Element {
         this.config.guide.label = _.defaults(
             (this.config.guide.label || {}),
             {
-                position: ['keep-within-diameter-or-top']
+                position: [
+                    'auto:avoid-label-label-overlap',
+                    'auto:avoid-label-anchor-overlap',
+                    'auto:hide-on-label-label-overlap'
+                    // 'auto:hide-on-label-edges-overlap'
+                ]
             });
 
         this.defMin = config.guide.size.defMinSize;
@@ -200,10 +205,17 @@ export class Point extends Element {
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
 
-        this.config
-            .options
-            .container
+        var container = this.config.options.container;
+
+        container
             .selectAll('.dot')
+            .classed({
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
+            });
+
+        container
+            .selectAll('.i-role-label')
             .classed({
                 [x]: ((d) => filter(d) === true),
                 [_]: ((d) => filter(d) === false)

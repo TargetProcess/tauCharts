@@ -6,6 +6,7 @@ define(function (require) {
     describe('LayerLabelsRules', function () {
 
         var fontSize = 10;
+        var borderPad = 2;
         var seedModel;
         var createModel = (rules, seed, args = {}) => {
             return rules
@@ -49,13 +50,13 @@ define(function (require) {
             var r = {text: 'text'};
             var m = createModel(['t'], seedModel);
             expect(m.x(r)).to.equal(100);
-            expect(m.y(r)).to.equal(100);
+            expect(m.y(r)).to.equal(100 - borderPad);
         });
 
         it('should support [t+] as top for positive ordinate value', function () {
             var m = createModel(['t+'], seedModel);
-            expect(m.y({y:10})).to.equal(100, 'pos');
-            expect(m.y({y: 0})).to.equal(100, 'zero');
+            expect(m.y({y:10})).to.equal(100 - borderPad, 'pos');
+            expect(m.y({y: 0})).to.equal(100 - borderPad, 'zero');
             expect(m.y({y:-1})).to.equal(105, 'neg');
         });
 
@@ -63,35 +64,35 @@ define(function (require) {
             var m = createModel(['t-'], seedModel);
             expect(m.y({y:10})).to.equal(105, 'pos');
             expect(m.y({y: 0})).to.equal(105, 'zero');
-            expect(m.y({y:-1})).to.equal(100, 'neg');
+            expect(m.y({y:-1})).to.equal(100 - borderPad, 'neg');
         });
 
         it('should support [T] as top with radius', function () {
             var r = {text: 'text'};
             var m = createModel(['T'], seedModel);
             expect(m.x(r)).to.equal(100);
-            expect(m.y(r)).to.equal(95);
+            expect(m.y(r)).to.equal(95 - borderPad);
         });
 
         it('should support [b] as bottom', function () {
             var r = {text: 'text'};
             var m = createModel(['b'], seedModel);
             expect(m.x(r)).to.equal(100);
-            expect(m.y(r)).to.equal(100 + fontSize);
+            expect(m.y(r)).to.equal(100 + fontSize + borderPad);
         });
 
         it('should support [l] as left', function () {
             var m = createModel(['l'], seedModel);
             var r = {text:'ABCDE'};
-            expect(m.x(r)).to.equal(95);
+            expect(m.x(r)).to.equal(95 - borderPad);
             expect(m.y(r)).to.equal(100 + fontSize / 2);
         });
 
         it('should support [l+] as left for positive ordinate value', function () {
             var m = createModel(['l+'], seedModel);
             var s = 'ABCDE';
-            expect(m.x({text: s, y: 1})).to.equal(95, 'pos');
-            expect(m.x({text: s, y: 0})).to.equal(95, 'zero');
+            expect(m.x({text: s, y: 1})).to.equal(95 - borderPad, 'pos');
+            expect(m.x({text: s, y: 0})).to.equal(95 - borderPad, 'zero');
             expect(m.x({text: s, y:-1})).to.equal(100, 'neg');
         });
 
@@ -100,19 +101,19 @@ define(function (require) {
             var s = 'ABCDE';
             expect(m.x({text: s, y: 1})).to.equal(100, 'pos');
             expect(m.x({text: s, y: 0})).to.equal(100, 'zero');
-            expect(m.x({text: s, y:-1})).to.equal(95, 'neg');
+            expect(m.x({text: s, y:-1})).to.equal(95 - borderPad, 'neg');
         });
 
         it('should support [L] as left with radius', function () {
             var m = createModel(['L'], seedModel);
             var r = {text:'ABCDE'};
-            expect(m.x(r)).to.equal(90);
+            expect(m.x(r)).to.equal(90 - borderPad);
             expect(m.y(r)).to.equal(100 + fontSize / 2);
         });
 
         it('should support [L+] as left with radius for positive value', function () {
             var m = createModel(['L+'], seedModel);
-            expect(m.x({text:'ABCDE', x: 1, y: 1})).to.equal(90);
+            expect(m.x({text:'ABCDE', x: 1, y: 1})).to.equal(90 - borderPad);
             expect(m.y({text:'ABCDE', x: 1, y: 1})).to.equal(100 + fontSize / 2);
 
             expect(m.x({text:'ABCDE', x: -1, y: -1})).to.equal(100);
@@ -122,7 +123,7 @@ define(function (require) {
         it('should support [r] as right', function () {
             var m = createModel(['r'], seedModel);
             var r = {text:'ABCDE'};
-            expect(m.x(r)).to.equal(105);
+            expect(m.x(r)).to.equal(105 + borderPad);
             expect(m.y(r)).to.equal(100 + fontSize / 2);
         });
 

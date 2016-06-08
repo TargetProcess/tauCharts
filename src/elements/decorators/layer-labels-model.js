@@ -8,6 +8,7 @@ export class LayerLabelsModel {
         this.y = prev.y || createFunc(0);
         this.w = prev.w || createFunc(0);
         this.h = prev.h || createFunc(0);
+        this.hide = prev.hide || createFunc(false);
         this.label = prev.label || createFunc('');
         this.color = prev.color || createFunc('');
     }

@@ -186,7 +186,7 @@ define(function (require) {
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')), 'stroke');
-            var labels = d3.selectAll('.t-label');
+            var labels = d3.selectAll('.i-role-label');
             expect(labels[0].length).to.be.equal(5);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to

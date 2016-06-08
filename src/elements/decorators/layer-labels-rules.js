@@ -32,7 +32,7 @@ var alignByX = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.x(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2);
+                return prev.x(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
             }
         };
     };
@@ -56,7 +56,7 @@ var alignByY = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.y(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2);
+                return prev.y(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
             }
         };
     };
@@ -90,6 +90,42 @@ LayerLabelsRules
     .regRule('b-', alignByY(['b', 1, '-']))
     .regRule('B+', alignByY(['B', 1, '+']))
     .regRule('B-', alignByY(['B', 1, '-']))
+
+    .regRule('keep-inside-or-hide-vertical', (prev) => {
+        return {
+            hide: (row) => {
+
+                if (prev.model.size(row) < prev.w(row)) {
+                    return true;
+                }
+
+                var h = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                if (h < prev.h(row)) {
+                    return true;
+                }
+
+                return prev.hide(row);
+            }
+        };
+    })
+
+    .regRule('keep-inside-or-hide-horizontal', (prev) => {
+        return {
+            hide: (row) => {
+
+                if (prev.model.size(row) < prev.h(row)) {
+                    return true;
+                }
+
+                var w = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                if (w < prev.w(row)) {
+                    return true;
+                }
+
+                return prev.hide(row);
+            }
+        };
+    })
 
     .regRule('keep-within-diameter-or-top', (prev) => {
         return {
