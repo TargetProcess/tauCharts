@@ -105,7 +105,7 @@
                             target = target.parentNode;
                         }
 
-                        self._tooltip.hide();
+                        self.hideTooltip();
 
                     }, false);
 
@@ -137,12 +137,9 @@
                 };
 
                 this.hideTooltip = function (e) {
-                    timeoutHide = setTimeout(
-                        function () {
-                            self._tooltip.hide();
-                            self._removeFocus();
-                        },
-                        300);
+                    self._tooltip.hide();
+                    self._removeFocus();
+                    self._currentData = null;
                 };
 
                 this._tooltip
@@ -155,8 +152,7 @@
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
-                        self._tooltip.hide();
-                        self._removeFocus();
+                        self.hideTooltip();
                     }, false);
 
                 this.afterInit(this._tooltip.getElement());
@@ -323,17 +319,18 @@
                     'ELEMENT.INTERVAL.STACKED'
                 ];
 
-                var mouseOverHandler = function (sender, e) {
+                var mouseToggleHandler = function (sender, e) {
                     var data = e.data;
-                    // TODO: get back to "nearest point" feature when GoG models are ready
-                    // var coords = (settings.dockToData ?
-                    //    self._getNearestDataCoordinates(sender, e) :
-                    //    self._getMouseCoordinates(sender, e));
-
-                    var coords = self._getMouseCoordinates(sender, e);
-
+                    // NOTE: _getNearestDataCoordinates don't work for a stacked elements for a while
+                    // use _getMouseCoordinates instead if needed
+                    // var coords = self._getMouseCoordinates(sender, e);
+                    var coords = self._getNearestDataCoordinates(sender, e);
                     self._currentUnit = sender;
-                    self.showTooltip(data, {x: coords.left, y: coords.top});
+                    if (self._currentData) {
+                        self.hideTooltip();
+                    } else {
+                        self.showTooltip(data, {x: coords.left, y: coords.top});
+                    }
                 };
 
                 this._chart
@@ -341,15 +338,8 @@
                         return true;
                     })
                     .forEach(function (node) {
-
-                        node.on('mouseout.chart', function (sender, e) {
-                            self.hideTooltip(e);
-                        });
-
-                        node.on('mouseover.chart', mouseOverHandler);
-
                         if (elementsToMatch.indexOf(node.config.type) > -1) {
-                            node.on('mousemove.chart', mouseOverHandler);
+                            node.on('click.chart', mouseToggleHandler);
                         }
                     });
             },
