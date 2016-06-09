@@ -19,6 +19,7 @@ define(function (require) {
             var gogModel = {
                 xi: (row) => 100,
                 yi: (row) => 100,
+                y0: (row) => 105,
                 size: (row) => 10,
                 label: (row) => row.text,
                 scaleY: {
@@ -145,6 +146,143 @@ define(function (require) {
             var row = {text: s};
             expect(m.x(row)).to.equal(95, 'should move left to fit box');
             expect(m.y(row)).to.equal(90 - fontSize / 2, 'should move top to fit box');
+        });
+
+        it('should support [keep-inside-or-hide-vertical] rule (by width)', function () {
+
+            var gogModel = {
+                xi: (row) => 100,
+                yi: (row) => 100,
+                y0: (row) => 125,
+                size: (row) => 10,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['keep-inside-or-hide-vertical'], seedModel);
+            var row4 = {text: 'ABCD'};
+            expect(m.w(row4)).to.equal(8, 'text width');
+            expect(m.model.size(row4)).to.equal(10, 'element width');
+            expect(m.hide(row4)).to.equal(false, 'show');
+
+            var row10 = {text: 'ABCDEFGHJK'};
+            expect(m.w(row10)).to.equal(20, 'text width');
+            expect(m.model.size(row10)).to.equal(10, 'element width');
+            expect(m.hide(row10)).to.equal(true, 'hide');
+        });
+
+        it('should support [keep-inside-or-hide-vertical] rule (by height)', function () {
+
+            var gogModel = {
+                xi: (row) => 100,
+                yi: (row) => 100,
+                y0: (row) => 105,
+                size: (row) => 10,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['keep-inside-or-hide-vertical'], seedModel);
+            var row4 = {text: 'A'};
+            expect(m.w(row4)).to.equal(2, 'text width');
+            expect(m.model.size(row4)).to.equal(10, 'element width');
+            expect(m.hide(row4)).to.equal(true, 'hide since not fit an element height');
+        });
+
+        it('should support [keep-inside-or-hide-horizontal] rule (by height)', function () {
+
+            var gogModel = {
+                xi: (row) => 100,
+                yi: (row) => 100,
+                y0: (row) => 125,
+                size: (row) => 4,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: true,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['keep-inside-or-hide-horizontal'], seedModel);
+            var row4 = {text: 'A'};
+            expect(m.h(row4)).to.equal(fontSize, 'text width');
+            expect(m.model.size(row4)).to.equal(4, 'element width');
+            expect(m.hide(row4)).to.equal(true, 'hide since not fit an element height');
+        });
+
+        it('should support [keep-inside-or-hide-horizontal] rule (by width)', function () {
+
+            var gogModel = {
+                xi: (row) => 100,
+                yi: (row) => 100,
+                y0: (row) => 105,
+                size: (row) => 10,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: true,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['keep-inside-or-hide-horizontal'], seedModel);
+            var row1 = {text: 'A'};
+            expect(m.h(row1)).to.equal(fontSize, 'text width');
+            expect(m.model.size(row1)).to.equal(10, 'element width');
+            expect(m.hide(row1)).to.equal(false, 'hide since not fit an element height');
+
+            var row10 = {text: 'ABCDEFGHJK'};
+            expect(m.w(row10)).to.equal(20, 'text width');
+            expect(m.hide(row10)).to.equal(true, 'hide');
         });
     });
 });
