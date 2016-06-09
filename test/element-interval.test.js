@@ -1096,6 +1096,7 @@ define(function (require) {
             type: 'bar',
             x: 'y',
             y: 'x',
+            label: 'y',
             color: 'color'
         },
         [
@@ -1103,13 +1104,11 @@ define(function (require) {
                 x: 1,
                 y: "1",
                 color: 'yellow'
-
             },
             {
                 x: 2,
                 y: "2",
                 color: 'yellow'
-
             },
             {
                 x: 3,
@@ -1127,6 +1126,7 @@ define(function (require) {
             it("should support highlight event", function () {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
                 expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
                 expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
 
@@ -1135,15 +1135,21 @@ define(function (require) {
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg1.querySelectorAll('.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(3);
+
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
 
                 intervalNode.fire('highlight', ((row) => null));
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg2.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
             });
         },
         {

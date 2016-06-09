@@ -326,4 +326,74 @@ define(function(require) {
                 expect(sizes[2]).to.be.equal(sizes[0]);
             });
         });
+
+    var describeChart = testUtils.describeChart;
+    describeChart("Scatterplot event API",
+        {
+            type: 'scatterplot',
+            x: 'y',
+            y: 'x',
+            label: 'y',
+            color: 'color'
+        },
+        [
+            {
+                x: 1,
+                y: "1",
+                color: 'yellow'
+
+            },
+            {
+                x: 2,
+                y: "2",
+                color: 'yellow'
+
+            },
+            {
+                x: 3,
+                y: "3",
+                color: 'yellow'
+            },
+            {
+                x: 3,
+                y: "4",
+                color: 'green'
+            }
+        ],
+        function (context) {
+
+            it("should support highlight event", function () {
+                var svg0 = context.chart.getSVG();
+                expect(svg0.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+                var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.POINT')[0];
+                pointNode.fire('highlight', ((row) => (row.color === 'green')));
+
+                var svg1 = context.chart.getSVG();
+                expect(svg1.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg1.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(3);
+
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+
+                pointNode.fire('highlight', ((row) => null));
+
+                var svg2 = context.chart.getSVG();
+                expect(svg2.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg2.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+
+                expect(svg2.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
