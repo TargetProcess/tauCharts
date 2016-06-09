@@ -488,11 +488,13 @@
 .graphical-report__line.graphical-report__dimmed {
   stroke-opacity: 0.2;
 }
+.i-role-label.graphical-report__highlighted,
 .graphical-report__area.graphical-report__highlighted,
 .graphical-report__bar.graphical-report__highlighted {
   stroke-opacity: 1;
   opacity: 1;
 }
+.i-role-label.graphical-report__dimmed,
 .graphical-report__area.graphical-report__dimmed,
 .graphical-report__bar.graphical-report__dimmed {
   opacity: 0.2;
