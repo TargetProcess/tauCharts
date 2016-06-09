@@ -30,7 +30,13 @@ export class BasePath extends Element {
             this.config.guide.label,
             {
                 fontSize: 11,
-                position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
+                position: [
+                    'auto:avoid-label-label-overlap',
+                    'auto:avoid-label-anchor-overlap',
+                    'auto:avoid-label-edges-overlap',
+                    'auto:hide-on-label-label-overlap',
+                    'auto:hide-on-label-edges-overlap'
+                ]
             });
 
         this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
@@ -241,7 +247,8 @@ export class BasePath extends Element {
             .append('g')
             .call(updateGroupContainer);
 
-        self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(fibers));
+        var dataFibers = CartesianGrammar.toFibers(fullData, pathModel);
+        self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(dataFibers));
     }
 
     highlight(filter) {
@@ -260,6 +267,13 @@ export class BasePath extends Element {
 
         container
             .selectAll('.i-role-dot')
+            .classed({
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
+            });
+
+        container
+            .selectAll('.i-role-label')
             .classed({
                 [x]: ((d) => filter(d) === true),
                 [_]: ((d) => filter(d) === false)

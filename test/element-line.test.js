@@ -186,7 +186,7 @@ define(function (require) {
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')), 'stroke');
-            var labels = d3.selectAll('.t-label');
+            var labels = d3.selectAll('.i-role-label');
             expect(labels[0].length).to.be.equal(5);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to
@@ -313,4 +313,65 @@ define(function (require) {
                 .equal('0,499 498,498 501,0 507,983 992,480 1000,520 493,1000 501,1000 502,502 0,501', 'line with size');
         });
     });
+
+    var describeChart = testUtils.describeChart;
+    describeChart("Line event API",
+        {
+            type: 'line',
+            x: 'y',
+            y: 'x',
+            label: 'y',
+            color: 'color'
+        },
+        [
+            {
+                x: 1,
+                y: "1",
+                color: 'yellow'
+
+            },
+            {
+                x: 2,
+                y: "2",
+                color: 'yellow'
+
+            },
+            {
+                x: 3,
+                y: "3",
+                color: 'yellow'
+            },
+            {
+                x: 3,
+                y: "4",
+                color: 'green'
+            }
+        ],
+        function (context) {
+
+            it("should support highlight event", function () {
+                var svg0 = context.chart.getSVG();
+                expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+                var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.LINE')[0];
+                pointNode.fire('highlight', ((row) => (row.color === 'green')));
+
+                var svg1 = context.chart.getSVG();
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+
+                pointNode.fire('highlight', ((row) => null));
+
+                var svg2 = context.chart.getSVG();
+                expect(svg2.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });

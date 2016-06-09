@@ -8,13 +8,12 @@ export class LayerLabelsModel {
         this.y = prev.y || createFunc(0);
         this.w = prev.w || createFunc(0);
         this.h = prev.h || createFunc(0);
+        this.hide = prev.hide || createFunc(false);
         this.label = prev.label || createFunc('');
         this.color = prev.color || createFunc('');
     }
 
-    static seed(model, {fontSize, fontColor, flip, formatter, textSize, textPad = 1.5}) {
-
-        var fnTextSize = textSize || ((str) => str.length * fontSize * 0.6);
+    static seed(model, {fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5}) {
 
         var x = flip ? model.yi : model.xi;
         var y = flip ? model.xi : model.yi;
@@ -24,9 +23,9 @@ export class LayerLabelsModel {
         return new LayerLabelsModel({
             model: model,
             x: (row) => x(row),
-            y: (row) => y(row) + (fontSize / 2) - textPad,
-            w: (row) => fnTextSize(label(row)),
-            h: () => fontSize,
+            y: (row) => y(row) + ((labelRectSize(label(row)).height) * paddingKoeff),
+            w: (row) => (labelRectSize(label(row)).width),
+            h: (row) => (labelRectSize(label(row)).height),
             label: label,
             color: () => fontColor
         });

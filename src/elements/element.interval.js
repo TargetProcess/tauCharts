@@ -32,7 +32,9 @@ export class Interval extends Element {
         this.config.guide.label = _.defaults(
             (this.config.guide.label || {}),
             {
-                position: (this.config.flip ? ['r+', 'l-'] : ['t+', 'b-'])
+                position: (this.config.flip ?
+                    ['r-', 'l+', 'keep-inside-or-hide-horizontal'] :
+                    ['t-', 'b+', 'keep-inside-or-hide-vertical'])
             });
 
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
@@ -280,10 +282,17 @@ export class Interval extends Element {
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
 
-        this.config
-            .options
-            .container
+        var container = this.config.options.container;
+
+        container
             .selectAll('.bar')
+            .classed({
+                [x]: ((d) => filter(d) === true),
+                [_]: ((d) => filter(d) === false)
+            });
+
+        container
+            .selectAll('.i-role-label')
             .classed({
                 [x]: ((d) => filter(d) === true),
                 [_]: ((d) => filter(d) === false)

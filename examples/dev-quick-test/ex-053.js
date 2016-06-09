@@ -36,6 +36,7 @@ window.drops.push({
         "tooltip": {"fields": ["company_3_20", "price_2_28", "date_1_36"], "formatters": {}},
         "x": ["date_1_36"],
         "y": ["price_2_28"],
+        'label': 'price_2_28',
         "color": "company_3_20",
         "annotations": []
     },

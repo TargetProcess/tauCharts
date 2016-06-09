@@ -104,6 +104,53 @@ var utilsDom = {
         document.body.removeChild(div);
 
         return size;
-    }
+    },
+
+    getLabelSize: function (text, {fontSize, fontFamily, fontWeight}) {
+
+        var xFontSize = typeof(fontSize) === 'string' ? fontSize : (`${fontSize}px`);
+        var w = 0;
+        var h = 0;
+        var l = text.length - 1;
+        for (var i = 0; i <= l; i++) {
+            var char = text.charAt(i);
+            var s = utilsDom.getCharSize(char, {fontSize: xFontSize, fontFamily, fontWeight});
+            w += s.width;
+            h = Math.max(h, s.height);
+        }
+
+        return {width: w, height: h};
+    },
+
+    getCharSize: _.memoize(
+        (char, {fontSize, fontFamily, fontWeight}) => {
+
+            var div = document.createElement('div');
+            div.style.position = 'absolute';
+            div.style.visibility = 'hidden';
+            div.style.border = '0px';
+            div.style.fontSize = fontSize;
+            div.style.fontFamily = fontFamily;
+            div.style.fontWeight = fontWeight;
+
+            document.body.appendChild(div);
+
+            div.innerHTML = (char === ' ') ? '&nbsp;' : char;
+
+            var size = {
+                width: 0,
+                height: 0
+            };
+
+            // Internet Explorer, Firefox 3+, Google Chrome, Opera 9.5+, Safari 4+
+            var rect = div.getBoundingClientRect();
+            size.width = rect.right - rect.left;
+            size.height = rect.bottom - rect.top;
+
+            document.body.removeChild(div);
+
+            return size;
+        },
+        (char, props) => `${char}_${JSON.stringify(props)}`)
 };
 export {utilsDom};
