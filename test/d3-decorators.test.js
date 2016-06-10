@@ -29,19 +29,19 @@ describe('d3-decorators', function () {
 
     it('should cut continuous text', function () {
         var d3Text = d3.select(div).selectAll('text.long');
-        d3Decorator.cutText(d3Text, 100, textLenMeasurer);
+        d3Decorator.cutText(d3Text, () => 100, textLenMeasurer);
         expect(d3Text.text()).to.equal('01234567...');
     });
 
     it('should cut intermittent text', function () {
         var d3Text = d3.select(div).selectAll('text.word');
-        d3Decorator.cutText(d3Text, 100, textLenMeasurer);
+        d3Decorator.cutText(d3Text, () => 100, textLenMeasurer);
         expect(d3Text.text()).to.equal('012345 6...');
     });
 
     it('should wrap text', function () {
         var d3Text = d3.select(div).selectAll('text.wrap');
-        d3Decorator.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
+        d3Decorator.wrapText(d3Text, () => 100, 3, 10, true, textLenMeasurer);
         expect(div.innerHTML).to.equal([
             '<div id="test-div" style="width: 800px; height: 600px">',
             '<svg>',
@@ -60,7 +60,7 @@ describe('d3-decorators', function () {
 
     it('should wrap continuous text', function () {
         var d3Text = d3.select(div).selectAll('text.long');
-        d3Decorator.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
+        d3Decorator.wrapText(d3Text, () => 100, 3, 10, true, textLenMeasurer);
         expect(div.innerHTML).to.equal([
             '<div id="test-div" style="width: 800px; height: 600px">',
             '<svg>',
@@ -77,7 +77,7 @@ describe('d3-decorators', function () {
 
     it('should wrap several continuous text tokens', function () {
         var d3Text = d3.select(div).selectAll('text.longwrap');
-        d3Decorator.wrapText(d3Text, 100, 3, 10, true, textLenMeasurer);
+        d3Decorator.wrapText(d3Text, () => 100, 3, 10, true, textLenMeasurer);
         expect(div.innerHTML).to.equal([
             '<div id="test-div" style="width: 800px; height: 600px">',
             '<svg>',

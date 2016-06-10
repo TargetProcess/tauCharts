@@ -1,25 +1,17 @@
 import {default as _} from 'underscore';
+import {utilsDraw} from '../../utils/utils-draw';
 import {utilsDom} from '../../utils/utils-dom';
 import {LayerLabelsModel} from './layer-labels-model';
 import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';
 import {FormatterRegistry} from '../../formatter-registry';
 
-var intersect = function (x1, x2, x3, x4, y1, y2, y3, y4) {
-    // returns true if two lines intersect, else false
-    var mua, mub;
-    var denom, numera, numerb;
-
-    denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-    numera = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
-    numerb = (x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3);
-
-    /* Is the intersection along the the segments */
-    mua = numera / denom;
-    mub = numerb / denom;
-
-    return (!(mua < 0 || mua > 1 || mub < 0 || mub > 1));
-};
+var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
+    x1, y1,
+    x2, y2,
+    x3, y3,
+    x4, y4
+);
 
 export class LayerLabels {
 

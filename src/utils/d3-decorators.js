@@ -6,11 +6,16 @@ var d3getComputedTextLength = _.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
     (d3Text) => d3Text.node().textContent.length);
 
-var cutText = (textString, widthLimit, getComputedTextLength) => {
+var cutText = (textString, getScaleStepSize, getComputedTextLength) => {
 
     getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
 
     textString.each(function () {
+
+        var tickNode = d3.select(this.parentNode);
+        var tickData = tickNode.data()[0];
+        var stepSize = getScaleStepSize(tickData);
+
         var textD3 = d3.select(this);
         var tokens = textD3.text().split(/\s+/);
 
@@ -23,10 +28,10 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
 
             var text = (i > 0) ? [memo, t].join(' ') : t;
             var len = getComputedTextLength(textD3.text(text));
-            if (len < widthLimit) {
+            if (len < stepSize) {
                 memo = text;
             } else {
-                var available = Math.floor(widthLimit / len * text.length);
+                var available = Math.floor(stepSize / len * text.length);
                 memo = text.substr(0, available - 4) + '...';
                 stop = true;
             }
@@ -39,7 +44,7 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
     });
 };
 
-var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
+var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
 
     getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
 
@@ -54,6 +59,11 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
     };
 
     textNode.each(function () {
+
+        var tickNode = d3.select(this.parentNode);
+        var tickData = tickNode.data()[0];
+        var stepSize = getScaleStepSize(tickData);
+
         var textD3 = d3.select(this),
             tokens = textD3.text().split(/\s+/),
             lineHeight = 1.1, // ems
@@ -77,10 +87,10 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
                 var last = memo[memo.length - 1];
                 var text = (last !== '') ? (last + ' ' + next) : next;
                 var tLen = getComputedTextLength(tempSpan.text(text));
-                var over = tLen > widthLimit;
+                var over = tLen > stepSize;
 
                 if (over && isLimit) {
-                    var available = Math.floor(widthLimit / tLen * text.length);
+                    var available = Math.floor(stepSize / tLen * text.length);
                     memo[memo.length - 1] = text.substr(0, available - 4) + '...';
                     stopReduce = true;
                 }
@@ -224,7 +234,7 @@ var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
     }
 };
 
-var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
+var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal, logicalScale) => {
 
     var angle = guide.rotate;
 
@@ -245,16 +255,18 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
         tick.attr(attr);
     }
 
+    var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);
+
     if (guide.tickFormatWordWrap) {
         tick.call(
             wrapText,
-            guide.tickFormatWordWrapLimit,
+            limitFunc,
             guide.tickFormatWordWrapLines,
             guide.tickFontHeight,
             !isHorizontal
         );
     } else {
-        tick.call(cutText, guide.tickFormatWordWrapLimit);
+        tick.call(cutText, limitFunc, d3getComputedTextLength);
     }
 };
 

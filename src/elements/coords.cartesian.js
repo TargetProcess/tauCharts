@@ -329,7 +329,7 @@ export class Cartesian extends Element {
                         d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
                     }
 
-                    d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
+                    d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal, scale);
 
                     if (prettifyTick && scale.guide.avoidCollisions) {
                         d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
