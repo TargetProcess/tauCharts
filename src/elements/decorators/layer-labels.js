@@ -113,6 +113,14 @@ export class LayerLabels {
             .filter((r) => r.label)
             .map((r, i) => _.extend(r, {i: i}));
 
+        var countHidden = parallel.text.reduce((sum, r) => sum + (r.hide), 0);
+        var countWhole = parallel.text.length;
+        if ((countWhole > 0) && (countHidden === countWhole)) {
+            var maxLabelWidth = Math.max(...parallel.text.map((r) => r.w));
+            var density = Math.ceil((countWhole / maxLabelWidth) * 2);
+            parallel.text.forEach((r, i) => r.hide = (i % density));
+        }
+
         var autoPosition = this.guide.position.filter((token) => token.indexOf('auto:') === 0);
         parallel = ((parallel.text.length > 0) && (autoPosition.length > 0)) ?
             this.autoPosition(parallel, autoPosition) :

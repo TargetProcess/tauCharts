@@ -34,7 +34,9 @@ export class Interval extends Element {
             {
                 position: (this.config.flip ?
                     ['r-', 'l+', 'keep-inside-or-hide-horizontal'] :
-                    ['t-', 'b+', 'keep-inside-or-hide-vertical'])
+                    (enableStack ?
+                        ['t-', 'b+', 'keep-inside-or-hide-vertical'] :
+                        ['t+', 'b-', 'keep-inside-or-hide-vertical']))
             });
 
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
