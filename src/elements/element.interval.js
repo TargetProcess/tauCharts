@@ -123,7 +123,6 @@ export class Interval extends Element {
         var xScale = this.xScale;
         var yScale = this.yScale;
         var colorScale = this.color;
-        var isHorizontal = config.flip;
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
 
@@ -131,7 +130,7 @@ export class Interval extends Element {
         var barModel = this.buildModel(modelGoG, {colorScale});
 
         var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
-        var d3Attrs = (isHorizontal ?
+        var d3Attrs = (config.flip ?
             this.toHorizontalDrawMethod(barModel, params) :
             this.toVerticalDrawMethod(barModel, params));
 
@@ -170,7 +169,7 @@ export class Interval extends Element {
             .append('g')
             .call(updateBarContainer);
 
-        self.subscribe(new LayerLabels(modelGoG, isHorizontal, config.guide.label, options).draw(fibers));
+        self.subscribe(new LayerLabels(modelGoG, config.flip, config.guide.label, options).draw(fibers));
     }
 
     toVerticalDrawMethod(
