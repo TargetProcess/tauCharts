@@ -8,6 +8,7 @@ export class CartesianGrammar {
 
     constructor(model) {
         var createFunc = ((x) => (() => x));
+        this.flip = model.flip || false;
         this.scaleX = model.scaleX;
         this.scaleY = model.scaleY;
         this.scaleSize = model.scaleSize;
@@ -23,6 +24,26 @@ export class CartesianGrammar {
         this.color = model.color || createFunc('');
         this.group = model.group || createFunc('');
         this.order = model.order || createFunc(0);
+    }
+
+    toScreenModel() {
+        var flip = this.flip;
+        var iff = ((statement, yes, no) => statement ? yes : no);
+        var m = this;
+        return {
+            flip,
+            x: iff(flip, m.yi, m.xi),
+            y: iff(flip, m.xi, m.yi),
+            x0: iff(flip, m.y0, m.xi),
+            y0: iff(flip, m.xi, m.y0),
+            size: m.size,
+            group: m.group,
+            order: m.order,
+            label: m.label,
+            color: (d) => m.scaleColor.toColor(m.color(d)),
+            class: (d) => m.scaleColor.toClass(m.color(d)),
+            model: m
+        };
     }
 
     static compose(prev, updates = {}) {
@@ -45,6 +66,7 @@ export class CartesianGrammar {
         var valsScale = (isHorizontal ? model.scaleX : model.scaleY);
 
         return CartesianGrammar.compose(model, {
+            flip: isHorizontal,
             scaleX: baseScale,
             scaleY: valsScale,
             yi: ((d) => (valsScale.value(d[valsScale.dim]))),
