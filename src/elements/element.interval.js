@@ -120,19 +120,12 @@ export class Interval extends Element {
         var options = this.config.options;
         var uid = options.uid;
         var config = this.config;
-        var xScale = this.xScale;
-        var yScale = this.yScale;
-        var colorScale = this.color;
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
 
         var modelGoG = this.walkFrames(frames);
-        var barModel = this.buildModel(modelGoG, {colorScale});
-
-        var params = {prettify, xScale, yScale, minBarH: 1, minBarW: 1, baseCssClass};
-        var d3Attrs = (config.flip ?
-            this.toHorizontalDrawMethod(barModel, params) :
-            this.toVerticalDrawMethod(barModel, params));
+        self.screenModel = modelGoG.toScreenModel();
+        var d3Attrs = this.buildModel(self.screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
 
         var updateBar = function () {
             return this.attr(d3Attrs);
@@ -172,110 +165,83 @@ export class Interval extends Element {
         self.subscribe(new LayerLabels(modelGoG, config.flip, config.guide.label, options).draw(fibers));
     }
 
-    toVerticalDrawMethod(
-        {barX, barY, barH, barW, barColor, barClass},
-        {prettify, minBarH, minBarW, yScale, baseCssClass}) {
+    buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {
 
-        var calculateW = ((d) => {
-            var w = barW(d);
+        var flip = screenModel.flip;
+
+        var barSize = ((d) => {
+            var w = screenModel.size(d);
             if (prettify) {
                 w = Math.max(minBarW, w);
             }
             return w;
         });
 
-        return {
-            x: ((d) => barX(d) - calculateW(d) * 0.5),
-            y: ((d) => {
-                var y = barY(d);
+        var model;
+        var value = (d) => d[screenModel.model.scaleY.dim];
+        if (flip) {
+            let barHeight = ((d) => Math.abs(screenModel.x(d) - screenModel.x0(d)));
+            model = {
+                y: ((d) => screenModel.y(d) - barSize(d) * 0.5),
+                x: ((d) => {
+                    var x = Math.min(screenModel.x0(d), screenModel.x(d));
+                    if (prettify) {
+                        // decorate for better visual look & feel
+                        var h = barHeight(d);
+                        var dx = value(d);
+                        var offset = 0;
 
-                if (prettify) {
-                    // decorate for better visual look & feel
-                    var h = barH(d);
-                    var isTooSmall = (h < minBarH);
-                    return ((isTooSmall && (d[yScale.dim] > 0)) ? (y - minBarH) : y);
-                } else {
-                    return y;
-                }
-            }),
-            height: ((d) => {
-                var h = barH(d);
-                if (prettify) {
-                    // decorate for better visual look & feel
-                    var y = d[yScale.dim];
-                    return (y === 0) ? h : Math.max(minBarH, h);
-                } else {
+                        if (dx === 0) {offset = 0;}
+                        if (dx > 0) {offset = (h);}
+                        if (dx < 0) {offset = (0 - minBarH);}
+
+                        var isTooSmall = (h < minBarH);
+                        return (isTooSmall) ? (x + offset) : (x);
+                    } else {
+                        return x;
+                    }
+                }),
+                height: ((d) => barSize(d)),
+                width: ((d) => {
+                    var h = barHeight(d);
+                    if (prettify) {
+                        // decorate for better visual look & feel
+                        return (value(d) === 0) ? h : Math.max(minBarH, h);
+                    }
                     return h;
-                }
-            }),
-            width: ((d) => calculateW(d)),
-            class: ((d) => `${baseCssClass} ${barClass(d)}`),
-            fill: ((d) => barColor(d))
-        };
-    }
-
-    toHorizontalDrawMethod(
-        {barX, barY, barH, barW, barColor, barClass},
-        {prettify, minBarH, minBarW, xScale, baseCssClass}) {
-
-        var calculateH = ((d) => {
-            var h = barW(d);
-            if (prettify) {
-                h = Math.max(minBarW, h);
+                })
             }
-            return h;
-        });
-
-        return {
-            y: ((d) => barX(d) - calculateH(d) * 0.5),
-            x: ((d) => {
-                var x = barY(d);
-
-                if (prettify) {
-                    // decorate for better visual look & feel
-                    var h = barH(d);
-                    var dx = d[xScale.dim];
-                    var offset = 0;
-
-                    if (dx === 0) {offset = 0;}
-                    if (dx > 0) {offset = (h);}
-                    if (dx < 0) {offset = (0 - minBarH);}
-
-                    var isTooSmall = (h < minBarH);
-                    return (isTooSmall) ? (x + offset) : (x);
-                } else {
-                    return x;
-                }
-            }),
-            height: ((d) => calculateH(d)),
-            width: ((d) => {
-                var w = barH(d);
-
-                if (prettify) {
-                    // decorate for better visual look & feel
-                    var x = d[xScale.dim];
-                    return (x === 0) ? w : Math.max(minBarH, w);
-                } else {
-                    return w;
-                }
-            }),
-            class: ((d) => `${baseCssClass} ${barClass(d)}`),
-            fill: ((d) => barColor(d))
-        };
-    }
-
-    buildModel(modelGoG, {colorScale}) {
-
-        return {
-            barX: ((d) => modelGoG.xi(d)),
-            barY: ((d) => Math.min(modelGoG.y0(d), modelGoG.yi(d))),
-            barH: ((d) => Math.abs(modelGoG.yi(d) - modelGoG.y0(d))),
-            barW: ((d) => modelGoG.size(d)),
-            barColor: ((d) => colorScale.toColor(modelGoG.color(d))),
-            barClass: ((d) => colorScale.toClass(modelGoG.color(d))),
-            group: ((d) => modelGoG.group(d)),
-            order: ((d) => modelGoG.order(d))
-        };
+        } else {
+            let barHeight = ((d) => Math.abs(screenModel.y(d) - screenModel.y0(d)));
+            model = {
+                x: ((d) => screenModel.x(d) - barSize(d) * 0.5),
+                y: ((d) => {
+                    var y = Math.min(screenModel.y0(d), screenModel.y(d));
+                    if (prettify) {
+                        // decorate for better visual look & feel
+                        var h = barHeight(d);
+                        var isTooSmall = (h < minBarH);
+                        y = ((isTooSmall && (value(d) > 0)) ? (y - minBarH) : y);
+                    }
+                    return y;
+                }),
+                width: ((d) => barSize(d)),
+                height: ((d) => {
+                    var h = barHeight(d);
+                    if (prettify) {
+                        // decorate for better visual look & feel
+                        h = ((value(d) === 0) ? h : Math.max(minBarH, h));
+                    }
+                    return h;
+                })
+            }
+        }
+        return _.extend(
+            model,
+            {
+                class: ((d) => `${baseCssClass} ${screenModel.class(d)}`),
+                fill: ((d) => screenModel.color(d))
+            });
     }
 
     highlight(filter) {

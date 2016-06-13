@@ -7,6 +7,7 @@ export class Element extends Emitter {
     // add base behaviour here
     constructor(config) {
         super(config);
+        this.screenModel = null;
         this._elementNameSpace = (config.namespace || 'default');
         this._elementScalesHub = {};
 
