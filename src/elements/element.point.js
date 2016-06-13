@@ -15,6 +15,7 @@ export class Point extends Element {
         this.config.guide = _.defaults(
             (this.config.guide || {}),
             {
+                animationSpeed: 0,
                 prettify: true,
                 enableColorToBarPosition: false
             });
@@ -95,18 +96,6 @@ export class Point extends Element {
             .regScale('label', this.label);
     }
 
-    buildModel(modelGoG, {colorScale}) {
-
-        return {
-            x: this.isHorizontal ? modelGoG.yi : modelGoG.xi,
-            y: this.isHorizontal ? modelGoG.xi : modelGoG.yi,
-            size: modelGoG.size,
-            group: modelGoG.group,
-            color: (d) => colorScale.toColor(modelGoG.color(d)),
-            class: (d) => colorScale.toClass(modelGoG.color(d))
-        };
-    }
-
     walkFrames(frames) {
 
         var args = {
@@ -142,23 +131,27 @@ export class Point extends Element {
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
 
         var modelGoG = this.walkFrames(frames);
-        var model = this.buildModel(modelGoG, {colorScale: this.color});
-
+        self.screenModel = modelGoG.toScreenModel();
         var kRound = 10000;
-        var attr = {
-            r: ((d) => (Math.round(kRound * model.size(d) / 2) / kRound)),
-            cx: ((d) => model.x(d)),
-            cy: ((d) => model.y(d)),
-            fill: ((d) => model.color(d)),
-            class: ((d) => `${prefix} ${model.class(d)}`)
+        var d3Attrs = {
+            r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
+            cx: ((d) => self.screenModel.x(d)),
+            cy: ((d) => self.screenModel.y(d)),
+            fill: ((d) => self.screenModel.color(d)),
+            class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
         };
 
-        var enter = function () {
-            return this.attr(attr).transition().duration(500).attr('r', attr.r);
-        };
-
-        var update = function () {
-            return this.attr(attr);
+        var createUpdateFunc = (speed, initAttrs, doneAttrs) => {
+            return function () {
+                var flow = this;
+                if (initAttrs) {
+                    flow = flow.attr(_.defaults(initAttrs, doneAttrs));
+                }
+                if (speed > 0) {
+                    flow = flow.transition().duration(speed);
+                }
+                return flow.attr(doneAttrs);
+            };
         };
 
         var updateGroups = function () {
@@ -170,16 +163,16 @@ export class Point extends Element {
                         .data((fiber) => fiber);
                     dots.exit()
                         .remove();
-                    dots.call(update);
+                    dots.call(createUpdateFunc(self.config.guide.animationSpeed, null, d3Attrs));
                     dots.enter()
                         .append('circle')
-                        .call(enter);
+                        .call(createUpdateFunc(self.config.guide.animationSpeed, {r: 0}, d3Attrs));
 
                     self.subscribe(dots);
                 });
         };
 
-        var groups = _.groupBy(fullData, model.group);
+        var groups = _.groupBy(fullData, self.screenModel.group);
         var fibers = Object
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);
