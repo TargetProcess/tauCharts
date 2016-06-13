@@ -18,10 +18,10 @@ export class Path extends BasePath {
         ];
     }
 
-    buildModel(pathModel, params) {
+    buildModel(screenModel) {
 
         var self = this;
-        var baseModel = super.buildModel(pathModel, params);
+        var baseModel = super.buildModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
@@ -45,18 +45,32 @@ export class Path extends BasePath {
 
         var guide = this.config.guide;
         var options = this.config.options;
-        var countCss = getLineClassesByCount(params.colorScale.domain().length);
+        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
 
         const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
         };
 
-        baseModel.pathAttributes = {
+        var pathPoints = (x, y) => {
+            return ((fiber) => (fiber.map((d) => [x(d), y(d)].join(',')).join(' ')));
+        };
+
+        var pathAttributesDefault = {
+            points: pathPoints(baseModel.x, baseModel.y0)
+        };
+
+        var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => baseModel.color(fiber[0]),
-            points: ((fiber) => (fiber.map((d) => [baseModel.x(d), baseModel.y(d)].join(',')).join(' ')))
+            points: pathPoints(baseModel.x, baseModel.y)
         };
+
+        baseModel.pathAttributesUpdateInit = null;
+        baseModel.pathAttributesUpdateDone = pathAttributes;
+
+        baseModel.pathAttributesEnterInit = pathAttributesDefault;
+        baseModel.pathAttributesEnterDone = pathAttributes;
 
         baseModel.pathElement = 'polygon';
 

@@ -2,6 +2,7 @@ import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
+import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
@@ -12,11 +13,11 @@ export class BasePath extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = this.config.guide || {};
 
         this.config.guide = _.defaults(
-            this.config.guide,
+            (this.config.guide || {}),
             {
+                animationSpeed: 0,
                 cssClass: '',
                 widthCssClass: '',
                 showAnchors: true,
@@ -82,33 +83,30 @@ export class BasePath extends Element {
             .regScale('label', this.label);
     }
 
-    buildModel(pathModel, {colorScale, labelScale}) {
+    buildModel(screenModel) {
 
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
-
-        var flip = this.config.flip;
-        var choose = ((statement, yes, no) => statement ? yes : no);
         var kRound = 10000;
         var baseModel = {
-            scaleX: pathModel.scaleX,
-            scaleY: pathModel.scaleY,
-            scaleColor: colorScale,
-            scaleLabel: labelScale,
-            x: choose(flip, pathModel.yi, pathModel.xi),
-            x0: choose(flip, pathModel.y0, pathModel.xi),
-            y: choose(flip, pathModel.xi, pathModel.yi),
-            y0: choose(flip, pathModel.xi, pathModel.y0),
-            size: pathModel.size,
-            group: pathModel.group,
-            order: pathModel.order,
-            color: (d) => colorScale.toColor(pathModel.color(d)),
-            class: (d) => colorScale.toClass(pathModel.color(d)),
+            gog: screenModel.model,
+            x: screenModel.x,
+            y: screenModel.y,
+            x0: screenModel.x0,
+            y0: screenModel.y0,
+            size: screenModel.size,
+            group: screenModel.group,
+            order: screenModel.order,
+            color: screenModel.color,
+            class: screenModel.class,
             matchRowInCoordinates() {
                 throw 'Not implemented';
             },
             groupAttributes: {},
-            pathAttributes: {},
+            pathAttributesUpdateInit: {},
+            pathAttributesUpdateDone: {},
+            pathAttributesEnterInit: {},
+            pathAttributesEnterDone: {},
             pathElement: null,
             dotAttributes: {
                 r: ((d) => (Math.round(kRound * baseModel.size(d) / 2) / kRound)),
@@ -116,6 +114,10 @@ export class BasePath extends Element {
                 cy: (d) => baseModel.y(d),
                 fill: (d) => baseModel.color(d),
                 class: (d) => (`${pointPref} ${baseModel.class(d)}`)
+            },
+            dotAttributesDefault: {
+                r: 0,
+                cy: (d) => baseModel.y0(d)
             }
         };
 
@@ -159,13 +161,10 @@ export class BasePath extends Element {
 
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
         var pathModel = this.walkFrames(frames);
-        var model = this.buildModel(
-            pathModel,
-            {
-                colorScale: this.color,
-                labelScale: this.label
-            });
-        this.model = model;
+        this.screenModel = pathModel.toScreenModel();
+        var model = this.buildModel(this.screenModel);
+
+        var createUpdateFunc = d3_animationInterceptor;
 
         var updateGroupContainer = function () {
 
@@ -178,11 +177,11 @@ export class BasePath extends Element {
                 .exit()
                 .remove();
             points
-                .attr(model.dotAttributes);
+                .call(createUpdateFunc(guide.animationSpeed, null, model.dotAttributes));
             points
                 .enter()
                 .append('circle')
-                .attr(model.dotAttributes);
+                .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
 
             self.subscribe(points, (d) => d);
 
@@ -193,11 +192,24 @@ export class BasePath extends Element {
                 .exit()
                 .remove();
             series
-                .attr(model.pathAttributes);
+                .attr('_hack_', function (fiber) {
+                    model.beforePathUpdate && model.beforePathUpdate(this, fiber);
+                })
+                .call(createUpdateFunc(
+                    guide.animationSpeed,
+                    model.pathAttributesUpdateInit,
+                    model.pathAttributesUpdateDone,
+                    model.afterPathUpdate
+                ));
             series
                 .enter()
                 .append(model.pathElement)
-                .attr(model.pathAttributes);
+                .call(createUpdateFunc(
+                    guide.animationSpeed,
+                    model.pathAttributesEnterInit,
+                    model.pathAttributesEnterDone,
+                    model.afterPathUpdate
+                ));
 
             self.subscribe(series, function (rows) {
                 var m = d3.mouse(this);
@@ -212,6 +224,7 @@ export class BasePath extends Element {
                     r: () => guide.anchorSize,
                     cx: (d) => model.x(d),
                     cy: (d) => model.y(d),
+                    opacity: 0,
                     class: 'i-data-anchor'
                 };
 
@@ -220,10 +233,10 @@ export class BasePath extends Element {
                     .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord));
                 dots.exit()
                     .remove();
-                dots.attr(attr);
+                dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
                 dots.enter()
                     .append('circle')
-                    .attr(attr);
+                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
 
                 self.subscribe(dots);
             }
@@ -287,9 +300,10 @@ export class BasePath extends Element {
             .container
             .selectAll(`.${cssClass}`)
             .attr({
-                r: (d) => (filter(d) ? (this.model.size(d) / 2) : this.config.guide.anchorSize),
-                fill: (d) => this.model.color(d),
-                class: (d) => (`${cssClass} ${this.model.class(d)}`)
+                r: (d) => (filter(d) ? (this.screenModel.size(d) / 2) : this.config.guide.anchorSize),
+                opacity: (d) => (filter(d) ? 1 : 0),
+                fill: (d) => this.screenModel.color(d),
+                class: (d) => (`${cssClass} ${this.screenModel.class(d)}`)
             });
     }
 }

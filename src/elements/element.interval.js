@@ -2,6 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
+import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
 
 export class Interval extends Element {
@@ -128,18 +129,7 @@ export class Interval extends Element {
         self.screenModel = modelGoG.toScreenModel();
         var d3Attrs = this.buildModel(self.screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
 
-        var createUpdateFunc = (speed, initAttrs, doneAttrs) => {
-            return function () {
-                var flow = this;
-                if (initAttrs) {
-                    flow = flow.attr(_.defaults(initAttrs, doneAttrs));
-                }
-                if (speed > 0) {
-                    flow = flow.transition().duration(speed);
-                }
-                return flow.attr(doneAttrs);
-            };
-        };
+        var createUpdateFunc = d3_animationInterceptor;
 
         var barY = config.flip ? 'x' : 'y';
         var barH = config.flip ? 'width' : 'height';
