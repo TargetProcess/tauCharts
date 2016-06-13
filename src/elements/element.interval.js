@@ -17,6 +17,7 @@ export class Interval extends Element {
         this.config.guide = _.defaults(
             (this.config.guide),
             {
+                animationSpeed: 0,
                 prettify: true,
                 enableColorToBarPosition: !enableStack
             });
@@ -127,19 +128,38 @@ export class Interval extends Element {
         self.screenModel = modelGoG.toScreenModel();
         var d3Attrs = this.buildModel(self.screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
 
-        var updateBar = function () {
-            return this.attr(d3Attrs);
+        var createUpdateFunc = (speed, initAttrs, doneAttrs) => {
+            return function () {
+                var flow = this;
+                if (initAttrs) {
+                    flow = flow.attr(_.defaults(initAttrs, doneAttrs));
+                }
+                if (speed > 0) {
+                    flow = flow.transition().duration(speed);
+                }
+                return flow.attr(doneAttrs);
+            };
         };
 
+        var barY = config.flip ? 'x' : 'y';
+        var barH = config.flip ? 'width' : 'height';
         var updateBarContainer = function () {
             this.attr('class', `frame-id-${uid} i-role-bar-group`);
             var bars = this.selectAll('.bar').data((fiber) => fiber);
             bars.exit()
                 .remove();
-            bars.call(updateBar);
+            bars.call(createUpdateFunc(
+                config.guide.animationSpeed,
+                null,
+                d3Attrs
+            ));
             bars.enter()
                 .append('rect')
-                .call(updateBar);
+                .call(createUpdateFunc(
+                    config.guide.animationSpeed,
+                    {[barY]: self.screenModel[`${barY}0`], [barH]: 0},
+                    d3Attrs
+                ));
 
             self.subscribe(bars);
         };
@@ -210,7 +230,7 @@ export class Interval extends Element {
                     }
                     return h;
                 })
-            }
+            };
         } else {
             let barHeight = ((d) => Math.abs(screenModel.y(d) - screenModel.y0(d)));
             model = {
@@ -234,7 +254,7 @@ export class Interval extends Element {
                     }
                     return h;
                 })
-            }
+            };
         }
         return _.extend(
             model,
