@@ -25,10 +25,9 @@ export class Area extends BasePath {
         ];
     }
 
-    buildModel(modelGoG, params) {
-
+    buildModel(screenModel) {
         var self = this;
-        var baseModel = super.buildModel(modelGoG, params);
+        var baseModel = super.buildModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
@@ -52,22 +51,19 @@ export class Area extends BasePath {
 
         var guide = this.config.guide;
         var options = this.config.options;
-        var countCss = getLineClassesByCount(params.colorScale.domain().length);
+        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
 
         const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
         };
 
-        baseModel.pathAttributes = {
-            fill: (fiber) => baseModel.color(fiber[0]),
-            stroke: (fiber) => baseModel.color(fiber[0]),
-            points: ((fiber) => {
-
+        var areaPoints = (xi, yi, x0, y0) => {
+            return ((fiber) => {
                 var ways = fiber
                     .reduce((memo, d) => {
-                        memo.dir.push([baseModel.x(d), baseModel.y(d)]);
-                        memo.rev.push([baseModel.x0(d), baseModel.y0(d)]);
+                        memo.dir.push([xi(d), yi(d)]);
+                        memo.rev.push([x0(d), y0(d)]);
                         return memo;
                     },
                     {
@@ -76,8 +72,24 @@ export class Area extends BasePath {
                     });
 
                 return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
-            })
+            });
         };
+
+        var pathAttributesDefault = {
+            points: areaPoints(baseModel.x, baseModel.y0, baseModel.x0, baseModel.y0)
+        };
+
+        var pathAttributes = {
+            fill: (fiber) => baseModel.color(fiber[0]),
+            stroke: (fiber) => baseModel.color(fiber[0]),
+            points: areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
+        };
+
+        baseModel.pathAttributesUpdateInit = null;
+        baseModel.pathAttributesUpdateDone = pathAttributes;
+
+        baseModel.pathAttributesEnterInit = pathAttributesDefault;
+        baseModel.pathAttributesEnterDone = pathAttributes;
 
         baseModel.pathElement = 'polygon';
 

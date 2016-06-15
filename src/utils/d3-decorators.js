@@ -369,7 +369,37 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     });
 };
 
+var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
+
+    var xAfterUpdate = afterUpdate || _.identity;
+
+    return function () {
+        var flow = this;
+
+        if (initAttrs) {
+            flow = flow.attr(_.defaults(initAttrs, doneAttrs));
+        }
+
+        if (speed > 0) {
+            flow = flow.transition().duration(speed);
+        }
+
+        flow = flow.attr(doneAttrs);
+
+        if (speed > 0) {
+            flow.each('end', function () {
+                xAfterUpdate(this);
+            });
+        } else {
+            xAfterUpdate(flow.node());
+        }
+
+        return flow;
+    };
+};
+
 export {
+    d3_animationInterceptor,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_bottom_line,

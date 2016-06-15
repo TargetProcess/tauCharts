@@ -2,6 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
+import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
 
 export class Point extends Element {
@@ -141,18 +142,7 @@ export class Point extends Element {
             class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
         };
 
-        var createUpdateFunc = (speed, initAttrs, doneAttrs) => {
-            return function () {
-                var flow = this;
-                if (initAttrs) {
-                    flow = flow.attr(_.defaults(initAttrs, doneAttrs));
-                }
-                if (speed > 0) {
-                    flow = flow.transition().duration(speed);
-                }
-                return flow.attr(doneAttrs);
-            };
-        };
+        var createUpdateFunc = d3_animationInterceptor;
 
         var updateGroups = function () {
 

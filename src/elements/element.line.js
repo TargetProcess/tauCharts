@@ -33,7 +33,7 @@ export class Line extends BasePath {
         ];
     }
 
-    buildModel(pathModel, params) {
+    buildModel(screenModel) {
 
         var wMax = this.config.options.width;
         var hMax = this.config.options.height;
@@ -54,7 +54,7 @@ export class Line extends BasePath {
             return n;
         };
 
-        var baseModel = super.buildModel(pathModel, params);
+        var baseModel = super.buildModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
             var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
@@ -100,7 +100,7 @@ export class Line extends BasePath {
         var widthCss = (this.isEmptySize ?
             (guide.widthCssClass || getLineClassesByWidth(options.width)) :
             (''));
-        var countCss = getLineClassesByCount(params.colorScale.domain().length);
+        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
 
         var tag = this.isEmptySize ? 'line' : 'area';
         const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
@@ -117,72 +117,123 @@ export class Line extends BasePath {
 
         baseModel.pathElement = this.isEmptySize ? 'path' : 'polygon';
 
-        baseModel.pathAttributes = this.isEmptySize ?
+        var d3LineVarySize = (x, y, w) => {
+            return (fiber) => {
+                var xy = ((d) => ([x(d), y(d)]));
+                var ways = fiber
+                    .reduce((memo, d, i, list) => {
+                        var dPrev = list[i - 1];
+                        var dNext = list[i + 1];
+                        var curr = xy(d);
+                        var prev = dPrev ? xy(dPrev) : null;
+                        var next = dNext ? xy(dNext) : null;
+
+                        var width = w(d);
+                        var lAngle = dPrev ? (Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0])) : Math.PI;
+                        var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
+
+                        var gamma = lAngle - rAngle;
+
+                        if (gamma === 0) {
+                            // Avoid divide be zero
+                            return memo;
+                        }
+
+                        var diff = width / 2 / Math.sin(gamma / 2);
+                        var aup = rAngle + gamma / 2;
+                        var adown = aup - Math.PI;
+                        var dxup = diff * Math.cos(aup);
+                        var dyup = diff * Math.sin(aup);
+                        var dxdown = diff * Math.cos(adown);
+                        var dydown = diff * Math.sin(adown);
+
+                        var dir = [
+                            limit(curr[0] + dxup, 0, wMax), // x
+                            limit(curr[1] - dyup, 0, hMax)  // y
+                        ];
+
+                        var rev = [
+                            limit(curr[0] + dxdown, 0, wMax),
+                            limit(curr[1] - dydown, 0, hMax)
+                        ];
+
+                        memo.dir.push(dir);
+                        memo.rev.push(rev);
+
+                        return memo;
+                    },
+                    {
+                        dir: [],
+                        rev: []
+                    });
+
+                return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
+            };
+        };
+
+        var prevNext = _.once((thisNode, fiber) => {
+            var testPath = d3
+                .select(thisNode.parentNode)
+                .append('path')
+                .datum(fiber)
+                .attr({d: d3Line});
+            var next = testPath.node().getTotalLength();
+            testPath.remove();
+            return {
+                prev: thisNode.getTotalLength(),
+                next
+            };
+        });
+
+        baseModel.beforePathUpdate = (thisNode, fiber) => {
+            prevNext(thisNode, fiber);
+        };
+
+        var pathAttributesDefault = this.isEmptySize ?
+            ({
+                d: function (fiber) {
+                    prevNext(this, fiber);
+                    return d3Line(fiber);
+                },
+                'stroke-dasharray': function (fiber) {
+                    var {next} = prevNext(this, fiber);
+                    return `${next} ${next}`;
+                },
+                'stroke-dashoffset': function (fiber) {
+                    var {prev, next} = prevNext(this, fiber);
+                    return next - prev;
+                }
+            }) :
+            ({
+                points: d3LineVarySize(baseModel.x, baseModel.y0, baseModel.size)
+            });
+
+        var pathAttributes = this.isEmptySize ?
             ({
                 d: d3Line,
                 stroke: (fiber) => baseModel.color(fiber[0]),
-                class: 'i-role-datum'
+                class: 'i-role-datum',
+                'stroke-dashoffset': 0
             }) :
             ({
                 fill: (fiber) => baseModel.color(fiber[0]),
-                points: ((fiber) => {
-
-                    var x = baseModel.x;
-                    var y = baseModel.y;
-                    var w = baseModel.size;
-
-                    var xy = ((d) => ([x(d), y(d)]));
-
-                    var ways = fiber
-                        .reduce((memo, d, i, list) => {
-                            var dPrev = list[i - 1];
-                            var dNext = list[i + 1];
-                            var curr = xy(d);
-                            var prev = dPrev ? xy(dPrev) : null;
-                            var next = dNext ? xy(dNext) : null;
-
-                            var width = w(d);
-                            var lAngle = dPrev ? (Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0])) : Math.PI;
-                            var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
-
-                            var gamma = lAngle - rAngle;
-
-                            if (gamma === 0) {
-                                // Avoid divide be zero
-                                return memo;
-                            }
-
-                            var diff = width / 2 / Math.sin(gamma / 2);
-                            var aup = rAngle + gamma / 2;
-                            var adown = aup - Math.PI;
-                            var dxup = diff * Math.cos(aup);
-                            var dyup = diff * Math.sin(aup);
-                            var dxdown = diff * Math.cos(adown);
-                            var dydown = diff * Math.sin(adown);
-
-                            var dir = [
-                                limit(curr[0] + dxup, 0, wMax), // x
-                                limit(curr[1] - dyup, 0, hMax)  // y
-                            ];
-
-                            var rev = [
-                                limit(curr[0] + dxdown, 0, wMax),
-                                limit(curr[1] - dydown, 0, hMax)
-                            ];
-
-                            memo.dir.push(dir);
-                            memo.rev.push(rev);
-
-                            return memo;
-                        },
-                        {
-                            dir: [],
-                            rev: []
-                        });
-
-                    return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
-                })
+                points: d3LineVarySize(baseModel.x, baseModel.y, baseModel.size)
             });
+
+        baseModel.pathAttributesUpdateInit = this.isEmptySize ?
+            (baseModel.gog.scaleX.discrete ? null : pathAttributesDefault) :
+            (pathAttributesDefault);
+        baseModel.pathAttributesUpdateDone = pathAttributes;
+
+        baseModel.pathAttributesEnterInit = pathAttributesDefault;
+        baseModel.pathAttributesEnterDone = pathAttributes;
+
+        baseModel.afterPathUpdate = (thisNode) => {
+            d3.select(thisNode).attr({
+                'stroke-dasharray': null,
+                'stroke-dashoffset': null
+            });
+        };
 
         return baseModel;
     }
