@@ -13,10 +13,11 @@ export class ColorScale extends BaseScale {
 
         var discrete = (scaleConfig.dimType !== 'measure');
 
-        var scaleBrewer = (discrete ?
-                (this.scaleConfig.brewer || _.times(20, (i) => 'color20-' + (1 + i))) :
-                (this.scaleConfig.brewer || ['#eee', '#000'])
-        );
+        var scaleBrewer = (this.scaleConfig.brewer
+        ||
+        (discrete ?
+            (_.times(20, (i) => 'color20-' + (1 + i))) :
+            (['#eee', '#000'])));
 
         var props = this.scaleConfig;
 
@@ -70,12 +71,8 @@ export class ColorScale extends BaseScale {
         var defaultColorClass = _.constant('color-default');
 
         var buildArrayGetClass = (domain, brewer) => {
-            if (domain.length === 0 || (domain.length === 1 && domain[0] === null)) {
-                return defaultColorClass;
-            } else {
-                var fullDomain = domain.map((x) => String(x).toString());
-                return d3.scale.ordinal().range(brewer).domain(fullDomain);
-            }
+            var fullDomain = domain.map((x) => String(x).toString());
+            return d3.scale.ordinal().range(brewer).domain(fullDomain);
         };
 
         var buildObjectGetClass = (brewer, defaultGetClass) => {

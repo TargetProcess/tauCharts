@@ -428,12 +428,12 @@ define(function (require) {
                     }
                 },
                 {
-                    dim: 'x',
+                    dim: null,
                     order: ['low', 'medium', 'high']
                 }).create();
 
             expect(scaleEmpty.domain()).to.deep.equal([]);
-            expect(scaleEmpty('any')).to.equal('color-default');
+            expect(scaleEmpty('any')).to.equal('color20-1');
 
             var scale0 = new ColorScale(
                 xSrc,
