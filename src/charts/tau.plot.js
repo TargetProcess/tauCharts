@@ -29,13 +29,13 @@ export class Plot extends Emitter {
         };
         this._layout = getLayout();
 
+        config.settings = Plot.setupSettings(config.settings);
+
         if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
             this.configGPL = config;
         } else {
             this.configGPL = new SpecConverter(this.setupConfig(config)).convert();
         }
-
-        this.configGPL.settings = Plot.setupSettings(this.configGPL.settings);
 
         this.configGPL = Plot.setupPeriodData(this.configGPL);
 
@@ -84,10 +84,6 @@ export class Plot extends Emitter {
             });
 
         this._emptyContainer = config.emptyContainer || '';
-        // TODO: remove this particular config cases
-        resConfig.settings.specEngine   = config.specEngine || config.settings.specEngine;
-        resConfig.settings.layoutEngine = config.layoutEngine || config.settings.layoutEngine;
-        resConfig.settings = Plot.setupSettings(resConfig.settings);
 
         resConfig.spec.dimensions = Plot.setupMetaInfo(resConfig.spec.dimensions, resConfig.data);
 
