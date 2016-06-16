@@ -205,7 +205,7 @@ export class Line extends BasePath {
                 }
             }) :
             ({
-                points: d3LineVarySize(baseModel.x, baseModel.y0, baseModel.size)
+                points: d3LineVarySize(baseModel.x, baseModel.y, () => 0)
             });
 
         var pathAttributes = this.isEmptySize ?
@@ -222,7 +222,7 @@ export class Line extends BasePath {
 
         baseModel.pathAttributesUpdateInit = this.isEmptySize ?
             (baseModel.gog.scaleX.discrete ? null : pathAttributesDefault) :
-            (pathAttributesDefault);
+            (null);
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
         baseModel.pathAttributesEnterInit = pathAttributesDefault;

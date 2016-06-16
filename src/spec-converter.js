@@ -49,6 +49,8 @@ export class SpecConverter {
 
     ruleApplyDefaults(spec) {
 
+        var settings = spec.settings || {};
+
         var traverse = (node, iterator, parentNode) => {
             iterator(node, parentNode);
             (node.units || []).map((x) => traverse(x, iterator, node));
@@ -63,7 +65,12 @@ export class SpecConverter {
                 childUnit = _.defaults(childUnit, _.pick(root, 'x', 'y'));
 
                 var parentGuide = utils.clone(root.guide || {});
-                childUnit.guide = childUnit.guide || {};
+                childUnit.guide = _.defaults(
+                    (childUnit.guide || {}),
+                    {
+                        animationSpeed: settings.animationSpeed
+                    }
+                );
                 childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
                 childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
 

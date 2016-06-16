@@ -85,6 +85,8 @@ var api = {
     },
     globalSettings: {
 
+        animationSpeed: 500,
+
         defaultNiceColor: true,
 
         // jscs:disable
