@@ -171,23 +171,25 @@ export class Line extends BasePath {
             };
         };
 
-        var prevNext = _.once((thisNode, fiber) => {
-            var testPath = d3
-                .select(thisNode.parentNode)
-                .append('path')
-                .datum(fiber)
-                .attr({d: d3Line});
-            var next = testPath.node().getTotalLength();
-            testPath.remove();
-            return {
-                prev: thisNode.getTotalLength(),
-                next
-            };
-        });
-
-        baseModel.beforePathUpdate = (thisNode, fiber) => {
-            prevNext(thisNode, fiber);
-        };
+        var cache = [];
+        var prevNext = _.memoize(
+            (thisNode, fiber) => {
+                var testPath = d3
+                    .select(thisNode.parentNode)
+                    .append('path')
+                    .datum(fiber)
+                    .attr({d: d3Line, opacity: 0});
+                var next = testPath.node().getTotalLength();
+                testPath.remove();
+                return {prev: thisNode.getTotalLength(), next};
+            },
+            (nodeRef) => {
+                var index = cache.indexOf(nodeRef);
+                if (index < 0) {
+                    index = cache.push(nodeRef) - 1;
+                }
+                return index;
+            });
 
         var pathAttributesDefault = this.isEmptySize ?
             ({

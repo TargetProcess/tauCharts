@@ -85,7 +85,7 @@ var api = {
     },
     globalSettings: {
 
-        animationSpeed: 500,
+        animationSpeed: 750,
 
         defaultNiceColor: true,
 
