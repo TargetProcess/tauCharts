@@ -192,9 +192,6 @@ export class BasePath extends Element {
                 .exit()
                 .remove();
             series
-                .attr('_hack_', function (fiber) {
-                    model.beforePathUpdate && model.beforePathUpdate(this, fiber);
-                })
                 .call(createUpdateFunc(
                     guide.animationSpeed,
                     model.pathAttributesUpdateInit,
