@@ -172,10 +172,14 @@ export class BasePath extends Element {
 
             var points = this
                 .selectAll('circle')
-                .data((fiber) => (fiber.length <= 1) ? fiber : []);
+                .data((fiber) => (fiber.length <= 1) ? fiber : [], self.screenModel.id);
             points
                 .exit()
-                .remove();
+                .call(createUpdateFunc(
+                    guide.animationSpeed,
+                    null,
+                    {r: 0},
+                    (node) => d3.select(node).remove()));
             points
                 .call(createUpdateFunc(guide.animationSpeed, null, model.dotAttributes));
             points
@@ -187,7 +191,7 @@ export class BasePath extends Element {
 
             var series = this
                 .selectAll(model.pathElement)
-                .data((fiber) => (fiber.length > 1) ? [fiber] : []);
+                .data((fiber) => (fiber.length > 1) ? [fiber] : [], ((fib) => fib.map(self.screenModel.id).join('-')));
             series
                 .exit()
                 .remove();

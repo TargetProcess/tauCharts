@@ -4,6 +4,7 @@ import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 
 export class Interval extends Element {
 
@@ -131,13 +132,36 @@ export class Interval extends Element {
 
         var createUpdateFunc = d3_animationInterceptor;
 
+        var barX = config.flip ? 'y' : 'x';
         var barY = config.flip ? 'x' : 'y';
         var barH = config.flip ? 'width' : 'height';
+        var barW = config.flip ? 'height' : 'width';
         var updateBarContainer = function () {
             this.attr('class', `frame-id-${uid} i-role-bar-group`);
-            var bars = this.selectAll('.bar').data((fiber) => fiber);
+            var bars = this.selectAll('.bar')
+                .data((fiber) => fiber, self.screenModel.id);
             bars.exit()
-                .remove();
+                .call(createUpdateFunc(
+                    config.guide.animationSpeed,
+                    null,
+                    {
+                        [barX]: function () {
+                            var d3This = d3.select(this);
+                            var x = d3This.attr(barX) - 0;
+                            var w = d3This.attr(barW) - 0;
+                            return x + w / 2;
+                        },
+                        [barY]: function () {
+                            var d3This = d3.select(this);
+                            var y = d3This.attr(barY) - 0;
+                            var h = d3This.attr(barH) - 0;
+                            return y + h / 2;
+                        },
+                        [barW]: 0,
+                        [barH]: 0
+                    },
+                    ((node) => d3.select(node).remove())
+                ));
             bars.call(createUpdateFunc(
                 config.guide.animationSpeed,
                 null,

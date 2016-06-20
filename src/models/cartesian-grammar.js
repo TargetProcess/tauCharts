@@ -1,8 +1,12 @@
 import {default as _} from 'underscore';
 import {TauChartError as Error, errorCodes} from './../error';
+import WeakMap from 'core-js/library/fn/weak-map';
 
 const delimiter = '(@taucharts@)';
 const synthetic = 'taucharts_synthetic_record';
+
+var iref = 0;
+var refs = new WeakMap();
 
 export class CartesianGrammar {
 
@@ -15,6 +19,18 @@ export class CartesianGrammar {
         this.scaleLabel = model.scaleLabel;
         this.scaleColor = model.scaleColor;
         this.scaleSplit = model.scaleSplit;
+        this.scaleIdentity = model.scaleIdentity;
+
+        this.id = this.scaleIdentity ?
+            ((row) => row[this.scaleIdentity.dim]) :
+            ((row) => {
+                var i = refs.get(row);
+                if (i == null) {
+                    i = ++iref;
+                    refs.set(row, i);
+                }
+                return i;
+            });
 
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
@@ -32,6 +48,7 @@ export class CartesianGrammar {
         var m = this;
         return {
             flip,
+            id: m.id,
             x: iff(flip, m.yi, m.xi),
             y: iff(flip, m.xi, m.yi),
             x0: iff(flip, m.y0, m.xi),
@@ -211,14 +228,7 @@ export class CartesianGrammar {
         var stackYi = createFnStack({positive: {}, negative: {}});
         var stackY0 = createFnStack({positive: {}, negative: {}});
 
-        var seq = [];
-        var memoize = ((fn) => _.memoize(fn, ((d) => {
-            var i = seq.indexOf(d);
-            if (i < 0) {
-                i = ((seq.push(d)) - 1);
-            }
-            return i;
-        })));
+        var memoize = ((fn) => _.memoize(fn, model.id));
 
         return CartesianGrammar.compose(model, {
             yi: memoize((d) => yScale.value(stackYi(d).nextStack)),
