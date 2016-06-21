@@ -4,6 +4,7 @@ import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
+import {default as d3} from 'd3';
 
 export class Point extends Element {
 
@@ -79,6 +80,7 @@ export class Point extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.split = fnCreateScale('split', config.split, {});
         this.label = fnCreateScale('label', config.label, {});
+        this.identity = fnCreateScale('identity', config.identity, {});
 
         var sortDesc = ((a, b) => {
             var discreteA = a.discrete ? 1 : 0;
@@ -117,7 +119,8 @@ export class Point extends Element {
                 scaleSize: this.size,
                 scaleLabel: this.label,
                 scaleColor: this.color,
-                scaleSplit: this.split
+                scaleSplit: this.split,
+                scaleIdentity: this.identity
             })));
     }
 
@@ -150,9 +153,13 @@ export class Point extends Element {
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
-                        .data((fiber) => fiber);
+                        .data((fiber) => fiber, self.screenModel.id);
                     dots.exit()
-                        .remove();
+                        .call(createUpdateFunc(
+                            self.config.guide.animationSpeed,
+                            null,
+                            {r: 0},
+                            (node) => d3.select(node).remove()));
                     dots.call(createUpdateFunc(self.config.guide.animationSpeed, null, d3Attrs));
                     dots.enter()
                         .append('circle')

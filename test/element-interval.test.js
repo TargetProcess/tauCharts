@@ -6,11 +6,18 @@ define(function (require) {
     var _ = require('underscore');
     var assert = require('chai').assert;
     var tauCharts = require('src/tau.charts');
-    var scalesRegistry = tauCharts.api.scalesRegistry.instance();
     var Cartesian = require('src/elements/coords.cartesian').Cartesian;
     var Interval = require('src/elements/element.interval').Interval;
     var ScalesFactory = require('src/scales-factory').ScalesFactory;
     var testUtils = require('testUtils');
+    var WeakMap = require('core-js/library/fn/weak-map');
+
+    var iref = 0;
+    var scalesRegistry = tauCharts.api.scalesRegistry.instance({
+        references: new WeakMap(),
+        refCounter: (() => (++iref))
+    });
+
     var unitsMap = {};
     var unitsRegistry = {
         reg: function (unitType, xUnit) {

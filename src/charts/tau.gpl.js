@@ -18,20 +18,20 @@ export class GPL extends Emitter {
         _.defaults(config.scales, {
             'split_null': {type: 'value', source: '?'},
             'label_null': {type: 'value', source: '?'},
+            'identity_null': {type: 'identity', source: '?'},
             'split:default': {type: 'value', source: '?'},
-            'label:default': {type: 'value', source: '?'}
+            'label:default': {type: 'value', source: '?'},
+            'identity:default': {type: 'identity', source: '?'}
         });
         // jscs:enable
 
+        config.settings = (config.settings || {});
+
         this.config = config;
-
-        this.config.settings = this.config.settings || {};
         this.sources = config.sources;
-
+        this.scales = config.scales;
         this.unitSet = unitsRegistry;
         this.scalesHub = scalesRegistryInstance;
-
-        this.scales = config.scales;
 
         this.transformations = _.extend(
             config.transformations || {},

@@ -15,7 +15,10 @@ export class CartesianGrammar {
         this.scaleLabel = model.scaleLabel;
         this.scaleColor = model.scaleColor;
         this.scaleSplit = model.scaleSplit;
+        this.scaleIdentity = model.scaleIdentity;
 
+        var sid = this.scaleIdentity;
+        this.id = ((row) => sid.value(row[sid.dim], row));
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
@@ -32,6 +35,7 @@ export class CartesianGrammar {
         var m = this;
         return {
             flip,
+            id: m.id,
             x: iff(flip, m.yi, m.xi),
             y: iff(flip, m.xi, m.yi),
             x0: iff(flip, m.y0, m.xi),
@@ -211,14 +215,7 @@ export class CartesianGrammar {
         var stackYi = createFnStack({positive: {}, negative: {}});
         var stackY0 = createFnStack({positive: {}, negative: {}});
 
-        var seq = [];
-        var memoize = ((fn) => _.memoize(fn, ((d) => {
-            var i = seq.indexOf(d);
-            if (i < 0) {
-                i = ((seq.push(d)) - 1);
-            }
-            return i;
-        })));
+        var memoize = ((fn) => _.memoize(fn, model.id));
 
         return CartesianGrammar.compose(model, {
             yi: memoize((d) => yScale.value(stackYi(d).nextStack)),
