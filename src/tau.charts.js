@@ -19,6 +19,7 @@ import {Interval}   from './elements/element.interval';
 import {StackedInterval}   from './elements/element.interval.stacked';
 import {ParallelLine}      from './elements/element.parallel.line';
 
+import {IdentityScale}     from './scales/identity';
 import {ColorScale}     from './scales/color';
 import {SizeScale}      from './scales/size';
 import {OrdinalScale}   from './scales/ordinal';
@@ -176,6 +177,16 @@ Plot.globalSettings = api.globalSettings;
 ].reduce((memo, nv) => (memo.reg(nv[0], nv[1])), api.unitsRegistry);
 
 [
+    [
+        'identity',
+        IdentityScale,
+        ((config, settings) => _.defaults(
+            config,
+            {
+                references: settings.references,
+                refCounter: settings.refCounter
+            }))
+    ],
     [
         'color',
         ColorScale,

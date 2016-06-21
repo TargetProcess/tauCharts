@@ -7,6 +7,7 @@ import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
+import WeakMap from 'core-js/library/fn/weak-map';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
@@ -29,7 +30,14 @@ export class Plot extends Emitter {
         };
         this._layout = getLayout();
 
-        config.settings = Plot.setupSettings(config.settings);
+        var iref = 0;
+        config.settings = Plot.setupSettings(_.defaults(
+            (config.settings || {}),
+            {
+                references: new WeakMap(),
+                refCounter: (() => (++iref))
+            }
+        ));
 
         if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
             this.configGPL = config;
@@ -155,12 +163,14 @@ export class Plot extends Emitter {
 
     static setupSettings(configSettings) {
         var globalSettings = Plot.globalSettings;
-        var localSettings = {};
-        Object.keys(globalSettings).forEach((k) => {
-            localSettings[k] = (_.isFunction(globalSettings[k])) ?
-                globalSettings[k] :
-                utils.clone(globalSettings[k]);
-        });
+        var localSettings = Object
+            .keys(globalSettings)
+            .reduce((memo, k) => {
+                memo[k] = (_.isFunction(globalSettings[k])) ?
+                    globalSettings[k] :
+                    utils.clone(globalSettings[k]);
+                return memo;
+            }, {});
 
         var r = _.defaults(configSettings || {}, localSettings);
 

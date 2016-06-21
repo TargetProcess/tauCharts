@@ -80,6 +80,7 @@ export class Point extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.split = fnCreateScale('split', config.split, {});
         this.label = fnCreateScale('label', config.label, {});
+        this.identity = fnCreateScale('identity', config.identity, {});
 
         var sortDesc = ((a, b) => {
             var discreteA = a.discrete ? 1 : 0;
@@ -118,7 +119,8 @@ export class Point extends Element {
                 scaleSize: this.size,
                 scaleLabel: this.label,
                 scaleColor: this.color,
-                scaleSplit: this.split
+                scaleSplit: this.split,
+                scaleIdentity: this.identity
             })));
     }
 

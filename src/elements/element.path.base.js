@@ -73,6 +73,7 @@ export class BasePath extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.label = fnCreateScale('label', config.label, {});
         this.split = fnCreateScale('split', config.split, {});
+        this.identity = fnCreateScale('identity', config.identity, {});
 
         return this
             .regScale('x', this.xScale)
@@ -148,7 +149,8 @@ export class BasePath extends Element {
                 scaleSize: this.size,
                 scaleLabel: this.label,
                 scaleColor: this.color,
-                scaleSplit: this.split
+                scaleSplit: this.split,
+                scaleIdentity: this.identity
             })));
     }
 

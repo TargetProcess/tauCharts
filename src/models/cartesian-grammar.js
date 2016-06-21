@@ -1,12 +1,8 @@
 import {default as _} from 'underscore';
 import {TauChartError as Error, errorCodes} from './../error';
-import WeakMap from 'core-js/library/fn/weak-map';
 
 const delimiter = '(@taucharts@)';
 const synthetic = 'taucharts_synthetic_record';
-
-var iref = 0;
-var refs = new WeakMap();
 
 export class CartesianGrammar {
 
@@ -21,17 +17,8 @@ export class CartesianGrammar {
         this.scaleSplit = model.scaleSplit;
         this.scaleIdentity = model.scaleIdentity;
 
-        this.id = this.scaleIdentity ?
-            ((row) => row[this.scaleIdentity.dim]) :
-            ((row) => {
-                var i = refs.get(row);
-                if (i == null) {
-                    i = ++iref;
-                    refs.set(row, i);
-                }
-                return i;
-            });
-
+        var sid = this.scaleIdentity;
+        this.id = ((row) => sid.value(row[sid.dim], row));
         this.y0 = model.y0 || createFunc(0);
         this.yi = model.yi || createFunc(0);
         this.xi = model.xi || createFunc(0);
