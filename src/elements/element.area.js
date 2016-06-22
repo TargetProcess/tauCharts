@@ -22,7 +22,7 @@ export class Area extends BasePath {
             CartesianGrammar.decorator_label,
             config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
-        ];
+        ].concat(config.transformModel || []);
     }
 
     buildModel(screenModel) {

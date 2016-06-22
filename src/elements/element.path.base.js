@@ -143,7 +143,8 @@ export class BasePath extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
+            .reduce((model, transform) => CartesianGrammar.compose(model, transform(model, args)),
+            (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,

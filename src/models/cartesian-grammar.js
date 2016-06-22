@@ -61,7 +61,7 @@ export class CartesianGrammar {
     }
 
     static decorator_identity(model) {
-        return CartesianGrammar.compose(model);
+        return model;
     }
 
     static decorator_orientation(model, {isHorizontal}) {
@@ -69,13 +69,13 @@ export class CartesianGrammar {
         var baseScale = (isHorizontal ? model.scaleY : model.scaleX);
         var valsScale = (isHorizontal ? model.scaleX : model.scaleY);
 
-        return CartesianGrammar.compose(model, {
+        return {
             flip: isHorizontal,
             scaleX: baseScale,
             scaleY: valsScale,
             yi: ((d) => (valsScale.value(d[valsScale.dim]))),
             xi: ((d) => (baseScale.value(d[baseScale.dim])))
-        });
+        };
     }
 
     static decorator_groundY0(model, {isHorizontal}) {
@@ -88,15 +88,15 @@ export class CartesianGrammar {
             (model.scaleY.value(min) + model.scaleY.stepSize(min) * k) :
             (model.scaleY.value(Math.max(0, Math.min(...ys))));
 
-        return CartesianGrammar.compose(model, {
+        return {
             y0: (() => y0)
-        });
+        };
     }
 
     static decorator_dynamic_size(model, {}) {
-        return CartesianGrammar.compose(model, {
+        return {
             size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
-        });
+        };
     }
 
     static decorator_positioningByColor(model, params) {
@@ -114,7 +114,7 @@ export class CartesianGrammar {
         var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim]))); // -1 (not found) to 0
         var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
 
-        return CartesianGrammar.compose(model, {
+        return {
             xi: ((d) => {
                 var availableSpace = space(d);
                 var absTickStart = (model.xi(d) - (availableSpace / 2));
@@ -122,38 +122,38 @@ export class CartesianGrammar {
                 var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
                 return absTickStart + relSegmStart;
             })
-        });
+        };
     }
 
     static decorator_color(model, {}) {
-        return CartesianGrammar.compose(model, {
+        return {
             color: ((d) => model.scaleColor.value(d[model.scaleColor.dim]))
-        });
+        };
     }
 
     static decorator_label(model, {}) {
-        return CartesianGrammar.compose(model, {
+        return {
             label: ((d) => model.scaleLabel.value(d[model.scaleLabel.dim]))
-        });
+        };
     }
 
     static decorator_group(model, {}) {
-        return CartesianGrammar.compose(model, {
+        return {
             group: ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`))
-        });
+        };
     }
 
     static decorator_groupOrderByColor(model, {}) {
 
         var order = model.scaleColor.domain();
 
-        return CartesianGrammar.compose(model, {
+        return {
             order: ((group) => {
                 var color = group.split(delimiter)[0];
                 var i = order.indexOf(color);
                 return ((i < 0) ? Number.MAX_VALUE : i);
             })
-        });
+        };
     }
 
     static decorator_groupOrderByAvg(model, {dataSource}) {
@@ -175,12 +175,12 @@ export class CartesianGrammar {
             .sort((a, b) => (a[1] - b[1]))
             .map((r) => r[0]);
 
-        return CartesianGrammar.compose(model, {
+        return {
             order: ((group) => {
                 var i = order.indexOf(group);
                 return ((i < 0) ? Number.MAX_VALUE : i);
             })
-        });
+        };
     }
 
     static decorator_stack(model, {}) {
@@ -217,10 +217,10 @@ export class CartesianGrammar {
 
         var memoize = ((fn) => _.memoize(fn, model.id));
 
-        return CartesianGrammar.compose(model, {
+        return {
             yi: memoize((d) => yScale.value(stackYi(d).nextStack)),
             y0: memoize((d) => yScale.value(stackY0(d).prevStack))
-        });
+        };
     }
 
     static decorator_size_distribute_evenly(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
@@ -271,7 +271,7 @@ export class CartesianGrammar {
             return next;
         });
 
-        return model;
+        return {};
     }
 
     static adjustYScale(model, {dataSource}) {
@@ -309,7 +309,7 @@ export class CartesianGrammar {
             return newConf;
         });
 
-        return model;
+        return {};
     }
 
     static adjustStaticSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
@@ -332,7 +332,7 @@ export class CartesianGrammar {
             return next;
         });
 
-        return model;
+        return {};
     }
 
     static adjustSigmaSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
@@ -392,7 +392,7 @@ export class CartesianGrammar {
             return next;
         });
 
-        return model;
+        return {};
     }
 
     static toFibers(data, model) {
