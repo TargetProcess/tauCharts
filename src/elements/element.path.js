@@ -15,7 +15,7 @@ export class Path extends BasePath {
             CartesianGrammar.decorator_color,
             CartesianGrammar.decorator_label,
             config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
-        ];
+        ].concat(config.transformModel || []);
     }
 
     buildModel(screenModel) {

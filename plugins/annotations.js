@@ -24,6 +24,50 @@
         }
     };
 
+    var stretchByOrdinalAxis = function (noteItem) {
+        return function (model) {
+            var res = {};
+            var seed = [
+                {
+                    dim: model.scaleX.dim,
+                    scale: model.scaleY,
+                    method: 'yi',
+                    k: -1
+                },
+                {
+                    dim: model.scaleY.dim,
+                    scale: model.scaleX,
+                    method: 'xi',
+                    k: 1
+                },
+                {
+                    dim: null,
+                    scale: null,
+                    method: null
+                }
+            ].find(function (a) {
+                    return a.dim === noteItem.dim;
+                });
+
+            if (seed.method === null) {
+                return res;
+            }
+
+            var marker = '__pos__';
+            var kAxis = seed.k;
+            var koeff = {l: -0.5, r: 0.5};
+            var method = seed.method;
+            var scale = seed.scale;
+            res[method] = (function (row) {
+                var k = (koeff[row[marker]] || 0) * kAxis;
+                return (scale.discrete ?
+                    (model[method](row) + scale.stepSize(row[scale.dim]) * k) :
+                    (model[method](row)));
+            });
+            return res;
+        };
+    };
+
     function annotations(xSettings) {
 
         var settings = _.defaults(xSettings || {}, {});
@@ -70,29 +114,30 @@
 
                     var a = primaryScaleInfo.dim;
                     var b = secondaryScaleInfo.dim;
+                    var z = '__pos__';
 
                     var leftBtm = {};
                     var leftTop = {};
                     var rghtTop = {};
                     var rghtBtm = {};
 
+                    leftBtm[z] = 'l';
                     leftBtm[a] = from;
                     leftBtm[b] = boundaries[0];
 
-                    leftTop[a] = from;
-                    leftTop[b] = boundaries[1];
+                    leftTop[z] = 'l';
+                    leftTop[a] = to;
+                    leftTop[b] = boundaries[0];
 
+                    rghtTop[z] = 'r';
                     rghtTop[a] = to;
                     rghtTop[b] = boundaries[1];
 
-                    rghtBtm[a] = to;
-                    rghtBtm[b] = boundaries[0];
+                    rghtBtm[z] = 'r';
+                    rghtBtm[a] = from;
+                    rghtBtm[b] = boundaries[1];
 
-                    if (metaInfo.axis === 'x') {
-                        leftTop.text = metaInfo.text;
-                    } else {
-                        rghtTop.text = metaInfo.text;
-                    }
+                    ((metaInfo.axis === 'y') ? rghtTop : rghtBtm).text = metaInfo.text;
 
                     return [leftBtm, leftTop, rghtTop, rghtBtm];
                 };
@@ -122,12 +167,15 @@
 
                     var a = primaryScaleInfo.dim;
                     var b = secondaryScaleInfo.dim;
+                    var z = '__pos__';
 
                     src[a] = from;
                     src[b] = boundaries[0];
+                    src[z] = 'l';
 
                     dst[a] = from;
                     dst[b] = boundaries[1];
+                    dst[z] = 'r';
 
                     dst.text = metaInfo.text;
 
@@ -167,6 +215,7 @@
                         params: [],
                         source: '/'
                     },
+                    transformModel: [stretchByOrdinalAxis(noteItem)],
                     transformation: [
                         {
                             type: 'dataRange',
@@ -219,6 +268,7 @@
                     y: coordsUnit.y,
                     label: textScaleName,
                     color: noteItem.colorScaleName,
+                    transformModel: [stretchByOrdinalAxis(noteItem)],
                     expression: {
                         inherit: false,
                         operator: 'none',

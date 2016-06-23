@@ -64,7 +64,7 @@ export class Interval extends Element {
             CartesianGrammar.decorator_label,
             config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
-        ];
+        ].concat(config.transformModel || []);
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -103,7 +103,8 @@ export class Interval extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
+            .reduce(((model, transform) => CartesianGrammar.compose(model, transform(model, args))),
+            (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,

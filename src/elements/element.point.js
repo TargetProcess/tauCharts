@@ -65,7 +65,7 @@ export class Point extends Element {
             config.adjustPhase && (enableDistributeEvenly ?
                 CartesianGrammar.adjustSigmaSizeScale :
                 CartesianGrammar.adjustStaticSizeScale)
-        ];
+        ].concat(config.transformModel || []);
 
         this.on('highlight', (sender, e) => this.highlight(e));
     }
@@ -113,7 +113,8 @@ export class Point extends Element {
         return this
             .decorators
             .filter(x => x)
-            .reduce(((model, transform) => transform(model, args)), (new CartesianGrammar({
+            .reduce((model, transform) => CartesianGrammar.compose(model, transform(model, args)),
+            (new CartesianGrammar({
                 scaleX: this.xScale,
                 scaleY: this.yScale,
                 scaleSize: this.size,
