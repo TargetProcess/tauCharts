@@ -100,6 +100,10 @@ class PluginsSDK {
                 fillSlot(memo, config, 'size');
             }
 
+            if (config.hasOwnProperty('label') && !isEmptyScale(config.label)) {
+                fillSlot(memo, config, 'label');
+            }
+
             return memo;
 
         }, {});
