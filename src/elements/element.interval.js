@@ -38,8 +38,8 @@ export class Interval extends Element {
                 position: (this.config.flip ?
                     ['r-', 'l+', 'keep-inside-or-hide-horizontal'] :
                     (enableStack ?
-                        ['t-', 'b+', 'keep-inside-or-hide-vertical'] :
-                        ['t+', 'b-', 'keep-inside-or-hide-vertical']))
+                        ['t-', 'b+', 'keep-inside-or-hide-vertical', 'auto:hide-on-label-label-overlap'] :
+                        ['t+', 'b-', 'keep-inside-or-hide-vertical', 'auto:hide-on-label-label-overlap']))
             });
 
         this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;

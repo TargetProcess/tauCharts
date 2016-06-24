@@ -115,16 +115,27 @@ export class LayerLabels {
 
         var countHidden = parallel.text.reduce((sum, r) => sum + (r.hide), 0);
         var countWhole = parallel.text.length;
-        if ((countWhole > 0) && (countHidden === countWhole)) {
+        var hiddenLimit = 2;
+        if ((countWhole > hiddenLimit) && ((countWhole - countHidden) <= hiddenLimit)) {
             var maxLabelWidth = Math.max(...parallel.text.map((r) => r.w));
             var density = Math.ceil((countWhole / maxLabelWidth) * 2);
             parallel.text.forEach((r, i) => r.hide = (i % density));
         }
 
-        var autoPosition = this.guide.position.filter((token) => token.indexOf('auto:') === 0);
-        parallel = ((parallel.text.length > 0) && (autoPosition.length > 0)) ?
-            this.autoPosition(parallel, autoPosition) :
+        var tokens = this.guide.position.filter((token) => token.indexOf('auto:avoid') === 0);
+        parallel = ((parallel.text.length > 0) && (tokens.length > 0)) ?
+            this.autoPosition(parallel, tokens) :
             parallel;
+
+        var flags = this.guide.position.reduce((memo, token) => _.extend(memo, {[token]:true}), {});
+
+        parallel.text = flags['auto:hide-on-label-edges-overlap'] ?
+            this.hideOnLabelEdgesOverlap(parallel.text, parallel.edges) :
+            parallel.text;
+
+        parallel.text = flags['auto:hide-on-label-label-overlap'] ?
+            this.hideOnLabelLabelOverlap(parallel.text) :
+            parallel.text;
 
         var labels = parallel.text;
 
@@ -156,8 +167,6 @@ export class LayerLabels {
     }
 
     autoPosition(parallel, tokens) {
-
-        var flags = tokens.reduce((memo, token) => _.extend(memo, {[token]:true}), {});
 
         var penalties = {
             'auto:avoid-label-label-overlap': (labels, edges, penaltyRate = 1.0) => {
@@ -287,16 +296,12 @@ export class LayerLabels {
 
         sim.start(4);
 
-        labels.forEach((l) => {
-            var r = textData[l.i];
+        textData = labels.reduce((memo, l) => {
+            var r = memo[l.i];
             r.x = l.x;
             r.y = l.y;
-        });
-
-        textData = flags['auto:hide-on-label-edges-overlap'] ?
-            this.hideOnLabelEdgesOverlap(textData, edges) :
-            textData;
-        textData = flags['auto:hide-on-label-label-overlap'] ? this.hideOnLabelLabelOverlap(textData) : textData;
+            return memo;
+        }, textData);
 
         return parallel;
     }
@@ -338,6 +343,7 @@ export class LayerLabels {
             };
         };
 
+        var extremumOrder = {min: 0, max: 1, norm: 2};
         var collisionSolveStrategies = {
             'min/min': ((p0, p1) => p1.y - p0.y), // desc
             'max/max': ((p0, p1) => p0.y - p1.y), // asc
@@ -350,13 +356,12 @@ export class LayerLabels {
         var cross = ((a, b) => {
             var ra = rect(a);
             var rb = rect(b);
-            var k = !(a.hide * b.hide);
+            var k = (!a.hide && !b.hide);
 
             var x_overlap = k * Math.max(0, Math.min(rb.x1, ra.x1) - Math.max(ra.x0, rb.x0));
             var y_overlap = k * Math.max(0, Math.min(rb.y1, ra.y1) - Math.max(ra.y0, rb.y0));
 
             if ((x_overlap * y_overlap) > 0) {
-                var extremumOrder = {min: 0, max: 1, norm: 2};
                 [a, b]
                     .sort((p0, p1) => extremumOrder[p0.extr] - extremumOrder[p1.extr])
                     .sort((p0, p1) => collisionSolveStrategies[`${p0.extr}/${p1.extr}`](p0, p1))
@@ -366,6 +371,9 @@ export class LayerLabels {
         });
 
         data.filter((r) => !r.hide)
+            .sort((p0, p1) => {
+                return extremumOrder[p0.extr] - extremumOrder[p1.extr];
+            })
             .forEach((a) => {
                 data.forEach((b) => {
                     if (a.i !== b.i) {
