@@ -1,12 +1,15 @@
 window.samples.push({
 
+    z: 111,
     "type": "horizontalBar",
     "color": "color",
-    "size": null,
-    "x": ["x1"],
+    "x": ['cat', "x1"],
     "y": ["y1", "y2"],
     "guide": [
         {
+            "x": {
+                "label": "Entity Type",
+            },
             "y": {
                 "label": "Feature",
                 "tickLabel": "name"
@@ -44,6 +47,10 @@ window.samples.push({
             "type": "category",
             "scale": "ordinal",
             "value": "id"
+        },
+        "cat": {
+            "type": "category",
+            "scale": "ordinal"
         }
     },
     "data": [
@@ -200,7 +207,20 @@ window.samples.push({
         }
     ].map((row) => {
             row.x1 = Math.random();
+            row.cat = row.color.name;
             return row;
         })
-
+        .reduce(function (memo, r) {
+            return memo.concat([
+                'A',
+                'B',
+                'C',
+                'D',
+                'E'
+            ].map(function (s) {
+                    var z = JSON.parse(JSON.stringify(r));
+                    z.cat = z.cat + ' ' + s;
+                    return z;
+                }));
+        }, [])
 });
