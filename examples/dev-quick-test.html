@@ -25,6 +25,7 @@
     <script src="../plugins/geomap-tooltip.js"></script>
     <script src="../plugins/geomap-legend.js"></script>
     <script src="../plugins/quick-filter.js"></script>
+    <script src="../plugins/floating-axes.js"></script>
 
     <!-- test data -->
     <script src="data-cars.js"></script>
@@ -168,6 +169,8 @@
                 cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
                 cfg.plugins = cfg.plugins || [];
+                cfg.plugins.push(tauCharts.api.plugins.get('floating-axes')());
+
 //                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
 //                    cssPaths: [
 //                        "../css/test-taucharts.css",
@@ -182,156 +185,6 @@
 
                 window.charts.push(chart);
             });
-
-    var chart = window.charts[0];
-    var scrollBarWidth = tauCharts.api.globalSettings.getScrollBarWidth();
-
-    var extractXAxesNew = function (chart) {
-        var srcSvg = d3.select(chart.getSVG());
-        var height = srcSvg.attr('height');
-        var width = srcSvg.attr('width');
-        var axes = [];
-        var xs = [];
-        var ys = [];
-        d3.selectAll('.x.axis').each(function () {
-            var parent = this;
-            var axisNode = this.cloneNode(true);
-            var x = 0;
-            var y = 0;
-            while (parent.nodeName.toUpperCase() !== 'SVG') {
-                var transform = (parent.attributes['transform'] || {}).value || '';
-                if (transform.indexOf('translate(') === 0) {
-                    var xy = transform
-                            .replace('translate(', '')
-                            .replace(')', '')
-                            .replace(' ', ',')
-                            .split(',')
-                            .concat(0)
-                            .map(function (x) {
-                                return (x - 0) || 0;
-                            });
-                    x += (xy[0] - 0);
-                    y += (xy[1] - 0);
-                }
-                parent = parent.parentNode;
-            }
-            xs.push(x);
-            ys.push(y);
-            axes.push(axisNode);
-        });
-
-        var minX = Math.min.apply(null, xs);
-        var minY = Math.min.apply(null, ys);
-
-        var axisHeight = height - minY + 1;
-
-        axes.forEach(function (axisNode, i) {
-            d3.select(axisNode).attr('transform', 'translate(' + (xs[i]) + ',' + (ys[i] - minY) + ')');
-        });
-
-        var g = d3.select(chart.getSVG()).append('g');
-
-        g.append('rect')
-                .attr({
-                    x: 0,
-                    y: 0,
-                    width: width,
-                    height: axisHeight,
-                    fill: '#eee'
-                });
-
-        axes.reduce(
-                function (dstSvg, node) {
-                    dstSvg.appendChild(node);
-                    return dstSvg;
-                },
-                g.node());
-
-        var move = function (x, bottomY) {
-            var y = Math.min((bottomY - axisHeight - scrollBarWidth), (minY - 1));
-            g.attr('transform', 'translate(0, ' + (y) + ')');
-        };
-
-        var scrollableArea = chart.getLayout().content.parentNode;
-        var rect = scrollableArea.getBoundingClientRect();
-
-        var scrollableHeight = (rect.height);
-        move(0, scrollableHeight);
-
-        $(scrollableArea).on('scroll', function () {
-            var scrollY = (scrollableHeight + scrollableArea.scrollTop);
-            move(0, scrollY);
-        });
-    };
-
-    var extractYAxesNew = function (chart) {
-        var srcSvg = d3.select(chart.getSVG());
-        var width = srcSvg.attr('width');
-        var height = srcSvg.attr('height');
-        var axes = [];
-        var xs = [];
-        var ys = [];
-        d3.selectAll('.y.axis').each(function () {
-            var parent = this;
-            var axisNode = this.cloneNode(true);
-            var x = 0;
-            var y = 0;
-            while (parent.nodeName.toUpperCase() !== 'SVG') {
-                var transform = (parent.attributes['transform'] || {}).value || '';
-                if (transform.indexOf('translate(') === 0) {
-                    var xy = transform.replace('translate(', '').replace(')', '').split(',');
-                    x += (xy[0] - 0);
-                    y += (xy[1] - 0);
-                }
-                parent = parent.parentNode;
-            }
-            xs.push(x);
-            ys.push(y);
-            axes.push(axisNode);
-        });
-
-        var maxX = Math.max.apply(null, xs);
-
-        var g = d3.select(chart.getSVG()).append('g');
-
-        g.append('rect')
-                .attr({
-                    x: 0,
-                    y: 0,
-                    width: maxX,
-                    height: height,
-                    fill: '#eee'
-                });
-
-        axes.forEach(function (axisNode, i) {
-            d3.select(axisNode).attr('transform', 'translate(' + xs[i] + ',' + ys[i] + ')');
-        });
-
-        axes.reduce(
-                function (dstSvg, node) {
-                    dstSvg.appendChild(node);
-                    return dstSvg;
-                },
-                g.node());
-
-        var move = function (topX, y) {
-            var x = Math.max((topX), 0);
-            g.attr('transform', 'translate(' + (x) + ', 0)');
-        };
-
-        var scrollableArea = chart.getLayout().content.parentNode;
-        var rect = scrollableArea.getBoundingClientRect();
-
-        move(0, 0);
-
-        $(scrollableArea).on('scroll', function () {
-            var scrollX = (scrollableArea.scrollLeft);
-            move(scrollX, 0);
-        });
-    };
-
-    extractXAxesNew(chart);
-    extractYAxesNew(chart);
 
 </script>
 </body>
