@@ -205,7 +205,7 @@ window.samples.push({
             "color": {"id": 4, "name": "UserStory"},
             "dataItem": null
         }
-    ].map((row) => {
+    ].map(function (row) {
             row.x1 = Math.random();
             row.cat = row.color.name;
             return row;

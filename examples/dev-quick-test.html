@@ -184,8 +184,9 @@
             });
 
     var chart = window.charts[0];
+    var scrollBarWidth = tauCharts.api.globalSettings.getScrollBarWidth();
 
-    var extractXAxes = function (chart) {
+    var extractXAxesNew = function (chart) {
         var srcSvg = d3.select(chart.getSVG());
         var height = srcSvg.attr('height');
         var width = srcSvg.attr('width');
@@ -200,7 +201,15 @@
             while (parent.nodeName.toUpperCase() !== 'SVG') {
                 var transform = (parent.attributes['transform'] || {}).value || '';
                 if (transform.indexOf('translate(') === 0) {
-                    var xy = transform.replace('translate(', '').replace(')', '').split(',');
+                    var xy = transform
+                            .replace('translate(', '')
+                            .replace(')', '')
+                            .replace(' ', ',')
+                            .split(',')
+                            .concat(0)
+                            .map(function (x) {
+                                return (x - 0) || 0;
+                            });
                     x += (xy[0] - 0);
                     y += (xy[1] - 0);
                 }
@@ -211,58 +220,51 @@
             axes.push(axisNode);
         });
 
+        var minX = Math.min.apply(null, xs);
         var minY = Math.min.apply(null, ys);
-        var maxY = Math.max.apply(null, ys);
+
+        var axisHeight = height - minY + 1;
 
         axes.forEach(function (axisNode, i) {
-            d3.select(axisNode).attr('transform', 'translate(' + xs[i] + ',' + (ys[i] - minY) + ')');
+            d3.select(axisNode).attr('transform', 'translate(' + (xs[i]) + ',' + (ys[i] - minY) + ')');
         });
 
-        var axisHeight = height - minY;
-        var dstSvg = d3.select('body')
-                .append('svg')
+        var g = d3.select(chart.getSVG()).append('g');
+
+        g.append('rect')
                 .attr({
-                    class: srcSvg.attr('class'),
-                    width: 2 * srcSvg.attr('width'),
-                    height: axisHeight
-                })
-                .node();
+                    x: 0,
+                    y: 0,
+                    width: width,
+                    height: axisHeight,
+                    fill: '#eee'
+                });
 
-        axes.forEach(function (node) {
-            dstSvg.appendChild(node);
-        });
+        axes.reduce(
+                function (dstSvg, node) {
+                    dstSvg.appendChild(node);
+                    return dstSvg;
+                },
+                g.node());
+
+        var move = function (x, bottomY) {
+            var y = Math.min((bottomY - axisHeight - scrollBarWidth), (minY - 1));
+            g.attr('transform', 'translate(0, ' + (y) + ')');
+        };
 
         var scrollableArea = chart.getLayout().content.parentNode;
-        var fixContentArea = scrollableArea.parentNode;
         var rect = scrollableArea.getBoundingClientRect();
-        var scrollableFooter = d3.select('body')
-                .append('div')
-                .style({
-                    'max-height': axisHeight + 'px',
-                    'max-width': rect.width + 'px',
-                    'background-color': 'rgba(256,256,256,0.8)',
-                    position: 'absolute',
-                    left: '13px',
-                    top: (fixContentArea.getBoundingClientRect().height - axisHeight) + 'px',
-                    overflow: 'hidden'
-                })
-                .node();
-
-        chart.getLayout().content.appendChild(scrollableFooter);
-        scrollableFooter.appendChild(dstSvg);
 
         var scrollableHeight = (rect.height);
+        move(0, scrollableHeight);
+
         $(scrollableArea).on('scroll', function () {
-            var scrollX = (scrollableArea.scrollLeft);
             var scrollY = (scrollableHeight + scrollableArea.scrollTop);
-            var viz = ((maxY - scrollY) > (axisHeight - 24)) ? '' : 'hidden';
-            $(scrollableFooter)
-                    .scrollLeft(scrollX)
-                    .css('visibility', viz);
+            move(0, scrollY);
         });
     };
 
-    var extractYAxes = function (chart) {
+    var extractYAxesNew = function (chart) {
         var srcSvg = d3.select(chart.getSVG());
         var width = srcSvg.attr('width');
         var height = srcSvg.attr('height');
@@ -286,55 +288,50 @@
             xs.push(x);
             ys.push(y);
             axes.push(axisNode);
-            d3.select(this).style({display: 'none'});
         });
 
         var maxX = Math.max.apply(null, xs);
+
+        var g = d3.select(chart.getSVG()).append('g');
+
+        g.append('rect')
+                .attr({
+                    x: 0,
+                    y: 0,
+                    width: maxX,
+                    height: height,
+                    fill: '#eee'
+                });
 
         axes.forEach(function (axisNode, i) {
             d3.select(axisNode).attr('transform', 'translate(' + xs[i] + ',' + ys[i] + ')');
         });
 
-        var dstSvg = d3.select('body')
-                .append('svg')
-                .attr({
-                    class: srcSvg.attr('class'),
-                    height: srcSvg.attr('height') * 2,
-                    width: maxX
-                })
-                .node();
+        axes.reduce(
+                function (dstSvg, node) {
+                    dstSvg.appendChild(node);
+                    return dstSvg;
+                },
+                g.node());
 
-        axes.forEach(function (node) {
-            dstSvg.appendChild(node);
-        });
+        var move = function (topX, y) {
+            var x = Math.max((topX), 0);
+            g.attr('transform', 'translate(' + (x) + ', 0)');
+        };
 
         var scrollableArea = chart.getLayout().content.parentNode;
         var rect = scrollableArea.getBoundingClientRect();
-        var scrollableFooter = d3.select('body')
-                .append('div')
-                .style({
-                    'max-height': rect.height - 15 + 'px',
-                    'min-width': maxX + 'px',
-                    'background-color': 'rgba(156,256,256,0.8)',
-                    position: 'absolute',
-                    left: '13px',
-                    top: '13px',
-                    overflow: 'hidden'
-                })
-                .node();
 
-        chart.getLayout().content.appendChild(scrollableFooter);
-        scrollableFooter.appendChild(dstSvg);
+        move(0, 0);
 
         $(scrollableArea).on('scroll', function () {
-            var scrollY = (scrollableArea.scrollTop);
-            $(scrollableFooter)
-                    .scrollTop(scrollY);
+            var scrollX = (scrollableArea.scrollLeft);
+            move(scrollX, 0);
         });
     };
 
-    extractYAxes(chart);
-    extractXAxes(chart);
+    extractXAxesNew(chart);
+    extractYAxesNew(chart);
 
 </script>
 </body>
