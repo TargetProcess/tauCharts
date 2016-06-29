@@ -221,12 +221,30 @@
 
                         var domain = _(fillScale.domain()).sortBy();
 
+                        var isDate = domain.reduce(function (memo, x) {
+                            return memo && _.isDate(x);
+                        }, true);
+
+                        var numDomain = (isDate ?
+                            domain.map(function (x) {
+                                return x - 0;
+                            }) :
+                            domain);
+
+                        var castNum = (isDate ?
+                            function (x) {
+                                return new Date(x);
+                            } :
+                            function (x) {
+                                return x;
+                            });
+
                         var brewerLength = fillScale.brewer.length;
 
                         var height = 120;
                         var fontHeight = 13;
 
-                        var stops = splitEvenly(domain, brewerLength)
+                        var stops = splitEvenly(numDomain, brewerLength)
                             .reverse()
                             .map(function (x, i) {
                                 var p = (i / (brewerLength - 1)) * 100;
@@ -236,7 +254,7 @@
                             });
 
                         var labelsLength = 3;
-                        var labels = splitEvenly(domain, labelsLength)
+                        var labels = splitEvenly(numDomain, labelsLength)
                             .reverse()
                             .map(function (x, i, list) {
                                 var p = (i / (labelsLength - 1));
@@ -244,7 +262,7 @@
                                         fontHeight :
                                         ((i === list.length - 1) ? (-fontHeight) : 0));
                                 var y = (height * p) + vPad + fontHeight / 2;
-                                return '<text x="25" y="' + y + '">' + x + '</text>';
+                                return '<text x="25" y="' + y + '">' + castNum(x) + '</text>';
                             });
 
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;

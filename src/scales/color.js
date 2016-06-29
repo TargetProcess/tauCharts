@@ -24,13 +24,15 @@ export class ColorScale extends BaseScale {
         if (!discrete) {
             var vars = d3.extent(this.vars);
 
-            var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
+            var isNum = ((num) => (!isNaN(num) && (_.isNumber(num) || _.isDate(num))));
             var min = isNum(props.min) ? props.min : vars[0];
             var max = isNum(props.max) ? props.max : vars[1];
 
+            var mins = [min, vars[0]].filter(isNum);
+            var maxs = [max, vars[1]].filter(isNum);
             vars = [
-                Math.min(...[min, vars[0]].filter(isNum)),
-                Math.max(...[max, vars[1]].filter(isNum))
+                mins.sort((a, b) => a - b)[0],
+                maxs.sort((a, b) => b - a)[0]
             ];
 
             if (props.nice) {
@@ -115,7 +117,7 @@ export class ColorScale extends BaseScale {
 
             func = d3.scale
                 .linear()
-                .domain(utils.splitEvenly(varSet, brewer.length))
+                .domain(utils.splitEvenly(varSet.map(x => x - 0), brewer.length))
                 .range(brewer);
 
         } else {
