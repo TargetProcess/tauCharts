@@ -20,6 +20,8 @@
             bgcolor: '#fff'
         });
 
+        var shadowStdDev = 2;
+
         var scrollBarWidth = tauCharts.api.globalSettings.getScrollBarWidth();
 
         var mmin = function (arr) {
@@ -77,16 +79,25 @@
             return d3Svg.append('g');
         };
 
-        var addBackground = function (g, w, h, color) {
-            g.append('rect')
+        var addBackground = function (cont, w, h, color, hideShadow) {
+
+            var shadow = hideShadow ? {} : {filter: 'url(#drop-shadow)'};
+
+            var bs = 2;
+            var dx = (bs + 1);
+            var dy = (-bs);
+            cont.append('rect')
                 .attr({
+                    class: 'i-role-bg',
                     x: 0,
-                    y: 0,
-                    width: w,
+                    y: dy,
+                    width: w + dx,
                     height: h,
                     fill: color
-                });
-            return g;
+                })
+                .style(shadow);
+
+            return cont;
         };
 
         var addAxes = function (g, axes) {
@@ -118,10 +129,16 @@
             });
 
             var g = addAxes(addBackground(createSlot(srcSvg), width, axisHeight, settings.bgcolor), axes);
+            var rect = g.select('.i-role-bg');
 
             var move = function (x, bottomY) {
-                var y = Math.min((bottomY - axisHeight), (minY - 1));
+                var dstY = (bottomY - axisHeight);
+                var limY = (minY - 1);
+                var y = Math.min(dstY, limY);
                 g.attr('transform', translate(x, y));
+
+                var svgFilter = (dstY < limY) ? {filter: 'url(#drop-shadow)'} : {filter:''};
+                rect.style(svgFilter);
             };
 
             var scrollableHeight = (scrollableArea.getBoundingClientRect().height);
@@ -153,10 +170,15 @@
             var axisWidth = mmax(xs);
 
             var g = addAxes(addBackground(createSlot(srcSvg), axisWidth, height, settings.bgcolor), axes);
+            var rect = g.select('.i-role-bg');
 
             var move = function (topX, y) {
-                var x = Math.max((topX), 0);
+                var limX = 0;
+                var x = Math.max(topX, limX);
                 g.attr('transform', translate(x, y));
+
+                var svgFilter = (x > limX) ? {filter: 'url(#drop-shadow)'} : {filter:''};
+                rect.style(svgFilter);
             };
 
             move(0, 0);
@@ -177,7 +199,8 @@
             var h = height - y + 1 + scrollBarWidth;
             var x = 0;
 
-            var g = addBackground(createSlot(srcSvg), w, h, settings.bgcolor);
+            var shadowSize = shadowStdDev * 2;
+            var g = addBackground(createSlot(srcSvg), w + shadowSize, h + shadowSize, settings.bgcolor, true);
 
             var move = function (topX, bottomY) {
                 var xi = Math.max((topX), 0);
@@ -241,6 +264,45 @@
                 if (applicable) {
                     var root = this.rootNode;
                     var srcSvg = d3.select(chart.getSVG());
+
+                    var defs = srcSvg.append('defs');
+
+                    // create filter with id #drop-shadow
+                    // height=130% so that the shadow is not clipped
+                    var filter = defs
+                        .append('filter')
+                        .attr('id', 'drop-shadow')
+                        .attr('height', '130%');
+
+                    // SourceAlpha refers to opacity of graphic that this filter will be applied to
+                    // convolve that with a Gaussian with standard deviation 3 and store result
+                    // in blur
+                    filter
+                        .append('feGaussianBlur')
+                        .attr('in', 'SourceAlpha')
+                        .attr('stdDeviation', shadowStdDev)
+                        .attr('result', 'blur');
+
+                    // translate output of Gaussian blur to the right and downwards with 2px
+                    // store result in offsetBlur
+                    filter
+                        .append('feOffset')
+                        .attr('in', 'blur')
+                        .attr('dx', 0)
+                        .attr('dy', 0)
+                        .attr('result', 'offsetBlur');
+
+                    // overlay original SourceGraphic over translated blurred opacity by using
+                    // feMerge filter. Order of specifying inputs is important!
+                    var feMerge = filter.append('feMerge');
+
+                    feMerge
+                        .append('feMergeNode')
+                        .attr('in', 'offsetBlur');
+                    feMerge
+                        .append('feMergeNode')
+                        .attr('in', 'SourceGraphic');
+
                     var xSel = srcSvg.selectAll('.x.axis');
                     var ySel = srcSvg.selectAll('.y.axis');
                     this.handlers = [
