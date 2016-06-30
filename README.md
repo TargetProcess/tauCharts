@@ -172,11 +172,11 @@ var chart1 = new tauCharts.Chart({
     ...
 });
 ```
-[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](http://jsfiddle.net/4o4z6fqn/6/)
+[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](//jsfiddle.net/taucharts/qdn76nab/)
 
 This sample uses the [setData(..)] method to refresh the chart's data source.
 
-See [streaming sample online](http://jsfiddle.net/4o4z6fqn/6/)
+See [streaming sample online](//jsfiddle.net/taucharts/qdn76nab/)
 
 =========
 
