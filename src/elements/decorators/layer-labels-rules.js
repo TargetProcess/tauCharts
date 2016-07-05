@@ -17,22 +17,22 @@ var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
 var alignByX = (exp) => {
     return (prev) => {
         return {
-            x: (row) => {
+            dx: (row) => {
 
                 var ordinateScale = prev.model.scaleY;
 
                 if ((exp[2] === '+') && !isPositive(ordinateScale, row)) {
-                    return prev.x(row);
+                    return prev.dx(row);
                 }
 
                 if ((exp[2] === '-') && !isNegative(ordinateScale, row)) {
-                    return prev.x(row);
+                    return prev.dx(row);
                 }
 
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.x(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dx(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
             }
         };
     };
@@ -41,22 +41,22 @@ var alignByX = (exp) => {
 var alignByY = (exp) => {
     return (prev) => {
         return {
-            y: (row) => {
+            dy: (row) => {
 
                 var ordinateScale = prev.model.scaleY;
 
                 if ((exp[2] === '+') && !isPositive(ordinateScale, row)) {
-                    return prev.y(row);
+                    return prev.dy(row);
                 }
 
                 if ((exp[2] === '-') && !isNegative(ordinateScale, row)) {
-                    return prev.y(row);
+                    return prev.dy(row);
                 }
 
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.y(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dy(row) + ((k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2));
             }
         };
     };
@@ -90,6 +90,30 @@ LayerLabelsRules
     .regRule('b-', alignByY(['b', 1, '-']))
     .regRule('B+', alignByY(['B', 1, '+']))
     .regRule('B-', alignByY(['B', 1, '-']))
+
+    .regRule('rotate-on-size-overflow', (prev) => {
+
+        var out = ((row) => prev.model.size(row) < prev.w(row));
+
+        var padKoeff = 0.5;
+        return {
+            angle: (row) => {
+                return out(row) ? -90 : prev.angle(row);
+            },
+            w: (row) => {
+                return out(row) ? prev.h(row) : prev.w(row);
+            },
+            h: (row) => {
+                return out(row) ? prev.w(row) : prev.h(row);
+            },
+            dx: (row) => {
+                return out(row) ? (prev.h(row) * padKoeff - 2) : prev.dx(row);
+            },
+            dy: (row) => {
+                return out(row) ? 0 : prev.dy(row);
+            }
+        };
+    })
 
     .regRule('keep-inside-or-hide-vertical', (prev) => {
         return {
@@ -129,13 +153,13 @@ LayerLabelsRules
 
     .regRule('keep-within-diameter-or-top', (prev) => {
         return {
-            y: (row) => {
+            dy: (row) => {
 
                 if ((prev.model.size(row) / prev.w(row)) < 1) {
-                    return (prev.y(row) - (prev.h(row) / 2) - (prev.model.size(row) / 2));
+                    return (prev.dy(row) - (prev.h(row) / 2) - (prev.model.size(row) / 2));
                 }
 
-                return prev.y(row);
+                return prev.dy(row);
             }
         };
     })
