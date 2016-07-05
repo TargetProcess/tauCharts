@@ -17,9 +17,11 @@ export class LayerLabels {
 
     constructor(model, isHorizontal, labelGuide, {width, height, container}) {
         this.container = container;
+        this.model = model;
+        this.flip = isHorizontal;
         this.w = width;
         this.h = height;
-        var guide = _.defaults(
+        this.guide = _.defaults(
             (labelGuide || {}),
             {
                 fontFamily: 'Helvetica, Arial, sans-serif',
@@ -30,38 +32,35 @@ export class LayerLabels {
                 tickFormat: null,
                 tickFormatNullAlias: ''
             });
+    }
 
-        this.guide = guide;
+    draw(fibers) {
 
-        var formatter = FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias);
+        var self = this;
+
+        var model = this.model;
+        var guide = this.guide;
 
         var seed = LayerLabelsModel.seed(
             model,
             {
                 fontSize: guide.fontSize,
                 fontColor: guide.fontColor,
-                flip: isHorizontal,
-                formatter,
+                flip: self.flip,
+                formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
                 labelRectSize: (str) => utilsDom.getLabelSize(str, guide),
                 paddingKoeff: 0.4
             });
 
-        var args = {maxWidth: width, maxHeight: height};
+        var args = {maxWidth: self.w, maxHeight: self.h, data: fibers.reduce((memo, f) => memo.concat(f), [])};
 
         var fixedPosition = guide
             .position
-            .filter((token) => token.indexOf('auto:') === -1)
-            .concat('keep-in-box');
+            .filter((token) => token.indexOf('auto:') === -1);
 
-        this.textModel = fixedPosition
+        var m = fixedPosition
             .map(LayerLabelsRules.getRule)
             .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
-    }
-
-    draw(fibers) {
-
-        var self = this;
-        var m = this.textModel;
 
         var readBy3 = (list, iterator) => {
             var l = list.length - 1;

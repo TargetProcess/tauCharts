@@ -198,8 +198,10 @@ define(function (require) {
             var m = createModel(['keep-in-box'], seedModel, {maxWidth: 100, maxHeight: 90});
             var s = 'ABCDE';
             var row = {text: s};
-            expect(m.x(row)).to.equal(95, 'should move left to fit box');
-            expect(m.y(row)).to.equal(90 - fontSize / 2, 'should move top to fit box');
+            expect(m.x(row)).to.equal(100, 'should move left to fit box / x');
+            expect(m.dx(row)).to.equal(-5, 'should move left to fit box / dx');
+            expect(m.y(row)).to.equal(100, 'should move top to fit box / y');
+            expect(m.dy(row)).to.equal(90 - 100 - fontSize / 2, 'should move top to fit box / dy');
         });
 
         it('should support [keep-inside-or-hide-vertical] rule (by width)', function () {
