@@ -157,8 +157,15 @@ var DataProcessor = {
 
     sortByDim: function (data, dimName, dimInfo) {
         var rows = data;
+
+        var interceptor = (['period', 'time'].indexOf(dimInfo.scale) >= 0) ?
+            (x => new Date(x)) :
+            (x => x);
+
         if ((dimInfo.type === 'measure') || (dimInfo.scale === 'period')) {
-            rows = _(data).sortBy(dimName);
+            rows = data.map(r => r).sort((a, b) => {
+                return interceptor(a[dimName]) - interceptor(b[dimName]);
+            });
         } else if (dimInfo.order) {
             var hashOrder = dimInfo.order.reduce(
                 (memo, x, i) => {
