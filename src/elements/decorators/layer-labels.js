@@ -17,9 +17,11 @@ export class LayerLabels {
 
     constructor(model, isHorizontal, labelGuide, {width, height, container}) {
         this.container = container;
+        this.model = model;
+        this.flip = isHorizontal;
         this.w = width;
         this.h = height;
-        var guide = _.defaults(
+        this.guide = _.defaults(
             (labelGuide || {}),
             {
                 fontFamily: 'Helvetica, Arial, sans-serif',
@@ -30,38 +32,35 @@ export class LayerLabels {
                 tickFormat: null,
                 tickFormatNullAlias: ''
             });
+    }
 
-        this.guide = guide;
+    draw(fibers) {
 
-        var formatter = FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias);
+        var self = this;
+
+        var model = this.model;
+        var guide = this.guide;
 
         var seed = LayerLabelsModel.seed(
             model,
             {
                 fontSize: guide.fontSize,
                 fontColor: guide.fontColor,
-                flip: isHorizontal,
-                formatter,
+                flip: self.flip,
+                formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
                 labelRectSize: (str) => utilsDom.getLabelSize(str, guide),
                 paddingKoeff: 0.4
             });
 
-        var args = {maxWidth: width, maxHeight: height};
+        var args = {maxWidth: self.w, maxHeight: self.h, data: fibers.reduce((memo, f) => memo.concat(f), [])};
 
         var fixedPosition = guide
             .position
-            .filter((token) => token.indexOf('auto:') === -1)
-            .concat('keep-in-box');
+            .filter((token) => token.indexOf('auto:') === -1);
 
-        this.textModel = fixedPosition
+        var m = fixedPosition
             .map(LayerLabelsRules.getRule)
             .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
-    }
-
-    draw(fibers) {
-
-        var self = this;
-        var m = this.textModel;
 
         var readBy3 = (list, iterator) => {
             var l = list.length - 1;
@@ -80,13 +79,14 @@ export class LayerLabels {
                 var absFiber = f.map((row) => {
                     return {
                         data: row,
-                        x: m.x(row),
-                        y: m.y(row),
+                        x: m.x(row) + m.dx(row),
+                        y: m.y(row) + m.dy(row),
                         w: m.w(row),
                         h: m.h(row),
                         hide: m.hide(row),
                         extr: null,
                         size: m.model.size(row),
+                        angle: m.angle(row),
                         label: m.label(row),
                         color: m.color(row)
                     };
@@ -113,15 +113,6 @@ export class LayerLabels {
             .filter((r) => r.label)
             .map((r, i) => _.extend(r, {i: i}));
 
-        var countHidden = parallel.text.reduce((sum, r) => sum + (r.hide), 0);
-        var countWhole = parallel.text.length;
-        var hiddenLimit = 2;
-        if ((countWhole > hiddenLimit) && ((countWhole - countHidden) <= hiddenLimit)) {
-            var maxLabelWidth = Math.max(...parallel.text.map((r) => r.w));
-            var density = Math.ceil((countWhole / maxLabelWidth) * 2);
-            parallel.text.forEach((r, i) => r.hide = (i % density));
-        }
-
         var tokens = this.guide.position.filter((token) => token.indexOf('auto:avoid') === 0);
         parallel = ((parallel.text.length > 0) && (tokens.length > 0)) ?
             this.autoPosition(parallel, tokens) :
@@ -141,13 +132,16 @@ export class LayerLabels {
 
         var get = ((prop) => ((__, i) => labels[i][prop]));
 
+        var xi = get('x');
+        var yi = get('y');
+        var angle = get('angle');
+        var color = get('color');
         var update = function () {
-            this.style('fill', get('color'))
+            this.style('fill', color)
                 .style('font-size', self.guide.fontSize)
                 .style('display', ((__, i) => labels[i].hide ? 'none' : null))
                 .attr('text-anchor', 'middle')
-                .attr('x', get('x'))
-                .attr('y', get('y'))
+                .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`)
                 .text(get('label'));
         };
 

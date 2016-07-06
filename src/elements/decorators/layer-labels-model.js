@@ -6,11 +6,14 @@ export class LayerLabelsModel {
         this.model = prev.model;
         this.x = prev.x || createFunc(0);
         this.y = prev.y || createFunc(0);
+        this.dx = prev.dx || createFunc(0);
+        this.dy = prev.dy || createFunc(0);
         this.w = prev.w || createFunc(0);
         this.h = prev.h || createFunc(0);
         this.hide = prev.hide || createFunc(false);
         this.label = prev.label || createFunc('');
         this.color = prev.color || createFunc('');
+        this.angle = prev.angle || createFunc(0);
     }
 
     static seed(model, {fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5}) {
@@ -23,11 +26,13 @@ export class LayerLabelsModel {
         return new LayerLabelsModel({
             model: model,
             x: (row) => x(row),
-            y: (row) => y(row) + ((labelRectSize(label(row)).height) * paddingKoeff),
+            y: (row) => y(row),
+            dy: (row) => ((labelRectSize(label(row)).height) * paddingKoeff),
             w: (row) => (labelRectSize(label(row)).width),
             h: (row) => (labelRectSize(label(row)).height),
             label: label,
-            color: () => fontColor
+            color: (() => fontColor),
+            angle: (() => 0)
         });
     }
 

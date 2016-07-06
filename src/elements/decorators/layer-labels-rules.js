@@ -17,22 +17,22 @@ var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
 var alignByX = (exp) => {
     return (prev) => {
         return {
-            x: (row) => {
+            dx: (row) => {
 
                 var ordinateScale = prev.model.scaleY;
 
                 if ((exp[2] === '+') && !isPositive(ordinateScale, row)) {
-                    return prev.x(row);
+                    return prev.dx(row);
                 }
 
                 if ((exp[2] === '-') && !isNegative(ordinateScale, row)) {
-                    return prev.x(row);
+                    return prev.dx(row);
                 }
 
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.x(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dx(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
             }
         };
     };
@@ -41,22 +41,22 @@ var alignByX = (exp) => {
 var alignByY = (exp) => {
     return (prev) => {
         return {
-            y: (row) => {
+            dy: (row) => {
 
                 var ordinateScale = prev.model.scaleY;
 
                 if ((exp[2] === '+') && !isPositive(ordinateScale, row)) {
-                    return prev.y(row);
+                    return prev.dy(row);
                 }
 
                 if ((exp[2] === '-') && !isNegative(ordinateScale, row)) {
-                    return prev.y(row);
+                    return prev.dy(row);
                 }
 
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.y(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dy(row) + ((k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2));
             }
         };
     };
@@ -90,6 +90,28 @@ LayerLabelsRules
     .regRule('b-', alignByY(['b', 1, '-']))
     .regRule('B+', alignByY(['B', 1, '+']))
     .regRule('B-', alignByY(['B', 1, '-']))
+
+    .regRule('rotate-on-size-overflow', (prev, {data}) => {
+
+        var out = ((row) => prev.model.size(row) < prev.w(row));
+        var overflowCount = data.reduce((memo, row) => (memo + (out(row) ? 1 : 0)), 0);
+
+        var isRot = ((overflowCount / data.length) > 0.5);
+
+        var changes = {};
+        if (isRot) {
+            var padKoeff = 0.5;
+            changes = {
+                angle: () => -90,
+                w: (row) => prev.h(row),
+                h: (row) => prev.w(row),
+                dx: (row) => (prev.h(row) * padKoeff - 2),
+                dy: () => 0
+            };
+        }
+
+        return changes;
+    })
 
     .regRule('keep-inside-or-hide-vertical', (prev) => {
         return {
@@ -129,39 +151,41 @@ LayerLabelsRules
 
     .regRule('keep-within-diameter-or-top', (prev) => {
         return {
-            y: (row) => {
+            dy: (row) => {
 
                 if ((prev.model.size(row) / prev.w(row)) < 1) {
-                    return (prev.y(row) - (prev.h(row) / 2) - (prev.model.size(row) / 2));
+                    return (prev.dy(row) - (prev.h(row) / 2) - (prev.model.size(row) / 2));
                 }
 
-                return prev.y(row);
+                return prev.dy(row);
             }
         };
     })
 
     .regRule('keep-in-box', (prev, {maxWidth, maxHeight}) => {
         return {
-            x: (row) => {
-                var x = prev.x(row);
+            dx: (row) => {
+                var dx = prev.dx(row);
+                var x = prev.x(row) + dx;
                 var w = prev.w(row);
                 var l = x - w / 2;
                 var r = x + w / 2;
 
                 var dl = 0 - l;
                 if (dl > 0) {
-                    return x + dl;
+                    return dx + dl;
                 }
 
                 var dr = r - maxWidth;
                 if (dr > 0) {
-                    return x - dr;
+                    return dx - dr;
                 }
 
-                return x;
+                return dx;
             },
-            y: (row) => {
-                var y = prev.y(row);
+            dy: (row) => {
+                var dy = prev.dy(row);
+                var y = prev.y(row) + dy;
                 var h = prev.h(row);
                 var t = y - h / 2;
                 var b = y + h / 2;
@@ -173,10 +197,10 @@ LayerLabelsRules
 
                 var db = b - maxHeight;
                 if (db > 0) {
-                    return y - db;
+                    return dy - db;
                 }
 
-                return y;
+                return dy;
             }
         };
     });

@@ -234,7 +234,7 @@
                         cssClass: 'graphical-report__annotation-area',
                         label: {
                             fontColor: noteItem.color,
-                            position: ['r', 'b']
+                            position: ['r', 'b', 'keep-in-box']
                         }
                     }
                 };
@@ -292,7 +292,7 @@
                         cssClass: 'graphical-report__annotation-line',
                         label: {
                             fontColor: noteItem.color,
-                            position: ['r', 'b']
+                            position: ['r', 'b', 'keep-in-box']
                         }
                     }
                 };
