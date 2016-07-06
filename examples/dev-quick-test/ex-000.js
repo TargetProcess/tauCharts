@@ -1,6 +1,72 @@
 var now = new Date();
 
 window.samples.push({
+    type: 'bar',
+    flip: true,
+    stack: true,
+    x: 'count',
+    y: 'process',
+    color: 'stage',
+    size: 'ABS(count)',
+    data: [
+        {
+            process: 'sales',
+            stage: 'visit',
+            count: 100
+        },
+        {
+            process: 'sales',
+            stage: 'trial',
+            count: 50
+        },
+        {
+            process: 'sales',
+            stage: 'buy',
+            count: 15
+        },
+        {
+            process: 'sales',
+            stage: 'go away',
+            count: -7
+        }
+    ]
+        .map(function (row) {
+            row['ABS(count)'] = Math.abs(row.count);
+            row['z'] = Math.random() * 10;
+            return row;
+        })
+        .reverse(),
+    plugins: [
+        tauCharts.api.plugins.get('tooltip')(),
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'count',
+                    val: 7,
+                    text: 'one',
+                    color: '#636363'
+                },
+                {
+                    dim: 'count',
+                    val: [10, 25],
+                    text: 'two',
+                    color: '#636363'
+                },
+                {
+                    dim: 'count',
+                    val: 55,
+                    text: 'three',
+                    color: '#636363'
+                }
+            ]
+        })
+    ]
+});
+
+
+
+
+window.samples.push({
 
     type: 'line',
     x: ['x'],

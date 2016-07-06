@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.2-beta.4 - 2016-06-22
+/*! taucharts - v0.9.2-beta.5 - 2016-07-06
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -1080,7 +1080,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        _this.config.guide.label = _underscore2.default.defaults(_this.config.guide.label || {}, {
-	            position: ['auto:avoid-label-label-overlap', 'auto:avoid-label-anchor-overlap', 'auto:hide-on-label-label-overlap'
+	            position: ['auto:avoid-label-label-overlap', 'auto:avoid-label-anchor-overlap', 'auto:hide-on-label-label-overlap', 'keep-in-box'
 	            // 'auto:hide-on-label-edges-overlap'
 	            ]
 	        });
@@ -1096,7 +1096,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale, config.adjustPhase && (enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale)];
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale, config.adjustPhase && (enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale)].concat(config.transformModel || []);
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -1146,7 +1146,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.decorators.filter(function (x) {
 	                return x;
 	            }).reduce(function (model, transform) {
-	                return transform(model, args);
+	                return _cartesianGrammar.CartesianGrammar.compose(model, transform(model, args));
 	            }, new _cartesianGrammar.CartesianGrammar({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
@@ -1670,7 +1670,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'decorator_identity',
 	        value: function decorator_identity(model) {
-	            return CartesianGrammar.compose(model);
+	            return model;
 	        }
 	    }, {
 	        key: 'decorator_orientation',
@@ -1681,7 +1681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var baseScale = isHorizontal ? model.scaleY : model.scaleX;
 	            var valsScale = isHorizontal ? model.scaleX : model.scaleY;
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                flip: isHorizontal,
 	                scaleX: baseScale,
 	                scaleY: valsScale,
@@ -1691,7 +1691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                xi: function xi(d) {
 	                    return baseScale.value(d[baseScale.dim]);
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_groundY0',
@@ -1705,22 +1705,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // NOTE: max also can be below 0
 	            var _y = model.scaleY.discrete ? model.scaleY.value(min) + model.scaleY.stepSize(min) * k : model.scaleY.value(Math.max(0, Math.min.apply(Math, _toConsumableArray(ys))));
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                y0: function y0() {
 	                    return _y;
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_dynamic_size',
 	        value: function decorator_dynamic_size(model, _ref3) {
 	            _objectDestructuringEmpty(_ref3);
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                size: function size(d) {
 	                    return model.size(d) * model.scaleSize.value(d[model.scaleSize.dim]);
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_positioningByColor',
@@ -1744,7 +1744,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
 	            };
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                xi: function xi(d) {
 	                    var availableSpace = space(d);
 	                    var absTickStart = model.xi(d) - availableSpace / 2;
@@ -1752,40 +1752,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
 	                    return absTickStart + relSegmStart;
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_color',
 	        value: function decorator_color(model, _ref5) {
 	            _objectDestructuringEmpty(_ref5);
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                color: function color(d) {
 	                    return model.scaleColor.value(d[model.scaleColor.dim]);
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_label',
 	        value: function decorator_label(model, _ref6) {
 	            _objectDestructuringEmpty(_ref6);
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                label: function label(d) {
 	                    return model.scaleLabel.value(d[model.scaleLabel.dim]);
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_group',
 	        value: function decorator_group(model, _ref7) {
 	            _objectDestructuringEmpty(_ref7);
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                group: function group(d) {
 	                    return '' + d[model.scaleColor.dim] + delimiter + d[model.scaleSplit.dim];
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_groupOrderByColor',
@@ -1794,13 +1794,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var _order = model.scaleColor.domain();
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                order: function order(group) {
 	                    var color = group.split(delimiter)[0];
 	                    var i = _order.indexOf(color);
 	                    return i < 0 ? Number.MAX_VALUE : i;
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_groupOrderByAvg',
@@ -1829,12 +1829,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return r[0];
 	            });
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                order: function order(group) {
 	                    var i = _order2.indexOf(group);
 	                    return i < 0 ? Number.MAX_VALUE : i;
 	                }
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_stack',
@@ -1873,14 +1873,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return _underscore2.default.memoize(fn, model.id);
 	            };
 
-	            return CartesianGrammar.compose(model, {
+	            return {
 	                yi: memoize(function (d) {
 	                    return yScale.value(stackYi(d).nextStack);
 	                }),
 	                y0: memoize(function (d) {
 	                    return yScale.value(stackY0(d).prevStack);
 	                })
-	            });
+	            };
 	        }
 	    }, {
 	        key: 'decorator_size_distribute_evenly',
@@ -1936,7 +1936,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return next;
 	            });
 
-	            return model;
+	            return {};
 	        }
 	    }, {
 	        key: 'adjustYScale',
@@ -1977,7 +1977,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return newConf;
 	            });
 
-	            return model;
+	            return {};
 	        }
 	    }, {
 	        key: 'adjustStaticSizeScale',
@@ -2006,7 +2006,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return next;
 	            });
 
-	            return model;
+	            return {};
 	        }
 	    }, {
 	        key: 'adjustSigmaSizeScale',
@@ -2073,7 +2073,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return next;
 	            });
 
-	            return model;
+	            return {};
 	        }
 	    }, {
 	        key: 'toFibers',
@@ -2224,8 +2224,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var intersect = function intersect(x1, x2, x3, x4, y1, y2, y3, y4) {
@@ -2241,9 +2239,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _classCallCheck(this, LayerLabels);
 
 	        this.container = container;
+	        this.model = model;
+	        this.flip = isHorizontal;
 	        this.w = width;
 	        this.h = height;
-	        var guide = _underscore2.default.defaults(labelGuide || {}, {
+	        this.guide = _underscore2.default.defaults(labelGuide || {}, {
 	            fontFamily: 'Helvetica, Arial, sans-serif',
 	            fontWeight: 'normal',
 	            fontSize: 10,
@@ -2252,31 +2252,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            tickFormat: null,
 	            tickFormatNullAlias: ''
 	        });
-
-	        this.guide = guide;
-
-	        var formatter = _formatterRegistry.FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias);
-
-	        var seed = _layerLabelsModel.LayerLabelsModel.seed(model, {
-	            fontSize: guide.fontSize,
-	            fontColor: guide.fontColor,
-	            flip: isHorizontal,
-	            formatter: formatter,
-	            labelRectSize: function labelRectSize(str) {
-	                return _utilsDom.utilsDom.getLabelSize(str, guide);
-	            },
-	            paddingKoeff: 0.4
-	        });
-
-	        var args = { maxWidth: width, maxHeight: height };
-
-	        var fixedPosition = guide.position.filter(function (token) {
-	            return token.indexOf('auto:') === -1;
-	        }).concat('keep-in-box');
-
-	        this.textModel = fixedPosition.map(_layerLabelsRules.LayerLabelsRules.getRule).reduce(function (prev, rule) {
-	            return _layerLabelsModel.LayerLabelsModel.compose(prev, rule(prev, args));
-	        }, seed);
 	    }
 
 	    _createClass(LayerLabels, [{
@@ -2284,7 +2259,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function draw(fibers) {
 
 	            var self = this;
-	            var m = this.textModel;
+
+	            var model = this.model;
+	            var guide = this.guide;
+
+	            var seed = _layerLabelsModel.LayerLabelsModel.seed(model, {
+	                fontSize: guide.fontSize,
+	                fontColor: guide.fontColor,
+	                flip: self.flip,
+	                formatter: _formatterRegistry.FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
+	                labelRectSize: function labelRectSize(str) {
+	                    return _utilsDom.utilsDom.getLabelSize(str, guide);
+	                },
+	                paddingKoeff: 0.4
+	            });
+
+	            var args = { maxWidth: self.w, maxHeight: self.h, data: fibers.reduce(function (memo, f) {
+	                    return memo.concat(f);
+	                }, []) };
+
+	            var fixedPosition = guide.position.filter(function (token) {
+	                return token.indexOf('auto:') === -1;
+	            });
+
+	            var m = fixedPosition.map(_layerLabelsRules.LayerLabelsRules.getRule).reduce(function (prev, rule) {
+	                return _layerLabelsModel.LayerLabelsModel.compose(prev, rule(prev, args));
+	            }, seed);
 
 	            var readBy3 = function readBy3(list, iterator) {
 	                var l = list.length - 1;
@@ -2302,13 +2302,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var absFiber = f.map(function (row) {
 	                    return {
 	                        data: row,
-	                        x: m.x(row),
-	                        y: m.y(row),
+	                        x: m.x(row) + m.dx(row),
+	                        y: m.y(row) + m.dy(row),
 	                        w: m.w(row),
 	                        h: m.h(row),
 	                        hide: m.hide(row),
 	                        extr: null,
 	                        size: m.model.size(row),
+	                        angle: m.angle(row),
 	                        label: m.label(row),
 	                        color: m.color(row)
 	                    };
@@ -2336,24 +2337,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return _underscore2.default.extend(r, { i: i });
 	            });
 
-	            var countHidden = parallel.text.reduce(function (sum, r) {
-	                return sum + r.hide;
-	            }, 0);
-	            var countWhole = parallel.text.length;
-	            if (countWhole > 0 && countHidden === countWhole) {
-	                var maxLabelWidth = Math.max.apply(Math, _toConsumableArray(parallel.text.map(function (r) {
-	                    return r.w;
-	                })));
-	                var density = Math.ceil(countWhole / maxLabelWidth * 2);
-	                parallel.text.forEach(function (r, i) {
-	                    return r.hide = i % density;
-	                });
-	            }
-
-	            var autoPosition = this.guide.position.filter(function (token) {
-	                return token.indexOf('auto:') === 0;
+	            var tokens = this.guide.position.filter(function (token) {
+	                return token.indexOf('auto:avoid') === 0;
 	            });
-	            parallel = parallel.text.length > 0 && autoPosition.length > 0 ? this.autoPosition(parallel, autoPosition) : parallel;
+	            parallel = parallel.text.length > 0 && tokens.length > 0 ? this.autoPosition(parallel, tokens) : parallel;
+
+	            var flags = this.guide.position.reduce(function (memo, token) {
+	                return _underscore2.default.extend(memo, _defineProperty({}, token, true));
+	            }, {});
+
+	            parallel.text = flags['auto:hide-on-label-edges-overlap'] ? this.hideOnLabelEdgesOverlap(parallel.text, parallel.edges) : parallel.text;
+
+	            parallel.text = flags['auto:hide-on-label-label-overlap'] ? this.hideOnLabelLabelOverlap(parallel.text) : parallel.text;
 
 	            var labels = parallel.text;
 
@@ -2363,10 +2358,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                };
 	            };
 
+	            var xi = get('x');
+	            var yi = get('y');
+	            var angle = get('angle');
+	            var color = get('color');
 	            var update = function update() {
-	                this.style('fill', get('color')).style('font-size', self.guide.fontSize).style('display', function (__, i) {
+	                this.style('fill', color).style('font-size', self.guide.fontSize).style('display', function (__, i) {
 	                    return labels[i].hide ? 'none' : null;
-	                }).attr('text-anchor', 'middle').attr('x', get('x')).attr('y', get('y')).text(get('label'));
+	                }).attr('text-anchor', 'middle').attr('transform', function (d, i) {
+	                    return 'translate(' + xi(d, i) + ',' + yi(d, i) + ') rotate(' + angle(d, i) + ')';
+	                }).text(get('label'));
 	            };
 
 	            var text = this.container.selectAll('.i-role-label').data(labels.map(function (r) {
@@ -2381,10 +2382,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'autoPosition',
 	        value: function autoPosition(parallel, tokens) {
-
-	            var flags = tokens.reduce(function (memo, token) {
-	                return _underscore2.default.extend(memo, _defineProperty({}, token, true));
-	            }, {});
 
 	            var penalties = {
 	                'auto:avoid-label-label-overlap': function autoAvoidLabelLabelOverlap(labels, edges) {
@@ -2523,14 +2520,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            sim.start(4);
 
-	            labels.forEach(function (l) {
-	                var r = textData[l.i];
+	            textData = labels.reduce(function (memo, l) {
+	                var r = memo[l.i];
 	                r.x = l.x;
 	                r.y = l.y;
-	            });
-
-	            textData = flags['auto:hide-on-label-edges-overlap'] ? this.hideOnLabelEdgesOverlap(textData, edges) : textData;
-	            textData = flags['auto:hide-on-label-label-overlap'] ? this.hideOnLabelLabelOverlap(textData) : textData;
+	                return memo;
+	            }, textData);
 
 	            return parallel;
 	        }
@@ -2575,6 +2570,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                };
 	            };
 
+	            var extremumOrder = { min: 0, max: 1, norm: 2 };
 	            var collisionSolveStrategies = {
 	                'min/min': function minMin(p0, p1) {
 	                    return p1.y - p0.y;
@@ -2599,13 +2595,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var cross = function cross(a, b) {
 	                var ra = rect(a);
 	                var rb = rect(b);
-	                var k = !(a.hide * b.hide);
+	                var k = !a.hide && !b.hide;
 
 	                var x_overlap = k * Math.max(0, Math.min(rb.x1, ra.x1) - Math.max(ra.x0, rb.x0));
 	                var y_overlap = k * Math.max(0, Math.min(rb.y1, ra.y1) - Math.max(ra.y0, rb.y0));
 
 	                if (x_overlap * y_overlap > 0) {
-	                    var extremumOrder = { min: 0, max: 1, norm: 2 };
 	                    [a, b].sort(function (p0, p1) {
 	                        return extremumOrder[p0.extr] - extremumOrder[p1.extr];
 	                    }).sort(function (p0, p1) {
@@ -2616,6 +2611,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            data.filter(function (r) {
 	                return !r.hide;
+	            }).sort(function (p0, p1) {
+	                return extremumOrder[p0.extr] - extremumOrder[p1.extr];
 	            }).forEach(function (a) {
 	                data.forEach(function (b) {
 	                    if (a.i !== b.i) {
@@ -2696,11 +2693,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.model = prev.model;
 	        this.x = prev.x || createFunc(0);
 	        this.y = prev.y || createFunc(0);
+	        this.dx = prev.dx || createFunc(0);
+	        this.dy = prev.dy || createFunc(0);
 	        this.w = prev.w || createFunc(0);
 	        this.h = prev.h || createFunc(0);
 	        this.hide = prev.hide || createFunc(false);
 	        this.label = prev.label || createFunc('');
 	        this.color = prev.color || createFunc('');
+	        this.angle = prev.angle || createFunc(0);
 	    }
 
 	    _createClass(LayerLabelsModel, null, [{
@@ -2727,7 +2727,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return _x(row);
 	                },
 	                y: function y(row) {
-	                    return _y(row) + labelRectSize(label(row)).height * paddingKoeff;
+	                    return _y(row);
+	                },
+	                dy: function dy(row) {
+	                    return labelRectSize(label(row)).height * paddingKoeff;
 	                },
 	                w: function w(row) {
 	                    return labelRectSize(label(row)).width;
@@ -2738,6 +2741,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                label: label,
 	                color: function color() {
 	                    return fontColor;
+	                },
+	                angle: function angle() {
+	                    return 0;
 	                }
 	            });
 	        }
@@ -2802,22 +2808,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	var alignByX = function alignByX(exp) {
 	    return function (prev) {
 	        return {
-	            x: function x(row) {
+	            dx: function dx(row) {
 
 	                var ordinateScale = prev.model.scaleY;
 
 	                if (exp[2] === '+' && !isPositive(ordinateScale, row)) {
-	                    return prev.x(row);
+	                    return prev.dx(row);
 	                }
 
 	                if (exp[2] === '-' && !isNegative(ordinateScale, row)) {
-	                    return prev.x(row);
+	                    return prev.dx(row);
 	                }
 
 	                var k = exp[1];
 	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
 
-	                return prev.x(row) + k * (prev.w(row) / 2) + k * u * prev.model.size(row) / 2 + k * 2;
+	                return prev.dx(row) + k * (prev.w(row) / 2) + k * u * prev.model.size(row) / 2 + k * 2;
 	            }
 	        };
 	    };
@@ -2826,28 +2832,64 @@ return /******/ (function(modules) { // webpackBootstrap
 	var alignByY = function alignByY(exp) {
 	    return function (prev) {
 	        return {
-	            y: function y(row) {
+	            dy: function dy(row) {
 
 	                var ordinateScale = prev.model.scaleY;
 
 	                if (exp[2] === '+' && !isPositive(ordinateScale, row)) {
-	                    return prev.y(row);
+	                    return prev.dy(row);
 	                }
 
 	                if (exp[2] === '-' && !isNegative(ordinateScale, row)) {
-	                    return prev.y(row);
+	                    return prev.dy(row);
 	                }
 
 	                var k = exp[1];
 	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
 
-	                return prev.y(row) + k * (prev.h(row) / 2) + k * u * prev.model.size(row) / 2 + k * 2;
+	                return prev.dy(row) + (k * (prev.h(row) / 2) + k * u * prev.model.size(row) / 2);
 	            }
 	        };
 	    };
 	};
 
-	LayerLabelsRules.regRule('l', alignByX(['l', -1, null])).regRule('L', alignByX(['L', -1, null])).regRule('l+', alignByX(['l', -1, '+'])).regRule('l-', alignByX(['l', -1, '-'])).regRule('L+', alignByX(['L', -1, '+'])).regRule('L-', alignByX(['L', -1, '-'])).regRule('r', alignByX(['r', 1, null])).regRule('R', alignByX(['R', 1, null])).regRule('r+', alignByX(['r', 1, '+'])).regRule('r-', alignByX(['r', 1, '-'])).regRule('R+', alignByX(['R', 1, '+'])).regRule('R-', alignByX(['R', 1, '-'])).regRule('t', alignByY(['t', -1, null])).regRule('T', alignByY(['T', -1, null])).regRule('t+', alignByY(['t', -1, '+'])).regRule('t-', alignByY(['t', -1, '-'])).regRule('T+', alignByY(['T', -1, '+'])).regRule('T-', alignByY(['T', -1, '-'])).regRule('b', alignByY(['b', 1, null])).regRule('B', alignByY(['B', 1, null])).regRule('b+', alignByY(['b', 1, '+'])).regRule('b-', alignByY(['b', 1, '-'])).regRule('B+', alignByY(['B', 1, '+'])).regRule('B-', alignByY(['B', 1, '-'])).regRule('keep-inside-or-hide-vertical', function (prev) {
+	LayerLabelsRules.regRule('l', alignByX(['l', -1, null])).regRule('L', alignByX(['L', -1, null])).regRule('l+', alignByX(['l', -1, '+'])).regRule('l-', alignByX(['l', -1, '-'])).regRule('L+', alignByX(['L', -1, '+'])).regRule('L-', alignByX(['L', -1, '-'])).regRule('r', alignByX(['r', 1, null])).regRule('R', alignByX(['R', 1, null])).regRule('r+', alignByX(['r', 1, '+'])).regRule('r-', alignByX(['r', 1, '-'])).regRule('R+', alignByX(['R', 1, '+'])).regRule('R-', alignByX(['R', 1, '-'])).regRule('t', alignByY(['t', -1, null])).regRule('T', alignByY(['T', -1, null])).regRule('t+', alignByY(['t', -1, '+'])).regRule('t-', alignByY(['t', -1, '-'])).regRule('T+', alignByY(['T', -1, '+'])).regRule('T-', alignByY(['T', -1, '-'])).regRule('b', alignByY(['b', 1, null])).regRule('B', alignByY(['B', 1, null])).regRule('b+', alignByY(['b', 1, '+'])).regRule('b-', alignByY(['b', 1, '-'])).regRule('B+', alignByY(['B', 1, '+'])).regRule('B-', alignByY(['B', 1, '-'])).regRule('rotate-on-size-overflow', function (prev, _ref) {
+	    var data = _ref.data;
+
+
+	    var out = function out(row) {
+	        return prev.model.size(row) < prev.w(row);
+	    };
+	    var overflowCount = data.reduce(function (memo, row) {
+	        return memo + (out(row) ? 1 : 0);
+	    }, 0);
+
+	    var isRot = overflowCount / data.length > 0.5;
+
+	    var changes = {};
+	    if (isRot) {
+	        var padKoeff = 0.5;
+	        changes = {
+	            angle: function angle() {
+	                return -90;
+	            },
+	            w: function w(row) {
+	                return prev.h(row);
+	            },
+	            h: function h(row) {
+	                return prev.w(row);
+	            },
+	            dx: function dx(row) {
+	                return prev.h(row) * padKoeff - 2;
+	            },
+	            dy: function dy() {
+	                return 0;
+	            }
+	        };
+	    }
+
+	    return changes;
+	}).regRule('keep-inside-or-hide-vertical', function (prev) {
 	    return {
 	        hide: function hide(row) {
 
@@ -2881,40 +2923,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}).regRule('keep-within-diameter-or-top', function (prev) {
 	    return {
-	        y: function y(row) {
+	        dy: function dy(row) {
 
 	            if (prev.model.size(row) / prev.w(row) < 1) {
-	                return prev.y(row) - prev.h(row) / 2 - prev.model.size(row) / 2;
+	                return prev.dy(row) - prev.h(row) / 2 - prev.model.size(row) / 2;
 	            }
 
-	            return prev.y(row);
+	            return prev.dy(row);
 	        }
 	    };
-	}).regRule('keep-in-box', function (prev, _ref) {
-	    var maxWidth = _ref.maxWidth;
-	    var maxHeight = _ref.maxHeight;
+	}).regRule('keep-in-box', function (prev, _ref2) {
+	    var maxWidth = _ref2.maxWidth;
+	    var maxHeight = _ref2.maxHeight;
 
 	    return {
-	        x: function x(row) {
-	            var x = prev.x(row);
+	        dx: function dx(row) {
+	            var dx = prev.dx(row);
+	            var x = prev.x(row) + dx;
 	            var w = prev.w(row);
 	            var l = x - w / 2;
 	            var r = x + w / 2;
 
 	            var dl = 0 - l;
 	            if (dl > 0) {
-	                return x + dl;
+	                return dx + dl;
 	            }
 
 	            var dr = r - maxWidth;
 	            if (dr > 0) {
-	                return x - dr;
+	                return dx - dr;
 	            }
 
-	            return x;
+	            return dx;
 	        },
-	        y: function y(row) {
-	            var y = prev.y(row);
+	        dy: function dy(row) {
+	            var dy = prev.dy(row);
+	            var y = prev.y(row) + dy;
 	            var h = prev.h(row);
 	            var t = y - h / 2;
 	            var b = y + h / 2;
@@ -2926,10 +2970,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var db = b - maxHeight;
 	            if (db > 0) {
-	                return y - db;
+	                return dy - db;
 	            }
 
-	            return y;
+	            return dy;
 	        }
 	    };
 	});
@@ -3561,7 +3605,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            interpolate: 'linear'
 	        });
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale];
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
 	        return _this;
 	    }
 
@@ -3840,7 +3884,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.config.guide.label = _underscore2.default.defaults(_this.config.guide.label, {
 	            fontSize: 11,
-	            position: ['auto:avoid-label-label-overlap', 'auto:avoid-label-anchor-overlap', 'auto:avoid-label-edges-overlap', 'auto:hide-on-label-label-overlap', 'auto:hide-on-label-edges-overlap']
+	            position: ['auto:avoid-label-label-overlap', 'auto:avoid-label-anchor-overlap', 'auto:avoid-label-edges-overlap', 'auto:hide-on-label-label-overlap', 'auto:hide-on-label-edges-overlap', 'keep-in-box']
 	        });
 
 	        _this.config.guide.color = _underscore2.default.defaults(_this.config.guide.color || {}, { fill: null });
@@ -3971,7 +4015,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.decorators.filter(function (x) {
 	                return x;
 	            }).reduce(function (model, transform) {
-	                return transform(model, args);
+	                return _cartesianGrammar.CartesianGrammar.compose(model, transform(model, args));
 	            }, new _cartesianGrammar.CartesianGrammar({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
@@ -4200,7 +4244,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var enableStack = _this.config.stack;
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale];
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
 	        return _this;
 	    }
 
@@ -4359,7 +4403,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        _this.config.guide.label = _underscore2.default.defaults(_this.config.guide.label || {}, {
-	            position: _this.config.flip ? ['r-', 'l+', 'keep-inside-or-hide-horizontal'] : enableStack ? ['t-', 'b+', 'keep-inside-or-hide-vertical'] : ['t+', 'b-', 'keep-inside-or-hide-vertical']
+	            position: _this.config.flip ? ['r-', 'l+', 'keep-inside-or-hide-horizontal'] : enableStack ? ['rotate-on-size-overflow', 't-', 'b+', 'keep-inside-or-hide-vertical', 'auto:hide-on-label-label-overlap'] : ['rotate-on-size-overflow', 't+', 'b-', 'keep-inside-or-hide-vertical', 'auto:hide-on-label-label-overlap']
 	        });
 
 	        _this.baseCssClass = 'i-role-element i-role-datum bar ' + _const.CSS_PREFIX + 'bar';
@@ -4372,7 +4416,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableDistributeEvenly && _cartesianGrammar.CartesianGrammar.decorator_size_distribute_evenly, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale];
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableDistributeEvenly && _cartesianGrammar.CartesianGrammar.decorator_size_distribute_evenly, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
 
 	        _this.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
@@ -4411,7 +4455,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.decorators.filter(function (x) {
 	                return x;
 	            }).reduce(function (model, transform) {
-	                return transform(model, args);
+	                return _cartesianGrammar.CartesianGrammar.compose(model, transform(model, args));
 	            }, new _cartesianGrammar.CartesianGrammar({
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
@@ -6863,8 +6907,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    sortByDim: function sortByDim(data, dimName, dimInfo) {
 	        var rows = data;
+
+	        var interceptor = ['period', 'time'].indexOf(dimInfo.scale) >= 0 ? function (x) {
+	            return new Date(x);
+	        } : function (x) {
+	            return x;
+	        };
+
 	        if (dimInfo.type === 'measure' || dimInfo.scale === 'period') {
-	            rows = (0, _underscore2.default)(data).sortBy(dimName);
+	            rows = data.map(function (r) {
+	                return r;
+	            }).sort(function (a, b) {
+	                return interceptor(a[dimName]) - interceptor(b[dimName]);
+	            });
 	        } else if (dimInfo.order) {
 	            var hashOrder = dimInfo.order.reduce(function (memo, x, i) {
 	                memo[x] = i;
@@ -12221,7 +12276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Path).call(this, config));
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale];
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale].concat(config.transformModel || []);
 	        return _this;
 	    }
 
@@ -14338,6 +14393,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (config.hasOwnProperty('size') && !isEmptyScale(config.size)) {
 	                    fillSlot(memo, config, 'size');
+	                }
+
+	                if (config.hasOwnProperty('label') && !isEmptyScale(config.label)) {
+	                    fillSlot(memo, config, 'label');
 	                }
 
 	                return memo;
