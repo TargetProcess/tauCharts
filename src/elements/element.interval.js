@@ -46,6 +46,7 @@ export class Interval extends Element {
                             'auto:hide-on-label-label-overlap'
                         ] :
                         [
+                            'rotate-on-size-overflow',
                             't+',
                             'b-',
                             'keep-inside-or-hide-vertical',
