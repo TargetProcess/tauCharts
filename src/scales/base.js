@@ -92,7 +92,8 @@ export class BaseScale {
         return this._fields[key];
     }
 
-    toBaseScale(func, dynamicProps = null) {
+    // toBaseScale(func, dynamicProps = null) {
+    toBaseScale(func) {
 
         var scaleFn = Object
             .keys(this._fields)
@@ -101,7 +102,8 @@ export class BaseScale {
                 return memo;
             }, func);
 
-        scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
+        // scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
+        scaleFn.getHash = (() => generateHashFunction(scaleFn.dim, {}));
         scaleFn.value = scaleFn;
 
         return scaleFn;
