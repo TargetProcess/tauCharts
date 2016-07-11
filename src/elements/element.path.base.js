@@ -195,7 +195,7 @@ export class BasePath extends Element {
 
             var series = this
                 .selectAll(model.pathElement)
-                .data((fiber) => (fiber.length > 1) ? [fiber] : [], ((fib) => fib.map(self.screenModel.id).join('-')));
+                .data((fib) => (fib.length > 1) ? [fib] : [], (fib) => self.screenModel.group(fib[0]));
             series
                 .exit()
                 .remove();
@@ -254,7 +254,7 @@ export class BasePath extends Element {
         var frameGroups = options
             .container
             .selectAll(`.frame-${options.uid}`)
-            .data(fibers);
+            .data(fibers, (fib) => self.screenModel.group(fib[0]));
         frameGroups
             .exit()
             .remove();

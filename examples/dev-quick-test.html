@@ -153,14 +153,16 @@
         return spec;
     };
 
-    window
+    var dd = window
             .samples
             .concat(window.drops.map(xdrops))
             .filter(_.identity)
             .filter(function (r) {
+                return r.z == 88;
                 return true;
             })
-            .forEach(function (cfg, i) {
+
+    dd.forEach(function (cfg, i) {
                 $('body').append('<div class="cc" id="div' + i + '"></div>');
 
                 cfg.settings = cfg.settings || {};
@@ -168,12 +170,12 @@
                 cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
                 cfg.plugins = cfg.plugins || [];
-//                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
-//                    cssPaths: [
-//                        "../css/test-taucharts.css",
-//                        "../css/test-entitycolors.css"
-//                    ]
-//                }));
+                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
+                    cssPaths: [
+                        "../css/test-taucharts.css",
+                        "../css/test-entitycolors.css"
+                    ]
+                }));
 
                 var chart = (cfg.hasOwnProperty('type')) ?
                         (new tauCharts.Chart(cfg)) :
@@ -182,6 +184,15 @@
 
                 window.charts.push(chart);
             });
+
+    var i = 1;
+    setInterval(function () {
+        var l = dd[0].data.length;
+        var d = dd[0].data[Math.round(Math.random() * (l - 1))];
+        d.price_2_28 = (Math.random() * 100 * i);
+        window.charts[0].refresh();
+        i++;
+    }, 3000);
 
 </script>
 

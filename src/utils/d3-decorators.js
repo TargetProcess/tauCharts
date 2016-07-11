@@ -199,31 +199,58 @@ var d3_decorator_fix_axis_bottom_line = (axisNode, size, isContinuesScale) => {
 var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = axisNode
-        .append('text')
-        .attr('transform', utilsDraw.rotate(guide.rotate))
-        .attr('class', guide.cssClass)
-        .attr('x', koeff * guide.size * 0.5)
-        .attr('y', koeff * guide.padding)
-        .style('text-anchor', guide.textAnchor);
 
-    var delimiter = ' \u2192 ';
-    var tags = guide.text.split(delimiter);
-    var tLen = tags.length;
-    tags.forEach((token, i) => {
+    var drawLabel = function (selection) {
 
-        labelTextNode
-            .append('tspan')
-            .attr('class', 'label-token label-token-' + i)
-            .text(token);
-
-        if (i < (tLen - 1)) {
-            labelTextNode
-                .append('tspan')
-                .attr('class', 'label-token-delimiter label-token-delimiter-' + i)
-                .text(delimiter);
+        if (selection.empty()) {
+            return;
         }
-    });
+
+        selection
+            .attr('transform', utilsDraw.rotate(guide.rotate))
+            .attr('class', 'i-axis-label ' + guide.cssClass)
+            .attr('x', koeff * guide.size * 0.5)
+            .attr('y', koeff * guide.padding)
+            .style('text-anchor', guide.textAnchor);
+    };
+
+    var drawTags = function (selection) {
+
+        if (selection.empty()) {
+            return;
+        }
+
+        var delimiter = ' \u2192 ';
+        var tags = guide.text.split(delimiter);
+        var tLen = tags.length;
+        tags.forEach((token, i) => {
+
+            selection
+                .append('tspan')
+                .attr('class', 'label-token label-token-' + i)
+                .text(token);
+
+            if (i < (tLen - 1)) {
+                selection
+                    .append('tspan')
+                    .attr('class', 'label-token-delimiter label-token-delimiter-' + i)
+                    .text(delimiter);
+            }
+        });
+    };
+
+    var labelTextNode = axisNode
+        .selectAll('.i-axis-label')
+        .data([1]);
+    labelTextNode
+        .call(drawLabel);
+    labelTextNode
+        .enter()
+        .append('text')
+        .call((sel) => {
+            drawLabel(sel);
+            drawTags(sel);
+        });
 
     if (guide.dock === 'right') {
         let box = axisNode.selectAll('path.domain').node().getBBox();
