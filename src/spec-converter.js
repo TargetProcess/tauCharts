@@ -151,7 +151,7 @@ export class SpecConverter {
     ruleCreateScales(srcUnit, gplRoot) {
 
         var guide = srcUnit.guide || {};
-        ['color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
+        ['identity', 'color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
             }
@@ -261,6 +261,14 @@ export class SpecConverter {
         if (scaleType === 'split' && dimName !== null) {
             item = {
                 type: 'value',
+                source: '/',
+                dim: this.ruleInferDim(dimName, guide)
+            };
+        }
+
+        if (scaleType === 'identity' && dimName !== null) {
+            item = {
+                type: 'identity',
                 source: '/',
                 dim: this.ruleInferDim(dimName, guide)
             };

@@ -13,6 +13,7 @@ var createElement = (type, config) => {
         type: type,
         x: config.x,
         y: config.y,
+        identity: config.identity,
         size: config.size,
         color: config.color,
         split: config.split,
@@ -139,6 +140,7 @@ function transformConfig(type, config) {
             spec.unit.push(createElement(type, {
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
+                identity: config.identity,
                 split: config.split,
                 color: config.color,
                 label: config.label,
