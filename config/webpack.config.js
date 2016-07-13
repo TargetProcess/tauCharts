@@ -83,7 +83,12 @@ var generateTestConf = function (addLoaders) {
             colors: true,
             reasons: true
         },
-        progress: true
+        progress: true,
+        plugins: [
+            new webpack.DefinePlugin({
+                VERSION: JSON.stringify(require('../package.json').version)
+            })
+        ]
     };
 };
 
@@ -140,7 +145,12 @@ var webpackConf = {
     },
     stats: {
         timings: true
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            VERSION: JSON.stringify(require('../package.json').version)
+        })
+    ]
 };
 
 module.exports = {
