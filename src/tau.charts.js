@@ -247,5 +247,6 @@ api.chartTypesRegistry = chartTypesRegistry
         }
     ]));
 
-var version = VERSION;
-export {GPL, Plot, Chart, __api__, api, version};
+// var version = VERSION;
+
+export {GPL, Plot, Chart, __api__, api};
