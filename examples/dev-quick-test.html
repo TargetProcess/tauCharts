@@ -25,6 +25,7 @@
     <script src="../plugins/geomap-tooltip.js"></script>
     <script src="../plugins/geomap-legend.js"></script>
     <script src="../plugins/quick-filter.js"></script>
+    <script src="../plugins/floating-axes.js"></script>
 
     <!-- test data -->
     <script src="data-cars.js"></script>
@@ -158,7 +159,7 @@
             .concat(window.drops.map(xdrops))
             .filter(_.identity)
             .filter(function (r) {
-                return true;
+                return r.z === 111;
             })
             .forEach(function (cfg, i) {
                 $('body').append('<div class="cc" id="div' + i + '"></div>');
@@ -168,6 +169,8 @@
                 cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
                 cfg.plugins = cfg.plugins || [];
+                cfg.plugins.push(tauCharts.api.plugins.get('floating-axes')());
+
 //                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
 //                    cssPaths: [
 //                        "../css/test-taucharts.css",
@@ -184,6 +187,5 @@
             });
 
 </script>
-
 </body>
 </html>
