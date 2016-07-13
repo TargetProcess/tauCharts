@@ -126,7 +126,12 @@ var exportBuild = {
     },
     stats: {
         timings: true
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            VERSION: JSON.stringify(require('../package.json').version)
+        })
+    ]
 };
 var webpackConf = {
     entry: './src/tau.charts.js',
