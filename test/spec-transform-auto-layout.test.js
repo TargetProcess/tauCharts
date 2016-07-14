@@ -156,8 +156,8 @@ define(function (require) {
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(20);
             expect(x.cssClass).to.equal('x axis');
-            expect(x.rotate).to.equal(90);
-            expect(x.textAnchor).to.equal('start');
+            expect(x.rotate).to.equal(-90);
+            expect(x.textAnchor).to.equal('end');
             expect(x.tickFormat).to.equal(null);
             expect(x.label.text).to.equal('team');
             expect(x.tickFontHeight).to.equal(10);

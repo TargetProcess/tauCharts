@@ -1,3 +1,4 @@
+import {utils} from '../utils/utils';
 import {utilsDraw} from '../utils/utils-draw';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -236,17 +237,19 @@ var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
 
 var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal, logicalScale) => {
 
-    var angle = guide.rotate;
+    var angle = utils.normalizeAngle(guide.rotate);
 
     var tick = nodeScale.selectAll('.tick text');
     tick.attr({transform: utilsDraw.rotate(angle)})
         .style('text-anchor', guide.textAnchor);
 
-    if ((Math.abs(angle / 90) % 2) > 0) {
+    var segment = Math.abs(angle / 90);
+    if ((segment % 2) > 0) {
+        var kRot = angle < 180 ? 1 : -1;
         var k = isHorizontal ? 0.5 : -2;
         var dy = k * parseFloat(tick.attr('dy'));
         var attr = {
-            x: 9,
+            x: 9 * kRot,
             y: 0,
             dx: (isHorizontal) ? null : `${dy}em`,
             dy: `${dy}em`

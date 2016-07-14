@@ -473,6 +473,18 @@ var utils = {
 
     toRadian: function (degree) {
         return (degree / 180) * Math.PI;
+    },
+
+    normalizeAngle: function (angle) {
+        if (Math.abs(angle) >= 360) {
+            angle = (angle % 360);
+        }
+
+        if (angle < 0) {
+            angle = (360 + angle);
+        }
+
+        return angle;
     }
 };
 

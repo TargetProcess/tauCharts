@@ -175,22 +175,16 @@ var shortFormat = (format) => {
 };
 
 var rotateBox = ({width, height}, angle) => {
-    var rad = utils.toRadian(angle);
+    var rad = Math.abs(utils.toRadian(angle));
     return {
         width: Math.max(Math.cos(rad) * width, height),
         height: Math.max(Math.sin(rad) * width, height)
     };
 };
 
-var getTextAnchorByAngle = (angle, xOrY = 'x') => {
+var getTextAnchorByAngle = (xAngle, xOrY = 'x') => {
 
-    if (Math.abs(angle) >= 360) {
-        angle = (angle % 360);
-    }
-
-    if (angle < 0) {
-        angle = (360 + angle);
-    }
+    var angle = utils.normalizeAngle(xAngle);
 
     var xRules = (xOrY === 'x') ?
         ([
@@ -351,7 +345,7 @@ var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertic
     unit.guide.x.padding = xIsEmptyAxis ? 0 : settings.xAxisPadding;
     unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
 
-    unit.guide.x.rotate = isXVertical ? 90 : 0;
+    unit.guide.x.rotate = isXVertical ? -90 : 0;
     unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate, 'x');
 
     unit.guide.y.rotate = isYVertical ? -90 : 0;
@@ -494,7 +488,7 @@ var SpecEngineTypeMap = {
 
                 var isXVertical = !isFacetUnit && (Boolean(xMeta.dimType) && xMeta.dimType !== 'measure');
 
-                unit.guide.x.rotate = (isXVertical ? 90 : 0);
+                unit.guide.x.rotate = (isXVertical ? -90 : 0);
                 unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate);
 
                 unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(xMeta, settings.defaultFormats);
