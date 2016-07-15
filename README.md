@@ -190,7 +190,41 @@ See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 ##How to run the project locally
 
-Here will be details
+Clone (forked) repository:
+```
+git clone https://github.com/TargetProcess/tauCharts.git
+```
+
+Initialize dependencies:
+```
+npm install
+```
+
+Run local webpack dev server (with hot reload):
+```
+npm run devserver
+```
+
+Local server will be started on port 9000 and live taucharts assembly will be exposed by url:
+```
+http://localhost:9000/tauCharts.js
+```
+
+Now you can see some taucharts examples:
+```
+http://localhost:9000/examples/dev-quick-test.html
+```
+
+To run tests (with hot reload):
+```
+npm run devtest
+```
+
+To build a static assembly:
+```
+npm run build
+```
+This command creates development and production assemblies in a *[./build]* folder.
 
 ##Taucharts examples / usage reviews
 
