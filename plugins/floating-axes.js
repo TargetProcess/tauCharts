@@ -66,7 +66,8 @@
                 xs.push(x);
                 ys.push(y);
                 axes.push(axisNode);
-            });
+            })
+            .style('visibility', 'hidden');
 
             return {
                 xs: xs,
@@ -92,7 +93,7 @@
                     x: 0,
                     y: dy,
                     width: w + dx,
-                    height: h,
+                    height: h + bs,
                     fill: color
                 })
                 .style(shadow);
