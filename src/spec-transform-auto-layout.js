@@ -646,7 +646,9 @@ var SpecEngineFactory = {
                     dimType: dim.type,
                     scaleType: scaleCfg.type,
                     values: values,
-                    isEmpty: ((values.filter((x) => !(_.isUndefined(x))).length) === 0)
+                    isEmpty: (dim.type == null)
+                    // isEmpty: (source == '?')
+                    // isEmpty: ((values.filter((x) => !(_.isUndefined(x))).length) === 0)
                 };
             }
         };
