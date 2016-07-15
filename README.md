@@ -16,6 +16,7 @@ The library's architecture allows you to build [facets](http://api.taucharts.com
 The Taucharts team is passionate about beautiful design.
 ####...
 Dive into the high-level [Taucharts concepts](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
+If you want to contribute - see [how to run the project locally](#how-to-run-the-project-locally)
 
 ##How to use Taucharts
 
@@ -186,6 +187,10 @@ See [streaming sample online](//jsfiddle.net/taucharts/qdn76nab/)
 See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 =========
+
+##How to run the project locally
+
+Here will be details
 
 ##Taucharts examples / usage reviews
 
