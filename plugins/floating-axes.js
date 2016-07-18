@@ -66,8 +66,7 @@
                 xs.push(x);
                 ys.push(y);
                 axes.push(axisNode);
-            })
-            .style('visibility', 'hidden');
+            });
 
             return {
                 xs: xs,
@@ -77,7 +76,9 @@
         };
 
         var createSlot = function (d3Svg) {
-            return d3Svg.append('g');
+            var slot = d3Svg.append('g');
+            slot.attr('class', 'floating-axes');
+            return slot;
         };
 
         var addBackground = function (cont, w, h, color, hideShadow) {
@@ -221,6 +222,14 @@
             };
         };
 
+        var show = function (sel) {
+            sel.style('visibility', '');
+        };
+
+        var hide = function (sel) {
+            sel.style('visibility', 'hidden');
+        };
+
         return {
 
             init: function (chart) {
@@ -235,6 +244,7 @@
                     root.removeEventListener('scroll', item.handler);
                     item.element.remove();
                 });
+                d3.selectAll('.floating-axes').remove();
             },
 
             destroy: function () {
@@ -267,6 +277,8 @@
                     var srcSvg = d3.select(chart.getSVG());
 
                     var defs = srcSvg.append('defs');
+
+                    defs.attr('class', 'floating-axes');
 
                     // create filter with id #drop-shadow
                     // height=130% so that the shadow is not clipped
@@ -304,17 +316,41 @@
                         .append('feMergeNode')
                         .attr('in', 'SourceGraphic');
 
-                    var xSel = srcSvg.selectAll('.x.axis');
-                    var ySel = srcSvg.selectAll('.y.axis');
+                    var xSel = srcSvg.selectAll('.cell .x.axis');
+                    var ySel = srcSvg.selectAll('.cell .y.axis');
+
+                    show(xSel);
+                    show(ySel);
+
                     this.handlers = [
                         extractXAxesNew(root, srcSvg, xSel),
                         extractYAxesNew(root, srcSvg, ySel),
                         extractCenter(root, srcSvg, xSel, ySel)
                     ];
 
+                    hide(xSel);
+                    hide(ySel);
+
                     this.handlers.forEach(function (item) {
                         root.addEventListener('scroll', item.handler, false);
                     });
+
+                    var self = this;
+                    chart.on('beforeExportSVGNode', function() {
+                        self.handlers.forEach(function (item) {
+                            hide(item.element);
+                        });
+                        show(xSel);
+                        show(ySel);
+                    });
+
+                    chart.on('afterExportSVGNode', function() {
+                        self.handlers.forEach(function (item) {
+                            show(item.element);
+                        });
+                        hide(xSel);
+                        hide(ySel);
+                    })
                 }
             }
         };

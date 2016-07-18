@@ -180,7 +180,9 @@
                     .then(function (res) {
                         var style = createStyleElement(res);
                         var div = document.createElement('div');
+                        chart.fire('beforeExportSVGNode');
                         var svg = chart.getSVG().cloneNode(true);
+                        chart.fire('afterExportSVGNode');
                         div.appendChild(fixSVGForCanvgCompatibility(svg));
                         d3.select(svg)
                             .attr('version', 1.1)
@@ -190,7 +192,7 @@
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
-                        return new Promise(function(resolve){
+                        return new Promise(function(resolve) {
                             canvg(
                                 canvas,
                                 svg.parentNode.innerHTML,
