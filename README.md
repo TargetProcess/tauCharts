@@ -240,6 +240,8 @@ This command creates development and production assemblies in a *[./build]* fold
 
 [Taucharts demo page](https://demo.taucharts.com/)
 
+[GeoTremor mobile app](http://geotremor.tangentapps.com)
+
 ##License
 
 Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
