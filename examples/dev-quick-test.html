@@ -159,7 +159,39 @@
             .concat(window.drops.map(xdrops))
             .filter(_.identity)
             .filter(function (r) {
-                return r.z === 111;
+                return true;
+            })
+            .slice(0, 0)
+            .concat({
+
+                z: 222,
+                type: 'box-whiskers',
+                x: ['type'],
+                y: ['y'],
+                color: 'type',
+                data: _.times(100, _.identity)
+                        .reduce(function (memo, i) {
+                            var x = i * (Math.PI / 100);
+                            return memo.concat([
+                                {
+                                    y: Math.sin(x),
+                                    type: 'sin'
+                                },
+                                {
+                                    y: Math.cos(x),
+                                    type: 'cos'
+                                }
+                            ]);
+                        }, [])
+                        .filter(function () {
+                            var rand = Math.random();
+                            return rand > 0.5 && rand < 0.75;
+                        }),
+
+                plugins: [
+                    tauCharts.api.plugins.get('legend')(),
+                    tauCharts.api.plugins.get('tooltip')()
+                ]
             })
             .forEach(function (cfg, i) {
                 $('body').append('<div class="cc" id="div' + i + '"></div>');
