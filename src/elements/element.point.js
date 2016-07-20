@@ -69,9 +69,11 @@ export class Point extends Element {
         ].concat(config.transformModel || []);
 
         this.on('highlight', (sender, e) => this.highlight(e));
+
+        this._createScales(config.fnCreateScale);
     }
 
-    createScales(fnCreateScale) {
+    _createScales(fnCreateScale) {
 
         var config = this.config;
 

@@ -69,9 +69,11 @@ export class BoxWhiskers extends Element {
         ].concat(config.transformModel || []);
 
         this.on('highlight', (sender, e) => this.highlight(e));
+
+        this._createScales(config.fnCreateScale);
     }
 
-    createScales(fnCreateScale) {
+    _createScales(fnCreateScale) {
 
         var config = this.config;
 
@@ -227,21 +229,27 @@ export class BoxWhiskers extends Element {
             return memo;
         }, {});
 
-        var percentile = (sortedArr, quantile) => {
+        var percentile = (sortedArr, n) => {
             var len = sortedArr.length - 1;
-            var pos = Math.round(len * quantile);
+            var pos = Math.round(len * n);
             return sortedArr[pos];
         };
+
+        var min = 'minimum';
+        var max = 'maximum';
+        var avg = 'mean';
+        var q1 = 'Q25';
+        var q3 = 'Q75';
 
         var tuples = Object.keys(cats).reduce((memo, k) => {
             var values = cats[k].sort((a, b) => a - b);
             var summary = {};
             summary[model.scaleX.dim] = k;
-            summary['minimum'] = percentile(values, 0);
-            summary['maximum'] = percentile(values, 1);
-            summary['mean'] = percentile(values, 0.5);
-            summary['Q25'] = percentile(values, 0.25);
-            summary['Q75'] = percentile(values, 0.75);
+            summary[min] = percentile(values, 0);
+            summary[max] = percentile(values, 1);
+            summary[avg] = percentile(values, 0.5);
+            summary[q1] = percentile(values, 0.25);
+            summary[q3] = percentile(values, 0.75);
 
             return memo.concat(summary);
         }, []);
@@ -316,7 +324,7 @@ export class BoxWhiskers extends Element {
             model,
             {
                 // class: ((d) => `${baseCssClass} ${screenModel.class(d)}`),
-                fill: ((d) => 'rgba(0,0,256, 0.5)')
+                fill: (() => 'rgba(0,0,256, 0.5)')
             });
     }
 }

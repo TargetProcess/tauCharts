@@ -157,32 +157,43 @@ export class GPL extends Emitter {
         return root;
     }
 
+    _createFrameScalesFactoryMethod(passFrame) {
+        var self = this;
+        return ((type, alias, dynamicProps) => {
+            var key = (alias || `${type}:default`);
+            return self
+                .scalesHub
+                .createScaleInfo(self.scales[key], passFrame)
+                .create(dynamicProps);
+        });
+    }
+
     _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
 
         var self = this;
 
         // Rule to cancel parent frame inheritance
         var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
+        var scalesFactoryMethod = this._createFrameScalesFactoryMethod(passFrame);
 
         var UnitClass = self.unitSet.get(unitConfig.type);
-        var unitNode = new UnitClass(unitConfig);
-        unitNode.parentUnit = rootUnit;
-        unitNode
-            .createScales((type, alias, dynamicProps) => {
-                var key = (alias || `${type}:default`);
-                return self
-                    .scalesHub
-                    .createScaleInfo(self.scales[key], passFrame)
-                    .create(dynamicProps);
-            })
-            .drawFrames(unitConfig.frames, (function (rootUnit) {
+        var node = new UnitClass(_.extend(
+            {
+                fnCreateScale: scalesFactoryMethod
+            },
+            unitConfig
+        ));
+        node.parentUnit = rootUnit;
+        node.drawFrames(
+            (unitConfig.frames),
+            (function (rootUnit) {
                 return function (rootConf, rootFrame) {
                     self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
                 };
-            }(unitNode)));
+            }(node)));
 
         if (self.onUnitDraw) {
-            self.onUnitDraw(unitNode);
+            self.onUnitDraw(node);
         }
 
         return unitConfig;
@@ -194,23 +205,24 @@ export class GPL extends Emitter {
 
         // Rule to cancel parent frame inheritance
         var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
+        var scalesFactoryMethod = this._createFrameScalesFactoryMethod(passFrame);
 
         var UnitClass = self.unitSet.get(unitConfig.type);
-        var unitNode = new UnitClass(_.extend({adjustPhase: true}, unitConfig));
-        unitNode.parentUnit = parentUnit;
-        unitNode
-            .createScales((type, alias, dynamicProps) => {
-                var key = (alias || `${type}:default`);
-                return self
-                    .scalesHub
-                    .createScaleInfo(self.scales[key], passFrame)
-                    .create(dynamicProps);
-            })
-            .walkFrames(unitConfig.frames, (function (rootUnit) {
+        var node = new UnitClass(_.extend(
+            {
+                adjustPhase: true,
+                fnCreateScale: scalesFactoryMethod
+            },
+            unitConfig
+        ));
+        node.parentUnit = parentUnit;
+        node.walkFrames(
+            (unitConfig.frames),
+            (function (rootUnit) {
                 return function (rootConf, rootFrame) {
                     self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
                 };
-            }(unitNode)));
+            }(node)));
 
         return unitConfig;
     }

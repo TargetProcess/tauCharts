@@ -24,9 +24,11 @@ export class Parallel extends Element {
         this.columnsBrushes = {};
 
         this.on('force-brush', (sender, e) => this._forceBrushing(e));
+
+        this._createScales(config.fnCreateScale);
     }
 
-    createScales(fnCreateScale) {
+    _createScales(fnCreateScale) {
 
         var cfg = this.config;
 

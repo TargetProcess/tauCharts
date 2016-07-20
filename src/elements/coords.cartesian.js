@@ -100,9 +100,11 @@ export class Cartesian extends Element {
             guide.x.hide = (Math.floor(diff) > 0);
             guide.y.hide = (Math.floor(unit.options.left) > 0);
         }
+
+        this._createScales(config.fnCreateScale);
     }
 
-    createScales(fnCreateScale) {
+    _createScales(fnCreateScale) {
 
         var node = this.config;
 
