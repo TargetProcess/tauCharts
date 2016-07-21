@@ -101,28 +101,26 @@ export class Cartesian extends Element {
             guide.y.hide = (Math.floor(unit.options.left) > 0);
         }
 
-        this._createScales(config.fnCreateScale);
-    }
+        var options = this.config.options;
+        var padding = this.config.guide.padding;
 
-    _createScales(fnCreateScale) {
+        this.L = options.left + padding.l;
+        this.T = options.top + padding.t;
+        this.W = options.width - (padding.l + padding.r);
+        this.H = options.height - (padding.t + padding.b);
 
-        var node = this.config;
-
-        var options = node.options;
-        var padding = node.guide.padding;
-
-        var innerWidth = options.width - (padding.l + padding.r);
-        var innerHeight = options.height - (padding.t + padding.b);
-
-        this.xScale = fnCreateScale('pos', node.x, [0, innerWidth]);
-        this.yScale = fnCreateScale('pos', node.y, [innerHeight, 0]);
-
-        this.W = innerWidth;
-        this.H = innerHeight;
-
-        return this
+        this.xScale = config.fnCreateScale('pos', this.config.x, [0, this.W]);
+        this.yScale = config.fnCreateScale('pos', this.config.y, [this.H, 0]);
+        this
             .regScale('x', this.xScale)
             .regScale('y', this.yScale);
+
+        this.xmodel = this.buildModel({
+            scaleX: this.xScale,
+            scaleY: this.yScale,
+            w: this.W,
+            h: this.H
+        });
     }
 
     buildModel(args) {
@@ -142,14 +140,19 @@ export class Cartesian extends Element {
             })));
     }
 
+    allocateRect(k) {
+        var model = this.xmodel;
+        return {
+            left: (model.xi(k) - model.sizeX(k) / 2),
+            top: (model.yi(k) - model.sizeY(k) / 2),
+            width: (model.sizeX(k)),
+            height: (model.sizeY(k))
+        };
+    }
+
     walkFrames(frames, continuation) {
 
-        var model = this.buildModel({
-            scaleX: this.xScale,
-            scaleY: this.yScale,
-            w: this.W,
-            h: this.H
-        });
+        var model = this.xmodel;
 
         frames.forEach((frame) => {
 
@@ -170,20 +173,14 @@ export class Cartesian extends Element {
 
     drawFrames(frames, continuation) {
 
-        var model = this.buildModel({
-            scaleX: this.xScale,
-            scaleY: this.yScale,
-            w: this.W,
-            h: this.H
-        });
+        var model = this.xmodel;
 
         var node = _.extend({}, this.config);
 
         var options = node.options;
-        var padding = node.guide.padding;
 
-        var innerLeft = options.left + padding.l;
-        var innerTop = options.top + padding.t;
+        var innerLeft = this.L;
+        var innerTop = this.T;
 
         var innerWidth = this.W;
         var innerHeight = this.H;

@@ -55,6 +55,24 @@ export class GPL extends Emitter {
         return [];
     }
 
+    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
+
+        var traverse = (node, enter, exit, parentNode, currFrame) => {
+
+            enter(node, parentNode, currFrame);
+
+            if (node.frames) {
+                node.frames.forEach((frame) => {
+                    (frame.units || []).map((subNode) => traverse(subNode, enter, exit, node, frame));
+                });
+            }
+
+            exit(node, parentNode, currFrame);
+        };
+
+        traverse(spec.unit, enter, exit, rootNode, rootFrame);
+    }
+
     renderTo(target, xSize) {
 
         var d3Target = d3.select(target);
@@ -83,6 +101,8 @@ export class GPL extends Emitter {
             .append('g')
             .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 
+        // remove from root container
+        // make an abstraction over it
         this.root.options = {
             container: d3Target.select('.frame-root'),
             frameId: 'root',
@@ -92,8 +112,62 @@ export class GPL extends Emitter {
             height: size.height
         };
 
-        this._walkUnitsStructure(
-            this.root,
+        var stack = [{
+            allocateRect: () => ({
+                container: d3Target.select('.frame-root'),
+                frameId: 'root',
+                left: 0,
+                top: 0,
+                width: size.width,
+                height: size.height
+            })
+        }];
+
+        var put = ((x) => stack.unshift(x));
+        var pop = (() => stack.shift());
+        var top = (() => stack[0]);
+        var scenario = [];
+        GPL.traverseSpec(
+            {unit: this.root},
+            // enter
+            (unit, parentUnit, currFrame) => {
+
+                var passFrame = (unit.expression.inherit === false) ? null : currFrame;
+                var scalesFactoryMethod = this._createFrameScalesFactoryMethod(passFrame);
+                var UnitClass = this.unitSet.get(unit.type);
+
+                var rect = top().allocateRect(currFrame.key);
+                scenario.push({
+                    unit: unit, // without frames. configuration only
+                    rect: rect,
+                    data: [] // save / unpack frames
+                });
+
+                var instance = new UnitClass(
+                    _.extend(
+                        {
+                            adjustPhase: true,
+                            fnCreateScale: scalesFactoryMethod
+                        },
+                        unit,
+                        {options: rect}
+                    ));
+
+                // TODO: move to constructor / rename
+                instance.walkFrames(unit.frames, (x) => x);
+
+                if (unit.units) {
+                    // go deep
+                    put(instance);
+                }
+            },
+            // exit
+            (unit) => {
+                if (unit.units) {
+                    pop();
+                }
+            },
+            null,
             this._datify({
                 source: this.root.expression.source,
                 pipe: []
@@ -195,34 +269,6 @@ export class GPL extends Emitter {
         if (self.onUnitDraw) {
             self.onUnitDraw(node);
         }
-
-        return unitConfig;
-    }
-
-    _walkUnitsStructure(unitConfig, rootFrame, parentUnit = null) {
-
-        var self = this;
-
-        // Rule to cancel parent frame inheritance
-        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
-        var scalesFactoryMethod = this._createFrameScalesFactoryMethod(passFrame);
-
-        var UnitClass = self.unitSet.get(unitConfig.type);
-        var node = new UnitClass(_.extend(
-            {
-                adjustPhase: true,
-                fnCreateScale: scalesFactoryMethod
-            },
-            unitConfig
-        ));
-        node.parentUnit = parentUnit;
-        node.walkFrames(
-            (unitConfig.frames),
-            (function (rootUnit) {
-                return function (rootConf, rootFrame) {
-                    self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-                };
-            }(node)));
 
         return unitConfig;
     }

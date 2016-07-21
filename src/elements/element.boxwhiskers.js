@@ -93,7 +93,7 @@ export class BoxWhiskers extends Element {
 
         this.isHorizontal = (this.yScale === [this.xScale, this.yScale].sort(sortDesc)[0]);
 
-        return this
+        this
             .regScale('x', this.xScale)
             .regScale('y', this.yScale)
             .regScale('size', this.size)
@@ -130,23 +130,21 @@ export class BoxWhiskers extends Element {
 
     drawFrames(frames) {
 
-        var self = this;
+        var modelGoG = this.walkFrames(frames);
+        this.screenModel = modelGoG.toScreenModel();
+        var container = this.config.options.container;
 
+        var self = this;
         var options = this.config.options;
 
-        var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
-
         var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
-
-        var modelGoG = this.walkFrames(frames);
-        self.screenModel = modelGoG.toScreenModel();
         var kRound = 10000;
         var d3Attrs = {
             r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
             cx: ((d) => self.screenModel.x(d)),
             cy: ((d) => self.screenModel.y(d)),
             fill: ((d) => self.screenModel.color(d)),
-            class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
+            class: ((d) => `${CSS_PREFIX}dot dot i-role-element i-role-datum ${self.screenModel.class(d)}`)
         };
 
         var createUpdateFunc = d3_animationInterceptor;
@@ -178,9 +176,9 @@ export class BoxWhiskers extends Element {
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
-        var frameGroups = options.container
+        var frameGroups = container
             .selectAll(`.frame-id-${options.uid}`)
-            .data(fibers); // FILTER extreme outliers
+            .data(fibers);
         frameGroups
             .exit()
             .remove();

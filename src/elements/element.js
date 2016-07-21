@@ -73,4 +73,13 @@ export class Element extends Emitter {
     walkFrames() {
         // do nothing by default
     }
+
+    allocateRect() {
+        return {
+            left: 0,
+            top: 0,
+            width: 0,
+            height: 0
+        };
+    }
 }
