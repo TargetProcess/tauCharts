@@ -143,44 +143,22 @@ export class Cartesian extends Element {
     allocateRect(k) {
         var model = this.xmodel;
         return {
+            slot: ((uid) => this.config.options.container.select(`.uid_${uid}`)),
             left: (model.xi(k) - model.sizeX(k) / 2),
             top: (model.yi(k) - model.sizeY(k) / 2),
             width: (model.sizeX(k)),
-            height: (model.sizeY(k))
+            height: (model.sizeY(k)),
+            // TODO: Fix autoLayout.. redundant properties
+            containerWidth: this.W,
+            containerHeight: this.H
         };
     }
 
-    walkFrames(frames, continuation) {
-
-        var model = this.xmodel;
-
-        frames.forEach((frame) => {
-
-            var k = frame.key;
-            var options = {
-                left: (model.xi(k) - model.sizeX(k) / 2),
-                top: (model.yi(k) - model.sizeY(k) / 2),
-                width: (model.sizeX(k)),
-                height: (model.sizeY(k))
-            };
-
-            frame.units.forEach((unit) => {
-                unit.options = options;
-                continuation(unit, frame);
-            });
-        });
-    }
-
-    drawFrames(frames, continuation) {
-
-        var model = this.xmodel;
+    drawFrames(frames) {
 
         var node = _.extend({}, this.config);
 
         var options = node.options;
-
-        var innerLeft = this.L;
-        var innerTop = this.T;
 
         var innerWidth = this.W;
         var innerHeight = this.H;
@@ -199,7 +177,7 @@ export class Cartesian extends Element {
 
         options
             .container
-            .attr('transform', utilsDraw.translate(innerLeft, innerTop));
+            .attr('transform', utilsDraw.translate(this.L, this.T));
 
         // take into account reposition during resize by orthogonal axis
         var hashX = node.x.getHash() + innerHeight;
@@ -237,62 +215,21 @@ export class Cartesian extends Element {
             );
         }
 
-        var updateCellLayers = (cellId, cell, frame) => {
+        var xdata = frames.reduce((memo, f) => {
+            return memo.concat((f.units || []).map((unit) => unit.uid));
+        }, []);
 
-            var mapper = ((basicOptions, unit, i) => {
-                unit.options = _.extend({uid: basicOptions.frameId + i}, basicOptions);
-                return unit;
-            }).bind(
-                null,
-                {
-                    frameId: frame.hash(),
-                    container: cell,
-                    containerWidth: innerWidth,
-                    containerHeight: innerHeight,
-                    left: (model.xi(frame.key) - model.sizeX(frame.key) / 2),
-                    top: (model.yi(frame.key) - model.sizeY(frame.key) / 2),
-                    width: (model.sizeX(frame.key)),
-                    height: (model.sizeY(frame.key))
-                });
-
-            var continueDrawUnit = function (unit) {
-                unit.options.container = d3.select(this);
-                continuation(unit, frame);
-            };
-
-            var layers = cell
-                .selectAll(`.layer_${cellId}`)
-                .data(frame.units.map(mapper), (unit) => (unit.options.uid + unit.type));
-            layers
-                .exit()
-                .remove();
-            layers
-                .each(continueDrawUnit);
-            layers
-                .enter()
-                .append('g')
-                .attr('class', `layer_${cellId}`)
-                .each(continueDrawUnit);
-        };
-
-        var cellFrameIterator = function (cellFrame) {
-            updateCellLayers(options.frameId, d3.select(this), cellFrame);
-        };
-
-        var cells = this
+        var xcells = this
             ._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY)
-            .selectAll(`.parent-frame-${options.frameId}`)
-            .data(frames, (f) => f.hash());
-        cells
+            .selectAll('.cell')
+            .data(xdata, x => x);
+        xcells
             .exit()
             .remove();
-        cells
-            .each(cellFrameIterator);
-        cells
+        xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
-            .each(cellFrameIterator);
+            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
     }
 
     _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {

@@ -25,6 +25,13 @@ export class Parallel extends Element {
 
         this.on('force-brush', (sender, e) => this._forceBrushing(e));
 
+        var options = this.config.options;
+        var padding = this.config.guide.padding;
+        this.L = options.left + padding.l;
+        this.T = options.top + padding.t;
+        this.W = options.width - (padding.l + padding.r);
+        this.H = options.height - (padding.t + padding.b);
+
         this._createScales(config.fnCreateScale);
     }
 
@@ -32,14 +39,8 @@ export class Parallel extends Element {
 
         var cfg = this.config;
 
-        var options = cfg.options;
-        var padding = cfg.guide.padding;
-
-        var innerWidth = options.width - (padding.l + padding.r);
-        var innerHeight = options.height - (padding.t + padding.b);
-
-        this.W = innerWidth;
-        this.H = innerHeight;
+        var innerWidth = this.W;
+        var innerHeight = this.H;
 
         this.columnsScalesMap = cfg.columns.reduce(
             (memo, xi) => {
@@ -62,51 +63,36 @@ export class Parallel extends Element {
         return this.regScale('columns', this.columnsScalesMap);
     }
 
-    drawFrames(frames, continuation) {
+    allocateRect() {
+        return {
+            slot: ((uid) => this.config.options.container.select(`.uid_${uid}`)),
+            left: 0,
+            top: 0,
+            width: this.W,
+            height: this.H,
+            // TODO: Fix autoLayout.. redundant properties
+            containerWidth: this.W,
+            containerHeight: this.H
+        };
+    }
+
+    drawFrames(frames) {
 
         var cfg = _.extend({}, this.config);
         var options = cfg.options;
-        var padding = cfg.guide.padding;
-
-        var innerW = options.width - (padding.l + padding.r);
-        var innerH = options.height - (padding.t + padding.b);
 
         var updateCellLayers = (cellId, cell, frame) => {
 
-            var frameId = frame.hash();
-            var mapper = (unit, i) => {
-                unit.options = {
-                    uid: frameId + i,
-                    frameId: frameId,
-                    container: cell,
-                    containerWidth: innerW,
-                    containerHeight: innerH,
-                    left: 0,
-                    top: 0,
-                    width: innerW,
-                    height: innerH
-                };
-                return unit;
-            };
-
-            var continueDrawUnit = function (unit) {
-                unit.options.container = d3.select(this);
-                continuation(unit, frame);
-            };
-
             var layers = cell
                 .selectAll(`.layer_${cellId}`)
-                .data(frame.units.map(mapper), (unit) => (unit.options.uid + unit.type));
+                .data(frame.units, (unit) => unit.uid);
             layers
                 .exit()
                 .remove();
             layers
-                .each(continueDrawUnit);
-            layers
                 .enter()
                 .append('g')
-                .attr('class', `layer_${cellId}`)
-                .each(continueDrawUnit);
+                .attr('class', (unit) => `layer_${cellId} uid_${unit.uid}`);
         };
 
         var cellFrameIterator = function (cellFrame) {
@@ -142,12 +128,6 @@ export class Parallel extends Element {
 
     _fnDrawGrid(container, config, frameId, uniqueHash) {
 
-        var options = config.options;
-        var padding = config.guide.padding;
-
-        var l = options.left + padding.l;
-        var t = options.top + padding.t;
-
         var grid = container
             .selectAll(`.grid_${frameId}`)
             .data([uniqueHash], _.identity);
@@ -156,7 +136,7 @@ export class Parallel extends Element {
         grid.enter()
             .append('g')
             .attr('class', `grid grid_${frameId}`)
-            .attr('transform', utilsDraw.translate(l, t));
+            .attr('transform', utilsDraw.translate(this.L, this.T));
 
         return grid;
     }

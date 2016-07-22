@@ -101,69 +101,103 @@ export class GPL extends Emitter {
             .append('g')
             .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 
-        // remove from root container
-        // make an abstraction over it
-        this.root.options = {
-            container: d3Target.select('.frame-root'),
-            frameId: 'root',
-            left: 0,
-            top: 0,
-            width: size.width,
-            height: size.height
-        };
-
-        var stack = [{
+        var root = {
             allocateRect: () => ({
-                container: d3Target.select('.frame-root'),
+                slot: (() => d3Target.select('.frame-root')),
                 frameId: 'root',
                 left: 0,
                 top: 0,
                 width: size.width,
-                height: size.height
+                containerWidth: size.width,
+                height: size.height,
+                containerHeight: size.height
             })
-        }];
+        };
+
+        this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+            // Rule to cancel parent frame inheritance
+            var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            var scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
+            var UnitClass = this.unitSet.get(unit.type);
+
+            var rect = parentInstance.allocateRect(rootFrame.key);
+            var instance = new UnitClass(
+                _.extend(
+                    {
+                        adjustPhase: true,
+                        fnCreateScale: scalesFactoryMethod
+                    },
+                    unit,
+                    {options: rect}
+                ));
+
+            // TODO: move to constructor / rename
+            instance.walkFrames(unit.frames, (x) => x);
+            return instance;
+        });
+
+        Object
+            .keys(this.scales)
+            .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
+
+        var drawScenario = this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+            var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            var scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
+            var UnitClass = this.unitSet.get(unit.type);
+
+            var rect = parentInstance.allocateRect(rootFrame.key);
+            var instance = new UnitClass(
+                _.extend(
+                    {fnCreateScale: scalesFactoryMethod},
+                    unit,
+                    {options: rect}
+                ));
+
+            instance.parentUnit = parentInstance;
+
+            instance.walkFrames(unit.frames, (x) => x);
+            return instance;
+        });
+
+        drawScenario.forEach((item) => {
+            item.config.options.container = item.config.options.slot(item.config.uid);
+            item.drawFrames(item.config.frames, (x) => x);
+            if (this.onUnitDraw) {
+                this.onUnitDraw(item);
+            }
+        });
+    }
+
+    _flattenDrawScenario(root, iterator) {
+
+        var uid = 0;
+        var scenario = [];
+
+        var stack = [root];
 
         var put = ((x) => stack.unshift(x));
         var pop = (() => stack.shift());
         var top = (() => stack[0]);
-        var scenario = [];
+
         GPL.traverseSpec(
             {unit: this.root},
             // enter
             (unit, parentUnit, currFrame) => {
 
-                var passFrame = (unit.expression.inherit === false) ? null : currFrame;
-                var scalesFactoryMethod = this._createFrameScalesFactoryMethod(passFrame);
-                var UnitClass = this.unitSet.get(unit.type);
+                unit.uid = ++uid;
+                unit.guide = utils.clone(unit.guide);
 
-                var rect = top().allocateRect(currFrame.key);
-                scenario.push({
-                    unit: unit, // without frames. configuration only
-                    rect: rect,
-                    data: [] // save / unpack frames
-                });
+                var instance = iterator(top(), unit, currFrame);
 
-                var instance = new UnitClass(
-                    _.extend(
-                        {
-                            adjustPhase: true,
-                            fnCreateScale: scalesFactoryMethod
-                        },
-                        unit,
-                        {options: rect}
-                    ));
+                scenario.push(instance);
 
-                // TODO: move to constructor / rename
-                instance.walkFrames(unit.frames, (x) => x);
-
-                if (unit.units) {
-                    // go deep
+                if (unit.type.indexOf('COORDS.') === 0) {
                     put(instance);
                 }
             },
             // exit
             (unit) => {
-                if (unit.units) {
+                if (unit.type.indexOf('COORDS.') === 0) {
                     pop();
                 }
             },
@@ -173,16 +207,7 @@ export class GPL extends Emitter {
                 pipe: []
             }));
 
-        Object
-            .keys(this.scales)
-            .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
-
-        this._drawUnitsStructure(
-            this.root,
-            this._datify({
-                source: this.root.expression.source,
-                pipe: []
-            }));
+        return scenario;
     }
 
     _expandUnitsStructure(root, parentPipe = []) {
@@ -240,37 +265,6 @@ export class GPL extends Emitter {
                 .createScaleInfo(self.scales[key], passFrame)
                 .create(dynamicProps);
         });
-    }
-
-    _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
-
-        var self = this;
-
-        // Rule to cancel parent frame inheritance
-        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
-        var scalesFactoryMethod = this._createFrameScalesFactoryMethod(passFrame);
-
-        var UnitClass = self.unitSet.get(unitConfig.type);
-        var node = new UnitClass(_.extend(
-            {
-                fnCreateScale: scalesFactoryMethod
-            },
-            unitConfig
-        ));
-        node.parentUnit = rootUnit;
-        node.drawFrames(
-            (unitConfig.frames),
-            (function (rootUnit) {
-                return function (rootConf, rootFrame) {
-                    self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-                };
-            }(node)));
-
-        if (self.onUnitDraw) {
-            self.onUnitDraw(node);
-        }
-
-        return unitConfig;
     }
 
     _datify(frame) {
