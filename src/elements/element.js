@@ -71,6 +71,14 @@ export class Element extends Emitter {
     }
 
     walkFrames() {
+        return {
+            toScreenModel() {
+                return null;
+            }
+        };
+    }
+
+    createScales() {
         // do nothing by default
     }
 
@@ -81,5 +89,21 @@ export class Element extends Emitter {
             width: 0,
             height: 0
         };
+    }
+
+    init() {
+        this.createScales(this.config.fnCreateScale);
+        this.modelGoG = this.walkFrames(this.config.frames);
+        this.screenModel = this.modelGoG.toScreenModel();
+    }
+
+    draw() {
+        // TODO: expose to explicit call everywhere
+        this.config.options.container = this.config.options.slot(this.config.uid);
+        this.drawFrames(this.config.frames);
+    }
+
+    node() {
+        return this;
     }
 }

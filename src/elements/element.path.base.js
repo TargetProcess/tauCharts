@@ -62,11 +62,9 @@ export class BasePath extends Element {
             this.on('mousemove', activate);
             this.on('mouseout', deactivate);
         }
-
-        this._createScales(config.fnCreateScale);
     }
 
-    _createScales(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var config = this.config;
 

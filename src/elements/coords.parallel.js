@@ -31,11 +31,9 @@ export class Parallel extends Element {
         this.T = options.top + padding.t;
         this.W = options.width - (padding.l + padding.r);
         this.H = options.height - (padding.t + padding.b);
-
-        this._createScales(config.fnCreateScale);
     }
 
-    _createScales(fnCreateScale) {
+    createScales(fnCreateScale) {
 
         var cfg = this.config;
 

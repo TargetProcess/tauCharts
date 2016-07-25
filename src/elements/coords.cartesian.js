@@ -108,40 +108,35 @@ export class Cartesian extends Element {
         this.T = options.top + padding.t;
         this.W = options.width - (padding.l + padding.r);
         this.H = options.height - (padding.t + padding.b);
-
-        this.xScale = config.fnCreateScale('pos', this.config.x, [0, this.W]);
-        this.yScale = config.fnCreateScale('pos', this.config.y, [this.H, 0]);
-        this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale);
-
-        this.xmodel = this.buildModel({
-            scaleX: this.xScale,
-            scaleY: this.yScale,
-            w: this.W,
-            h: this.H
-        });
     }
 
-    buildModel(args) {
+    createScales(fnCreateScale) {
+        this.xScale = fnCreateScale('pos', this.config.x, [0, this.W]);
+        this.yScale = fnCreateScale('pos', this.config.y, [this.H, 0]);
+        this.regScale('x', this.xScale)
+            .regScale('y', this.yScale);
+    }
 
+    walkFrames() {
+        var w = this.W;
+        var h = this.H;
         return [
             CartesianModel.decorator_size,
             CartesianModel.decorator_color
         ].filter(x => x).reduce(
-            ((model, transform) => transform(model, args)),
+            ((model, transform) => transform(model, {})),
             (new CartesianModel({
-                scaleX: args.scaleX,
-                scaleY: args.scaleY,
-                xi: (() => args.w / 2),
-                yi: (() => args.h / 2),
-                sizeX: (() => args.w),
-                sizeY: (() => args.h)
+                scaleX: this.xScale,
+                scaleY: this.yScale,
+                xi: (() => w / 2),
+                yi: (() => h / 2),
+                sizeX: (() => w),
+                sizeY: (() => h)
             })));
     }
 
     allocateRect(k) {
-        var model = this.xmodel;
+        var model = this.screenModel;
         return {
             slot: ((uid) => this.config.options.container.select(`.uid_${uid}`)),
             left: (model.xi(k) - model.sizeX(k) / 2),

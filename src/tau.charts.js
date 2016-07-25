@@ -18,7 +18,6 @@ import {Line}       from './elements/element.line';
 import {Interval}   from './elements/element.interval';
 import {StackedInterval}   from './elements/element.interval.stacked';
 import {ParallelLine}      from './elements/element.parallel.line';
-import {BoxWhiskers} from './elements/element.boxwhiskers';
 
 import {IdentityScale}     from './scales/identity';
 import {ColorScale}     from './scales/color';
@@ -37,7 +36,7 @@ import {ChartScatterplot}       from './api/chart-scatterplot';
 import {ChartLine}              from './api/chart-line';
 import {ChartArea}              from './api/chart-area';
 import {ChartParallel}          from './api/chart-parallel';
-import {normalizeConfig, transformConfig} from './api/converter-helpers';
+import {d3_animationInterceptor} from './utils/d3-decorators';
 
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
@@ -71,6 +70,7 @@ var api = {
             return colorBrewers[name];
         }
     },
+    d3_animationInterceptor: d3_animationInterceptor,
     pluginsSDK: PluginsSDK,
     plugins: {
         add: function (name, brewer) {
@@ -175,8 +175,7 @@ Plot.globalSettings = api.globalSettings;
     ['ELEMENT.AREA', Area],
     ['ELEMENT.INTERVAL', Interval],
     ['ELEMENT.INTERVAL.STACKED', StackedInterval],
-    ['PARALLEL/ELEMENT.LINE', ParallelLine],
-    ['ELEMENT.BOXWHISKERS', BoxWhiskers]
+    ['PARALLEL/ELEMENT.LINE', ParallelLine]
 ].reduce((memo, nv) => (memo.reg(nv[0], nv[1])), api.unitsRegistry);
 
 [
@@ -248,8 +247,7 @@ api.chartTypesRegistry = chartTypesRegistry
                 return '[columns] property must contain at least 2 dimensions';
             }
         }
-    ]))
-    .add('box-whiskers', (cfg) => transformConfig('ELEMENT.BOXWHISKERS', normalizeConfig(cfg)), commonRules);
+    ]));
 
 /* global VERSION:false */
 var version = VERSION;

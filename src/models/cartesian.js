@@ -10,6 +10,10 @@ export class CartesianModel {
         this.sizeY = model.sizeY || createFunc(0);
     }
 
+    toScreenModel() {
+        return this;
+    }
+
     static compose(prev, updates = {}) {
         return (Object
             .keys(updates)

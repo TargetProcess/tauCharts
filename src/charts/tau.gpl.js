@@ -117,22 +117,16 @@ export class GPL extends Emitter {
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
-            var scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
-            var UnitClass = this.unitSet.get(unit.type);
-
-            var rect = parentInstance.allocateRect(rootFrame.key);
-            var instance = new UnitClass(
+            var instance = this.unitSet.create(
+                unit.type,
                 _.extend(
-                    {
-                        adjustPhase: true,
-                        fnCreateScale: scalesFactoryMethod
-                    },
-                    unit,
-                    {options: rect}
+                    {adjustPhase: true},
+                    {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
+                    (unit),
+                    {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            // TODO: move to constructor / rename
-            instance.walkFrames(unit.frames, (x) => x);
+            instance.init();
             return instance;
         });
 
@@ -142,28 +136,23 @@ export class GPL extends Emitter {
 
         var drawScenario = this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
-            var scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
-            var UnitClass = this.unitSet.get(unit.type);
-
-            var rect = parentInstance.allocateRect(rootFrame.key);
-            var instance = new UnitClass(
+            var instance = this.unitSet.create(
+                unit.type,
                 _.extend(
-                    {fnCreateScale: scalesFactoryMethod},
-                    unit,
-                    {options: rect}
+                    {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
+                    (unit),
+                    {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
+            instance.init();
             instance.parentUnit = parentInstance;
-
-            instance.walkFrames(unit.frames, (x) => x);
             return instance;
         });
 
         drawScenario.forEach((item) => {
-            item.config.options.container = item.config.options.slot(item.config.uid);
-            item.drawFrames(item.config.frames, (x) => x);
+            item.draw();
             if (this.onUnitDraw) {
-                this.onUnitDraw(item);
+                this.onUnitDraw(item.node());
             }
         });
     }

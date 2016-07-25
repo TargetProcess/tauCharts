@@ -31,6 +31,14 @@ define(function (require) {
             }
 
             return unitsMap[unitType];
+        },
+        create: function (unitType, unitConfig) {
+
+            if (!unitsMap.hasOwnProperty(unitType)) {
+                throw new Error('Unknown unit type: ' + unitType);
+            }
+
+            return new unitsMap[unitType](unitConfig);
         }
     };
     unitsRegistry
