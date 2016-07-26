@@ -103,6 +103,13 @@ export class Element extends Emitter {
         this.drawFrames(this.config.frames);
     }
 
+    data() {
+        return this
+            .config
+            .frames
+            .reduce(((data, frame) => data.concat(frame.part())), []);
+    }
+
     node() {
         return this;
     }

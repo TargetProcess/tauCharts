@@ -11,6 +11,7 @@ import {scalesRegistry} from './scales-registry';
 import {Cartesian}  from './elements/coords.cartesian';
 import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
+import {GenericCartesian} from './elements/element.generic.cartesian';
 import {Point}      from './elements/element.point';
 import {Area}       from './elements/element.area';
 import {Path}       from './elements/element.path';
@@ -169,6 +170,7 @@ Plot.globalSettings = api.globalSettings;
     ['COORDS.RECT', Cartesian],
     ['COORDS.MAP', GeoMap],
     ['COORDS.PARALLEL', Parallel],
+    ['ELEMENT.GENERIC.CARTESIAN', GenericCartesian],
     ['ELEMENT.POINT', Point],
     ['ELEMENT.LINE', Line],
     ['ELEMENT.PATH', Path],
