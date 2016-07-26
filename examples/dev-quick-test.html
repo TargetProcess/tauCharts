@@ -26,6 +26,7 @@
     <script src="../plugins/geomap-legend.js"></script>
     <script src="../plugins/quick-filter.js"></script>
     <script src="../plugins/floating-axes.js"></script>
+    <script src="../plugins/box-whiskers.js"></script>
 
     <!-- test data -->
     <script src="data-cars.js"></script>
@@ -140,6 +141,7 @@
 <body>
 
 <script>
+
     window.charts = [];
 
     var xdrops = function (dropCfg) {
@@ -154,6 +156,11 @@
         return spec;
     };
 
+    // n = 6 gives a good enough approximation
+    function rnd2() {
+        return ((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 3) / 3;
+    }
+
     window
             .samples
             .concat(window.drops.map(xdrops))
@@ -165,21 +172,25 @@
             .concat({
 
                 z: 222,
-                type: 'box-whiskers',
-                x: ['type'],
-                y: ['y'],
-                color: 'type',
+                type: 'scatterplot',
+                x: 'distribution',
+                y: 'y',
+                color: 'distribution',
                 data: _.times(100, _.identity)
                         .reduce(function (memo, i) {
-                            var x = i * (Math.PI / 100);
+
+                            var outlierKoeff = function (lim) {
+                                return (Math.random() >= lim) ? 2 : 1;
+                            };
+
                             return memo.concat([
                                 {
-                                    y: Math.sin(x),
-                                    type: 'sin'
+                                    y: rnd2(),
+                                    distribution: 'A'
                                 },
                                 {
-                                    y: Math.cos(x),
-                                    type: 'cos'
+                                    y: rnd2() * outlierKoeff(0.95),
+                                    distribution: 'B'
                                 }
                             ]);
                         }, [])
@@ -190,7 +201,10 @@
 
                 plugins: [
                     tauCharts.api.plugins.get('legend')(),
-                    tauCharts.api.plugins.get('tooltip')()
+                    tauCharts.api.plugins.get('tooltip')(),
+                    tauCharts.api.plugins.get('box-whiskers')({
+                        hideScatterplot: false
+                    })
                 ]
             })
             .forEach(function (cfg, i) {
@@ -201,7 +215,7 @@
                 cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
                 cfg.plugins = cfg.plugins || [];
-                cfg.plugins.push(tauCharts.api.plugins.get('floating-axes')());
+                // cfg.plugins.push(tauCharts.api.plugins.get('floating-axes')());
 
 //                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
 //                    cssPaths: [
