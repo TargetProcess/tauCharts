@@ -71,15 +71,15 @@
                     var n = values.length;
                     var q1Pos = n * 0.25;
                     q1Pos = Math.floor(q1Pos);
-                    var q1 = (q1Pos % 1 ? (values[q1Pos] + values[q1Pos+1]) / 2 : values[q1Pos]);
+                    var q1 = (q1Pos % 1 ? (values[q1Pos] + values[q1Pos + 1]) / 2 : values[q1Pos]);
 
                     var medianPos = n * 0.5;
                     medianPos = Math.floor(medianPos);
-                    var median = (medianPos % 1 ? (values[medianPos] + values[medianPos+1]) / 2 : values[medianPos]);
+                    var median = (medianPos % 1 ? (values[medianPos] + values[medianPos + 1]) / 2 : values[medianPos]);
 
                     var q3Pos = n * 0.75;
                     q3Pos = Math.floor(q3Pos);
-                    var q3 = (q3Pos % 1 ? (values[q3Pos] + values[q3Pos+1]) / 2 : values[q3Pos]);
+                    var q3 = (q3Pos % 1 ? (values[q3Pos] + values[q3Pos + 1]) / 2 : values[q3Pos]);
 
                     var iqr = q3 - q1;
                     var lowerMildOutlierLimmit = q1 - 1.5 * iqr;
@@ -89,23 +89,22 @@
                     var upperWhisker = values[n - 1];
 
                     for (var i = 0; i < q1Pos; i++) {
-                      var item = values[i];
-                      if (item > lowerMildOutlierLimmit) {
-                        lowerWhisker = item;
-                        break;
-                      }
+                        var item = values[i];
+                        if (item > lowerMildOutlierLimmit) {
+                            lowerWhisker = item;
+                            break;
+                        }
                     }
                     for (var i = n - 1; i > q3Pos; i--) {
-                      var item = values[i];
-                      if (item < upperMildOutlierLimmit) {
-                        upperWhisker = item;
-                        break;
-                      }
+                        var item = values[i];
+                        if (item < upperMildOutlierLimmit) {
+                            upperWhisker = item;
+                            break;
+                        }
                     }
 
                     summary[MIN] = lowerWhisker;
                     summary[MAX] = upperWhisker;
-                    
                     summary[MEDIAN] = median;
                     summary[Q1] = q1;
                     summary[Q3] = q3;
@@ -184,8 +183,6 @@
                         color: '#ff0000',
                         class: 'limit-median'
                     }));
-
-
                 };
 
                 var frameGroups = container
@@ -232,7 +229,9 @@
 
                         unit.transformation = unit.transformation || [];
                         if (xSettings.hideScatterplot) {
-                            unit.transformation.push({ type: 'empty' });
+                            unit.transformation.push({
+                                type: 'empty'
+                            });
                         }
 
                         parentUnit.units.push(boxWhiskers);
