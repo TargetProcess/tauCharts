@@ -11,6 +11,12 @@
     }
 })(function (tauCharts) {
 
+    var MIN = 'minimum';
+    var MAX = 'maximum';
+    var MEDIAN = 'median';
+    var Q1 = 'Q1';
+    var Q3 = 'Q3';
+
     var percentile = function (sortedArr, n) {
         var len = sortedArr.length - 1;
         var pos = Math.round(len * n);
@@ -27,27 +33,17 @@
                 var xs = screenModel.model.scaleX;
                 var ys = screenModel.model.scaleY;
                 var model = {
-                    x: function (d) {
-                        return xs(d[xs.dim]) - size * 0.5;
-                    },
-                    y: function (d) {
-                        return ys(d[y1]);
-                    },
-                    width: function () {
-                        return size;
-                    },
-                    height: function (d) {
-                        return Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1])));
-                    },
+                    x: (d)  => xs(d[xs.dim]) - size * 0.5,
+                    y: (d) => ys(d[y1]),
+                    width: () => size,
+                    height: (d) => Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1]))),
                     class: cfg.class
                 };
 
                 return _.extend(
                     model,
                     {
-                        fill: function () {
-                            return cfg.color || 'rgba(0,0,256, 0.5)';
-                        }
+                        fill: () => cfg.color || 'rgba(0,0,256, 0.5)'
                     });
             },
 
@@ -60,38 +56,59 @@
                 var screenModel = this.node().screenModel;
                 var model = screenModel.model;
 
-                var cats = this.node().data().reduce(function (memo, row) {
+                var cats = this.node().data().reduce((memo, row) => {
                     var k = row[model.scaleX.dim];
                     memo[k] = memo[k] || [];
                     memo[k].push(row[model.scaleY.dim]);
                     return memo;
                 }, {});
 
-                var MIN = 'minimum';
-                var MAX = 'maximum';
-                var AVG = 'mean';
-                var Q1 = 'Q1';
-                var Q3 = 'Q3';
-
-                var tuples = Object.keys(cats).reduce(function (memo, k) {
-                    var values = cats[k].sort(function (a, b) {
-                        return a - b;
-                    });
+                var tuples = Object.keys(cats).reduce((memo, k) => {
+                    var values = cats[k].sort((a, b) => a - b);
                     var summary = {};
                     summary[model.scaleX.dim] = k;
-                    var sum = values.reduce(function (sum, x) {
-                        return sum + x;
-                    }, 0);
-                    var average = sum / values.length;
-                    var p25 = percentile(values, 0.25);
-                    var p75 = percentile(values, 0.75);
-                    var iqr = p75 - p25;
 
-                    summary[MIN] = (p25 - (iqr * 1.5)); // Math.min.apply(null, values));
-                    summary[MAX] = (p75 + (iqr * 1.5)); // Math.max.apply(null, values));
-                    summary[AVG] = average;
-                    summary[Q1] = p25;
-                    summary[Q3] = p75;
+                    var n = values.length;
+                    var q1Pos = n * 0.25;
+                    q1Pos = Math.floor(q1Pos);
+                    var q1 = (q1Pos % 1 ? (values[q1Pos] + values[q1Pos+1]) / 2 : values[q1Pos]);
+
+                    var medianPos = n * 0.5;
+                    medianPos = Math.floor(medianPos);
+                    var median = (medianPos % 1 ? (values[medianPos] + values[medianPos+1]) / 2 : values[medianPos]);
+
+                    var q3Pos = n * 0.75;
+                    q3Pos = Math.floor(q3Pos);
+                    var q3 = (q3Pos % 1 ? (values[q3Pos] + values[q3Pos+1]) / 2 : values[q3Pos]);
+
+                    var iqr = q3 - q1;
+                    var lowerMildOutlierLimmit = q1 - 1.5 * iqr;
+                    var upperMildOutlierLimmit = q3 + 1.5 * iqr;
+
+                    var lowerWhisker = values[0];
+                    var upperWhisker = values[n - 1];
+
+                    for (var i = 0; i < q1Pos; i++) {
+                      var item = values[i];
+                      if (item > lowerMildOutlierLimmit) {
+                        lowerWhisker = item;
+                        break;
+                      }
+                    }
+                    for (var i = n - 1; i > q3Pos; i--) {
+                      var item = values[i];
+                      if (item < upperMildOutlierLimmit) {
+                        upperWhisker = item;
+                        break;
+                      }
+                    }
+
+                    summary[MIN] = lowerWhisker;
+                    summary[MAX] = upperWhisker;
+                    
+                    summary[MEDIAN] = median;
+                    summary[Q1] = q1;
+                    summary[Q3] = q3;
 
                     return memo.concat(summary);
                 }, []);
@@ -124,49 +141,51 @@
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 2,
-                        y0: 'minimum',
-                        y1: 'Q1',
+                        y0: MIN,
+                        y1: Q1,
                         class: 'range-min-Q1'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 2,
-                        y0: 'Q3',
-                        y1: 'maximum',
+                        y0: Q3,
+                        y1: MAX,
                         class: 'range-Q3-max'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
-                        y0: 'Q1',
-                        y1: 'Q3',
+                        y0: Q1,
+                        y1: Q3,
                         class: 'range-Q1-Q3'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
                         minHeight: 1,
-                        y0: 'maximum',
-                        y1: 'maximum',
+                        y0: MAX,
+                        y1: MAX,
                         class: 'limit-max'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
                         minHeight: 1,
-                        y0: 'minimum',
-                        y1: 'minimum',
+                        y0: MIN,
+                        y1: MIN,
                         class: 'limit-min'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
                         minHeight: 2,
-                        y0: 'mean',
-                        y1: 'mean',
+                        y0: MEDIAN,
+                        y1: MEDIAN,
                         color: '#ff0000',
-                        class: 'limit-avg'
+                        class: 'limit-median'
                     }));
+
+
                 };
 
                 var frameGroups = container
@@ -194,16 +213,14 @@
                 this._chart = chart;
             },
 
-            onSpecReady: function (chart, specRef) {
+            onSpecReady: (chart, specRef) => {
 
                 specRef.transformations = specRef.transformations || {};
-                specRef.transformations.empty = function () {
-                    return [];
-                };
+                specRef.transformations.empty = () => [];
 
                 chart.traverseSpec(
                     specRef,
-                    function (unit, parentUnit) {
+                    (unit, parentUnit) => {
 
                         if (unit.type !== 'ELEMENT.POINT') {
                             return;
@@ -215,9 +232,7 @@
 
                         unit.transformation = unit.transformation || [];
                         if (xSettings.hideScatterplot) {
-                            unit.transformation.push({
-                                type: 'empty'
-                            });
+                            unit.transformation.push({ type: 'empty' });
                         }
 
                         parentUnit.units.push(boxWhiskers);
