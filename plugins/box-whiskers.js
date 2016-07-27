@@ -37,7 +37,7 @@
             if (module) {
                 return {
                     pos: pos,
-                    value: sortedArr[posFloor] + (module * (sortedArr[posFloor] - sortedArr[posFloor + 1]))
+                    value: sortedArr[posFloor] + (module * (sortedArr[posFloor + 1] - sortedArr[posFloor]))
                 };
             } else {
                 return {
