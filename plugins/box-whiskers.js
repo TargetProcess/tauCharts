@@ -17,10 +17,35 @@
     var Q1 = 'Q1';
     var Q3 = 'Q3';
 
-    var percentile = function (sortedArr, n) {
-        var len = sortedArr.length - 1;
-        var pos = Math.round(len * n);
-        return sortedArr[pos];
+    function percentile(sortedArr, perc) {
+        var n = sortedArr.length - 1;
+        var pos = perc / 100 * n;
+        var posFloor = Math.floor(pos);
+
+        if (posFloor === 0) {
+            return {
+                pos: 0,
+                value: sortedArr[0]
+            };
+        } else if (posFloor === n) {
+            return {
+                pos: n,
+                value: sortedArr[n]
+            };
+        } else {
+            var module = pos - posFloor;
+            if (module) {
+                return {
+                    pos: pos,
+                    value: sortedArr[posFloor] + (module * (sortedArr[posFloor] - sortedArr[posFloor + 1]))
+                };
+            } else {
+                return {
+                    pos: pos,
+                    value: sortedArr[pos]
+                };
+            }
+        }
     };
 
     tauCharts.api.unitsRegistry.reg(
@@ -33,17 +58,27 @@
                 var xs = screenModel.model.scaleX;
                 var ys = screenModel.model.scaleY;
                 var model = {
-                    x: (d)  => xs(d[xs.dim]) - size * 0.5,
-                    y: (d) => ys(d[y1]),
-                    width: () => size,
-                    height: (d) => Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1]))),
+                    x: function (d){
+                        return xs(d[xs.dim]) - size * 0.5;
+                    },
+                    y: function (d) {
+                        return ys(d[y1]);
+                    },
+                    width: function () {
+                        return size;
+                    },
+                    height: function (d) {
+                        return Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1])));
+                    },
                     class: cfg.class
                 };
 
                 return _.extend(
                     model,
                     {
-                        fill: () => cfg.color || 'rgba(0,0,256, 0.5)'
+                        fill: function () {
+                            return cfg.color || 'rgba(0,0,256, 0.5)';
+                        }
                     });
             },
 
@@ -56,46 +91,39 @@
                 var screenModel = this.node().screenModel;
                 var model = screenModel.model;
 
-                var cats = this.node().data().reduce((memo, row) => {
+                var cats = this.node().data().reduce(function (memo, row) {
                     var k = row[model.scaleX.dim];
                     memo[k] = memo[k] || [];
                     memo[k].push(row[model.scaleY.dim]);
                     return memo;
                 }, {});
 
-                var tuples = Object.keys(cats).reduce((memo, k) => {
-                    var values = cats[k].sort((a, b) => a - b);
+                var tuples = Object.keys(cats).reduce(function (memo, k) {
+                    var values = cats[k].sort(function (a, b) {
+                        return a - b;
+                    });
                     var summary = {};
                     summary[model.scaleX.dim] = k;
 
-                    var n = values.length;
-                    var q1Pos = n * 0.25;
-                    q1Pos = Math.floor(q1Pos);
-                    var q1 = (q1Pos % 1 ? (values[q1Pos] + values[q1Pos + 1]) / 2 : values[q1Pos]);
+                    var q1 = percentile(values, 25);
+                    var median = percentile(values, 50);
+                    var q3 = percentile(values, 75);
 
-                    var medianPos = n * 0.5;
-                    medianPos = Math.floor(medianPos);
-                    var median = (medianPos % 1 ? (values[medianPos] + values[medianPos + 1]) / 2 : values[medianPos]);
-
-                    var q3Pos = n * 0.75;
-                    q3Pos = Math.floor(q3Pos);
-                    var q3 = (q3Pos % 1 ? (values[q3Pos] + values[q3Pos + 1]) / 2 : values[q3Pos]);
-
-                    var iqr = q3 - q1;
-                    var lowerMildOutlierLimmit = q1 - 1.5 * iqr;
-                    var upperMildOutlierLimmit = q3 + 1.5 * iqr;
+                    var iqr = q3.value - q1.value;
+                    var lowerMildOutlierLimmit = q1.value - 1.5 * iqr;
+                    var upperMildOutlierLimmit = q3.value + 1.5 * iqr;
 
                     var lowerWhisker = values[0];
-                    var upperWhisker = values[n - 1];
+                    var upperWhisker = values[values.length - 1];
 
-                    for (var i = 0; i < q1Pos; i++) {
+                    for (var i = 0; i <= q1.pos; i++) {
                         var item = values[i];
                         if (item > lowerMildOutlierLimmit) {
                             lowerWhisker = item;
                             break;
                         }
                     }
-                    for (var i = n - 1; i > q3Pos; i--) {
+                    for (var i = values.length - 1; i >= q3.pos; i--) {
                         var item = values[i];
                         if (item < upperMildOutlierLimmit) {
                             upperWhisker = item;
@@ -105,9 +133,9 @@
 
                     summary[MIN] = lowerWhisker;
                     summary[MAX] = upperWhisker;
-                    summary[MEDIAN] = median;
-                    summary[Q1] = q1;
-                    summary[Q3] = q3;
+                    summary[MEDIAN] = median.value;
+                    summary[Q1] = q1.value;
+                    summary[Q3] = q3.value;
 
                     return memo.concat(summary);
                 }, []);
@@ -126,9 +154,13 @@
                     var speed = self.node().config.guide.animationSpeed;
                     var part = that
                         .selectAll('.' + props.class)
-                        .data((row) => [row], screenModel.id);
+                        .data(function(row) {
+                            return [row];
+                        }, screenModel.id);
                     part.exit()
-                        .call(createUpdateFunc(speed, null, {width: 0}, (node) => d3.select(node).remove()));
+                        .call(createUpdateFunc(speed, null, {width: 0}, function (node) {
+                            d3.select(node).remove();
+                        }));
                     part.call(createUpdateFunc(speed, null, props));
                     part.enter()
                         .append('rect')
@@ -210,14 +242,16 @@
                 this._chart = chart;
             },
 
-            onSpecReady: (chart, specRef) => {
+            onSpecReady: function (chart, specRef) {
 
                 specRef.transformations = specRef.transformations || {};
-                specRef.transformations.empty = () => [];
+                specRef.transformations.empty = function () {
+                    return [];
+                };
 
                 chart.traverseSpec(
                     specRef,
-                    (unit, parentUnit) => {
+                    function (unit, parentUnit) {
 
                         if (unit.type !== 'ELEMENT.POINT') {
                             return;
