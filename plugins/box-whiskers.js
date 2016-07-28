@@ -17,6 +17,14 @@
     var Q1 = 'Q1';
     var Q3 = 'Q3';
 
+    var KEYS = {
+        MIN: MIN,
+        MAX: MAX,
+        MEDIAN: MEDIAN,
+        Q1: Q1,
+        Q3: Q3
+    };
+
     function percentile(sortedArr, perc) {
         var n = sortedArr.length - 1;
         var pos = perc / 100 * n;
@@ -46,31 +54,139 @@
                 };
             }
         }
-    };
+    }
+
+    function calculateStatistics(fiber, summary, keys) {
+
+        var values = fiber.sort(function (a, b) {
+            return a - b;
+        });
+
+        var q1 = percentile(values, 25);
+        var median = percentile(values, 50);
+        var q3 = percentile(values, 75);
+
+        var iqr = q3.value - q1.value;
+        var lowerMildOutlierLimmit = q1.value - 1.5 * iqr;
+        var upperMildOutlierLimmit = q3.value + 1.5 * iqr;
+
+        var lowerWhisker = values[0];
+        var upperWhisker = values[values.length - 1];
+
+        for (var l = 0; l <= q1.pos; l++) {
+            var itemLower = values[l];
+            if (itemLower > lowerMildOutlierLimmit) {
+                lowerWhisker = itemLower;
+                break;
+            }
+        }
+
+        for (var u = values.length - 1; u >= q3.pos; u--) {
+            var itemUpper = values[u];
+            if (itemUpper < upperMildOutlierLimmit) {
+                upperWhisker = itemUpper;
+                break;
+            }
+        }
+
+        summary[keys.MIN] = lowerWhisker;
+        summary[keys.MAX] = upperWhisker;
+        summary[keys.MEDIAN] = median.value;
+        summary[keys.Q1] = q1.value;
+        summary[keys.Q3] = q3.value;
+
+        return summary;
+    }
 
     tauCharts.api.unitsRegistry.reg(
         'ELEMENT.BOX-WHISKERS',
         {
+            init: function () {
+                var node = this.node();
+                node.init();
+                var stat = this.calcStat();
+                if (node.config.adjustPhase && node.config.guide.fitScale) {
+                    this.fixScale(node, stat);
+                }
+            },
+
+            fixScale: function (node, stat) {
+                var vals = stat
+                    .reduce(function (memo, row) {
+                        return memo.concat([row[KEYS.MIN], row[KEYS.MAX]]);
+                    }, [])
+                    .sort(function (a, b) {
+                        return a - b;
+                    });
+
+                var minY = vals[0];
+                var maxY = vals[vals.length - 1];
+                node.screenModel.model.scaleY.fixup(function (yScaleConfig) {
+                    var newConf = {};
+
+                    var fixed = false;
+
+                    if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
+                        newConf.max = maxY;
+                        fixed = true;
+                    }
+
+                    if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
+                        newConf.min = minY;
+                        fixed = true;
+                    }
+
+                    if (fixed) {
+                        newConf.source = '?';
+                    }
+
+                    return newConf;
+                });
+            },
+
+            calcStat: function () {
+                var screenModel = this.node().screenModel;
+                var model = screenModel.model;
+
+                var cats = this.node().data().reduce(function (memo, row) {
+                    var k = row[model.scaleX.dim];
+                    memo[k] = memo[k] || [];
+                    memo[k].push(row[model.scaleY.dim]);
+                    return memo;
+                }, {});
+
+                return Object.keys(cats).reduce(function (memo, k) {
+                    var base = {};
+                    base[model.scaleX.dim] = k;
+                    return memo.concat(calculateStatistics(cats[k], base, KEYS));
+                }, []);
+            },
+
             buildRangeModel: function (screenModel, cfg) {
+                var flip = screenModel.flip;
+
+                var x = flip ? 'y' : 'x';
+                var y = flip ? 'x' : 'y';
+                var w = flip ? 'height' : 'width';
+                var h = flip ? 'width' : 'height';
+
+                var y0 = flip ? cfg.y1 : cfg.y0;
+                var y1 = flip ? cfg.y0 : cfg.y1;
                 var size = cfg.size;
-                var y0 = cfg.y0;
-                var y1 = cfg.y1;
                 var xs = screenModel.model.scaleX;
                 var ys = screenModel.model.scaleY;
-                var model = {
-                    x: function (d){
-                        return xs(d[xs.dim]) - size * 0.5;
-                    },
-                    y: function (d) {
-                        return ys(d[y1]);
-                    },
-                    width: function () {
-                        return size;
-                    },
-                    height: function (d) {
-                        return Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1])));
-                    },
-                    class: cfg.class
+                var model = {class: cfg.class};
+                model[x] = function (d) {
+                    return xs(d[xs.dim]) - size * 0.5;
+                };
+                model[y] = function (d) {
+                    return ys(d[y1]);
+                };
+                model[w] = function () {
+                    return size;
+                };
+                model[h] = function (d) {
+                    return Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1])));
                 };
 
                 return _.extend(
@@ -83,64 +199,10 @@
             },
 
             draw: function () {
-
                 var cfg = this.node().config;
-
                 var container = cfg.options.slot(cfg.uid);
-
-                var screenModel = this.node().screenModel;
-                var model = screenModel.model;
-
-                var cats = this.node().data().reduce(function (memo, row) {
-                    var k = row[model.scaleX.dim];
-                    memo[k] = memo[k] || [];
-                    memo[k].push(row[model.scaleY.dim]);
-                    return memo;
-                }, {});
-
-                var tuples = Object.keys(cats).reduce(function (memo, k) {
-                    var values = cats[k].sort(function (a, b) {
-                        return a - b;
-                    });
-                    var summary = {};
-                    summary[model.scaleX.dim] = k;
-
-                    var q1 = percentile(values, 25);
-                    var median = percentile(values, 50);
-                    var q3 = percentile(values, 75);
-
-                    var iqr = q3.value - q1.value;
-                    var lowerMildOutlierLimmit = q1.value - 1.5 * iqr;
-                    var upperMildOutlierLimmit = q3.value + 1.5 * iqr;
-
-                    var lowerWhisker = values[0];
-                    var upperWhisker = values[values.length - 1];
-
-                    for (var i = 0; i <= q1.pos; i++) {
-                        var item = values[i];
-                        if (item > lowerMildOutlierLimmit) {
-                            lowerWhisker = item;
-                            break;
-                        }
-                    }
-                    for (var i = values.length - 1; i >= q3.pos; i--) {
-                        var item = values[i];
-                        if (item < upperMildOutlierLimmit) {
-                            upperWhisker = item;
-                            break;
-                        }
-                    }
-
-                    summary[MIN] = lowerWhisker;
-                    summary[MAX] = upperWhisker;
-                    summary[MEDIAN] = median.value;
-                    summary[Q1] = q1.value;
-                    summary[Q3] = q3.value;
-
-                    return memo.concat(summary);
-                }, []);
-
-                this.drawElement(container, tuples);
+                var summary = this.calcStat();
+                this.drawElement(container, summary);
             },
 
             drawElement: function (container, tuples) {
@@ -236,6 +298,8 @@
 
     function boxWhiskersPlot(xSettings) {
 
+        _.defaults(xSettings, {mode: 'outliers-only'});
+
         return {
 
             init: function (chart) {
@@ -244,9 +308,47 @@
 
             onSpecReady: function (chart, specRef) {
 
+                var flip = (xSettings.flip === true);
+
                 specRef.transformations = specRef.transformations || {};
+
                 specRef.transformations.empty = function () {
                     return [];
+                };
+
+                specRef.transformations.outliers = function (data, props) {
+
+                    var x = props.x.dim;
+                    var y = props.y.dim;
+
+                    var groups = data.reduce(function (memo, row) {
+                        var k = row[x];
+                        memo[k] = memo[k] || [];
+                        memo[k].push(row[y]);
+                        return memo;
+                    }, {});
+
+                    var filters = Object.keys(groups).reduce(function (filters, k) {
+
+                        var stat = calculateStatistics(groups[k], {}, KEYS);
+                        var max = stat[KEYS.MAX];
+                        var min = stat[KEYS.MIN];
+
+                        return filters.concat(function (row) {
+                            if (row[x] === k) {
+                                return (row[y] > max) || (row[y] < min);
+                            }
+                            return true;
+                        });
+                    }, []);
+
+                    return data.filter(function (row) {
+                        var deny = filters.some(function (f) {
+                            return !f(row);
+                        });
+
+                        return !deny;
+                    });
                 };
 
                 chart.traverseSpec(
@@ -259,14 +361,27 @@
 
                         var boxWhiskers = JSON.parse(JSON.stringify(unit));
                         boxWhiskers.type = 'ELEMENT.BOX-WHISKERS';
+                        boxWhiskers.flip = flip;
                         boxWhiskers.namespace = 'boxwhiskers';
+                        boxWhiskers.guide = boxWhiskers.guide || {};
+                        boxWhiskers.guide.fitScale = (xSettings.mode === 'hide-scatter');
+
+                        var strategies = {
+                            'show-scatter': [],
+                            'hide-scatter': [
+                                {type: 'empty'}
+                            ],
+                            'outliers-only': [{
+                                type: 'outliers',
+                                args: {
+                                    x: specRef.scales[flip ? unit.y : unit.x],
+                                    y: specRef.scales[flip ? unit.x : unit.y]
+                                }
+                            }]
+                        };
 
                         unit.transformation = unit.transformation || [];
-                        if (xSettings.hideScatterplot) {
-                            unit.transformation.push({
-                                type: 'empty'
-                            });
-                        }
+                        unit.transformation = unit.transformation.concat(strategies[xSettings.mode]);
 
                         parentUnit.units.push(boxWhiskers);
                     });

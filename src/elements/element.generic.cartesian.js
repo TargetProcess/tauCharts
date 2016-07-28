@@ -33,7 +33,7 @@ export class GenericCartesian extends Element {
         this.minLimit = config.guide.size.minSize;
         this.maxLimit = config.guide.size.maxSize;
 
-        this.isHorizontal = false;
+        this.isHorizontal = this.config.flip;
 
         var enableStack = this.config.stack;
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
@@ -128,28 +128,34 @@ export class GenericCartesian extends Element {
                 .call(createUpdateFunc(speed, {width: 0}, props));
         };
 
+        var flip = this.config.flip;
+        var x = flip ? 'y' : 'x';
+        var y = flip ? 'x' : 'y';
+        var y0 = flip ? 'x0' : 'y0';
+        var w = flip ? 'height' : 'width';
+        var h = flip ? 'width' : 'height';
         var drawElement = function () {
             drawPart(this, 'lvl-top', {
-                width: ((d) => size(d)),
-                height: 1,
-                x: ((d) => self.screenModel.x(d) - size(d) / 2),
-                y: ((d) => self.screenModel.y(d)),
+                [w]: ((d) => size(d)),
+                [h]: 1,
+                [x]: ((d) => self.screenModel[x](d) - size(d) / 2),
+                [y]: ((d) => self.screenModel[y](d)),
                 fill: ((d) => self.screenModel.color(d)),
                 class: ((d) => `lvl-top ${self.screenModel.class(d)}`)
             });
             drawPart(this, 'lvl-btm', {
-                width: ((d) => size(d)),
-                height: 1,
-                x: ((d) => self.screenModel.x(d) - size(d) / 2),
-                y: ((d) => self.screenModel.y0(d)),
+                [w]: ((d) => size(d)),
+                [h]: 1,
+                [x]: ((d) => self.screenModel[x](d) - size(d) / 2),
+                [y]: ((d) => self.screenModel[y0](d)),
                 fill: ((d) => self.screenModel.color(d)),
                 class: ((d) => `lvl-btm ${self.screenModel.class(d)}`)
             });
             drawPart(this, 'lvl-link', {
-                width: 0.5,
-                height: ((d) => Math.abs(self.screenModel.y(d) - self.screenModel.y0(d))),
-                x: ((d) => self.screenModel.x(d) - 0.25),
-                y: ((d) => Math.min(self.screenModel.y(d), self.screenModel.y0(d))),
+                [w]: 0.5,
+                [h]: ((d) => Math.abs(self.screenModel[y](d) - self.screenModel[y0](d))),
+                [x]: ((d) => self.screenModel[x](d) - 0.25),
+                [y]: ((d) => Math.min(self.screenModel[y](d), self.screenModel[y0](d))),
                 fill: ((d) => self.screenModel.color(d)),
                 class: ((d) => `lvl-link ${self.screenModel.class(d)}`)
             });

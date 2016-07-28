@@ -173,14 +173,14 @@
 
                 z: 222,
                 type: 'scatterplot',
-                x: 'distribution',
-                y: 'y',
+                y: 'distribution',
+                x: 'y',
                 color: 'distribution',
                 data: _.times(100, _.identity)
                         .reduce(function (memo, i) {
 
                             var outlierKoeff = function (lim) {
-                                return (Math.random() >= lim) ? 2 : 1;
+                                return (Math.random() >= lim) ? 100 : 1;
                             };
 
                             return memo.concat([
@@ -203,7 +203,10 @@
                     tauCharts.api.plugins.get('legend')(),
                     tauCharts.api.plugins.get('tooltip')(),
                     tauCharts.api.plugins.get('box-whiskers')({
-                        hideScatterplot: false
+                        flip: true,
+                        //mode: 'show-scatter',
+                        //mode: 'hide-scatter',
+                        mode: 'outliers-only'
                     })
                 ]
             })
