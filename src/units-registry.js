@@ -23,9 +23,6 @@ var unitsRegistry = {
                     },
                     draw() {
                         this.node().draw();
-                    },
-                    walkFrames() {
-                        // TODO: remove
                     }
                 },
                 xUnit);

@@ -93,8 +93,9 @@ export class Element extends Emitter {
 
     init() {
         this.createScales(this.config.fnCreateScale);
-        this.modelGoG = this.walkFrames(this.config.frames);
-        this.screenModel = this.modelGoG.toScreenModel();
+        this.screenModel = (this
+            .walkFrames(this.config.frames)
+            .toScreenModel());
     }
 
     draw() {
