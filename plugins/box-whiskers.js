@@ -11,10 +11,41 @@
     }
 })(function (tauCharts) {
 
-    var percentile = function (sortedArr, n) {
-        var len = sortedArr.length - 1;
-        var pos = Math.round(len * n);
-        return sortedArr[pos];
+    var MIN = 'minimum';
+    var MAX = 'maximum';
+    var MEDIAN = 'median';
+    var Q1 = 'Q1';
+    var Q3 = 'Q3';
+
+    function percentile(sortedArr, perc) {
+        var n = sortedArr.length - 1;
+        var pos = perc / 100 * n;
+        var posFloor = Math.floor(pos);
+
+        if (posFloor === 0) {
+            return {
+                pos: 0,
+                value: sortedArr[0]
+            };
+        } else if (posFloor === n) {
+            return {
+                pos: n,
+                value: sortedArr[n]
+            };
+        } else {
+            var module = pos - posFloor;
+            if (module) {
+                return {
+                    pos: pos,
+                    value: sortedArr[posFloor] + (module * (sortedArr[posFloor + 1] - sortedArr[posFloor]))
+                };
+            } else {
+                return {
+                    pos: pos,
+                    value: sortedArr[pos]
+                };
+            }
+        }
     };
 
     tauCharts.api.unitsRegistry.reg(
@@ -27,7 +58,7 @@
                 var xs = screenModel.model.scaleX;
                 var ys = screenModel.model.scaleY;
                 var model = {
-                    x: function (d) {
+                    x: function (d){
                         return xs(d[xs.dim]) - size * 0.5;
                     },
                     y: function (d) {
@@ -67,31 +98,44 @@
                     return memo;
                 }, {});
 
-                var MIN = 'minimum';
-                var MAX = 'maximum';
-                var AVG = 'mean';
-                var Q1 = 'Q1';
-                var Q3 = 'Q3';
-
                 var tuples = Object.keys(cats).reduce(function (memo, k) {
                     var values = cats[k].sort(function (a, b) {
                         return a - b;
                     });
                     var summary = {};
                     summary[model.scaleX.dim] = k;
-                    var sum = values.reduce(function (sum, x) {
-                        return sum + x;
-                    }, 0);
-                    var average = sum / values.length;
-                    var p25 = percentile(values, 0.25);
-                    var p75 = percentile(values, 0.75);
-                    var iqr = p75 - p25;
 
-                    summary[MIN] = (p25 - (iqr * 1.5)); // Math.min.apply(null, values));
-                    summary[MAX] = (p75 + (iqr * 1.5)); // Math.max.apply(null, values));
-                    summary[AVG] = average;
-                    summary[Q1] = p25;
-                    summary[Q3] = p75;
+                    var q1 = percentile(values, 25);
+                    var median = percentile(values, 50);
+                    var q3 = percentile(values, 75);
+
+                    var iqr = q3.value - q1.value;
+                    var lowerMildOutlierLimmit = q1.value - 1.5 * iqr;
+                    var upperMildOutlierLimmit = q3.value + 1.5 * iqr;
+
+                    var lowerWhisker = values[0];
+                    var upperWhisker = values[values.length - 1];
+
+                    for (var i = 0; i <= q1.pos; i++) {
+                        var item = values[i];
+                        if (item > lowerMildOutlierLimmit) {
+                            lowerWhisker = item;
+                            break;
+                        }
+                    }
+                    for (var i = values.length - 1; i >= q3.pos; i--) {
+                        var item = values[i];
+                        if (item < upperMildOutlierLimmit) {
+                            upperWhisker = item;
+                            break;
+                        }
+                    }
+
+                    summary[MIN] = lowerWhisker;
+                    summary[MAX] = upperWhisker;
+                    summary[MEDIAN] = median.value;
+                    summary[Q1] = q1.value;
+                    summary[Q3] = q3.value;
 
                     return memo.concat(summary);
                 }, []);
@@ -110,9 +154,13 @@
                     var speed = self.node().config.guide.animationSpeed;
                     var part = that
                         .selectAll('.' + props.class)
-                        .data((row) => [row], screenModel.id);
+                        .data(function(row) {
+                            return [row];
+                        }, screenModel.id);
                     part.exit()
-                        .call(createUpdateFunc(speed, null, {width: 0}, (node) => d3.select(node).remove()));
+                        .call(createUpdateFunc(speed, null, {width: 0}, function (node) {
+                            d3.select(node).remove();
+                        }));
                     part.call(createUpdateFunc(speed, null, props));
                     part.enter()
                         .append('rect')
@@ -124,48 +172,48 @@
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 2,
-                        y0: 'minimum',
-                        y1: 'Q1',
+                        y0: MIN,
+                        y1: Q1,
                         class: 'range-min-Q1'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 2,
-                        y0: 'Q3',
-                        y1: 'maximum',
+                        y0: Q3,
+                        y1: MAX,
                         class: 'range-Q3-max'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
-                        y0: 'Q1',
-                        y1: 'Q3',
+                        y0: Q1,
+                        y1: Q3,
                         class: 'range-Q1-Q3'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
                         minHeight: 1,
-                        y0: 'maximum',
-                        y1: 'maximum',
+                        y0: MAX,
+                        y1: MAX,
                         class: 'limit-max'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
                         minHeight: 1,
-                        y0: 'minimum',
-                        y1: 'minimum',
+                        y0: MIN,
+                        y1: MIN,
                         class: 'limit-min'
                     }));
 
                     drawPart(this, self.buildRangeModel(screenModel, {
                         size: 20,
                         minHeight: 2,
-                        y0: 'mean',
-                        y1: 'mean',
+                        y0: MEDIAN,
+                        y1: MEDIAN,
                         color: '#ff0000',
-                        class: 'limit-avg'
+                        class: 'limit-median'
                     }));
                 };
 
