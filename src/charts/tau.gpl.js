@@ -1,11 +1,8 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
 import {default as _} from 'underscore';
-import {default as d3} from 'd3';
 var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {
@@ -45,14 +42,6 @@ export class GPL extends Emitter {
                     });
                 }
             });
-
-        this.onUnitDraw = config.onUnitDraw;
-        this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
-    }
-
-    static destroyNodes (nodes) {
-        nodes.forEach((node) => node.destroy());
-        return [];
     }
 
     static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
@@ -73,47 +62,12 @@ export class GPL extends Emitter {
         traverse(spec.unit, enter, exit, rootNode, rootFrame);
     }
 
-    renderTo(target, xSize) {
-
-        var d3Target = d3.select(target);
-
-        this.config.settings.size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
-
+    unfoldStructure() {
         this.root = this._expandUnitsStructure(this.config.unit);
+        return this.config;
+    }
 
-        this.onUnitsStructureExpanded(this.config);
-
-        var xSvg = d3Target.selectAll('svg').data([1]);
-
-        var size = this.config.settings.size;
-
-        var attr = {
-            class: (`${CSS_PREFIX}svg`),
-            width: size.width,
-            height: size.height
-        };
-
-        xSvg.attr(attr);
-
-        xSvg.enter()
-            .append('svg')
-            .attr(attr)
-            .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
-
-        var root = {
-            allocateRect: () => ({
-                slot: (() => d3Target.select('.frame-root')),
-                frameId: 'root',
-                left: 0,
-                top: 0,
-                width: size.width,
-                containerWidth: size.width,
-                height: size.height,
-                containerHeight: size.height
-            })
-        };
-
+    getDrawScenario(root) {
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
@@ -134,7 +88,7 @@ export class GPL extends Emitter {
             .keys(this.scales)
             .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
 
-        var drawScenario = this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+        return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
             var instance = this.unitSet.create(
                 unit.type,
@@ -147,13 +101,6 @@ export class GPL extends Emitter {
             instance.init();
             instance.parentUnit = parentInstance;
             return instance;
-        });
-
-        drawScenario.forEach((item) => {
-            item.draw();
-            if (this.onUnitDraw) {
-                this.onUnitDraw(item.node());
-            }
         });
     }
 

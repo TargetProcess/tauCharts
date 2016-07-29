@@ -159,12 +159,10 @@ define(function (require) {
                         console.log(JSON.stringify(sss, null, 2));
                     }
 
-                    context.chart = new tauCharts.GPL(
-                        sss,
-                        new ScalesFactory(scalesRegistry, sss.sources, sss.scales),
-                        unitsRegistry
-                    );
-
+                    sss.settings = sss.settings || {};
+                    sss.settings.specEngine = 'NONE';
+                    sss.settings.layoutEngine = 'NONE';
+                    context.chart = new tauCharts.Plot(sss);
                     context.chart.renderTo(
                         context.element,
                         {
@@ -225,7 +223,9 @@ define(function (require) {
                 units: [
                     {
                         type: 'ELEMENT.INTERVAL',
-                        guide: {prettify: false},
+                        guide: {
+                            prettify: false
+                        },
                         x: 'x',
                         flip: false,
                         y: 'y',
@@ -253,57 +253,57 @@ define(function (require) {
 
             it('should render group bar element', function () {
                 var chart = context.chart;
-                assert.equal(schemes.barGPL.errors(chart.config), false, 'spec is right');
+                assert.equal(schemes.barGPL.errors(chart.getSpec()), false, 'spec is right');
                 expect(getGroupBar().length).to.equal(3);
             });
 
             it('should contain correct interval elements', function () {
 
-                var barWidth = 7.5;
+                var barWidth = 56.25;
 
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 8.75,
+                            "x": 65.625,
                             "y": 0,
                             "width": barWidth,
-                            "height": 50
+                            "height": 400
                         }
                     ],
                     [
                         {
-                            "x": 56.25,
-                            "y": 25,
+                            "x": 421.875,
+                            "y": 200,
                             "width": barWidth,
-                            "height": 25
+                            "height": 200
                         },
                         {
-                            "x": 96.25,
-                            "y": 50,
+                            "x": 721.875,
+                            "y": 400,
                             "width": barWidth,
                             "height": 0
                         },
                         {
-                            "x": 96.25,
-                            "y": 50,
+                            "x": 721.875,
+                            "y": 400,
                             "width": barWidth,
-                            "height": 25
+                            "height": 200
                         }
                     ],
                     [
                         {
-                            "x": 103.75,
-                            "y": 50,
+                            "x": 778.125,
+                            "y": 400,
                             "width": barWidth,
-                            "height": 50
+                            "height": 400
                         }
                     ]
                 ]);
             });
         },
         {
-            width: 120,
-            height: 100
+            width: 900,
+            //height: 100
         }
     );
 
@@ -495,7 +495,7 @@ define(function (require) {
 
             it('should render group bar element', function () {
                 var chart = context.chart;
-                assert.equal(schemes.barGPL.errors(chart.config), false, 'spec is right');
+                assert.equal(schemes.barGPL.errors(chart.getSpec()), false, 'spec is right');
                 expect(getGroupBar().length).to.equal(3);
             });
 
@@ -578,13 +578,13 @@ define(function (require) {
                     [
                         {
                             "x": 0,
-                            "y": 56.5,
+                            "y": 170.5,
                             height: 1,
                             width: 20
                         },
                         {
                             "x": 0,
-                            "y": 63.5,
+                            "y": 192.5,
                             height: 1,
                             width: 60
                         },
@@ -596,7 +596,7 @@ define(function (require) {
                         },
                         {
                             "x": 0,
-                            "y": 99.5,
+                            "y": 299.5,
                             height: 1,
                             width: 100
                         }
@@ -606,7 +606,7 @@ define(function (require) {
         },
         {
             width: 120,
-            height: 100
+            height: 300
         }
     );
 
@@ -701,7 +701,9 @@ define(function (require) {
                 units: [
                     {
                         type: 'ELEMENT.INTERVAL',
-                        guide: {prettify: false}
+                        guide: {
+                            prettify: false
+                        }
                     }
                 ]
             }
@@ -737,23 +739,23 @@ define(function (require) {
                             "x": xi(0),
                             "y": 0,
                             "width": barWidth,
-                            "height": 100
+                            "height": 120
                         },
                         {
                             "x": xi(1),
-                            "y": 50,
+                            "y": 60,
                             "width": barWidth,
-                            "height": 50
+                            "height": 60
                         },
                         {
                             "x": xi(2),
-                            "y": 99,
+                            "y": 119,
                             "width": barWidth,
                             "height": 1
                         },
                         {
                             "x": xi(3),
-                            "y": 100,
+                            "y": 120,
                             "width": barWidth,
                             "height": 0
                         }
@@ -763,7 +765,7 @@ define(function (require) {
         },
         {
             width: 100,
-            height: 100
+            height: 120
         }
     );
 
@@ -817,25 +819,25 @@ define(function (require) {
                         [
                             {
                                 "x": 0,
-                                "y": 87,
-                                "width": 100,
+                                "y": 104.5,
+                                "width": 103,
                                 "height": 1
                             },
                             {
                                 "x": 0,
-                                "y": 62,
-                                "width": 50,
+                                "y": 74.5,
+                                "width": 52,
                                 "height": 1
                             },
                             {
                                 "x": 0,
-                                "y": 37,
+                                "y": 44.5,
                                 "width": 1,
                                 "height": 1
                             },
                             {
                                 "x": 0,
-                                "y": 12,
+                                "y": 14.5,
                                 "width": 0,
                                 "height": 1
                             }
@@ -844,14 +846,14 @@ define(function (require) {
             });
         },
         {
-            width: 100,
+            width: 120,
             height: 100
         }
     );
     var testExpectCoordForTimeAdCount = [
         [
-            750,
-            375,
+            800,
+            400,
             1
         ]
     ];
@@ -945,25 +947,25 @@ define(function (require) {
 
                 var coords = [
                     [
-                        375,
-                        187,
+                        400,
+                        200,
                         minimalHeight,
                         0,
                         minimalHeight,
-                        188,
-                        375
+                        200,
+                        400
                     ]
                 ];
 
                 var ys = [
                     [
                         0,      // count = 1000
-                        188,    // count = 500
-                        374,    // count = 1 (minus minimal height)
-                        375,    // count = 0
-                        375,    // count = -1
-                        375,    // count = -500
-                        375     // count = -1000
+                        200,    // count = 500
+                        399,    // count = 1 (minus minimal height)
+                        400,    // count = 0
+                        400,    // count = -1
+                        400,    // count = -500
+                        400     // count = -1000
                     ]
                 ];
 
@@ -1006,24 +1008,24 @@ define(function (require) {
 
                 var coords = [
                     [
-                        375,
-                        188,
+                        400,
+                        200,
                         minimalHeight,
                         0,
                         minimalHeight,
-                        187,
-                        375
+                        200,
+                        400
                     ]
                 ];
 
                 var xs = [
                     [
-                        375,    // count = 1000
-                        375,    // count = 500
-                        375,    // count = 1
-                        375,    // count = 0
-                        374,    // count = -1 (minus minimal height)
-                        188,    // count = -500
+                        400,    // count = 1000
+                        400,    // count = 500
+                        400,    // count = 1
+                        400,    // count = 0
+                        399,    // count = -1 (minus minimal height)
+                        200,    // count = -500
                         0       // count = -1000
                     ]
                 ];
