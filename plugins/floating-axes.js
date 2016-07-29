@@ -244,14 +244,18 @@
                     root.removeEventListener('scroll', item.handler);
                     item.element.remove();
                 });
-                d3.selectAll('.floating-axes').remove();
+                var srcSvg = d3.select(this._chart.getSVG());
+                srcSvg.selectAll('.floating-axes').remove();
             },
 
             destroy: function () {
                 this.recycle();
             },
 
-            onRender: function (chart) {
+            onRender: function () {
+
+                var self = this;
+                var chart = this._chart;
 
                 this.recycle();
 
@@ -335,7 +339,6 @@
                         root.addEventListener('scroll', item.handler, false);
                     });
 
-                    var self = this;
                     chart.on('beforeExportSVGNode', function() {
                         self.handlers.forEach(function (item) {
                             hide(item.element);
