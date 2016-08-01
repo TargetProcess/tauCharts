@@ -14,6 +14,66 @@ define(function (require) {
             expect(registry.get('b')).to.deep.equal({type:'B'});
         });
 
+        it('should reg and create element with inheritance', function () {
+
+            var actions = [];
+            registry.reg('Base-A',
+                function () {
+                    this.init = () => {
+                        actions.push('init');
+                    };
+                    this.draw = () => {
+                        actions.push('draw');
+                    };
+                });
+
+            registry.reg('a',
+                {
+                    type: 'A'
+                },
+                'Base-A'
+            );
+
+            var inst = registry.create('a', {});
+            inst.init();
+            inst.draw();
+            expect(actions).to.deep.equal(['init', 'draw']);
+        });
+
+        it('should reg and create element with overriden methods', function () {
+
+            var actions = [];
+            registry.reg('Base-A',
+                function () {
+                    this.init = () => {
+                        actions.push('init');
+                    };
+                    this.draw = () => {
+                        actions.push('draw');
+                    };
+                });
+
+            registry.reg('a',
+                {
+                    type: 'A',
+                    init() {
+                        actions.push('init(A)');
+                        this.node().init();
+                    },
+                    draw() {
+                        actions.push('draw(A)');
+                        this.node().draw();
+                    }
+                },
+                'Base-A'
+            );
+
+            var inst = registry.create('a', {});
+            inst.init();
+            inst.draw();
+            expect(actions).to.deep.equal(['init(A)', 'init', 'draw(A)', 'draw']);
+        });
+
         it('should throw on unknown element', function () {
 
             registry
