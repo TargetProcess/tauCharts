@@ -138,7 +138,6 @@ export class Interval extends Element {
         var self = this;
 
         var options = this.config.options;
-        var uid = options.uid;
         var config = this.config;
         var prettify = config.guide.prettify;
         var baseCssClass = this.baseCssClass;
@@ -154,7 +153,7 @@ export class Interval extends Element {
         var barH = config.flip ? 'width' : 'height';
         var barW = config.flip ? 'height' : 'width';
         var updateBarContainer = function () {
-            this.attr('class', `frame-id-${uid} i-role-bar-group`);
+            this.attr('class', 'frame i-role-bar-group');
             var bars = this.selectAll('.bar')
                 .data((fiber) => fiber, self.screenModel.id);
             bars.exit()
@@ -201,7 +200,7 @@ export class Interval extends Element {
 
         var elements = options
             .container
-            .selectAll(`.frame-id-${uid}`)
+            .selectAll('.frame')
             .data(fibers);
         elements
             .exit()

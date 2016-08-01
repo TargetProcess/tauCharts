@@ -50,12 +50,11 @@ export class Area extends BasePath {
         };
 
         var guide = this.config.guide;
-        var options = this.config.options;
         var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
 
         const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
-            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
+            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
         var areaPoints = (xi, yi, x0, y0) => {

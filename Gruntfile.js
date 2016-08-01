@@ -159,6 +159,14 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/quick-filter.js',
                         dest: 'build/development/plugins/tauCharts.quick-filter.js'
+                    },
+                    {
+                        src: 'plugins/floating-axes.js',
+                        dest: 'build/development/plugins/tauCharts.floating-axes.js'
+                    },
+                    {
+                        src: 'plugins/box-whiskers.js',
+                        dest: 'build/development/plugins/tauCharts.box-whiskers.js'
                     }
                 ].concat(cssConfig.css)
             }

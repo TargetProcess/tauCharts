@@ -253,7 +253,7 @@ export class BasePath extends Element {
 
         var frameGroups = options
             .container
-            .selectAll(`.frame-${options.uid}`)
+            .selectAll('.frame')
             .data(fibers);
         frameGroups
             .exit()

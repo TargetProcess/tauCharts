@@ -112,7 +112,7 @@ export class Line extends BasePath {
             .y(baseModel.y);
 
         baseModel.groupAttributes = {
-            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame-${options.uid}`
+            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
         baseModel.pathElement = this.isEmptySize ? 'path' : 'polygon';
