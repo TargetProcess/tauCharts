@@ -686,170 +686,6 @@ define(function (require) {
         return (str + '+' + offsetISO);
     };
 
-    describePlot(
-        'ELEMENT.INTERVAL WITH TWO ORDER AXIS',
-        {
-            unit: {
-                type: 'COORDS.RECT',
-                x: 'date',
-                y: 'count',
-                guide: {
-                    padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, nice: false},
-                    y: {hide: true, nice: false}
-                },
-                units: [
-                    {
-                        type: 'ELEMENT.INTERVAL',
-                        guide: {
-                            prettify: false
-                        }
-                    }
-                ]
-            }
-        },
-        [
-            {
-                "createDate": new Date(iso("2014-09-01T00:00:00")),
-                "count": 100
-            },
-            {
-                "createDate": new Date(iso("2014-09-02T00:00:00")),
-                "count": 50
-            },
-            {
-                "createDate": new Date(iso("2014-09-03T00:00:00")),
-                "count": 1
-            },
-            {
-                "createDate": new Date(iso("2014-09-04T00:00:00")),
-                "count": 0
-            }
-        ],
-        function () {
-            it('should contain correct interval elements', function () {
-
-                var stepSize = 100 / 4;
-                var barWidth = stepSize / 2;
-                var xi = (i) => String(stepSize * i + (stepSize - barWidth) / 2);
-
-                expectCoordsElement(expect, [
-                    [
-                        {
-                            "x": xi(0),
-                            "y": 0,
-                            "width": barWidth,
-                            "height": 120
-                        },
-                        {
-                            "x": xi(1),
-                            "y": 60,
-                            "width": barWidth,
-                            "height": 60
-                        },
-                        {
-                            "x": xi(2),
-                            "y": 119,
-                            "width": barWidth,
-                            "height": 1
-                        },
-                        {
-                            "x": xi(3),
-                            "y": 120,
-                            "width": barWidth,
-                            "height": 0
-                        }
-                    ]
-                ]);
-            });
-        },
-        {
-            width: 100,
-            height: 120
-        }
-    );
-
-    describePlot(
-        'ELEMENT.INTERVAL.FLIP WITH TWO ORDER AXIS',
-        {
-
-            unit: {
-                type: 'COORDS.RECT',
-                x: 'count',
-                y: 'date',
-                guide: {
-                    padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, nice: false, min: 0, max: 100},
-                    y: {hide: true, nice: false}
-                },
-                units: [
-                    {
-                        flip: true,
-                        guide: {
-                            prettify: false,
-                            size: {enableDistributeEvenly: false}
-                        }
-                    }
-                ]
-            }
-        },
-        [
-            {
-                "createDate": new Date(iso("2014-09-01T00:00:00")),
-                "count": 100
-            },
-            {
-                "createDate": new Date(iso("2014-09-02T00:00:00")),
-                "count": 50
-            },
-            {
-                "createDate": new Date(iso("2014-09-03T00:00:00")),
-                "count": 1
-            },
-            {
-                "createDate": new Date(iso("2014-09-04T00:00:00")),
-                "count": 0
-            }
-        ],
-        function () {
-            it('should contain correct interval elements', function () {
-                expectCoordsElement(
-                    expect,
-                    [
-                        [
-                            {
-                                "x": 0,
-                                "y": 104.5,
-                                "width": 103,
-                                "height": 1
-                            },
-                            {
-                                "x": 0,
-                                "y": 74.5,
-                                "width": 52,
-                                "height": 1
-                            },
-                            {
-                                "x": 0,
-                                "y": 44.5,
-                                "width": 1,
-                                "height": 1
-                            },
-                            {
-                                "x": 0,
-                                "y": 14.5,
-                                "width": 0,
-                                "height": 1
-                            }
-                        ]
-                    ]);
-            });
-        },
-        {
-            width: 120,
-            height: 100
-        }
-    );
     var testExpectCoordForTimeAdCount = [
         [
             800,
@@ -857,6 +693,7 @@ define(function (require) {
             1
         ]
     ];
+
     var testDataCoordForTimeAdCount = [
         {time: testUtils.toLocalDate('2014-02-03'), count: 0},
         {time: testUtils.toLocalDate('2014-02-02'), count: 5},
@@ -1295,4 +1132,168 @@ define(function (require) {
             autoWidth: false
         }
     );
+
+    describe('ELEMENT.INTERVAL', function () {
+
+        var div;
+        var size = {width: 1000, height: 1000};
+
+        beforeEach(function () {
+            div = document.createElement('div');
+            document.body.appendChild(div);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+        });
+
+        it('should draw horizontal bar on 2 order axis', function () {
+
+            var plot = new tauCharts.Chart({
+                data: [
+                    {
+                        "createDate": new Date(iso("2014-09-01T00:00:00")),
+                        "count": 100
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-02T00:00:00")),
+                        "count": 50
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-03T00:00:00")),
+                        "count": 1
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-04T00:00:00")),
+                        "count": 0
+                    }
+                ],
+                type: 'horizontal-bar',
+                x: 'count',
+                y: 'createDate',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, nice: false, min: 0, max: 100},
+                    y: {hide: true, nice: false, tickPeriod: 'day'},
+                    prettify: false,
+                    size: {enableDistributeEvenly: false}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            plot.renderTo(div,
+                {
+                    width: 120,
+                    height: 100
+                });
+
+            expectCoordsElement(
+                expect,
+                [
+                    [
+                        {
+                            "x": 0,
+                            "y": 87,
+                            width: 120,
+                            height: 1
+                        },
+                        {
+                            "x": 0,
+                            "y": 62,
+                            width: 60,
+                            height: 1
+                        },
+                        {
+                            "x": 0,
+                            "y": 37,
+                            width: 1,
+                            height: 1
+                        },
+                        {
+                            "x": 0,
+                            "y": 12,
+                            "width": 0,
+                            "height": 1
+                        }
+                    ]
+                ]);
+        });
+
+        it('should draw vertical bar on 2 order axis', function () {
+
+            var plot = new tauCharts.Chart({
+                data: [
+                    {
+                        "createDate": new Date(iso("2014-09-01T00:00:00")),
+                        "count": 100
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-02T00:00:00")),
+                        "count": 50
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-03T00:00:00")),
+                        "count": 1
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-04T00:00:00")),
+                        "count": 0
+                    }
+                ],
+                type: 'bar',
+                y: 'count',
+                x: 'createDate',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, nice: false, tickPeriod: 'day'},
+                    y: {hide: true, nice: false},
+                    prettify: false
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            plot.renderTo(div,
+                {
+                    width: 100,
+                    height: 120
+                });
+
+            var stepSize = 100 / 4;
+            var barWidth = stepSize / 2;
+            var xi = (i) => String(stepSize * i + (stepSize - barWidth) / 2);
+
+            expectCoordsElement(
+                expect,
+                [
+                    [
+                        {
+                            "x": xi(0),
+                            "y": 0,
+                            "width": barWidth,
+                            "height": 120
+                        },
+                        {
+                            "x": xi(1),
+                            "y": 60,
+                            "width": barWidth,
+                            "height": 60
+                        },
+                        {
+                            "x": xi(2),
+                            "y": 119,
+                            "width": barWidth,
+                            "height": 1
+                        },
+                        {
+                            "x": xi(3),
+                            "y": 120,
+                            "width": barWidth,
+                            "height": 0
+                        }
+                    ]
+                ]);
+        });
+    });
 });
