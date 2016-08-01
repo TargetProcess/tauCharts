@@ -337,8 +337,8 @@ define(function (require) {
                 return true;
             });
             expect(allElements.length).to.equal(2);
-            expect(allElements[0].config.type).to.equal('ELEMENT.POINT');
-            expect(allElements[1].config.type).to.equal('COORDS.RECT');
+            expect(allElements[0].config.type).to.equal('COORDS.RECT');
+            expect(allElements[1].config.type).to.equal('ELEMENT.POINT');
 
             var someElements = plot.select(function (unitNode) {
                 return unitNode.config.type === 'ELEMENT.POINT';

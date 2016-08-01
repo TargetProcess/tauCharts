@@ -15,6 +15,7 @@ import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
 import {SpecTransformCalcSize} from '../spec-transform-calc-size';
 import {SpecTransformApplyRatio} from '../spec-transform-apply-ratio';
 import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
+import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
 import {default as _} from 'underscore';
@@ -66,7 +67,7 @@ export class Plot extends Emitter {
     }
 
     destroy() {
-        this._nodes = GPL.destroyNodes(this._nodes);
+        this.destroyNodes();
         d3.select(this._svg).remove();
         d3.select(this._layout.layout).remove();
         super.destroy();
@@ -201,6 +202,35 @@ export class Plot extends Emitter {
         return new Tooltip('', conf || {});
     }
 
+    destroyNodes() {
+        this._nodes.forEach((node) => node.destroy());
+        this._nodes = [];
+    }
+
+    onUnitDraw(unitNode) {
+        this._nodes.push(unitNode);
+        this.fire('unitdraw', unitNode);
+        ['click', 'mouseover', 'mouseout']
+            .forEach((eventName) => unitNode.on(
+                (eventName),
+                (sender, e) => {
+                    this.fire(
+                        `element${eventName}`,
+                        {
+                            element: sender,
+                            data: e.data,
+                            event: e.event
+                        }
+                    );
+                }));
+    }
+
+    onUnitsStructureExpanded(specRef) {
+        this.onUnitsStructureExpandedTransformers
+            .forEach((TClass) => (new TClass(specRef)).transform(this));
+        this.fire(['units', 'structure', 'expanded'].join(''), specRef);
+    }
+
     renderTo(target, xSize) {
         this._svg = null;
         this._target = target;
@@ -240,40 +270,52 @@ export class Plot extends Emitter {
             .transformers
             .reduce((memo, TransformClass) => (new TransformClass(memo).transform(this)), this._liveSpec);
 
-        this._nodes = GPL.destroyNodes(this._nodes);
-
-        this._liveSpec.onUnitDraw = (unitNode) => {
-            this._nodes.push(unitNode);
-            this.fire('unitdraw', unitNode);
-            ['click', 'mouseover', 'mouseout']
-                .forEach((eventName) => unitNode.on(
-                    (eventName),
-                    (sender, e) => {
-                        this.fire(
-                            `element${eventName}`,
-                            {
-                                element: sender,
-                                data: e.data,
-                                event: e.event
-                            }
-                        );
-                    }));
-        };
-
-        this._liveSpec.onUnitsStructureExpanded = (specRef) => {
-            this.onUnitsStructureExpandedTransformers
-                .forEach((TClass) => (new TClass(specRef)).transform(this));
-            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
-        };
+        this.destroyNodes();
 
         this.fire('specready', this._liveSpec);
 
-        new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry)
-            .renderTo(content, this._liveSpec.settings.size);
+        var xGpl = new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry);
+        var structure = xGpl.unfoldStructure();
 
-        var svgXElement = d3.select(content).select('svg');
+        this.onUnitsStructureExpanded(structure);
 
-        this._svg = svgXElement.node();
+        var newSize = xGpl.config.settings.size;
+        var d3Target = d3.select(content);
+        var attr = {
+            class: (`${CSS_PREFIX}svg`),
+            width: newSize.width,
+            height: newSize.height
+        };
+
+        var xSvg = d3Target
+            .selectAll('svg')
+            .data([1]);
+        xSvg.attr(attr);
+        xSvg.enter()
+            .append('svg')
+            .attr(attr)
+            .append('g')
+            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
+
+        var scenario = xGpl.getDrawScenario({
+            allocateRect: () => ({
+                slot: (() => d3Target.select('.frame-root')),
+                frameId: 'root',
+                left: 0,
+                top: 0,
+                width: newSize.width,
+                containerWidth: newSize.width,
+                height: newSize.height,
+                containerHeight: newSize.height
+            })
+        });
+
+        scenario.forEach((item) => {
+            item.draw();
+            this.onUnitDraw(item.node());
+        });
+
+        this._svg = xSvg.node();
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
     }

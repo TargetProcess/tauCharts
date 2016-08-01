@@ -1,11 +1,8 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
 import {default as _} from 'underscore';
-import {default as d3} from 'd3';
 var cast = (v) => (_.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {
@@ -16,9 +13,13 @@ export class GPL extends Emitter {
 
         // jscs:disable
         _.defaults(config.scales, {
+            'size_null': {type: 'size', source: '?'},
             'split_null': {type: 'value', source: '?'},
             'label_null': {type: 'value', source: '?'},
+            'color_null': {type: 'color', source: '?'},
             'identity_null': {type: 'identity', source: '?'},
+            'size:default': {type: 'size', source: '?'},
+            'color:default': {type: 'color', source: '?'},
             'split:default': {type: 'value', source: '?'},
             'label:default': {type: 'value', source: '?'},
             'identity:default': {type: 'identity', source: '?'}
@@ -45,70 +46,108 @@ export class GPL extends Emitter {
                     });
                 }
             });
-
-        this.onUnitDraw = config.onUnitDraw;
-        this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
     }
 
-    static destroyNodes (nodes) {
-        nodes.forEach((node) => node.destroy());
-        return [];
+    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
+
+        var traverse = (node, enter, exit, parentNode, currFrame) => {
+
+            enter(node, parentNode, currFrame);
+
+            if (node.frames) {
+                node.frames.forEach((frame) => {
+                    (frame.units || []).map((subNode) => traverse(subNode, enter, exit, node, frame));
+                });
+            }
+
+            exit(node, parentNode, currFrame);
+        };
+
+        traverse(spec.unit, enter, exit, rootNode, rootFrame);
     }
 
-    renderTo(target, xSize) {
-
-        var d3Target = d3.select(target);
-
-        this.config.settings.size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
-
+    unfoldStructure() {
         this.root = this._expandUnitsStructure(this.config.unit);
+        return this.config;
+    }
 
-        this.onUnitsStructureExpanded(this.config);
+    getDrawScenario(root) {
+        this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+            // Rule to cancel parent frame inheritance
+            var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            var instance = this.unitSet.create(
+                unit.type,
+                _.extend(
+                    {adjustPhase: true},
+                    {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
+                    (unit),
+                    {options: parentInstance.allocateRect(rootFrame.key)}
+                ));
 
-        var xSvg = d3Target.selectAll('svg').data([1]);
-
-        var size = this.config.settings.size;
-
-        var attr = {
-            class: (`${CSS_PREFIX}svg`),
-            width: size.width,
-            height: size.height
-        };
-
-        xSvg.attr(attr);
-
-        xSvg.enter()
-            .append('svg')
-            .attr(attr)
-            .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
-
-        this.root.options = {
-            container: d3Target.select('.frame-root'),
-            frameId: 'root',
-            left: 0,
-            top: 0,
-            width: size.width,
-            height: size.height
-        };
-
-        this._walkUnitsStructure(
-            this.root,
-            this._datify({
-                source: this.root.expression.source,
-                pipe: []
-            }));
+            instance.init();
+            return instance;
+        });
 
         Object
             .keys(this.scales)
             .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
 
-        this._drawUnitsStructure(
-            this.root,
+        return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+            var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            var instance = this.unitSet.create(
+                unit.type,
+                _.extend(
+                    {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
+                    (unit),
+                    {options: parentInstance.allocateRect(rootFrame.key)}
+                ));
+
+            instance.init();
+            instance.parentUnit = parentInstance;
+            return instance;
+        });
+    }
+
+    _flattenDrawScenario(root, iterator) {
+
+        var uid = 0;
+        var scenario = [];
+
+        var stack = [root];
+
+        var put = ((x) => stack.unshift(x));
+        var pop = (() => stack.shift());
+        var top = (() => stack[0]);
+
+        GPL.traverseSpec(
+            {unit: this.root},
+            // enter
+            (unit, parentUnit, currFrame) => {
+
+                unit.uid = ++uid;
+                unit.guide = utils.clone(unit.guide);
+
+                var instance = iterator(top(), unit, currFrame);
+
+                scenario.push(instance);
+
+                if (unit.type.indexOf('COORDS.') === 0) {
+                    put(instance);
+                }
+            },
+            // exit
+            (unit) => {
+                if (unit.type.indexOf('COORDS.') === 0) {
+                    pop();
+                }
+            },
+            null,
             this._datify({
                 source: this.root.expression.source,
                 pipe: []
             }));
+
+        return scenario;
     }
 
     _expandUnitsStructure(root, parentPipe = []) {
@@ -157,62 +196,15 @@ export class GPL extends Emitter {
         return root;
     }
 
-    _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
-
+    _createFrameScalesFactoryMethod(passFrame) {
         var self = this;
-
-        // Rule to cancel parent frame inheritance
-        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
-
-        var UnitClass = self.unitSet.get(unitConfig.type);
-        var unitNode = new UnitClass(unitConfig);
-        unitNode.parentUnit = rootUnit;
-        unitNode
-            .createScales((type, alias, dynamicProps) => {
-                var key = (alias || `${type}:default`);
-                return self
-                    .scalesHub
-                    .createScaleInfo(self.scales[key], passFrame)
-                    .create(dynamicProps);
-            })
-            .drawFrames(unitConfig.frames, (function (rootUnit) {
-                return function (rootConf, rootFrame) {
-                    self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-                };
-            }(unitNode)));
-
-        if (self.onUnitDraw) {
-            self.onUnitDraw(unitNode);
-        }
-
-        return unitConfig;
-    }
-
-    _walkUnitsStructure(unitConfig, rootFrame, parentUnit = null) {
-
-        var self = this;
-
-        // Rule to cancel parent frame inheritance
-        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
-
-        var UnitClass = self.unitSet.get(unitConfig.type);
-        var unitNode = new UnitClass(_.extend({adjustPhase: true}, unitConfig));
-        unitNode.parentUnit = parentUnit;
-        unitNode
-            .createScales((type, alias, dynamicProps) => {
-                var key = (alias || `${type}:default`);
-                return self
-                    .scalesHub
-                    .createScaleInfo(self.scales[key], passFrame)
-                    .create(dynamicProps);
-            })
-            .walkFrames(unitConfig.frames, (function (rootUnit) {
-                return function (rootConf, rootFrame) {
-                    self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-                };
-            }(unitNode)));
-
-        return unitConfig;
+        return ((type, alias, dynamicProps) => {
+            var key = (alias || `${type}:default`);
+            return self
+                .scalesHub
+                .createScaleInfo(self.scales[key], passFrame)
+                .create(dynamicProps);
+        });
     }
 
     _datify(frame) {

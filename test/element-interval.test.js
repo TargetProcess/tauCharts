@@ -31,6 +31,14 @@ define(function (require) {
             }
 
             return unitsMap[unitType];
+        },
+        create: function (unitType, unitConfig) {
+
+            if (!unitsMap.hasOwnProperty(unitType)) {
+                throw new Error('Unknown unit type: ' + unitType);
+            }
+
+            return new unitsMap[unitType](unitConfig);
         }
     };
     unitsRegistry
@@ -151,12 +159,10 @@ define(function (require) {
                         console.log(JSON.stringify(sss, null, 2));
                     }
 
-                    context.chart = new tauCharts.GPL(
-                        sss,
-                        new ScalesFactory(scalesRegistry, sss.sources, sss.scales),
-                        unitsRegistry
-                    );
-
+                    sss.settings = sss.settings || {};
+                    sss.settings.specEngine = 'NONE';
+                    sss.settings.layoutEngine = 'NONE';
+                    context.chart = new tauCharts.Plot(sss);
                     context.chart.renderTo(
                         context.element,
                         {
@@ -217,7 +223,9 @@ define(function (require) {
                 units: [
                     {
                         type: 'ELEMENT.INTERVAL',
-                        guide: {prettify: false},
+                        guide: {
+                            prettify: false
+                        },
                         x: 'x',
                         flip: false,
                         y: 'y',
@@ -245,57 +253,57 @@ define(function (require) {
 
             it('should render group bar element', function () {
                 var chart = context.chart;
-                assert.equal(schemes.barGPL.errors(chart.config), false, 'spec is right');
+                assert.equal(schemes.barGPL.errors(chart.getSpec()), false, 'spec is right');
                 expect(getGroupBar().length).to.equal(3);
             });
 
             it('should contain correct interval elements', function () {
 
-                var barWidth = 7.5;
+                var barWidth = 56.25;
 
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 8.75,
+                            "x": 65.625,
                             "y": 0,
                             "width": barWidth,
-                            "height": 50
+                            "height": 400
                         }
                     ],
                     [
                         {
-                            "x": 56.25,
-                            "y": 25,
+                            "x": 421.875,
+                            "y": 200,
                             "width": barWidth,
-                            "height": 25
+                            "height": 200
                         },
                         {
-                            "x": 96.25,
-                            "y": 50,
+                            "x": 721.875,
+                            "y": 400,
                             "width": barWidth,
                             "height": 0
                         },
                         {
-                            "x": 96.25,
-                            "y": 50,
+                            "x": 721.875,
+                            "y": 400,
                             "width": barWidth,
-                            "height": 25
+                            "height": 200
                         }
                     ],
                     [
                         {
-                            "x": 103.75,
-                            "y": 50,
+                            "x": 778.125,
+                            "y": 400,
                             "width": barWidth,
-                            "height": 50
+                            "height": 400
                         }
                     ]
                 ]);
             });
         },
         {
-            width: 120,
-            height: 100
+            width: 900,
+            //height: 100
         }
     );
 
@@ -487,7 +495,7 @@ define(function (require) {
 
             it('should render group bar element', function () {
                 var chart = context.chart;
-                assert.equal(schemes.barGPL.errors(chart.config), false, 'spec is right');
+                assert.equal(schemes.barGPL.errors(chart.getSpec()), false, 'spec is right');
                 expect(getGroupBar().length).to.equal(3);
             });
 
@@ -570,13 +578,13 @@ define(function (require) {
                     [
                         {
                             "x": 0,
-                            "y": 56.5,
+                            "y": 170.5,
                             height: 1,
                             width: 20
                         },
                         {
                             "x": 0,
-                            "y": 63.5,
+                            "y": 192.5,
                             height: 1,
                             width: 60
                         },
@@ -588,7 +596,7 @@ define(function (require) {
                         },
                         {
                             "x": 0,
-                            "y": 99.5,
+                            "y": 299.5,
                             height: 1,
                             width: 100
                         }
@@ -598,7 +606,7 @@ define(function (require) {
         },
         {
             width: 120,
-            height: 100
+            height: 300
         }
     );
 
@@ -678,175 +686,14 @@ define(function (require) {
         return (str + '+' + offsetISO);
     };
 
-    describePlot(
-        'ELEMENT.INTERVAL WITH TWO ORDER AXIS',
-        {
-            unit: {
-                type: 'COORDS.RECT',
-                x: 'date',
-                y: 'count',
-                guide: {
-                    padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, nice: false},
-                    y: {hide: true, nice: false}
-                },
-                units: [
-                    {
-                        type: 'ELEMENT.INTERVAL',
-                        guide: {prettify: false}
-                    }
-                ]
-            }
-        },
-        [
-            {
-                "createDate": new Date(iso("2014-09-01T00:00:00")),
-                "count": 100
-            },
-            {
-                "createDate": new Date(iso("2014-09-02T00:00:00")),
-                "count": 50
-            },
-            {
-                "createDate": new Date(iso("2014-09-03T00:00:00")),
-                "count": 1
-            },
-            {
-                "createDate": new Date(iso("2014-09-04T00:00:00")),
-                "count": 0
-            }
-        ],
-        function () {
-            it('should contain correct interval elements', function () {
-
-                var stepSize = 100 / 4;
-                var barWidth = stepSize / 2;
-                var xi = (i) => String(stepSize * i + (stepSize - barWidth) / 2);
-
-                expectCoordsElement(expect, [
-                    [
-                        {
-                            "x": xi(0),
-                            "y": 0,
-                            "width": barWidth,
-                            "height": 100
-                        },
-                        {
-                            "x": xi(1),
-                            "y": 50,
-                            "width": barWidth,
-                            "height": 50
-                        },
-                        {
-                            "x": xi(2),
-                            "y": 99,
-                            "width": barWidth,
-                            "height": 1
-                        },
-                        {
-                            "x": xi(3),
-                            "y": 100,
-                            "width": barWidth,
-                            "height": 0
-                        }
-                    ]
-                ]);
-            });
-        },
-        {
-            width: 100,
-            height: 100
-        }
-    );
-
-    describePlot(
-        'ELEMENT.INTERVAL.FLIP WITH TWO ORDER AXIS',
-        {
-
-            unit: {
-                type: 'COORDS.RECT',
-                x: 'count',
-                y: 'date',
-                guide: {
-                    padding: {l: 0, r: 0, t: 0, b: 0},
-                    x: {hide: true, nice: false, min: 0, max: 100},
-                    y: {hide: true, nice: false}
-                },
-                units: [
-                    {
-                        flip: true,
-                        guide: {
-                            prettify: false,
-                            size: {enableDistributeEvenly: false}
-                        }
-                    }
-                ]
-            }
-        },
-        [
-            {
-                "createDate": new Date(iso("2014-09-01T00:00:00")),
-                "count": 100
-            },
-            {
-                "createDate": new Date(iso("2014-09-02T00:00:00")),
-                "count": 50
-            },
-            {
-                "createDate": new Date(iso("2014-09-03T00:00:00")),
-                "count": 1
-            },
-            {
-                "createDate": new Date(iso("2014-09-04T00:00:00")),
-                "count": 0
-            }
-        ],
-        function () {
-            it('should contain correct interval elements', function () {
-                expectCoordsElement(
-                    expect,
-                    [
-                        [
-                            {
-                                "x": 0,
-                                "y": 87,
-                                "width": 100,
-                                "height": 1
-                            },
-                            {
-                                "x": 0,
-                                "y": 62,
-                                "width": 50,
-                                "height": 1
-                            },
-                            {
-                                "x": 0,
-                                "y": 37,
-                                "width": 1,
-                                "height": 1
-                            },
-                            {
-                                "x": 0,
-                                "y": 12,
-                                "width": 0,
-                                "height": 1
-                            }
-                        ]
-                    ]);
-            });
-        },
-        {
-            width: 100,
-            height: 100
-        }
-    );
     var testExpectCoordForTimeAdCount = [
         [
-            750,
-            375,
+            800,
+            400,
             1
         ]
     ];
+
     var testDataCoordForTimeAdCount = [
         {time: testUtils.toLocalDate('2014-02-03'), count: 0},
         {time: testUtils.toLocalDate('2014-02-02'), count: 5},
@@ -937,25 +784,25 @@ define(function (require) {
 
                 var coords = [
                     [
-                        375,
-                        187,
+                        400,
+                        200,
                         minimalHeight,
                         0,
                         minimalHeight,
-                        188,
-                        375
+                        200,
+                        400
                     ]
                 ];
 
                 var ys = [
                     [
                         0,      // count = 1000
-                        188,    // count = 500
-                        374,    // count = 1 (minus minimal height)
-                        375,    // count = 0
-                        375,    // count = -1
-                        375,    // count = -500
-                        375     // count = -1000
+                        200,    // count = 500
+                        399,    // count = 1 (minus minimal height)
+                        400,    // count = 0
+                        400,    // count = -1
+                        400,    // count = -500
+                        400     // count = -1000
                     ]
                 ];
 
@@ -998,24 +845,24 @@ define(function (require) {
 
                 var coords = [
                     [
-                        375,
-                        188,
+                        400,
+                        200,
                         minimalHeight,
                         0,
                         minimalHeight,
-                        187,
-                        375
+                        200,
+                        400
                     ]
                 ];
 
                 var xs = [
                     [
-                        375,    // count = 1000
-                        375,    // count = 500
-                        375,    // count = 1
-                        375,    // count = 0
-                        374,    // count = -1 (minus minimal height)
-                        188,    // count = -500
+                        400,    // count = 1000
+                        400,    // count = 500
+                        400,    // count = 1
+                        400,    // count = 0
+                        399,    // count = -1 (minus minimal height)
+                        200,    // count = -500
                         0       // count = -1000
                     ]
                 ];
@@ -1285,4 +1132,168 @@ define(function (require) {
             autoWidth: false
         }
     );
+
+    describe('ELEMENT.INTERVAL', function () {
+
+        var div;
+        var size = {width: 1000, height: 1000};
+
+        beforeEach(function () {
+            div = document.createElement('div');
+            document.body.appendChild(div);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+        });
+
+        it('should draw horizontal bar on 2 order axis', function () {
+
+            var plot = new tauCharts.Chart({
+                data: [
+                    {
+                        "createDate": new Date(iso("2014-09-01T00:00:00")),
+                        "count": 100
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-02T00:00:00")),
+                        "count": 50
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-03T00:00:00")),
+                        "count": 1
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-04T00:00:00")),
+                        "count": 0
+                    }
+                ],
+                type: 'horizontal-bar',
+                x: 'count',
+                y: 'createDate',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, nice: false, min: 0, max: 100},
+                    y: {hide: true, nice: false, tickPeriod: 'day'},
+                    prettify: false,
+                    size: {enableDistributeEvenly: false}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            plot.renderTo(div,
+                {
+                    width: 120,
+                    height: 100
+                });
+
+            expectCoordsElement(
+                expect,
+                [
+                    [
+                        {
+                            "x": 0,
+                            "y": 87,
+                            width: 120,
+                            height: 1
+                        },
+                        {
+                            "x": 0,
+                            "y": 62,
+                            width: 60,
+                            height: 1
+                        },
+                        {
+                            "x": 0,
+                            "y": 37,
+                            width: 1,
+                            height: 1
+                        },
+                        {
+                            "x": 0,
+                            "y": 12,
+                            "width": 0,
+                            "height": 1
+                        }
+                    ]
+                ]);
+        });
+
+        it('should draw vertical bar on 2 order axis', function () {
+
+            var plot = new tauCharts.Chart({
+                data: [
+                    {
+                        "createDate": new Date(iso("2014-09-01T00:00:00")),
+                        "count": 100
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-02T00:00:00")),
+                        "count": 50
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-03T00:00:00")),
+                        "count": 1
+                    },
+                    {
+                        "createDate": new Date(iso("2014-09-04T00:00:00")),
+                        "count": 0
+                    }
+                ],
+                type: 'bar',
+                y: 'count',
+                x: 'createDate',
+                guide: {
+                    padding: {l: 0, r: 0, t: 0, b: 0},
+                    x: {hide: true, nice: false, tickPeriod: 'day'},
+                    y: {hide: true, nice: false},
+                    prettify: false
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                }
+            });
+            plot.renderTo(div,
+                {
+                    width: 100,
+                    height: 120
+                });
+
+            var stepSize = 100 / 4;
+            var barWidth = stepSize / 2;
+            var xi = (i) => String(stepSize * i + (stepSize - barWidth) / 2);
+
+            expectCoordsElement(
+                expect,
+                [
+                    [
+                        {
+                            "x": xi(0),
+                            "y": 0,
+                            "width": barWidth,
+                            "height": 120
+                        },
+                        {
+                            "x": xi(1),
+                            "y": 60,
+                            "width": barWidth,
+                            "height": 60
+                        },
+                        {
+                            "x": xi(2),
+                            "y": 119,
+                            "width": barWidth,
+                            "height": 1
+                        },
+                        {
+                            "x": xi(3),
+                            "y": 120,
+                            "width": barWidth,
+                            "height": 0
+                        }
+                    ]
+                ]);
+        });
+    });
 });

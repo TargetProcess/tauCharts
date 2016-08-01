@@ -11,6 +11,7 @@ import {scalesRegistry} from './scales-registry';
 import {Cartesian}  from './elements/coords.cartesian';
 import {Parallel}   from './elements/coords.parallel';
 import {GeoMap}     from './elements/coords.geomap';
+import {GenericCartesian} from './elements/element.generic.cartesian';
 import {Point}      from './elements/element.point';
 import {Area}       from './elements/element.area';
 import {Path}       from './elements/element.path';
@@ -36,6 +37,7 @@ import {ChartScatterplot}       from './api/chart-scatterplot';
 import {ChartLine}              from './api/chart-line';
 import {ChartArea}              from './api/chart-area';
 import {ChartParallel}          from './api/chart-parallel';
+import {d3_animationInterceptor} from './utils/d3-decorators';
 
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
@@ -69,6 +71,7 @@ var api = {
             return colorBrewers[name];
         }
     },
+    d3_animationInterceptor: d3_animationInterceptor,
     pluginsSDK: PluginsSDK,
     plugins: {
         add: function (name, brewer) {
@@ -167,6 +170,7 @@ Plot.globalSettings = api.globalSettings;
     ['COORDS.RECT', Cartesian],
     ['COORDS.MAP', GeoMap],
     ['COORDS.PARALLEL', Parallel],
+    ['ELEMENT.GENERIC.CARTESIAN', GenericCartesian],
     ['ELEMENT.POINT', Point],
     ['ELEMENT.LINE', Line],
     ['ELEMENT.PATH', Path],

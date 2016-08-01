@@ -71,6 +71,47 @@ export class Element extends Emitter {
     }
 
     walkFrames() {
+        return {
+            toScreenModel() {
+                return null;
+            }
+        };
+    }
+
+    createScales() {
         // do nothing by default
+    }
+
+    allocateRect() {
+        return {
+            left: 0,
+            top: 0,
+            width: 0,
+            height: 0
+        };
+    }
+
+    init() {
+        this.createScales(this.config.fnCreateScale);
+        this.screenModel = (this
+            .walkFrames(this.config.frames)
+            .toScreenModel());
+    }
+
+    draw() {
+        // TODO: expose to explicit call everywhere
+        this.config.options.container = this.config.options.slot(this.config.uid);
+        this.drawFrames(this.config.frames);
+    }
+
+    data() {
+        return this
+            .config
+            .frames
+            .reduce(((data, frame) => data.concat(frame.part())), []);
+    }
+
+    node() {
+        return this;
     }
 }

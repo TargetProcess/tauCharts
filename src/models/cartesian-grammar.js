@@ -73,6 +73,7 @@ export class CartesianGrammar {
             flip: isHorizontal,
             scaleX: baseScale,
             scaleY: valsScale,
+            y0: ((d) => (valsScale.value(d[valsScale.dim]))),
             yi: ((d) => (valsScale.value(d[valsScale.dim]))),
             xi: ((d) => (baseScale.value(d[baseScale.dim])))
         };
