@@ -424,7 +424,7 @@ export class GeoMap extends Element {
 
         var updateGroups = function () {
 
-            this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
+            this.attr('class', (f) => `frame frame-${f.hash}`)
                 .call(function () {
                     var points = this
                         .selectAll('circle')
@@ -444,7 +444,7 @@ export class GeoMap extends Element {
         var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
         var frameGroups = xmap
-            .selectAll('.frame-id-' + options.uid)
+            .selectAll('.frame')
             .data(frames.map(mapper), (f) => f.hash);
         frameGroups
             .exit()

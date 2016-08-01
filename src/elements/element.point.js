@@ -151,7 +151,7 @@ export class Point extends Element {
 
         var updateGroups = function () {
 
-            this.attr('class', `frame-id-${options.uid}`)
+            this.attr('class', 'frame')
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
@@ -177,7 +177,7 @@ export class Point extends Element {
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var frameGroups = options.container
-            .selectAll(`.frame-id-${options.uid}`)
+            .selectAll('.frame')
             .data(fibers);
         frameGroups
             .exit()
