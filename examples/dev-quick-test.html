@@ -168,10 +168,8 @@
             .filter(function (r) {
                 return true;
             })
-            .slice(0, 0)
+            //.slice(0, 1)
             .concat({
-
-                z: 222,
                 type: 'scatterplot',
                 y: 'distribution',
                 x: 'y',
@@ -218,7 +216,7 @@
                 cfg.settings.fitModel = cfg.settings.fitModel || 'normal'; // 'entire-view'
 
                 cfg.plugins = cfg.plugins || [];
-                // cfg.plugins.push(tauCharts.api.plugins.get('floating-axes')());
+                cfg.plugins.push(tauCharts.api.plugins.get('floating-axes')());
 
 //                cfg.plugins.push(tauCharts.api.plugins.get('exportTo')({
 //                    cssPaths: [

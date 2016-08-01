@@ -13,9 +13,13 @@ export class GPL extends Emitter {
 
         // jscs:disable
         _.defaults(config.scales, {
+            'size_null': {type: 'size', source: '?'},
             'split_null': {type: 'value', source: '?'},
             'label_null': {type: 'value', source: '?'},
+            'color_null': {type: 'color', source: '?'},
             'identity_null': {type: 'identity', source: '?'},
+            'size:default': {type: 'size', source: '?'},
+            'color:default': {type: 'color', source: '?'},
             'split:default': {type: 'value', source: '?'},
             'label:default': {type: 'value', source: '?'},
             'identity:default': {type: 'identity', source: '?'}
