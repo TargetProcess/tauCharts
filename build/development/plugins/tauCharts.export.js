@@ -224,7 +224,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }).then(function (res) {
 	                    var style = createStyleElement(res);
 	                    var div = document.createElement('div');
+	                    chart.fire('beforeExportSVGNode');
 	                    var svg = chart.getSVG().cloneNode(true);
+	                    chart.fire('afterExportSVGNode');
 	                    div.appendChild(fixSVGForCanvgCompatibility(svg));
 	                    d3.select(svg).attr('version', 1.1).attr('xmlns', 'http://www.w3.org/2000/svg');
 	                    svg.insertBefore(style, svg.firstChild);

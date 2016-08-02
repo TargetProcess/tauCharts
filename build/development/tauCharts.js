@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.2-beta.5 - 2016-07-06
+/*! taucharts - v0.9.3-beta.0 - 2016-08-02
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -62,7 +62,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.api = exports.__api__ = exports.Chart = exports.Plot = exports.GPL = undefined;
+	exports.version = exports.api = exports.__api__ = exports.Chart = exports.Plot = exports.GPL = undefined;
 
 	var _utilsDom = __webpack_require__(1);
 
@@ -88,11 +88,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _coords3 = __webpack_require__(114);
 
+	var _elementGeneric = __webpack_require__(117);
+
 	var _element = __webpack_require__(5);
 
 	var _element2 = __webpack_require__(21);
 
-	var _element3 = __webpack_require__(117);
+	var _element3 = __webpack_require__(118);
 
 	var _element4 = __webpack_require__(18);
 
@@ -100,43 +102,45 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _elementInterval = __webpack_require__(23);
 
-	var _elementParallel = __webpack_require__(118);
+	var _elementParallel = __webpack_require__(119);
 
-	var _identity = __webpack_require__(119);
+	var _identity = __webpack_require__(120);
 
-	var _color = __webpack_require__(121);
+	var _color = __webpack_require__(122);
 
-	var _size = __webpack_require__(122);
+	var _size = __webpack_require__(123);
 
-	var _ordinal = __webpack_require__(123);
+	var _ordinal = __webpack_require__(124);
 
-	var _period = __webpack_require__(124);
+	var _period = __webpack_require__(125);
 
-	var _time = __webpack_require__(125);
+	var _time = __webpack_require__(126);
 
-	var _linear = __webpack_require__(126);
+	var _linear = __webpack_require__(127);
 
-	var _value = __webpack_require__(127);
+	var _value = __webpack_require__(128);
 
-	var _fill = __webpack_require__(128);
+	var _fill = __webpack_require__(129);
 
 	var _chartAliasRegistry = __webpack_require__(110);
 
-	var _chartMap = __webpack_require__(129);
+	var _chartMap = __webpack_require__(130);
 
-	var _chartInterval = __webpack_require__(130);
+	var _chartInterval = __webpack_require__(131);
 
-	var _chartScatterplot = __webpack_require__(132);
+	var _chartScatterplot = __webpack_require__(133);
 
-	var _chartLine = __webpack_require__(133);
+	var _chartLine = __webpack_require__(134);
 
-	var _chartArea = __webpack_require__(134);
+	var _chartArea = __webpack_require__(135);
 
-	var _chartParallel = __webpack_require__(135);
+	var _chartParallel = __webpack_require__(136);
+
+	var _d3Decorators = __webpack_require__(17);
 
 	var _error = __webpack_require__(10);
 
-	var _pluginsSdk = __webpack_require__(136);
+	var _pluginsSdk = __webpack_require__(137);
 
 	var _underscore = __webpack_require__(3);
 
@@ -177,6 +181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return colorBrewers[name];
 	        }
 	    },
+	    d3_animationInterceptor: _d3Decorators.d3_animationInterceptor,
 	    pluginsSDK: _pluginsSdk.PluginsSDK,
 	    plugins: {
 	        add: function add(name, brewer) {
@@ -268,7 +273,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	_tau2.Plot.__api__ = api;
 	_tau2.Plot.globalSettings = api.globalSettings;
 
-	[['COORDS.RECT', _coords.Cartesian], ['COORDS.MAP', _coords3.GeoMap], ['COORDS.PARALLEL', _coords2.Parallel], ['ELEMENT.POINT', _element.Point], ['ELEMENT.LINE', _element4.Line], ['ELEMENT.PATH', _element3.Path], ['ELEMENT.AREA', _element2.Area], ['ELEMENT.INTERVAL', _element5.Interval], ['ELEMENT.INTERVAL.STACKED', _elementInterval.StackedInterval], ['PARALLEL/ELEMENT.LINE', _elementParallel.ParallelLine]].reduce(function (memo, nv) {
+	[['COORDS.RECT', _coords.Cartesian], ['COORDS.MAP', _coords3.GeoMap], ['COORDS.PARALLEL', _coords2.Parallel], ['ELEMENT.GENERIC.CARTESIAN', _elementGeneric.GenericCartesian], ['ELEMENT.POINT', _element.Point], ['ELEMENT.LINE', _element4.Line], ['ELEMENT.PATH', _element3.Path], ['ELEMENT.AREA', _element2.Area], ['ELEMENT.INTERVAL', _element5.Interval], ['ELEMENT.INTERVAL.STACKED', _elementInterval.StackedInterval], ['PARALLEL/ELEMENT.LINE', _elementParallel.ParallelLine]].reduce(function (memo, nv) {
 	    return memo.reg(nv[0], nv[1]);
 	}, api.unitsRegistry);
 
@@ -317,11 +322,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	}]));
 
+	/* global VERSION:false */
+	var version = ("0.9.3-beta.0");
+
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
 	exports.__api__ = __api__;
 	exports.api = api;
+	exports.version = version;
 
 /***/ },
 /* 1 */
@@ -1011,6 +1020,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    toRadian: function toRadian(degree) {
 	        return degree / 180 * Math.PI;
+	    },
+
+	    normalizeAngle: function normalizeAngle(angle) {
+	        if (Math.abs(angle) >= 360) {
+	            angle = angle % 360;
+	        }
+
+	        if (angle < 0) {
+	            angle = 360 + angle;
+	        }
+
+	        return angle;
 	    }
 	};
 
@@ -1196,7 +1217,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var updateGroups = function updateGroups() {
 
-	                this.attr('class', 'frame-id-' + options.uid).call(function () {
+	                this.attr('class', 'frame').call(function () {
 	                    var dots = this.selectAll('circle').data(function (fiber) {
 	                        return fiber;
 	                    }, self.screenModel.id);
@@ -1215,7 +1236,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return memo.concat([groups[k]]);
 	            }, []);
 
-	            var frameGroups = options.container.selectAll('.frame-id-' + options.uid).data(fibers);
+	            var frameGroups = options.container.selectAll('.frame').data(fibers);
 	            frameGroups.exit().remove();
 	            frameGroups.call(updateGroups);
 	            frameGroups.enter().append('g').call(updateGroups);
@@ -1368,7 +1389,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'walkFrames',
 	        value: function walkFrames() {
+	            return {
+	                toScreenModel: function toScreenModel() {
+	                    return null;
+	                }
+	            };
+	        }
+	    }, {
+	        key: 'createScales',
+	        value: function createScales() {
 	            // do nothing by default
+	        }
+	    }, {
+	        key: 'allocateRect',
+	        value: function allocateRect() {
+	            return {
+	                left: 0,
+	                top: 0,
+	                width: 0,
+	                height: 0
+	            };
+	        }
+	    }, {
+	        key: 'init',
+	        value: function init() {
+	            this.createScales(this.config.fnCreateScale);
+	            this.screenModel = this.walkFrames(this.config.frames).toScreenModel();
+	        }
+	    }, {
+	        key: 'draw',
+	        value: function draw() {
+	            // TODO: expose to explicit call everywhere
+	            this.config.options.container = this.config.options.slot(this.config.uid);
+	            this.drawFrames(this.config.frames);
+	        }
+	    }, {
+	        key: 'data',
+	        value: function data() {
+	            return this.config.frames.reduce(function (data, frame) {
+	                return data.concat(frame.part());
+	            }, []);
+	        }
+	    }, {
+	        key: 'node',
+	        value: function node() {
+	            return this;
 	        }
 	    }]);
 
@@ -1685,6 +1750,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                flip: isHorizontal,
 	                scaleX: baseScale,
 	                scaleY: valsScale,
+	                y0: function y0(d) {
+	                    return valsScale.value(d[valsScale.dim]);
+	                },
 	                yi: function yi(d) {
 	                    return valsScale.value(d[valsScale.dim]);
 	                },
@@ -1725,6 +1793,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'decorator_positioningByColor',
 	        value: function decorator_positioningByColor(model, params) {
+
 	            var method = model.scaleX.discrete ? CartesianGrammar.decorator_discrete_positioningByColor : CartesianGrammar.decorator_identity;
 
 	            return method(model, params);
@@ -1735,7 +1804,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _objectDestructuringEmpty(_ref4);
 
 	            var baseScale = model.scaleX;
-	            var categories = model.scaleColor.domain();
+	            var categories = !model.scaleColor.discrete ? [] : model.scaleColor.domain();
 	            var categoriesCount = categories.length || 1;
 	            var colorIndexScale = function colorIndexScale(d) {
 	                return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
@@ -3166,6 +3235,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.cutText = exports.wrapText = exports.d3_decorator_avoid_labels_collisions = exports.d3_decorator_prettify_categorical_axis_ticks = exports.d3_decorator_fix_horizontal_axis_ticks_overflow = exports.d3_decorator_fix_axis_bottom_line = exports.d3_decorator_prettify_axis_label = exports.d3_decorator_wrap_tick_label = exports.d3_animationInterceptor = undefined;
 
+	var _utils = __webpack_require__(4);
+
 	var _utilsDraw = __webpack_require__(12);
 
 	var _underscore = __webpack_require__(3);
@@ -3396,16 +3467,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var d3_decorator_wrap_tick_label = function d3_decorator_wrap_tick_label(nodeScale, guide, isHorizontal, logicalScale) {
 
-	    var angle = guide.rotate;
+	    var angle = _utils.utils.normalizeAngle(guide.rotate);
 
 	    var tick = nodeScale.selectAll('.tick text');
 	    tick.attr({ transform: _utilsDraw.utilsDraw.rotate(angle) }).style('text-anchor', guide.textAnchor);
 
-	    if (Math.abs(angle / 90) % 2 > 0) {
+	    var segment = Math.abs(angle / 90);
+	    if (segment % 2 > 0) {
+	        var kRot = angle < 180 ? 1 : -1;
 	        var k = isHorizontal ? 0.5 : -2;
 	        var dy = k * parseFloat(tick.attr('dy'));
 	        var attr = {
-	            x: 9,
+	            x: 9 * kRot,
 	            y: 0,
 	            dx: isHorizontal ? null : dy + 'em',
 	            dy: dy + 'em'
@@ -3691,7 +3764,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
-	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame-' + options.uid;
+	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame';
 	                }
 	            };
 
@@ -4104,7 +4177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var fibers = this.config.stack ? _cartesianGrammar.CartesianGrammar.toStackedFibers(fullData, pathModel) : _cartesianGrammar.CartesianGrammar.toFibers(fullData, pathModel);
 
-	            var frameGroups = options.container.selectAll('.frame-' + options.uid).data(fibers);
+	            var frameGroups = options.container.selectAll('.frame').data(fibers);
 	            frameGroups.exit().remove();
 	            frameGroups.call(updateGroupContainer);
 	            frameGroups.enter().append('g').call(updateGroupContainer);
@@ -4278,13 +4351,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var guide = this.config.guide;
-	            var options = this.config.options;
 	            var countCss = (0, _cssClassMap.getLineClassesByCount)(screenModel.model.scaleColor.domain().length);
 
 	            var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
-	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame-' + options.uid;
+	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame';
 	                }
 	            };
 
@@ -4480,7 +4552,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var self = this;
 
 	            var options = this.config.options;
-	            var uid = options.uid;
 	            var config = this.config;
 	            var prettify = config.guide.prettify;
 	            var baseCssClass = this.baseCssClass;
@@ -4498,7 +4569,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var updateBarContainer = function updateBarContainer() {
 	                var _createUpdateFunc, _createUpdateFunc2;
 
-	                this.attr('class', 'frame-id-' + uid + ' i-role-bar-group');
+	                this.attr('class', 'frame i-role-bar-group');
 	                var bars = this.selectAll('.bar').data(function (fiber) {
 	                    return fiber;
 	                }, self.screenModel.id);
@@ -4525,7 +4596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var fibers = _cartesianGrammar.CartesianGrammar.toFibers(data, modelGoG);
 
-	            var elements = options.container.selectAll('.frame-id-' + uid).data(fibers);
+	            var elements = options.container.selectAll('.frame').data(fibers);
 	            elements.exit().remove();
 	            elements.call(updateBarContainer);
 	            elements.enter().append('g').call(updateBarContainer);
@@ -4719,10 +4790,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(4);
 
-	var _utilsDom = __webpack_require__(1);
-
-	var _const = __webpack_require__(6);
-
 	var _algebra = __webpack_require__(25);
 
 	var _dataFrame = __webpack_require__(27);
@@ -4730,10 +4797,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
-
-	var _d = __webpack_require__(2);
-
-	var _d2 = _interopRequireDefault(_d);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4758,9 +4821,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GPL).call(this));
 
 	        _underscore2.default.defaults(config.scales, {
+	            'size_null': { type: 'size', source: '?' },
 	            'split_null': { type: 'value', source: '?' },
 	            'label_null': { type: 'value', source: '?' },
+	            'color_null': { type: 'color', source: '?' },
 	            'identity_null': { type: 'identity', source: '?' },
+	            'size:default': { type: 'size', source: '?' },
+	            'color:default': { type: 'color', source: '?' },
 	            'split:default': { type: 'value', source: '?' },
 	            'label:default': { type: 'value', source: '?' },
 	            'identity:default': { type: 'identity', source: '?' }
@@ -4789,63 +4856,87 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        });
-
-	        _this.onUnitDraw = config.onUnitDraw;
-	        _this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || function (x) {
-	            return x;
-	        };
 	        return _this;
 	    }
 
 	    _createClass(GPL, [{
-	        key: 'renderTo',
-	        value: function renderTo(target, xSize) {
+	        key: 'unfoldStructure',
+	        value: function unfoldStructure() {
+	            this.root = this._expandUnitsStructure(this.config.unit);
+	            return this.config;
+	        }
+	    }, {
+	        key: 'getDrawScenario',
+	        value: function getDrawScenario(root) {
 	            var _this2 = this;
 
-	            var d3Target = _d2.default.select(target);
+	            this._flattenDrawScenario(root, function (parentInstance, unit, rootFrame) {
+	                // Rule to cancel parent frame inheritance
+	                var frame = unit.expression.inherit === false ? null : rootFrame;
+	                var instance = _this2.unitSet.create(unit.type, _underscore2.default.extend({ adjustPhase: true }, { fnCreateScale: _this2._createFrameScalesFactoryMethod(frame) }, unit, { options: parentInstance.allocateRect(rootFrame.key) }));
 
-	            this.config.settings.size = xSize || _underscore2.default.defaults(_utilsDom.utilsDom.getContainerSize(d3Target.node()));
-
-	            this.root = this._expandUnitsStructure(this.config.unit);
-
-	            this.onUnitsStructureExpanded(this.config);
-
-	            var xSvg = d3Target.selectAll('svg').data([1]);
-
-	            var size = this.config.settings.size;
-
-	            var attr = {
-	                class: _const.CSS_PREFIX + 'svg',
-	                width: size.width,
-	                height: size.height
-	            };
-
-	            xSvg.attr(attr);
-
-	            xSvg.enter().append('svg').attr(attr).append('g').attr('class', _const.CSS_PREFIX + 'cell cell frame-root');
-
-	            this.root.options = {
-	                container: d3Target.select('.frame-root'),
-	                frameId: 'root',
-	                left: 0,
-	                top: 0,
-	                width: size.width,
-	                height: size.height
-	            };
-
-	            this._walkUnitsStructure(this.root, this._datify({
-	                source: this.root.expression.source,
-	                pipe: []
-	            }));
+	                instance.init();
+	                return instance;
+	            });
 
 	            Object.keys(this.scales).forEach(function (k) {
 	                return _this2.scalesHub.createScaleInfo(_this2.scales[k]).commit();
 	            });
 
-	            this._drawUnitsStructure(this.root, this._datify({
+	            return this._flattenDrawScenario(root, function (parentInstance, unit, rootFrame) {
+	                var frame = unit.expression.inherit === false ? null : rootFrame;
+	                var instance = _this2.unitSet.create(unit.type, _underscore2.default.extend({ fnCreateScale: _this2._createFrameScalesFactoryMethod(frame) }, unit, { options: parentInstance.allocateRect(rootFrame.key) }));
+
+	                instance.init();
+	                instance.parentUnit = parentInstance;
+	                return instance;
+	            });
+	        }
+	    }, {
+	        key: '_flattenDrawScenario',
+	        value: function _flattenDrawScenario(root, iterator) {
+
+	            var uid = 0;
+	            var scenario = [];
+
+	            var stack = [root];
+
+	            var put = function put(x) {
+	                return stack.unshift(x);
+	            };
+	            var pop = function pop() {
+	                return stack.shift();
+	            };
+	            var top = function top() {
+	                return stack[0];
+	            };
+
+	            GPL.traverseSpec({ unit: this.root },
+	            // enter
+	            function (unit, parentUnit, currFrame) {
+
+	                unit.uid = ++uid;
+	                unit.guide = _utils.utils.clone(unit.guide);
+
+	                var instance = iterator(top(), unit, currFrame);
+
+	                scenario.push(instance);
+
+	                if (unit.type.indexOf('COORDS.') === 0) {
+	                    put(instance);
+	                }
+	            },
+	            // exit
+	            function (unit) {
+	                if (unit.type.indexOf('COORDS.') === 0) {
+	                    pop();
+	                }
+	            }, null, this._datify({
 	                source: this.root.expression.source,
 	                pipe: []
 	            }));
+
+	            return scenario;
 	        }
 	    }, {
 	        key: '_expandUnitsStructure',
@@ -4896,58 +4987,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return root;
 	        }
 	    }, {
-	        key: '_drawUnitsStructure',
-	        value: function _drawUnitsStructure(unitConfig, rootFrame) {
-	            var rootUnit = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
-
-
+	        key: '_createFrameScalesFactoryMethod',
+	        value: function _createFrameScalesFactoryMethod(passFrame) {
 	            var self = this;
-
-	            // Rule to cancel parent frame inheritance
-	            var passFrame = unitConfig.expression.inherit === false ? null : rootFrame;
-
-	            var UnitClass = self.unitSet.get(unitConfig.type);
-	            var unitNode = new UnitClass(unitConfig);
-	            unitNode.parentUnit = rootUnit;
-	            unitNode.createScales(function (type, alias, dynamicProps) {
+	            return function (type, alias, dynamicProps) {
 	                var key = alias || type + ':default';
 	                return self.scalesHub.createScaleInfo(self.scales[key], passFrame).create(dynamicProps);
-	            }).drawFrames(unitConfig.frames, function (rootUnit) {
-	                return function (rootConf, rootFrame) {
-	                    self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-	                };
-	            }(unitNode));
-
-	            if (self.onUnitDraw) {
-	                self.onUnitDraw(unitNode);
-	            }
-
-	            return unitConfig;
-	        }
-	    }, {
-	        key: '_walkUnitsStructure',
-	        value: function _walkUnitsStructure(unitConfig, rootFrame) {
-	            var parentUnit = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
-
-
-	            var self = this;
-
-	            // Rule to cancel parent frame inheritance
-	            var passFrame = unitConfig.expression.inherit === false ? null : rootFrame;
-
-	            var UnitClass = self.unitSet.get(unitConfig.type);
-	            var unitNode = new UnitClass(_underscore2.default.extend({ adjustPhase: true }, unitConfig));
-	            unitNode.parentUnit = parentUnit;
-	            unitNode.createScales(function (type, alias, dynamicProps) {
-	                var key = alias || type + ':default';
-	                return self.scalesHub.createScaleInfo(self.scales[key], passFrame).create(dynamicProps);
-	            }).walkFrames(unitConfig.frames, function (rootUnit) {
-	                return function (rootConf, rootFrame) {
-	                    self._walkUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-	                };
-	            }(unitNode));
-
-	            return unitConfig;
+	            };
 	        }
 	    }, {
 	        key: '_datify',
@@ -4990,12 +5036,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }
 	    }], [{
-	        key: 'destroyNodes',
-	        value: function destroyNodes(nodes) {
-	            nodes.forEach(function (node) {
-	                return node.destroy();
-	            });
-	            return [];
+	        key: 'traverseSpec',
+	        value: function traverseSpec(spec, enter, exit) {
+	            var rootNode = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
+	            var rootFrame = arguments.length <= 4 || arguments[4] === undefined ? null : arguments[4];
+
+
+	            var traverse = function traverse(node, enter, exit, parentNode, currFrame) {
+
+	                enter(node, parentNode, currFrame);
+
+	                if (node.frames) {
+	                    node.frames.forEach(function (frame) {
+	                        (frame.units || []).map(function (subNode) {
+	                            return traverse(subNode, enter, exit, node, frame);
+	                        });
+	                    });
+	                }
+
+	                exit(node, parentNode, currFrame);
+	            };
+
+	            traverse(spec.unit, enter, exit, rootNode, rootFrame);
 	        }
 	    }]);
 
@@ -5331,6 +5393,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _specTransformExtractAxes = __webpack_require__(108);
 
+	var _const = __webpack_require__(6);
+
 	var _tau = __webpack_require__(24);
 
 	var _underscore = __webpack_require__(3);
@@ -5401,7 +5465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(Plot, [{
 	        key: 'destroy',
 	        value: function destroy() {
-	            this._nodes = _tau.GPL.destroyNodes(this._nodes);
+	            this.destroyNodes();
 	            _d2.default.select(this._svg).remove();
 	            _d2.default.select(this._layout.layout).remove();
 	            _get(Object.getPrototypeOf(Plot.prototype), 'destroy', this).call(this);
@@ -5469,9 +5533,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return new _balloon.Tooltip('', conf || {});
 	        }
 	    }, {
+	        key: 'destroyNodes',
+	        value: function destroyNodes() {
+	            this._nodes.forEach(function (node) {
+	                return node.destroy();
+	            });
+	            this._nodes = [];
+	        }
+	    }, {
+	        key: 'onUnitDraw',
+	        value: function onUnitDraw(unitNode) {
+	            var _this2 = this;
+
+	            this._nodes.push(unitNode);
+	            this.fire('unitdraw', unitNode);
+	            ['click', 'mouseover', 'mouseout'].forEach(function (eventName) {
+	                return unitNode.on(eventName, function (sender, e) {
+	                    _this2.fire('element' + eventName, {
+	                        element: sender,
+	                        data: e.data,
+	                        event: e.event
+	                    });
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'onUnitsStructureExpanded',
+	        value: function onUnitsStructureExpanded(specRef) {
+	            var _this3 = this;
+
+	            this.onUnitsStructureExpandedTransformers.forEach(function (TClass) {
+	                return new TClass(specRef).transform(_this3);
+	            });
+	            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
+	        }
+	    }, {
 	        key: 'renderTo',
 	        value: function renderTo(target, xSize) {
-	            var _this2 = this;
+	            var _this4 = this;
 
 	            this._svg = null;
 	            this._target = target;
@@ -5508,39 +5607,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            this._liveSpec = this.transformers.reduce(function (memo, TransformClass) {
-	                return new TransformClass(memo).transform(_this2);
+	                return new TransformClass(memo).transform(_this4);
 	            }, this._liveSpec);
 
-	            this._nodes = _tau.GPL.destroyNodes(this._nodes);
-
-	            this._liveSpec.onUnitDraw = function (unitNode) {
-	                _this2._nodes.push(unitNode);
-	                _this2.fire('unitdraw', unitNode);
-	                ['click', 'mouseover', 'mouseout'].forEach(function (eventName) {
-	                    return unitNode.on(eventName, function (sender, e) {
-	                        _this2.fire('element' + eventName, {
-	                            element: sender,
-	                            data: e.data,
-	                            event: e.event
-	                        });
-	                    });
-	                });
-	            };
-
-	            this._liveSpec.onUnitsStructureExpanded = function (specRef) {
-	                _this2.onUnitsStructureExpandedTransformers.forEach(function (TClass) {
-	                    return new TClass(specRef).transform(_this2);
-	                });
-	                _this2.fire(['units', 'structure', 'expanded'].join(''), specRef);
-	            };
+	            this.destroyNodes();
 
 	            this.fire('specready', this._liveSpec);
 
-	            new _tau.GPL(this._liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry).renderTo(content, this._liveSpec.settings.size);
+	            var xGpl = new _tau.GPL(this._liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry);
+	            var structure = xGpl.unfoldStructure();
 
-	            var svgXElement = _d2.default.select(content).select('svg');
+	            this.onUnitsStructureExpanded(structure);
 
-	            this._svg = svgXElement.node();
+	            var newSize = xGpl.config.settings.size;
+	            var d3Target = _d2.default.select(content);
+	            var attr = {
+	                class: _const.CSS_PREFIX + 'svg',
+	                width: newSize.width,
+	                height: newSize.height
+	            };
+
+	            var xSvg = d3Target.selectAll('svg').data([1]);
+	            xSvg.attr(attr);
+	            xSvg.enter().append('svg').attr(attr).append('g').attr('class', _const.CSS_PREFIX + 'cell cell frame-root');
+
+	            var scenario = xGpl.getDrawScenario({
+	                allocateRect: function allocateRect() {
+	                    return {
+	                        slot: function slot() {
+	                            return d3Target.select('.frame-root');
+	                        },
+	                        frameId: 'root',
+	                        left: 0,
+	                        top: 0,
+	                        width: newSize.width,
+	                        containerWidth: newSize.width,
+	                        height: newSize.height,
+	                        containerHeight: newSize.height
+	                    };
+	                }
+	            });
+
+	            scenario.forEach(function (item) {
+	                item.draw();
+	                _this4.onUnitDraw(item.node());
+	            });
+
+	            this._svg = xSvg.node();
 	            this._layout.rightSidebar.style.maxHeight = this._liveSpec.settings.size.height + 'px';
 	            this.fire('render', this._svg);
 	        }
@@ -5575,7 +5688,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDataSources',
 	        value: function getDataSources() {
-	            var _this3 = this;
+	            var _this5 = this;
 
 	            var param = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -5592,7 +5705,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return k !== '?';
 	            }).reduce(function (memo, k) {
 	                var item = chartDataModel[k];
-	                var filterIterator = _this3.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+	                var filterIterator = _this5.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
 	                memo[k] = {
 	                    dims: item.dims,
 	                    data: item.data.filter(filterIterator)
@@ -5662,10 +5775,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'removeFilter',
 	        value: function removeFilter(id) {
-	            var _this4 = this;
+	            var _this6 = this;
 
 	            _underscore2.default.each(this._filtersStore.filters, function (filters, key) {
-	                _this4._filtersStore.filters[key] = _underscore2.default.reject(filters, function (item) {
+	                _this6._filtersStore.filters[key] = _underscore2.default.reject(filters, function (item) {
 	                    return item.id === id;
 	                });
 	            });
@@ -6597,17 +6710,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.unitsRegistry = undefined;
 
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
 	var _error = __webpack_require__(10);
 
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	var UnitsMap = {};
+	var SeedsMap = {};
 
 	var unitsRegistry = {
+	    reg: function reg(unitType, xUnit, xSeed) {
 
-	    reg: function reg(unitType, xUnit) {
-	        UnitsMap[unitType] = xUnit;
+	        if (xSeed) {
+	            SeedsMap[unitType] = xSeed;
+	            UnitsMap[unitType] = function (seed) {
+	                this.___tauchartsseed___ = seed;
+	            };
+	            UnitsMap[unitType].prototype = _underscore2.default.extend({
+	                node: function node() {
+	                    return this.___tauchartsseed___;
+	                },
+	                init: function init() {
+	                    this.node().init();
+	                },
+	                draw: function draw() {
+	                    this.node().draw();
+	                }
+	            }, xUnit);
+	        } else {
+	            UnitsMap[unitType] = xUnit;
+	        }
 	        return this;
 	    },
-
 	    get: function get(unitType) {
 
 	        if (!UnitsMap.hasOwnProperty(unitType)) {
@@ -6615,6 +6752,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        return UnitsMap[unitType];
+	    },
+	    create: function create(unitType, unitConfig) {
+	        var Unit = this.get(unitType);
+	        var node;
+	        if (SeedsMap[unitType]) {
+	            var Seed = this.get(SeedsMap[unitType]);
+	            node = new Unit(new Seed(unitConfig));
+	        } else {
+	            node = new Unit(unitConfig);
+	        }
+
+	        return node;
 	    }
 	};
 
@@ -8450,7 +8599,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this2 = this;
 
 	            var guide = srcUnit.guide || {};
-	            ['color', 'size', 'label', 'x', 'y', 'split'].forEach(function (p) {
+	            ['identity', 'color', 'size', 'label', 'x', 'y', 'split'].forEach(function (p) {
 	                if (srcUnit.hasOwnProperty(p)) {
 	                    gplRoot[p] = _this2.scalesPool(p, srcUnit[p], guide[p] || {});
 	                }
@@ -8562,6 +8711,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (scaleType === 'split' && dimName !== null) {
 	                item = {
 	                    type: 'value',
+	                    source: '/',
+	                    dim: this.ruleInferDim(dimName, guide)
+	                };
+	            }
+
+	            if (scaleType === 'identity' && dimName !== null) {
+	                item = {
+	                    type: 'identity',
 	                    source: '/',
 	                    dim: this.ruleInferDim(dimName, guide)
 	                };
@@ -8874,24 +9031,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var width = _ref.width;
 	    var height = _ref.height;
 
-	    var rad = _utils.utils.toRadian(angle);
+	    var rad = Math.abs(_utils.utils.toRadian(angle));
 	    return {
 	        width: Math.max(Math.cos(rad) * width, height),
 	        height: Math.max(Math.sin(rad) * width, height)
 	    };
 	};
 
-	var getTextAnchorByAngle = function getTextAnchorByAngle(angle) {
+	var getTextAnchorByAngle = function getTextAnchorByAngle(xAngle) {
 	    var xOrY = arguments.length <= 1 || arguments[1] === undefined ? 'x' : arguments[1];
 
 
-	    if (Math.abs(angle) >= 360) {
-	        angle = angle % 360;
-	    }
-
-	    if (angle < 0) {
-	        angle = 360 + angle;
-	    }
+	    var angle = _utils.utils.normalizeAngle(xAngle);
 
 	    var xRules = xOrY === 'x' ? [[0, 45, 'middle'], [45, 135, 'start'], [135, 225, 'middle'], [225, 315, 'end'], [315, 360, 'middle']] : [[0, 90, 'end'], [90, 135, 'middle'], [135, 225, 'start'], [225, 315, 'middle'], [315, 360, 'end']];
 
@@ -9007,7 +9158,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    unit.guide.x.padding = xIsEmptyAxis ? 0 : settings.xAxisPadding;
 	    unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
 
-	    unit.guide.x.rotate = isXVertical ? 90 : 0;
+	    unit.guide.x.rotate = isXVertical ? -90 : 0;
 	    unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate, 'x');
 
 	    unit.guide.y.rotate = isYVertical ? -90 : 0;
@@ -9136,7 +9287,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var isXVertical = !isFacetUnit && Boolean(xMeta.dimType) && xMeta.dimType !== 'measure';
 
-	            unit.guide.x.rotate = isXVertical ? 90 : 0;
+	            unit.guide.x.rotate = isXVertical ? -90 : 0;
 	            unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate);
 
 	            unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(xMeta, settings.defaultFormats);
@@ -9261,9 +9412,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    dimType: dim.type,
 	                    scaleType: scaleCfg.type,
 	                    values: values,
-	                    isEmpty: values.filter(function (x) {
-	                        return !_underscore2.default.isUndefined(x);
-	                    }).length === 0
+	                    isEmpty: dim.type == null
+	                    // isEmpty: (source == '?')
+	                    // isEmpty: ((values.filter((x) => !(_.isUndefined(x))).length) === 0)
 	                };
 	            }
 	        };
@@ -10130,99 +10281,76 @@ return /******/ (function(modules) { // webpackBootstrap
 	            guide.x.hide = Math.floor(diff) > 0;
 	            guide.y.hide = Math.floor(unit.options.left) > 0;
 	        }
+
+	        var options = _this.config.options;
+	        var padding = _this.config.guide.padding;
+
+	        _this.L = options.left + padding.l;
+	        _this.T = options.top + padding.t;
+	        _this.W = options.width - (padding.l + padding.r);
+	        _this.H = options.height - (padding.t + padding.b);
 	        return _this;
 	    }
 
 	    _createClass(Cartesian, [{
 	        key: 'createScales',
 	        value: function createScales(fnCreateScale) {
-
-	            var node = this.config;
-
-	            var options = node.options;
-	            var padding = node.guide.padding;
-
-	            var innerWidth = options.width - (padding.l + padding.r);
-	            var innerHeight = options.height - (padding.t + padding.b);
-
-	            this.xScale = fnCreateScale('pos', node.x, [0, innerWidth]);
-	            this.yScale = fnCreateScale('pos', node.y, [innerHeight, 0]);
-
-	            this.W = innerWidth;
-	            this.H = innerHeight;
-
-	            return this.regScale('x', this.xScale).regScale('y', this.yScale);
+	            this.xScale = fnCreateScale('pos', this.config.x, [0, this.W]);
+	            this.yScale = fnCreateScale('pos', this.config.y, [this.H, 0]);
+	            this.regScale('x', this.xScale).regScale('y', this.yScale);
 	        }
 	    }, {
-	        key: 'buildModel',
-	        value: function buildModel(args) {
-
+	        key: 'walkFrames',
+	        value: function walkFrames() {
+	            var w = this.W;
+	            var h = this.H;
 	            return [_cartesian.CartesianModel.decorator_size, _cartesian.CartesianModel.decorator_color].filter(function (x) {
 	                return x;
 	            }).reduce(function (model, transform) {
-	                return transform(model, args);
+	                return transform(model, {});
 	            }, new _cartesian.CartesianModel({
-	                scaleX: args.scaleX,
-	                scaleY: args.scaleY,
+	                scaleX: this.xScale,
+	                scaleY: this.yScale,
 	                xi: function xi() {
-	                    return args.w / 2;
+	                    return w / 2;
 	                },
 	                yi: function yi() {
-	                    return args.h / 2;
+	                    return h / 2;
 	                },
 	                sizeX: function sizeX() {
-	                    return args.w;
+	                    return w;
 	                },
 	                sizeY: function sizeY() {
-	                    return args.h;
+	                    return h;
 	                }
 	            }));
 	        }
 	    }, {
-	        key: 'walkFrames',
-	        value: function walkFrames(frames, continuation) {
+	        key: 'allocateRect',
+	        value: function allocateRect(k) {
+	            var _this2 = this;
 
-	            var model = this.buildModel({
-	                scaleX: this.xScale,
-	                scaleY: this.yScale,
-	                w: this.W,
-	                h: this.H
-	            });
-
-	            frames.forEach(function (frame) {
-
-	                var k = frame.key;
-	                var options = {
-	                    left: model.xi(k) - model.sizeX(k) / 2,
-	                    top: model.yi(k) - model.sizeY(k) / 2,
-	                    width: model.sizeX(k),
-	                    height: model.sizeY(k)
-	                };
-
-	                frame.units.forEach(function (unit) {
-	                    unit.options = options;
-	                    continuation(unit, frame);
-	                });
-	            });
+	            var model = this.screenModel;
+	            return {
+	                slot: function slot(uid) {
+	                    return _this2.config.options.container.select('.uid_' + uid);
+	                },
+	                left: model.xi(k) - model.sizeX(k) / 2,
+	                top: model.yi(k) - model.sizeY(k) / 2,
+	                width: model.sizeX(k),
+	                height: model.sizeY(k),
+	                // TODO: Fix autoLayout.. redundant properties
+	                containerWidth: this.W,
+	                containerHeight: this.H
+	            };
 	        }
 	    }, {
 	        key: 'drawFrames',
-	        value: function drawFrames(frames, continuation) {
-
-	            var model = this.buildModel({
-	                scaleX: this.xScale,
-	                scaleY: this.yScale,
-	                w: this.W,
-	                h: this.H
-	            });
+	        value: function drawFrames(frames) {
 
 	            var node = _underscore2.default.extend({}, this.config);
 
 	            var options = node.options;
-	            var padding = node.guide.padding;
-
-	            var innerLeft = options.left + padding.l;
-	            var innerTop = options.top + padding.t;
 
 	            var innerWidth = this.W;
 	            var innerHeight = this.H;
@@ -10239,7 +10367,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            node.x.guide.label.size = innerWidth;
 	            node.y.guide.label.size = innerHeight;
 
-	            options.container.attr('transform', _utilsDraw.utilsDraw.translate(innerLeft, innerTop));
+	            options.container.attr('transform', _utilsDraw.utilsDraw.translate(this.L, this.T));
 
 	            // take into account reposition during resize by orthogonal axis
 	            var hashX = node.x.getHash() + innerHeight;
@@ -10259,47 +10387,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this._fnDrawDimAxis(options.container, node.y, positionY, innerHeight, options.frameId + 'y', hashY);
 	            }
 
-	            var updateCellLayers = function updateCellLayers(cellId, cell, frame) {
+	            var xdata = frames.reduce(function (memo, f) {
+	                return memo.concat((f.units || []).map(function (unit) {
+	                    return unit.uid;
+	                }));
+	            }, []);
 
-	                var mapper = function (basicOptions, unit, i) {
-	                    unit.options = _underscore2.default.extend({ uid: basicOptions.frameId + i }, basicOptions);
-	                    return unit;
-	                }.bind(null, {
-	                    frameId: frame.hash(),
-	                    container: cell,
-	                    containerWidth: innerWidth,
-	                    containerHeight: innerHeight,
-	                    left: model.xi(frame.key) - model.sizeX(frame.key) / 2,
-	                    top: model.yi(frame.key) - model.sizeY(frame.key) / 2,
-	                    width: model.sizeX(frame.key),
-	                    height: model.sizeY(frame.key)
-	                });
-
-	                var continueDrawUnit = function continueDrawUnit(unit) {
-	                    unit.options.container = _d2.default.select(this);
-	                    continuation(unit, frame);
-	                };
-
-	                var layers = cell.selectAll('.layer_' + cellId).data(frame.units.map(mapper), function (unit) {
-	                    return unit.options.uid + unit.type;
-	                });
-	                layers.exit().remove();
-	                layers.each(continueDrawUnit);
-	                layers.enter().append('g').attr('class', 'layer_' + cellId).each(continueDrawUnit);
-	            };
-
-	            var cellFrameIterator = function cellFrameIterator(cellFrame) {
-	                updateCellLayers(options.frameId, _d2.default.select(this), cellFrame);
-	            };
-
-	            var cells = this._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY).selectAll('.parent-frame-' + options.frameId).data(frames, function (f) {
-	                return f.hash();
+	            var xcells = this._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY).selectAll('.cell').data(xdata, function (x) {
+	                return x;
 	            });
-	            cells.exit().remove();
-	            cells.each(cellFrameIterator);
-	            cells.enter().append('g').attr('class', function (d) {
-	                return _const.CSS_PREFIX + 'cell cell parent-frame-' + options.frameId + ' frame-' + d.hash();
-	            }).each(cellFrameIterator);
+	            xcells.exit().remove();
+	            xcells.enter().append('g').attr('class', function (d) {
+	                return _const.CSS_PREFIX + 'cell cell uid_' + d;
+	            });
 	        }
 	    }, {
 	        key: '_fnDrawDimAxis',
@@ -10462,7 +10562,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.sizeY = model.sizeY || createFunc(0);
 	    }
 
-	    _createClass(CartesianModel, null, [{
+	    _createClass(CartesianModel, [{
+	        key: "toScreenModel",
+	        value: function toScreenModel() {
+	            return this;
+	        }
+	    }], [{
 	        key: "compose",
 	        value: function compose(prev) {
 	            var updates = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -10560,6 +10665,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.on('force-brush', function (sender, e) {
 	            return _this._forceBrushing(e);
 	        });
+
+	        var options = _this.config.options;
+	        var padding = _this.config.guide.padding;
+	        _this.L = options.left + padding.l;
+	        _this.T = options.top + padding.t;
+	        _this.W = options.width - (padding.l + padding.r);
+	        _this.H = options.height - (padding.t + padding.b);
 	        return _this;
 	    }
 
@@ -10569,14 +10681,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var cfg = this.config;
 
-	            var options = cfg.options;
-	            var padding = cfg.guide.padding;
-
-	            var innerWidth = options.width - (padding.l + padding.r);
-	            var innerHeight = options.height - (padding.t + padding.b);
-
-	            this.W = innerWidth;
-	            this.H = innerHeight;
+	            var innerWidth = this.W;
+	            var innerHeight = this.H;
 
 	            this.columnsScalesMap = cfg.columns.reduce(function (memo, xi) {
 	                memo[xi] = fnCreateScale('pos', xi, [innerHeight, 0]);
@@ -10597,46 +10703,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.regScale('columns', this.columnsScalesMap);
 	        }
 	    }, {
-	        key: 'drawFrames',
-	        value: function drawFrames(frames, continuation) {
+	        key: 'allocateRect',
+	        value: function allocateRect() {
 	            var _this2 = this;
+
+	            return {
+	                slot: function slot(uid) {
+	                    return _this2.config.options.container.select('.uid_' + uid);
+	                },
+	                left: 0,
+	                top: 0,
+	                width: this.W,
+	                height: this.H,
+	                // TODO: Fix autoLayout.. redundant properties
+	                containerWidth: this.W,
+	                containerHeight: this.H
+	            };
+	        }
+	    }, {
+	        key: 'drawFrames',
+	        value: function drawFrames(frames) {
+	            var _this3 = this;
 
 	            var cfg = _underscore2.default.extend({}, this.config);
 	            var options = cfg.options;
-	            var padding = cfg.guide.padding;
-
-	            var innerW = options.width - (padding.l + padding.r);
-	            var innerH = options.height - (padding.t + padding.b);
 
 	            var updateCellLayers = function updateCellLayers(cellId, cell, frame) {
 
-	                var frameId = frame.hash();
-	                var mapper = function mapper(unit, i) {
-	                    unit.options = {
-	                        uid: frameId + i,
-	                        frameId: frameId,
-	                        container: cell,
-	                        containerWidth: innerW,
-	                        containerHeight: innerH,
-	                        left: 0,
-	                        top: 0,
-	                        width: innerW,
-	                        height: innerH
-	                    };
-	                    return unit;
-	                };
-
-	                var continueDrawUnit = function continueDrawUnit(unit) {
-	                    unit.options.container = _d2.default.select(this);
-	                    continuation(unit, frame);
-	                };
-
-	                var layers = cell.selectAll('.layer_' + cellId).data(frame.units.map(mapper), function (unit) {
-	                    return unit.options.uid + unit.type;
+	                var layers = cell.selectAll('.layer_' + cellId).data(frame.units, function (unit) {
+	                    return unit.uid;
 	                });
 	                layers.exit().remove();
-	                layers.each(continueDrawUnit);
-	                layers.enter().append('g').attr('class', 'layer_' + cellId).each(continueDrawUnit);
+	                layers.enter().append('g').attr('class', function (unit) {
+	                    return 'layer_' + cellId + ' uid_' + unit.uid;
+	                });
 	            };
 
 	            var cellFrameIterator = function cellFrameIterator(cellFrame) {
@@ -10644,7 +10744,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var grid = this._fnDrawGrid(options.container, cfg, options.frameId, Object.keys(this.columnsScalesMap).reduce(function (memo, k) {
-	                return memo.concat([_this2.columnsScalesMap[k].getHash()]);
+	                return memo.concat([_this3.columnsScalesMap[k].getHash()]);
 	            }, []).join('_'));
 
 	            var frms = grid.selectAll('.parent-frame-' + options.frameId).data(frames, function (f) {
@@ -10666,15 +10766,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: '_fnDrawGrid',
 	        value: function _fnDrawGrid(container, config, frameId, uniqueHash) {
 
-	            var options = config.options;
-	            var padding = config.guide.padding;
-
-	            var l = options.left + padding.l;
-	            var t = options.top + padding.t;
-
 	            var grid = container.selectAll('.grid_' + frameId).data([uniqueHash], _underscore2.default.identity);
 	            grid.exit().remove();
-	            grid.enter().append('g').attr('class', 'grid grid_' + frameId).attr('transform', _utilsDraw.utilsDraw.translate(l, t));
+	            grid.enter().append('g').attr('class', 'grid grid_' + frameId).attr('transform', _utilsDraw.utilsDraw.translate(this.L, this.T));
 
 	            return grid;
 	        }
@@ -10711,7 +10805,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_enableBrushing',
 	        value: function _enableBrushing(cols) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var brushWidth = 16;
 
@@ -10746,7 +10840,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    };
 	                });
 
-	                _this3.fire('brush', eventBrush);
+	                _this4.fire('brush', eventBrush);
 	            };
 
 	            cols.selectAll('.brush').remove();
@@ -11215,7 +11309,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var updateGroups = function updateGroups() {
 
 	                this.attr('class', function (f) {
-	                    return 'frame-id-' + options.uid + ' frame-' + f.hash;
+	                    return 'frame frame-' + f.hash;
 	                }).call(function () {
 	                    var points = this.selectAll('circle').data(function (frame) {
 	                        return frame.data.map(function (item) {
@@ -11232,7 +11326,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return { tags: f.key || {}, hash: f.hash(), data: f.part() };
 	            };
 
-	            var frameGroups = xmap.selectAll('.frame-id-' + options.uid).data(frames.map(mapper), function (f) {
+	            var frameGroups = xmap.selectAll('.frame').data(frames.map(mapper), function (f) {
 	                return f.hash;
 	            });
 	            frameGroups.exit().remove();
@@ -12248,6 +12342,222 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.GenericCartesian = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _element = __webpack_require__(7);
+
+	var _cartesianGrammar = __webpack_require__(9);
+
+	var _d3Decorators = __webpack_require__(17);
+
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var GenericCartesian = exports.GenericCartesian = function (_Element) {
+	    _inherits(GenericCartesian, _Element);
+
+	    function GenericCartesian(config) {
+	        _classCallCheck(this, GenericCartesian);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GenericCartesian).call(this, config));
+
+	        _this.config = config;
+
+	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
+	            animationSpeed: 0,
+	            prettify: true,
+	            enableColorToBarPosition: false
+	        });
+
+	        _this.config.guide.size = _underscore2.default.defaults(_this.config.guide.size || {}, {
+	            defMinSize: 10,
+	            defMaxSize: _this.isEmptySize ? 10 : 40, // TODO: fix when pass scales to constructor
+	            enableDistributeEvenly: !_this.isEmptySize
+	        });
+
+	        _this.defMin = config.guide.size.defMinSize;
+	        _this.defMax = config.guide.size.defMaxSize;
+	        _this.minLimit = config.guide.size.minSize;
+	        _this.maxLimit = config.guide.size.maxSize;
+
+	        _this.isHorizontal = _this.config.flip;
+
+	        var enableStack = _this.config.stack;
+	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
+	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
+
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale, config.adjustPhase && (enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale)].concat(config.transformModel || []);
+	        return _this;
+	    }
+
+	    _createClass(GenericCartesian, [{
+	        key: 'createScales',
+	        value: function createScales(fnCreateScale) {
+
+	            var config = this.config;
+
+	            this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
+	            this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
+	            this.size = fnCreateScale('size', config.size, {});
+	            this.color = fnCreateScale('color', config.color, {});
+	            this.split = fnCreateScale('split', config.split, {});
+	            this.label = fnCreateScale('label', config.label, {});
+	            this.identity = fnCreateScale('identity', config.identity, {});
+	            return this.regScale('x', this.xScale).regScale('y', this.yScale).regScale('size', this.size).regScale('color', this.color).regScale('split', this.split).regScale('label', this.label);
+	        }
+	    }, {
+	        key: 'walkFrames',
+	        value: function walkFrames() {
+
+	            var args = {
+	                defMin: this.defMin,
+	                defMax: this.defMax,
+	                minLimit: this.minLimit,
+	                maxLimit: this.maxLimit,
+	                isHorizontal: this.isHorizontal,
+	                dataSource: this.data()
+	            };
+
+	            return this.decorators.filter(function (x) {
+	                return x;
+	            }).reduce(function (model, transform) {
+	                return _cartesianGrammar.CartesianGrammar.compose(model, transform(model, args));
+	            }, new _cartesianGrammar.CartesianGrammar({
+	                scaleX: this.xScale,
+	                scaleY: this.yScale,
+	                scaleSize: this.size,
+	                scaleLabel: this.label,
+	                scaleColor: this.color,
+	                scaleSplit: this.split,
+	                scaleIdentity: this.identity
+	            }));
+	        }
+	    }, {
+	        key: 'drawFrames',
+	        value: function drawFrames() {
+
+	            var self = this;
+
+	            var options = this.config.options;
+
+	            var round = function round(x, decimals) {
+	                var kRound = Math.pow(10, decimals);
+	                return Math.round(kRound * x) / kRound;
+	            };
+	            var size = function size(d) {
+	                return round(self.screenModel.size(d) / 2, 4);
+	            };
+	            var createUpdateFunc = _d3Decorators.d3_animationInterceptor;
+
+	            var drawPart = function drawPart(that, id, props) {
+	                var speed = self.config.guide.animationSpeed;
+	                var part = that.selectAll('.' + id).data(function (row) {
+	                    return [row];
+	                }, self.screenModel.id);
+	                part.exit().call(createUpdateFunc(speed, null, { width: 0 }, function (node) {
+	                    return _d2.default.select(node).remove();
+	                }));
+	                part.call(createUpdateFunc(speed, null, props));
+	                part.enter().append('rect').style('stroke-width', 0).call(createUpdateFunc(speed, { width: 0 }, props));
+	            };
+
+	            var flip = this.config.flip;
+	            var x = flip ? 'y' : 'x';
+	            var y = flip ? 'x' : 'y';
+	            var y0 = flip ? 'x0' : 'y0';
+	            var w = flip ? 'height' : 'width';
+	            var h = flip ? 'width' : 'height';
+	            var drawElement = function drawElement() {
+	                var _drawPart, _drawPart2, _drawPart3;
+
+	                drawPart(this, 'lvl-top', (_drawPart = {}, _defineProperty(_drawPart, w, function (d) {
+	                    return size(d);
+	                }), _defineProperty(_drawPart, h, 1), _defineProperty(_drawPart, x, function (d) {
+	                    return self.screenModel[x](d) - size(d) / 2;
+	                }), _defineProperty(_drawPart, y, function (d) {
+	                    return self.screenModel[y](d);
+	                }), _defineProperty(_drawPart, 'fill', function fill(d) {
+	                    return self.screenModel.color(d);
+	                }), _defineProperty(_drawPart, 'class', function _class(d) {
+	                    return 'lvl-top ' + self.screenModel.class(d);
+	                }), _drawPart));
+	                drawPart(this, 'lvl-btm', (_drawPart2 = {}, _defineProperty(_drawPart2, w, function (d) {
+	                    return size(d);
+	                }), _defineProperty(_drawPart2, h, 1), _defineProperty(_drawPart2, x, function (d) {
+	                    return self.screenModel[x](d) - size(d) / 2;
+	                }), _defineProperty(_drawPart2, y, function (d) {
+	                    return self.screenModel[y0](d);
+	                }), _defineProperty(_drawPart2, 'fill', function fill(d) {
+	                    return self.screenModel.color(d);
+	                }), _defineProperty(_drawPart2, 'class', function _class(d) {
+	                    return 'lvl-btm ' + self.screenModel.class(d);
+	                }), _drawPart2));
+	                drawPart(this, 'lvl-link', (_drawPart3 = {}, _defineProperty(_drawPart3, w, 0.5), _defineProperty(_drawPart3, h, function (d) {
+	                    return Math.abs(self.screenModel[y](d) - self.screenModel[y0](d));
+	                }), _defineProperty(_drawPart3, x, function (d) {
+	                    return self.screenModel[x](d) - 0.25;
+	                }), _defineProperty(_drawPart3, y, function (d) {
+	                    return Math.min(self.screenModel[y](d), self.screenModel[y0](d));
+	                }), _defineProperty(_drawPart3, 'fill', function fill(d) {
+	                    return self.screenModel.color(d);
+	                }), _defineProperty(_drawPart3, 'class', function _class(d) {
+	                    return 'lvl-link ' + self.screenModel.class(d);
+	                }), _drawPart3));
+	            };
+
+	            var updateGroups = function updateGroups() {
+
+	                this.attr('class', 'frame-id-' + self.config.uid).call(function () {
+	                    var generic = this.selectAll('.generic').data(function (fiber) {
+	                        return fiber;
+	                    }, self.screenModel.id);
+	                    generic.exit().remove();
+	                    generic.call(drawElement);
+	                    generic.enter().append('g').attr('class', 'generic').call(drawElement);
+	                });
+	            };
+
+	            var groups = _underscore2.default.groupBy(this.data(), self.screenModel.group);
+	            var fibers = Object.keys(groups).reduce(function (memo, k) {
+	                return memo.concat([groups[k]]);
+	            }, []);
+
+	            var frameGroups = options.container.selectAll('.frame-id-' + self.config.uid).data(fibers);
+	            frameGroups.exit().remove();
+	            frameGroups.call(updateGroups);
+	            frameGroups.enter().append('g').call(updateGroups);
+	        }
+	    }]);
+
+	    return GenericCartesian;
+	}(_element.Element);
+
+/***/ },
+/* 118 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 	exports.Path = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -12311,13 +12621,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var guide = this.config.guide;
-	            var options = this.config.options;
 	            var countCss = (0, _cssClassMap.getLineClassesByCount)(screenModel.model.scaleColor.domain().length);
 
 	            var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
 	            baseModel.groupAttributes = {
 	                class: function _class(fiber) {
-	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame-' + options.uid;
+	                    return groupPref + ' ' + baseModel.class(fiber[0]) + ' frame';
 	                }
 	            };
 
@@ -12359,7 +12668,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_elementPath.BasePath);
 
 /***/ },
-/* 118 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12513,7 +12822,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_element.Element);
 
 /***/ },
-/* 119 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12525,7 +12834,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -12571,7 +12880,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 120 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12708,7 +13017,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getVarSet',
 	        value: function getVarSet(arr, scale) {
-	            return (0, _underscore2.default)(arr).chain().pluck(scale.dim).uniq(map_value(scale.dimType)).value();
+
+	            var series = scale.hasOwnProperty('series') ? scale.series : arr.map(function (row) {
+	                return row[scale.dim];
+	            });
+
+	            return _underscore2.default.uniq(series, map_value(scale.dimType));
 	        }
 	    }]);
 
@@ -12716,7 +13030,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 121 */
+/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12728,7 +13042,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _utils = __webpack_require__(4);
 
@@ -12774,12 +13088,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var vars = _d2.default.extent(_this.vars);
 
 	            var isNum = function isNum(num) {
-	                return !isNaN(num) && _underscore2.default.isNumber(num);
+	                return !isNaN(num) && (_underscore2.default.isNumber(num) || _underscore2.default.isDate(num));
 	            };
 	            var min = isNum(props.min) ? props.min : vars[0];
 	            var max = isNum(props.max) ? props.max : vars[1];
 
-	            vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(isNum)))];
+	            var mins = [min, vars[0]].filter(isNum);
+	            var maxs = [max, vars[1]].filter(isNum);
+	            vars = [mins.sort(function (a, b) {
+	                return a - b;
+	            })[0], maxs.sort(function (a, b) {
+	                return b - a;
+	            })[0]];
 
 	            if (props.nice) {
 
@@ -12868,7 +13188,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (_underscore2.default.isArray(brewer)) {
 
-	                func = _d2.default.scale.linear().domain(_utils.utils.splitEvenly(varSet, brewer.length)).range(brewer);
+	                func = _d2.default.scale.linear().domain(_utils.utils.splitEvenly(varSet.map(function (x) {
+	                    return x - 0;
+	                }), brewer.length)).range(brewer);
 	            } else {
 
 	                throw new Error('This brewer is not supported');
@@ -12882,7 +13204,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 122 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12894,7 +13216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _underscore = __webpack_require__(3);
 
@@ -13011,7 +13333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 123 */
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13025,7 +13347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _d = __webpack_require__(2);
 
@@ -13110,7 +13432,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 124 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13124,7 +13446,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _unitDomainPeriodGenerator = __webpack_require__(26);
 
@@ -13260,7 +13582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 125 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13272,7 +13594,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _underscore = __webpack_require__(3);
 
@@ -13390,7 +13712,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 126 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13402,7 +13724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _utils = __webpack_require__(4);
 
@@ -13502,7 +13824,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 127 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13514,7 +13836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13547,7 +13869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 128 */
+/* 129 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13559,7 +13881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _base = __webpack_require__(120);
+	var _base = __webpack_require__(121);
 
 	var _utils = __webpack_require__(4);
 
@@ -13650,7 +13972,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 129 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13738,7 +14060,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartMap = ChartMap;
 
 /***/ },
-/* 130 */
+/* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13748,7 +14070,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartInterval = undefined;
 
-	var _converterHelpers = __webpack_require__(131);
+	var _converterHelpers = __webpack_require__(132);
 
 	var disableColorToBarPositionOnceColorAndAxesUseTheSameDim = function disableColorToBarPositionOnceColorAndAxesUseTheSameDim(normConfig) {
 
@@ -13773,7 +14095,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartInterval = ChartInterval;
 
 /***/ },
-/* 131 */
+/* 132 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13810,6 +14132,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        type: type,
 	        x: config.x,
 	        y: config.y,
+	        identity: config.identity,
 	        size: config.size,
 	        color: config.color,
 	        split: config.split,
@@ -13932,6 +14255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            spec.unit.push(createElement(type, {
 	                x: convertAxis(currentX),
 	                y: convertAxis(currentY),
+	                identity: config.identity,
 	                split: config.split,
 	                color: config.color,
 	                label: config.label,
@@ -13970,7 +14294,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.transformConfig = transformConfig;
 
 /***/ },
-/* 132 */
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13980,7 +14304,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartScatterplot = undefined;
 
-	var _converterHelpers = __webpack_require__(131);
+	var _converterHelpers = __webpack_require__(132);
 
 	var ChartScatterplot = function ChartScatterplot(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -13990,7 +14314,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartScatterplot = ChartScatterplot;
 
 /***/ },
-/* 133 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14002,7 +14326,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _dataProcessor = __webpack_require__(35);
 
-	var _converterHelpers = __webpack_require__(131);
+	var _converterHelpers = __webpack_require__(132);
 
 	var ChartLine = function ChartLine(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -14078,7 +14402,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartLine = ChartLine;
 
 /***/ },
-/* 134 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14090,7 +14414,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _dataProcessor = __webpack_require__(35);
 
-	var _converterHelpers = __webpack_require__(131);
+	var _converterHelpers = __webpack_require__(132);
 
 	var ChartArea = function ChartArea(rawConfig) {
 
@@ -14177,7 +14501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartArea = ChartArea;
 
 /***/ },
-/* 135 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14263,7 +14587,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartParallel = ChartParallel;
 
 /***/ },
-/* 136 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14281,9 +14605,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _formatterRegistry = __webpack_require__(16);
 
-	var _unit = __webpack_require__(137);
+	var _unit = __webpack_require__(138);
 
-	var _spec = __webpack_require__(138);
+	var _spec = __webpack_require__(139);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -14465,7 +14789,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.PluginsSDK = PluginsSDK;
 
 /***/ },
-/* 137 */
+/* 138 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -14568,7 +14892,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Unit = Unit;
 
 /***/ },
-/* 138 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14580,7 +14904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _unit = __webpack_require__(137);
+	var _unit = __webpack_require__(138);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
