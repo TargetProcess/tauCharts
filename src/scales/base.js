@@ -108,10 +108,11 @@ export class BaseScale {
     }
 
     getVarSet(arr, scale) {
-        return _(arr)
-            .chain()
-            .pluck(scale.dim)
-            .uniq(map_value(scale.dimType))
-            .value();
+
+        var series = scale.hasOwnProperty('series') ?
+            scale.series :
+            arr.map((row) => row[scale.dim]);
+
+        return _.uniq(series, map_value(scale.dimType));
     }
 }
