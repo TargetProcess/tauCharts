@@ -124,20 +124,12 @@
                 node.screenModel.model.scaleY.fixup(function (yScaleConfig) {
                     var newConf = {};
 
-                    var fixed = false;
-
-                    if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
-                        newConf.max = maxY;
-                        fixed = true;
-                    }
-
-                    if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
-                        newConf.min = minY;
-                        fixed = true;
-                    }
-
-                    if (fixed) {
-                        newConf.source = '?';
+                    if (!yScaleConfig.hasOwnProperty('series')) {
+                        newConf.series = [minY, maxY];
+                    } else {
+                        var min = Math.min(yScaleConfig.series[0], minY);
+                        var max = Math.max(yScaleConfig.series[1], maxY);
+                        newConf.series = [min, max];
                     }
 
                     return newConf;

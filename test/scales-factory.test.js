@@ -906,5 +906,55 @@ define(function (require) {
             expect(scale1(0)).to.equal('#eeeeee');
             expect(scale1(110)).to.equal('#0000ff');
         });
+
+        it('should support fixed series property in linear scale config', function () {
+
+            var scale0 = new LinearScale(
+                xSrc,
+                {
+                    dim: 'i'
+                }).create([0, 100]);
+
+            expect(scale0.domain()).to.deep.equal([1, 3]);
+            expect(scale0(3)).to.equal(100);
+            expect(scale0.isContains(2)).to.equal(true);
+            expect(scale0.isContains(100)).to.equal(false);
+
+            var scale1 = new LinearScale(
+                xSrc,
+                {
+                    dim: 'i',
+                    series: [0, 100]
+                }).create([0, 100]);
+
+            expect(scale1.domain()).to.deep.equal([0, 100]);
+            expect(scale1(50)).to.equal(50);
+            expect(scale1.isContains(100)).to.equal(true);
+            expect(scale1.isContains(200)).to.equal(false);
+        });
+
+        it('should support fixed series property in ordinal scale config', function () {
+
+            var scale0 = new OrdinalScale(
+                xSrc,
+                {
+                    dim: 'x'
+                }).create([0, 90]);
+
+            expect(scale0.domain()).to.deep.equal(['high', 'low', 'medium']);
+
+            var scale1 = new OrdinalScale(
+                xSrc,
+                {
+                    dim: 'x',
+                    series: ['A', 'B', 'C', 'D']
+                }).create([0, 100]);
+
+            expect(scale1.domain()).to.deep.equal(['A', 'B', 'C', 'D']);
+            expect(scale1.isContains('A')).to.equal(true);
+            expect(scale1.isContains('E')).to.equal(false);
+            expect(scale1('A')).to.equal(12.5);
+            expect(scale1('D')).to.equal(87.5);
+        });
     });
 });
