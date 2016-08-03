@@ -5,6 +5,7 @@ define(function (require) {
     var ValueScale = require('src/scales/value').ValueScale;
     var TimeScale = require('src/scales/time').TimeScale;
     var LinearScale = require('src/scales/linear').LinearScale;
+    var LogarithmicScale = require('src/scales/logarithmic').LogarithmicScale;
     var PeriodScale = require('src/scales/period').PeriodScale;
     var ColorScale = require('src/scales/color').ColorScale;
     var SizeScale = require('src/scales/size').SizeScale;
@@ -414,6 +415,42 @@ define(function (require) {
 
             expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
             expect(scale2.stepSize()).to.equal(0);
+        });
+
+        it('should support [logarithmic] scale', function () {
+
+            var scale0 = new LogarithmicScale(
+                xSrc,
+                {
+                    dim: 'i'
+                }).create([0, 100]);
+
+            expect(scale0.domain()).to.deep.equal([1, 3]);
+
+            expect(scale0(1)).to.equal(0);
+            expect(scale0(2)).to.equal(Math.round(Math.log(2) / (Math.log(3) - Math.log(1)) * 100));
+            expect(scale0(3)).to.equal(100);
+
+            expect(scale0.isContains(0)).to.equal(false);
+            expect(scale0.isContains(1)).to.equal(true);
+            expect(scale0.isContains(2)).to.equal(true);
+            expect(scale0.isContains(3)).to.equal(true);
+            expect(scale0.isContains(3.1)).to.equal(false);
+        });
+
+        it('should logarithmic scale fallback to linear', function () {
+
+            var scale1 = new LogarithmicScale(
+                xSrc,
+                {
+                    dim: 'i',
+                    min: -10,
+                    max: 10
+                }).create([0, 100]);
+
+            expect(scale1.domain()).to.deep.equal([-10, 10]);
+            expect(scale1(-10)).to.equal(0);
+            expect(scale1(10)).to.equal(100);
         });
 
         it('should support [color] scale', function () {
