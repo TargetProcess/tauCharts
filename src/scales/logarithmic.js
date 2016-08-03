@@ -1,5 +1,4 @@
 import {BaseScale} from './base';
-import {utils} from '../utils/utils';
 /* jshint ignore:start */
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -47,9 +46,10 @@ export class LogarithmicScale extends BaseScale {
             vars[1] === 0 ||
             vars[0] > 0 !== vars[1] > 0
         ) {
+            /*eslint-disable */
             console.warn(
-                'Logarithmic scale domain cannot cross zero. Fallback to linear scale.'
-            );
+                'Logarithmic scale domain cannot cross zero. Falling back to linear scale.'
+            );/*eslint-enable */
             d3Scale = d3.scale.linear();
         } else {
             d3Scale = d3.scale.log();
