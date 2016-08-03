@@ -221,13 +221,16 @@ api.chartTypesRegistry = chartTypesRegistry
 
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', ChartLine, commonRules)
-    .add('area', ChartArea, commonRules)
-    .add('bar', (cfg) => ChartInterval(_.defaults(cfg, {flip: false})), commonRules)
 
+    .add('area', ChartArea, commonRules)
+    .add('stacked-area', (cfg) => ChartArea(_.defaults(cfg, {stack: true})), commonRules)
+
+    .add('bar', (cfg) => ChartInterval(_.defaults(cfg, {flip: false})), commonRules)
     .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
     .add('stacked-bar', (cfg) => ChartInterval(_.defaults({flip: false, stack: true}, cfg)), commonRules)
     .add('horizontal-stacked-bar', (cfg) => ChartInterval(_.defaults({flip: true, stack: true}, cfg)), commonRules)
+
     .add('map', ChartMap, commonRules.concat([
         (config) => {
             var shouldSpecifyFillWithCode = (config.fill && config.code);
