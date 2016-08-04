@@ -4,7 +4,7 @@ window.samples.push({
     "y": ["y1", "y2"],
     data: _.times(16, function (i) {
         return {
-            x1: Math.round(Math.random() * 100000) + 1,
+            x1: Math.round(Math.random() * 205000) + 1,
             y1: Math.random() > 0.25 ? 'BIG' : 'SMALL',
             y2: String.fromCharCode(65 + i)
         };

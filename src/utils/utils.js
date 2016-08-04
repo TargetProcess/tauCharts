@@ -346,6 +346,35 @@ var utils = {
         ];
     },
 
+    niceLog10(domain) {
+        domain = [
+            Math.min.apply(null, domain),
+            Math.max.apply(null, domain)
+        ];
+        if (
+            domain[0] === 0 ||
+            domain[1] === 0 ||
+            domain[0] > 0 !== domain[1] > 0
+        ) {
+            throw new Error('Logarithmic domain cannot cross zero.');
+        }
+
+        var isPositive = domain[0] < domain[1];
+        var top = Math.abs(isPositive ? domain[1] : domain[0]);
+        var low = Math.abs(isPositive ? domain[0] : domain[1]);
+
+        var lowExp = low.toExponential().split('e');
+        var topExp = top.toExponential().split('e');
+        var niceLow = parseFloat(Math.floor(lowExp[0]) + 'e' + lowExp[1]);
+        var niceTop = parseFloat(Math.ceil(topExp[0]) + 'e' + topExp[1]);
+
+        return (
+            isPositive ?
+                [niceLow, niceTop] :
+                [-niceTop, -niceLow]
+        );
+    },
+
     traverseJSON,
 
     generateHash: (str) => {

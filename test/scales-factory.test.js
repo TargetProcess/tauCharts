@@ -419,38 +419,93 @@ define(function (require) {
 
         it('should support [logarithmic] scale', function () {
 
+            var low = 0.00125;
+            var medium = 2;
+            var high = 100500;
+            var width = 100;
+            var crossLow = -10;
+            var crossHigh = 100700;
+            var niceLow = 0.001;
+            var niceHigh = 200000;
+            var niceCrossLow = -10000;
+            var niceCrossHigh = 110000;
+
+            var dataLog10 = [
+                { i: high, s: -3, x: 'high', t: new Date('2015-04-17').getTime() },
+                { i: low, s: 3, x: 'low', t: new Date('2015-04-16').getTime() },
+                { i: medium, s: 1, x: 'medium', t: new Date('2015-04-19').getTime() }
+            ];
+            var xLog10Src = {
+                part: function () {
+                    return dataLog10;
+                },
+                full: function () {
+                    return dataLog10;
+                }
+            };
+
             var scale0 = new LogarithmicScale(
-                xSrc,
+                xLog10Src,
                 {
                     dim: 'i'
-                }).create([0, 100]);
+                }).create([0, width]);
 
-            expect(scale0.domain()).to.deep.equal([1, 3]);
+            expect(scale0.domain()).to.deep.equal([low, high]);
 
-            expect(scale0(1)).to.equal(0);
-            expect(scale0(2)).to.equal(Math.round(Math.log(2) / (Math.log(3) - Math.log(1)) * 100));
-            expect(scale0(3)).to.equal(100);
+            expect(scale0(low)).to.equal(0);
+            expect(scale0(medium)).to.equal(
+                Math.round((Math.log(medium) - Math.log(low)) / (Math.log(high) - Math.log(low)) * width)
+            );
+            expect(scale0(high)).to.equal(width);
 
             expect(scale0.isContains(0)).to.equal(false);
-            expect(scale0.isContains(1)).to.equal(true);
-            expect(scale0.isContains(2)).to.equal(true);
-            expect(scale0.isContains(3)).to.equal(true);
-            expect(scale0.isContains(3.1)).to.equal(false);
-        });
-
-        it('should logarithmic scale fallback to linear', function () {
+            expect(scale0.isContains(low)).to.equal(true);
+            expect(scale0.isContains(medium)).to.equal(true);
+            expect(scale0.isContains(high)).to.equal(true);
+            expect(scale0.isContains(crossHigh)).to.equal(false);
 
             var scale1 = new LogarithmicScale(
-                xSrc,
+                xLog10Src,
                 {
                     dim: 'i',
-                    min: -10,
-                    max: 10
-                }).create([0, 100]);
+                    nice: true
+                }).create([0, width]);
 
-            expect(scale1.domain()).to.deep.equal([-10, 10]);
-            expect(scale1(-10)).to.equal(0);
-            expect(scale1(10)).to.equal(100);
+            expect(scale1.domain()).to.deep.equal([niceLow, niceHigh]);
+            expect(scale1(medium)).to.equal(
+                Math.round((Math.log(medium) - Math.log(niceLow)) / (Math.log(niceHigh) - Math.log(niceLow)) * width)
+            );
+
+            var scale2 = new LogarithmicScale(
+                xLog10Src,
+                {
+                    dim: 'i',
+                    min: crossLow,
+                    max: crossHigh
+                }).create([0, width]);
+
+            expect(scale2.domain()).to.deep.equal([crossLow, crossHigh]);
+            expect(scale2(medium)).to.equal(
+                Math.round(width * (medium - crossLow) / (crossHigh - crossLow))
+            );
+            expect(scale2(crossHigh)).to.equal(width);
+
+            var scale3 = new LogarithmicScale(
+                xLog10Src,
+                {
+                    dim: 'i',
+                    min: crossLow,
+                    max: crossHigh,
+                    nice: true
+                }).create([0, width]);
+
+            expect(scale3.domain()).to.deep.equal([niceCrossLow, niceCrossHigh]);
+            expect(scale3(medium)).to.equal(
+                Math.round(width * (medium - niceCrossLow) / (niceCrossHigh - niceCrossLow))
+            );
+
+            expect(scale3.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale3.stepSize()).to.equal(0);
         });
 
         it('should support [color] scale', function () {

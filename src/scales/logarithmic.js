@@ -1,4 +1,5 @@
 import {BaseScale} from './base';
+import {utils} from '../utils/utils';
 /* jshint ignore:start */
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -23,6 +24,14 @@ export class LogarithmicScale extends BaseScale {
             Math.max(...[max, vars[1]].filter(isNum))
         ];
 
+        if (props.nice) {
+            if (crossesZero(vars)) {
+                vars = utils.niceZeroBased(vars);
+            } else {
+                vars = utils.niceLog10(vars);
+            }
+        }
+
         this.vars = vars;
 
         this.addField('scaleType', 'logarithmic')
@@ -41,11 +50,8 @@ export class LogarithmicScale extends BaseScale {
         var vars = this.vars;
 
         var d3Scale;
-        if (
-            vars[0] === 0 ||
-            vars[1] === 0 ||
-            vars[0] > 0 !== vars[1] > 0
-        ) {
+
+        if (crossesZero(vars)) {
             /*eslint-disable */
             console.warn(
                 'Logarithmic scale domain cannot cross zero. Falling back to linear scale.'
@@ -54,14 +60,20 @@ export class LogarithmicScale extends BaseScale {
         } else {
             d3Scale = d3.scale.log();
         }
+
         d3Scale
             .domain(vars)
             .rangeRound(interval, 1);
-        if (this.scaleConfig.nice) {
-            d3Scale.nice();
-        }
         d3Scale.stepSize = (() => 0);
 
         return this.toBaseScale(d3Scale, interval);
     }
+}
+
+function crossesZero(domain) {
+    return (
+        domain[0] === 0 ||
+        domain[1] === 0 ||
+        domain[0] > 0 !== domain[1] > 0
+    );
 }
