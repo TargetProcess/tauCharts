@@ -194,6 +194,21 @@ define(function (require) {
         });
     });
 
+    describe('utils.niceLog10(domain)', function () {
+
+        it('should return nice logarithmic domain', function () {
+            expect(utils.niceLog10([0.0125, 100500])).to.deep.equal([0.01, 200000]);
+            expect(utils.niceLog10([100500, 0.0125])).to.deep.equal([0.01, 200000]);
+            expect(utils.niceLog10([-100500, -0.0125])).to.deep.equal([-200000, -0.01]);
+        });
+
+        it('should throw error when logarithmic domain crosses zero', function () {
+            expect(utils.niceLog10.bind(null, [-100500, 0.0125])).to.throw(Error);
+            expect(utils.niceLog10.bind(null, [0, 100500])).to.throw(Error);
+            expect(utils.niceLog10.bind(null, [-100500, 0])).to.throw(Error);
+        });
+    });
+
     describe('d3 decorators', function() {
 
         var svgNode;

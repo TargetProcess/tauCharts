@@ -359,7 +359,7 @@ var utils = {
             throw new Error('Logarithmic domain cannot cross zero.');
         }
 
-        var isPositive = domain[0] < domain[1];
+        var isPositive = domain[0] > 0;
         var top = Math.abs(isPositive ? domain[1] : domain[0]);
         var low = Math.abs(isPositive ? domain[0] : domain[1]);
 
