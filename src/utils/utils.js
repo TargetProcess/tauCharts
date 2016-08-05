@@ -351,11 +351,7 @@ var utils = {
             Math.min.apply(null, domain),
             Math.max.apply(null, domain)
         ];
-        if (
-            domain[0] === 0 ||
-            domain[1] === 0 ||
-            domain[0] > 0 !== domain[1] > 0
-        ) {
+        if (domain[0] * domain[1] <= 0) {
             throw new Error('Logarithmic domain cannot cross zero.');
         }
 

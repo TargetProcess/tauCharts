@@ -75,11 +75,7 @@ function log10(x) {
 }
 
 function crossesZero(domain) {
-    return (
-        domain[0] === 0 ||
-        domain[1] === 0 ||
-        domain[0] > 0 !== domain[1] > 0
-    );
+    return domain[0] * domain[1] <= 0;
 }
 
 function extendLogScale(scale) {
