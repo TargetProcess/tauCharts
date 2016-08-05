@@ -122,4 +122,4 @@ function extendLogScale(scale) {
     };
 
     return scale;
-};
+}
