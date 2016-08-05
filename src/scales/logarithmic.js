@@ -61,7 +61,6 @@ export class LogarithmicScale extends BaseScale {
             d3Scale = d3.scale.log();
 
             var extendLogScale = function (scale) {
-                var d3ScaleTicks = scale.ticks;
                 var d3ScaleCopy = scale.copy;
 
                 // NOTE: D3 log scale ticks count is readonly
