@@ -2,13 +2,21 @@ window.samples.push({
     "type": "scatterplot",
     "x": ["x1"],
     "y": ["y1", "y2"],
-    data: _.times(16, function (i) {
-        return {
-            x1: Math.round(Math.random() * 205000) + 1,
-            y1: Math.random() > 0.25 ? 'BIG' : 'SMALL',
-            y2: String.fromCharCode(65 + i)
-        };
-    }),
+    data: [
+        {
+            x1: 3,
+            y1: 'BIG',
+            y2: 'A'
+        }, {
+            x1: 230055,
+            y1: 'BIG',
+            y2: 'B'
+        }, {
+            x1: 3733453345354,
+            y1: 'SMALL',
+            y2: 'C'
+        }
+    ],
     dimensions: {
         x1: { 'type': 'measure', 'scale': 'logarithmic' },
         y1: { 'type': 'category', 'scale': 'ordinal' },

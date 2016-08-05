@@ -59,6 +59,48 @@ export class LogarithmicScale extends BaseScale {
             d3Scale = d3.scale.linear();
         } else {
             d3Scale = d3.scale.log();
+
+            var extendLogScale = function (scale) {
+                var d3ScaleTicks = scale.ticks;
+                var d3ScaleCopy = scale.copy;
+
+                // NOTE: D3 log scale ticks count is readonly
+                // and returns 10 ticks per each exponent (10/e).
+                // So here we filter them (10/2e, 10/3e ...).
+                scale.ticks = function (n) {
+
+                    var ticksPerExp = 10;
+                    var ticks = [];
+                    var extent = d3.extent(scale.domain());
+                    var lowExp = Math.floor(log10(extent[0]));
+                    var topExp = Math.ceil(log10(extent[1]));
+
+                    var step = Math.ceil(
+                        (topExp - lowExp) * ticksPerExp /
+                        (Math.ceil(n / ticksPerExp) * ticksPerExp)
+                    );
+
+                    for (let e = lowExp; e <= topExp; e += step) {
+                        for (let t = 1; t <= ticksPerExp; t++) {
+                            let tick = Math.pow(t, step) * Math.pow(10, e);
+                            tick = parseFloat(tick.toExponential(0));
+                            if (tick >= extent[0] && tick <= extent[1]) {
+                                ticks.push(tick);
+                            }
+                        }
+                    }
+
+                    return ticks;
+                };
+                scale.copy = function () {
+                    var copy = d3ScaleCopy.call(scale);
+                    extendLogScale(copy);
+                    return scale;
+                };
+
+                return scale;
+            };
+            extendLogScale(d3Scale);
         }
 
         d3Scale
@@ -68,6 +110,10 @@ export class LogarithmicScale extends BaseScale {
 
         return this.toBaseScale(d3Scale, interval);
     }
+}
+
+function log10(x) {
+    return Math.log(x) / Math.LN10;
 }
 
 function crossesZero(domain) {
