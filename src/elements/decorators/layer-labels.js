@@ -356,11 +356,13 @@ export class LayerLabels {
             var y_overlap = k * Math.max(0, Math.min(rb.y1, ra.y1) - Math.max(ra.y0, rb.y0));
 
             if ((x_overlap * y_overlap) > 0) {
-                [a, b]
-                    .sort((p0, p1) => extremumOrder[p0.extr] - extremumOrder[p1.extr])
-                    .sort((p0, p1) => collisionSolveStrategies[`${p0.extr}/${p1.extr}`](p0, p1))
-                    [1]
-                    .hide = true;
+                let p = [a, b];
+                p.sort((p0, p1) => extremumOrder[p0.extr] - extremumOrder[p1.extr]);
+                let r = (collisionSolveStrategies[`${p[0].extr}/${p[1].extr}`](p[0], p[1]) < 0 ?
+                    p[0] :
+                    p[1]
+                );
+                r.hide = true;
             }
         });
 
