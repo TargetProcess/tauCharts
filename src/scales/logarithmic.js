@@ -118,7 +118,7 @@ function extendLogScale(scale) {
     scale.copy = function () {
         var copy = d3ScaleCopy.call(scale);
         extendLogScale(copy);
-        return scale;
+        return copy;
     };
 
     return scale;

@@ -464,6 +464,11 @@ define(function (require) {
             expect(scale0.isContains(high)).to.equal(true);
             expect(scale0.isContains(crossHigh)).to.equal(false);
 
+            expect(scale0.copy()).to.not.equal(scale0);
+            expect(scale0.ticks(5)).to.deep.equal([
+                0.5, 20, 300, 2000, 10000, 40000, 100000
+            ]);
+
             var scale1 = new LogarithmicScale(
                 xLog10Src,
                 {
