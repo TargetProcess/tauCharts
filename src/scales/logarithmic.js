@@ -1,5 +1,5 @@
 import {BaseScale} from './base';
-import {utils} from '../utils/utils';
+import {TauChartError, errorCodes} from '../error';
 /* jshint ignore:start */
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
@@ -14,25 +14,22 @@ export class LogarithmicScale extends BaseScale {
         var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
 
         var props = this.scaleConfig;
-        var vars = d3.extent(this.vars);
+        var domain = d3.extent(this.vars);
 
-        var min = isNum(props.min) ? props.min : vars[0];
-        var max = isNum(props.max) ? props.max : vars[1];
+        var min = isNum(props.min) ? props.min : domain[0];
+        var max = isNum(props.max) ? props.max : domain[1];
 
-        vars = [
-            Math.min(...[min, vars[0]].filter(isNum)),
-            Math.max(...[max, vars[1]].filter(isNum))
+        domain = [
+            Math.min(...[min, domain[0]].filter(isNum)),
+            Math.max(...[max, domain[1]].filter(isNum))
         ];
+        throwIfCrossesZero(domain);
 
         if (props.nice) {
-            if (crossesZero(vars)) {
-                vars = utils.niceZeroBased(vars);
-            } else {
-                vars = utils.niceLog10(vars);
-            }
+            domain = niceLog10(domain);
         }
 
-        this.vars = vars;
+        this.vars = domain;
 
         this.addField('scaleType', 'logarithmic')
             .addField('discrete', false);
@@ -47,22 +44,11 @@ export class LogarithmicScale extends BaseScale {
 
     create(interval) {
 
-        var vars = this.vars;
+        var domain = this.vars;
+        throwIfCrossesZero(domain);
 
-        var d3Scale;
-
-        if (crossesZero(vars)) {
-            /*eslint-disable */
-            console.warn(
-                'Logarithmic scale domain cannot cross zero. Falling back to linear scale.'
-            );/*eslint-enable */
-            d3Scale = d3.scale.linear();
-        } else {
-            d3Scale = extendLogScale(d3.scale.log());
-        }
-
-        d3Scale
-            .domain(vars)
+        var d3Scale = extendLogScale(d3.scale.log())
+            .domain(domain)
             .rangeRound(interval, 1);
         d3Scale.stepSize = (() => 0);
 
@@ -74,8 +60,13 @@ function log10(x) {
     return Math.log(x) / Math.LN10;
 }
 
-function crossesZero(domain) {
-    return domain[0] * domain[1] <= 0;
+function throwIfCrossesZero(domain) {
+    if (domain[0] * domain[1] <= 0) {
+        throw new TauChartError(
+            'Logarithmic scale domain cannot cross zero.',
+            errorCodes.INVALID_LOG_DOMAIN
+        );
+    }
 }
 
 function extendLogScale(scale) {
@@ -118,4 +109,23 @@ function extendLogScale(scale) {
     };
 
     return scale;
+}
+
+function niceLog10(domain) {
+
+    var isPositive = domain[0] > 0;
+    var absDomain = domain.map((d) => Math.abs(d));
+    var top = Math.max.apply(null, absDomain);
+    var low = Math.min.apply(null, absDomain);
+
+    var lowExp = low.toExponential().split('e');
+    var topExp = top.toExponential().split('e');
+    var niceLow = parseFloat(Math.floor(lowExp[0]) + 'e' + lowExp[1]);
+    var niceTop = parseFloat(Math.ceil(topExp[0]) + 'e' + topExp[1]);
+
+    return (
+        isPositive ?
+            [niceLow, niceTop] :
+            [-niceTop, -niceLow]
+    );
 }
