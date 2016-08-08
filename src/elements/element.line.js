@@ -181,7 +181,7 @@ export class Line extends BasePath {
                     .attr({d: d3Line, opacity: 0});
                 var next = testPath.node().getTotalLength();
                 testPath.remove();
-                return { prev: thisNode.hasAttribute('d') ? thisNode.getTotalLength() : 0, next };
+                return {prev: thisNode.hasAttribute('d') ? thisNode.getTotalLength() : 0, next};
             },
             (nodeRef) => {
                 var index = cache.indexOf(nodeRef);
