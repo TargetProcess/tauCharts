@@ -5,6 +5,7 @@ define(function (require) {
     var ValueScale = require('src/scales/value').ValueScale;
     var TimeScale = require('src/scales/time').TimeScale;
     var LinearScale = require('src/scales/linear').LinearScale;
+    var LogarithmicScale = require('src/scales/logarithmic').LogarithmicScale;
     var PeriodScale = require('src/scales/period').PeriodScale;
     var ColorScale = require('src/scales/color').ColorScale;
     var SizeScale = require('src/scales/size').SizeScale;
@@ -414,6 +415,101 @@ define(function (require) {
 
             expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
             expect(scale2.stepSize()).to.equal(0);
+        });
+
+        it('should support [logarithmic] scale', function () {
+
+            var low = 0.00125;
+            var medium = 2;
+            var high = 100500;
+            var width = 100;
+            var crossLow = -10;
+            var crossHigh = 100700;
+            var niceLow = 0.001;
+            var niceHigh = 200000;
+
+            var DataSource = function (data) {
+                this.data = data;
+            };
+            DataSource.prototype = {
+                part: function () {
+                    return this.data;
+                },
+                full: function () {
+                    return this.data;
+                }
+            };
+            xLog10Src = new DataSource([
+                {i: high, s: -3, x: 'high', t: new Date('2015-04-17').getTime()},
+                {i: low, s: 3, x: 'low', t: new Date('2015-04-16').getTime()},
+                {i: medium, s: 1, x: 'medium', t: new Date('2015-04-19').getTime()}
+            ]);
+            xLog10NegativeSrc = new DataSource(xLog10Src.data.map((d) => {
+                return {i: -d.i, s: d.s, x: d.x, t: d.t};
+            }));
+
+            var scale0 = new LogarithmicScale(
+                xLog10Src,
+                {
+                    dim: 'i'
+                }).create([0, width]);
+
+            expect(scale0.domain()).to.deep.equal([low, high]);
+
+            expect(scale0(low)).to.equal(0);
+            expect(scale0(medium)).to.equal(
+                Math.round((Math.log(medium) - Math.log(low)) / (Math.log(high) - Math.log(low)) * width)
+            );
+            expect(scale0(high)).to.equal(width);
+
+            expect(scale0.isContains(0)).to.equal(false);
+            expect(scale0.isContains(low)).to.equal(true);
+            expect(scale0.isContains(medium)).to.equal(true);
+            expect(scale0.isContains(high)).to.equal(true);
+            expect(scale0.isContains(crossHigh)).to.equal(false);
+
+            expect(scale0.copy()).to.not.equal(scale0);
+            expect(scale0.ticks(5)).to.deep.equal([
+                0.5, 20, 300, 2000, 10000, 40000, 100000
+            ]);
+
+            expect(scale0.hasOwnProperty('stepSize')).to.equal(true);
+            expect(scale0.stepSize()).to.equal(0);
+
+            var scale1 = new LogarithmicScale(
+                xLog10Src,
+                {
+                    dim: 'i',
+                    nice: true
+                }).create([0, width]);
+
+            expect(scale1.domain()).to.deep.equal([niceLow, niceHigh]);
+            expect(scale1(medium)).to.equal(
+                Math.round((Math.log(medium) - Math.log(niceLow)) / (Math.log(niceHigh) - Math.log(niceLow)) * width)
+            );
+
+            var scale2 = new LogarithmicScale(
+                xLog10NegativeSrc,
+                {
+                    dim: 'i',
+                    nice: true
+                }).create([0, width]);
+
+            expect(scale2.domain()).to.deep.equal([-niceHigh, -niceLow]);
+            expect(scale2(-medium)).to.equal(
+                Math.round((1 - (Math.log(medium) - Math.log(niceLow)) / (Math.log(niceHigh) - Math.log(niceLow))) * width)
+            );
+
+            expect(function () {
+                var scale3 = new LogarithmicScale(
+                    xLog10Src,
+                    {
+                        dim: 'i',
+                        min: crossLow,
+                        max: crossHigh,
+                        nice: true
+                    }).create([0, width]);
+            }).to.throw(Error, /Logarithmic scale domain cannot cross zero/);
         });
 
         it('should support [color] scale', function () {
