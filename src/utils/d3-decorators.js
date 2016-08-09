@@ -1,7 +1,9 @@
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
+var selectOrAppend = utilsDom.selectOrAppend;
 
 var d3getComputedTextLength = _.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
@@ -200,31 +202,32 @@ var d3_decorator_fix_axis_bottom_line = (axisNode, size, isContinuesScale) => {
 var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = axisNode
-        .append('text')
+    var labelTextNode = selectOrAppend(axisNode, `text.js-axisLabel`)
+        .attr('class', `js-axisLabel ${guide.cssClass}`)
         .attr('transform', utilsDraw.rotate(guide.rotate))
-        .attr('class', guide.cssClass)
         .attr('x', koeff * guide.size * 0.5)
         .attr('y', koeff * guide.padding)
         .style('text-anchor', guide.textAnchor);
 
     var delimiter = ' \u2192 ';
-    var tags = guide.text.split(delimiter);
-    var tLen = tags.length;
-    tags.forEach((token, i) => {
-
-        labelTextNode
-            .append('tspan')
-            .attr('class', 'label-token label-token-' + i)
-            .text(token);
-
-        if (i < (tLen - 1)) {
-            labelTextNode
-                .append('tspan')
-                .attr('class', 'label-token-delimiter label-token-delimiter-' + i)
-                .text(delimiter);
+    var texts = ((parts) => {
+        var result = [];
+        for (var i = 0; i < parts.length - 1; i++) {
+            result.push(parts[i], delimiter);
         }
-    });
+        result.push(parts[i]);
+        return result;
+    })(guide.text.split(delimiter));
+
+    var tspans = labelTextNode.selectAll('tspan')
+        .data(texts);
+    tspans.enter()
+        .append('tspan')
+        .attr('class', (d, i) => i % 2 ?
+            ('label-token-delimiter label-token-delimiter-' + i) :
+            ('label-token label-token-' + i))
+        .text((d) => d);
+    tspans.exit().remove();
 
     if (guide.dock === 'right') {
         let box = axisNode.selectAll('path.domain').node().getBBox();

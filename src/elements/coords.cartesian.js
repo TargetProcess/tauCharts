@@ -2,6 +2,7 @@ import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {Element} from './element';
 import {CartesianModel} from '../models/cartesian';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
@@ -12,7 +13,8 @@ import {
     d3_decorator_fix_horizontal_axis_ticks_overflow,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions
-    } from '../utils/d3-decorators';
+} from '../utils/d3-decorators';
+var selectOrAppend = utilsDom.selectOrAppend;
 
 export class Cartesian extends Element {
 
@@ -174,10 +176,6 @@ export class Cartesian extends Element {
             .container
             .attr('transform', utilsDraw.translate(this.L, this.T));
 
-        // take into account reposition during resize by orthogonal axis
-        var hashX = node.x.getHash() + innerHeight;
-        var hashY = node.y.getHash() + innerWidth;
-
         if (!node.x.guide.hide) {
             var orientX = node.x.guide.scaleOrient;
             var positionX = ((orientX === 'top') ?
@@ -189,8 +187,7 @@ export class Cartesian extends Element {
                 node.x,
                 positionX,
                 innerWidth,
-                (`${options.frameId}x`),
-                hashX
+                (`${options.frameId}x`)
             );
         }
 
@@ -205,8 +202,7 @@ export class Cartesian extends Element {
                 node.y,
                 positionY,
                 innerHeight,
-                (`${options.frameId}y`),
-                hashY
+                (`${options.frameId}y`)
             );
         }
 
@@ -215,7 +211,7 @@ export class Cartesian extends Element {
         }, []);
 
         var xcells = this
-            ._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY)
+            ._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId)
             .selectAll('.cell')
             .data(xdata, x => x);
         xcells
@@ -227,7 +223,7 @@ export class Cartesian extends Element {
             .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
     }
 
-    _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {
+    _fnDrawDimAxis(container, scale, position, size, frameId) {
 
         var axisScale = d3.svg
             .axis()
@@ -240,66 +236,46 @@ export class Cartesian extends Element {
             axisScale.tickFormat(formatter);
         }
 
-        var axis = container
-            .selectAll('.axis_' + frameId)
-            .data([uniqueHash], (x) => x);
-        axis.exit()
-            .remove();
-        axis.enter()
-            .append('g')
-            .attr('class', scale.guide.cssClass + ' axis_' + frameId)
+        selectOrAppend(container, `g.${scale.guide.cssClass.replace(/\s+/, '.')}.axis_${frameId}`)
             .attr('transform', utilsDraw.translate(...position))
-            .call(function (refAxisNode) {
-                if (!refAxisNode.empty()) {
+            .call((refAxisNode) => {
 
-                    axisScale.call(this, refAxisNode);
+                axisScale.call(this, refAxisNode);
 
-                    var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-                    var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                    if (prettifyTick) {
-                        d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
-                    }
+                var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+                var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
+                if (prettifyTick) {
+                    d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
+                }
 
-                    d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal, scale);
+                d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal, scale);
 
-                    if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
-                    }
+                if (prettifyTick && scale.guide.avoidCollisions) {
+                    d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
+                }
 
-                    if (!scale.guide.label.hide) {
-                        d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
-                    }
+                if (!scale.guide.label.hide) {
+                    d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+                }
 
-                    if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
-                    }
+                if (isHorizontal && (scale.scaleType === 'time')) {
+                    d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
                 }
             });
     }
 
-    _fnDrawGrid(container, node, height, width, frameId, uniqueHash) {
+    _fnDrawGrid(container, node, height, width, frameId) {
 
-        var grid = container
-            .selectAll('.grid_' + frameId)
-            .data([uniqueHash], (x) => x);
-        grid.exit()
-            .remove();
-        grid.enter()
-            .append('g')
-            .attr('class', 'grid grid_' + frameId)
+        var grid = selectOrAppend(container, `g.grid.grid_${frameId}`)
             .attr('transform', utilsDraw.translate(0, 0))
             .call((selection) => {
-
-                if (selection.empty()) {
-                    return;
-                }
 
                 var grid = selection;
 
                 var linesOptions = (node.guide.showGridLines || '').toLowerCase();
                 if (linesOptions.length > 0) {
 
-                    var gridLines = grid.append('g').attr('class', 'grid-lines');
+                    var gridLines = selectOrAppend(grid, 'g.grid-lines');
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
@@ -316,9 +292,7 @@ export class Cartesian extends Element {
                             xGridAxis.tickFormat(formatter);
                         }
 
-                        var xGridLines = gridLines
-                            .append('g')
-                            .attr('class', 'grid-lines-x')
+                        var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x')
                             .call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
@@ -328,15 +302,20 @@ export class Cartesian extends Element {
                         }
 
                         var firstXGridLine = xGridLines.select('g.tick');
+                        var zeroNode = gridLines.node().querySelector('.js-leftBorder');
                         if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
-                            var zeroNode = firstXGridLine.node().cloneNode(true);
-                            gridLines.node().appendChild(zeroNode);
+                            if (!zeroNode) {
+                                zeroNode = firstXGridLine.node().cloneNode(true);
+                                gridLines.node().appendChild(zeroNode);
+                                d3.select(zeroNode).classed('js-leftBorder', true);
+                            }
                             d3.select(zeroNode)
-                                .attr('class', 'border')
                                 .attr('transform', utilsDraw.translate(0, 0))
                                 .select('line')
                                 .attr('x1', 0)
                                 .attr('x2', 0);
+                        } else if (zeroNode) {
+                            zeroNode.parentElement.removeChild(zeroNode);
                         }
                     }
 
@@ -355,9 +334,7 @@ export class Cartesian extends Element {
                             yGridAxis.tickFormat(formatter);
                         }
 
-                        var yGridLines = gridLines
-                            .append('g')
-                            .attr('class', 'grid-lines-y')
+                        var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y')
                             .call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');

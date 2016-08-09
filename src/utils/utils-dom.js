@@ -151,6 +151,45 @@ var utilsDom = {
 
             return size;
         },
-        (char, props) => `${char}_${JSON.stringify(props)}`)
+        (char, props) => `${char}_${JSON.stringify(props)}`
+    ),
+
+    /**
+     * Searches for an element by specified selector.
+     * If missing, creates an element that matches the selector.
+     */
+    selectOrAppend: function (container, selector) {
+
+        var element = container.select(selector);
+        if (!element.empty()) {
+            return element;
+        }
+
+        var delimitersActions = {
+            '.': (text, el) => el.classed(text, true),
+            '#': (text, el) => el.attr('id', text)
+        };
+        var delimiters = Object.keys(delimitersActions).join('');
+
+        var lastFoundIndex = -1;
+        var lastFoundDelimiter = null;
+        for (var i = 0, l = selector.length, text; i <= l; i++) {
+            if (i == l || delimiters.indexOf(selector[i]) >= 0) {
+                if (i === 0) {
+                    throw new Error('Selector must have tag at the beginning.');
+                }
+                text = selector.substring(lastFoundIndex + 1, i);
+                if (lastFoundIndex < 0) {
+                    element = container.append(text);
+                } else {
+                    delimitersActions[lastFoundDelimiter].call(null, text, element);
+                }
+                lastFoundDelimiter = selector[i];
+                lastFoundIndex = i;
+            }
+        }
+
+        return element;
+    }
 };
 export {utilsDom};
