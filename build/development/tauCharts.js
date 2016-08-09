@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.3-beta.0 - 2016-08-02
+/*! taucharts - v0.9.3-beta.1 - 2016-08-09
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -118,29 +118,31 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _linear = __webpack_require__(127);
 
-	var _value = __webpack_require__(128);
+	var _logarithmic = __webpack_require__(128);
 
-	var _fill = __webpack_require__(129);
+	var _value = __webpack_require__(129);
+
+	var _fill = __webpack_require__(130);
 
 	var _chartAliasRegistry = __webpack_require__(110);
 
-	var _chartMap = __webpack_require__(130);
+	var _chartMap = __webpack_require__(131);
 
-	var _chartInterval = __webpack_require__(131);
+	var _chartInterval = __webpack_require__(132);
 
-	var _chartScatterplot = __webpack_require__(133);
+	var _chartScatterplot = __webpack_require__(134);
 
-	var _chartLine = __webpack_require__(134);
+	var _chartLine = __webpack_require__(135);
 
-	var _chartArea = __webpack_require__(135);
+	var _chartArea = __webpack_require__(136);
 
-	var _chartParallel = __webpack_require__(136);
+	var _chartParallel = __webpack_require__(137);
 
 	var _d3Decorators = __webpack_require__(17);
 
 	var _error = __webpack_require__(10);
 
-	var _pluginsSdk = __webpack_require__(137);
+	var _pluginsSdk = __webpack_require__(138);
 
 	var _underscore = __webpack_require__(3);
 
@@ -287,7 +289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        nice: settings.defaultNiceColor,
 	        brewer: config.dimType === 'measure' ? settings.defaultColorBrewer : settings.defaultClassBrewer
 	    });
-	}], ['fill', _fill.FillScale], ['size', _size.SizeScale], ['ordinal', _ordinal.OrdinalScale], ['period', _period.PeriodScale], ['time', _time.TimeScale], ['linear', _linear.LinearScale], ['value', _value.ValueScale]].reduce(function (memo, nv) {
+	}], ['fill', _fill.FillScale], ['size', _size.SizeScale], ['ordinal', _ordinal.OrdinalScale], ['period', _period.PeriodScale], ['time', _time.TimeScale], ['linear', _linear.LinearScale], ['logarithmic', _logarithmic.LogarithmicScale], ['value', _value.ValueScale]].reduce(function (memo, nv) {
 	    return memo.reg.apply(memo, _toConsumableArray(nv));
 	}, api.scalesRegistry);
 
@@ -295,7 +297,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return !config.data ? ['[data] must be specified'] : [];
 	}];
 
-	api.chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry.add('scatterplot', _chartScatterplot.ChartScatterplot, commonRules).add('line', _chartLine.ChartLine, commonRules).add('area', _chartArea.ChartArea, commonRules).add('bar', function (cfg) {
+	api.chartTypesRegistry = _chartAliasRegistry.chartTypesRegistry.add('scatterplot', _chartScatterplot.ChartScatterplot, commonRules).add('line', _chartLine.ChartLine, commonRules).add('area', _chartArea.ChartArea, commonRules).add('stacked-area', function (cfg) {
+	    return (0, _chartArea.ChartArea)(_underscore2.default.defaults(cfg, { stack: true }));
+	}, commonRules).add('bar', function (cfg) {
 	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults(cfg, { flip: false }));
 	}, commonRules).add('horizontalBar', function (cfg) {
 	    return (0, _chartInterval.ChartInterval)(_underscore2.default.defaults({ flip: true }, cfg));
@@ -323,7 +327,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.3-beta.0");
+	var version = ("0.9.3-beta.1");
 
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
@@ -1314,7 +1318,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _inherits(Element, _Emitter);
 
 	    // add base behaviour here
-
 	    function Element(config) {
 	        _classCallCheck(this, Element);
 
@@ -1538,7 +1541,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	     * @constructor
 	     */
-
 	    function Emitter() {
 	        _classCallCheck(this, Emitter);
 
@@ -2254,7 +2256,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    STACKED_FIELD_NOT_NUMBER: 'STACKED_FIELD_NOT_NUMBER',
 	    NO_DATA: 'NO_DATA',
 	    NOT_SUPPORTED_TYPE_CHART: 'NOT_SUPPORTED_TYPE_CHART',
-	    UNKNOWN_UNIT_TYPE: 'UNKNOWN_UNIT_TYPE'
+	    UNKNOWN_UNIT_TYPE: 'UNKNOWN_UNIT_TYPE',
+	    INVALID_LOG_DOMAIN: 'INVALID_LOG_DOMAIN'
 	};
 
 	exports.TauChartError = TauChartError;
@@ -2670,11 +2673,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var y_overlap = k * Math.max(0, Math.min(rb.y1, ra.y1) - Math.max(ra.y0, rb.y0));
 
 	                if (x_overlap * y_overlap > 0) {
-	                    [a, b].sort(function (p0, p1) {
+	                    var p = [a, b];
+	                    p.sort(function (p0, p1) {
 	                        return extremumOrder[p0.extr] - extremumOrder[p1.extr];
-	                    }).sort(function (p0, p1) {
-	                        return collisionSolveStrategies[p0.extr + '/' + p1.extr](p0, p1);
-	                    })[1].hide = true;
+	                    });
+	                    var r = collisionSolveStrategies[p[0].extr + '/' + p[1].extr](p[0], p[1]) < 0 ? p[0] : p[1];
+	                    r.hide = true;
 	                }
 	            };
 
@@ -3825,7 +3829,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var testPath = _d2.default.select(thisNode.parentNode).append('path').datum(fiber).attr({ d: d3Line, opacity: 0 });
 	                var next = testPath.node().getTotalLength();
 	                testPath.remove();
-	                return { prev: thisNode.getTotalLength(), next: next };
+	                return { prev: thisNode.hasAttribute('d') ? thisNode.getTotalLength() : 0, next: next };
 	            }, function (nodeRef) {
 	                var index = cache.indexOf(nodeRef);
 	                if (index < 0) {
@@ -4817,7 +4821,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _classCallCheck(this, GPL);
 
 	        // jscs:disable
-
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GPL).call(this));
 
 	        _underscore2.default.defaults(config.scales, {
@@ -7597,6 +7600,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Thrash, waste and sodomy: IE GC bug
 	  var iframe = __webpack_require__(61)('iframe')
 	    , i      = enumBugKeys.length
+	    , lt     = '<'
 	    , gt     = '>'
 	    , iframeDocument;
 	  iframe.style.display = 'none';
@@ -7606,7 +7610,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // html.removeChild(iframe);
 	  iframeDocument = iframe.contentWindow.document;
 	  iframeDocument.open();
-	  iframeDocument.write('<script>document.F=Object</script' + gt);
+	  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
 	  iframeDocument.close();
 	  createDict = iframeDocument.F;
 	  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
@@ -7624,6 +7628,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else result = createDict();
 	  return Properties === undefined ? result : dPs(result, Properties);
 	};
+
 
 /***/ },
 /* 68 */
@@ -7850,7 +7855,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  , assign       = __webpack_require__(90)
 	  , weak         = __webpack_require__(93)
 	  , isObject     = __webpack_require__(57)
-	  , has          = __webpack_require__(65)
 	  , getWeak      = meta.getWeak
 	  , isExtensible = Object.isExtensible
 	  , uncaughtFrozenStore = weak.ufstore
@@ -9905,8 +9909,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (ex.message === 'Not applicable') {
 	                    console.log('[TauCharts]: can\'t extract axes for the given chart specification'); // eslint-disable-line
 	                } else {
-	                        throw ex;
-	                    }
+	                    throw ex;
+	                }
 	            }
 
 	            return refSpec;
@@ -13832,6 +13836,169 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.LogarithmicScale = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _base = __webpack_require__(121);
+
+	var _error = __webpack_require__(10);
+
+	var _underscore = __webpack_require__(3);
+
+	var _underscore2 = _interopRequireDefault(_underscore);
+
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	/* jshint ignore:start */
+
+
+	/* jshint ignore:end */
+
+	var LogarithmicScale = exports.LogarithmicScale = function (_BaseScale) {
+	    _inherits(LogarithmicScale, _BaseScale);
+
+	    function LogarithmicScale(xSource, scaleConfig) {
+	        _classCallCheck(this, LogarithmicScale);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LogarithmicScale).call(this, xSource, scaleConfig));
+
+	        var isNum = function isNum(num) {
+	            return !isNaN(num) && _underscore2.default.isNumber(num);
+	        };
+
+	        var props = _this.scaleConfig;
+	        var domain = _d2.default.extent(_this.vars);
+
+	        var min = isNum(props.min) ? props.min : domain[0];
+	        var max = isNum(props.max) ? props.max : domain[1];
+
+	        domain = [Math.min.apply(Math, _toConsumableArray([min, domain[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, domain[1]].filter(isNum)))];
+	        throwIfCrossesZero(domain);
+
+	        if (props.nice) {
+	            domain = niceLog10(domain);
+	        }
+
+	        _this.vars = domain;
+
+	        _this.addField('scaleType', 'logarithmic').addField('discrete', false);
+	        return _this;
+	    }
+
+	    _createClass(LogarithmicScale, [{
+	        key: 'isInDomain',
+	        value: function isInDomain(x) {
+	            var domain = this.domain();
+	            var min = domain[0];
+	            var max = domain[domain.length - 1];
+	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	        }
+	    }, {
+	        key: 'create',
+	        value: function create(interval) {
+
+	            var domain = this.vars;
+	            throwIfCrossesZero(domain);
+
+	            var d3Scale = extendLogScale(_d2.default.scale.log()).domain(domain).rangeRound(interval, 1);
+	            d3Scale.stepSize = function () {
+	                return 0;
+	            };
+
+	            return this.toBaseScale(d3Scale, interval);
+	        }
+	    }]);
+
+	    return LogarithmicScale;
+	}(_base.BaseScale);
+
+	function log10(x) {
+	    return Math.log(x) / Math.LN10;
+	}
+
+	function throwIfCrossesZero(domain) {
+	    if (domain[0] * domain[1] <= 0) {
+	        throw new _error.TauChartError('Logarithmic scale domain cannot cross zero.', _error.errorCodes.INVALID_LOG_DOMAIN);
+	    }
+	}
+
+	function extendLogScale(scale) {
+	    var d3ScaleCopy = scale.copy;
+
+	    // NOTE: D3 log scale ticks count is not configurable
+	    // and returns 10 ticks per each exponent.
+	    // So here we make it return 10 ticks per each
+	    // step of 1, 2 or more exponents, according to
+	    // necessary ticks count.
+	    scale.ticks = function (n) {
+
+	        var ticksPerExp = 10;
+	        var ticks = [];
+	        var extent = _d2.default.extent(scale.domain());
+	        var lowExp = Math.floor(log10(extent[0]));
+	        var topExp = Math.ceil(log10(extent[1]));
+
+	        var step = Math.ceil((topExp - lowExp) * ticksPerExp / (Math.ceil(n / ticksPerExp) * ticksPerExp));
+
+	        for (var e = lowExp; e <= topExp; e += step) {
+	            for (var t = 1; t <= ticksPerExp; t++) {
+	                var tick = Math.pow(t, step) * Math.pow(10, e);
+	                tick = parseFloat(tick.toExponential(0));
+	                if (tick >= extent[0] && tick <= extent[1]) {
+	                    ticks.push(tick);
+	                }
+	            }
+	        }
+
+	        return ticks;
+	    };
+	    scale.copy = function () {
+	        var copy = d3ScaleCopy.call(scale);
+	        extendLogScale(copy);
+	        return copy;
+	    };
+
+	    return scale;
+	}
+
+	function niceLog10(domain) {
+
+	    var isPositive = domain[0] > 0;
+	    var absDomain = domain.map(function (d) {
+	        return Math.abs(d);
+	    });
+	    var top = Math.max.apply(null, absDomain);
+	    var low = Math.min.apply(null, absDomain);
+
+	    var lowExp = low.toExponential().split('e');
+	    var topExp = top.toExponential().split('e');
+	    var niceLow = parseFloat(Math.floor(lowExp[0]) + 'e' + lowExp[1]);
+	    var niceTop = parseFloat(Math.ceil(topExp[0]) + 'e' + topExp[1]);
+
+	    return isPositive ? [niceLow, niceTop] : [-niceTop, -niceLow];
+	}
+
+/***/ },
+/* 129 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 	exports.ValueScale = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -13869,7 +14036,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 129 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13972,7 +14139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_base.BaseScale);
 
 /***/ },
-/* 130 */
+/* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14060,7 +14227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartMap = ChartMap;
 
 /***/ },
-/* 131 */
+/* 132 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14070,7 +14237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartInterval = undefined;
 
-	var _converterHelpers = __webpack_require__(132);
+	var _converterHelpers = __webpack_require__(133);
 
 	var disableColorToBarPositionOnceColorAndAxesUseTheSameDim = function disableColorToBarPositionOnceColorAndAxesUseTheSameDim(normConfig) {
 
@@ -14095,7 +14262,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartInterval = ChartInterval;
 
 /***/ },
-/* 132 */
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14294,7 +14461,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.transformConfig = transformConfig;
 
 /***/ },
-/* 133 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14304,7 +14471,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartScatterplot = undefined;
 
-	var _converterHelpers = __webpack_require__(132);
+	var _converterHelpers = __webpack_require__(133);
 
 	var ChartScatterplot = function ChartScatterplot(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -14314,7 +14481,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartScatterplot = ChartScatterplot;
 
 /***/ },
-/* 134 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14326,7 +14493,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _dataProcessor = __webpack_require__(35);
 
-	var _converterHelpers = __webpack_require__(132);
+	var _converterHelpers = __webpack_require__(133);
 
 	var ChartLine = function ChartLine(rawConfig) {
 	    var config = (0, _converterHelpers.normalizeConfig)(rawConfig);
@@ -14402,7 +14569,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartLine = ChartLine;
 
 /***/ },
-/* 135 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14414,7 +14581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _dataProcessor = __webpack_require__(35);
 
-	var _converterHelpers = __webpack_require__(132);
+	var _converterHelpers = __webpack_require__(133);
 
 	var ChartArea = function ChartArea(rawConfig) {
 
@@ -14501,7 +14668,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartArea = ChartArea;
 
 /***/ },
-/* 136 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14587,7 +14754,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ChartParallel = ChartParallel;
 
 /***/ },
-/* 137 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14605,9 +14772,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _formatterRegistry = __webpack_require__(16);
 
-	var _unit = __webpack_require__(138);
+	var _unit = __webpack_require__(139);
 
-	var _spec = __webpack_require__(139);
+	var _spec = __webpack_require__(140);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -14789,7 +14956,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.PluginsSDK = PluginsSDK;
 
 /***/ },
-/* 138 */
+/* 139 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -14892,7 +15059,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Unit = Unit;
 
 /***/ },
-/* 139 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14904,7 +15071,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _unit = __webpack_require__(138);
+	var _unit = __webpack_require__(139);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 

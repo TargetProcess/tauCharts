@@ -27,7 +27,7 @@
     var stretchByOrdinalAxis = function (noteItem) {
         return function (model) {
             var res = {};
-            var seed = [
+            var seed = _.find([
                 {
                     dim: model.scaleX.dim,
                     scale: model.scaleY,
@@ -45,7 +45,7 @@
                     scale: null,
                     method: null
                 }
-            ].find(function (a) {
+            ], function (a) {
                     return a.dim === noteItem.dim;
                 });
 
