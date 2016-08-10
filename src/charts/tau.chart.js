@@ -56,7 +56,7 @@ Chart.resizeOnWindowEvent = (function () {
         }
     }
 
-    return requestReposition;
+    return _.debounce(requestReposition, 125);
 }());
 Chart.winAware = [];
 window.addEventListener('resize', Chart.resizeOnWindowEvent);

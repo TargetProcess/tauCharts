@@ -59,18 +59,18 @@ export class SpecConverter {
         var iterator = (childUnit, root) => {
 
             childUnit.namespace = 'chart';
+            childUnit.guide = _.defaults(
+                (childUnit.guide || {}),
+                {
+                    animationSpeed: settings.animationSpeed || 0
+                }
+            );
 
             // leaf elements should inherit coordinates properties
             if (root && !childUnit.hasOwnProperty('units')) {
                 childUnit = _.defaults(childUnit, _.pick(root, 'x', 'y'));
 
                 var parentGuide = utils.clone(root.guide || {});
-                childUnit.guide = _.defaults(
-                    (childUnit.guide || {}),
-                    {
-                        animationSpeed: settings.animationSpeed
-                    }
-                );
                 childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
                 childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
 

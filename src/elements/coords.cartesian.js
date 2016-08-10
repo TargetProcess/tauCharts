@@ -7,9 +7,10 @@ import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
+    d3_animationInterceptor,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_bottom_line,
+    d3_decorator_fix_axis_start_line,
     d3_decorator_fix_horizontal_axis_ticks_overflow,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions
@@ -272,10 +273,22 @@ export class Cartesian extends Element {
 
                 var grid = selection;
 
+                var trans = (selection) => {
+                    if (this.config.guide.animationSpeed > 0) {
+                        return selection
+                            .transition()
+                            .duration(this.config.guide.animationSpeed);
+                    }
+                    return selection;
+                };
+
                 var linesOptions = (node.guide.showGridLines || '').toLowerCase();
                 if (linesOptions.length > 0) {
 
                     var gridLines = selectOrAppend(grid, 'g.grid-lines');
+
+                    // HACK: Prevent extra ticks from being catched by D3 axes calls.
+                    gridLines.selectAll('.js-extraTick').classed('tick', false);
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
@@ -292,31 +305,28 @@ export class Cartesian extends Element {
                             xGridAxis.tickFormat(formatter);
                         }
 
-                        var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x')
-                            .call(xGridAxis);
+                        var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
+                        var xGridLinesTrans = trans(xGridLines).call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(xGridLines, xScale, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(
+                                xGridLinesTrans,
+                                xScale,
+                                isHorizontal,
+                                this.config.guide.animationSpeed
+                            );
                         }
 
-                        var firstXGridLine = xGridLines.select('g.tick');
-                        var zeroNode = gridLines.node().querySelector('.js-leftBorder');
-                        if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
-                            if (!zeroNode) {
-                                zeroNode = firstXGridLine.node().cloneNode(true);
-                                gridLines.node().appendChild(zeroNode);
-                                d3.select(zeroNode).classed('js-leftBorder', true);
-                            }
-                            d3.select(zeroNode)
-                                .attr('transform', utilsDraw.translate(0, 0))
-                                .select('line')
-                                .attr('x1', 0)
-                                .attr('x2', 0);
-                        } else if (zeroNode) {
-                            zeroNode.parentElement.removeChild(zeroNode);
-                        }
+                        let extraTickNode = xGridLines.selectAll('.js-extraTick');
+                        d3_decorator_fix_axis_start_line(
+                            xGridLines,
+                            isHorizontal,
+                            width,
+                            height,
+                            this.config.guide.animationSpeed
+                        );
                     }
 
                     if ((linesOptions.indexOf('y') > -1)) {
@@ -334,23 +344,37 @@ export class Cartesian extends Element {
                             yGridAxis.tickFormat(formatter);
                         }
 
-                        var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y')
-                            .call(yGridAxis);
+                        var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
+                        var yGridLinesTrans = trans(yGridLines).call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(yGridLines, yScale, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(
+                                yGridLinesTrans,
+                                yScale,
+                                isHorizontal,
+                                this.config.guide.animationSpeed
+                            );
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];
                         let fixBottomLine = _.contains(fixLineScales, yScale.scaleType);
                         if (fixBottomLine) {
-                            d3_decorator_fix_axis_bottom_line(yGridLines, height, (yScale.scaleType === 'time'));
+                            d3_decorator_fix_axis_start_line(
+                                yGridLines,
+                                isHorizontal,
+                                width,
+                                height,
+                                this.config.guide.animationSpeed
+                            );
                         }
                     }
 
                     gridLines.selectAll('text').remove();
+
+                    // HACK: Preserve "tick" class for CSS.
+                    gridLines.selectAll('.js-extraTick').classed('tick', true);
                 }
             });
 
