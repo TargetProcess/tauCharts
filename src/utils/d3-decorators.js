@@ -132,10 +132,7 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
                 return;
             }
 
-            var tickNode = d3.select(this);
-            if (animationSpeed > 0) {
-                tickNode = tickNode.transition().duration(animationSpeed);
-            }
+            var tickNode = d3_transition(d3.select(this), animationSpeed);
 
             var offset = logicalScale.stepSize(tickData) * 0.5;
             var key = (isHorizontal) ? 'x' : 'y';
@@ -178,7 +175,7 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
 };
 
 /**
- * Adds extra tick to axis container (to left or to bottom).
+ * Adds extra tick to axis container.
  */
 var d3_decorator_fix_axis_start_line = (
     axisNode,
@@ -213,22 +210,27 @@ var d3_decorator_fix_axis_start_line = (
         extraTickNode.append('line')
             .call(setLineSize);
     }
-    if (animationSpeed > 0) {
-        extraTickNode = extraTickNode.transition().duration(animationSpeed);
-    }
-    extraTickNode
+    d3_transition(extraTickNode, animationSpeed)
         .style('opacity', 1)
         .call(setTransform)
         .select('line')
         .call(setLineSize);
 };
 
-var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
+var d3_decorator_prettify_axis_label = (
+    axisNode,
+    guide,
+    isHorizontal,
+    size,
+    animationSpeed
+) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
     var labelTextNode = selectOrAppend(axisNode, `text.js-axisLabel`)
         .attr('class', `js-axisLabel ${guide.cssClass}`)
-        .attr('transform', utilsDraw.rotate(guide.rotate))
+        .attr('transform', utilsDraw.rotate(guide.rotate));
+
+    var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
         .attr('x', koeff * guide.size * 0.5)
         .attr('y', koeff * guide.padding)
         .style('text-anchor', guide.textAnchor);
@@ -253,12 +255,12 @@ var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
         .text((d) => d);
     tspans.exit().remove();
 
-    if (guide.dock === 'right') {
-        let box = axisNode.selectAll('path.domain').node().getBBox();
-        labelTextNode.attr('x', isHorizontal ? (box.width) : 0);
-    } else if (guide.dock === 'left') {
-        let box = axisNode.selectAll('path.domain').node().getBBox();
-        labelTextNode.attr('x', isHorizontal ? 0 : (-box.height));
+    if (['left', 'right'].indexOf(guide.dock) >= 0) {
+        let labelX = {
+            left: [-size, 0],
+            right: [0, size]
+        };
+        labelTextTrans.attr('x', labelX[guide.dock][Number(isHorizontal)]);
     }
 };
 
@@ -266,8 +268,8 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal, logicalScale
 
     var angle = utils.normalizeAngle(guide.rotate);
 
-    var tick = nodeScale.selectAll('.tick text');
-    tick.attr({transform: utilsDraw.rotate(angle)})
+    var tick = nodeScale.selectAll('.tick text')
+        .attr('transform', utilsDraw.rotate(angle))
         .style('text-anchor', guide.textAnchor);
 
     var segment = Math.abs(angle / 90);
@@ -316,7 +318,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 .replace('translate(', '')
                 .replace(' ', ',') // IE specific
                 .split(',')
-                [translateParam];
+            [translateParam];
 
             var translateX = directionKoeff * parseFloat(translateXStr);
             var tNode = tick.selectAll('text');
@@ -399,7 +401,14 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     });
 };
 
-var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
+var d3_transition = (selection, animationSpeed) => {
+    if (animationSpeed > 0) {
+        return selection.transition().duration(animationSpeed);
+    }
+    return selection;
+};
+
+var d3_animationInterceptor = (animationSpeed, initAttrs, doneAttrs, afterUpdate) => {
 
     var xAfterUpdate = afterUpdate || _.identity;
 
@@ -410,13 +419,11 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
             flow = flow.attr(_.defaults(initAttrs, doneAttrs));
         }
 
-        if (speed > 0) {
-            flow = flow.transition().duration(speed);
-        }
+        flow = d3_transition(flow, animationSpeed);
 
         flow = flow.attr(doneAttrs);
 
-        if (speed > 0) {
+        if (animationSpeed > 0) {
             flow.each('end', function () {
                 xAfterUpdate(this);
             });
@@ -436,6 +443,7 @@ export {
     d3_decorator_fix_horizontal_axis_ticks_overflow,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions,
+    d3_transition,
     wrapText,
     cutText
 };

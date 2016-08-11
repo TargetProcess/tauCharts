@@ -7,6 +7,7 @@ import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
+    d3_transition as transition,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
@@ -211,7 +212,7 @@ export class Cartesian extends Element {
         }, []);
 
         var xcells = this
-            ._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId)
+            ._fnDrawGrid(options.container, node, innerWidth, innerHeight, options.frameId)
             .selectAll('.cell')
             .data(xdata, x => x);
         xcells
@@ -236,35 +237,52 @@ export class Cartesian extends Element {
             axisScale.tickFormat(formatter);
         }
 
-        selectOrAppend(container, `g.${scale.guide.cssClass.replace(/\s+/, '.')}.axis_${frameId}`)
-            .attr('transform', utilsDraw.translate(...position))
-            .call((refAxisNode) => {
+        var animationSpeed = this.config.guide.animationSpeed;
 
-                axisScale.call(this, refAxisNode);
+        selectOrAppend(container, `g.${scale.guide.cssClass.replace(/\s+/, '.')}.axis_${frameId}`)
+            .call((axis) => {
+
+                var transAxis = transition(axis, animationSpeed);
+                (axis.attr('transform') ? transAxis : axis).attr('transform', utilsDraw.translate(...position));
+                transAxis.call(axisScale);
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
                 if (prettifyTick) {
-                    d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
+                    d3_decorator_prettify_categorical_axis_ticks(
+                        transAxis,
+                        scale,
+                        isHorizontal,
+                        animationSpeed
+                    );
                 }
 
-                d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal, scale);
+                // TODO: Check with transition
+                d3_decorator_wrap_tick_label(transAxis, scale.guide, isHorizontal, scale);
 
+                // TODO: Check with transition
                 if (prettifyTick && scale.guide.avoidCollisions) {
-                    d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
+                    d3_decorator_avoid_labels_collisions(axis, isHorizontal);
                 }
 
                 if (!scale.guide.label.hide) {
-                    d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+                    d3_decorator_prettify_axis_label(
+                        axis,
+                        scale.guide.label,
+                        isHorizontal,
+                        size,
+                        animationSpeed
+                    );
                 }
 
+                // TODO: Check with transition
                 if (isHorizontal && (scale.scaleType === 'time')) {
-                    d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
+                    d3_decorator_fix_horizontal_axis_ticks_overflow(axis);
                 }
             });
     }
 
-    _fnDrawGrid(container, node, height, width, frameId) {
+    _fnDrawGrid(container, node, width, height, frameId) {
 
         var grid = selectOrAppend(container, `g.grid.grid_${frameId}`)
             .attr('transform', utilsDraw.translate(0, 0))
@@ -272,14 +290,7 @@ export class Cartesian extends Element {
 
                 var grid = selection;
 
-                var trans = (selection) => {
-                    if (this.config.guide.animationSpeed > 0) {
-                        return selection
-                            .transition()
-                            .duration(this.config.guide.animationSpeed);
-                    }
-                    return selection;
-                };
+                var animationSpeed = this.config.guide.animationSpeed;
 
                 var linesOptions = (node.guide.showGridLines || '').toLowerCase();
                 if (linesOptions.length > 0) {
@@ -302,7 +313,7 @@ export class Cartesian extends Element {
                         }
 
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
-                        var xGridLinesTrans = trans(xGridLines)
+                        var xGridLinesTrans = transition(xGridLines, animationSpeed)
                             .call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
@@ -312,7 +323,7 @@ export class Cartesian extends Element {
                                 xGridLinesTrans,
                                 xScale,
                                 isHorizontal,
-                                this.config.guide.animationSpeed
+                                animationSpeed
                             );
                         }
 
@@ -322,7 +333,7 @@ export class Cartesian extends Element {
                             isHorizontal,
                             width,
                             height,
-                            this.config.guide.animationSpeed
+                            animationSpeed
                         );
                     }
 
@@ -342,7 +353,7 @@ export class Cartesian extends Element {
                         }
 
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
-                        var yGridLinesTrans = trans(yGridLines)
+                        var yGridLinesTrans = transition(yGridLines, animationSpeed)
                             .call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
@@ -352,7 +363,7 @@ export class Cartesian extends Element {
                                 yGridLinesTrans,
                                 yScale,
                                 isHorizontal,
-                                this.config.guide.animationSpeed
+                                animationSpeed
                             );
                         }
 
@@ -365,7 +376,7 @@ export class Cartesian extends Element {
                                 isHorizontal,
                                 width,
                                 height,
-                                this.config.guide.animationSpeed
+                                animationSpeed
                             );
                         }
                     }
