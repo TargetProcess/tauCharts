@@ -7,7 +7,6 @@ import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
-    d3_animationInterceptor,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
@@ -287,9 +286,6 @@ export class Cartesian extends Element {
 
                     var gridLines = selectOrAppend(grid, 'g.grid-lines');
 
-                    // HACK: Prevent extra ticks from being catched by D3 axes calls.
-                    gridLines.selectAll('.js-extraTick').classed('tick', false);
-
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
                         let xOrientKoeff = ((xScale.guide.scaleOrient === 'top') ? (-1) : (1));
@@ -306,7 +302,8 @@ export class Cartesian extends Element {
                         }
 
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
-                        var xGridLinesTrans = trans(xGridLines).call(xGridAxis);
+                        var xGridLinesTrans = trans(xGridLines)
+                            .call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
@@ -319,9 +316,9 @@ export class Cartesian extends Element {
                             );
                         }
 
-                        let extraTickNode = xGridLines.selectAll('.js-extraTick');
+                        let extraGridLines = selectOrAppend(gridLines, 'g.grid-lines-extra');
                         d3_decorator_fix_axis_start_line(
-                            xGridLines,
+                            extraGridLines,
                             isHorizontal,
                             width,
                             height,
@@ -345,7 +342,8 @@ export class Cartesian extends Element {
                         }
 
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
-                        var yGridLinesTrans = trans(yGridLines).call(yGridAxis);
+                        var yGridLinesTrans = trans(yGridLines)
+                            .call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
@@ -361,8 +359,9 @@ export class Cartesian extends Element {
                         let fixLineScales = ['time', 'ordinal', 'period'];
                         let fixBottomLine = _.contains(fixLineScales, yScale.scaleType);
                         if (fixBottomLine) {
+                            let extraGridLines = selectOrAppend(gridLines, 'g.grid-lines-extra');
                             d3_decorator_fix_axis_start_line(
-                                yGridLines,
+                                extraGridLines,
                                 isHorizontal,
                                 width,
                                 height,
@@ -372,9 +371,6 @@ export class Cartesian extends Element {
                     }
 
                     gridLines.selectAll('text').remove();
-
-                    // HACK: Preserve "tick" class for CSS.
-                    gridLines.selectAll('.js-extraTick').classed('tick', true);
                 }
             });
 

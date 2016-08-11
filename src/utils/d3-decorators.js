@@ -119,7 +119,7 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
 };
 
 /**
- * Moves ticks from categories middle to categories top. 
+ * Moves ticks from categories middle to categories top.
  */
 var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal, animationSpeed) => {
 
@@ -128,7 +128,7 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
         .each(function (tickData) {
             var coord = logicalScale(tickData);
             if (coord === undefined) {
-                // Tick may be removed by D3 axis call during transition.
+                // Tick could be removed by D3 axis call during transition.
                 return;
             }
 
@@ -188,9 +188,6 @@ var d3_decorator_fix_axis_start_line = (
     animationSpeed
 ) => {
 
-    // HACK: Determine whether axis is horizontal or vertical.
-    var isHorizontal = axisNode.attr('class').toLowerCase().indexOf('y') >= 0;
-
     var setTransform = (selection) => {
         selection.attr('transform', utilsDraw.translate(0, isHorizontal ? height : 0));
         return selection;
@@ -205,10 +202,12 @@ var d3_decorator_fix_axis_start_line = (
         return selection;
     };
 
-    let extraTickNode = axisNode.selectAll('.js-extraTick');
+    var tickClass = `js-extra${isHorizontal ? 'Y' : 'X'}Tick`;
+
+    let extraTickNode = axisNode.selectAll(`.${tickClass}`);
     if (extraTickNode.empty()) {
         extraTickNode = axisNode.append('g')
-            .classed('js-extraTick', true)
+            .classed(tickClass, true)
             .call(setTransform)
             .style('opacity', 1e-6);
         extraTickNode.append('line')
