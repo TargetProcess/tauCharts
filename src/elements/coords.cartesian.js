@@ -183,13 +183,14 @@ export class Cartesian extends Element {
                 [0, 0 - node.guide.x.padding] :
                 [0, innerHeight + node.guide.x.padding]);
 
-            this._fnDrawDimAxis(
+            this._drawDimAxis(
                 options.container,
                 node.x,
                 positionX,
-                innerWidth,
-                (`${options.frameId}x`)
+                innerWidth
             );
+        } else {
+            this._removeDimAxis(options.container, node.x);
         }
 
         if (!node.y.guide.hide) {
@@ -198,13 +199,14 @@ export class Cartesian extends Element {
                 [innerWidth + node.guide.y.padding, 0] :
                 [0 - node.guide.y.padding, 0]);
 
-            this._fnDrawDimAxis(
+            this._drawDimAxis(
                 options.container,
                 node.y,
                 positionY,
-                innerHeight,
-                (`${options.frameId}y`)
+                innerHeight
             );
+        } else {
+            this._removeDimAxis(options.container, node.y);
         }
 
         var xdata = frames.reduce((memo, f) => {
@@ -212,7 +214,7 @@ export class Cartesian extends Element {
         }, []);
 
         var xcells = this
-            ._fnDrawGrid(options.container, node, innerWidth, innerHeight, options.frameId)
+            ._drawGrid(options.container, node, innerWidth, innerHeight, options)
             .selectAll('.cell')
             .data(xdata, x => x);
         xcells
@@ -224,7 +226,7 @@ export class Cartesian extends Element {
             .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
     }
 
-    _fnDrawDimAxis(container, scale, position, size, frameId) {
+    _drawDimAxis(container, scale, position, size) {
 
         var axisScale = d3.svg
             .axis()
@@ -239,7 +241,7 @@ export class Cartesian extends Element {
 
         var animationSpeed = this.config.guide.animationSpeed;
 
-        selectOrAppend(container, `g.${scale.guide.cssClass.replace(/\s+/, '.')}.axis_${frameId}`)
+        selectOrAppend(container, `g.${scale.guide.cssClass.replace(/\s+/, '.')}`)
             .call((axis) => {
 
                 var transAxis = transition(axis, animationSpeed);
@@ -282,9 +284,19 @@ export class Cartesian extends Element {
             });
     }
 
-    _fnDrawGrid(container, node, width, height, frameId) {
+    _removeDimAxis(container, scale) {
+        transition(container.select(this._getAxisSelector(scale)), this.config.guide.animationSpeed)
+            .attr('opacity', 1e-6)
+            .remove();
+    }
 
-        var grid = selectOrAppend(container, `g.grid.grid_${frameId}`)
+    _getAxisSelector(scale) {
+        return `g.${scale.guide.cssClass.replace(/\s+/, '.')}`;
+    }
+
+    _drawGrid(container, node, width, height) {
+
+        var grid = selectOrAppend(container, `g.grid`)
             .attr('transform', utilsDraw.translate(0, 0))
             .call((selection) => {
 

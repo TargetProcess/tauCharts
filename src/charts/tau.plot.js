@@ -20,6 +20,8 @@ import {CSS_PREFIX} from '../const';
 import {GPL} from './tau.gpl';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
+var selectOrAppend = utilsDom.selectOrAppend;
+
 export class Plot extends Emitter {
     constructor(config) {
         super();
@@ -287,15 +289,8 @@ export class Plot extends Emitter {
             height: newSize.height
         };
 
-        var xSvg = d3Target
-            .selectAll('svg')
-            .data([1]);
-        xSvg.attr(attr);
-        xSvg.enter()
-            .append('svg')
-            .attr(attr)
-            .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
+        var xSvg = selectOrAppend(d3Target, `svg`).attr(attr);
+        selectOrAppend(xSvg, `g.${CSS_PREFIX}cell.cell.frame-root`);
 
         var scenario = xGpl.getDrawScenario({
             allocateRect: () => ({
