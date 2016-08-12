@@ -160,6 +160,10 @@ var utilsDom = {
      */
     selectOrAppend: function (container, selector) {
 
+        if (selector.indexOf(' ') >= 0) {
+            throw new Error('Selector contains whitespace.');
+        }
+
         var element = container.select(selector);
         if (!element.empty()) {
             return element;

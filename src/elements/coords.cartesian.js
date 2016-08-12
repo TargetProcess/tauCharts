@@ -241,7 +241,7 @@ export class Cartesian extends Element {
 
         var animationSpeed = this.config.guide.animationSpeed;
 
-        selectOrAppend(container, `g.${scale.guide.cssClass.replace(/\s+/, '.')}`)
+        selectOrAppend(container, this._getAxisSelector(scale))
             .call((axis) => {
 
                 var transAxis = transition(axis, animationSpeed);
@@ -259,13 +259,7 @@ export class Cartesian extends Element {
                     );
                 }
 
-                // TODO: Check with transition
-                d3_decorator_wrap_tick_label(transAxis, scale.guide, isHorizontal, scale);
-
-                // TODO: Check with transition
-                if (prettifyTick && scale.guide.avoidCollisions) {
-                    d3_decorator_avoid_labels_collisions(axis, isHorizontal);
-                }
+                d3_decorator_wrap_tick_label(axis, scale.guide, isHorizontal, scale);
 
                 if (!scale.guide.label.hide) {
                     d3_decorator_prettify_axis_label(
@@ -277,10 +271,15 @@ export class Cartesian extends Element {
                     );
                 }
 
-                // TODO: Check with transition
-                if (isHorizontal && (scale.scaleType === 'time')) {
-                    d3_decorator_fix_horizontal_axis_ticks_overflow(axis);
-                }
+                transAxis.onTransitionEnd(() => {
+                    if (prettifyTick && scale.guide.avoidCollisions) {
+                        d3_decorator_avoid_labels_collisions(axis, isHorizontal);
+                    }
+
+                    if (isHorizontal && (scale.scaleType === 'time')) {
+                        d3_decorator_fix_horizontal_axis_ticks_overflow(axis);
+                    }
+                });
             });
     }
 
@@ -291,7 +290,7 @@ export class Cartesian extends Element {
     }
 
     _getAxisSelector(scale) {
-        return `g.${scale.guide.cssClass.replace(/\s+/, '.')}`;
+        return `g.${scale.guide.cssClass.replace(/\s+/g, '.')}`;
     }
 
     _drawGrid(container, node, width, height) {

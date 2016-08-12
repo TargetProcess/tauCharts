@@ -403,9 +403,28 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
 
 var d3_transition = (selection, animationSpeed) => {
     if (animationSpeed > 0) {
-        return selection.transition().duration(animationSpeed);
+        selection = selection.transition().duration(animationSpeed);
     }
+    selection.onTransitionEnd = (callback) => {
+        d3_transition(selection, callback);
+        return selection;
+    };
     return selection;
+};
+
+var d3_on_transition_end = (selection, callback) => {
+    if (!selection.duration || selection.empty()) {
+        // HACK: Determine if selection is transition.
+        callback.call(null, selection);
+        return;
+    }
+    var t = selection.size();
+    selection.each('end', () => {
+        t--;
+        if (t === 0) {
+            callback.call(null, selection);
+        }
+    });
 };
 
 var d3_animationInterceptor = (animationSpeed, initAttrs, doneAttrs, afterUpdate) => {
@@ -444,6 +463,7 @@ export {
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions,
     d3_transition,
+    d3_on_transition_end,
     wrapText,
     cutText
 };
