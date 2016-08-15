@@ -2,9 +2,8 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
-import {d3_animationInterceptor} from '../utils/d3-decorators';
+import {d3_transition as transition} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
-import {default as d3} from 'd3';
 
 export class Point extends Element {
 
@@ -147,8 +146,6 @@ export class Point extends Element {
             class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
         };
 
-        var createUpdateFunc = d3_animationInterceptor;
-
         var updateGroups = function () {
 
             this.attr('class', 'frame')
@@ -156,16 +153,13 @@ export class Point extends Element {
                     var dots = this
                         .selectAll('circle')
                         .data((fiber) => fiber, self.screenModel.id);
-                    dots.exit()
-                        .call(createUpdateFunc(
-                            self.config.guide.animationSpeed,
-                            null,
-                            {r: 0},
-                            (node) => d3.select(node).remove()));
-                    dots.call(createUpdateFunc(self.config.guide.animationSpeed, null, d3Attrs));
-                    dots.enter()
-                        .append('circle')
-                        .call(createUpdateFunc(self.config.guide.animationSpeed, {r: 0}, d3Attrs));
+                    transition(dots.exit(), self.config.guide.animationSpeed)
+                        .attr({r: 0})
+                        .remove();
+                    transition(dots, self.config.guide.animationSpeed)
+                        .attr(d3Attrs);
+                    transition(dots.enter().append('circle'), self.config.guide.animationSpeed)
+                        .attr(d3Attrs);
 
                     self.subscribe(dots);
                 });
