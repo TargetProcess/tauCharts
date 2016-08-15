@@ -3,7 +3,9 @@ import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
+// TODO: Fix utilsDom export.
 var selectOrAppend = utilsDom.selectOrAppend;
+var classes = utilsDom.classes;
 
 var d3getComputedTextLength = _.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
@@ -227,7 +229,7 @@ var d3_decorator_prettify_axis_label = (
 
     var koeff = (isHorizontal) ? 1 : -1;
     var labelTextNode = selectOrAppend(axisNode, `text.js-axisLabel`)
-        .attr('class', `js-axisLabel ${guide.cssClass}`)
+        .attr('class', classes('js-axisLabel', guide.cssClass))
         .attr('transform', utilsDraw.rotate(guide.rotate));
 
     var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
@@ -413,8 +415,8 @@ var d3_transition = (selection, animationSpeed) => {
 };
 
 var d3_on_transition_end = (selection, callback) => {
+    // HACK: Determine if selection is transition.
     if (!selection.duration || selection.empty()) {
-        // HACK: Determine if selection is transition.
         callback.call(null, selection);
         return;
     }
@@ -427,7 +429,7 @@ var d3_on_transition_end = (selection, callback) => {
     });
 };
 
-var d3_animationInterceptor = (animationSpeed, initAttrs, doneAttrs, afterUpdate) => {
+var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 
     var xAfterUpdate = afterUpdate || _.identity;
 
@@ -438,11 +440,11 @@ var d3_animationInterceptor = (animationSpeed, initAttrs, doneAttrs, afterUpdate
             flow = flow.attr(_.defaults(initAttrs, doneAttrs));
         }
 
-        flow = d3_transition(flow, animationSpeed);
+        flow = d3_transition(flow, speed);
 
         flow = flow.attr(doneAttrs);
 
-        if (animationSpeed > 0) {
+        if (speed > 0) {
             flow.each('end', function () {
                 xAfterUpdate(this);
             });

@@ -173,8 +173,10 @@ export class Cartesian extends Element {
         node.x.guide.label.size = innerWidth;
         node.y.guide.label.size = innerHeight;
 
-        options
-            .container
+        // TODO: Should we modify transform of a container here or create own container?
+        (options.container.attr('transform') ?
+            transition(options.container, this.config.guide.animationSpeed) :
+            options.container)
             .attr('transform', utilsDraw.translate(this.L, this.T));
 
         if (!node.x.guide.hide) {
