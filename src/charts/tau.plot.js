@@ -290,6 +290,7 @@ export class Plot extends Emitter {
         };
 
         var xSvg = selectOrAppend(d3Target, `svg`).attr(attr);
+        // TODO: Root should be drawn like nested layers. Use D3 data-binding by unit UID.
         selectOrAppend(xSvg, `g.${CSS_PREFIX}cell.cell.frame-root`);
 
         var scenario = xGpl.getDrawScenario({
