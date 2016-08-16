@@ -266,7 +266,7 @@ var d3_decorator_prettify_axis_label = (
     }
 };
 
-var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal, logicalScale) => {
+var d3_decorator_wrap_tick_label = (nodeScale, transScale, guide, isHorizontal, logicalScale) => {
 
     var angle = utils.normalizeAngle(guide.rotate);
 
@@ -274,19 +274,26 @@ var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal, logicalScale
         .attr('transform', utilsDraw.rotate(angle))
         .style('text-anchor', guide.textAnchor);
 
+    // TODO: Improve indent calculation for ratated text.
     var segment = Math.abs(angle / 90);
     if ((segment % 2) > 0) {
-        var kRot = angle < 180 ? 1 : -1;
-        var k = isHorizontal ? 0.5 : -2;
-        var dy = k * parseFloat(tick.attr('dy'));
-        var attr = {
+        let kRot = angle < 180 ? 1 : -1;
+        let k = isHorizontal ? 0.5 : -2;
+        let sign = (guide.scaleOrient === 'top' || guide.scaleOrient === 'left' ? -1 : 1);
+        let dy = (k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ?
+            (sign < 0 ? 0 : 0.71) :
+            0.32));
+        let pt = {
             x: 9 * kRot,
-            y: 0,
+            y: 0
+        };
+        let dpt = {
             dx: (isHorizontal) ? null : `${dy}em`,
             dy: `${dy}em`
         };
 
-        tick.attr(attr);
+        nodeScale.selectAll('.tick text').attr(pt).attr(dpt);
+        transScale.selectAll('.tick text').attr(pt);
     }
 
     var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);

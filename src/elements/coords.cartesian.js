@@ -261,7 +261,7 @@ export class Cartesian extends Element {
                     );
                 }
 
-                d3_decorator_wrap_tick_label(axis, scale.guide, isHorizontal, scale);
+                d3_decorator_wrap_tick_label(axis, transAxis, scale.guide, isHorizontal, scale);
 
                 if (!scale.guide.label.hide) {
                     d3_decorator_prettify_axis_label(
