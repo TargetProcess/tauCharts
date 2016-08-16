@@ -141,7 +141,7 @@ export class Cartesian extends Element {
     allocateRect(k) {
         var model = this.screenModel;
         return {
-            slot: ((uid) => this.config.options.container.select(`.uid_${uid}`)),
+            slot: ((uid) => this.config.options.container.selectAll(`.uid_${uid}`)),
             left: (model.xi(k) - model.sizeX(k) / 2),
             top: (model.yi(k) - model.sizeY(k) / 2),
             width: (model.sizeX(k)),
@@ -217,7 +217,7 @@ export class Cartesian extends Element {
 
         var xcells = this
             ._drawGrid(options.container, node, innerWidth, innerHeight, options)
-            .selectAll('.cell')
+            .selectAll(`.cell.parent-uid_${this.config.uid}`)
             .data(xdata, x => x);
         xcells
             .exit()
@@ -225,7 +225,7 @@ export class Cartesian extends Element {
         xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
+            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d} parent-uid_${this.config.uid}`));
     }
 
     _drawDimAxis(container, scale, position, size) {
