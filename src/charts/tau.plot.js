@@ -283,15 +283,6 @@ export class Plot extends Emitter {
 
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
-        var attr = {
-            class: (`${CSS_PREFIX}svg`),
-            width: newSize.width,
-            height: newSize.height
-        };
-
-        var xSvg = selectOrAppend(d3Target, `svg`).attr(attr);
-        // TODO: Root should be drawn like nested layers. Use D3 data-binding by unit UID.
-        selectOrAppend(xSvg, `g.${CSS_PREFIX}cell.cell.frame-root`);
 
         var scenario = xGpl.getDrawScenario({
             allocateRect: () => ({
@@ -305,6 +296,20 @@ export class Plot extends Emitter {
                 containerHeight: newSize.height
             })
         });
+
+        var frameRootId = scenario[0].config.uid;
+        var xSvg = selectOrAppend(d3Target, `svg`).attr({
+            class: `${CSS_PREFIX}svg`,
+            width: newSize.width,
+            height: newSize.height
+        });
+        var xSvgBind = xSvg.selectAll('g.frame-root')
+            .data([frameRootId], x => x);
+        xSvgBind.enter()
+            .append('g')
+            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
+        xSvgBind.exit()
+            .remove();
 
         scenario.forEach((item) => {
             item.draw();

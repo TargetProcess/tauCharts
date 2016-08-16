@@ -155,7 +155,7 @@ var utilsDom = {
     ),
 
     /**
-     * Searches for an element by specified selector.
+     * Searches for immediate child element by specified selector.
      * If missing, creates an element that matches the selector.
      */
     selectOrAppend: function (container, selector) {
@@ -164,17 +164,30 @@ var utilsDom = {
             throw new Error('Selector contains whitespace.');
         }
 
-        var element = container.select(selector);
-        if (!element.empty()) {
-            return element;
+        // Search for existing immediate child
+        var matches = (
+            Element.prototype.matches ||
+            Element.prototype.matchesSelector ||
+            Element.prototype.msMatchesSelector ||
+            Element.prototype.webkitMatchesSelector
+        );
+        for (
+            var child = container.node().firstElementChild;
+            Boolean(child);
+            child = child.nextElementSibling
+        ) {
+            if (matches.call(child, selector)) {
+                return d3.select(child);
+            }
         }
 
+        // Create new element
         var delimitersActions = {
             '.': (text, el) => el.classed(text, true),
             '#': (text, el) => el.attr('id', text)
         };
         var delimiters = Object.keys(delimitersActions).join('');
-
+        var element;
         var lastFoundIndex = -1;
         var lastFoundDelimiter = null;
         for (var i = 0, l = selector.length, text; i <= l; i++) {
@@ -213,7 +226,7 @@ var utilsDom = {
                     );
                 }
             });
-        return classes.join(' ');
+        return _.uniq(classes).join(' ');
     }
 };
 export {utilsDom};
