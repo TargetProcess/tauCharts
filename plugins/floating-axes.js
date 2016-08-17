@@ -42,10 +42,9 @@
             var xs = [];
             var ys = [];
             selection.each(function () {
-                var parent = this;
-                var axisNode = this.cloneNode(true);
                 var x = 0;
                 var y = 0;
+                var parent = this;
                 while (parent.nodeName.toUpperCase() !== 'SVG') {
                     var transform = (parent.attributes[transProp] || {}).value || '';
                     if (transform.indexOf('translate(') === 0) {
@@ -56,16 +55,16 @@
                             .split(',')
                             .concat(0)
                             .map(function (x) {
-                                return (x - 0) || 0;
+                                return Number(x);
                             });
-                        x += (xy[0] - 0);
-                        y += (xy[1] - 0);
+                        x += xy[0];
+                        y += xy[1];
                     }
                     parent = parent.parentNode;
                 }
                 xs.push(x);
                 ys.push(y);
-                axes.push(axisNode);
+                axes.push(this);
             });
 
             return {
@@ -75,9 +74,10 @@
             };
         };
 
-        var createSlot = function (d3Svg) {
+        var createSlot = function (d3Svg, w, h, color, hideShadow) {
             var slot = d3Svg.append('g');
             slot.attr('class', 'floating-axes');
+            addBackground(slot, w, h, color, hideShadow);
             return slot;
         };
 
@@ -103,12 +103,12 @@
         };
 
         var addAxes = function (g, axes) {
-            axes.reduce(
-                function (dstSvg, node) {
-                    dstSvg.appendChild(node);
-                    return dstSvg;
-                },
-                g.node());
+            var container = g.node();
+            axes.forEach(function (node) {
+                node.__floatingAxesSrcParent__ = node.parentElement;
+                node.__floatingAxesSrcTransform__ = node.getAttribute('transform');
+                container.appendChild(node);
+            });
             return g;
         };
 
@@ -124,13 +124,10 @@
 
             var axisHeight = height - minY + 1 + scrollBarWidth;
 
+            var g = addAxes(createSlot(srcSvg, width, axisHeight, settings.bgcolor), axes);
             axes.forEach(function (axisNode, i) {
-                d3
-                    .select(axisNode)
-                    .attr('transform', translate(xs[i], (ys[i] - minY)));
+                axisNode.setAttribute('transform', translate(xs[i], (ys[i] - minY)));
             });
-
-            var g = addAxes(addBackground(createSlot(srcSvg), width, axisHeight, settings.bgcolor), axes);
             var rect = g.select('.i-role-bg');
 
             var move = function (x, bottomY) {
@@ -163,15 +160,12 @@
             var xs = info.xs;
             var ys = info.ys;
 
-            axes.forEach(function (axisNode, i) {
-                d3
-                    .select(axisNode)
-                    .attr('transform', translate(xs[i], ys[i]));
-            });
-
             var axisWidth = mmax(xs);
 
-            var g = addAxes(addBackground(createSlot(srcSvg), axisWidth, height, settings.bgcolor), axes);
+            var g = addAxes(createSlot(srcSvg, axisWidth, height, settings.bgcolor), axes);
+            axes.forEach(function (axisNode, i) {
+                axisNode.setAttribute('transform', translate(xs[i], ys[i]));
+            });
             var rect = g.select('.i-role-bg');
 
             var move = function (topX, y) {
@@ -193,7 +187,7 @@
             };
         };
 
-        var extractCenter = function (scrollableArea, srcSvg, xSel, ySel) {
+        var extractCorner = function (scrollableArea, srcSvg, xSel, ySel) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
             var w = mmax(extractAxesInfo(ySel).xs) + 1;
@@ -202,7 +196,7 @@
             var x = 0;
 
             var shadowSize = shadowStdDev * 2;
-            var g = addBackground(createSlot(srcSvg), w + shadowSize, h + shadowSize, settings.bgcolor, true);
+            var g = createSlot(srcSvg, w + shadowSize, h + shadowSize, settings.bgcolor, true);
 
             var move = function (topX, bottomY) {
                 var xi = Math.max((topX), 0);
@@ -222,14 +216,6 @@
             };
         };
 
-        var show = function (sel) {
-            sel.style('visibility', '');
-        };
-
-        var hide = function (sel) {
-            sel.style('visibility', 'hidden');
-        };
-
         return {
 
             init: function (chart) {
@@ -242,6 +228,10 @@
                 var root = this.rootNode;
                 this.handlers.forEach(function (item) {
                     root.removeEventListener('scroll', item.handler);
+                    item.element.selectAll('.axis').each(function () {
+                        this.__floatingAxesSrcParent__.appendChild(this);
+                        this.setAttribute('transform', this.__floatingAxesSrcTransform__);
+                    });
                     item.element.remove();
                 });
                 var srcSvg = d3.select(this._chart.getSVG());
@@ -256,8 +246,6 @@
 
                 var self = this;
                 var chart = this._chart;
-
-                this.recycle();
 
                 var applicable = true;
                 chart.traverseSpec(chart.getSpec(), function (unit) {
@@ -323,38 +311,29 @@
                     var xSel = srcSvg.selectAll('.cell .x.axis');
                     var ySel = srcSvg.selectAll('.cell .y.axis');
 
-                    show(xSel);
-                    show(ySel);
-
                     this.handlers = [
+                        extractCorner(root, srcSvg, xSel, ySel),
                         extractXAxesNew(root, srcSvg, xSel),
-                        extractYAxesNew(root, srcSvg, ySel),
-                        extractCenter(root, srcSvg, xSel, ySel)
+                        extractYAxesNew(root, srcSvg, ySel)
                     ];
-
-                    hide(xSel);
-                    hide(ySel);
+                    this.handlers[0].element.node().parentElement.appendChild(this.handlers[0].element.node());
 
                     this.handlers.forEach(function (item) {
                         root.addEventListener('scroll', item.handler, false);
                     });
 
                     chart.on('beforeExportSVGNode', function() {
-                        self.handlers.forEach(function (item) {
-                            hide(item.element);
-                        });
-                        show(xSel);
-                        show(ySel);
+                        self.recycle();
                     });
 
                     chart.on('afterExportSVGNode', function() {
-                        self.handlers.forEach(function (item) {
-                            show(item.element);
-                        });
-                        hide(xSel);
-                        hide(ySel);
+                        self.onRender();
                     });
                 }
+            },
+
+            onBeforeRender: function () {
+                this.recycle();
             }
         };
     }

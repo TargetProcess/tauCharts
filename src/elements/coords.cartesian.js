@@ -244,10 +244,15 @@ export class Cartesian extends Element {
         var animationSpeed = this.config.guide.animationSpeed;
 
         selectOrAppend(container, this._getAxisSelector(scale))
+            .classed(scale.guide.cssClass, true)
             .call((axis) => {
 
                 var transAxis = transition(axis, animationSpeed);
-                (axis.attr('transform') ? transAxis : axis).attr('transform', utilsDraw.translate(...position));
+                var prevAxisTranslate = axis.attr('transform');
+                var nextAxisTranslate = utilsDraw.translate(...position);
+                if (nextAxisTranslate !== prevAxisTranslate) {
+                    (prevAxisTranslate ? transAxis : axis).attr('transform', utilsDraw.translate(...position));
+                }
                 transAxis.call(axisScale);
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
@@ -292,7 +297,8 @@ export class Cartesian extends Element {
     }
 
     _getAxisSelector(scale) {
-        return `g.${scale.guide.cssClass.replace(/\s+/g, '.')}`;
+        // HACK: Remove "compact" class, because selector may fail after window resize.
+        return `g.${scale.guide.cssClass.replace('compact', '').trim().replace(/\s+/g, '.')}`;
     }
 
     _drawGrid(container, node, width, height) {

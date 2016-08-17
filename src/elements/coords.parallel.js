@@ -63,7 +63,7 @@ export class Parallel extends Element {
 
     allocateRect() {
         return {
-            slot: ((uid) => this.config.options.container.select(`.uid_${uid}`)),
+            slot: ((uid) => this.config.options.container.selectAll(`.uid_${uid}`)),
             left: 0,
             top: 0,
             width: this.W,

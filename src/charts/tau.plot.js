@@ -286,7 +286,7 @@ export class Plot extends Emitter {
 
         var scenario = xGpl.getDrawScenario({
             allocateRect: () => ({
-                slot: (() => d3Target.select('.frame-root')),
+                slot: (() => d3Target.selectAll('.frame-root')),
                 frameId: 'root',
                 left: 0,
                 top: 0,
@@ -303,6 +303,8 @@ export class Plot extends Emitter {
             width: newSize.width,
             height: newSize.height
         });
+        this._svg = xSvg.node();
+        this.fire('beforerender', this._svg);
         var xSvgBind = xSvg.selectAll('g.frame-root')
             .data([frameRootId], x => x);
         xSvgBind.enter()
@@ -316,7 +318,6 @@ export class Plot extends Emitter {
             this.onUnitDraw(item.node());
         });
 
-        this._svg = xSvg.node();
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
     }
