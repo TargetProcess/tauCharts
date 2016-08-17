@@ -43,6 +43,7 @@ export class GenericCartesian extends Element {
             CartesianGrammar.decorator_orientation,
             CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_group,
+            CartesianGrammar.decorator_groupOrderByColor,
             enableStack && CartesianGrammar.decorator_stack,
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
             CartesianGrammar.decorator_dynamic_size,
@@ -184,6 +185,7 @@ export class GenericCartesian extends Element {
         var groups = _.groupBy(this.data(), self.screenModel.group);
         var fibers = Object
             .keys(groups)
+            .sort((a, b) => self.screenModel.order(a) - self.screenModel.order(b))
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var frameGroups = options
