@@ -33,45 +33,57 @@
         };
 
         var translate = function (x, y) {
-            return ('translate(' + (x) + ',' + (y) + ')');
+            return ('translate(' + x + ',' + y + ')');
+        };
+
+        var parseTransform = function (transform) {
+            if (!transform || transform.indexOf('translate(') !== 0) {
+                return null;
+            }
+            return transform
+                .replace('translate(', '')
+                .replace(')', '')
+                .replace(' ', ',')
+                .split(',')
+                .concat(0)
+                .slice(0, 2)
+                .map(function (x) {
+                    return Number(x);
+                });
         };
 
         var extractAxesInfo = function (selection) {
             var transProp = 'transform';
             var axes = [];
-            var xs = [];
-            var ys = [];
             selection.each(function () {
-                var x = 0;
-                var y = 0;
+                var info = {
+                    axis: this,
+                    translate0: {x: 0, y: 0},
+                    translate: {x: 0, y: 0}
+                };
                 var parent = this;
+                var isTransformInTransition, currentTransform, nextTransform;
                 while (parent.nodeName.toUpperCase() !== 'SVG') {
-                    var transform = (parent.attributes[transProp] || {}).value || '';
-                    if (transform.indexOf('translate(') === 0) {
-                        var xy = transform
-                            .replace('translate(', '')
-                            .replace(')', '')
-                            .replace(' ', ',')
-                            .split(',')
-                            .concat(0)
-                            .map(function (x) {
-                                return Number(x);
-                            });
-                        x += xy[0];
-                        y += xy[1];
+                    isTransformInTransition = (parent.__transitionAttrs__ &&
+                        parent.__transitionAttrs__[transProp]);
+                    currentTransform = parseTransform(parent.getAttribute(transProp));
+                    nextTransform = (isTransformInTransition ?
+                        parseTransform(parent.__transitionAttrs__[transProp]) :
+                        currentTransform);
+                    if (currentTransform) {
+                        info.translate0.x += currentTransform[0];
+                        info.translate0.y += currentTransform[1];
+                    }
+                    if (nextTransform) {
+                        info.translate.x += nextTransform[0];
+                        info.translate.y += nextTransform[1];
                     }
                     parent = parent.parentNode;
                 }
-                xs.push(x);
-                ys.push(y);
-                axes.push(this);
+                axes.push(info);
             });
 
-            return {
-                xs: xs,
-                ys: ys,
-                axes: axes
-            };
+            return axes;
         };
 
         var createSlot = function (d3Svg, w, h, color, hideShadow) {
@@ -106,27 +118,36 @@
             var container = g.node();
             axes.forEach(function (node) {
                 node.__floatingAxesSrcParent__ = node.parentElement;
-                node.__floatingAxesSrcTransform__ = node.getAttribute('transform');
+                node.__floatingAxesSrcTransform__ = (node.__transitionAttrs__ && node.__transitionAttrs__.transform ?
+                    node.__transitionAttrs__.transform :
+                    node.getAttribute('transform'));
                 container.appendChild(node);
             });
             return g;
         };
 
-        var extractXAxesNew = function (scrollableArea, srcSvg, xSel) {
+        var extractXAxes = function (scrollableArea, srcSvg, axesInfo, animationSpeed) {
             var height = srcSvg.attr('height');
             var width = srcSvg.attr('width');
-            var info = extractAxesInfo(xSel);
-            var axes = info.axes;
-            var xs = info.xs;
-            var ys = info.ys;
+            var axes = axesInfo.map(function (info) {
+                return info.axis;
+            });
 
-            var minY = mmin(ys);
+            var minY = mmin(axesInfo.map(function (info) {
+                return info.translate.y;
+            }));
 
             var axisHeight = height - minY + 1 + scrollBarWidth;
 
             var g = addAxes(createSlot(srcSvg, width, axisHeight, settings.bgcolor), axes);
-            axes.forEach(function (axisNode, i) {
-                axisNode.setAttribute('transform', translate(xs[i], (ys[i] - minY)));
+            axesInfo.forEach(function (info) {
+                translateAxis(
+                    info.axis,
+                    // NOTE: No vertical transition.
+                    info.translate0.x, info.translate.y - minY,
+                    info.translate.x, info.translate.y - minY,
+                    animationSpeed
+                );
             });
             var rect = g.select('.i-role-bg');
 
@@ -152,19 +173,26 @@
             };
         };
 
-        var extractYAxesNew = function (scrollableArea, srcSvg, ySel) {
+        var extractYAxes = function (scrollableArea, srcSvg, axesInfo, animationSpeed) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
-            var info = extractAxesInfo(ySel);
-            var axes = info.axes;
-            var xs = info.xs;
-            var ys = info.ys;
+            var axes = axesInfo.map(function (info) {
+                return info.axis;
+            });
 
-            var axisWidth = mmax(xs);
+            var axisWidth = mmax(axesInfo.map(function (info) {
+                return info.translate.x;
+            }));
 
             var g = addAxes(createSlot(srcSvg, axisWidth, height, settings.bgcolor), axes);
-            axes.forEach(function (axisNode, i) {
-                axisNode.setAttribute('transform', translate(xs[i], ys[i]));
+            axesInfo.forEach(function (info, i) {
+                translateAxis(
+                    info.axis,
+                    // NOTE: No horizontal transition.
+                    info.translate.x, info.translate0.y,
+                    info.translate.x, info.translate.y,
+                    animationSpeed
+                );
             });
             var rect = g.select('.i-role-bg');
 
@@ -187,11 +215,15 @@
             };
         };
 
-        var extractCorner = function (scrollableArea, srcSvg, xSel, ySel) {
+        var extractCorner = function (scrollableArea, srcSvg, xAxesInfo, yAxesInfo) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
-            var w = mmax(extractAxesInfo(ySel).xs) + 1;
-            var y = mmin(extractAxesInfo(xSel).ys);
+            var w = mmax(yAxesInfo.map(function (info) {
+                return info.translate.x;
+            })) + 1;
+            var y = mmin(xAxesInfo.map(function (info) {
+                return info.translate.y;
+            }));
             var h = height - y + 1 + scrollBarWidth;
             var x = 0;
 
@@ -216,12 +248,32 @@
             };
         };
 
+        var translateAxis = function(axisNode, x0, y0, x1, y1, animationSpeed) {
+            if (animationSpeed > 0) {
+                d3.select(axisNode)
+                    .attr('transform', translate(x0, y0))
+                    .transition()
+                     // TODO: Determine, how much time passed since last transition beginning.
+                    .duration(animationSpeed)
+                    .attr('transform', translate(x1, y1));
+            } else {
+                axisNode.setAttribute('transform', translate(x1, y1));
+            }
+        };
+
         return {
 
             init: function (chart) {
                 this._chart = chart;
                 this.rootNode = chart.getLayout().content.parentNode;
                 this.handlers = [];
+
+                this._beforeExportHandler = chart.on('beforeExportSVGNode', function () {
+                    this.recycle();
+                }, this);
+                this._afterExportHandler = chart.on('afterExportSVGNode', function () {
+                    this.onRender();
+                }, this);
             },
 
             recycle: function () {
@@ -240,6 +292,8 @@
 
             destroy: function () {
                 this.recycle();
+                this._chart.removeHandler(this._beforeExportHandler, this);
+                this._chart.removeHandler(this._afterExportHandler, this);
             },
 
             onRender: function () {
@@ -308,26 +362,20 @@
                         .append('feMergeNode')
                         .attr('in', 'SourceGraphic');
 
-                    var xSel = srcSvg.selectAll('.cell .x.axis');
-                    var ySel = srcSvg.selectAll('.cell .y.axis');
+                    var xSel = srcSvg.selectAll('.cell .tau-xAxis.tau-activeAxis');
+                    var ySel = srcSvg.selectAll('.cell .tau-yAxis.tau-activeAxis');
 
+                    var xAxesInfo = extractAxesInfo(xSel);
+                    var yAxesInfo = extractAxesInfo(ySel);
+                    var animationSpeed = chart.configGPL.settings.animationSpeed;
                     this.handlers = [
-                        extractCorner(root, srcSvg, xSel, ySel),
-                        extractXAxesNew(root, srcSvg, xSel),
-                        extractYAxesNew(root, srcSvg, ySel)
+                        extractXAxes(root, srcSvg, xAxesInfo, animationSpeed),
+                        extractYAxes(root, srcSvg, yAxesInfo, animationSpeed),
+                        extractCorner(root, srcSvg, xAxesInfo, yAxesInfo)
                     ];
-                    this.handlers[0].element.node().parentElement.appendChild(this.handlers[0].element.node());
 
                     this.handlers.forEach(function (item) {
                         root.addEventListener('scroll', item.handler, false);
-                    });
-
-                    chart.on('beforeExportSVGNode', function() {
-                        self.recycle();
-                    });
-
-                    chart.on('afterExportSVGNode', function() {
-                        self.onRender();
                     });
                 }
             },

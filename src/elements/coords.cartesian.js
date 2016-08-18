@@ -8,6 +8,7 @@ import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
     d3_transition as transition,
+    d3_selectAllImmediate as selectAllImmediate,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
@@ -244,6 +245,7 @@ export class Cartesian extends Element {
         var animationSpeed = this.config.guide.animationSpeed;
 
         selectOrAppend(container, this._getAxisSelector(scale))
+            .classed('tau-activeAxis', true)
             .classed(scale.guide.cssClass, true)
             .call((axis) => {
 
@@ -291,14 +293,16 @@ export class Cartesian extends Element {
     }
 
     _removeDimAxis(container, scale) {
-        transition(container.select(this._getAxisSelector(scale)), this.config.guide.animationSpeed)
+        var axis = selectAllImmediate(container, this._getAxisSelector(scale))
+            .classed('tau-activeAxis', false);
+        transition(axis, this.config.guide.animationSpeed)
             .attr('opacity', 1e-6)
             .remove();
     }
 
     _getAxisSelector(scale) {
-        // HACK: Remove "compact" class, because selector may fail after window resize.
-        return `g.${scale.guide.cssClass.replace('compact', '').trim().replace(/\s+/g, '.')}`;
+        var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+        return `g.tau-${isHorizontal ? 'x' : 'y'}Axis`;
     }
 
     _drawGrid(container, node, width, height) {

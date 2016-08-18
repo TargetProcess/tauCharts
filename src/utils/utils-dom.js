@@ -165,20 +165,9 @@ var utilsDom = {
         }
 
         // Search for existing immediate child
-        var matches = (
-            Element.prototype.matches ||
-            Element.prototype.matchesSelector ||
-            Element.prototype.msMatchesSelector ||
-            Element.prototype.webkitMatchesSelector
-        );
-        for (
-            var child = container.node().firstElementChild;
-            Boolean(child);
-            child = child.nextElementSibling
-        ) {
-            if (matches.call(child, selector)) {
-                return d3.select(child);
-            }
+        var child = utilsDom.selectImmediate(container.node(), selector);
+        if (child) {
+            return d3.select(child);
         }
 
         // Create new element
@@ -207,6 +196,25 @@ var utilsDom = {
         }
 
         return element;
+    },
+
+    selectImmediate: function (container, selector) {
+        var matches = (
+            Element.prototype.matches ||
+            Element.prototype.matchesSelector ||
+            Element.prototype.msMatchesSelector ||
+            Element.prototype.webkitMatchesSelector
+        );
+        for (
+            var child = container.firstElementChild;
+            Boolean(child);
+            child = child.nextElementSibling
+        ) {
+            if (matches.call(child, selector)) {
+                return child;
+            }
+        }
+        return null;
     },
 
     /**

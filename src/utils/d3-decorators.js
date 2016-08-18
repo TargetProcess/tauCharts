@@ -201,7 +201,7 @@ var d3_decorator_fix_axis_start_line = (
         return selection;
     };
 
-    var tickClass = `js-extra${isHorizontal ? 'Y' : 'X'}Tick`;
+    var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
 
     let extraTickNode = axisNode.selectAll(`.${tickClass}`);
     if (extraTickNode.empty()) {
@@ -228,8 +228,8 @@ var d3_decorator_prettify_axis_label = (
 ) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = selectOrAppend(axisNode, `text.js-axisLabel`)
-        .attr('class', classes('js-axisLabel', guide.cssClass))
+    var labelTextNode = selectOrAppend(axisNode, `text.tau-axisLabel`)
+        .attr('class', classes('tau-axisLabel', guide.cssClass))
         .attr('transform', utilsDraw.rotate(guide.rotate));
 
     var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
@@ -413,12 +413,52 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
 var d3_transition = (selection, animationSpeed) => {
     if (animationSpeed > 0) {
         selection = selection.transition().duration(animationSpeed);
+        selection.attr = d3_transition_attr;
     }
     selection.onTransitionEnd = (callback) => {
-        d3_transition(selection, callback);
+        d3_on_transition_end(selection, callback);
         return selection;
     };
     return selection;
+};
+
+var d3_transition_attr = function (keyOrMap, value) {
+    if (arguments.length === 0) {
+        throw new Error('Unexpected `transition().attr()` arguments.');
+    }
+    var attrs;
+    if (arguments.length === 1) {
+        attrs = keyOrMap;
+    } else if (arguments.length > 1) {
+        attrs = {[keyOrMap]: value};
+    }
+
+    // Store transitioned attributes values
+    // until transition ends.
+    this.each(function () {
+        var newAttrs = {};
+        for (var key in attrs) {
+            if (typeof attrs[key] === 'function') {
+                newAttrs[key] = attrs[key].apply(this, arguments);
+            } else {
+                newAttrs[key] = attrs[key];
+            }
+        }
+        this.__transitionAttrs__ = _.extend(
+            this.__transitionAttrs__ || {},
+            newAttrs
+        );
+    });
+    this.each('end.d3_transition_attr', function () {
+        var leftAttrs = {};
+        var keys = Object.keys(attrs);
+        Object.keys(this.__transitionAttrs__)
+            .filter((k) => keys.indexOf(k) < 0)
+            .forEach((k) => leftAttrs[k] = this.__transitionAttrs__[k]);
+        this.__transitionAttrs__ = leftAttrs;
+    });
+
+    return d3.transition.prototype.attr.apply(this, arguments);
 };
 
 var d3_on_transition_end = (selection, callback) => {
@@ -428,7 +468,7 @@ var d3_on_transition_end = (selection, callback) => {
         return;
     }
     var t = selection.size();
-    selection.each('end', () => {
+    selection.each('end.d3_on_transition_end', () => {
         t--;
         if (t === 0) {
             callback.call(null, selection);
@@ -463,6 +503,13 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
     };
 };
 
+var d3_selectAllImmediate = (container, selector) => {
+    var node = container.node();
+    return container.selectAll(selector).filter(function () {
+        return this.parentElement === node;
+    });
+};
+
 export {
     d3_animationInterceptor,
     d3_decorator_wrap_tick_label,
@@ -472,7 +519,7 @@ export {
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions,
     d3_transition,
-    d3_on_transition_end,
+    d3_selectAllImmediate,
     wrapText,
     cutText
 };
