@@ -125,8 +125,8 @@ export class GPL extends Emitter {
             (unit, parentUnit, currFrame) => {
 
                 unit.uid = (() => {
-                    var pathId = ((parentUnit ? parentUnit.uid + '__' : '') +
-                        (unit.type + '-' + unit.x + '-' + unit.y).replace(/[^a-z\d_-]/ig, '-'));
+                    var pathId = utils.generateHash((parentUnit ? parentUnit.uid + '/' : '') +
+                        (unit.type + '-' + unit.x + '-' + unit.y));
                     if (!(pathId in pathsIds)) {
                         pathsIds[pathId] = 0;
                     }

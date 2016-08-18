@@ -216,9 +216,8 @@ export class Cartesian extends Element {
             return memo.concat((f.units || []).map((unit) => unit.uid));
         }, []);
 
-        var xcells = this
-            ._drawGrid(options.container, node, innerWidth, innerHeight, options)
-            .selectAll(`.cell.parent-uid_${this.config.uid}`)
+        var grid = this._drawGrid(options.container, node, innerWidth, innerHeight, options);
+        var xcells = selectAllImmediate(grid, '.cell')
             .data(xdata, x => x);
         xcells
             .exit()
@@ -226,7 +225,7 @@ export class Cartesian extends Element {
         xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d} parent-uid_${this.config.uid}`));
+            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
     }
 
     _drawDimAxis(container, scale, position, size) {
