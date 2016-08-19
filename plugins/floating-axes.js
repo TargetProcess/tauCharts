@@ -14,6 +14,10 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
+    var storeProp = '__transitionAttrs__';
+    var parentProp = '__floatingAxesSrcParent__';
+    var transProp = '__floatingAxesSrcTransform__';
+
     function floatingAxes(xSettings) {
 
         var settings = _.defaults(xSettings || {}, {
@@ -53,7 +57,6 @@
         };
 
         var extractAxesInfo = function (selection) {
-            var transProp = 'transform';
             var axes = [];
             selection.each(function () {
                 var info = {
@@ -64,11 +67,11 @@
                 var parent = this;
                 var isTransformInTransition, currentTransform, nextTransform;
                 while (parent.nodeName.toUpperCase() !== 'SVG') {
-                    isTransformInTransition = (parent.__transitionAttrs__ &&
-                        parent.__transitionAttrs__[transProp]);
-                    currentTransform = parseTransform(parent.getAttribute(transProp));
+                    isTransformInTransition = (parent[storeProp] &&
+                        parent[storeProp].transform);
+                    currentTransform = parseTransform(parent.getAttribute('transform'));
                     nextTransform = (isTransformInTransition ?
-                        parseTransform(parent.__transitionAttrs__[transProp]) :
+                        parseTransform(parent[storeProp].transform) :
                         currentTransform);
                     if (currentTransform) {
                         info.translate0.x += currentTransform[0];
@@ -117,9 +120,9 @@
         var addAxes = function (g, axes) {
             var container = g.node();
             axes.forEach(function (node) {
-                node.__floatingAxesSrcParent__ = node.parentElement;
-                node.__floatingAxesSrcTransform__ = (node.__transitionAttrs__ && node.__transitionAttrs__.transform ?
-                    node.__transitionAttrs__.transform :
+                node[parentProp] = node.parentElement;
+                node[transProp] = (node[storeProp] && node[storeProp].transform ?
+                    node[storeProp].transform :
                     node.getAttribute('transform'));
                 container.appendChild(node);
             });
@@ -281,8 +284,10 @@
                 this.handlers.forEach(function (item) {
                     root.removeEventListener('scroll', item.handler);
                     item.element.selectAll('.axis').each(function () {
-                        this.__floatingAxesSrcParent__.appendChild(this);
-                        this.setAttribute('transform', this.__floatingAxesSrcTransform__);
+                        this[parentProp].appendChild(this);
+                        this.setAttribute('transform', this[transProp]);
+                        delete this[parentProp];
+                        delete this[transProp];
                     });
                     item.element.remove();
                 });

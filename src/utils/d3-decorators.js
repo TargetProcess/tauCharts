@@ -128,18 +128,15 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
     nodeAxis
         .selectAll('.tick')
         .each(function (tickData) {
-            var coord = logicalScale(tickData);
-            if (coord === undefined) {
-                // Tick could be removed by D3 axis call during transition.
-                return;
+            // NOTE: Skip ticks removed by D3 axis call during transition.
+            if (logicalScale(tickData)) {
+                var tickNode = d3_transition(d3.select(this), animationSpeed);
+
+                var offset = logicalScale.stepSize(tickData) * 0.5;
+                var key = (isHorizontal) ? 'x' : 'y';
+                var val = (isHorizontal) ? offset : (-offset);
+                tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
             }
-
-            var tickNode = d3_transition(d3.select(this), animationSpeed);
-
-            var offset = logicalScale.stepSize(tickData) * 0.5;
-            var key = (isHorizontal) ? 'x' : 'y';
-            var val = (isHorizontal) ? offset : (-offset);
-            tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
         });
 };
 
@@ -415,9 +412,9 @@ var d3_transition = (selection, animationSpeed) => {
         selection = selection.transition().duration(animationSpeed);
         selection.attr = d3_transition_attr;
     }
-    selection.onTransitionEnd = (callback) => {
-        d3_on_transition_end(selection, callback);
-        return selection;
+    selection.onTransitionEnd = function (callback) {
+        d3_on_transition_end(this, callback);
+        return this;
     };
     return selection;
 };
@@ -435,6 +432,8 @@ var d3_transition_attr = function (keyOrMap, value) {
 
     // Store transitioned attributes values
     // until transition ends.
+    var store = '__transitionAttrs__';
+    var id = utils.generateHash(JSON.stringify(keyOrMap));
     this.each(function () {
         var newAttrs = {};
         for (var key in attrs) {
@@ -444,19 +443,27 @@ var d3_transition_attr = function (keyOrMap, value) {
                 newAttrs[key] = attrs[key];
             }
         }
-        this.__transitionAttrs__ = _.extend(
-            this.__transitionAttrs__ || {},
+        this[store] = _.extend(
+            this[store] || {},
             newAttrs
         );
     });
-    this.each('end.d3_transition_attr', function () {
+    var onTransitionEnd = function () {
         var leftAttrs = {};
         var keys = Object.keys(attrs);
-        Object.keys(this.__transitionAttrs__)
-            .filter((k) => keys.indexOf(k) < 0)
-            .forEach((k) => leftAttrs[k] = this.__transitionAttrs__[k]);
-        this.__transitionAttrs__ = leftAttrs;
-    });
+        if (this[store]) {
+            Object.keys(this[store])
+                .filter((k) => keys.indexOf(k) < 0)
+                .forEach((k) => leftAttrs[k] = this[store][k]);
+        }
+        if (Object.keys(leftAttrs).length === 0) {
+            delete this[store];
+        } else {
+            this[store] = leftAttrs;
+        }
+    };
+    this.each(`interrupt.${id}`, onTransitionEnd);
+    this.each(`end.${id}`, onTransitionEnd);
 
     return d3.transition.prototype.attr.apply(this, arguments);
 };
@@ -468,12 +475,14 @@ var d3_on_transition_end = (selection, callback) => {
         return;
     }
     var t = selection.size();
-    selection.each('end.d3_on_transition_end', () => {
+    var onTransitionEnd = () => {
         t--;
         if (t === 0) {
             callback.call(null, selection);
         }
-    });
+    };
+    selection.each('interrupt.d3_on_transition_end', onTransitionEnd);
+    selection.each('end.d3_on_transition_end', onTransitionEnd);
 };
 
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
@@ -492,7 +501,7 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         flow = flow.attr(doneAttrs);
 
         if (speed > 0) {
-            flow.each('end', function () {
+            flow.each('end.d3_animationInterceptor', function () {
                 xAfterUpdate(this);
             });
         } else {

@@ -91,4 +91,39 @@ describe('d3-decorators', function () {
             '</div>'
         ].join(''));
     });
+
+    // TODO: Async transition test.
+    it('should extend D3 transition attr and store future values', function (done) {
+        var node = div.querySelector('text');
+        var transition = d3Decorator.d3_transition;
+
+        // Start transition "dy"
+        transition(d3.select(div).selectAll('text'), 200)
+            .attr('dy', 0)
+            .onTransitionEnd(function () {
+                expect(node.__transitionAttrs__.dy).to.be.undefined;
+                expect(node.__transitionAttrs__.x).to.equal(10);
+            });
+        expect(node.__transitionAttrs__.dy).to.equal(0);
+        expect(+node.getAttribute('dy')).to.equal(10);
+        transition(d3.select(div).selectAll('text'), 200)
+            .attr('x', function (d) { return 10; })
+            .onTransitionEnd(function () {
+                expect(+node.getAttribute('x')).to.equal(10);
+                expect(node.__transitionAttrs__).to.be.undefined;
+                done();
+            });
+
+        (function flushAllD3Transitions() {
+            var now = Date.now;
+            Date.now = function () { return Infinity; };
+            d3.timer.flush();
+            Date.now = now;
+        })();
+    });
+
+    it('should not create D3 transition when zero animation duration', function () {
+        var texts = d3Decorator.d3_transition(d3.select(div).selectAll('text'), 0).attr('dy', 0);
+        expect(+div.querySelector('text').getAttribute('dy')).to.equal(0);
+    });
 });

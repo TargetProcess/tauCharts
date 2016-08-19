@@ -3,6 +3,8 @@ define(function (require) {
     var assert = require('chai').assert;
     var utils = require('src/utils/utils').utils;
     var drawUtils = require('src/utils/utils-draw').utilsDraw;
+    var domUtils = require('src/utils/utils-dom').utilsDom;
+    var d3 = require('d3');
     var d3_decorator_avoid_labels_collisions = require('src/utils/d3-decorators').d3_decorator_avoid_labels_collisions;
 
     var check = function (samples) {
@@ -263,6 +265,34 @@ define(function (require) {
                 ['19', '-10'],
                 ['-3', '-10']
             ], 'text y after decorator');
+        });
+    });
+
+    describe('utils-dom', function () {
+        var node = document.createElement('div');
+        node.innerHTML = [
+            '<span class="x" id="x">',
+            '  <a class="y" id="y"></a>',
+            '</span>'
+        ].join('\n');
+
+        it('should select immediate child or create new', function () {
+            var n1 = domUtils.selectOrAppend(d3.select(node), 'span.x').node();
+            expect(n1.id).to.equal('x');
+
+            var n2 = domUtils.selectOrAppend(d3.select(node), 'a.y').node();
+            expect(n2.id).to.equal('');
+            expect(n2.getAttribute('class')).to.equal('y');
+            expect(n2.tagName).to.equal('A');
+
+            expect(function () {
+                domUtils.selectOrAppend(d3.select(node), '.x');
+            }).to.throw(/Selector must have tag at the beginning/);
+        });
+
+        it('should create class name', function () {
+            var classes = domUtils.classes('x', null, {y: true, z: false}, 'a b');
+            expect(classes).to.equal('x y a b');
         });
     });
 });

@@ -349,7 +349,7 @@ export class Cartesian extends Element {
                             );
                         }
 
-                        let extraGridLines = selectOrAppend(gridLines, 'g.grid-lines-extra');
+                        let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
                         d3_decorator_fix_axis_start_line(
                             extraGridLines,
                             isHorizontal,
@@ -392,7 +392,7 @@ export class Cartesian extends Element {
                         let fixLineScales = ['time', 'ordinal', 'period'];
                         let fixBottomLine = _.contains(fixLineScales, yScale.scaleType);
                         if (fixBottomLine) {
-                            let extraGridLines = selectOrAppend(gridLines, 'g.grid-lines-extra');
+                            let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
                             d3_decorator_fix_axis_start_line(
                                 extraGridLines,
                                 isHorizontal,

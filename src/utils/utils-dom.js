@@ -159,9 +159,17 @@ var utilsDom = {
      * If missing, creates an element that matches the selector.
      */
     selectOrAppend: function (container, selector) {
+        var delimitersActions = {
+            '.': (text, el) => el.classed(text, true),
+            '#': (text, el) => el.attr('id', text)
+        };
+        var delimiters = Object.keys(delimitersActions).join('');
 
         if (selector.indexOf(' ') >= 0) {
             throw new Error('Selector contains whitespace.');
+        }
+        if (delimiters.indexOf(selector[0]) >= 0) {
+            throw new Error('Selector must have tag at the beginning.');
         }
 
         // Search for existing immediate child
@@ -171,19 +179,11 @@ var utilsDom = {
         }
 
         // Create new element
-        var delimitersActions = {
-            '.': (text, el) => el.classed(text, true),
-            '#': (text, el) => el.attr('id', text)
-        };
-        var delimiters = Object.keys(delimitersActions).join('');
         var element;
         var lastFoundIndex = -1;
         var lastFoundDelimiter = null;
-        for (var i = 0, l = selector.length, text; i <= l; i++) {
+        for (var i = 1, l = selector.length, text; i <= l; i++) {
             if (i == l || delimiters.indexOf(selector[i]) >= 0) {
-                if (i === 0) {
-                    throw new Error('Selector must have tag at the beginning.');
-                }
                 text = selector.substring(lastFoundIndex + 1, i);
                 if (lastFoundIndex < 0) {
                     element = container.append(text);
