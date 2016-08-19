@@ -1,3 +1,4 @@
+import {default as d3} from 'd3';
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
