@@ -1632,6 +1632,7 @@ window.samples.push({
     "type": "stacked-area",
     "x": "endDate",
     "guide": {
+        showGridLines: 'y',
         "x": {
             "nice": false
         },
@@ -1640,12 +1641,16 @@ window.samples.push({
                 // var stateOrder = orderByState[state];
                 var stateOrder = orderIndex.indexOf(state);
                 var color = d3.scale.linear()
-                    // .domain([orderRange[0], (orderRange[1] + orderRange[0]) / 2, orderRange[1]])
-                    .domain([0, orderIndex.length / 2, orderIndex.length])
+                    .domain(splitEvenly([0, orderIndex.length], 8))
                     .range([
-                        "rgb(240, 100, 240)",
-                        "rgb(240, 240, 100)",
-                        "rgb(100, 240, 240)"
+                        d3.hsl(260, 0.5, 0.8),
+                        d3.hsl(300, 0.5, 0.8),
+                        d3.hsl(340, 0.5, 0.8),
+                        d3.hsl(20, 0.5, 0.8),
+                        d3.hsl(60, 0.5, 0.8),
+                        d3.hsl(100, 0.5, 0.8),
+                        d3.hsl(140, 0.5, 0.8),
+                        d3.hsl(180, 0.5, 0.8)
                     ]);
 
                 return color(stateOrder);
@@ -1662,7 +1667,15 @@ window.samples.push({
 
 
 
-
+function splitEvenly(domain, parts) {
+    var min = domain[0];
+    var max = domain[1];
+    var segment = (max - min) / (parts - 1);
+    var chunks = _.times(parts - 2, function (n) {
+        return min + segment * (n + 1);
+    });
+    return [min].concat(chunks).concat(max);
+};
 
 
 

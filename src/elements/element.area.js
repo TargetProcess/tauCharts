@@ -81,7 +81,13 @@ export class Area extends BasePath {
 
         var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
-            stroke: (fiber) => baseModel.color(fiber[0]),
+            stroke: (fiber) => {
+                var colorStr = baseModel.color(fiber[0]);
+                if (colorStr.length > 0) {
+                    colorStr = d3.rgb(colorStr).darker(1);
+                }
+                return colorStr;
+            },
             points: areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
         };
 

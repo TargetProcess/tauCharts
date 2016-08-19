@@ -109,25 +109,13 @@
                     var w = 'width';
                     var h = 'height';
 
-                    drawRect(that, 'left', {
-                            class: 'left',
+                    drawRect(that, 'center', {
+                            class: 'center',
                             [x]: 0,
                             [y]: 0,
                             [h]: cfg.options.height,
                             [w]: 0,
-                            fill: '#fff',
-                            opacity: 0.25,
-                            speed: 0
-                        },
-                        [{}]);
-
-                    drawRect(that, 'right', {
-                            class: 'right',
-                            [x]: 0,
-                            [y]: 0,
-                            [h]: cfg.options.height,
-                            [w]: 0,
-                            fill: '#fff',
+                            fill: '#c4b3e6',
                             opacity: 0.25,
                             speed: 0
                         },
@@ -140,6 +128,7 @@
                             width: cfg.options.width,
                             height: cfg.options.height,
                             opacity: 0,
+                            cursor: 'pointer',
                             speed: 0
                         },
                         [{}]);
@@ -151,22 +140,15 @@
                         var range = findRangeValue(c.x);
 
                         var prevX = screenModel.model.scaleX(range[0]);
-                        drawRect(that, 'left', {
-                                speed: 0,
-                                [x]: 0,
-                                [y]: 0,
-                                [h]: cfg.options.height,
-                                [w]: prevX
-                            },
-                            [{}]);
-
                         var nextX = screenModel.model.scaleX(range[1]);
-                        drawRect(that, 'right', {
-                                speed: 0,
-                                [x]: nextX,
+
+                        drawRect(that, 'center', {
+                                class: 'center',
+                                [x]: prevX,
                                 [y]: 0,
                                 [h]: cfg.options.height,
-                                [w]: cfg.options.width - nextX
+                                [w]: nextX - prevX,
+                                speed: 0
                             },
                             [{}]);
                     });
@@ -181,13 +163,15 @@
                         var nextValues = filterValuesStack(nextValue);
                         var prevValues = filterValuesStack(prevValue);
 
-                        var topItem = nextValues
-                            .map((row) => ({x: screenModel.x(row), y: screenModel.y(row)}))
-                            .sort((a, b) => a.y - b.y)
-                            [0];
+                        //var topItem = nextValues
+                        //    .map((row) => ({x: screenModel.x(row), y: screenModel.y(row)}))
+                        //    .sort((a, b) => a.y - b.y)
+                        //    [0];
+                        //var pageX = e.pageX - e.offsetX + topItem.x;
+                        //var pageY = e.pageY - e.offsetY + topItem.y;
 
-                        var pageX = e.pageX - e.offsetX + topItem.x;
-                        var pageY = e.pageY - e.offsetY + topItem.y;
+                        var pageX = e.pageX + 10;
+                        var pageY = e.pageY + 15;
 
                         var prevStack = prevValues.reduce(
                             (memo, item) => {
@@ -242,7 +226,7 @@
                 this._tooltip = this._chart.addBalloon(
                     {
                         spacing: 3,
-                        place: 'top-right',
+                        place: 'bottom-right',
                         auto: true,
                         effectClass: 'fade'
                     });
@@ -275,18 +259,21 @@
                 str.push(' - ');
                 str.push(d3.time.format('%d %b %Y')(dateRange[1]));
                 str.push('</strong>');
-                str.push('<table>');
+                str.push('<table cellpadding="0" cellspacing="1" border="0">');
                 str = str.concat(states.map(function (s) {
                     return [
                         '<tr>',
                         '<td>' + s.name + '</td>',
                         '<td>',
-                        '<div style="padding-left:2px;width:' + (50 * s.value / max) + 'px;background-color:' + s.color + ';">',
+                        '<div style="padding:2px 0 2px 2px;width:' + (50 * s.value / max) + 'px;background-color:' + s.color + ';">',
                         (s.value),
                         '</div>',
                         '</td>',
                         '<td style="padding-left: 5px; text-align: right;color:' + (s.diff > 0 ? 'green' : 'red') + '">',
-                        (s.diff === 0 ? '' : s.diff),
+                        '<div style="padding:2px 0 2px 2px;">',
+                        (s.diff > 0 ? '&uarr;' : (s.diff < 0 ? '&darr;' : '')),
+                        (s.diff === 0 ? '' : ('&nbsp;' + Math.abs(s.diff))),
+                        '</div>',
                         '</td>',
                         '</tr>'
                     ].join('');
@@ -301,16 +288,18 @@
                 var cfd = chart.select((node) => node.config.type === 'ELEMENT.CFD')[0];
                 cfd.on('focus', function (sender, e) {
                     var categories = sender.screenModel.model.scaleColor.domain();
-                    var states = categories.map(function (cat) {
-                        var curr = e.data[cat] || 0;
-                        var prev = e.prev[cat] || 0;
-                        return {
-                            name: cat,
-                            color: sender.screenModel.model.scaleColor.value(cat),
-                            value: curr,
-                            diff: curr - prev
-                        };
-                    });
+                    var states = categories
+                        .map(function (cat) {
+                            var curr = e.data[cat] || 0;
+                            var prev = e.prev[cat] || 0;
+                            return {
+                                name: cat,
+                                color: sender.screenModel.model.scaleColor.value(cat),
+                                value: curr,
+                                diff: curr - prev
+                            };
+                        })
+                        .reverse();
 
                     self._tooltip
                         .content(self.getContent([e.prev.date, e.data.date], states))
