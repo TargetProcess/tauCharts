@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.3-beta.1 - 2016-08-09
+/*! taucharts - v0.9.3-beta.2 - 2016-08-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -327,7 +327,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.3-beta.1");
+	var version = ("0.9.3-beta.2");
 
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
@@ -1318,6 +1318,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _inherits(Element, _Emitter);
 
 	    // add base behaviour here
+
 	    function Element(config) {
 	        _classCallCheck(this, Element);
 
@@ -1541,6 +1542,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	     * @constructor
 	     */
+
 	    function Emitter() {
 	        _classCallCheck(this, Emitter);
 
@@ -3682,7 +3684,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            interpolate: 'linear'
 	        });
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, !enableStack && _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
 	        return _this;
 	    }
 
@@ -4297,6 +4299,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
 	var _const = __webpack_require__(6);
 
 	var _elementPath = __webpack_require__(19);
@@ -4304,6 +4310,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _cssClassMap = __webpack_require__(20);
 
 	var _cartesianGrammar = __webpack_require__(9);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4321,7 +4329,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var enableStack = _this.config.stack;
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, !enableStack && _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale].concat(config.transformModel || []);
 	        return _this;
 	    }
 
@@ -4388,7 +4396,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return baseModel.color(fiber[0]);
 	                },
 	                stroke: function stroke(fiber) {
-	                    return baseModel.color(fiber[0]);
+	                    var colorStr = baseModel.color(fiber[0]);
+	                    if (colorStr.length > 0) {
+	                        colorStr = _d2.default.rgb(colorStr).darker(1);
+	                    }
+	                    return colorStr;
 	                },
 	                points: areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
 	            };
@@ -4821,6 +4833,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _classCallCheck(this, GPL);
 
 	        // jscs:disable
+
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GPL).call(this));
 
 	        _underscore2.default.defaults(config.scales, {
@@ -7600,7 +7613,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Thrash, waste and sodomy: IE GC bug
 	  var iframe = __webpack_require__(61)('iframe')
 	    , i      = enumBugKeys.length
-	    , lt     = '<'
 	    , gt     = '>'
 	    , iframeDocument;
 	  iframe.style.display = 'none';
@@ -7610,7 +7622,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // html.removeChild(iframe);
 	  iframeDocument = iframe.contentWindow.document;
 	  iframeDocument.open();
-	  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
+	  iframeDocument.write('<script>document.F=Object</script' + gt);
 	  iframeDocument.close();
 	  createDict = iframeDocument.F;
 	  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
@@ -7628,7 +7640,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else result = createDict();
 	  return Properties === undefined ? result : dPs(result, Properties);
 	};
-
 
 /***/ },
 /* 68 */
@@ -7855,6 +7866,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  , assign       = __webpack_require__(90)
 	  , weak         = __webpack_require__(93)
 	  , isObject     = __webpack_require__(57)
+	  , has          = __webpack_require__(65)
 	  , getWeak      = meta.getWeak
 	  , isExtensible = Object.isExtensible
 	  , uncaughtFrozenStore = weak.ufstore
@@ -9909,8 +9921,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (ex.message === 'Not applicable') {
 	                    console.log('[TauCharts]: can\'t extract axes for the given chart specification'); // eslint-disable-line
 	                } else {
-	                    throw ex;
-	                }
+	                        throw ex;
+	                    }
 	            }
 
 	            return refSpec;
@@ -12407,7 +12419,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = _this.config.guide.size.enableDistributeEvenly;
 
-	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale, config.adjustPhase && (enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale)].concat(config.transformModel || []);
+	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_groundY0, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && enableStack && _cartesianGrammar.CartesianGrammar.adjustYScale, config.adjustPhase && (enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale)].concat(config.transformModel || []);
 	        return _this;
 	    }
 
@@ -12539,7 +12551,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var groups = _underscore2.default.groupBy(this.data(), self.screenModel.group);
-	            var fibers = Object.keys(groups).reduce(function (memo, k) {
+	            var fibers = Object.keys(groups).sort(function (a, b) {
+	                return self.screenModel.order(a) - self.screenModel.order(b);
+	            }).reduce(function (memo, k) {
 	                return memo.concat([groups[k]]);
 	            }, []);
 

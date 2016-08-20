@@ -21,11 +21,14 @@
 .graphical-report__layout {
   display: -webkit-flexbox;
   display: -ms-flexbox;
+  display: -webkit-flex;
   display: flex;
   -ms-flex-align: stretch;
+  -webkit-align-items: stretch;
   align-items: stretch;
   -ms-flex-direction: column;
-  flex-direction: column;
+  -webkit-flex-direction: column;
+          flex-direction: column;
   height: 100%;
   width: 100%;
   overflow: auto;
@@ -34,27 +37,33 @@
 }
 .graphical-report__layout__header {
   -ms-flex: 0 0.1 auto;
-  flex: 0 0.1 auto;
+  -webkit-flex: 0 0.1 auto;
+          flex: 0 0.1 auto;
 }
 .graphical-report__layout__container {
   display: -webkit-flexbox;
   display: -ms-flexbox;
+  display: -webkit-flex;
   display: flex;
   -ms-flex: 1 1 auto;
-  flex: 1 1 auto;
+  -webkit-flex: 1 1 auto;
+          flex: 1 1 auto;
   max-height: 100%;
 }
 .graphical-report__layout__footer {
   -ms-flex: 0 1 auto;
-  flex: 0 1 auto;
+  -webkit-flex: 0 1 auto;
+          flex: 0 1 auto;
 }
 .graphical-report__layout__sidebar {
   -ms-flex: 0 1 auto;
-  flex: 0 1 auto;
+  -webkit-flex: 0 1 auto;
+          flex: 0 1 auto;
 }
 .graphical-report__layout__content {
   -ms-flex: 1 1 auto;
-  flex: 1 1 auto;
+  -webkit-flex: 1 1 auto;
+          flex: 1 1 auto;
   padding: 0 17px 17px 0;
   overflow: auto;
 }
@@ -63,7 +72,8 @@
   overflow: auto;
   padding: 0 17px 17px 0;
   -ms-flex: 0 0 auto;
-  flex: 0 0 auto;
+  -webkit-flex: 0 0 auto;
+          flex: 0 0 auto;
 }
 .graphical-report__layout__sidebar-right__wrap {
   max-height: 100%;
@@ -458,7 +468,7 @@
   opacity: 0.7;
 }
 .graphical-report__area polygon {
-  opacity: 0.55;
+  opacity: 0.6;
   transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
 }
 .graphical-report__svg .graphical-report__bar {

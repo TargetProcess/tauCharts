@@ -10,10 +10,12 @@
   left: 0;
   max-width: 500px;
   z-index: 900;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-align: stretch;
-      align-items: stretch;
+  -webkit-align-items: stretch;
+      -ms-flex-align: stretch;
+          align-items: stretch;
   font-size: 11px;
   background: rgba(0, 0, 0, 0.9);
   box-shadow: 0 1px 4px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.005);
@@ -48,8 +50,10 @@
 .graphical-report__tooltip__exclude__wrap {
   line-height: 26px;
   padding: 0 15px;
-  transform: rotate(-90deg);
-  transform-origin: 0 0;
+  -webkit-transform: rotate(-90deg);
+          transform: rotate(-90deg);
+  -webkit-transform-origin: 0 0;
+          transform-origin: 0 0;
   height: 100%;
   white-space: nowrap;
   position: absolute;

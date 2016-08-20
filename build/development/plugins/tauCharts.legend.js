@@ -521,7 +521,7 @@
                         .createScaleInfoByName(c)
                         .domain();
 
-                    if (!scaleConfig.brewer) {
+                    if (!scaleConfig.brewer || _.isArray(scaleConfig.brewer)) {
                         scaleConfig.brewer = self._generateColorMap(fullLegendDomain);
                     }
 
