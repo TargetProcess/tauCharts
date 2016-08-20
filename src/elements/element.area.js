@@ -1,3 +1,4 @@
+import {default as d3} from 'd3';
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
@@ -15,7 +16,8 @@ export class Area extends BasePath {
             CartesianGrammar.decorator_orientation,
             CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_group,
-            CartesianGrammar.decorator_groupOrderByAvg,
+            !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && CartesianGrammar.decorator_groupOrderByColor,
             enableStack && CartesianGrammar.decorator_stack,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
@@ -80,7 +82,13 @@ export class Area extends BasePath {
 
         var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
-            stroke: (fiber) => baseModel.color(fiber[0]),
+            stroke: (fiber) => {
+                var colorStr = baseModel.color(fiber[0]);
+                if (colorStr.length > 0) {
+                    colorStr = d3.rgb(colorStr).darker(1);
+                }
+                return colorStr;
+            },
             points: areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
         };
 
