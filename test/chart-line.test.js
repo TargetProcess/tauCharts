@@ -3,7 +3,12 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var tauChart = require('src/tau.charts');
+    var testUtils = require('testUtils');
     describe('Line plot chart', function () {
+
+        afterEach(function () {
+            testUtils.destroyCharts();
+        });
 
         it('should convert to common config', function () {
             var line = new tauChart.Chart({

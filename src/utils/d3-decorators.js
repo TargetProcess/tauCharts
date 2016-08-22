@@ -413,12 +413,15 @@ var d3_transition = (selection, animationSpeed) => {
         selection.attr = d3_transition_attr;
     }
     selection.onTransitionEnd = function (callback) {
-        d3_on_transition_end(this, callback);
+        d3_add_transition_end_listener(this, callback);
         return this;
     };
     return selection;
 };
 
+// TODO: Getting attribute value may be possible in D3 v4:
+// http://stackoverflow.com/a/39024812/4137472
+// so it will be possible to get future attribute value.
 var d3_transition_attr = function (keyOrMap, value) {
     if (arguments.length === 0) {
         throw new Error('Unexpected `transition().attr()` arguments.');
@@ -468,7 +471,7 @@ var d3_transition_attr = function (keyOrMap, value) {
     return d3.transition.prototype.attr.apply(this, arguments);
 };
 
-var d3_on_transition_end = (selection, callback) => {
+var d3_add_transition_end_listener = (selection, callback) => {
     // HACK: Determine if selection is transition.
     if (!selection.duration || selection.empty()) {
         callback.call(null, selection);
@@ -483,6 +486,7 @@ var d3_on_transition_end = (selection, callback) => {
     };
     selection.each('interrupt.d3_on_transition_end', onTransitionEnd);
     selection.each('end.d3_on_transition_end', onTransitionEnd);
+    return selection;
 };
 
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {

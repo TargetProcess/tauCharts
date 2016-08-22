@@ -92,33 +92,65 @@ describe('d3-decorators', function () {
         ].join(''));
     });
 
-    // TODO: Async transition test.
     it('should extend D3 transition attr and store future values', function (done) {
         var node = div.querySelector('text');
         var transition = d3Decorator.d3_transition;
 
-        // Start transition "dy"
-        transition(d3.select(div).selectAll('text'), 200)
-            .attr('dy', 0)
-            .onTransitionEnd(function () {
-                expect(node.__transitionAttrs__.dy).to.be.undefined;
-                expect(node.__transitionAttrs__.x).to.equal(10);
-            });
-        expect(node.__transitionAttrs__.dy).to.equal(0);
-        expect(+node.getAttribute('dy')).to.equal(10);
-        transition(d3.select(div).selectAll('text'), 200)
-            .attr('x', function (d) { return 10; })
-            .onTransitionEnd(function () {
-                expect(+node.getAttribute('x')).to.equal(10);
-                expect(node.__transitionAttrs__).to.be.undefined;
-                done();
-            });
+        var check = function (fn, final) {
+            return function () {
+                var err;
+                try {
+                    fn();
+                    if (final) {
+                        expect(transitionInterrupted).to.equal(true);
+                        done();
+                    }
+                } catch (e) {
+                    err = e;
+                }
+                if (err) {
+                    done(err);
+                } else if (final) {
+                    done();
+                }
+            };
+        };
+        var final = function (fn) {
+            return check(fn, true);
+        };
 
-        (function flushAllD3Transitions() {
-            var now = Date.now;
-            Date.now = function () { return Infinity; };
-            d3.timer.flush();
-            Date.now = now;
+        var transitionInterrupted = false;
+
+        check(function () {
+            // Start transition "dy"
+            var texts = transition(d3.select(div).selectAll('text'), 200)
+                .attr('dy', 0)
+                .onTransitionEnd(check(function () {
+                    transitionInterrupted = true;
+                    expect(node.__transitionAttrs__.dy).to.be.undefined;
+                    expect(node.__transitionAttrs__.x).to.equal(10);
+                }));
+            expect(node.__transitionAttrs__.dy).to.equal(0);
+            expect(+node.getAttribute('dy')).to.equal(10);
+            expect(function () {
+                texts.attr();
+            }).to.throw(/Unexpected.*arguments/);
+
+            // Start transition "x" with delay
+            setTimeout(check(function () {
+                expect(+node.getAttribute('dy')).to.be.above(0);
+                expect(+node.getAttribute('dy')).to.be.below(10);
+                transition(d3.select(div).selectAll('text'), 200)
+                    .attr({
+                        'x': function (d) { return 10; },
+                        'dy': function (d) { return 0; }
+                    })
+                    .onTransitionEnd(final(function () {
+                        expect(+node.getAttribute('dy')).to.equal(0);
+                        expect(+node.getAttribute('x')).to.equal(10);
+                        expect(node.__transitionAttrs__).to.be.undefined;
+                    }));
+            }), 100);
         })();
     });
 
