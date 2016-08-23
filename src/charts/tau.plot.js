@@ -20,6 +20,8 @@ import {CSS_PREFIX} from '../const';
 import {GPL} from './tau.gpl';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
+var selectOrAppend = utilsDom.selectOrAppend;
+
 export class Plot extends Emitter {
     constructor(config) {
         super();
@@ -281,25 +283,10 @@ export class Plot extends Emitter {
 
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
-        var attr = {
-            class: (`${CSS_PREFIX}svg`),
-            width: newSize.width,
-            height: newSize.height
-        };
-
-        var xSvg = d3Target
-            .selectAll('svg')
-            .data([1]);
-        xSvg.attr(attr);
-        xSvg.enter()
-            .append('svg')
-            .attr(attr)
-            .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 
         var scenario = xGpl.getDrawScenario({
             allocateRect: () => ({
-                slot: (() => d3Target.select('.frame-root')),
+                slot: (() => d3Target.selectAll('.frame-root')),
                 frameId: 'root',
                 left: 0,
                 top: 0,
@@ -310,12 +297,27 @@ export class Plot extends Emitter {
             })
         });
 
+        var frameRootId = scenario[0].config.uid;
+        var xSvg = selectOrAppend(d3Target, `svg`).attr({
+            class: `${CSS_PREFIX}svg`,
+            width: newSize.width,
+            height: newSize.height
+        });
+        this._svg = xSvg.node();
+        this.fire('beforerender', this._svg);
+        var xSvgBind = xSvg.selectAll('g.frame-root')
+            .data([frameRootId], x => x);
+        xSvgBind.enter()
+            .append('g')
+            .attr('class', `${CSS_PREFIX}cell cell frame-root uid_${frameRootId.replace(/[^a-z\d-_]/ig, '-')}`);
+        xSvgBind.exit()
+            .remove();
+
         scenario.forEach((item) => {
             item.draw();
             this.onUnitDraw(item.node());
         });
 
-        this._svg = xSvg.node();
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
     }

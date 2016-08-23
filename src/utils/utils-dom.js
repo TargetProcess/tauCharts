@@ -151,6 +151,90 @@ var utilsDom = {
 
             return size;
         },
-        (char, props) => `${char}_${JSON.stringify(props)}`)
+        (char, props) => `${char}_${JSON.stringify(props)}`
+    ),
+
+    /**
+     * Searches for immediate child element by specified selector.
+     * If missing, creates an element that matches the selector.
+     */
+    selectOrAppend: function (container, selector) {
+        var delimitersActions = {
+            '.': (text, el) => el.classed(text, true),
+            '#': (text, el) => el.attr('id', text)
+        };
+        var delimiters = Object.keys(delimitersActions).join('');
+
+        if (selector.indexOf(' ') >= 0) {
+            throw new Error('Selector contains whitespace.');
+        }
+        if (delimiters.indexOf(selector[0]) >= 0) {
+            throw new Error('Selector must have tag at the beginning.');
+        }
+
+        // Search for existing immediate child
+        var child = utilsDom.selectImmediate(container.node(), selector);
+        if (child) {
+            return d3.select(child);
+        }
+
+        // Create new element
+        var element;
+        var lastFoundIndex = -1;
+        var lastFoundDelimiter = null;
+        for (var i = 1, l = selector.length, text; i <= l; i++) {
+            if (i == l || delimiters.indexOf(selector[i]) >= 0) {
+                text = selector.substring(lastFoundIndex + 1, i);
+                if (lastFoundIndex < 0) {
+                    element = container.append(text);
+                } else {
+                    delimitersActions[lastFoundDelimiter].call(null, text, element);
+                }
+                lastFoundDelimiter = selector[i];
+                lastFoundIndex = i;
+            }
+        }
+
+        return element;
+    },
+
+    selectImmediate: function (container, selector) {
+        var matches = (
+            Element.prototype.matches ||
+            Element.prototype.matchesSelector ||
+            Element.prototype.msMatchesSelector ||
+            Element.prototype.webkitMatchesSelector
+        );
+        for (
+            var child = container.firstElementChild;
+            Boolean(child);
+            child = child.nextElementSibling
+        ) {
+            if (matches.call(child, selector)) {
+                return child;
+            }
+        }
+        return null;
+    },
+
+    /**
+     * Generates "class" attribute string.
+     */
+    classes: function (...args) {
+        var classes = [];
+        args.filter((c) => Boolean(c))
+            .forEach((c) => {
+                if (typeof c === 'string') {
+                    classes.push(c);
+                } else if (typeof c === 'object') {
+                    classes.push.apply(
+                        classes,
+                        Object.keys(c)
+                            .filter((key) => Boolean(c[key]))
+                    );
+                }
+            });
+        return _.uniq(classes).join(' ');
+    }
 };
 export {utilsDom};

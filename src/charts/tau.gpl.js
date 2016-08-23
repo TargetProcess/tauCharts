@@ -110,7 +110,7 @@ export class GPL extends Emitter {
 
     _flattenDrawScenario(root, iterator) {
 
-        var uid = 0;
+        var pathsIds = {};
         var scenario = [];
 
         var stack = [root];
@@ -124,7 +124,14 @@ export class GPL extends Emitter {
             // enter
             (unit, parentUnit, currFrame) => {
 
-                unit.uid = ++uid;
+                unit.uid = (() => {
+                    var pathId = utils.generateHash((parentUnit ? parentUnit.uid + '/' : '') +
+                        (unit.type + '-' + unit.x + '-' + unit.y));
+                    if (!(pathId in pathsIds)) {
+                        pathsIds[pathId] = 0;
+                    }
+                    return (pathId + '-' + (pathsIds[pathId]++));
+                })();
                 unit.guide = utils.clone(unit.guide);
 
                 var instance = iterator(top(), unit, currFrame);

@@ -14,6 +14,10 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
+    var storeProp = '__transitionAttrs__';
+    var parentProp = '__floatingAxesSrcParent__';
+    var transProp = '__floatingAxesSrcTransform__';
+
     function floatingAxes(xSettings) {
 
         var settings = _.defaults(xSettings || {}, {
@@ -33,51 +37,62 @@
         };
 
         var translate = function (x, y) {
-            return ('translate(' + (x) + ',' + (y) + ')');
+            return ('translate(' + x + ',' + y + ')');
+        };
+
+        var parseTransform = function (transform) {
+            if (!transform || transform.indexOf('translate(') !== 0) {
+                return null;
+            }
+            return transform
+                .replace('translate(', '')
+                .replace(')', '')
+                .replace(' ', ',')
+                .split(',')
+                .concat(0)
+                .slice(0, 2)
+                .map(function (x) {
+                    return Number(x);
+                });
         };
 
         var extractAxesInfo = function (selection) {
-            var transProp = 'transform';
             var axes = [];
-            var xs = [];
-            var ys = [];
             selection.each(function () {
+                var info = {
+                    axis: this,
+                    translate0: {x: 0, y: 0},
+                    translate: {x: 0, y: 0}
+                };
                 var parent = this;
-                var axisNode = this.cloneNode(true);
-                var x = 0;
-                var y = 0;
+                var isTransformInTransition, currentTransform, nextTransform;
                 while (parent.nodeName.toUpperCase() !== 'SVG') {
-                    var transform = (parent.attributes[transProp] || {}).value || '';
-                    if (transform.indexOf('translate(') === 0) {
-                        var xy = transform
-                            .replace('translate(', '')
-                            .replace(')', '')
-                            .replace(' ', ',')
-                            .split(',')
-                            .concat(0)
-                            .map(function (x) {
-                                return (x - 0) || 0;
-                            });
-                        x += (xy[0] - 0);
-                        y += (xy[1] - 0);
+                    isTransformInTransition = (parent[storeProp] &&
+                        parent[storeProp].transform);
+                    currentTransform = parseTransform(parent.getAttribute('transform'));
+                    nextTransform = (isTransformInTransition ?
+                        parseTransform(parent[storeProp].transform) :
+                        currentTransform);
+                    if (currentTransform) {
+                        info.translate0.x += currentTransform[0];
+                        info.translate0.y += currentTransform[1];
+                    }
+                    if (nextTransform) {
+                        info.translate.x += nextTransform[0];
+                        info.translate.y += nextTransform[1];
                     }
                     parent = parent.parentNode;
                 }
-                xs.push(x);
-                ys.push(y);
-                axes.push(axisNode);
+                axes.push(info);
             });
 
-            return {
-                xs: xs,
-                ys: ys,
-                axes: axes
-            };
+            return axes;
         };
 
-        var createSlot = function (d3Svg) {
+        var createSlot = function (d3Svg, w, h, color, hideShadow) {
             var slot = d3Svg.append('g');
             slot.attr('class', 'floating-axes');
+            addBackground(slot, w, h, color, hideShadow);
             return slot;
         };
 
@@ -103,34 +118,40 @@
         };
 
         var addAxes = function (g, axes) {
-            axes.reduce(
-                function (dstSvg, node) {
-                    dstSvg.appendChild(node);
-                    return dstSvg;
-                },
-                g.node());
+            var container = g.node();
+            axes.forEach(function (node) {
+                node[parentProp] = node.parentElement;
+                node[transProp] = (node[storeProp] && node[storeProp].transform ?
+                    node[storeProp].transform :
+                    node.getAttribute('transform'));
+                container.appendChild(node);
+            });
             return g;
         };
 
-        var extractXAxesNew = function (scrollableArea, srcSvg, xSel) {
+        var extractXAxes = function (scrollableArea, srcSvg, axesInfo, animationSpeed) {
             var height = srcSvg.attr('height');
             var width = srcSvg.attr('width');
-            var info = extractAxesInfo(xSel);
-            var axes = info.axes;
-            var xs = info.xs;
-            var ys = info.ys;
+            var axes = axesInfo.map(function (info) {
+                return info.axis;
+            });
 
-            var minY = mmin(ys);
+            var minY = mmin(axesInfo.map(function (info) {
+                return info.translate.y;
+            }));
 
             var axisHeight = height - minY + 1 + scrollBarWidth;
 
-            axes.forEach(function (axisNode, i) {
-                d3
-                    .select(axisNode)
-                    .attr('transform', translate(xs[i], (ys[i] - minY)));
+            var g = addAxes(createSlot(srcSvg, width, axisHeight, settings.bgcolor), axes);
+            axesInfo.forEach(function (info) {
+                translateAxis(
+                    info.axis,
+                    // NOTE: No vertical transition.
+                    info.translate0.x, info.translate.y - minY,
+                    info.translate.x, info.translate.y - minY,
+                    animationSpeed
+                );
             });
-
-            var g = addAxes(addBackground(createSlot(srcSvg), width, axisHeight, settings.bgcolor), axes);
             var rect = g.select('.i-role-bg');
 
             var move = function (x, bottomY) {
@@ -155,23 +176,27 @@
             };
         };
 
-        var extractYAxesNew = function (scrollableArea, srcSvg, ySel) {
+        var extractYAxes = function (scrollableArea, srcSvg, axesInfo, animationSpeed) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
-            var info = extractAxesInfo(ySel);
-            var axes = info.axes;
-            var xs = info.xs;
-            var ys = info.ys;
-
-            axes.forEach(function (axisNode, i) {
-                d3
-                    .select(axisNode)
-                    .attr('transform', translate(xs[i], ys[i]));
+            var axes = axesInfo.map(function (info) {
+                return info.axis;
             });
 
-            var axisWidth = mmax(xs);
+            var axisWidth = mmax(axesInfo.map(function (info) {
+                return info.translate.x;
+            }));
 
-            var g = addAxes(addBackground(createSlot(srcSvg), axisWidth, height, settings.bgcolor), axes);
+            var g = addAxes(createSlot(srcSvg, axisWidth, height, settings.bgcolor), axes);
+            axesInfo.forEach(function (info, i) {
+                translateAxis(
+                    info.axis,
+                    // NOTE: No horizontal transition.
+                    info.translate.x, info.translate0.y,
+                    info.translate.x, info.translate.y,
+                    animationSpeed
+                );
+            });
             var rect = g.select('.i-role-bg');
 
             var move = function (topX, y) {
@@ -193,16 +218,20 @@
             };
         };
 
-        var extractCenter = function (scrollableArea, srcSvg, xSel, ySel) {
+        var extractCorner = function (scrollableArea, srcSvg, xAxesInfo, yAxesInfo) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
-            var w = mmax(extractAxesInfo(ySel).xs) + 1;
-            var y = mmin(extractAxesInfo(xSel).ys);
+            var w = mmax(yAxesInfo.map(function (info) {
+                return info.translate.x;
+            })) + 1;
+            var y = mmin(xAxesInfo.map(function (info) {
+                return info.translate.y;
+            }));
             var h = height - y + 1 + scrollBarWidth;
             var x = 0;
 
             var shadowSize = shadowStdDev * 2;
-            var g = addBackground(createSlot(srcSvg), w + shadowSize, h + shadowSize, settings.bgcolor, true);
+            var g = createSlot(srcSvg, w + shadowSize, h + shadowSize, settings.bgcolor, true);
 
             var move = function (topX, bottomY) {
                 var xi = Math.max((topX), 0);
@@ -222,12 +251,17 @@
             };
         };
 
-        var show = function (sel) {
-            sel.style('visibility', '');
-        };
-
-        var hide = function (sel) {
-            sel.style('visibility', 'hidden');
+        var translateAxis = function(axisNode, x0, y0, x1, y1, animationSpeed) {
+            if (animationSpeed > 0) {
+                d3.select(axisNode)
+                    .attr('transform', translate(x0, y0))
+                    .transition()
+                     // TODO: Determine, how much time passed since last transition beginning.
+                    .duration(animationSpeed)
+                    .attr('transform', translate(x1, y1));
+            } else {
+                axisNode.setAttribute('transform', translate(x1, y1));
+            }
         };
 
         return {
@@ -236,12 +270,25 @@
                 this._chart = chart;
                 this.rootNode = chart.getLayout().content.parentNode;
                 this.handlers = [];
+
+                this._beforeExportHandler = chart.on('beforeExportSVGNode', function () {
+                    this.recycle();
+                }, this);
+                this._afterExportHandler = chart.on('afterExportSVGNode', function () {
+                    this.onRender();
+                }, this);
             },
 
             recycle: function () {
                 var root = this.rootNode;
                 this.handlers.forEach(function (item) {
                     root.removeEventListener('scroll', item.handler);
+                    item.element.selectAll('.axis').each(function () {
+                        this[parentProp].appendChild(this);
+                        this.setAttribute('transform', this[transProp]);
+                        delete this[parentProp];
+                        delete this[transProp];
+                    });
                     item.element.remove();
                 });
                 var srcSvg = d3.select(this._chart.getSVG());
@@ -250,14 +297,14 @@
 
             destroy: function () {
                 this.recycle();
+                this._chart.removeHandler(this._beforeExportHandler, this);
+                this._chart.removeHandler(this._afterExportHandler, this);
             },
 
             onRender: function () {
 
                 var self = this;
                 var chart = this._chart;
-
-                this.recycle();
 
                 var applicable = true;
                 chart.traverseSpec(chart.getSpec(), function (unit) {
@@ -320,41 +367,26 @@
                         .append('feMergeNode')
                         .attr('in', 'SourceGraphic');
 
-                    var xSel = srcSvg.selectAll('.cell .x.axis');
-                    var ySel = srcSvg.selectAll('.cell .y.axis');
+                    var xSel = srcSvg.selectAll('.cell .tau-xAxis.tau-activeAxis');
+                    var ySel = srcSvg.selectAll('.cell .tau-yAxis.tau-activeAxis');
 
-                    show(xSel);
-                    show(ySel);
-
+                    var xAxesInfo = extractAxesInfo(xSel);
+                    var yAxesInfo = extractAxesInfo(ySel);
+                    var animationSpeed = chart.configGPL.settings.animationSpeed;
                     this.handlers = [
-                        extractXAxesNew(root, srcSvg, xSel),
-                        extractYAxesNew(root, srcSvg, ySel),
-                        extractCenter(root, srcSvg, xSel, ySel)
+                        extractXAxes(root, srcSvg, xAxesInfo, animationSpeed),
+                        extractYAxes(root, srcSvg, yAxesInfo, animationSpeed),
+                        extractCorner(root, srcSvg, xAxesInfo, yAxesInfo)
                     ];
-
-                    hide(xSel);
-                    hide(ySel);
 
                     this.handlers.forEach(function (item) {
                         root.addEventListener('scroll', item.handler, false);
                     });
-
-                    chart.on('beforeExportSVGNode', function() {
-                        self.handlers.forEach(function (item) {
-                            hide(item.element);
-                        });
-                        show(xSel);
-                        show(ySel);
-                    });
-
-                    chart.on('afterExportSVGNode', function() {
-                        self.handlers.forEach(function (item) {
-                            show(item.element);
-                        });
-                        hide(xSel);
-                        hide(ySel);
-                    });
                 }
+            },
+
+            onBeforeRender: function () {
+                this.recycle();
             }
         };
     }
