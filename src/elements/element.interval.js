@@ -201,7 +201,7 @@ export class Interval extends Element {
         var elements = options
             .container
             .selectAll('.frame')
-            .data(fibers);
+            .data(fibers, (d) => d.getKey());
         elements
             .exit()
             .remove();
