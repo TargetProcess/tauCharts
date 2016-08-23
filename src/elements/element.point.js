@@ -2,7 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
-import {d3_transition as transition} from '../utils/d3-decorators';
+import {d3_transition} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
 
 export class Point extends Element {
@@ -130,6 +130,9 @@ export class Point extends Element {
         var self = this;
 
         var options = this.config.options;
+        var transition = (sel) => {
+            return d3_transition(sel, this.config.guide.animationSpeed);
+        };
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
@@ -138,12 +141,14 @@ export class Point extends Element {
         var modelGoG = this.walkFrames(frames);
         self.screenModel = modelGoG.toScreenModel();
         var kRound = 10000;
-        var d3Attrs = {
-            r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
-            cx: ((d) => self.screenModel.x(d)),
-            cy: ((d) => self.screenModel.y(d)),
+        var circleAttrs = {
             fill: ((d) => self.screenModel.color(d)),
             class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
+        };
+        var circleTransAttrs = {
+            r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
+            cx: ((d) => self.screenModel.x(d)),
+            cy: ((d) => self.screenModel.y(d))
         };
 
         var updateGroups = function () {
@@ -152,38 +157,56 @@ export class Point extends Element {
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
-                        .data((fiber) => fiber, self.screenModel.id);
-                    transition(dots.exit(), self.config.guide.animationSpeed)
+                        .data((fiber) => fiber.data, self.screenModel.id);
+
+                    transition(dots.enter().append('circle').attr(circleAttrs))
+                        .attr(circleTransAttrs);
+
+                    transition(dots.attr(circleAttrs))
+                        .attr(circleTransAttrs);
+
+                    transition(dots.exit())
                         .attr({r: 0})
                         .remove();
-                    transition(dots, self.config.guide.animationSpeed)
-                        .attr(d3Attrs);
-                    transition(dots.enter().append('circle'), self.config.guide.animationSpeed)
-                        .attr(d3Attrs);
 
                     self.subscribe(dots);
                 });
+
+            transition(this)
+                .attr('opacity', 1);
         };
 
         var groups = _.groupBy(fullData, self.screenModel.group);
         var fibers = Object
             .keys(groups)
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
+            .map((key) => ({key, data: groups[key]}));
 
         var frameGroups = options.container
             .selectAll('.frame')
-            .data(fibers);
-        frameGroups
-            .exit()
-            .remove();
-        frameGroups
-            .call(updateGroups);
+            .data(fibers, (f) => f.key);
+
         frameGroups
             .enter()
             .append('g')
+            .attr('opacity', 0)
             .call(updateGroups);
 
-        self.subscribe(new LayerLabels(modelGoG, this.isHorizontal, this.config.guide.label, options).draw(fibers));
+        frameGroups
+            .call(updateGroups);
+
+        transition(frameGroups.exit())
+            .attr('opacity', 0)
+            .remove()
+            .selectAll('circle')
+            .attr('r', 0);
+
+        self.subscribe(
+            new LayerLabels(
+                modelGoG,
+                this.isHorizontal,
+                this.config.guide.label, options
+            ).draw(fibers.map((f) => f.data))
+        );
     }
 
     highlight(filter) {
