@@ -178,7 +178,7 @@ define(function (require) {
             // 20 "Long" vertical string
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(84);
+            expect(full.unit.guide.padding.b).to.equal(88);
 
             // 20 padding to Y axis line
             // 9  tick mark size
@@ -228,7 +228,7 @@ define(function (require) {
             // 10 "25" string length
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(74);
+            expect(full.unit.guide.padding.b).to.equal(78);
 
             // 20 padding to Y axis line
             // 9  tick mark size
@@ -319,7 +319,7 @@ define(function (require) {
             // 10 "25" string length
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(54);
+            expect(full.unit.guide.padding.b).to.equal(58);
 
             // y is null axis
             expect(full.unit.guide.padding.l).to.equal(24);
@@ -484,7 +484,7 @@ define(function (require) {
             expect(y.tickFontHeight).to.equal(10);
             expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
 
-            expect(full.unit.guide.padding.b).to.equal(34);
+            expect(full.unit.guide.padding.b).to.equal(38);
 
             // y is null axis
             expect(full.unit.guide.padding.l).to.equal(15);
