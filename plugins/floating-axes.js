@@ -120,7 +120,7 @@
         var addAxes = function (g, axes) {
             var container = g.node();
             axes.forEach(function (node) {
-                node[parentProp] = node.parentElement;
+                node[parentProp] = node.parentNode;
                 node[transProp] = (node[storeProp] && node[storeProp].transform ?
                     node[storeProp].transform :
                     node.getAttribute('transform'));

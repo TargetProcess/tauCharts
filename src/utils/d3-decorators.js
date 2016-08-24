@@ -519,7 +519,7 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 var d3_selectAllImmediate = (container, selector) => {
     var node = container.node();
     return container.selectAll(selector).filter(function () {
-        return this.parentElement === node;
+        return this.parentNode === node;
     });
 };
 
