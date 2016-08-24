@@ -52,6 +52,7 @@ export class BaseScale {
         }
 
         this.vars = vars;
+        const originalSeries = vars.map((row) => (row));
         this.scaleConfig = scaleConfig;
 
         // keep for backward compatibility with "autoScale"
@@ -64,6 +65,7 @@ export class BaseScale {
             .addField('scaleType', this.scaleConfig.type)
             .addField('source', this.scaleConfig.source)
             .addField('domain', (() => this.vars))
+            .addField('originalSeries', (() => originalSeries))
             .addField('isContains', ((x) => this.isInDomain(x)))
             .addField('fixup', (fn) => {
                 var cfg = this.scaleConfig;
