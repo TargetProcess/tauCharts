@@ -1,7 +1,11 @@
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
+// TODO: Fix utilsDom export.
+var selectOrAppend = utilsDom.selectOrAppend;
+var classes = utilsDom.classes;
 
 var d3getComputedTextLength = _.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
@@ -116,28 +120,23 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
     });
 };
 
-var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal) => {
-
-    if (nodeAxis.selectAll('.tick line').empty()) {
-        return;
-    }
+/**
+ * Moves ticks from categories middle to categories top.
+ */
+var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal, animationSpeed) => {
 
     nodeAxis
-        .selectAll('.tick')[0]
-        .forEach((node) => {
+        .selectAll('.tick')
+        .each(function (tickData) {
+            // NOTE: Skip ticks removed by D3 axis call during transition.
+            if (logicalScale(tickData)) {
+                var tickNode = d3_transition(d3.select(this), animationSpeed);
 
-            var tickNode = d3.select(node);
-            var tickData = tickNode.data()[0];
-
-            var coord = logicalScale(tickData);
-            var tx = (isHorizontal) ? coord : 0;
-            var ty = (isHorizontal) ? 0 : coord;
-            tickNode.attr('transform', `translate(${tx},${ty})`);
-
-            var offset = logicalScale.stepSize(tickData) * 0.5;
-            var key = (isHorizontal) ? 'x' : 'y';
-            var val = (isHorizontal) ? offset : (-offset);
-            tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+                var offset = logicalScale.stepSize(tickData) * 0.5;
+                var key = (isHorizontal) ? 'x' : 'y';
+                var val = (isHorizontal) ? offset : (-offset);
+                tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+            }
         });
 };
 
@@ -174,88 +173,124 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
     }
 };
 
-var d3_decorator_fix_axis_bottom_line = (axisNode, size, isContinuesScale) => {
+/**
+ * Adds extra tick to axis container.
+ */
+var d3_decorator_fix_axis_start_line = (
+    axisNode,
+    isHorizontal,
+    width,
+    height,
+    animationSpeed
+) => {
 
-    var selection = axisNode.selectAll('.tick line');
-    if (selection.empty()) {
-        return;
+    var setTransform = (selection) => {
+        selection.attr('transform', utilsDraw.translate(0, isHorizontal ? height : 0));
+        return selection;
+    };
+
+    var setLineSize = (selection) => {
+        if (isHorizontal) {
+            selection.attr('x2', width);
+        } else {
+            selection.attr('y2', height);
+        }
+        return selection;
+    };
+
+    var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
+
+    let extraTickNode = axisNode.selectAll(`.${tickClass}`);
+    if (extraTickNode.empty()) {
+        extraTickNode = axisNode.append('g')
+            .classed(tickClass, true)
+            .call(setTransform)
+            .style('opacity', 1e-6);
+        extraTickNode.append('line')
+            .call(setLineSize);
     }
-
-    var tickOffset = -1;
-
-    if (isContinuesScale) {
-        tickOffset = 0;
-    } else {
-        var sectorSize = size / selection[0].length;
-        var offsetSize = sectorSize / 2;
-        tickOffset = (-offsetSize);
-    }
-
-    var tickGroupClone = axisNode.select('.tick').node().cloneNode(true);
-    axisNode
-        .append(() => tickGroupClone)
-        .attr('transform', utilsDraw.translate(0, size - tickOffset));
+    d3_transition(extraTickNode, animationSpeed)
+        .style('opacity', 1)
+        .call(setTransform)
+        .select('line')
+        .call(setLineSize);
 };
 
-var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
+var d3_decorator_prettify_axis_label = (
+    axisNode,
+    guide,
+    isHorizontal,
+    size,
+    animationSpeed
+) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = axisNode
-        .append('text')
-        .attr('transform', utilsDraw.rotate(guide.rotate))
-        .attr('class', guide.cssClass)
+    var labelTextNode = selectOrAppend(axisNode, `text.tau-axisLabel`)
+        .attr('class', classes('tau-axisLabel', guide.cssClass))
+        .attr('transform', utilsDraw.rotate(guide.rotate));
+
+    var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
         .attr('x', koeff * guide.size * 0.5)
         .attr('y', koeff * guide.padding)
         .style('text-anchor', guide.textAnchor);
 
     var delimiter = ' \u2192 ';
-    var tags = guide.text.split(delimiter);
-    var tLen = tags.length;
-    tags.forEach((token, i) => {
-
-        labelTextNode
-            .append('tspan')
-            .attr('class', 'label-token label-token-' + i)
-            .text(token);
-
-        if (i < (tLen - 1)) {
-            labelTextNode
-                .append('tspan')
-                .attr('class', 'label-token-delimiter label-token-delimiter-' + i)
-                .text(delimiter);
+    var texts = ((parts) => {
+        var result = [];
+        for (var i = 0; i < parts.length - 1; i++) {
+            result.push(parts[i], delimiter);
         }
-    });
+        result.push(parts[i]);
+        return result;
+    })(guide.text.split(delimiter));
 
-    if (guide.dock === 'right') {
-        let box = axisNode.selectAll('path.domain').node().getBBox();
-        labelTextNode.attr('x', isHorizontal ? (box.width) : 0);
-    } else if (guide.dock === 'left') {
-        let box = axisNode.selectAll('path.domain').node().getBBox();
-        labelTextNode.attr('x', isHorizontal ? 0 : (-box.height));
+    var tspans = labelTextNode.selectAll('tspan')
+        .data(texts);
+    tspans.enter()
+        .append('tspan')
+        .attr('class', (d, i) => i % 2 ?
+            ('label-token-delimiter label-token-delimiter-' + i) :
+            ('label-token label-token-' + i))
+        .text((d) => d);
+    tspans.exit().remove();
+
+    if (['left', 'right'].indexOf(guide.dock) >= 0) {
+        let labelX = {
+            left: [-size, 0],
+            right: [0, size]
+        };
+        labelTextTrans.attr('x', labelX[guide.dock][Number(isHorizontal)]);
     }
 };
 
-var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal, logicalScale) => {
+var d3_decorator_wrap_tick_label = (nodeScale, transScale, guide, isHorizontal, logicalScale) => {
 
     var angle = utils.normalizeAngle(guide.rotate);
 
-    var tick = nodeScale.selectAll('.tick text');
-    tick.attr({transform: utilsDraw.rotate(angle)})
+    var tick = nodeScale.selectAll('.tick text')
+        .attr('transform', utilsDraw.rotate(angle))
         .style('text-anchor', guide.textAnchor);
 
+    // TODO: Improve indent calculation for ratated text.
     var segment = Math.abs(angle / 90);
     if ((segment % 2) > 0) {
-        var kRot = angle < 180 ? 1 : -1;
-        var k = isHorizontal ? 0.5 : -2;
-        var dy = k * parseFloat(tick.attr('dy'));
-        var attr = {
+        let kRot = angle < 180 ? 1 : -1;
+        let k = isHorizontal ? 0.5 : -2;
+        let sign = (guide.scaleOrient === 'top' || guide.scaleOrient === 'left' ? -1 : 1);
+        let dy = (k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ?
+            (sign < 0 ? 0 : 0.71) :
+            0.32));
+        let pt = {
             x: 9 * kRot,
-            y: 0,
+            y: 0
+        };
+        let dpt = {
             dx: (isHorizontal) ? null : `${dy}em`,
             dy: `${dy}em`
         };
 
-        tick.attr(attr);
+        nodeScale.selectAll('.tick text').attr(pt).attr(dpt);
+        transScale.selectAll('.tick text').attr(pt);
     }
 
     var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);
@@ -289,7 +324,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 .replace('translate(', '')
                 .replace(' ', ',') // IE specific
                 .split(',')
-                [translateParam];
+            [translateParam];
 
             var translateX = directionKoeff * parseFloat(translateXStr);
             var tNode = tick.selectAll('text');
@@ -372,6 +407,88 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     });
 };
 
+var d3_transition = (selection, animationSpeed) => {
+    if (animationSpeed > 0) {
+        selection = selection.transition().duration(animationSpeed);
+        selection.attr = d3_transition_attr;
+    }
+    selection.onTransitionEnd = function (callback) {
+        d3_add_transition_end_listener(this, callback);
+        return this;
+    };
+    return selection;
+};
+
+// TODO: Getting attribute value may be possible in D3 v4:
+// http://stackoverflow.com/a/39024812/4137472
+// so it will be possible to get future attribute value.
+var d3_transition_attr = function (keyOrMap, value) {
+    if (arguments.length === 0) {
+        throw new Error('Unexpected `transition().attr()` arguments.');
+    }
+    var attrs;
+    if (arguments.length === 1) {
+        attrs = keyOrMap;
+    } else if (arguments.length > 1) {
+        attrs = {[keyOrMap]: value};
+    }
+
+    // Store transitioned attributes values
+    // until transition ends.
+    var store = '__transitionAttrs__';
+    var id = utils.generateHash(JSON.stringify(keyOrMap));
+    this.each(function () {
+        var newAttrs = {};
+        for (var key in attrs) {
+            if (typeof attrs[key] === 'function') {
+                newAttrs[key] = attrs[key].apply(this, arguments);
+            } else {
+                newAttrs[key] = attrs[key];
+            }
+        }
+        this[store] = _.extend(
+            this[store] || {},
+            newAttrs
+        );
+    });
+    var onTransitionEnd = function () {
+        var leftAttrs = {};
+        var keys = Object.keys(attrs);
+        if (this[store]) {
+            Object.keys(this[store])
+                .filter((k) => keys.indexOf(k) < 0)
+                .forEach((k) => leftAttrs[k] = this[store][k]);
+        }
+        if (Object.keys(leftAttrs).length === 0) {
+            delete this[store];
+        } else {
+            this[store] = leftAttrs;
+        }
+    };
+    this.each(`interrupt.${id}`, onTransitionEnd);
+    this.each(`end.${id}`, onTransitionEnd);
+
+    return d3.transition.prototype.attr.apply(this, arguments);
+};
+
+var d3_add_transition_end_listener = (selection, callback) => {
+    // HACK: Determine if selection is transition.
+    if (!selection.duration || selection.empty()) {
+        callback.call(null, selection);
+        return;
+    }
+    var t = selection.size();
+    var onTransitionEnd = () => {
+        t--;
+        if (t === 0) {
+            callback.call(null, selection);
+        }
+    };
+    selection.each('interrupt.d3_on_transition_end', onTransitionEnd);
+    selection.each('end.d3_on_transition_end', onTransitionEnd);
+    return selection;
+};
+
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 
     var xAfterUpdate = afterUpdate || _.identity;
@@ -383,14 +500,12 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
             flow = flow.attr(_.defaults(initAttrs, doneAttrs));
         }
 
-        if (speed > 0) {
-            flow = flow.transition().duration(speed);
-        }
+        flow = d3_transition(flow, speed);
 
         flow = flow.attr(doneAttrs);
 
         if (speed > 0) {
-            flow.each('end', function () {
+            flow.each('end.d3_animationInterceptor', function () {
                 xAfterUpdate(this);
             });
         } else {
@@ -401,14 +516,23 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
     };
 };
 
+var d3_selectAllImmediate = (container, selector) => {
+    var node = container.node();
+    return container.selectAll(selector).filter(function () {
+        return this.parentElement === node;
+    });
+};
+
 export {
     d3_animationInterceptor,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_bottom_line,
+    d3_decorator_fix_axis_start_line,
     d3_decorator_fix_horizontal_axis_ticks_overflow,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions,
+    d3_transition,
+    d3_selectAllImmediate,
     wrapText,
     cutText
 };

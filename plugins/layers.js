@@ -16,7 +16,7 @@
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
 
-    function layers(xSettings) {
+    function Layers(xSettings) {
 
         var settings = _.defaults(
             xSettings || {},
@@ -607,8 +607,8 @@
         };
     }
 
-    tauCharts.api.plugins.add('layers', layers);
+    tauCharts.api.plugins.add('layers', Layers);
 
-    return layers;
+    return Layers;
 });
 // jscs:enable *

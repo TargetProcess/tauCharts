@@ -181,6 +181,14 @@ define(function (require) {
         return originTimeout;
     }
 
+    function destroyCharts() {
+        tauCharts.Chart.winAware
+            .slice(0)
+            .forEach(function (chart) {
+                chart.destroy();
+            });
+    }
+
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,
@@ -200,6 +208,7 @@ define(function (require) {
             evt.initMouseEvent(name, true, true, window,
                 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             element.dispatchEvent(evt);
-        }
+        },
+        destroyCharts: destroyCharts
     };
 });

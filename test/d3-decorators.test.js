@@ -91,4 +91,71 @@ describe('d3-decorators', function () {
             '</div>'
         ].join(''));
     });
+
+    it('should extend D3 transition attr and store future values', function (done) {
+        var node = div.querySelector('text');
+        var transition = d3Decorator.d3_transition;
+
+        var check = function (fn, final) {
+            return function () {
+                var err;
+                try {
+                    fn();
+                    if (final) {
+                        expect(transitionInterrupted).to.equal(true);
+                        done();
+                    }
+                } catch (e) {
+                    err = e;
+                }
+                if (err) {
+                    done(err);
+                } else if (final) {
+                    done();
+                }
+            };
+        };
+        var final = function (fn) {
+            return check(fn, true);
+        };
+
+        var transitionInterrupted = false;
+
+        check(function () {
+            // Start transition "dy"
+            var texts = transition(d3.select(div).selectAll('text'), 200)
+                .attr('dy', 0)
+                .onTransitionEnd(check(function () {
+                    transitionInterrupted = true;
+                    expect(node.__transitionAttrs__.dy).to.be.undefined;
+                    expect(node.__transitionAttrs__.x).to.equal(10);
+                }));
+            expect(node.__transitionAttrs__.dy).to.equal(0);
+            expect(+node.getAttribute('dy')).to.equal(10);
+            expect(function () {
+                texts.attr();
+            }).to.throw(/Unexpected.*arguments/);
+
+            // Start transition "x" with delay
+            setTimeout(check(function () {
+                expect(+node.getAttribute('dy')).to.be.above(0);
+                expect(+node.getAttribute('dy')).to.be.below(10);
+                transition(d3.select(div).selectAll('text'), 200)
+                    .attr({
+                        'x': function (d) { return 10; },
+                        'dy': function (d) { return 0; }
+                    })
+                    .onTransitionEnd(final(function () {
+                        expect(+node.getAttribute('dy')).to.equal(0);
+                        expect(+node.getAttribute('x')).to.equal(10);
+                        expect(node.__transitionAttrs__).to.be.undefined;
+                    }));
+            }), 100);
+        })();
+    });
+
+    it('should not create D3 transition when zero animation duration', function () {
+        var texts = d3Decorator.d3_transition(d3.select(div).selectAll('text'), 0).attr('dy', 0);
+        expect(+div.querySelector('text').getAttribute('dy')).to.equal(0);
+    });
 });

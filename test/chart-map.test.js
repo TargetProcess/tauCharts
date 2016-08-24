@@ -30,6 +30,7 @@ define(function (require) {
 
         afterEach(function () {
             target.parentNode.removeChild(target);
+            testUtils.destroyCharts();
         });
 
         it('should throw if fill is specified without code', function () {
