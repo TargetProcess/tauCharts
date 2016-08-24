@@ -309,7 +309,7 @@ export class Plot extends Emitter {
             .data([frameRootId], x => x);
         xSvgBind.enter()
             .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root uid_${frameRootId.replace(/[^a-z\d-_]/ig, '-')}`);
+            .attr('class', `${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`);
         xSvgBind.exit()
             .remove();
 
