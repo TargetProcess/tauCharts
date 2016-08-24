@@ -248,9 +248,12 @@ export class Plot extends Emitter {
         var content = this._layout.content;
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
+            let {scrollLeft, scrollTop} = content.parentElement;
             content.style.display = 'none';
             size = _.defaults(size, utilsDom.getContainerSize(content.parentNode));
             content.style.display = '';
+            content.parentElement.scrollLeft = scrollLeft;
+            content.parentElement.scrollTop = scrollTop;
             // TODO: fix this issue
             if (!size.height) {
                 size.height = utilsDom.getContainerSize(this._layout.layout).height;
