@@ -3,6 +3,7 @@ import {Emitter} from '../event';
 import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
+import {d3_transition as transition} from '../utils/d3-decorators';
 import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
@@ -286,7 +287,7 @@ export class Plot extends Emitter {
 
         var scenario = xGpl.getDrawScenario({
             allocateRect: () => ({
-                slot: (() => d3Target.selectAll('.frame-root')),
+                slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
                 left: 0,
                 top: 0,
@@ -298,20 +299,33 @@ export class Plot extends Emitter {
         });
 
         var frameRootId = scenario[0].config.uid;
-        var xSvg = selectOrAppend(d3Target, `svg`).attr({
+        var svg = selectOrAppend(d3Target, `svg`).attr({
             class: `${CSS_PREFIX}svg`,
             width: newSize.width,
             height: newSize.height
         });
-        this._svg = xSvg.node();
+        this._svg = svg.node();
         this.fire('beforerender', this._svg);
-        var xSvgBind = xSvg.selectAll('g.frame-root')
+        var roots = svg.selectAll('g.frame-root')
             .data([frameRootId], x => x);
-        xSvgBind.enter()
+
+        // NOTE: Fade out removed root, fade-in if removing interrupted.
+        roots.enter()
             .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`);
-        xSvgBind.exit()
-            .remove();
+            .classed(`${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`, true);
+        roots
+            .call((selection) => {
+                selection.classed('tau-activeFrameRoot', true);
+                transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
+                    .attr('opacity', 1);
+            });
+        roots.exit()
+            .call((selection) => {
+                selection.classed('tau-activeFrameRoot', false);
+                transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
+                    .attr('opacity', 1e-6)
+                    .remove();
+            });
 
         scenario.forEach((item) => {
             item.draw();

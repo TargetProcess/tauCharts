@@ -176,7 +176,7 @@ export class Cartesian extends Element {
 
         // TODO: Should we modify transform of a container here or create own container?
         (options.container.attr('transform') ?
-            transition(options.container, this.config.guide.animationSpeed) :
+            transition(options.container, this.config.guide.animationSpeed, 'cartesianContainerTransform') :
             options.container)
             .attr('transform', utilsDraw.translate(this.L, this.T));
 
@@ -220,12 +220,14 @@ export class Cartesian extends Element {
         var xcells = selectAllImmediate(grid, '.cell')
             .data(xdata, x => x);
         xcells
-            .exit()
-            .remove();
-        xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
+            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
+        transition(xcells, this.config.guide.animationSpeed)
+            .attr('opacity', 1);
+        transition(xcells.exit(), this.config.guide.animationSpeed)
+            .attr('opacity', 1e-6)
+            .remove();
     }
 
     _drawDimAxis(container, scale, position, size) {

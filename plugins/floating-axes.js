@@ -367,8 +367,8 @@
                         .append('feMergeNode')
                         .attr('in', 'SourceGraphic');
 
-                    var xSel = srcSvg.selectAll('.cell .tau-xAxis.tau-activeAxis');
-                    var ySel = srcSvg.selectAll('.cell .tau-yAxis.tau-activeAxis');
+                    var xSel = srcSvg.selectAll('.tau-activeFrameRoot .tau-xAxis.tau-activeAxis');
+                    var ySel = srcSvg.selectAll('.tau-activeFrameRoot .tau-yAxis.tau-activeAxis');
 
                     var xAxesInfo = extractAxesInfo(xSel);
                     var yAxesInfo = extractAxesInfo(ySel);
