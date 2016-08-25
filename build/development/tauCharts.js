@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.3-beta.2 - 2016-08-20
+/*! taucharts - v0.9.3-beta.3 - 2016-08-25
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -257,6 +257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        xAxisPadding: 20,
 	        yAxisPadding: 20,
 
+	        xFontLabelDescenderLineHeight: 4,
 	        xFontLabelHeight: 10,
 	        yFontLabelHeight: 10,
 
@@ -327,7 +328,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.3-beta.2");
+	var version = ("0.9.3-beta.3");
 
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
@@ -1808,7 +1809,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _objectDestructuringEmpty(_ref4);
 
 	            var baseScale = model.scaleX;
-	            var categories = !model.scaleColor.discrete ? [] : model.scaleColor.domain();
+	            var scaleColor = model.scaleColor;
+	            var categories = scaleColor.discrete ? scaleColor.domain() : scaleColor.originalSeries().sort(function (a, b) {
+	                return a - b;
+	            });
 	            var categoriesCount = categories.length || 1;
 	            var colorIndexScale = function colorIndexScale(d) {
 	                return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
@@ -8482,13 +8486,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                'x_null': { type: 'ordinal', source: '?' },
 	                'y_null': { type: 'ordinal', source: '?' },
 	                'size_null': { type: 'size', source: '?' },
-	                'color_null': { type: 'color', source: '?', brewer: null },
+	                'color_null': { type: 'color', source: '?' },
 	                'split_null': { type: 'value', source: '?' },
 
 	                'pos:default': { type: 'ordinal', source: '?' },
 	                'size:default': { type: 'size', source: '?' },
 	                'label:default': { type: 'value', source: '?' },
-	                'color:default': { type: 'color', source: '?', brewer: null },
+	                'color:default': { type: 'color', source: '?' },
 	                'split:default': { type: 'value', source: '?' }
 	                // jscs:enable disallowQuotedKeysInObjects
 	            },
@@ -9124,13 +9128,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        kyLabelW = 0;
 	    } else {
 
-	        xLabel.padding = sum([kxAxisW * (settings.xTickWidth + rotXBox.height), kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight - 2)]);
+	        xLabel.padding = sum([kxAxisW * (settings.xTickWidth + rotXBox.height), kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight)]);
 
 	        yLabel.padding = sum([kyAxisW * (settings.yTickWidth + rotYBox.width), kyLabelW * settings.distToYAxisLabel]);
 	    }
 
+	    var bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
 	    guide.padding = _underscore2.default.extend(guide.padding, {
-	        b: guide.x.hide ? 0 : sum([guide.x.padding, kxAxisW * (settings.xTickWidth + rotXBox.height), kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight)]),
+	        b: guide.x.hide ? 0 : sum([guide.x.padding, kxAxisW * (settings.xTickWidth + rotXBox.height), kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder)]),
 	        l: guide.y.hide ? 0 : sum([guide.y.padding, kyAxisW * (settings.yTickWidth + rotYBox.width), kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight)])
 	    });
 
@@ -12976,6 +12981,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        this.vars = vars;
+	        var originalSeries = vars.map(function (row) {
+	            return row;
+	        });
 	        this.scaleConfig = scaleConfig;
 
 	        // keep for backward compatibility with "autoScale"
@@ -12983,6 +12991,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this.addField('dim', this.scaleConfig.dim).addField('scaleDim', this.scaleConfig.dim).addField('scaleType', this.scaleConfig.type).addField('source', this.scaleConfig.source).addField('domain', function () {
 	            return _this.vars;
+	        }).addField('originalSeries', function () {
+	            return originalSeries;
 	        }).addField('isContains', function (x) {
 	            return _this.isInDomain(x);
 	        }).addField('fixup', function (fn) {
