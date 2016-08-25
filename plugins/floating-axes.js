@@ -129,7 +129,7 @@
             return g;
         };
 
-        var extractXAxes = function (scrollableArea, srcSvg, axesInfo, animationSpeed) {
+        var extractXAxes = function (getScrollY, srcSvg, axesInfo, animationSpeed) {
             var height = srcSvg.attr('height');
             var width = srcSvg.attr('width');
             var axes = axesInfo.map(function (info) {
@@ -164,19 +164,17 @@
                 rect.style(svgFilter);
             };
 
-            var scrollableHeight = (scrollableArea.getBoundingClientRect().height);
-            move(0, scrollableHeight);
+            move(0, getScrollY());
 
             return {
                 element: g,
                 handler: function () {
-                    var scrollY = (scrollableHeight + scrollableArea.scrollTop);
-                    move(0, scrollY);
+                    move(0, getScrollY());
                 }
             };
         };
 
-        var extractYAxes = function (scrollableArea, srcSvg, axesInfo, animationSpeed) {
+        var extractYAxes = function (getScrollX, srcSvg, axesInfo, animationSpeed) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
             var axes = axesInfo.map(function (info) {
@@ -207,18 +205,17 @@
                 var svgFilter = (x > limX) ? {filter: 'url(#drop-shadow)'} : {filter:''};
                 rect.style(svgFilter);
             };
+            move(getScrollX(), 0);
 
-            move(0, 0);
             return {
                 element: g,
                 handler: function () {
-                    var scrollX = (scrollableArea.scrollLeft);
-                    move(scrollX, 0);
+                    move(getScrollX(), 0);
                 }
             };
         };
 
-        var extractCorner = function (scrollableArea, srcSvg, xAxesInfo, yAxesInfo) {
+        var extractCorner = function (getScrollX, getScrollY, srcSvg, xAxesInfo, yAxesInfo) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
             var w = mmax(yAxesInfo.map(function (info) {
@@ -238,15 +235,12 @@
                 var yi = Math.min((bottomY - h), (y - 1));
                 g.attr('transform', translate(xi, yi));
             };
+            move(getScrollX(), getScrollY());
 
-            var scrollableHeight = (scrollableArea.getBoundingClientRect().height);
-            move(x, scrollableHeight);
             return {
                 element: g,
                 handler: function () {
-                    var scrollX = (scrollableArea.scrollLeft);
-                    var scrollY = (scrollableHeight + scrollableArea.scrollTop);
-                    move(scrollX, scrollY);
+                    move(getScrollX(), getScrollY());
                 }
             };
         };
@@ -292,6 +286,7 @@
                     item.element.remove();
                 });
                 var srcSvg = d3.select(this._chart.getSVG());
+                // TODO: Reuse elements.
                 srcSvg.selectAll('.floating-axes').remove();
             },
 
@@ -369,21 +364,30 @@
 
                     var getAxesSelector = function (axis) {
                         var axisPart = '> .' + axis + '.axis.tau-active';
+                        var rootPart = '.frame-root.tau-active ';
                         return [
-                            '.frame-root.tau-active ' + axisPart,
-                            '.frame-root.tau-active .cell.tau-active ' + axisPart
+                            rootPart + axisPart,
+                            rootPart + '.cell.tau-active ' + axisPart
                         ].join(', ');
                     };
                     var xSel = srcSvg.selectAll(getAxesSelector('x'));
                     var ySel = srcSvg.selectAll(getAxesSelector('y'));
 
+                    var scrollableHeight = root.getBoundingClientRect().height;
+                    var getScrollX = function () {
+                        return root.scrollLeft;
+                    };
+                    var getScrollY = function () {
+                        return (scrollableHeight + root.scrollTop);
+                    };
+
                     var xAxesInfo = extractAxesInfo(xSel);
                     var yAxesInfo = extractAxesInfo(ySel);
                     var animationSpeed = chart.configGPL.settings.animationSpeed;
                     this.handlers = [
-                        extractXAxes(root, srcSvg, xAxesInfo, animationSpeed),
-                        extractYAxes(root, srcSvg, yAxesInfo, animationSpeed),
-                        extractCorner(root, srcSvg, xAxesInfo, yAxesInfo)
+                        extractXAxes(getScrollY, srcSvg, xAxesInfo, animationSpeed),
+                        extractYAxes(getScrollX, srcSvg, yAxesInfo, animationSpeed),
+                        extractCorner(getScrollX, getScrollY, srcSvg, xAxesInfo, yAxesInfo)
                     ];
 
                     this.handlers.forEach(function (item) {
