@@ -166,16 +166,24 @@ var utilsDom = {
         var delimiters = Object.keys(delimitersActions).join('');
 
         if (selector.indexOf(' ') >= 0) {
-            throw new Error('Selector contains whitespace.');
+            throw new Error('Selector should not contain whitespaces.');
         }
         if (delimiters.indexOf(selector[0]) >= 0) {
             throw new Error('Selector must have tag at the beginning.');
         }
 
+        var isElement = (container instanceof Element);
+        if (isElement) {
+            container = d3.select(container);
+        }
+        var result = (d3El) => (isElement ? d3El.node() : d3El);
+
         // Search for existing immediate child
-        var child = utilsDom.selectImmediate(container.node(), selector);
-        if (child) {
-            return d3.select(child);
+        var child = container.selectAll(selector)
+            .filter(function () { return this.parentNode === container.node(); })
+            .filter((d, i) => i === 0);
+        if (!child.empty()) {
+            return result(child);
         }
 
         // Create new element
@@ -195,10 +203,15 @@ var utilsDom = {
             }
         }
 
-        return element;
+        return result(element);
     },
 
     selectImmediate: function (container, selector) {
+        return utilsDom.selectAllImmediate(container, selector)[0] || null;
+    },
+
+    selectAllImmediate: function (container, selector) {
+        var results = [];
         var matches = (
             Element.prototype.matches ||
             Element.prototype.matchesSelector ||
@@ -211,10 +224,10 @@ var utilsDom = {
             child = child.nextElementSibling
         ) {
             if (matches.call(child, selector)) {
-                return child;
+                results.push(child);
             }
         }
-        return null;
+        return results;
     },
 
     /**
@@ -234,7 +247,12 @@ var utilsDom = {
                     );
                 }
             });
-        return _.uniq(classes).join(' ');
+        return (
+            _.uniq(classes)
+                .join(' ')
+                .trim()
+                .replace(/\s{2,}/g, ' ')
+        );
     }
 };
 export {utilsDom};

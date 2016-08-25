@@ -315,13 +315,13 @@ export class Plot extends Emitter {
             .classed(`${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`, true);
         roots
             .call((selection) => {
-                selection.classed('tau-activeFrameRoot', true);
+                selection.classed('tau-active', true);
                 transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
                     .attr('opacity', 1);
             });
         roots.exit()
             .call((selection) => {
-                selection.classed('tau-activeFrameRoot', false);
+                selection.classed('tau-active', false);
                 transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
                     .attr('opacity', 1e-6)
                     .remove();

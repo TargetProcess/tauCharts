@@ -367,8 +367,15 @@
                         .append('feMergeNode')
                         .attr('in', 'SourceGraphic');
 
-                    var xSel = srcSvg.selectAll('.tau-activeFrameRoot .tau-xAxis.tau-activeAxis');
-                    var ySel = srcSvg.selectAll('.tau-activeFrameRoot .tau-yAxis.tau-activeAxis');
+                    var getAxesSelector = function (axis) {
+                        var axisPart = '> .' + axis + '.axis.tau-active';
+                        return [
+                            '.frame-root.tau-active ' + axisPart,
+                            '.frame-root.tau-active .cell.tau-active ' + axisPart
+                        ].join(', ');
+                    };
+                    var xSel = srcSvg.selectAll(getAxesSelector('x'));
+                    var ySel = srcSvg.selectAll(getAxesSelector('y'));
 
                     var xAxesInfo = extractAxesInfo(xSel);
                     var yAxesInfo = extractAxesInfo(ySel);

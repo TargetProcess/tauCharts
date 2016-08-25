@@ -223,9 +223,9 @@ export class Cartesian extends Element {
             .enter()
             .append('g')
             .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
-        transition(xcells, this.config.guide.animationSpeed)
+        transition(xcells.classed('tau-active', true), this.config.guide.animationSpeed)
             .attr('opacity', 1);
-        transition(xcells.exit(), this.config.guide.animationSpeed)
+        transition(xcells.exit().classed('tau-active', false), this.config.guide.animationSpeed)
             .attr('opacity', 1e-6)
             .remove();
     }
@@ -246,7 +246,7 @@ export class Cartesian extends Element {
         var animationSpeed = this.config.guide.animationSpeed;
 
         selectOrAppend(container, this._getAxisSelector(scale))
-            .classed('tau-activeAxis', true)
+            .classed('tau-active', true)
             .classed(scale.guide.cssClass, true)
             .call((axis) => {
 
@@ -295,7 +295,7 @@ export class Cartesian extends Element {
 
     _removeDimAxis(container, scale) {
         var axis = selectAllImmediate(container, this._getAxisSelector(scale))
-            .classed('tau-activeAxis', false);
+            .classed('tau-active', false);
         transition(axis, this.config.guide.animationSpeed)
             .attr('opacity', 1e-6)
             .remove();
@@ -303,7 +303,8 @@ export class Cartesian extends Element {
 
     _getAxisSelector(scale) {
         var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-        return `g.tau-${isHorizontal ? 'x' : 'y'}Axis`;
+        // return `g.tau-${isHorizontal ? 'x' : 'y'}Axis`;
+        return `g.${isHorizontal ? 'x' : 'y'}.axis`;
     }
 
     _drawGrid(container, node, width, height) {
