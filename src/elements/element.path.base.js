@@ -254,7 +254,7 @@ export class BasePath extends Element {
         var frameGroups = options
             .container
             .selectAll('.frame')
-            .data(fibers);
+            .data(fibers, (d) => pathModel.group(d[0]));
         frameGroups
             .exit()
             .remove();

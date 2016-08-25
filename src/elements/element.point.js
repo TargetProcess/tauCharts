@@ -157,7 +157,7 @@ export class Point extends Element {
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
-                        .data((fiber) => fiber.data, self.screenModel.id);
+                        .data((fiber) => fiber, self.screenModel.id);
 
                     transition(dots.enter().append('circle').attr(circleAttrs))
                         .attr(circleTransAttrs);
@@ -179,11 +179,11 @@ export class Point extends Element {
         var groups = _.groupBy(fullData, self.screenModel.group);
         var fibers = Object
             .keys(groups)
-            .map((key) => ({key, data: groups[key]}));
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var frameGroups = options.container
             .selectAll('.frame')
-            .data(fibers, (f) => f.key);
+            .data(fibers, (f) => self.screenModel.group(f[0]));
 
         frameGroups
             .enter()
@@ -205,7 +205,7 @@ export class Point extends Element {
                 modelGoG,
                 this.isHorizontal,
                 this.config.guide.label, options
-            ).draw(fibers.map((f) => f.data))
+            ).draw(fibers)
         );
     }
 
