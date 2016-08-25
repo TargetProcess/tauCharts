@@ -149,6 +149,7 @@ var api = {
         xAxisPadding: 20,
         yAxisPadding: 20,
 
+        xFontLabelDescenderLineHeight: 4,
         xFontLabelHeight: 10,
         yFontLabelHeight: 10,
 

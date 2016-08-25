@@ -960,10 +960,10 @@ define(function (require) {
             var scale0 = new ColorScale(
                 {
                     part: function () {
-                        return [{x:0}, {x:100}];
+                        return [{x:0}, {x:10}, {x:100}];
                     },
                     full: function () {
-                        return [{x:0}, {x:100}];
+                        return [{x:0}, {x:10}, {x:100}];
                     }
                 },
                 {
@@ -976,6 +976,7 @@ define(function (require) {
                 }).create();
 
             expect(scale0.domain()).to.deep.equal([-100, 110]);
+            expect(scale0.originalSeries()).to.deep.equal([0, 10, 100]);
             expect(scale0(-100)).to.equal('#ff0000');
             expect(scale0(110)).to.equal('#0000ff');
 

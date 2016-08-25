@@ -35,6 +35,7 @@ define(function (require) {
         xAxisPadding: 20,
         yAxisPadding: 20,
 
+        xFontLabelDescenderLineHeight: 4,
         xFontLabelHeight: 15,
         yFontLabelHeight: 15,
 

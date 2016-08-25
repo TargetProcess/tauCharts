@@ -111,7 +111,10 @@ export class CartesianGrammar {
 
     static decorator_discrete_positioningByColor(model, {}) {
         var baseScale = model.scaleX;
-        var categories = !model.scaleColor.discrete ? [] : model.scaleColor.domain();
+        var scaleColor = model.scaleColor;
+        var categories = scaleColor.discrete ?
+            scaleColor.domain() :
+            scaleColor.originalSeries().sort((a, b) => a - b);
         var categoriesCount = (categories.length || 1);
         var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim]))); // -1 (not found) to 0
         var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
