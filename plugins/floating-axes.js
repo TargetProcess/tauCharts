@@ -120,7 +120,7 @@
         var addAxes = function (g, axes) {
             var container = g.node();
             axes.forEach(function (node) {
-                node[parentProp] = node.parentElement;
+                node[parentProp] = node.parentNode;
                 node[transProp] = (node[storeProp] && node[storeProp].transform ?
                     node[storeProp].transform :
                     node.getAttribute('transform'));
@@ -367,8 +367,15 @@
                         .append('feMergeNode')
                         .attr('in', 'SourceGraphic');
 
-                    var xSel = srcSvg.selectAll('.cell .tau-xAxis.tau-activeAxis');
-                    var ySel = srcSvg.selectAll('.cell .tau-yAxis.tau-activeAxis');
+                    var getAxesSelector = function (axis) {
+                        var axisPart = '> .' + axis + '.axis.tau-active';
+                        return [
+                            '.frame-root.tau-active ' + axisPart,
+                            '.frame-root.tau-active .cell.tau-active ' + axisPart
+                        ].join(', ');
+                    };
+                    var xSel = srcSvg.selectAll(getAxesSelector('x'));
+                    var ySel = srcSvg.selectAll(getAxesSelector('y'));
 
                     var xAxesInfo = extractAxesInfo(xSel);
                     var yAxesInfo = extractAxesInfo(ySel);

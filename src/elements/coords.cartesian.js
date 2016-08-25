@@ -176,7 +176,7 @@ export class Cartesian extends Element {
 
         // TODO: Should we modify transform of a container here or create own container?
         (options.container.attr('transform') ?
-            transition(options.container, this.config.guide.animationSpeed) :
+            transition(options.container, this.config.guide.animationSpeed, 'cartesianContainerTransform') :
             options.container)
             .attr('transform', utilsDraw.translate(this.L, this.T));
 
@@ -220,12 +220,14 @@ export class Cartesian extends Element {
         var xcells = selectAllImmediate(grid, '.cell')
             .data(xdata, x => x);
         xcells
-            .exit()
-            .remove();
-        xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
+            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
+        transition(xcells.classed('tau-active', true), this.config.guide.animationSpeed)
+            .attr('opacity', 1);
+        transition(xcells.exit().classed('tau-active', false), this.config.guide.animationSpeed)
+            .attr('opacity', 1e-6)
+            .remove();
     }
 
     _drawDimAxis(container, scale, position, size) {
@@ -244,7 +246,7 @@ export class Cartesian extends Element {
         var animationSpeed = this.config.guide.animationSpeed;
 
         selectOrAppend(container, this._getAxisSelector(scale))
-            .classed('tau-activeAxis', true)
+            .classed('tau-active', true)
             .classed(scale.guide.cssClass, true)
             .call((axis) => {
 
@@ -293,7 +295,7 @@ export class Cartesian extends Element {
 
     _removeDimAxis(container, scale) {
         var axis = selectAllImmediate(container, this._getAxisSelector(scale))
-            .classed('tau-activeAxis', false);
+            .classed('tau-active', false);
         transition(axis, this.config.guide.animationSpeed)
             .attr('opacity', 1e-6)
             .remove();
@@ -301,7 +303,8 @@ export class Cartesian extends Element {
 
     _getAxisSelector(scale) {
         var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-        return `g.tau-${isHorizontal ? 'x' : 'y'}Axis`;
+        // return `g.tau-${isHorizontal ? 'x' : 'y'}Axis`;
+        return `g.${isHorizontal ? 'x' : 'y'}.axis`;
     }
 
     _drawGrid(container, node, width, height) {

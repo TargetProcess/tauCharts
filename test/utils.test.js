@@ -277,21 +277,33 @@ define(function (require) {
         ].join('\n');
 
         it('should select immediate child or create new', function () {
-            var n1 = domUtils.selectOrAppend(d3.select(node), 'span.x').node();
-            expect(n1.id).to.equal('x');
+            var n0 = node.querySelector('#x');
+            var n1 = domUtils.selectOrAppend(node, 'span#x.x');
+            expect(n1).to.equal(n0);
+            n1 = domUtils.selectOrAppend(d3.select(node), 'span#x.x').node();
+            expect(n1).to.equal(n0);
 
             var n2 = domUtils.selectOrAppend(d3.select(node), 'a.y').node();
             expect(n2.id).to.equal('');
             expect(n2.getAttribute('class')).to.equal('y');
             expect(n2.tagName).to.equal('A');
 
+            var n3 = domUtils.selectOrAppend(n2, 'p#p1.p2');
+            expect(n3.id).to.equal('p1');
+            expect(n3.getAttribute('class')).to.equal('p2');
+            expect(n3.tagName).to.equal('P');
+
             expect(function () {
                 domUtils.selectOrAppend(d3.select(node), '.x');
             }).to.throw(/Selector must have tag at the beginning/);
+
+            expect(function () {
+                domUtils.selectOrAppend(d3.select(node), '.x .y');
+            }).to.throw(/Selector should not contain whitespaces/);
         });
 
         it('should create class name', function () {
-            var classes = domUtils.classes('x', null, {y: true, z: false}, 'a b');
+            var classes = domUtils.classes('x', null, {y: true, z: false}, 'a  b ');
             expect(classes).to.equal('x y a b');
         });
     });

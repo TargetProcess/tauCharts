@@ -199,21 +199,13 @@ var d3_decorator_fix_axis_start_line = (
     };
 
     var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
-
-    let extraTickNode = axisNode.selectAll(`.${tickClass}`);
-    if (extraTickNode.empty()) {
-        extraTickNode = axisNode.append('g')
-            .classed(tickClass, true)
-            .call(setTransform)
-            .style('opacity', 1e-6);
-        extraTickNode.append('line')
-            .call(setLineSize);
+    var extraTick = selectOrAppend(axisNode, `g.${tickClass}`);
+    var extraLine = selectOrAppend(extraTick, 'line');
+    if (!extraTick.node().hasAttribute('opacity')) {
+        extraTick.attr('opacity', 1e-6);
     }
-    d3_transition(extraTickNode, animationSpeed)
-        .style('opacity', 1)
-        .call(setTransform)
-        .select('line')
-        .call(setLineSize);
+    d3_transition(extraTick, animationSpeed).call(setTransform);
+    d3_transition(extraLine, animationSpeed).call(setLineSize);
 };
 
 var d3_decorator_prettify_axis_label = (
@@ -225,8 +217,8 @@ var d3_decorator_prettify_axis_label = (
 ) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = selectOrAppend(axisNode, `text.tau-axisLabel`)
-        .attr('class', classes('tau-axisLabel', guide.cssClass))
+    var labelTextNode = selectOrAppend(axisNode, `text.label`)
+        .attr('class', classes('label', guide.cssClass))
         .attr('transform', utilsDraw.rotate(guide.rotate));
 
     var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
@@ -407,9 +399,9 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     });
 };
 
-var d3_transition = (selection, animationSpeed) => {
+var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0) {
-        selection = selection.transition().duration(animationSpeed);
+        selection = selection.transition(nameSpace).duration(animationSpeed);
         selection.attr = d3_transition_attr;
     }
     selection.onTransitionEnd = function (callback) {
@@ -519,7 +511,7 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 var d3_selectAllImmediate = (container, selector) => {
     var node = container.node();
     return container.selectAll(selector).filter(function () {
-        return this.parentElement === node;
+        return this.parentNode === node;
     });
 };
 
