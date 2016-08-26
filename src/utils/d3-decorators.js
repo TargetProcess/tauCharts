@@ -374,9 +374,13 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
 
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 
-    var xAfterUpdate = afterUpdate || _.identity;
+    const xAfterUpdate = afterUpdate || _.identity;
+    const afterUpdateIterator = function () {
+        xAfterUpdate(this);
+    };
 
     return function () {
+
         var flow = this;
 
         if (initAttrs) {
@@ -390,11 +394,9 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         flow = flow.attr(doneAttrs);
 
         if (speed > 0) {
-            flow.each('end', function () {
-                xAfterUpdate(this);
-            });
+            flow.each('end', afterUpdateIterator);
         } else {
-            xAfterUpdate(flow.node());
+            flow.each(afterUpdateIterator);
         }
 
         return flow;
