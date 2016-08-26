@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.3-beta.3 - 2016-08-25
+/*! taucharts - v0.9.3-beta.4 - 2016-08-26
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -328,7 +328,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.3-beta.3");
+	var version = ("0.9.3-beta.4");
 
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
@@ -3599,8 +3599,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var d3_animationInterceptor = function d3_animationInterceptor(speed, initAttrs, doneAttrs, afterUpdate) {
 
 	    var xAfterUpdate = afterUpdate || _underscore2.default.identity;
+	    var afterUpdateIterator = function afterUpdateIterator() {
+	        xAfterUpdate(this);
+	    };
 
 	    return function () {
+
 	        var flow = this;
 
 	        if (initAttrs) {
@@ -3614,11 +3618,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        flow = flow.attr(doneAttrs);
 
 	        if (speed > 0) {
-	            flow.each('end', function () {
-	                xAfterUpdate(this);
-	            });
+	            flow.each('end', afterUpdateIterator);
 	        } else {
-	            xAfterUpdate(flow.node());
+	            flow.each(afterUpdateIterator);
 	        }
 
 	        return flow;
