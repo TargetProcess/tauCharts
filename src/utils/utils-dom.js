@@ -4,6 +4,9 @@
 import {default as d3} from 'd3';
 var tempDiv = document.createElement('div');
 import {default as _} from 'underscore';
+import WeakMap from 'core-js/library/fn/weak-map';
+var scrollBarSizes = new WeakMap();
+
 var utilsDom = {
     appendTo: function (el, container) {
         var node;
@@ -16,20 +19,29 @@ var utilsDom = {
         container.appendChild(node);
         return node;
     },
-    getScrollbarWidth: function () {
-        var div = document.createElement('div');
-        div.style.overflow = 'scroll';
-        div.style.visibility = 'hidden';
-        div.style.position = 'absolute';
-        div.style.width = '100px';
-        div.style.height = '100px';
-
-        document.body.appendChild(div);
-
-        var r = div.offsetWidth - div.clientWidth;
-
-        document.body.removeChild(div);
-
+    getScrollbarWidth: function (container) {
+        // TODO: Maybe use element path (eg. "html > body > div.a") as a key.
+        var key = container || { 'default': 'default' };
+        if (scrollBarSizes.has(key)) {
+            return scrollBarSizes.get(key);
+        }
+        if (!container) {
+            container = document.createElement('div');
+            container.style.visibility = 'hidden';
+            container.style.position = 'absolute';
+            container.style.width = '100px';
+            container.style.height = '100px';
+            document.body.appendChild(container);
+        }
+        var initialOverflow = container.style.overflow;
+        container.style.overflow = 'scroll';
+        var r = (container.offsetWidth - container.clientWidth);
+        if (container !== arguments[0]) {
+            document.body.removeChild(container);
+        } else {
+            container.style.overflow = initialOverflow;
+        }
+        scrollBarSizes.set(key, r);
         return r;
     },
 

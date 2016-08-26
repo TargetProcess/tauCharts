@@ -132,7 +132,7 @@ var api = {
 
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
-        getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),
+        getScrollBarWidth: utilsDom.getScrollbarWidth,
 
         xAxisTickLabelLimit: 150,
         yAxisTickLabelLimit: 150,

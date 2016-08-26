@@ -255,6 +255,10 @@ export class Plot extends Emitter {
             }
         }
 
+        // Set padding as scrollbar width
+        var sw = utilsDom.getScrollbarWidth(this._layout.contentContainer);
+        this._layout.contentContainer.style.padding = `0 ${sw}px ${sw}px 0`;
+
         this.configGPL.settings.size = size;
 
         this._liveSpec = utils.clone(_.omit(this.configGPL, 'plugins'));

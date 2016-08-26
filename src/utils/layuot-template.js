@@ -23,6 +23,7 @@ var getLayout = function () {
         layout,
         header,
         content,
+        contentContainer,
         leftSidebar,
         rightSidebar,
         footer

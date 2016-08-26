@@ -22,8 +22,6 @@
 
         var shadowStdDev = 2;
 
-        var scrollBarWidth = tauCharts.api.globalSettings.getScrollBarWidth();
-
         var mmin = function (arr) {
             return Math.min.apply(null, arr);
         };
@@ -112,7 +110,7 @@
             return g;
         };
 
-        var extractXAxesNew = function (scrollableArea, srcSvg, xSel) {
+        var extractXAxesNew = function (scrollableArea, scrollBarWidth, srcSvg, xSel) {
             var height = srcSvg.attr('height');
             var width = srcSvg.attr('width');
             var info = extractAxesInfo(xSel);
@@ -193,7 +191,7 @@
             };
         };
 
-        var extractCenter = function (scrollableArea, srcSvg, xSel, ySel) {
+        var extractCenter = function (scrollableArea, scrollBarWidth, srcSvg, xSel, ySel) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
             var w = mmax(extractAxesInfo(ySel).xs) + 1;
@@ -326,10 +324,12 @@
                     show(xSel);
                     show(ySel);
 
+                    var sw = tauCharts.api.globalSettings.getScrollBarWidth(root);
+
                     this.handlers = [
-                        extractXAxesNew(root, srcSvg, xSel),
+                        extractXAxesNew(root, sw, srcSvg, xSel),
                         extractYAxesNew(root, srcSvg, ySel),
-                        extractCenter(root, srcSvg, xSel, ySel)
+                        extractCenter(root, sw, srcSvg, xSel, ySel)
                     ];
 
                     hide(xSel);
