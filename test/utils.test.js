@@ -273,7 +273,10 @@ define(function (require) {
         node.innerHTML = [
             '<span class="x" id="x">',
             '  <a class="y" id="y"></a>',
-            '</span>'
+            '  <a class="z"></a>',
+            '</span>',
+            '<a class="z" id="z1"></a>',
+            '<a class="z" id="z2"></a>'
         ].join('\n');
 
         it('should select immediate child or create new', function () {
@@ -292,6 +295,14 @@ define(function (require) {
             expect(n3.id).to.equal('p1');
             expect(n3.getAttribute('class')).to.equal('p2');
             expect(n3.tagName).to.equal('P');
+
+            var n4 = domUtils.selectAllImmediate(node, '.z');
+            expect(n4.length).to.equal(2);
+            expect(n4[0].id).to.equal('z1');
+            expect(n4[1].id).to.equal('z2');
+
+            var n5 = domUtils.selectImmediate(node, '.z');
+            expect(n5.id).to.equal('z1');
 
             expect(function () {
                 domUtils.selectOrAppend(d3.select(node), '.x');
