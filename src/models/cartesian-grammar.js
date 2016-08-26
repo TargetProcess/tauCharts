@@ -402,7 +402,7 @@ export class CartesianGrammar {
         return (Object
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => memo.concat([setKeyGetter(groups[k], k)]), []));
+            .reduce((memo, k) => memo.concat([groups[k]]), []));
     }
 
     static isNonSyntheticRecord(row) {
@@ -449,11 +449,4 @@ export class CartesianGrammar {
             },
             []));
     }
-}
-
-function setKeyGetter(arr, key) {
-    arr.getKey = function () {
-        return key;
-    };
-    return arr;
 }
