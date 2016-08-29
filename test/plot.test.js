@@ -4,6 +4,19 @@ define(function (require) {
     var modernizer = require('bower_components/modernizer/modernizr');
     var tauChart = require('src/tau.charts');
 
+    // NOTE: To prevent layout jumps when content changes and scrollbar appears,
+    // currently padding is added.
+    var createNoScrollStyle = function () {
+        var style = document.createElement('style');
+        style.id = 'noScrollStyle';
+        style.textContent = '.graphical-report__layout__content, .graphical-report__layout__sidebar-right { padding: 0 !important; }';
+        document.head.appendChild(style);
+    };
+    var removeNoScrollStyle = function () {
+        var style = document.getElementById('noScrollStyle');
+        document.head.removeChild(style);
+    };
+
     describe('tauChart.Plot', function () {
 
         var spec;
@@ -37,10 +50,13 @@ define(function (require) {
                     {x: 1, y: 2}
                 ]
             };
+
+            createNoScrollStyle();
         });
 
         afterEach(function () {
             div.parentNode.removeChild(div);
+            removeNoScrollStyle();
         });
 
         it('should support destroy() method', function () {

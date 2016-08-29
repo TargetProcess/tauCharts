@@ -5,7 +5,16 @@ import {default as d3} from 'd3';
 var tempDiv = document.createElement('div');
 import {default as _} from 'underscore';
 import WeakMap from 'core-js/library/fn/weak-map';
-var scrollBarSizes = new WeakMap();
+var scrollbarSizes = new WeakMap();
+var tempScrollDiv = (function () {
+    var div = document.createElement('div');
+    div.style.visibility = 'hidden';
+    div.style.position = 'absolute';
+    div.style.width = '100px';
+    div.style.height = '100px';
+    div.style.overflow = 'scroll';
+    return div;
+})();
 
 var utilsDom = {
     appendTo: function (el, container) {
@@ -19,30 +28,42 @@ var utilsDom = {
         container.appendChild(node);
         return node;
     },
-    getScrollbarWidth: function (container) {
-        // TODO: Maybe use element path (eg. "html > body > div.a") as a key.
-        var key = container || { 'default': 'default' };
-        if (scrollBarSizes.has(key)) {
-            return scrollBarSizes.get(key);
+    getScrollbarSize: function (container) {
+        var isContainerSpecified = Boolean(container);
+        var key = container || tempScrollDiv;
+        if (scrollbarSizes.has(key)) {
+            return scrollbarSizes.get(key);
         }
-        if (!container) {
-            container = document.createElement('div');
-            container.style.visibility = 'hidden';
-            container.style.position = 'absolute';
-            container.style.width = '100px';
-            container.style.height = '100px';
+        if (!isContainerSpecified) {
+            container = tempScrollDiv;
             document.body.appendChild(container);
         }
         var initialOverflow = container.style.overflow;
         container.style.overflow = 'scroll';
-        var r = (container.offsetWidth - container.clientWidth);
-        if (container !== arguments[0]) {
+        var size = {
+            width: (container.offsetWidth - container.clientWidth),
+            height: (container.offsetHeight - container.clientHeight)
+        };
+        container.style.overflow = initialOverflow;
+        if (!isContainerSpecified) {
             document.body.removeChild(container);
-        } else {
-            container.style.overflow = initialOverflow;
         }
-        scrollBarSizes.set(key, r);
-        return r;
+        scrollbarSizes.set(key, size);
+        return size;
+    },
+
+    /**
+     * Sets padding as a placeholder for scrollbars.
+     */
+    setScrollPadding: function (container) {
+        var scrollbars = utilsDom.getScrollbarSize(container);
+        container.style.padding = `0 ${scrollbars.width}px ${scrollbars.height}px 0`;
+        var hasHorizontal = container.scrollWidth > container.clientWidth;
+        var hasVertical = container.scrollHeight > container.clientHeight;
+        var paddingRight = hasVertical ? '0' : `${scrollbars.width}px`;
+        var paddingBottom = hasHorizontal ? '0' : `${scrollbars.height}px`;
+        container.style.padding = `0 ${paddingRight} ${paddingBottom} 0`;
+        return scrollbars;
     },
 
     getStyle: function (el, prop) {
@@ -165,4 +186,5 @@ var utilsDom = {
         },
         (char, props) => `${char}_${JSON.stringify(props)}`)
 };
+// TODO: Export functions separately.
 export {utilsDom};

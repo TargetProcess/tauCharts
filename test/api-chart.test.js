@@ -39,6 +39,19 @@ define(function (require) {
         ]
     };
 
+    // NOTE: To prevent layout jumps when content changes and scrollbar appears,
+    // currently padding is added.
+    var createNoScrollStyle = function () {
+        var style = document.createElement('style');
+        style.id = 'noScrollStyle';
+        style.textContent = '.graphical-report__layout__content, .graphical-report__layout__sidebar-right { padding: 0 !important; }';
+        document.head.appendChild(style);
+    };
+    var removeNoScrollStyle = function () {
+        var style = document.getElementById('noScrollStyle');
+        document.head.removeChild(style);
+    };
+
     describe('Chart resize by window sizes change', function () {
 
         var div1, div2, div3;
@@ -56,6 +69,7 @@ define(function (require) {
             div1 = createDiv();
             div2 = createDiv();
             div3 = createDiv();
+            createNoScrollStyle();
         });
 
         it('should correct handler resize', function (done) {
@@ -118,6 +132,7 @@ define(function (require) {
             div1.parentNode.removeChild(div1);
             div2.parentNode.removeChild(div2);
             div3.parentNode.removeChild(div3);
+            removeNoScrollStyle();
         });
     });
 
@@ -163,6 +178,7 @@ define(function (require) {
 
         beforeEach(function () {
             div1 = createDiv();
+            createNoScrollStyle();
         });
 
         it('should support [entire-view] model', function () {
@@ -197,6 +213,7 @@ define(function (require) {
 
         afterEach(function () {
             div1.parentNode.removeChild(div1);
+            removeNoScrollStyle();
         });
     });
 
@@ -207,12 +224,14 @@ define(function (require) {
             div.style.width = 600 + 'px';
             div.style.height = 800 + 'px';
             document.body.appendChild(div);
+            createNoScrollStyle();
         });
 
         afterEach(function () {
             if (div && div.parentNode) {
                 div.parentNode.removeChild(div);
             }
+            removeNoScrollStyle();
         });
 
         it('api test element events', function (done) {

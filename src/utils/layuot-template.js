@@ -26,6 +26,7 @@ var getLayout = function () {
         contentContainer,
         leftSidebar,
         rightSidebar,
+        rightSidebarContainer,
         footer
     };
     /* jshint ignore:end */

@@ -158,7 +158,7 @@ export class SpecTransformCalcSize {
 
         var prettifySize = (srcSize, newSize) => {
 
-            var scrollSize = specRef.settings.getScrollBarWidth();
+            var scrollSize = specRef.settings.getScrollbarSize();
 
             var recommendedWidth = newSize.width;
             var recommendedHeight = newSize.height;
@@ -166,8 +166,8 @@ export class SpecTransformCalcSize {
             var deltaW = (srcSize.width - recommendedWidth);
             var deltaH = (srcSize.height - recommendedHeight);
 
-            var scrollW = (deltaH >= 0) ? 0 : scrollSize;
-            var scrollH = (deltaW >= 0) ? 0 : scrollSize;
+            var scrollW = (deltaH >= 0) ? 0 : scrollSize.width;
+            var scrollH = (deltaW >= 0) ? 0 : scrollSize.height;
 
             return {
                 height: recommendedHeight - scrollH,

@@ -244,6 +244,11 @@ export class Plot extends Emitter {
         targetNode.appendChild(this._layout.layout);
 
         var content = this._layout.content;
+
+        // Set padding to fit scrollbar size
+        utilsDom.setScrollPadding(this._layout.contentContainer);
+        utilsDom.setScrollPadding(this._layout.rightSidebarContainer);
+
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
             content.style.display = 'none';
@@ -254,10 +259,6 @@ export class Plot extends Emitter {
                 size.height = utilsDom.getContainerSize(this._layout.layout).height;
             }
         }
-
-        // Set padding as scrollbar width
-        var sw = utilsDom.getScrollbarWidth(this._layout.contentContainer);
-        this._layout.contentContainer.style.padding = `0 ${sw}px ${sw}px 0`;
 
         this.configGPL.settings.size = size;
 
@@ -319,9 +320,15 @@ export class Plot extends Emitter {
             this.onUnitDraw(item.node());
         });
 
+        // TODO: Render panels before chart, to
+        // prevent chart size shrink. Use some other event.
         this._svg = xSvg.node();
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
+
+        // NOTE: After plugins have rendered, the panel scrollbar may appear.
+        utilsDom.setScrollPadding(this._layout.contentContainer);
+        utilsDom.setScrollPadding(this._layout.rightSidebarContainer);
     }
 
     getScaleFactory(dataSources = null) {

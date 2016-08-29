@@ -16,8 +16,8 @@ define(function (require) {
         layoutEngine: '', // 'EXTRACT'
         autoRatio: true,
 
-        getScrollBarWidth: function () {
-            return 10;
+        getScrollbarSize: function () {
+            return {width: 10, height: 10};
         },
 
         xAxisTickLabelLimit: 100,
