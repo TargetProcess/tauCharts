@@ -675,19 +675,28 @@
                 }.bind(this));
                 var timeoutID = null;
 
-                popupElement.addEventListener('blur', function () {
+                var onBlur = function () {
                     timeoutID = setTimeout(function () {
                         popup.hide();
                     }, 100);
-                }, true);
-                popupElement.addEventListener('focus', function () {
+                };
+                var onFocus = function () {
                     clearTimeout(timeoutID);
-                }, true);
-                this._container.addEventListener('click', function () {
+                };
+                var onClick = function () {
                     popup.toggle();
                     if (!popup.hidden) {
                         popupElement.querySelectorAll('a')[0].focus();
                     }
+                };
+                popupElement.addEventListener('blur', onBlur, true);
+                popupElement.addEventListener('focus', onFocus, true);
+                this._container.addEventListener('click', onClick);
+                this._onDestroy(function () {
+                    popupElement.removeEventListener('blur', onBlur, true);
+                    popupElement.removeEventListener('focus', onFocus, true);
+                    this._container.removeEventListener('click', onClick);
+                    clearTimeout(timeoutID);
                 });
             },
 
@@ -697,6 +706,7 @@
                 this._info = {};
                 this._cssPaths = settings.cssPaths;
                 this._fileName = settings.fileName;
+                this._destroyListeners = [];
 
                 this._csvSeparator = settings.csvSeparator || ',';
                 this._exportFields = settings.exportFields || [];
@@ -723,7 +733,6 @@
                 var popup = chart.addBalloon({
                     place: 'bottom-left'
                 });
-                this._popup = popup;
                 // jscs:disable maximumLineLength
                 popup.content([
                     '<ul class="graphical-report__export__list">',
@@ -749,12 +758,19 @@
                 chart.on('exportTo', function (chart, type) {
                     this._select(type, chart);
                 }.bind(this));
+                this._onDestroy(function () {
+                    popup.destroy();
+                });
+            },
+
+            _onDestroy: function (listener) {
+                this._destroyListeners.push(listener);
             },
 
             destroy: function () {
-                if (this._popup) {
-                    this._popup.destroy();
-                }
+                this._destroyListeners.forEach(function (listener) {
+                    listener.call(this);
+                }, this);
             }
         };
     }
