@@ -324,7 +324,7 @@
                     show(xSel);
                     show(ySel);
 
-                    var s = tauCharts.api.globalSettings.getScrollbarSize();
+                    var s = tauCharts.api.globalSettings.getScrollbarSize(root);
 
                     this.handlers = [
                         extractXAxesNew(root, s.height, srcSvg, xSel),

@@ -158,7 +158,7 @@ export class SpecTransformCalcSize {
 
         var prettifySize = (srcSize, newSize) => {
 
-            var scrollSize = specRef.settings.getScrollbarSize();
+            var scrollSize = specRef.settings.getScrollbarSize(chart.getLayout().contentContainer);
 
             var recommendedWidth = newSize.width;
             var recommendedHeight = newSize.height;

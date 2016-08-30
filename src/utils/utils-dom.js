@@ -6,15 +6,6 @@ var tempDiv = document.createElement('div');
 import {default as _} from 'underscore';
 import WeakMap from 'core-js/library/fn/weak-map';
 var scrollbarSizes = new WeakMap();
-var tempScrollDiv = (function () {
-    var div = document.createElement('div');
-    div.style.visibility = 'hidden';
-    div.style.position = 'absolute';
-    div.style.width = '100px';
-    div.style.height = '100px';
-    div.style.overflow = 'scroll';
-    return div;
-})();
 
 var utilsDom = {
     appendTo: function (el, container) {
@@ -29,14 +20,8 @@ var utilsDom = {
         return node;
     },
     getScrollbarSize: function (container) {
-        var isContainerSpecified = Boolean(container);
-        var key = container || tempScrollDiv;
-        if (scrollbarSizes.has(key)) {
-            return scrollbarSizes.get(key);
-        }
-        if (!isContainerSpecified) {
-            container = tempScrollDiv;
-            document.body.appendChild(container);
+        if (scrollbarSizes.has(container)) {
+            return scrollbarSizes.get(container);
         }
         var initialOverflow = container.style.overflow;
         container.style.overflow = 'scroll';
@@ -45,10 +30,7 @@ var utilsDom = {
             height: (container.offsetHeight - container.clientHeight)
         };
         container.style.overflow = initialOverflow;
-        if (!isContainerSpecified) {
-            document.body.removeChild(container);
-        }
-        scrollbarSizes.set(key, size);
+        scrollbarSizes.set(container, size);
         return size;
     },
 
