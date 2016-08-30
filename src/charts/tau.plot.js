@@ -248,7 +248,7 @@ export class Plot extends Emitter {
         // Set padding to fit scrollbar size
         var s = utilsDom.getScrollbarSize(this._layout.contentContainer);
         this._layout.contentContainer.style.padding = `0 ${s.width}px ${s.height}px 0`;
-        utilsDom.setScrollPadding(this._layout.rightSidebarContainer);
+        utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
 
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
@@ -327,9 +327,9 @@ export class Plot extends Emitter {
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
 
-        // NOTE: After plugins have rendered, the panel scrollbar may appear.
+        // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
         utilsDom.setScrollPadding(this._layout.contentContainer);
-        utilsDom.setScrollPadding(this._layout.rightSidebarContainer);
+        utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
     }
 
     getScaleFactory(dataSources = null) {

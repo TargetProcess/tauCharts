@@ -36,15 +36,25 @@ var utilsDom = {
 
     /**
      * Sets padding as a placeholder for scrollbars.
+     * @param el Target element.
+     * @param [direction=both] Scrollbar direction ("horizontal", "vertical" or "both").
      */
-    setScrollPadding: function (container) {
-        var scrollbars = utilsDom.getScrollbarSize(container);
-        container.style.padding = `0 ${scrollbars.width}px ${scrollbars.height}px 0`;
-        var hasHorizontal = container.scrollWidth > container.clientWidth;
-        var hasVertical = container.scrollHeight > container.clientHeight;
-        var paddingRight = hasVertical ? '0' : `${scrollbars.width}px`;
-        var paddingBottom = hasHorizontal ? '0' : `${scrollbars.height}px`;
-        container.style.padding = `0 ${paddingRight} ${paddingBottom} 0`;
+    setScrollPadding: function (el, direction) {
+        direction = direction || 'both';
+        var isBottom = direction === 'horizontal' || direction === 'both';
+        var isRight = direction === 'vertical' || direction === 'both';
+
+        var scrollbars = utilsDom.getScrollbarSize(el);
+        var initialPaddingRight = isRight ? `${scrollbars.width}px` : '0';
+        var initialPaddingBottom = isBottom ? `${scrollbars.height}px` : '0';
+        el.style.padding = `0 ${initialPaddingRight} ${initialPaddingBottom} 0`;
+
+        var hasBottomScroll = el.scrollWidth > el.clientWidth;
+        var hasRightScroll = el.scrollHeight > el.clientHeight;
+        var paddingRight = isRight && !hasRightScroll ? `${scrollbars.width}px` : '0';
+        var paddingBottom = isBottom && !hasBottomScroll ? `${scrollbars.height}px` : '0';
+        el.style.padding = `0 ${paddingRight} ${paddingBottom} 0`;
+
         return scrollbars;
     },
 
