@@ -246,7 +246,8 @@ export class Plot extends Emitter {
         var content = this._layout.content;
 
         // Set padding to fit scrollbar size
-        utilsDom.setScrollPadding(this._layout.contentContainer);
+        var s = utilsDom.getScrollbarSize(this._layout.contentContainer);
+        this._layout.contentContainer.style.padding = `0 ${s.width}px ${s.height}px 0`;
         utilsDom.setScrollPadding(this._layout.rightSidebarContainer);
 
         var size = _.clone(xSize) || {};
