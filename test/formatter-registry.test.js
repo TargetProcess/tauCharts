@@ -4,9 +4,9 @@ define(function (require) {
     var tauChart = require('src/tau.charts');
     describe("Formatter registry", function () {
 
-        var offsetHrs = new Date().getTimezoneOffset() / 60;
-        var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
         var iso = function (str) {
+            var offsetHrs = new Date(str).getTimezoneOffset() / 60;
+            var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
             return (str + '+' + offsetISO);
         };
 
