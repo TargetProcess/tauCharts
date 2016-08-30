@@ -244,7 +244,9 @@ export class Plot extends Emitter {
             throw new Error('Target element not found');
         }
 
-        targetNode.appendChild(this._layout.layout);
+        if (this._layout.layout.parentNode !== targetNode) {
+            targetNode.appendChild(this._layout.layout);
+        }
 
         var content = this._layout.content;
         var size = _.clone(xSize) || {};
