@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     name: 'Scatterplot of period / mass correlation',
     desc: 'There are no data on exoplanets similar to Earth by mass',
@@ -15,8 +15,10 @@ window.samples.push({
             tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: exoplanets.filter(function (row) {
-            return row['jupiter mass'] <= 1;
+        data: dev.dataset('exoplanets', function (data) {
+            return data.filter(function (row) {
+                return row['jupiter mass'] <= 1;
+            });
         })
     }
 });

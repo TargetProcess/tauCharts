@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<head>
+    <!-- dependencies -->
+    <script src="../node_modules/underscore/underscore-min.js"></script>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/d3/d3.min.js"></script>
+
+    <!-- core -->
+    <script src="http://localhost:9000/tauCharts.js"></script>
+
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../build/development/plugins/tauCharts.export.js"></script>
+    <script src="../plugins/layers.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/trendline.js"></script>
+    <script src="../plugins/settings.js"></script>
+    <script src="../plugins/annotations.js"></script>
+    <script src="../plugins/parallel-brushing.js"></script>
+    <script src="../plugins/parallel-tooltip.js"></script>
+    <script src="../plugins/geomap-tooltip.js"></script>
+    <script src="../plugins/geomap-legend.js"></script>
+    <script src="../plugins/quick-filter.js"></script>
+    <script src="../plugins/floating-axes.js"></script>
+    <script src="../plugins/box-whiskers.js"></script>
+
+    <!-- css -->
+    <link href="../css/tauCharts.default.css" rel="stylesheet" />
+    <link href="../css/export.default.css" rel="stylesheet" />
+    <link href="../css/legend.default.css" rel="stylesheet" />
+    <link href="../css/tooltip.default.css" rel="stylesheet" />
+    <link href="../css/trendline.default.css" rel="stylesheet" />
+    <link href="../css/annotations.default.css" rel="stylesheet" />
+    <link href="../css/quick-filter.default.css" rel="stylesheet" />
+    <style>
+        body {
+            overflow-y: scroll;
+        }
+        
+        .sample {
+            display: inline-block;
+            float: left;
+            height: 400px;
+            margin: 5px;
+            overflow: auto;
+            position: relative;
+            width: 100%;
+        }
+        
+        .sample__title {
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <label>types:
+            <input id="inputTypes"/>
+        </label>
+        <label>plugins:
+            <input id="inputPlugins"/>
+        </label>
+    </div>
+    <div id="samplesContainer"></div>
+
+    <script src="dev.js" defer></script>
+</body>
+
+</html>

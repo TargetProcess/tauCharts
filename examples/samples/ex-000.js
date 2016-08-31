@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     name: 'Scatterplot of exoplanets period / eccentricity correlation',
     desc: 'There are some exoplanets similar to Earth by eccentricity and period',
@@ -17,7 +17,7 @@ window.samples.push({
             tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: exoplanets
+        data: 'exoplanets'
 
     }
 });

@@ -1,4 +1,4 @@
-window.cars = [{
+dev.dataset('cars', [{
     "name": "AMC Ambassador Brougham",
     "economy (mpg)": 13,
     "cylinders": 8,
@@ -3652,4 +3652,4 @@ window.cars = [{
     "weight (lb)": 3160,
     "0-60 mph (s)": 19.6,
     "year": 81
-}];
+}]);

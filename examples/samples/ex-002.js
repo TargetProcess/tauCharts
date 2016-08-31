@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     name: 'Sin / Cos plot',
     desc: 'Streaming with trend lines',
