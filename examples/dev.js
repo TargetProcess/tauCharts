@@ -7,11 +7,10 @@
     //
     var PATHS = [
         {
-            'samples/': _.times(4, function (i) {
-                var num = '00' + String(i);
-                num = num.substring(num.length - 3);
-                return 'ex-' + num;
-            })
+            'samples/': getFileNames(
+                'ex-',
+                [0, 1, 2, 3]
+            )
         },
         [
             'data',
@@ -41,6 +40,7 @@
         this._datasets = {};
         this._charts = [];
         this._settings = this._loadSettings();
+        this._initUI();
         if (paths) {
             this.load(paths);
         }
@@ -71,26 +71,34 @@
         var samples = filterSamples(this._samples.slice(0));
         if (settings.types.length) {
             samples = samples.filter(function (s) {
-                return s.types.indexOf(s.type) >= 0;
+                var type = s.spec ? s.spec.type : s.type;
+                return settings.types.indexOf(type) >= 0;
             });
         }
 
         samples.forEach(function (s, i) {
             // Create DOM element
-            var target = createElement([
+            var block = createElement([
                 '<div class="sample">',
-                '  <h2 class="sample__title">{{title}}</h2>',
+                '  <h2 class="sample__name">{{name}}</h2>',
+                '  <h4 class="sample__desc">{{description}}</h4>',
+                '  <div class="sample__chart"></div>',
                 '</div>'
-            ], { title: s.name || i });
-            container.appendChild(target);
+            ], {
+                    name: s.name || i,
+                    description: s.desc || ''
+                });
+            container.appendChild(block);
+            var target = block.querySelector('.sample__chart');
 
             // Modify chart settings
+            if (s.spec) {
+                s = s.spec;
+            }
             s = modifySample(s);
-            if (typeof s.spec.data === 'string') {
-                s.spec.data = this._datasets[s.spec.data];
-            } else if (s.spec.data instanceof DatasetLoader) {
-                var loader = s.spec.data;
-                s.spec.data = loader.filter(this._datasets[loader.name]);
+            if (s.data instanceof DatasetLoader) {
+                var loader = s.data;
+                s.data = loader.filter(this._datasets[loader.name]);
             }
             if (settings.plugins.length > 0) {
                 s.plugins.splice(0);
@@ -131,19 +139,19 @@
 
         var setValues = function () {
             var settings = this._settings;
-            types.value = settings.types.join('\n');
-            plugins.value = settings.plugins.join('\n');
+            types.value = settings.types.join(' ');
+            plugins.value = settings.plugins.join(' ');
         }.bind(this);
         setValues();
         var onValueChanged = function () {
             var parseArray = function (str) {
-                return str.split(',').map(function (s) {
-                    return s.trim();
-                });
-            }
+                return filterEmptyValues(
+                    str.replace(/[\s\,]+/g, ' ').split(' ')
+                );
+            };
             var settings = {
                 types: parseArray(types.value),
-                plugins: parseArray(types.plugins)
+                plugins: parseArray(plugins.value)
             };
             this._settings = settings;
             this._saveSettings(settings);
@@ -173,13 +181,18 @@
             types: [],
             plugins: []
         });
+        settings.types = filterEmptyValues(settings.types);
+        settings.plugins = filterEmptyValues(settings.plugins);
         return settings;
     };
 
     DevApp.prototype._saveSettings = function (settings) {
+        settings.types = filterEmptyValues(settings.types);
+        settings.plugins = filterEmptyValues(settings.plugins);
         var json = JSON.stringify(settings);
         localStorage.setItem('devSettings', json);
     };
+
 
     function DatasetLoader(name, filter) {
         this.name = name;
@@ -194,7 +207,10 @@
         }
     };
 
-    window.dev = new DevApp(PATHS);
+
+    window.addEventListener('load', function () {
+        window.dev = new DevApp(PATHS);
+    });
 
 
     //------------------------------------------
@@ -237,6 +253,22 @@
             }
         }
         return accumulator;
+    }
+
+    function filterEmptyValues(arr) {
+        return arr.map(function (d) {
+            return d.trim();
+        }).filter(function (d) {
+            return Boolean(d);
+        });
+    };
+
+    function getFileNames(prefix, numbers) {
+        return numbers.map(function (num) {
+            num = '00' + String(num);
+            num = num.substring(num.length - 3);
+            return prefix + num;
+        });
     }
 
 })();

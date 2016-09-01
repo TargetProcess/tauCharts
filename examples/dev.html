@@ -38,28 +38,46 @@
     <style>
         body {
             overflow-y: scroll;
+            padding: 2em 2em 4em 2em;
+        }
+        
+        body,
+        .graphical-report__layout,
+        .graphical-report__layout text {
+            font-family: "Helvetica Neue", "Segoe UI", "Open Sans";
+        }
+
+        #controls label:not(:first-child) {
+            margin-left: 1em;
         }
         
         .sample {
-            display: inline-block;
-            float: left;
-            height: 400px;
-            margin: 5px;
-            overflow: auto;
-            position: relative;
+            padding: 2em 0;
             width: 100%;
         }
         
-        .sample__title {
-            pointer-events: none;
-            position: absolute;
-            top: 0;
+        .sample__name {
+            font-weight: 300;
+            margin: 0;
+        }
+        
+        .sample__desc {
+            font-weight: 400;
+            margin: 0;
+        }
+        
+        .sample__desc:empty {
+            display: none;
+        }
+        
+        .sample__chart {
+            height: 24em;
         }
     </style>
 </head>
 
 <body>
-    <div>
+    <div id="controls">
         <label>types:
             <input id="inputTypes"/>
         </label>
@@ -69,7 +87,7 @@
     </div>
     <div id="samplesContainer"></div>
 
-    <script src="dev.js" defer></script>
+    <script src="dev.js"></script>
 </body>
 
 </html>

@@ -17,7 +17,7 @@ dev.sample({
             tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: 'exoplanets'
+        data: dev.dataset('exoplanets')
 
     }
 });
