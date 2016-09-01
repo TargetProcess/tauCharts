@@ -36,9 +36,17 @@
     <link href="../css/annotations.default.css" rel="stylesheet" />
     <link href="../css/quick-filter.default.css" rel="stylesheet" />
     <style>
+        html {
+            height: 100%;
+            width: 100%;
+        }
+        
         body {
-            overflow-y: scroll;
-            padding: 2em 2em 4em 2em;
+            box-sizing: border-box;
+            display: flex;
+            height: 100%;
+            margin: 0;
+            width: 100%;
         }
         
         body,
@@ -46,9 +54,40 @@
         .graphical-report__layout text {
             font-family: "Helvetica Neue", "Segoe UI", "Open Sans";
         }
+        
+        #controls {
+            background-color: #eee;
+            flex: none;
+            overflow: auto;
+            padding: 3em 2em 0 2em;
+            width: 12em;
+        }
+        
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 2em;
+            padding-left: 0.5em;
+        }
+        
+        .filter-section__header {
+            font-weight: 300;
+            margin: 0 0 0.5em -0.5em;
+        }
+        
+        .filter-section label {
+            cursor: pointer;
+        }
 
-        #controls label:not(:first-child) {
-            margin-left: 1em;
+        .check-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #samplesContainer {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 1em 2em 2em 2em;
         }
         
         .sample {
@@ -73,20 +112,38 @@
         .sample__chart {
             height: 24em;
         }
+        
+        #samplesContainer::-webkit-scrollbar,
+        #controls::-webkit-scrollbar,
+        .graphical-report__layout__content::-webkit-scrollbar,
+        .graphical-report__layout__sidebar-right::-webkit-scrollbar {
+            height: 0.75em;
+            width: 0.75em;
+        }
+        
+        #samplesContainer::-webkit-scrollbar-thumb,
+        #controls::-webkit-scrollbar-thumb,
+        .graphical-report__layout__content::-webkit-scrollbar-thumb,
+        .graphical-report__layout__sidebar-right::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+        }
     </style>
 </head>
 
 <body>
     <div id="controls">
-        <label>name:
-            <input id="inputName"/>
-        </label>
-        <label>types:
-            <input id="inputTypes"/>
-        </label>
-        <label>plugins:
-            <input id="inputPlugins"/>
-        </label>
+        <div class="filter-section">
+            <h2 class="filter-section__header">Filter by name</h2>
+            <input id="inputName" />
+        </div>
+        <div class="filter-section">
+            <h2 class="filter-section__header">Filter by types</h2>
+            <div id="typesContainer" class="check-group"></div>
+        </div>
+        <div class="filter-section">
+            <h2 class="filter-section__header">Plug-ins</h2>
+            <div id="pluginsContainer" class="check-group"></div>
+        </div>
     </div>
     <div id="samplesContainer"></div>
 

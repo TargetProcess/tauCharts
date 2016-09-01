@@ -34,6 +34,32 @@
         return sample;
     }
 
+    var TYPES = [
+        'area',
+        'bar',
+        'horizontal-bar',
+        'horizontal-stacked-bar',
+        'line',
+        'map',
+        'parallel',
+        'scatterplot',
+        'stacked-area',
+        'stacked-bar'
+    ].sort();
+
+    var PLUGINS = [
+        'annotations',
+        'box-whiskers',
+        'export',
+        'floating-axes',
+        'layers',
+        'legend',
+        'quick-filter',
+        'settings',
+        'tooltip',
+        'trendline'
+    ];
+
 
     function DevApp(paths) {
         this._samples = [];
@@ -140,37 +166,87 @@
     };
 
     DevApp.prototype._initUI = function () {
-        var name = document.getElementById('inputName');
-        var types = document.getElementById('inputTypes');
-        var plugins = document.getElementById('inputPlugins');
-
         var settings = this._settings;
-        name.value = settings.name;
-        types.value = settings.types.join(' ');
-        plugins.value = settings.plugins.join(' ');
 
-        var onValueChanged = function () {
-            var parseArray = function (str) {
-                return filterEmptyValues(
-                    str.replace(/[\s\,]+/g, ' ').split(' ')
-                );
+        var nameInput = document.getElementById('inputName');
+        nameInput.value = settings.name;
+        nameInput.focus();
+
+        var createCheckbox = function (name) {
+            var node = createElement(
+                '<label><input type="checkbox" value="{{name}}"/>{{name}}</label>',
+                { name: name }
+            );
+            return {
+                node: node,
+                input: node.querySelector('input')
+            };
+        };
+
+        var createCheckGroup = function (container, items, checkedItems) {
+            var all = createCheckbox('all');
+            if (items.every(function (t) {
+                return checkedItems.indexOf(t) >= 0;
+            })) {
+                all.input.checked = true;
+            }
+            container.appendChild(all.node);
+            var checkboxes = items.map(function (t) {
+                var c = createCheckbox(t);
+                if (checkedItems.indexOf(t) >= 0) {
+                    c.input.checked = true;
+                }
+                container.appendChild(c.node);
+                return c;
+            });
+            container.addEventListener('change', function (e) {
+                if (e.target === all.input) {
+                    // Check/uncheck all checkboxes
+                    checkboxes.forEach(function (c) {
+                        c.input.checked = all.input.checked;
+                    });
+                } else {
+                    // Check/uncheck "all" checkbox
+                    all.input.checked = checkboxes.every(function (c) {
+                        return c.input.checked;
+                    });
+                }
+            });
+        };
+
+        var typesContainer = document.getElementById('typesContainer');
+        createCheckGroup(typesContainer, TYPES, settings.types);
+
+        var pluginsContainer = document.getElementById('pluginsContainer');
+        createCheckGroup(pluginsContainer, PLUGINS, settings.plugins);
+
+        var onValueChanged = function (e) {
+            var getValues = function (container) {
+                return select(container, 'input').filter(function (el) {
+                    return (el.value !== 'all' &&
+                        el.checked === true);
+                }).map(function (el) {
+                    return el.value;
+                });
             };
             var settings = {
-                name: name.value.trim(),
-                types: parseArray(types.value),
-                plugins: parseArray(plugins.value)
+                name: nameInput.value.trim(),
+                types: getValues(typesContainer),
+                plugins: getValues(pluginsContainer)
             };
             this._settings = settings;
             this._saveSettings(settings);
             this.renderCharts();
         }.bind(this);
 
-        name.onchange = types.onchange = plugins.onchange = onValueChanged;
-        name.onkeydown = types.onkeydown = plugins.onkeydown = function (e) {
+        nameInput.onchange = onValueChanged;
+        nameInput.onkeydown = function (e) {
             if (e.keyCode === 13) {
-                onValueChanged();
+                onValueChanged(e);
             }
         };
+        typesContainer.addEventListener('change', onValueChanged);
+        pluginsContainer.addEventListener('change', onValueChanged);
     };
 
     DevApp.prototype._loadSettings = function () {
@@ -279,6 +355,12 @@
             num = num.substring(num.length - 3);
             return prefix + num;
         });
+    }
+
+    function select(container, selector) {
+        return Array.prototype.slice.call(
+            container.querySelectorAll(selector), 0
+        );
     }
 
 })();
