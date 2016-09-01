@@ -75,6 +75,11 @@
                 return settings.types.indexOf(type) >= 0;
             });
         }
+        if (settings.name) {
+            samples = samples.filter(function (s) {
+                return s.name.indexOf(settings.name) >= 0;
+            });
+        }
 
         samples.forEach(function (s, i) {
             // Create DOM element
@@ -134,15 +139,15 @@
     };
 
     DevApp.prototype._initUI = function () {
+        var name = document.getElementById('inputName');
         var types = document.getElementById('inputTypes');
         var plugins = document.getElementById('inputPlugins');
 
-        var setValues = function () {
-            var settings = this._settings;
-            types.value = settings.types.join(' ');
-            plugins.value = settings.plugins.join(' ');
-        }.bind(this);
-        setValues();
+        var settings = this._settings;
+        name.value = settings.name;
+        types.value = settings.types.join(' ');
+        plugins.value = settings.plugins.join(' ');
+
         var onValueChanged = function () {
             var parseArray = function (str) {
                 return filterEmptyValues(
@@ -150,6 +155,7 @@
                 );
             };
             var settings = {
+                name: name.value.trim(),
                 types: parseArray(types.value),
                 plugins: parseArray(plugins.value)
             };
@@ -158,8 +164,8 @@
             this.renderCharts();
         }.bind(this);
 
-        types.onchange = plugins.onchange = onValueChanged;
-        types.onkeydown = plugins.onkeydown = function (e) {
+        name.onchange = types.onchange = plugins.onchange = onValueChanged;
+        name.onkeydown = types.onkeydown = plugins.onkeydown = function (e) {
             if (e.keyCode === 13) {
                 onValueChanged();
             }
@@ -178,15 +184,18 @@
             settings = {};
         }
         settings = _.defaults(settings, {
+            name: '',
             types: [],
             plugins: []
         });
+        settings.name = settings.name.trim();
         settings.types = filterEmptyValues(settings.types);
         settings.plugins = filterEmptyValues(settings.plugins);
         return settings;
     };
 
     DevApp.prototype._saveSettings = function (settings) {
+        settings.name = settings.name.trim();
         settings.types = filterEmptyValues(settings.types);
         settings.plugins = filterEmptyValues(settings.plugins);
         var json = JSON.stringify(settings);
