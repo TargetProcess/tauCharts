@@ -76,8 +76,9 @@
             });
         }
         if (settings.name) {
+            var lowName = settings.name.toLowerCase();
             samples = samples.filter(function (s) {
-                return s.name.indexOf(settings.name) >= 0;
+                return s.name.toLowerCase().indexOf(lowName) >= 0;
             });
         }
 
