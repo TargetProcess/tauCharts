@@ -50,7 +50,7 @@
     var PLUGINS = [
         'annotations',
         'box-whiskers',
-        'export',
+        'exportTo',
         'floating-axes',
         'layers',
         'legend',
@@ -127,12 +127,15 @@
             if (s.spec) {
                 s = s.spec;
             }
+            s = cloneObject(s);
             s = modifySample(s);
             if (s.data instanceof DatasetLoader) {
                 var loader = s.data;
-                s.data = loader.filter(this._datasets[loader.name]);
+                var data = cloneObject(this._datasets[loader.name]);
+                s.data = loader.filter(data);
             }
             if (settings.plugins.length > 0) {
+                s.plugins = s.plugins || [];
                 s.plugins.splice(0);
                 settings.plugins.forEach(function (p) {
                     s.plugins.push(tauCharts.api.plugins.get(p)());
@@ -284,13 +287,11 @@
         this.name = name;
         this._filter = filter;
     };
-    DatasetLoader.prototype = {
-        filter: function (data) {
-            if (this._filter) {
-                return this._filter.call(null, data);
-            }
-            return data;
+    DatasetLoader.prototype.filter = function (data) {
+        if (this._filter) {
+            return this._filter.call(null, data);
         }
+        return data;
     };
 
 
@@ -361,6 +362,62 @@
         return Array.prototype.slice.call(
             container.querySelectorAll(selector), 0
         );
+    }
+
+    var WeakMap = window.WeakMap || (function () {
+        var counter = 0;
+        function WeakMap() {
+            this.id = 'WeakMap' + counter++;
+        }
+        WeakMap.prototype.has = function (key) {
+            return this.id in key;
+        };
+        WeakMap.prototype.get = function (key) {
+            return key[this.id];
+        };
+        WeakMap.prototype.set = function (key, value) {
+            Object.defineProperty(key, this.id, {
+                configurable: true, value: value
+            });
+        };
+        return WeakMap;
+    })();
+
+    function cloneObject(src, refs) {
+        if (typeof src !== 'object' || src === null) {
+            return src;
+        }
+        refs = refs || new WeakMap();
+        if (refs.has(src)) {
+            return refs.get(src);
+        }
+        var result;
+        if (Array.isArray(src)) {
+            result = [];
+            refs.set(src, result);
+            src.forEach(function (d) {
+                result.push(cloneObject(d, refs));
+            });
+        } else if (src instanceof Date) {
+            result = new Date(src.getTime());
+            refs.set(src, result);
+        } else if (src instanceof Node) {
+            result = src.cloneNode(true);
+            refs.set(src, result);
+        } else if (src instanceof String || src instanceof Boolean || src instanceof Number) {
+            var Ctor = Object.getPrototypeOf(src).constructor;
+            result = new Ctor(src);
+            refs.set(src, result);
+        } else {
+            var Ctor = Object.getPrototypeOf(src).constructor;
+            result = new Ctor();
+            refs.set(src, result);
+            Object.keys(src).reduce(function (memo, key) {
+                memo[key] = cloneObject(src[key], refs);
+                return memo;
+            }, result);
+        }
+        return result;
     }
 
 })();

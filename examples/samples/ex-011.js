@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     name: 'Funnel',
     desc: 'Look, it is a stacked bar chart with size assigned',

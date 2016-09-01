@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     name: 'Chart of Fame',
     desc: 'Explore achievements of belarusian olympic athletes',
@@ -13,23 +13,24 @@ window.samples.push({
             tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: _(olimpics)
-            .chain()
-            .filter(function (row) {
-                return ['Belarus'].indexOf(row['Country']) >= 0;
-            })
-            .reduce(function (memo, row) {
-                var k = row['Athlete'];
-                if (!memo[k]) {
-                    memo[k] = _.clone(row);
-                    memo[k]['Total Medals'] = 0;
-                }
+        data: dev.dataset('olympics', function (data) {
+            return _(data)
+                .chain()
+                .filter(function (row) {
+                    return ['Belarus'].indexOf(row['Country']) >= 0;
+                })
+                .reduce(function (memo, row) {
+                    var k = row['Athlete'];
+                    if (!memo[k]) {
+                        memo[k] = _.clone(row);
+                        memo[k]['Total Medals'] = 0;
+                    }
 
-                memo[k]['Total Medals'] += row['Total Medals'];
-                return memo;
-            }, {})
-            .values()
-            .value()
-
+                    memo[k]['Total Medals'] += row['Total Medals'];
+                    return memo;
+                }, {})
+                .values()
+                .value();
+        })
     }
 });

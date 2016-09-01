@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     name: 'Amount of olympic medals per athlete age in different countries',
     desc: 'Country as a color',
@@ -14,29 +14,30 @@ window.samples.push({
             tauCharts.api.plugins.get('tooltip')()
         ],
 
-        data: _(olimpics)
-            .chain()
-            .reduce(function (memo, row) {
-                var key = row['Sport'] + row['Age'] + row['Country'];
-                if (!memo.hasOwnProperty(key)) {
-                    memo[key] = {
-                        'Country': row['Country'],
-                        'Sport': row['Sport'],
-                        'Age': row['Age'],
-                        'SUM(Total Medals)': 0
-                    };
-                }
+        data: dev.dataset('olympics', function (data) {
+            return _(data)
+                .chain()
+                .reduce(function (memo, row) {
+                    var key = row['Sport'] + row['Age'] + row['Country'];
+                    if (!memo.hasOwnProperty(key)) {
+                        memo[key] = {
+                            'Country': row['Country'],
+                            'Sport': row['Sport'],
+                            'Age': row['Age'],
+                            'SUM(Total Medals)': 0
+                        };
+                    }
 
-                memo[key]['SUM(Total Medals)'] += row['Total Medals'];
+                    memo[key]['SUM(Total Medals)'] += row['Total Medals'];
 
-                return memo;
-            },
-            {})
-            .values()
-            .filter(function (row) {
-                return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
-            })
-            .value()
-
+                    return memo;
+                },
+                {})
+                .values()
+                .filter(function (row) {
+                    return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
+                })
+                .value();
+        })
     }
 });
