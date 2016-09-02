@@ -4,7 +4,7 @@ var iso = function (str) {
     return (str + '+' + offsetISO);
 };
 
-window.samples.push({
+dev.sample({
 
     data: [
         {

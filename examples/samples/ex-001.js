@@ -20,5 +20,6 @@ dev.sample({
                 return row['jupiter mass'] <= 1;
             });
         })
-    }
+    },
+    _oldFormat: true
 });

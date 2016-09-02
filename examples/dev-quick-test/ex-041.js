@@ -1,6 +1,6 @@
 var now = new Date();
 
-window.samples.push({
+dev.sample({
 
     data: [
         {z: 'A', x: 'Day1', visits: 10, clicks: 2, likes: 10, total: 100},

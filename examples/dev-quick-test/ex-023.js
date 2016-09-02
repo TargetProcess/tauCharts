@@ -1,6 +1,6 @@
-window.samples.push({
+dev.sample({
 
-    data: rawData,
+    data: dev.dataset('userStories'),
     type: 'scatterplot',
     x: 'cycleTime',
     y: 'effort',

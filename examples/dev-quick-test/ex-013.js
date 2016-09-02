@@ -1,7 +1,7 @@
-window.samples.push({
+dev.sample({
 
     type: 'parallel',
-    data: cars,
+    data: dev.dataset('cars'),
     columns: [
         'economy (mpg)',
         'cylinders',

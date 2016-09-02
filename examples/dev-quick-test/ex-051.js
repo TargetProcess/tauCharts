@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     sel: 1111,
 
@@ -160,7 +160,7 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.sample({
 
     sel: 1111,
 
@@ -305,7 +305,7 @@ window.samples.push({
 });
 
 
-window.drops.push({
+dev.drop({
     "title": "facets_ stacked-bar",
     "thumbnails": {
         "small": "/api/v1/drops/572317a43dc68e2100c10621/thumbnail?drop=44a30b8ad48b1d032bd0a76021215270c176611e&source=1461916345630&config=small",

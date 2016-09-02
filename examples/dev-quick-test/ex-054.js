@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
     sel: 99,
     data: [
         {y: 'A', x: -25, color: 'up'},

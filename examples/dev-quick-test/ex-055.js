@@ -1930,7 +1930,7 @@ var orderIndex = [
 
 var orderRange = d3.extent(_.values(orderByState));
 
-window.samples.push({
+dev.sample({
     z: 777,
     "dimensions": {
         "endDate": {

@@ -39,5 +39,6 @@ dev.sample({
                 })
                 .value();
         })
-    }
+    },
+    _oldFormat: true
 });

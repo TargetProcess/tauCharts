@@ -10,13 +10,18 @@
             'samples/': getFileNames(
                 'ex-',
                 [0, 1, 2, 3]
+            ),
+            'dev-quick-test/': getFileNames(
+                'ex-',
+                _.times(56, _.identity)
             )
         },
         [
             'data',
             'data-cars',
             'data-exoplanets',
-            'data-olympics'
+            'data-olympics',
+            'tpStories'
         ]
     ];
 
@@ -73,7 +78,24 @@
     }
 
     DevApp.prototype.sample = function (sample) {
+        var l = window.location;
+        Object.defineProperty(sample, 'filePath', {
+            value: document.currentScript.src
+                .replace(l.protocol + '//' + l.host + '/', '')
+        });
         this._samples.push(sample);
+    };
+
+    DevApp.prototype.drop = function (dropCfg) {
+        var spec = dropCfg.spec;
+        spec.data = dropCfg.data.map(function (row) {
+            return dropCfg.header.reduce(function (memo, h, i) {
+                memo[h] = row[i];
+                return memo;
+            }, {});
+        });
+
+        this.sample(spec);
     };
 
     DevApp.prototype.dataset = function (name, dataOrFilter) {
@@ -97,14 +119,14 @@
         var samples = filterSamples(this._samples.slice(0));
         if (settings.types.length) {
             samples = samples.filter(function (s) {
-                var type = s.spec ? s.spec.type : s.type;
+                var type = s._oldFormat ? s.spec.type : s.type;
                 return settings.types.indexOf(type) >= 0;
             });
         }
-        if (settings.name) {
-            var lowName = settings.name.toLowerCase();
+        if (settings.path) {
+            var regex = new RegExp(settings.path.replace('\\', '\\\\'), 'i');
             samples = samples.filter(function (s) {
-                return s.name.toLowerCase().indexOf(lowName) >= 0;
+                return s.filePath.match(regex);
             });
         }
 
@@ -117,20 +139,23 @@
                 '  <div class="sample__chart"></div>',
                 '</div>'
             ], {
-                    name: s.name || i,
-                    description: s.desc || ''
+                    name: s.name || s.filePath || i,
+                    description: s.desc || ('type: ' + (s._oldFormat ? s.spec.type : s.type))
                 });
             container.appendChild(block);
             var target = block.querySelector('.sample__chart');
 
             // Modify chart settings
-            if (s.spec) {
+            if (s._oldFormat) {
                 s = s.spec;
             }
             s = cloneObject(s);
             s = modifySample(s);
             if (s.data instanceof DatasetLoader) {
                 var loader = s.data;
+                if (!(loader.name in this._datasets)) {
+                    throw new Error('Dataset "' + loader.name + '" not found.');
+                }
                 var data = cloneObject(this._datasets[loader.name]);
                 s.data = loader.filter(data);
             }
@@ -156,7 +181,7 @@
         var loaded = 0;
         for (var i = 0; i < pathsToLoad.length; i++) {
             var s = document.createElement('script');
-            s.src = pathsToLoad[i];
+            s.defer = true;
             s.onload = s.onerror = function () {
                 loaded++;
                 if (loaded === pathsToLoad.length) {
@@ -164,6 +189,7 @@
                 }
             }.bind(this);
             document.head.appendChild(s);
+            s.src = pathsToLoad[i];
         }
 
     };
@@ -171,9 +197,9 @@
     DevApp.prototype._initUI = function () {
         var settings = this._settings;
 
-        var nameInput = document.getElementById('inputName');
-        nameInput.value = settings.name;
-        nameInput.focus();
+        var pathInput = document.getElementById('inputPath');
+        pathInput.value = settings.path;
+        pathInput.focus();
 
         var createCheckbox = function (name) {
             var node = createElement(
@@ -233,7 +259,7 @@
                 });
             };
             var settings = {
-                name: nameInput.value.trim(),
+                path: pathInput.value.trim(),
                 types: getValues(typesContainer),
                 plugins: getValues(pluginsContainer)
             };
@@ -242,8 +268,8 @@
             this.renderCharts();
         }.bind(this);
 
-        nameInput.onchange = onValueChanged;
-        nameInput.onkeydown = function (e) {
+        pathInput.onchange = onValueChanged;
+        pathInput.onkeydown = function (e) {
             if (e.keyCode === 13) {
                 onValueChanged(e);
             }
@@ -264,18 +290,18 @@
             settings = {};
         }
         settings = _.defaults(settings, {
-            name: '',
+            path: '',
             types: [],
             plugins: []
         });
-        settings.name = settings.name.trim();
+        settings.path = settings.path.trim();
         settings.types = filterEmptyValues(settings.types);
         settings.plugins = filterEmptyValues(settings.plugins);
         return settings;
     };
 
     DevApp.prototype._saveSettings = function (settings) {
-        settings.name = settings.name.trim();
+        settings.path = settings.path.trim();
         settings.types = filterEmptyValues(settings.types);
         settings.plugins = filterEmptyValues(settings.plugins);
         var json = JSON.stringify(settings);

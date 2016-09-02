@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     type: 'map',
     code: 'state',

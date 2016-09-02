@@ -35,5 +35,6 @@ dev.sample({
                 .values()
                 .value();
         })
-    }
+    },
+    _oldFormat: true
 });

@@ -37,5 +37,6 @@ dev.sample({
         plugins: [
             tauCharts.api.plugins.get('trendline')({showPanel:false})
         ]
-    }
+    },
+    _oldFormat: true
 });

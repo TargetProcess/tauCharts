@@ -1,4 +1,4 @@
-window.drops.push({
+dev.drop({
     "title": "DO NOT DELETE",
     "thumbnails": {
         "small": "/api/v1/drops/5720b5db2c29c614006a800c/thumbnail?drop=50b73d58dc4a4623444572022e2a11070dbf3abb&source=1461759829849&config=small",
@@ -41,7 +41,7 @@ window.drops.push({
         "guide": [{
             "x": {"label": "Average Number of Operators, Sat-Sun, (7:00AM-3:00PM) "},
             "y": {"label": "Count of records"},
-            "size": {"label": "34ê"}
+            "size": {"label": "34ï¿½"}
         }],
         "tooltip": {
             "fields": ["average_wait_time_seconds_11_00pm_7_00am_2_94", "row_number_3_15", "average_number_of_operators_sat_sun_7_00am_3_00pm__2_26"],

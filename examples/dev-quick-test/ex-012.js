@@ -1,4 +1,4 @@
-window.samples.push({
+dev.sample({
 
     z: 111,
     "type": "horizontalBar",

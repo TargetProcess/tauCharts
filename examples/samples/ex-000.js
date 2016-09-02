@@ -19,5 +19,6 @@ dev.sample({
 
         data: dev.dataset('exoplanets')
 
-    }
+    },
+    _oldFormat: true
 });

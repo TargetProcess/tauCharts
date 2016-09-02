@@ -42,5 +42,6 @@ dev.sample({
                 row['ABS(count)'] = Math.abs(row.count);
                 return row;
             })
-    }
+    },
+    _oldFormat: true
 });
