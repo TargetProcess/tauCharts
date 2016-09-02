@@ -13,7 +13,9 @@
             ),
             'dev-quick-test/': getFileNames(
                 'ex-',
-                _.times(56, _.identity)
+                _.times(56, _.identity).filter(function (n) {
+                    return n < 32 || n > 39;
+                })
             )
         },
         [
@@ -65,11 +67,14 @@
         'trendline'
     ];
 
+    var LAZY_RENDERING = true;
+
 
     function DevApp(paths) {
         this._samples = [];
         this._datasets = {};
         this._charts = [];
+        this._notRenderedSamples = [];
         this._settings = this._loadSettings();
         this._initUI();
         if (paths) {
@@ -77,6 +82,9 @@
         }
     }
 
+    /**
+     * Registers chart sample (spec).
+     */
     DevApp.prototype.sample = function (sample) {
         var l = window.location;
         Object.defineProperty(sample, 'filePath', {
@@ -86,6 +94,9 @@
         this._samples.push(sample);
     };
 
+    /**
+     * Registers sample in drop format.
+     */
     DevApp.prototype.drop = function (dropCfg) {
         var spec = dropCfg.spec;
         spec.data = dropCfg.data.map(function (row) {
@@ -98,6 +109,11 @@
         this.sample(spec);
     };
 
+    /**
+     * If second argument is an object, registers a dataset.
+     * Otherwise sets up a dataset loader, which will retrieve
+     * dataset when chart will be loaded.
+     */
     DevApp.prototype.dataset = function (name, dataOrFilter) {
         if (typeof dataOrFilter === 'object') {
             this._datasets[name] = dataOrFilter;
@@ -106,15 +122,42 @@
         }
     };
 
-    DevApp.prototype.renderCharts = function () {
-        // Clear resources
+    /**
+     * Starts scripts loading.
+     */
+    DevApp.prototype.load = function (paths) {
+        var pathsToLoad = getJSPaths(paths);
+        var loaded = 0;
+        for (var i = 0; i < pathsToLoad.length; i++) {
+            var s = document.createElement('script');
+            s.defer = true;
+            s.onload = s.onerror = function () {
+                loaded++;
+                if (loaded === pathsToLoad.length) {
+                    this._renderCharts();
+                }
+            }.bind(this);
+            document.head.appendChild(s);
+            s.src = pathsToLoad[i];
+        }
+
+    };
+
+    DevApp.prototype._renderCharts = function () {
+
+        //
+        // Destroy previous charts
+
         this._charts.forEach((c) => {
             c.destroy();
         });
+        this._notRenderedSamples.splice(0);
         var container = document.getElementById('samplesContainer');
         container.innerHTML = '';
 
+        //
         // Filter samples
+
         var settings = this._settings;
         var samples = filterSamples(this._samples.slice(0));
         if (settings.types.length) {
@@ -130,7 +173,11 @@
             });
         }
 
+        //
+        // Handle specs
+
         samples.forEach(function (s, i) {
+
             // Create DOM element
             var block = createElement([
                 '<div class="sample">',
@@ -149,8 +196,6 @@
             if (s._oldFormat) {
                 s = s.spec;
             }
-            s = cloneObject(s);
-            s = modifySample(s);
             if (s.data instanceof DatasetLoader) {
                 var loader = s.data;
                 if (!(loader.name in this._datasets)) {
@@ -159,6 +204,8 @@
                 var data = cloneObject(this._datasets[loader.name]);
                 s.data = loader.filter(data);
             }
+            s = cloneObject(s);
+            s = modifySample(s);
             if (settings.plugins.length > 0) {
                 s.plugins = s.plugins || [];
                 s.plugins.splice(0);
@@ -167,39 +214,65 @@
                 });
             }
 
-            // Render chart
-            var chart = (s.type ?
-                new tauCharts.Chart(s) :
-                new tauCharts.Plot(s));
-            chart.renderTo(target);
-            this._charts.push(chart);
+            this._notRenderedSamples.push({
+                sample: s,
+                target: target
+            });
         }, this);
+
+        //
+        // Render charts
+
+        if (LAZY_RENDERING) {
+            this._renderVisibleCharts();
+        } else {
+            var s, chart;
+            while (this._notRenderedSamples.length) {
+                s = this._notRenderedSamples.shift();
+                chart = (s.sample.type ?
+                    new tauCharts.Chart(s.sample) :
+                    new tauCharts.Plot(s.sample));
+                chart.renderTo(s.target);
+                this._charts.push(chart);
+            }
+        };
     };
 
-    DevApp.prototype.load = function (paths) {
-        var pathsToLoad = getJSPaths(paths);
-        var loaded = 0;
-        for (var i = 0; i < pathsToLoad.length; i++) {
-            var s = document.createElement('script');
-            s.defer = true;
-            s.onload = s.onerror = function () {
-                loaded++;
-                if (loaded === pathsToLoad.length) {
-                    this.renderCharts();
-                }
-            }.bind(this);
-            document.head.appendChild(s);
-            s.src = pathsToLoad[i];
+    DevApp.prototype._renderVisibleCharts = function () {
+        var s, chart, rect;
+        var top = document.documentElement.clientTop;
+        var bottom = top + document.documentElement.clientHeight;
+        for (var i = 0; i < this._notRenderedSamples.length; i++) {
+            s = this._notRenderedSamples[i];
+            rect = s.target.getBoundingClientRect();
+            if (
+                (rect.bottom > top && rect.bottom < bottom) ||
+                (rect.top > top && rect.top < bottom) ||
+                (rect.top <= top && rect.bottom >= bottom)
+            ) {
+                chart = (s.sample.type ?
+                    new tauCharts.Chart(s.sample) :
+                    new tauCharts.Plot(s.sample));
+                chart.renderTo(s.target);
+                this._charts.push(chart);
+                this._notRenderedSamples.splice(i, 1);
+                i--;
+            }
         }
-
     };
 
     DevApp.prototype._initUI = function () {
         var settings = this._settings;
 
+        //
+        // Init file path input
+
         var pathInput = document.getElementById('inputPath');
         pathInput.value = settings.path;
         pathInput.focus();
+
+        //
+        // Init checkboxes
 
         var createCheckbox = function (name) {
             var node = createElement(
@@ -249,6 +322,9 @@
         var pluginsContainer = document.getElementById('pluginsContainer');
         createCheckGroup(pluginsContainer, PLUGINS, settings.plugins);
 
+        //
+        // Handle input changes
+
         var onValueChanged = function (e) {
             var getValues = function (container) {
                 return select(container, 'input').filter(function (el) {
@@ -265,7 +341,7 @@
             };
             this._settings = settings;
             this._saveSettings(settings);
-            this.renderCharts();
+            this._renderCharts();
         }.bind(this);
 
         pathInput.onchange = onValueChanged;
@@ -276,6 +352,15 @@
         };
         typesContainer.addEventListener('change', onValueChanged);
         pluginsContainer.addEventListener('change', onValueChanged);
+
+        //
+        // Init scroll
+
+        if (LAZY_RENDERING) {
+            window.addEventListener('resize', this._renderVisibleCharts.bind(this));
+            document.getElementById('samplesContainer')
+                .addEventListener('scroll', this._renderVisibleCharts.bind(this));
+        }
     };
 
     DevApp.prototype._loadSettings = function () {
@@ -321,6 +406,9 @@
     };
 
 
+    /**
+     * Start app.
+     */
     window.addEventListener('load', function () {
         window.dev = new DevApp(PATHS);
     });
@@ -405,6 +493,9 @@
             Object.defineProperty(key, this.id, {
                 configurable: true, value: value
             });
+        };
+        WeakMap.prototype.delete = function (key) {
+            delete key[this.id];
         };
         return WeakMap;
     })();
