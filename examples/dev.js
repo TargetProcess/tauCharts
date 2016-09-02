@@ -5,27 +5,26 @@
     //------------------------------------------------
     // NOTE: Place paths to samples and datasets here.
     //
-    var PATHS = [
-        {
-            'samples/': getFileNames(
-                'ex-',
-                [0, 1, 2, 3]
-            ),
-            'dev-quick-test/': getFileNames(
-                'ex-',
-                _.times(56, _.identity).filter(function (n) {
-                    return n < 32 || n > 39;
-                })
-            )
-        },
-        [
+    var PATHS = {
+        'samples/': [
+            getFileNames('ex-', [0, 1, 2, 3]),
+            'whiskers'
+        ],
+        'dev-quick-test/': getFileNames(
+            'ex-',
+            _.times(56, _.identity).filter(function (n) {
+                return n < 32 || n > 39;
+            })
+        ),
+        'datasets/': [
+            'cars',
+            'countries',
+            'exoplanets',
             'data',
-            'data-cars',
-            'data-exoplanets',
-            'data-olympics',
+            'olympics',
             'tpStories'
         ]
-    ];
+    };
 
     //---------------------------
     // NOTE: Filter samples here.
