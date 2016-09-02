@@ -7,10 +7,10 @@
     //
     var PATHS = {
         'specs/': [
-            filesRange('ex-', range(0, 3), 5, range(9, 15)),
+            fileRange('ex-', range(0, 3), 5, range(9, 15)),
             'whiskers'
         ],
-        'dev-quick-test/': filesRange(
+        'dev-quick-test/': fileRange(
             'ex-',
             range(0, 31), range(40, 55)
         ),
@@ -457,7 +457,7 @@
         });
     };
 
-    function filesRange(prefix, numbers) {
+    function fileRange(prefix, numbers) {
         numbers = Array.prototype.slice.call(arguments, 1);
         return _.flatten(numbers).map(function (num) {
             num = '00' + String(num);
