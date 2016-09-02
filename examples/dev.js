@@ -7,14 +7,12 @@
     //
     var PATHS = {
         'specs/': [
-            getFileNames('ex-', [0, 1, 2, 3]),
+            filesRange('ex-', range(0, 3), 5, range(9, 15)),
             'whiskers'
         ],
-        'dev-quick-test/': getFileNames(
+        'dev-quick-test/': filesRange(
             'ex-',
-            _.times(56, _.identity).filter(function (n) {
-                return n < 32 || n > 39;
-            })
+            range(0, 31), range(40, 55)
         ),
         'datasets/': [
             'cars',
@@ -161,8 +159,7 @@
         var specs = filterSpecs(this._specs.slice(0));
         if (settings.types.length) {
             specs = specs.filter(function (s) {
-                var type = s._oldFormat ? s.spec.type : s.type;
-                return settings.types.indexOf(type) >= 0;
+                return settings.types.indexOf(s.type) >= 0;
             });
         }
         if (settings.path) {
@@ -185,16 +182,13 @@
                 '  <div class="sample__chart"></div>',
                 '</div>'
             ], {
-                    name: s.name || s.filePath || i,
-                    description: s.desc || ('type: ' + (s._oldFormat ? s.spec.type : s.type))
+                    name: s._name || s.filePath || i,
+                    description: s._desc || ('type: ' + s.type)
                 });
             container.appendChild(block);
             var target = block.querySelector('.sample__chart');
 
             // Modify chart settings
-            if (s._oldFormat) {
-                s = s.spec;
-            }
             if (s.data instanceof DatasetLoader) {
                 var loader = s.data;
                 if (!(loader.name in this._datasets)) {
@@ -276,7 +270,7 @@
         var createCheckbox = function (name) {
             var node = createElement(
                 '<label><input type="checkbox" value="{{name}}"/>{{name}}</label>',
-                { name: name }
+                {name: name}
             );
             return {
                 node: node,
@@ -463,12 +457,21 @@
         });
     };
 
-    function getFileNames(prefix, numbers) {
-        return numbers.map(function (num) {
+    function filesRange(prefix, numbers) {
+        numbers = Array.prototype.slice.call(arguments, 1);
+        return _.flatten(numbers).map(function (num) {
             num = '00' + String(num);
             num = num.substring(num.length - 3);
             return prefix + num;
         });
+    }
+    
+    function range(start, end) {
+        var arr = [];
+        for (var i = start; i <= end; i++) {
+            arr.push(i);
+        }
+        return arr;
     }
 
     function select(container, selector) {

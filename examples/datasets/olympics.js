@@ -1,4 +1,4 @@
-dev.dataset('olimpics', [
+dev.dataset('olympics', [
   {
     "Bronze Medals": 0.0,
     "Closing Ceremony Date": "2008-08-24T00:00:00",
