@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     name: 'Sin / Cos plot',
     desc: 'Streaming with trend lines',

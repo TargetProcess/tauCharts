@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     sel: 1111,
 
@@ -160,7 +160,7 @@ dev.sample({
     ]
 });
 
-dev.sample({
+dev.spec({
 
     sel: 1111,
 

@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
     "type": "horizontalBar",
     "color": null,
     "size": null,

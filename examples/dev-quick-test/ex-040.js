@@ -28,7 +28,7 @@ var gendata = function (num) {
         }, []);
 };
 
-dev.sample({
+dev.spec({
 
     //dimensions: {
     //    x: {type: 'order', scale: 'period'},

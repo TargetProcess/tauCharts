@@ -2,11 +2,11 @@
 
     'use strict';
 
-    //------------------------------------------------
-    // NOTE: Place paths to samples and datasets here.
+    //----------------------------------------------
+    // NOTE: Place paths to specs and datasets here.
     //
     var PATHS = {
-        'samples/': [
+        'specs/': [
             getFileNames('ex-', [0, 1, 2, 3]),
             'whiskers'
         ],
@@ -26,18 +26,18 @@
         ]
     };
 
-    //---------------------------
-    // NOTE: Filter samples here.
+    //-------------------------
+    // NOTE: Filter specs here.
     //
-    function filterSamples(allSamples) {
-        return allSamples;
+    function filterSpecs(allSpecs) {
+        return allSpecs;
     };
 
-    //----------------------------------
-    // NOTE: Modify chart settings here.
+    //------------------------------
+    // NOTE: Modify chart spec here.
     //
-    function modifySample(sample) {
-        return sample;
+    function modifySpec(spec) {
+        return spec;
     }
 
     var TYPES = [
@@ -70,10 +70,10 @@
 
 
     function DevApp(paths) {
-        this._samples = [];
+        this._specs = [];
         this._datasets = {};
         this._charts = [];
-        this._notRenderedSamples = [];
+        this._notRenderedSpecs = [];
         this._settings = this._loadSettings();
         this._initUI();
         if (paths) {
@@ -82,19 +82,19 @@
     }
 
     /**
-     * Registers chart sample (spec).
+     * Registers chart spec.
      */
-    DevApp.prototype.sample = function (sample) {
+    DevApp.prototype.spec = function (spec) {
         var l = window.location;
-        Object.defineProperty(sample, 'filePath', {
+        Object.defineProperty(spec, 'filePath', {
             value: document.currentScript.src
                 .replace(l.protocol + '//' + l.host + '/', '')
         });
-        this._samples.push(sample);
+        this._specs.push(spec);
     };
 
     /**
-     * Registers sample in drop format.
+     * Registers spec in drop format.
      */
     DevApp.prototype.drop = function (dropCfg) {
         var spec = dropCfg.spec;
@@ -105,7 +105,7 @@
             }, {});
         });
 
-        this.sample(spec);
+        this.spec(spec);
     };
 
     /**
@@ -150,24 +150,24 @@
         this._charts.forEach((c) => {
             c.destroy();
         });
-        this._notRenderedSamples.splice(0);
+        this._notRenderedSpecs.splice(0);
         var container = document.getElementById('samplesContainer');
         container.innerHTML = '';
 
         //
-        // Filter samples
+        // Filter specs
 
         var settings = this._settings;
-        var samples = filterSamples(this._samples.slice(0));
+        var specs = filterSpecs(this._specs.slice(0));
         if (settings.types.length) {
-            samples = samples.filter(function (s) {
+            specs = specs.filter(function (s) {
                 var type = s._oldFormat ? s.spec.type : s.type;
                 return settings.types.indexOf(type) >= 0;
             });
         }
         if (settings.path) {
             var regex = new RegExp(settings.path.replace('\\', '\\\\'), 'i');
-            samples = samples.filter(function (s) {
+            specs = specs.filter(function (s) {
                 return s.filePath.match(regex);
             });
         }
@@ -175,7 +175,7 @@
         //
         // Handle specs
 
-        samples.forEach(function (s, i) {
+        specs.forEach(function (s, i) {
 
             // Create DOM element
             var block = createElement([
@@ -204,7 +204,7 @@
                 s.data = loader.filter(data);
             }
             s = cloneObject(s);
-            s = modifySample(s);
+            s = modifySpec(s);
             if (settings.plugins.length > 0) {
                 s.plugins = s.plugins || [];
                 s.plugins.splice(0);
@@ -213,8 +213,8 @@
                 });
             }
 
-            this._notRenderedSamples.push({
-                sample: s,
+            this._notRenderedSpecs.push({
+                spec: s,
                 target: target
             });
         }, this);
@@ -226,11 +226,11 @@
             this._renderVisibleCharts();
         } else {
             var s, chart;
-            while (this._notRenderedSamples.length) {
-                s = this._notRenderedSamples.shift();
-                chart = (s.sample.type ?
-                    new tauCharts.Chart(s.sample) :
-                    new tauCharts.Plot(s.sample));
+            while (this._notRenderedSpecs.length) {
+                s = this._notRenderedSpecs.shift();
+                chart = (s.spec.type ?
+                    new tauCharts.Chart(s.spec) :
+                    new tauCharts.Plot(s.spec));
                 chart.renderTo(s.target);
                 this._charts.push(chart);
             }
@@ -241,20 +241,20 @@
         var s, chart, rect;
         var top = document.documentElement.clientTop;
         var bottom = top + document.documentElement.clientHeight;
-        for (var i = 0; i < this._notRenderedSamples.length; i++) {
-            s = this._notRenderedSamples[i];
+        for (var i = 0; i < this._notRenderedSpecs.length; i++) {
+            s = this._notRenderedSpecs[i];
             rect = s.target.getBoundingClientRect();
             if (
                 (rect.bottom > top && rect.bottom < bottom) ||
                 (rect.top > top && rect.top < bottom) ||
                 (rect.top <= top && rect.bottom >= bottom)
             ) {
-                chart = (s.sample.type ?
-                    new tauCharts.Chart(s.sample) :
-                    new tauCharts.Plot(s.sample));
+                chart = (s.spec.type ?
+                    new tauCharts.Chart(s.spec) :
+                    new tauCharts.Plot(s.spec));
                 chart.renderTo(s.target);
                 this._charts.push(chart);
-                this._notRenderedSamples.splice(i, 1);
+                this._notRenderedSpecs.splice(i, 1);
                 i--;
             }
         }

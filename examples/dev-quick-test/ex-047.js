@@ -3,7 +3,7 @@ function days (i) {
     return (new Date(now - i * 1000 * 60 * 60 * 24));
 }
 
-dev.sample({
+dev.spec({
     data:[
         {
             x: days(5),

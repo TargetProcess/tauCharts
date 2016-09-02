@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     layoutEngine: 'DEFAULT',
     data: dev.dataset('userStories'),

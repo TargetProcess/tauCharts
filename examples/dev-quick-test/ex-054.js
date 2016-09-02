@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
     sel: 99,
     data: [
         {y: 'A', x: -25, color: 'up'},

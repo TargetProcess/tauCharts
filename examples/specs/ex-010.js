@@ -1,30 +1,27 @@
-dev.sample({
+dev.spec({
 
-    name: 'Histogram: amount of olympic medals per athlete age',
-    desc: 'Looks like there are no chances to get medals in Rhythmic Gymnastics after 25...',
+    name: 'Amount of olympic medals per athlete age in different countries',
+    desc: 'Country as a color',
     spec: {
 
-        type: 'bar',
+        type: 'stacked-bar',
         y: ['Sport', 'SUM(Total Medals)'],
         x: ['Age'],
-        // color: 'Sport',
+        color: 'Country',
 
         plugins: [
             tauCharts.api.plugins.get('legend')(),
             tauCharts.api.plugins.get('tooltip')()
         ],
 
-        settings: {
-            layoutEngine: 'NONE'
-        },
-
         data: dev.dataset('olympics', function (data) {
             return _(data)
                 .chain()
                 .reduce(function (memo, row) {
-                    var key = row['Sport'] + row['Age'];
+                    var key = row['Sport'] + row['Age'] + row['Country'];
                     if (!memo.hasOwnProperty(key)) {
                         memo[key] = {
+                            'Country': row['Country'],
                             'Sport': row['Sport'],
                             'Age': row['Age'],
                             'SUM(Total Medals)': 0
@@ -37,9 +34,11 @@ dev.sample({
                 },
                 {})
                 .values()
+                .filter(function (row) {
+                    return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
+                })
                 .value();
         })
-
     },
     _oldFormat: true
 });

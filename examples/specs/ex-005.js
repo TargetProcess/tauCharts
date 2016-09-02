@@ -1,12 +1,12 @@
-dev.sample({
+dev.spec({
 
-    name: 'Amount of olympic medals per athlete age in different countries',
-    desc: 'Country as a color',
+    name: 'Compare USA and Canada in amount of olympic medals per athlete age',
+    desc: 'Looks like colored bar chart is mush better',
     spec: {
 
-        type: 'stacked-bar',
+        type: 'bar',
         y: ['Sport', 'SUM(Total Medals)'],
-        x: ['Age'],
+        x: ['AgeOrdinal'],
         color: 'Country',
 
         plugins: [
@@ -24,6 +24,7 @@ dev.sample({
                             'Country': row['Country'],
                             'Sport': row['Sport'],
                             'Age': row['Age'],
+                            'AgeOrdinal': row['Age'] ? row['Age'].toString() : null,
                             'SUM(Total Medals)': 0
                         };
                     }
@@ -35,8 +36,13 @@ dev.sample({
                 {})
                 .values()
                 .filter(function (row) {
-                    return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
+                    return (
+                        (['United States', 'Canada'].indexOf(row['Country']) >= 0)
+                        &&
+                        (['Ice Hockey'].indexOf(row['Sport']) >= 0)
+                    );
                 })
+                .sortBy('Age')
                 .value();
         })
     },

@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     name: 'Scatterplot of exoplanets period / eccentricity correlation',
     desc: 'There are some exoplanets similar to Earth by eccentricity and period',

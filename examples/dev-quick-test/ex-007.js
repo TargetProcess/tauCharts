@@ -4,7 +4,7 @@ var iso = function (str) {
     return (str + '+' + offsetISO);
 };
 
-dev.sample({
+dev.spec({
 
     data: [
         {

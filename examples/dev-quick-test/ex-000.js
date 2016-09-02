@@ -1,6 +1,6 @@
 var now = new Date();
 
-dev.sample({
+dev.spec({
     type: 'bar',
     flip: true,
     stack: true,
@@ -66,7 +66,7 @@ dev.sample({
 
 
 
-dev.sample({
+dev.spec({
 
     type: 'line',
     x: ['x'],
@@ -124,7 +124,7 @@ dev.sample({
     ]
 });
 
-dev.sample({
+dev.spec({
 
     type: 'line',
     x: ['x'],
@@ -177,7 +177,7 @@ dev.sample({
     ]
 });
 
-dev.sample({
+dev.spec({
 
     type: 'line',
     x: ['x'],
@@ -227,7 +227,7 @@ dev.sample({
     ]
 });
 
-dev.sample({
+dev.spec({
 
     sources: {
         '?': {

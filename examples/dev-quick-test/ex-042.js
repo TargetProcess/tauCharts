@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
     "type": "stacked-bar",
     "dimensions": {
         "__2": {"type": "order", "scale": "period"},

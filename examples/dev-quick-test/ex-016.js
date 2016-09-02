@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     z: 33,
     "type": "horizontal-bar",

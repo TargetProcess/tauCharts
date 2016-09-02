@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     data: [
         {"x1": {"id": 13, "name": "Tau Product Web Site - Scrum #1"}, "y1": 4},

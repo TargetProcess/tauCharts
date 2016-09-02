@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
     type: 'scatterplot',
     y: 'distribution',
     x: 'y',

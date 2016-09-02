@@ -47,7 +47,7 @@
         };
     };
 
-    dev.sample({
+    dev.spec({
 
         settings: {
             fitModel: 'none'

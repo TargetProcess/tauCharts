@@ -1,13 +1,13 @@
-dev.sample({
+dev.spec({
 
-    name: 'Compare USA and Canada in amount of olympic medals per athlete age',
-    desc: 'Looks like colored bar chart is mush better',
+    name: 'Amount of olympic medals per athlete age',
+    desc: 'Same data in one place. Sport encoded by color',
     spec: {
 
-        type: 'bar',
-        y: ['Sport', 'SUM(Total Medals)'],
-        x: ['AgeOrdinal'],
-        color: 'Country',
+        type: 'line',
+        y: ['SUM(Total Medals)'],
+        x: ['Age'],
+        color: 'Sport',
 
         plugins: [
             tauCharts.api.plugins.get('legend')(),
@@ -18,13 +18,11 @@ dev.sample({
             return _(data)
                 .chain()
                 .reduce(function (memo, row) {
-                    var key = row['Sport'] + row['Age'] + row['Country'];
+                    var key = row['Sport'] + row['Age'];
                     if (!memo.hasOwnProperty(key)) {
                         memo[key] = {
-                            'Country': row['Country'],
                             'Sport': row['Sport'],
                             'Age': row['Age'],
-                            'AgeOrdinal': row['Age'] ? row['Age'].toString() : null,
                             'SUM(Total Medals)': 0
                         };
                     }
@@ -35,14 +33,6 @@ dev.sample({
                 },
                 {})
                 .values()
-                .filter(function (row) {
-                    return (
-                        (['United States', 'Canada'].indexOf(row['Country']) >= 0)
-                        &&
-                        (['Ice Hockey'].indexOf(row['Sport']) >= 0)
-                    );
-                })
-                .sortBy('Age')
                 .value();
         })
     },

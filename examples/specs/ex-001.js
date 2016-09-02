@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     name: 'Scatterplot of period / mass correlation',
     desc: 'There are no data on exoplanets similar to Earth by mass',

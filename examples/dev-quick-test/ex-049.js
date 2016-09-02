@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
     "type": "scatterplot",
     "x": ["x1"],
     "y": ["y1", "y2"],

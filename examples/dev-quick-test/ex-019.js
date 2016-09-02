@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     layoutEngine: 'EXTRACT',
     data: dev.dataset('userStories'),

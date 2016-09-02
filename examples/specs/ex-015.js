@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     name: 'Geo chart of Olympics data',
     desc: 'SUM(Total Medals) as color saturation',

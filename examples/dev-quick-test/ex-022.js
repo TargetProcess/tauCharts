@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     data: dev.dataset('userStories'),
     spec: {

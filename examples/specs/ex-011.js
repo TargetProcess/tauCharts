@@ -1,4 +1,4 @@
-dev.sample({
+dev.spec({
 
     name: 'Funnel',
     desc: 'Look, it is a stacked bar chart with size assigned',
