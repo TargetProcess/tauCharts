@@ -10,8 +10,8 @@ var FramesAlgebra = {
 
         var data = dataFn();
 
-        var domainX = _.unique(data.map(x => x[dimX]));
-        var domainY = _.unique(data.map(x => x[dimY]));
+        var domainX = _.unique(data.map(x => x[dimX]), unify);
+        var domainY = _.unique(data.map(x => x[dimY]), unify);
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
@@ -40,8 +40,8 @@ var FramesAlgebra = {
     cross_period(dataFn, dimX, dimY, xPeriod, yPeriod) {
         var data = dataFn();
 
-        var domainX = _.unique(data.map(x => x[dimX]));
-        var domainY = _.unique(data.map(x => x[dimY]));
+        var domainX = _.unique(data.map(x => x[dimX]), unify);
+        var domainY = _.unique(data.map(x => x[dimY]), unify);
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
@@ -77,7 +77,7 @@ var FramesAlgebra = {
 
     groupBy(dataFn, dim) {
         var data = dataFn();
-        var domainX = _.unique(data.map(x => x[dim]));
+        var domainX = _.unique(data.map(x => x[dim]), unify);
         return domainX.map((x)=>({[dim]: unify(x)}));
     },
 
