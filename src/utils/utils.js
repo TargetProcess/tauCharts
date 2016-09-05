@@ -274,10 +274,10 @@ var utils = {
         return deepClone(obj);
     },
     isDate(obj) {
-        return obj instanceof Date && !isNaN(+obj)
+        return obj instanceof Date && !isNaN(Number(obj));
     },
     isObject(obj) {
-        return obj != null && typeof obj === 'object'
+        return obj != null && typeof obj === 'object';
     },
     isChartElement(element) {
         return chartElement.some(Element => element instanceof Element);
@@ -498,7 +498,7 @@ var utils = {
         }
         let  arr = [];
         for (let i = start; i < end; i++) {
-           arr.push(i); 
+            arr.push(i);
         }
         return arr;
     }

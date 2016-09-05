@@ -93,7 +93,10 @@ export class ColorScale extends BaseScale {
 
         } else if (typeof brewer === 'function') {
 
-            func = (d) => brewer(d, wrapString(buildArrayGetClass(varSet, utils.range(20).map((i) => 'color20-' + (1 + i)))));
+            func = (d) => brewer(d,
+                wrapString(
+                    buildArrayGetClass(varSet,
+                        utils.range(20).map((i) => 'color20-' + (1 + i)))));
 
         } else if (utils.isObject(brewer)) {
 

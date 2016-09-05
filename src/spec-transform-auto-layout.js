@@ -33,7 +33,7 @@ var applyCustomProps = (targetUnit, customUnit) => {
         }
         return obj;
     }, {}));
-    
+
     return targetUnit;
 };
 
@@ -151,8 +151,8 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     domainValues.forEach((value) => {
         let computed = formatter(value).toString().length;
         if (computed > lastComputed || computed === -Infinity && maxXTickText === -Infinity) {
-          maxXTickText = value;
-          lastComputed = computed;
+            maxXTickText = value;
+            lastComputed = computed;
         }
     });
 
@@ -438,8 +438,12 @@ var SpecEngineTypeMap = {
                 unit.guide.x = unit.guide.x || {label: ''};
                 unit.guide.y = unit.guide.y || {label: ''};
 
-                unit.guide.x.label = utils.isObject(unit.guide.x.label) ? unit.guide.x.label : {text: unit.guide.x.label};
-                unit.guide.y.label = utils.isObject(unit.guide.y.label) ? unit.guide.y.label : {text: unit.guide.y.label};
+                unit.guide.x.label = utils.isObject(unit.guide.x.label)
+                    ? unit.guide.x.label
+                    : {text: unit.guide.x.label};
+                unit.guide.y.label = utils.isObject(unit.guide.y.label)
+                    ? unit.guide.y.label
+                    : {text: unit.guide.y.label};
 
                 if (unit.x) {
                     unit.guide.x.label.text = unit.guide.x.label.text || meta.dimension(unit.x).dimName;

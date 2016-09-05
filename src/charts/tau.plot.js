@@ -343,7 +343,8 @@ export class Plot extends Emitter {
     }
 
     getDataSources(param = {}) {
-        var excludeFiltersByTagAndSource = (k) => ((f) => (param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1) || f.src !== k);
+        var excludeFiltersByTagAndSource = (k) =>
+            ((f) => (param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1) || f.src !== k);
 
         var chartDataModel = this._chartDataModel(this._originData);
 

@@ -62,7 +62,7 @@ export class SpecConverter {
 
             // leaf elements should inherit coordinates properties
             if (root && !childUnit.hasOwnProperty('units')) {
-                childUnit = _.defaults(childUnit, { x: root.x, y: root.y });
+                childUnit = _.defaults(childUnit, {x: root.x, y: root.y});
 
                 var parentGuide = utils.clone(root.guide || {});
                 childUnit.guide = _.defaults(

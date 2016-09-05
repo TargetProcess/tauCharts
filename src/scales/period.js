@@ -28,8 +28,12 @@ export class PeriodScale extends BaseScale {
             this.vars = _.unique(vars)
                 .map((x) => new Date(x))
                 .sort((date1, date2) => {
-                    if (date1 > date2) return -1;
-                    if (date1 < date2) return 1;
+                    if (date1 > date2) {
+                        return -1;
+                    }
+                    if (date1 < date2) {
+                        return 1;
+                    }
                     return 0;
                 });
         } else {
