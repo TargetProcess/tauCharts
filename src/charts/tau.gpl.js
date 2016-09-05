@@ -3,7 +3,7 @@ import {utils} from '../utils/utils';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
 import {default as _} from 'underscore';
-var cast = (v) => (_.isDate(v) ? v.getTime() : v);
+var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {
 
@@ -38,11 +38,11 @@ export class GPL extends Emitter {
             config.transformations || {},
             {
                 where(data, tuple) {
-                    var predicates = _.map(tuple, (v, k) => {
-                        return (row) => (cast(row[k]) === v);
+                    var predicates = Object.keys(tuple || {}).map((k) => {
+                        return (row) => (cast(row[k]) === tuple[k]);
                     });
-                    return _(data).filter((row) => {
-                        return _.every(predicates, (p) => p(row));
+                    return data.filter((row) => {
+                        return predicates.every((p) => p(row));
                     });
                 }
             });
@@ -236,7 +236,7 @@ export class GPL extends Emitter {
             inherit: bInherit,
             func: func,
             args: funcArgs,
-            exec: () => func.apply(null, [dataFn].concat(funcArgs))
+            exec: () => func(dataFn, ...(funcArgs || []))
         };
     }
 }

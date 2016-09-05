@@ -15,8 +15,8 @@ export class PeriodScale extends BaseScale {
         var vars = this.vars;
 
         var domain = d3.extent(vars);
-        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
-        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domain[1] : new Date(props.max).getTime();
+        var min = (props.min === null || props.min === undefined) ? domain[0] : new Date(props.min).getTime();
+        var max = (props.max === null || props.max === undefined) ? domain[1] : new Date(props.max).getTime();
 
         var range = [
             new Date(Math.min(min, domain[0])),
@@ -25,11 +25,13 @@ export class PeriodScale extends BaseScale {
 
         var periodGenerator = UnitDomainPeriodGenerator.get(props.period);
         if (props.fitToFrameByDims || (periodGenerator === null)) {
-            this.vars = _(vars).chain()
-                .uniq((x) => new Date(x).getTime())
+            this.vars = _.unique(vars)
                 .map((x) => new Date(x))
-                .sortBy((x) => -x)
-                .value();
+                .sort((date1, date2) => {
+                    if (date1 > date2) return -1;
+                    if (date1 < date2) return 1;
+                    return 0;
+                });
         } else {
             this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
         }

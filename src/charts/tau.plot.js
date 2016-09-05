@@ -167,7 +167,7 @@ export class Plot extends Emitter {
         var localSettings = Object
             .keys(globalSettings)
             .reduce((memo, k) => {
-                memo[k] = (_.isFunction(globalSettings[k])) ?
+                memo[k] = (typeof globalSettings[k] === 'function') ?
                     globalSettings[k] :
                     utils.clone(globalSettings[k]);
                 return memo;
@@ -175,7 +175,7 @@ export class Plot extends Emitter {
 
         var r = _.defaults(configSettings || {}, localSettings);
 
-        if (!utils.isArray(r.specEngine)) {
+        if (!Array.isArray(r.specEngine)) {
             r.specEngine = [{width: Number.MAX_VALUE, name: r.specEngine}];
         }
 
@@ -335,21 +335,15 @@ export class Plot extends Emitter {
     }
 
     getSourceFiltersIterator(rejectFiltersPredicate) {
-
-        var filters = _(this._filtersStore.filters)
-            .chain()
-            .values()
-            .flatten()
-            .reject((f) => rejectFiltersPredicate(f))
-            .pluck('predicate')
-            .value();
+        var filters = _.flatten(Object.keys(this._filtersStore.filters).map(key => this._filtersStore.filters[key]))
+            .filter((f) => !rejectFiltersPredicate(f))
+            .map(x => x.predicate);
 
         return (row) => filters.reduce((prev, f) => (prev && f(row)), true);
     }
 
     getDataSources(param = {}) {
-
-        var excludeFiltersByTagAndSource = (k) => ((f) => ((_.contains(param.excludeFilter, f.tag)) || f.src !== k));
+        var excludeFiltersByTagAndSource = (k) => ((f) => (param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1) || f.src !== k);
 
         var chartDataModel = this._chartDataModel(this._originData);
 
@@ -412,8 +406,8 @@ export class Plot extends Emitter {
     }
 
     removeFilter(id) {
-        _.each(this._filtersStore.filters, (filters, key) => {
-            this._filtersStore.filters[key] = _.reject(filters, (item) => item.id === id);
+        Object.keys(this._filtersStore.filters).map((key) => {
+            this._filtersStore.filters[key] = this._filtersStore.filters[key].filter((item) => item.id !== id);
         });
         return this;
     }

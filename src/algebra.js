@@ -1,7 +1,8 @@
 import {default as _} from 'underscore';
+import {utils} from './utils/utils';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 
-var unify = (v) => (v instanceof Date) ? v.getTime() : v;
+var unify = (v) => utils.isDate(v) ? v.getTime() : v;
 
 var FramesAlgebra = {
 
@@ -9,16 +10,16 @@ var FramesAlgebra = {
 
         var data = dataFn();
 
-        var domainX = _(data).chain().pluck(dimX).unique(unify).value();
-        var domainY = _(data).chain().pluck(dimY).unique(unify).value();
+        var domainX = _.unique(data.map(x => x[dimX]));
+        var domainY = _.unique(data.map(x => x[dimY]));
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
 
-        return _(domY).reduce(
+        return domY.reduce(
             (memo, rowVal) => {
 
-                return memo.concat(_(domX).map((colVal) => {
+                return memo.concat(domX.map((colVal) => {
 
                     var r = {};
 
@@ -39,24 +40,24 @@ var FramesAlgebra = {
     cross_period(dataFn, dimX, dimY, xPeriod, yPeriod) {
         var data = dataFn();
 
-        var domainX = _(data).chain().pluck(dimX).unique(unify).value();
-        var domainY = _(data).chain().pluck(dimY).unique(unify).value();
+        var domainX = _.unique(data.map(x => x[dimX]));
+        var domainY = _.unique(data.map(x => x[dimY]));
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
 
         if (xPeriod) {
-            domX = UnitDomainPeriodGenerator.generate(_.min(domainX), _.max(domainX), xPeriod);
+            domX = UnitDomainPeriodGenerator.generate(Math.min(...domainX), Math.max(...domainX), xPeriod);
         }
 
         if (yPeriod) {
-            domY = UnitDomainPeriodGenerator.generate(_.min(domainY), _.max(domainY), yPeriod);
+            domY = UnitDomainPeriodGenerator.generate(Math.min(...domainY), Math.max(...domainY), yPeriod);
         }
 
-        return _(domY).reduce(
+        return domY.reduce(
             (memo, rowVal) => {
 
-                return memo.concat(_(domX).map((colVal) => {
+                return memo.concat(domX.map((colVal) => {
 
                     var r = {};
 
@@ -76,7 +77,7 @@ var FramesAlgebra = {
 
     groupBy(dataFn, dim) {
         var data = dataFn();
-        var domainX = _(data).chain().pluck(dim).unique(unify).value();
+        var domainX = _.unique(data.map(x => x[dim]));
         return domainX.map((x)=>({[dim]: unify(x)}));
     },
 

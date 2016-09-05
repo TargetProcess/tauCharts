@@ -273,8 +273,11 @@ var utils = {
     clone(obj) {
         return deepClone(obj);
     },
-    isArray(obj) {
-        return Array.isArray(obj);
+    isDate(obj) {
+        return obj instanceof Date && !isNaN(+obj)
+    },
+    isObject(obj) {
+        return obj != null && typeof obj === 'object'
     },
     isChartElement(element) {
         return chartElement.some(Element => element instanceof Element);
@@ -286,8 +289,8 @@ var utils = {
 
         var m = 10;
 
-        var low = parseFloat(Math.min.apply(null, domain).toFixed(15));
-        var top = parseFloat(Math.max.apply(null, domain).toFixed(15));
+        var low = parseFloat(Math.min(...domain).toFixed(15));
+        var top = parseFloat(Math.max(...domain).toFixed(15));
 
         if (low === top) {
             let k = (top >= 0) ? -1 : 1;
@@ -358,23 +361,21 @@ var utils = {
 
     generateRatioFunction: (dimPropName, paramsList, chartInstanceRef) => {
 
-        var unify = (v) => (v instanceof Date) ? v.getTime() : v;
+        var unify = (v) => utils.isDate(v) ? v.getTime() : v;
 
         var dataNewSnap = 0;
         var dataPrevRef = null;
         var xHash = _.memoize(
             (data, keys) => {
-                return _(data)
-                    .chain()
-                    .map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), [])))
-                    .uniq((t) => JSON.stringify(t))
+                return _.uniq(
+                    data.map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), []))),
+                    (t) => JSON.stringify(t))
                     .reduce((memo, t) => {
                         var k = t[0];
                         memo[k] = memo[k] || 0;
                         memo[k] += 1;
                         return memo;
-                    }, {})
-                    .value();
+                    }, {});
             },
             (data, keys) => {
                 let seed = (dataPrevRef === data) ? dataNewSnap : (++dataNewSnap);
@@ -401,7 +402,8 @@ var utils = {
             }
 
             var xTotal = (keys) => {
-                return _.values(xHash(data, keys)).reduce((sum, v) => (sum + v), 0);
+                var arr = xHash(data, keys);
+                return Object.keys(arr).reduce((sum, k) => (sum + arr[k]), 0);
             };
 
             var xPart = ((keys, k) => (xHash(data, keys)[k]));
@@ -459,8 +461,10 @@ var utils = {
         var min = domain[0];
         var max = domain[1];
         var segment = ((max - min) / (parts - 1));
-        var chunks = _.times(parts - 2, (n) => (min + segment * (n + 1)));
-        return [min].concat(chunks).concat(max);
+        var chunks = parts >= 2 ?
+            utils.range(parts - 2).map((n) => (min + segment * (n + 1)))
+            : [];
+        return [min, ...chunks, max];
     },
 
     extRGBColor: function (x) {
@@ -485,6 +489,18 @@ var utils = {
         }
 
         return angle;
+    },
+
+    range: function (start, end) {
+        if (arguments.length ===  1) {
+            end = start;
+            start = 0;
+        }
+        let  arr = [];
+        for (let i = start; i < end; i++) {
+           arr.push(i); 
+        }
+        return arr;
     }
 };
 

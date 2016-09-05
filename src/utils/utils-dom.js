@@ -63,19 +63,6 @@ var utilsDom = {
     },
 
     getAxisTickLabelSize: function (text) {
-
-        var tmpl = [
-            '<svg class="graphical-report__svg">',
-            '<g class="graphical-report__cell cell">',
-            '<g class="x axis">',
-            '<g class="tick"><text><%= xTick %></text></g>',
-            '</g>',
-            '</g>',
-            '</svg>'
-        ].join('');
-
-        var compiled = _.template(tmpl);
-
         var div = document.createElement('div');
         div.style.position = 'absolute';
         div.style.visibility = 'hidden';
@@ -84,7 +71,13 @@ var utilsDom = {
         div.style.border = '1px solid green';
         document.body.appendChild(div);
 
-        div.innerHTML = compiled({xTick: text});
+        div.innerHTML = `<svg class="graphical-report__svg">
+            <g class="graphical-report__cell cell">
+            <g class="x axis">
+            <g class="tick"><text>${text}</text></g>
+            </g>
+            </g>
+            </svg>`;
 
         var textNode = d3.select(div).selectAll('.x.axis .tick text')[0][0];
 

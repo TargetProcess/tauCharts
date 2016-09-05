@@ -6,7 +6,7 @@ module.exports = function (config) {
         basePath: '..',
 
         // frameworks to use
-        frameworks: ['mocha'],
+        frameworks: ['mocha', 'es6-shim'],
 
         // list of files / patterns to load in the browser
         files: [

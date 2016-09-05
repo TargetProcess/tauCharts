@@ -45,7 +45,7 @@ export class Cartesian extends Element {
             }
         );
 
-        if (_.isString(this.config.guide.x.label)) {
+        if (typeof this.config.guide.x.label === 'string') {
             this.config.guide.x.label = {
                 text: this.config.guide.x.label
             };
@@ -76,7 +76,7 @@ export class Cartesian extends Element {
                 tickFormatWordWrapLimit: 100
             });
 
-        if (_.isString(this.config.guide.y.label)) {
+        if (typeof this.config.guide.y.label === 'string') {
             this.config.guide.y.label = {
                 text: this.config.guide.y.label
             };
@@ -367,7 +367,7 @@ export class Cartesian extends Element {
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];
-                        let fixBottomLine = _.contains(fixLineScales, yScale.scaleType);
+                        let fixBottomLine = fixLineScales.indexOf(yScale.scaleType) !== -1;
                         if (fixBottomLine) {
                             d3_decorator_fix_axis_bottom_line(yGridLines, height, (yScale.scaleType === 'time'));
                         }

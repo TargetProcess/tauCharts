@@ -374,7 +374,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
 
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 
-    const xAfterUpdate = afterUpdate || _.identity;
+    const xAfterUpdate = afterUpdate || ((x) => x);
     const afterUpdateIterator = function () {
         xAfterUpdate(this);
     };

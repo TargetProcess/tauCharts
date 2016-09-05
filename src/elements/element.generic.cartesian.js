@@ -181,7 +181,7 @@ export class GenericCartesian extends Element {
                         .call(drawElement);
                 });
         };
-
+     
         var groups = _.groupBy(this.data(), self.screenModel.group);
         var fibers = Object
             .keys(groups)
