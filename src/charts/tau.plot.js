@@ -3,6 +3,7 @@ import {Emitter} from '../event';
 import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
+import {d3_transition as transition} from '../utils/d3-decorators';
 import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
@@ -20,6 +21,8 @@ import {CSS_PREFIX} from '../const';
 import {GPL} from './tau.gpl';
 import {default as _} from 'underscore';
 import {default as d3} from 'd3';
+var selectOrAppend = utilsDom.selectOrAppend;
+
 export class Plot extends Emitter {
     constructor(config) {
         super();
@@ -241,7 +244,9 @@ export class Plot extends Emitter {
             throw new Error('Target element not found');
         }
 
-        targetNode.appendChild(this._layout.layout);
+        if (this._layout.layout.parentNode !== targetNode) {
+            targetNode.appendChild(this._layout.layout);
+        }
 
         var content = this._layout.content;
 
@@ -252,9 +257,12 @@ export class Plot extends Emitter {
 
         var size = _.clone(xSize) || {};
         if (!size.width || !size.height) {
+            let {scrollLeft, scrollTop} = content.parentElement;
             content.style.display = 'none';
             size = _.defaults(size, utilsDom.getContainerSize(content.parentNode));
             content.style.display = '';
+            content.parentElement.scrollLeft = scrollLeft;
+            content.parentElement.scrollTop = scrollTop;
             // TODO: fix this issue
             if (!size.height) {
                 size.height = utilsDom.getContainerSize(this._layout.layout).height;
@@ -287,25 +295,10 @@ export class Plot extends Emitter {
 
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
-        var attr = {
-            class: (`${CSS_PREFIX}svg`),
-            width: newSize.width,
-            height: newSize.height
-        };
-
-        var xSvg = d3Target
-            .selectAll('svg')
-            .data([1]);
-        xSvg.attr(attr);
-        xSvg.enter()
-            .append('svg')
-            .attr(attr)
-            .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
 
         var scenario = xGpl.getDrawScenario({
             allocateRect: () => ({
-                slot: (() => d3Target.select('.frame-root')),
+                slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
                 left: 0,
                 top: 0,
@@ -316,6 +309,35 @@ export class Plot extends Emitter {
             })
         });
 
+        var frameRootId = scenario[0].config.uid;
+        var svg = selectOrAppend(d3Target, `svg`).attr({
+            class: `${CSS_PREFIX}svg`,
+            width: newSize.width,
+            height: newSize.height
+        });
+        this._svg = svg.node();
+        this.fire('beforerender', this._svg);
+        var roots = svg.selectAll('g.frame-root')
+            .data([frameRootId], x => x);
+
+        // NOTE: Fade out removed root, fade-in if removing interrupted.
+        roots.enter()
+            .append('g')
+            .classed(`${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`, true);
+        roots
+            .call((selection) => {
+                selection.classed('tau-active', true);
+                transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
+                    .attr('opacity', 1);
+            });
+        roots.exit()
+            .call((selection) => {
+                selection.classed('tau-active', false);
+                transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
+                    .attr('opacity', 1e-6)
+                    .remove();
+            });
+
         scenario.forEach((item) => {
             item.draw();
             this.onUnitDraw(item.node());
@@ -323,7 +345,6 @@ export class Plot extends Emitter {
 
         // TODO: Render panels before chart, to
         // prevent chart size shrink. Use some other event.
-        this._svg = xSvg.node();
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
 

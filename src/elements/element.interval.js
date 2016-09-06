@@ -201,7 +201,7 @@ export class Interval extends Element {
         var elements = options
             .container
             .selectAll('.frame')
-            .data(fibers);
+            .data(fibers, (d) => modelGoG.group(d[0]));
         elements
             .exit()
             .remove();

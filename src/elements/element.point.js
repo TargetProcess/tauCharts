@@ -2,9 +2,8 @@ import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
-import {d3_animationInterceptor} from '../utils/d3-decorators';
+import {d3_transition} from '../utils/d3-decorators';
 import {default as _} from 'underscore';
-import {default as d3} from 'd3';
 
 export class Point extends Element {
 
@@ -131,6 +130,9 @@ export class Point extends Element {
         var self = this;
 
         var options = this.config.options;
+        var transition = (sel) => {
+            return d3_transition(sel, this.config.guide.animationSpeed);
+        };
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
@@ -139,15 +141,15 @@ export class Point extends Element {
         var modelGoG = this.walkFrames(frames);
         self.screenModel = modelGoG.toScreenModel();
         var kRound = 10000;
-        var d3Attrs = {
-            r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
-            cx: ((d) => self.screenModel.x(d)),
-            cy: ((d) => self.screenModel.y(d)),
+        var circleAttrs = {
             fill: ((d) => self.screenModel.color(d)),
             class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
         };
-
-        var createUpdateFunc = d3_animationInterceptor;
+        var circleTransAttrs = {
+            r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
+            cx: ((d) => self.screenModel.x(d)),
+            cy: ((d) => self.screenModel.y(d))
+        };
 
         var updateGroups = function () {
 
@@ -156,19 +158,22 @@ export class Point extends Element {
                     var dots = this
                         .selectAll('circle')
                         .data((fiber) => fiber, self.screenModel.id);
-                    dots.exit()
-                        .call(createUpdateFunc(
-                            self.config.guide.animationSpeed,
-                            null,
-                            {r: 0},
-                            (node) => d3.select(node).remove()));
-                    dots.call(createUpdateFunc(self.config.guide.animationSpeed, null, d3Attrs));
-                    dots.enter()
-                        .append('circle')
-                        .call(createUpdateFunc(self.config.guide.animationSpeed, {r: 0}, d3Attrs));
+
+                    transition(dots.enter().append('circle').attr(circleAttrs))
+                        .attr(circleTransAttrs);
+
+                    transition(dots.attr(circleAttrs))
+                        .attr(circleTransAttrs);
+
+                    transition(dots.exit())
+                        .attr({r: 0})
+                        .remove();
 
                     self.subscribe(dots);
                 });
+
+            transition(this)
+                .attr('opacity', 1);
         };
 
         var groups = _.groupBy(fullData, self.screenModel.group);
@@ -178,18 +183,30 @@ export class Point extends Element {
 
         var frameGroups = options.container
             .selectAll('.frame')
-            .data(fibers);
-        frameGroups
-            .exit()
-            .remove();
-        frameGroups
-            .call(updateGroups);
+            .data(fibers, (f) => self.screenModel.group(f[0]));
+
         frameGroups
             .enter()
             .append('g')
+            .attr('opacity', 0)
             .call(updateGroups);
 
-        self.subscribe(new LayerLabels(modelGoG, this.isHorizontal, this.config.guide.label, options).draw(fibers));
+        frameGroups
+            .call(updateGroups);
+
+        transition(frameGroups.exit())
+            .attr('opacity', 0)
+            .remove()
+            .selectAll('circle')
+            .attr('r', 0);
+
+        self.subscribe(
+            new LayerLabels(
+                modelGoG,
+                this.isHorizontal,
+                this.config.guide.label, options
+            ).draw(fibers)
+        );
     }
 
     highlight(filter) {

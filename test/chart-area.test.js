@@ -15,6 +15,7 @@ define(function (require) {
 
         afterEach(function () {
             element.parentNode.removeChild(element);
+            testUtils.destroyCharts();
         });
 
         //it('should convert to PATH by default', function () {

@@ -202,6 +202,14 @@ define(function (require) {
         }
     };
 
+    function destroyCharts() {
+        tauCharts.Chart.winAware
+            .slice(0)
+            .forEach(function (chart) {
+                chart.destroy();
+            });
+    }
+
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,
@@ -222,6 +230,7 @@ define(function (require) {
                 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             element.dispatchEvent(evt);
         },
-        noScrollStyle
+        noScrollStyle,
+        destroyCharts
     };
 });
