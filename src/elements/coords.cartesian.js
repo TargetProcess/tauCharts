@@ -303,7 +303,6 @@ export class Cartesian extends Element {
 
     _getAxisSelector(scale) {
         var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-        // return `g.tau-${isHorizontal ? 'x' : 'y'}Axis`;
         return `g.${isHorizontal ? 'x' : 'y'}.axis`;
     }
 
