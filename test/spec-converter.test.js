@@ -133,18 +133,25 @@ define(function (require) {
                                         "params": []
                                     },
                                     "namespace": "chart",
-                                    "x": "x_date",
-                                    "y": "y_count",
                                     "guide": {
+                                        "animationSpeed": 0,
                                         "x": {},
                                         "y": {}
-                                    }
+                                    },
+                                    "x": "x_date",
+                                    "y": "y_count"
                                 }
                             ],
-                            "namespace": "chart"
+                            "namespace": "chart",
+                            "guide": {
+                                "animationSpeed": 0
+                            }
                         }
                     ],
-                    "namespace": "chart"
+                    "namespace": "chart",
+                    "guide": {
+                        "animationSpeed": 0
+                    }
                 }
             };
 
@@ -280,7 +287,8 @@ define(function (require) {
                     "y": "y_proj",
                     "guide": {
                         "x": {"tickPeriod": "week"},
-                        "y": {"tickLabel": "name"}
+                        "y": {"tickLabel": "name"},
+                        "animationSpeed": 0
                     },
                     "expression": {
                         "inherit": false,
@@ -309,15 +317,19 @@ define(function (require) {
                                         "params": []
                                     },
                                     "namespace": "chart",
-                                    "x": "x_date",
-                                    "y": "y_count",
                                     "guide": {
+                                        "animationSpeed": 0,
                                         "x": {},
                                         "y": {}
-                                    }
+                                    },
+                                    "x": "x_date",
+                                    "y": "y_count"
                                 }
                             ],
-                            "namespace": "chart"
+                            "namespace": "chart",
+                            "guide": {
+                                "animationSpeed": 0
+                            }
                         }
                     ],
                     "namespace": "chart"

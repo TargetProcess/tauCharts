@@ -39,6 +39,7 @@ define(function(require){
 
             assert.equal(facetSpec.errors(bar.getSpec()), false, 'spec right');
             assert.equal(bar.getSpec().unit.units[0].units[0].flip, false, 'spec right');
+            bar.destroy();
         })
     });
 
@@ -61,6 +62,7 @@ define(function(require){
 
             assert.equal(facetSpec.errors(bar.getSpec()), false, 'spec right');
             assert.equal(bar.getSpec().unit.units[0].units[0].flip, false, 'spec right');
+            bar.destroy();
         });
     });
 

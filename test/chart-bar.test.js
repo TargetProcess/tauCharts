@@ -19,6 +19,7 @@ define(function(require){
             });
             assert.equal(schemes.barGPL.errors(bar.getSpec()), false, 'spec right');
             assert.equal(bar.getSpec().unit.units[0].flip, false, 'spec right');
+            bar.destroy();
         });
     });
 

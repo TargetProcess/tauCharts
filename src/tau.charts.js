@@ -132,7 +132,7 @@ var api = {
 
         getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
-        getScrollBarWidth: _.memoize(utilsDom.getScrollbarWidth),
+        getScrollbarSize: utilsDom.getScrollbarSize,
 
         xAxisTickLabelLimit: 150,
         yAxisTickLabelLimit: 150,
@@ -259,5 +259,5 @@ api.chartTypesRegistry = chartTypesRegistry
 
 /* global VERSION:false */
 var version = VERSION;
-
 export {GPL, Plot, Chart, __api__, api, version};
+export default {GPL, Plot, Chart, __api__, api, version};

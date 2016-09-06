@@ -2,6 +2,7 @@ define(function (require) {
     var assert = require('chai').assert;
     var schemes = require('schemes');
     var tauChart = require('src/tau.charts');
+    var testUtils = require('testUtils');
     describe('scatter plot chart', function () {
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6},
@@ -31,6 +32,7 @@ define(function (require) {
 
         afterEach(function () {
             element.parentNode.removeChild(element);
+            testUtils.destroyCharts();
         });
 
         it('point size should not depend on facet segment size', function () {

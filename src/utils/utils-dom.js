@@ -4,6 +4,9 @@
 import {default as d3} from 'd3';
 var tempDiv = document.createElement('div');
 import {default as _} from 'underscore';
+import WeakMap from 'core-js/library/fn/weak-map';
+var scrollbarSizes = new WeakMap();
+
 var utilsDom = {
     appendTo: function (el, container) {
         var node;
@@ -16,21 +19,43 @@ var utilsDom = {
         container.appendChild(node);
         return node;
     },
-    getScrollbarWidth: function () {
-        var div = document.createElement('div');
-        div.style.overflow = 'scroll';
-        div.style.visibility = 'hidden';
-        div.style.position = 'absolute';
-        div.style.width = '100px';
-        div.style.height = '100px';
+    getScrollbarSize: function (container) {
+        if (scrollbarSizes.has(container)) {
+            return scrollbarSizes.get(container);
+        }
+        var initialOverflow = container.style.overflow;
+        container.style.overflow = 'scroll';
+        var size = {
+            width: (container.offsetWidth - container.clientWidth),
+            height: (container.offsetHeight - container.clientHeight)
+        };
+        container.style.overflow = initialOverflow;
+        scrollbarSizes.set(container, size);
+        return size;
+    },
 
-        document.body.appendChild(div);
+    /**
+     * Sets padding as a placeholder for scrollbars.
+     * @param el Target element.
+     * @param [direction=both] Scrollbar direction ("horizontal", "vertical" or "both").
+     */
+    setScrollPadding: function (el, direction) {
+        direction = direction || 'both';
+        var isBottom = direction === 'horizontal' || direction === 'both';
+        var isRight = direction === 'vertical' || direction === 'both';
 
-        var r = div.offsetWidth - div.clientWidth;
+        var scrollbars = utilsDom.getScrollbarSize(el);
+        var initialPaddingRight = isRight ? `${scrollbars.width}px` : '0';
+        var initialPaddingBottom = isBottom ? `${scrollbars.height}px` : '0';
+        el.style.padding = `0 ${initialPaddingRight} ${initialPaddingBottom} 0`;
 
-        document.body.removeChild(div);
+        var hasBottomScroll = el.scrollWidth > el.clientWidth;
+        var hasRightScroll = el.scrollHeight > el.clientHeight;
+        var paddingRight = isRight && !hasRightScroll ? `${scrollbars.width}px` : '0';
+        var paddingBottom = isBottom && !hasBottomScroll ? `${scrollbars.height}px` : '0';
+        el.style.padding = `0 ${paddingRight} ${paddingBottom} 0`;
 
-        return r;
+        return scrollbars;
     },
 
     getStyle: function (el, prop) {
@@ -151,6 +176,109 @@ var utilsDom = {
 
             return size;
         },
-        (char, props) => `${char}_${JSON.stringify(props)}`)
+        (char, props) => `${char}_${JSON.stringify(props)}`
+    ),
+
+    /**
+     * Searches for immediate child element by specified selector.
+     * If missing, creates an element that matches the selector.
+     */
+    selectOrAppend: function (container, selector) {
+        var delimitersActions = {
+            '.': (text, el) => el.classed(text, true),
+            '#': (text, el) => el.attr('id', text)
+        };
+        var delimiters = Object.keys(delimitersActions).join('');
+
+        if (selector.indexOf(' ') >= 0) {
+            throw new Error('Selector should not contain whitespaces.');
+        }
+        if (delimiters.indexOf(selector[0]) >= 0) {
+            throw new Error('Selector must have tag at the beginning.');
+        }
+
+        var isElement = (container instanceof Element);
+        if (isElement) {
+            container = d3.select(container);
+        }
+        var result = (d3El) => (isElement ? d3El.node() : d3El);
+
+        // Search for existing immediate child
+        var child = container.selectAll(selector)
+            .filter(function () { return this.parentNode === container.node(); })
+            .filter((d, i) => i === 0);
+        if (!child.empty()) {
+            return result(child);
+        }
+
+        // Create new element
+        var element;
+        var lastFoundIndex = -1;
+        var lastFoundDelimiter = null;
+        for (var i = 1, l = selector.length, text; i <= l; i++) {
+            if (i == l || delimiters.indexOf(selector[i]) >= 0) {
+                text = selector.substring(lastFoundIndex + 1, i);
+                if (lastFoundIndex < 0) {
+                    element = container.append(text);
+                } else {
+                    delimitersActions[lastFoundDelimiter].call(null, text, element);
+                }
+                lastFoundDelimiter = selector[i];
+                lastFoundIndex = i;
+            }
+        }
+
+        return result(element);
+    },
+
+    selectImmediate: function (container, selector) {
+        return utilsDom.selectAllImmediate(container, selector)[0] || null;
+    },
+
+    selectAllImmediate: function (container, selector) {
+        var results = [];
+        var matches = (
+            Element.prototype.matches ||
+            Element.prototype.matchesSelector ||
+            Element.prototype.msMatchesSelector ||
+            Element.prototype.webkitMatchesSelector
+        );
+        for (
+            var child = container.firstElementChild;
+            Boolean(child);
+            child = child.nextElementSibling
+        ) {
+            if (matches.call(child, selector)) {
+                results.push(child);
+            }
+        }
+        return results;
+    },
+
+    /**
+     * Generates "class" attribute string.
+     */
+    classes: function (...args) {
+        var classes = [];
+        args.filter((c) => Boolean(c))
+            .forEach((c) => {
+                if (typeof c === 'string') {
+                    classes.push(c);
+                } else if (typeof c === 'object') {
+                    classes.push.apply(
+                        classes,
+                        Object.keys(c)
+                            .filter((key) => Boolean(c[key]))
+                    );
+                }
+            });
+        return (
+            _.uniq(classes)
+                .join(' ')
+                .trim()
+                .replace(/\s{2,}/g, ' ')
+        );
+    }
 };
+// TODO: Export functions separately.
 export {utilsDom};

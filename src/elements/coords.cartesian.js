@@ -2,17 +2,21 @@ import {default as d3} from 'd3';
 import {default as _} from 'underscore';
 import {Element} from './element';
 import {CartesianModel} from '../models/cartesian';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
+    d3_transition as transition,
+    d3_selectAllImmediate as selectAllImmediate,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_bottom_line,
+    d3_decorator_fix_axis_start_line,
     d3_decorator_fix_horizontal_axis_ticks_overflow,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoid_labels_collisions
-    } from '../utils/d3-decorators';
+} from '../utils/d3-decorators';
+var selectOrAppend = utilsDom.selectOrAppend;
 
 export class Cartesian extends Element {
 
@@ -138,7 +142,7 @@ export class Cartesian extends Element {
     allocateRect(k) {
         var model = this.screenModel;
         return {
-            slot: ((uid) => this.config.options.container.select(`.uid_${uid}`)),
+            slot: ((uid) => this.config.options.container.selectAll(`.uid_${uid}`)),
             left: (model.xi(k) - model.sizeX(k) / 2),
             top: (model.yi(k) - model.sizeY(k) / 2),
             width: (model.sizeX(k)),
@@ -170,13 +174,11 @@ export class Cartesian extends Element {
         node.x.guide.label.size = innerWidth;
         node.y.guide.label.size = innerHeight;
 
-        options
-            .container
+        // TODO: Should we modify transform of a container here or create own container?
+        (options.container.attr('transform') ?
+            transition(options.container, this.config.guide.animationSpeed, 'cartesianContainerTransform') :
+            options.container)
             .attr('transform', utilsDraw.translate(this.L, this.T));
-
-        // take into account reposition during resize by orthogonal axis
-        var hashX = node.x.getHash() + innerHeight;
-        var hashY = node.y.getHash() + innerWidth;
 
         if (!node.x.guide.hide) {
             var orientX = node.x.guide.scaleOrient;
@@ -184,14 +186,14 @@ export class Cartesian extends Element {
                 [0, 0 - node.guide.x.padding] :
                 [0, innerHeight + node.guide.x.padding]);
 
-            this._fnDrawDimAxis(
+            this._drawDimAxis(
                 options.container,
                 node.x,
                 positionX,
-                innerWidth,
-                (`${options.frameId}x`),
-                hashX
+                innerWidth
             );
+        } else {
+            this._removeDimAxis(options.container, node.x);
         }
 
         if (!node.y.guide.hide) {
@@ -200,34 +202,35 @@ export class Cartesian extends Element {
                 [innerWidth + node.guide.y.padding, 0] :
                 [0 - node.guide.y.padding, 0]);
 
-            this._fnDrawDimAxis(
+            this._drawDimAxis(
                 options.container,
                 node.y,
                 positionY,
-                innerHeight,
-                (`${options.frameId}y`),
-                hashY
+                innerHeight
             );
+        } else {
+            this._removeDimAxis(options.container, node.y);
         }
 
         var xdata = frames.reduce((memo, f) => {
             return memo.concat((f.units || []).map((unit) => unit.uid));
         }, []);
 
-        var xcells = this
-            ._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY)
-            .selectAll('.cell')
+        var grid = this._drawGrid(options.container, node, innerWidth, innerHeight, options);
+        var xcells = selectAllImmediate(grid, '.cell')
             .data(xdata, x => x);
-        xcells
-            .exit()
-            .remove();
         xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell uid_${d}`));
+            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
+        transition(xcells.classed('tau-active', true), this.config.guide.animationSpeed)
+            .attr('opacity', 1);
+        transition(xcells.exit().classed('tau-active', false), this.config.guide.animationSpeed)
+            .attr('opacity', 1e-6)
+            .remove();
     }
 
-    _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {
+    _drawDimAxis(container, scale, position, size) {
 
         var axisScale = d3.svg
             .axis()
@@ -240,66 +243,93 @@ export class Cartesian extends Element {
             axisScale.tickFormat(formatter);
         }
 
-        var axis = container
-            .selectAll('.axis_' + frameId)
-            .data([uniqueHash], (x) => x);
-        axis.exit()
-            .remove();
-        axis.enter()
-            .append('g')
-            .attr('class', scale.guide.cssClass + ' axis_' + frameId)
-            .attr('transform', utilsDraw.translate(...position))
-            .call(function (refAxisNode) {
-                if (!refAxisNode.empty()) {
+        var animationSpeed = this.config.guide.animationSpeed;
 
-                    axisScale.call(this, refAxisNode);
+        selectOrAppend(container, this._getAxisSelector(scale))
+            .classed('tau-active', true)
+            .classed(scale.guide.cssClass, true)
+            .call((axis) => {
 
-                    var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-                    var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                    if (prettifyTick) {
-                        d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
-                    }
+                var transAxis = transition(axis, animationSpeed, 'axisTransition');
+                var prevAxisTranslate = axis.attr('transform');
+                var nextAxisTranslate = utilsDraw.translate(...position);
+                if (nextAxisTranslate !== prevAxisTranslate) {
+                    (prevAxisTranslate ? transAxis : axis).attr('transform', utilsDraw.translate(...position));
+                }
+                transAxis.call(axisScale);
 
-                    d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal, scale);
+                var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+                var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
+                if (prettifyTick) {
+                    d3_decorator_prettify_categorical_axis_ticks(
+                        transAxis,
+                        scale,
+                        isHorizontal,
+                        animationSpeed
+                    );
+                }
 
+                d3_decorator_wrap_tick_label(axis, transAxis, scale.guide, isHorizontal, scale);
+
+                if (!scale.guide.label.hide) {
+                    d3_decorator_prettify_axis_label(
+                        axis,
+                        scale.guide.label,
+                        isHorizontal,
+                        size,
+                        animationSpeed
+                    );
+                }
+
+                var onTransitionEnd = () => {
                     if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
-                    }
-
-                    if (!scale.guide.label.hide) {
-                        d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
+                        d3_decorator_avoid_labels_collisions(axis, isHorizontal);
                     }
 
                     if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
+                        d3_decorator_fix_horizontal_axis_ticks_overflow(axis);
                     }
+                };
+                // NOTE: As far as floating axes transition overrides current,
+                // transition `end` event cannot be used. So using `setTimeout`.
+                // transAxis.onTransitionEnd(onTransitionEnd);
+                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
+                clearTimeout(this[timeoutField]);
+                if (animationSpeed > 0) {
+                    this[timeoutField] = setTimeout(onTransitionEnd, animationSpeed);
+                } else {
+                    onTransitionEnd();
                 }
             });
     }
 
-    _fnDrawGrid(container, node, height, width, frameId, uniqueHash) {
-
-        var grid = container
-            .selectAll('.grid_' + frameId)
-            .data([uniqueHash], (x) => x);
-        grid.exit()
+    _removeDimAxis(container, scale) {
+        var axis = selectAllImmediate(container, this._getAxisSelector(scale))
+            .classed('tau-active', false);
+        transition(axis, this.config.guide.animationSpeed)
+            .attr('opacity', 1e-6)
             .remove();
-        grid.enter()
-            .append('g')
-            .attr('class', 'grid grid_' + frameId)
+    }
+
+    _getAxisSelector(scale) {
+        var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+        return `g.${isHorizontal ? 'x' : 'y'}.axis`;
+    }
+
+    _drawGrid(container, node, width, height) {
+
+        var grid = selectOrAppend(container, `g.grid`)
             .attr('transform', utilsDraw.translate(0, 0))
             .call((selection) => {
 
-                if (selection.empty()) {
-                    return;
-                }
-
                 var grid = selection;
+
+                var animationSpeed = this.config.guide.animationSpeed;
 
                 var linesOptions = (node.guide.showGridLines || '').toLowerCase();
                 if (linesOptions.length > 0) {
 
-                    var gridLines = grid.append('g').attr('class', 'grid-lines');
+                    var gridLines = selectOrAppend(grid, 'g.grid-lines');
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
@@ -316,28 +346,29 @@ export class Cartesian extends Element {
                             xGridAxis.tickFormat(formatter);
                         }
 
-                        var xGridLines = gridLines
-                            .append('g')
-                            .attr('class', 'grid-lines-x')
+                        var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
+                        var xGridLinesTrans = transition(xGridLines, animationSpeed)
                             .call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(xGridLines, xScale, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(
+                                xGridLinesTrans,
+                                xScale,
+                                isHorizontal,
+                                animationSpeed
+                            );
                         }
 
-                        var firstXGridLine = xGridLines.select('g.tick');
-                        if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
-                            var zeroNode = firstXGridLine.node().cloneNode(true);
-                            gridLines.node().appendChild(zeroNode);
-                            d3.select(zeroNode)
-                                .attr('class', 'border')
-                                .attr('transform', utilsDraw.translate(0, 0))
-                                .select('line')
-                                .attr('x1', 0)
-                                .attr('x2', 0);
-                        }
+                        let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
+                        d3_decorator_fix_axis_start_line(
+                            extraGridLines,
+                            isHorizontal,
+                            width,
+                            height,
+                            animationSpeed
+                        );
                     }
 
                     if ((linesOptions.indexOf('y') > -1)) {
@@ -355,21 +386,32 @@ export class Cartesian extends Element {
                             yGridAxis.tickFormat(formatter);
                         }
 
-                        var yGridLines = gridLines
-                            .append('g')
-                            .attr('class', 'grid-lines-y')
+                        var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
+                        var yGridLinesTrans = transition(yGridLines, animationSpeed)
                             .call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(yGridLines, yScale, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(
+                                yGridLinesTrans,
+                                yScale,
+                                isHorizontal,
+                                animationSpeed
+                            );
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];
                         let fixBottomLine = _.contains(fixLineScales, yScale.scaleType);
                         if (fixBottomLine) {
-                            d3_decorator_fix_axis_bottom_line(yGridLines, height, (yScale.scaleType === 'time'));
+                            let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
+                            d3_decorator_fix_axis_start_line(
+                                extraGridLines,
+                                isHorizontal,
+                                width,
+                                height,
+                                animationSpeed
+                            );
                         }
                     }
 

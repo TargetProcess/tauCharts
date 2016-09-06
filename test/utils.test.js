@@ -3,6 +3,8 @@ define(function (require) {
     var assert = require('chai').assert;
     var utils = require('src/utils/utils').utils;
     var drawUtils = require('src/utils/utils-draw').utilsDraw;
+    var domUtils = require('src/utils/utils-dom').utilsDom;
+    var d3 = require('d3');
     var d3_decorator_avoid_labels_collisions = require('src/utils/d3-decorators').d3_decorator_avoid_labels_collisions;
 
     var check = function (samples) {
@@ -263,6 +265,57 @@ define(function (require) {
                 ['19', '-10'],
                 ['-3', '-10']
             ], 'text y after decorator');
+        });
+    });
+
+    describe('utils-dom', function () {
+        var node = document.createElement('div');
+        node.innerHTML = [
+            '<span class="x" id="x">',
+            '  <a class="y" id="y"></a>',
+            '  <a class="z"></a>',
+            '</span>',
+            '<a class="z" id="z1"></a>',
+            '<a class="z" id="z2"></a>'
+        ].join('\n');
+
+        it('should select immediate child or create new', function () {
+            var n0 = node.querySelector('#x');
+            var n1 = domUtils.selectOrAppend(node, 'span#x.x');
+            expect(n1).to.equal(n0);
+            n1 = domUtils.selectOrAppend(d3.select(node), 'span#x.x').node();
+            expect(n1).to.equal(n0);
+
+            var n2 = domUtils.selectOrAppend(d3.select(node), 'a.y').node();
+            expect(n2.id).to.equal('');
+            expect(n2.getAttribute('class')).to.equal('y');
+            expect(n2.tagName).to.equal('A');
+
+            var n3 = domUtils.selectOrAppend(n2, 'p#p1.p2');
+            expect(n3.id).to.equal('p1');
+            expect(n3.getAttribute('class')).to.equal('p2');
+            expect(n3.tagName).to.equal('P');
+
+            var n4 = domUtils.selectAllImmediate(node, '.z');
+            expect(n4.length).to.equal(2);
+            expect(n4[0].id).to.equal('z1');
+            expect(n4[1].id).to.equal('z2');
+
+            var n5 = domUtils.selectImmediate(node, '.z');
+            expect(n5.id).to.equal('z1');
+
+            expect(function () {
+                domUtils.selectOrAppend(d3.select(node), '.x');
+            }).to.throw(/Selector must have tag at the beginning/);
+
+            expect(function () {
+                domUtils.selectOrAppend(d3.select(node), '.x .y');
+            }).to.throw(/Selector should not contain whitespaces/);
+        });
+
+        it('should create class name', function () {
+            var classes = domUtils.classes('x', null, {y: true, z: false}, 'a  b ');
+            expect(classes).to.equal('x y a b');
         });
     });
 });
