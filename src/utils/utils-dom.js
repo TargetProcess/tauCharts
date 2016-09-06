@@ -4,6 +4,9 @@
 import {default as d3} from 'd3';
 var tempDiv = document.createElement('div');
 import {default as _} from 'underscore';
+import WeakMap from 'core-js/library/fn/weak-map';
+var scrollbarSizes = new WeakMap();
+
 var utilsDom = {
     appendTo: function (el, container) {
         var node;
@@ -16,21 +19,43 @@ var utilsDom = {
         container.appendChild(node);
         return node;
     },
-    getScrollbarWidth: function () {
-        var div = document.createElement('div');
-        div.style.overflow = 'scroll';
-        div.style.visibility = 'hidden';
-        div.style.position = 'absolute';
-        div.style.width = '100px';
-        div.style.height = '100px';
+    getScrollbarSize: function (container) {
+        if (scrollbarSizes.has(container)) {
+            return scrollbarSizes.get(container);
+        }
+        var initialOverflow = container.style.overflow;
+        container.style.overflow = 'scroll';
+        var size = {
+            width: (container.offsetWidth - container.clientWidth),
+            height: (container.offsetHeight - container.clientHeight)
+        };
+        container.style.overflow = initialOverflow;
+        scrollbarSizes.set(container, size);
+        return size;
+    },
 
-        document.body.appendChild(div);
+    /**
+     * Sets padding as a placeholder for scrollbars.
+     * @param el Target element.
+     * @param [direction=both] Scrollbar direction ("horizontal", "vertical" or "both").
+     */
+    setScrollPadding: function (el, direction) {
+        direction = direction || 'both';
+        var isBottom = direction === 'horizontal' || direction === 'both';
+        var isRight = direction === 'vertical' || direction === 'both';
 
-        var r = div.offsetWidth - div.clientWidth;
+        var scrollbars = utilsDom.getScrollbarSize(el);
+        var initialPaddingRight = isRight ? `${scrollbars.width}px` : '0';
+        var initialPaddingBottom = isBottom ? `${scrollbars.height}px` : '0';
+        el.style.padding = `0 ${initialPaddingRight} ${initialPaddingBottom} 0`;
 
-        document.body.removeChild(div);
+        var hasBottomScroll = el.scrollWidth > el.clientWidth;
+        var hasRightScroll = el.scrollHeight > el.clientHeight;
+        var paddingRight = isRight && !hasRightScroll ? `${scrollbars.width}px` : '0';
+        var paddingBottom = isBottom && !hasBottomScroll ? `${scrollbars.height}px` : '0';
+        el.style.padding = `0 ${paddingRight} ${paddingBottom} 0`;
 
-        return r;
+        return scrollbars;
     },
 
     getStyle: function (el, prop) {
@@ -153,4 +178,5 @@ var utilsDom = {
         },
         (char, props) => `${char}_${JSON.stringify(props)}`)
 };
+// TODO: Export functions separately.
 export {utilsDom};

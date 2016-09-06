@@ -22,8 +22,6 @@
 
         var shadowStdDev = 2;
 
-        var scrollBarWidth = tauCharts.api.globalSettings.getScrollBarWidth();
-
         var mmin = function (arr) {
             return Math.min.apply(null, arr);
         };
@@ -112,7 +110,7 @@
             return g;
         };
 
-        var extractXAxesNew = function (scrollableArea, srcSvg, xSel) {
+        var extractXAxesNew = function (scrollableArea, scrollbarHeight, srcSvg, xSel) {
             var height = srcSvg.attr('height');
             var width = srcSvg.attr('width');
             var info = extractAxesInfo(xSel);
@@ -122,7 +120,7 @@
 
             var minY = mmin(ys);
 
-            var axisHeight = height - minY + 1 + scrollBarWidth;
+            var axisHeight = height - minY + 1 + scrollbarHeight;
 
             axes.forEach(function (axisNode, i) {
                 d3
@@ -193,12 +191,12 @@
             };
         };
 
-        var extractCenter = function (scrollableArea, srcSvg, xSel, ySel) {
+        var extractCenter = function (scrollableArea, scrollbarHeight, srcSvg, xSel, ySel) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
             var w = mmax(extractAxesInfo(ySel).xs) + 1;
             var y = mmin(extractAxesInfo(xSel).ys);
-            var h = height - y + 1 + scrollBarWidth;
+            var h = height - y + 1 + scrollbarHeight;
             var x = 0;
 
             var shadowSize = shadowStdDev * 2;
@@ -326,10 +324,12 @@
                     show(xSel);
                     show(ySel);
 
+                    var s = tauCharts.api.globalSettings.getScrollbarSize(root);
+
                     this.handlers = [
-                        extractXAxesNew(root, srcSvg, xSel),
+                        extractXAxesNew(root, s.height, srcSvg, xSel),
                         extractYAxesNew(root, srcSvg, ySel),
-                        extractCenter(root, srcSvg, xSel, ySel)
+                        extractCenter(root, s.height, srcSvg, xSel, ySel)
                     ];
 
                     hide(xSel);

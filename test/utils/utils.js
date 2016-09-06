@@ -16,8 +16,8 @@ define(function (require) {
         layoutEngine: '', // 'EXTRACT'
         autoRatio: true,
 
-        getScrollBarWidth: function () {
-            return 10;
+        getScrollbarSize: function () {
+            return {width: 10, height: 10};
         },
 
         xAxisTickLabelLimit: 100,
@@ -182,6 +182,26 @@ define(function (require) {
         return originTimeout;
     }
 
+    // NOTE: To prevent layout jumps when content changes and scrollbar appears,
+    // currently padding is added as a placeholder for missing scrollbar.
+    var noScrollStyle = {
+        create: function () {
+            var style = document.getElementById('noScrollStyle');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'noScrollStyle';
+                style.textContent = '.graphical-report__layout__content, .graphical-report__layout__sidebar-right { padding: 0 !important; }';
+                document.head.appendChild(style);
+            }
+        },
+        remove: function () {
+            var style = document.getElementById('noScrollStyle');
+            if (style) {
+                document.head.removeChild(style);
+            }
+        }
+    };
+
     return {
         toLocalDate: toLocalDate,
         describePlot: describePlot,
@@ -201,6 +221,7 @@ define(function (require) {
             evt.initMouseEvent(name, true, true, window,
                 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             element.dispatchEvent(evt);
-        }
+        },
+        noScrollStyle
     };
 });
