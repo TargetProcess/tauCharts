@@ -1,20 +1,20 @@
-window.samples.push({
+dev.spec({
 
-    name: 'Amount of olympic medals per athlete age',
-    desc: 'Same data in one place. Sport encoded by color',
-    spec: {
+    _name: 'Amount of olympic medals per athlete age',
+    _desc: 'Same data in one place. Sport encoded by color',
 
-        type: 'line',
-        y: ['SUM(Total Medals)'],
-        x: ['Age'],
-        color: 'Sport',
+    type: 'line',
+    y: ['SUM(Total Medals)'],
+    x: ['Age'],
+    color: 'Sport',
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')()
-        ],
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')()
+    ],
 
-        data: _(olimpics)
+    data: dev.dataset('olympics', function (data) {
+        return _(data)
             .chain()
             .reduce(function (memo, row) {
                 var key = row['Sport'] + row['Age'];
@@ -32,7 +32,6 @@ window.samples.push({
             },
             {})
             .values()
-            .value()
-
-    }
+            .value();
+    })
 });

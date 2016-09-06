@@ -212,7 +212,7 @@ http://localhost:9000/tauCharts.js
 
 Now you can see some taucharts examples:
 ```
-http://localhost:9000/examples/dev-quick-test.html
+http://localhost:9000/examples/
 ```
 
 To run tests (with hot reload):

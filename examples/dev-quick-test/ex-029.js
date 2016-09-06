@@ -1,4 +1,4 @@
-(function (samples) {
+(function (dev) {
 
     var createSampleGuide = function (xName, yName) {
         return {
@@ -47,7 +47,7 @@
         };
     };
 
-    samples.push({
+    dev.spec({
 
         settings: {
             fitModel: 'none'
@@ -299,4 +299,4 @@
             ]
         }
     });
-})(window.samples);
+})(dev);

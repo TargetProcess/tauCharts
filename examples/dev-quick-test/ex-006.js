@@ -1,4 +1,4 @@
-window.samples.push({
+dev.spec({
 
     type: 'scatterplot',
     x: ['euroEco', 'co2'],

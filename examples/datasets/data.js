@@ -1,4 +1,4 @@
-window.lineData = [
+dev.dataset('lineData', [
     {
         "priority": "High",
         "effort": 1,
@@ -84,9 +84,9 @@ window.lineData = [
         "effort": 21,
         "bugsCount": 12
     }
-];
+]);
 
-window.scatterData = [
+dev.dataset('scatterData', [
     {
         "duration": 20,
         "effort": 10,
@@ -327,4 +327,4 @@ window.scatterData = [
         "timeSpent": 10,
         "priority": "Urgent"
     }
-];
+]);

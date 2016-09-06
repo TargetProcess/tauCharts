@@ -1,6 +1,6 @@
 var now = new Date();
 
-window.samples.push({
+dev.spec({
     type: 'bar',
     flip: true,
     stack: true,
@@ -66,7 +66,7 @@ window.samples.push({
 
 
 
-window.samples.push({
+dev.spec({
 
     type: 'line',
     x: ['x'],
@@ -124,7 +124,7 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.spec({
 
     type: 'line',
     x: ['x'],
@@ -177,7 +177,7 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.spec({
 
     type: 'line',
     x: ['x'],
@@ -227,7 +227,7 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.spec({
 
     sources: {
         '?': {

@@ -1,19 +1,19 @@
-window.samples.push({
+dev.spec({
 
-    name: 'Chart of Fame',
-    desc: 'Explore achievements of belarusian olympic athletes',
-    spec: {
+    _name: 'Chart of Fame',
+    _desc: 'Explore achievements of belarusian olympic athletes',
 
-        type: 'horizontal-bar',
-        y: ['Sport', 'Athlete'],
-        x: ['Total Medals'],
+    type: 'horizontal-bar',
+    y: ['Sport', 'Athlete'],
+    x: ['Total Medals'],
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')()
-        ],
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')()
+    ],
 
-        data: _(olimpics)
+    data: dev.dataset('olympics', function (data) {
+        return _(data)
             .chain()
             .filter(function (row) {
                 return ['Belarus'].indexOf(row['Country']) >= 0;
@@ -29,7 +29,6 @@ window.samples.push({
                 return memo;
             }, {})
             .values()
-            .value()
-
-    }
+            .value();
+    })
 });

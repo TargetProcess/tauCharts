@@ -1,4 +1,4 @@
-window.exoplanets = [
+dev.dataset('exoplanets', [
     {
         "eccentricity": 0,
         "period": 4.95,
@@ -531,4 +531,4 @@ window.exoplanets = [
 ].map(function (row) {
         row["mass"] = parseFloat((row["jupiter mass"] / 0.00315).toFixed(4));
         return row;
-    });
+    }));

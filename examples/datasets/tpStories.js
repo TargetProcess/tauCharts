@@ -1,5 +1,5 @@
-function getUserStories() {
-    return [
+dev.dataset('userStories',
+    [
             {"effort": 1.0000, "name": "Report: how many roles are used in estimation", "team": "Exploited", "endDate": "9/1/2014 3:08:22 AM", "project": "TP2"},
             {"effort": 0.0000, "name": "Followers collection for General", "team": "Alaska", "endDate": "8/27/2014 4:49:32 AM", "project": "TP2"},
             {"effort": 1.0000, "name": "Warning 'No project' is deprecated", "team": "Exploited", "endDate": "8/27/2014 4:50:30 AM", "project": "TP2"},
@@ -474,5 +474,22 @@ function getUserStories() {
             {"effort": 0.0000, "name": "Initial Comet Prototype / SignalR for TargetProcess v.2", "team": "Comet", "endDate": "5/29/2012 4:59:23 AM", "project": "TP3"},
             {"effort": 0.0000, "name": "Team-level permissions", "team": "Multi-Teams", "endDate": "11/15/2012 3:35:35 AM", "project": "TP3"},
             {"effort": 0.0000, "name": "Team/Project Axis Template (UX meeting required)", "team": "Multi-Teams", "endDate": "12/13/2012 3:40:54 AM", "project": "TP3"}
-        ];
-}
+    ].map(function (r, i) {
+        r.cycleTime = r.name.length;
+        var k = i % 2;
+        r.priority = {
+            key: k,
+            val: k ? 'High' : 'Low'
+        };
+
+        r.priorityName = k ? 'High' : 'Low';
+
+        r.severity = k ? 'Must Have' : 'Nice to have';
+
+        if (i === 7) {
+            r.severity = 'Out of index';
+        }
+
+        return r;
+    })
+);

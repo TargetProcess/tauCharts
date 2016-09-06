@@ -1,20 +1,20 @@
-window.samples.push({
+dev.spec({
 
-    name: 'Amount of olympic medals per athlete age in different countries',
-    desc: 'Country as a color',
-    spec: {
+    _name: 'Amount of olympic medals per athlete age in different countries',
+    _desc: 'Country as a color',
 
-        type: 'stacked-bar',
-        y: ['Sport', 'SUM(Total Medals)'],
-        x: ['Age'],
-        color: 'Country',
+    type: 'stacked-bar',
+    y: ['Sport', 'SUM(Total Medals)'],
+    x: ['Age'],
+    color: 'Country',
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')()
-        ],
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')()
+    ],
 
-        data: _(olimpics)
+    data: dev.dataset('olympics', function (data) {
+        return _(data)
             .chain()
             .reduce(function (memo, row) {
                 var key = row['Sport'] + row['Age'] + row['Country'];
@@ -36,7 +36,6 @@ window.samples.push({
             .filter(function (row) {
                 return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
             })
-            .value()
-
-    }
+            .value();
+    })
 });

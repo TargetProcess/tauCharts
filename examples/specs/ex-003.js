@@ -1,23 +1,23 @@
-window.samples.push({
+dev.spec({
 
-    name: 'Compare dynamic of achievements across sports and countries',
-    desc: 'Looks like Germany has a problems in swimming',
-    spec: {
+    _name: 'Compare dynamic of achievements across sports and countries',
+    _desc: 'Looks like Germany has a problems in swimming',
 
-        type: 'scatterplot',
-        x: ['Year'],
-        y: ['Sport', 'Count'],
-        color: 'Country',
+    type: 'scatterplot',
+    x: ['Year'],
+    y: ['Sport', 'Count'],
+    color: 'Country',
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('trendline')(),
-            tauCharts.api.plugins.get('tooltip')({
-                // fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
-            })
-        ],
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('trendline')(),
+        tauCharts.api.plugins.get('tooltip')({
+            // fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
+        })
+    ],
 
-        data: _(olimpics)
+    data: dev.dataset('olympics', function (data) {
+        return _(data)
             .chain()
             .filter(function (row) {
                 return (
@@ -44,6 +44,5 @@ window.samples.push({
             {})
             .values()
             .value()
-
-    }
+    })
 });

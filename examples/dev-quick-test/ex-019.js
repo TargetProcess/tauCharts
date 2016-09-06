@@ -1,7 +1,7 @@
-window.samples.push({
+dev.spec({
 
     layoutEngine: 'EXTRACT',
-    data: rawData,
+    data: dev.dataset('userStories'),
     spec: {
         dimensions: {
             project: { type: 'category' },

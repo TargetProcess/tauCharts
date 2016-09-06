@@ -1,23 +1,23 @@
-window.samples.push({
+dev.spec({
 
-    name: 'Drill down to belarusian canoeing dynamic',
-    desc: 'Looks like the school of champions grows',
-    spec: {
+    _name: 'Drill down to belarusian canoeing dynamic',
+    _desc: 'Looks like the school of champions grows',
 
-        type: 'horizontal-bar',
-        y: ['Sport', 'Athlete'],
-        x: ['FullYear', 'Total Medals'],
+    type: 'horizontal-bar',
+    y: ['Sport', 'Athlete'],
+    x: ['FullYear', 'Total Medals'],
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')()
-        ],
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')()
+    ],
 
-        settings: {
-            fitModel: 'entire-view'
-        },
+    settings: {
+        fitModel: 'entire-view'
+    },
 
-        data: _(olimpics)
+    data: dev.dataset('olympics', function (data) {
+        return _(data)
             .chain()
             .filter(function (row) {
                 return (
@@ -43,7 +43,7 @@ window.samples.push({
                 row['FullYear'] = row['FullYear'].toString();
                 return row;
             })
-            .value()
+            .value();
+    })
 
-    }
 });

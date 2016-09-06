@@ -1,20 +1,20 @@
-window.samples.push({
+dev.spec({
 
-    name: 'Compare USA and Canada in amount of olympic medals per athlete age',
-    desc: 'Looks like colored bar chart is mush better',
-    spec: {
+    _name: 'Compare USA and Canada in amount of olympic medals per athlete age',
+    _desc: 'Looks like colored bar chart is mush better',
 
-        type: 'bar',
-        y: ['Sport', 'SUM(Total Medals)'],
-        x: ['AgeOrdinal'],
-        color: 'Country',
+    type: 'bar',
+    y: ['Sport', 'SUM(Total Medals)'],
+    x: ['AgeOrdinal'],
+    color: 'Country',
 
-        plugins: [
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('tooltip')()
-        ],
+    plugins: [
+        tauCharts.api.plugins.get('legend')(),
+        tauCharts.api.plugins.get('tooltip')()
+    ],
 
-        data: _(olimpics)
+    data: dev.dataset('olympics', function (data) {
+        return _(data)
             .chain()
             .reduce(function (memo, row) {
                 var key = row['Sport'] + row['Age'] + row['Country'];
@@ -42,7 +42,6 @@ window.samples.push({
                 );
             })
             .sortBy('Age')
-            .value()
-
-    }
+            .value();
+    })
 });

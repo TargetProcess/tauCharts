@@ -1,4 +1,4 @@
-window.drops.push({
+dev.drop({
     "title": "My awesome chart",
     "thumbnails": {
         "small": "/api/v1/drops/572c8c43a9315b1300a6d780/thumbnail?drop=276665957ea22cd1c6018cf94dc33e2622278afc&source=1462537079548&config=small",

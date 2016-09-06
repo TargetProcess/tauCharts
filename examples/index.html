@@ -1,154 +1,167 @@
 <!DOCTYPE html>
 <html>
 <meta charset="utf-8">
+
 <head>
+    <!-- dependencies -->
+    <script src="../node_modules/underscore/underscore-min.js"></script>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/d3/d3.min.js"></script>
 
-    <link href="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css" rel="stylesheet" type="text/css"/>
-    <link href="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.normalize.min.css" rel="stylesheet" type="text/css"/>
+    <!-- core -->
+    <script src="http://localhost:9000/tauCharts.js"></script>
+
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <script src="../build/development/plugins/tauCharts.export.js"></script>
+    <script src="../plugins/layers.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/trendline.js"></script>
+    <script src="../plugins/settings.js"></script>
+    <script src="../plugins/annotations.js"></script>
+    <script src="../plugins/parallel-brushing.js"></script>
+    <script src="../plugins/parallel-tooltip.js"></script>
+    <script src="../plugins/geomap-tooltip.js"></script>
+    <script src="../plugins/geomap-legend.js"></script>
+    <script src="../plugins/quick-filter.js"></script>
+    <script src="../plugins/floating-axes.js"></script>
+    <script src="../plugins/box-whiskers.js"></script>
+
+    <!-- css -->
+    <link href="../css/tauCharts.default.css" rel="stylesheet" />
+    <link href="../css/export.default.css" rel="stylesheet" />
+    <link href="../css/legend.default.css" rel="stylesheet" />
+    <link href="../css/tooltip.default.css" rel="stylesheet" />
+    <link href="../css/trendline.default.css" rel="stylesheet" />
+    <link href="../css/annotations.default.css" rel="stylesheet" />
+    <link href="../css/quick-filter.default.css" rel="stylesheet" />
     <style>
-        .cc {
-            display:inline-block;
-            margin:2px 2px 2px 2px;
-            float:left;
-            width: 45%;
-            border: dotted 1px #000;
-            position: relative;
-        }
-
-        .name {
-            text-align: center;
-            font-weight: bold;
-            font-size: large;
-        }
-
-        .desc {
-            text-align: center;
-            font-size: smaller;
-        }
-
-        .spec {
+        html {
+            height: 100%;
             width: 100%;
-            height: 400px;
-            float: left;
-            overflow: hidden;
         }
-
-        .xsrc {
-            position: absolute;
+        
+        body {
+            box-sizing: border-box;
+            display: flex;
+            height: 100%;
+            margin: 0;
+            width: 100%;
+        }
+        
+        body,
+        .graphical-report__layout,
+        .graphical-report__layout text {
+            font-family: "Helvetica Neue", "Segoe UI", "Open Sans";
+        }
+        
+        #controls {
             background-color: #eee;
-            color: #000;
-            font-size: smaller;
-            font-family: monospace;
-            border-radius: 8px;
-            width: 16px;
-            height: 16px;
-            text-align: center;
+            flex: none;
+            overflow: auto;
+            padding: 3em 2em 0 2em;
+            width: 12em;
+        }
+        
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 2em;
+            padding-left: 0.5em;
+        }
+        
+        .filter-section__header {
+            font-weight: 300;
+            margin: 0 0 0.5em -0.5em;
+        }
+        
+        .filter-section label {
             cursor: pointer;
         }
-
-        .code {
-            position: absolute;
-            width: 65%;
-            height: 400px;
-            float: left;
-            background-color: #000;
-            color: #fff;
-            opacity: 0.75;
-            overflow-y: auto;
-            font-size: smaller;
-            font-family: monospace;
-
+        
+        .check-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #samplesContainer {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 1em 2em 2em 2em;
+        }
+        
+        .sample {
+            padding: 2em 0;
+            width: 100%;
+        }
+        
+        .sample__name {
+            font-weight: 300;
+            margin: 0;
+        }
+        
+        .sample__desc {
+            font-weight: 400;
+            margin: 0;
+        }
+        
+        .sample__desc:empty {
             display: none;
         }
-
-        .code .sec-code {
-            margin: 12px;
+        
+        .sample__chart {
+            height: 24em;
+            position: relative;
         }
-
-        .code .sec-data {
-            border-top: 1px solid #eee;
-            margin: 8px;
+        
+        .sample__chart:empty::before {
+            align-items: center;
+            content: "Loading...";
+            display: flex;
+            font-size: 2em;
+            font-weight: 300;
+            height: 100%;
+            justify-content: center;
+            opacity: 0.25;
+            position: absolute;
+            width: 100%;
         }
-
-        .graphical-report__layout {
-            overflow-x: hidden;
+        
+        #samplesContainer::-webkit-scrollbar,
+        #controls::-webkit-scrollbar,
+        .graphical-report__layout__content::-webkit-scrollbar,
+        .graphical-report__layout__sidebar-right::-webkit-scrollbar {
+            height: 0.75em;
+            width: 0.75em;
+        }
+        
+        #samplesContainer::-webkit-scrollbar-thumb,
+        #controls::-webkit-scrollbar-thumb,
+        .graphical-report__layout__content::-webkit-scrollbar-thumb,
+        .graphical-report__layout__sidebar-right::-webkit-scrollbar-thumb {
+            background-color: #ccc;
         }
     </style>
-
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
-
-    <script src="data-olympics.js"></script>
-    <script src="data-exoplanets.js"></script>
 </head>
-<body></body>
-<script src="http://cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js"></script>
-<script>
-    window.samples = [];
-    tauCharts.api.globalSettings.defaultSourceMap = '../src/addons/world-countries.json';
-</script>
 
-<script src="samples/ex-000.js"></script>
-<script src="samples/ex-001.js"></script>
-<script src="samples/ex-009.js"></script>
-<script src="samples/ex-012.js"></script>
-<script src="samples/ex-010.js"></script>
-<script src="samples/ex-005.js"></script>
-<script src="samples/ex-013.js"></script>
-<script src="samples/ex-014.js"></script>
-<script src="samples/ex-003.js"></script>
-<script src="samples/ex-015.js"></script>
-<script src="samples/ex-011.js"></script>
-<script src="samples/ex-002.js"></script>
+<body>
+    <div id="controls">
+        <div class="filter-section">
+            <h2 class="filter-section__header">Filter by path</h2>
+            <input id="inputPath" />
+        </div>
+        <div class="filter-section">
+            <h2 class="filter-section__header">Filter by types</h2>
+            <div id="typesContainer" class="check-group"></div>
+        </div>
+        <div class="filter-section">
+            <h2 class="filter-section__header">Plug-ins</h2>
+            <div id="pluginsContainer" class="check-group"></div>
+        </div>
+    </div>
+    <div id="samplesContainer"></div>
 
-<script>
-    var fcode = function (spec) {
-        return JSON.stringify(_.omit(spec, 'data', 'plugins'), null, 4);
-    };
+    <script src="dev.js"></script>
+</body>
 
-    var fdata = function (spec) {
-        var rows = spec.data.slice(0, 2).concat('... ' + spec.data.length + ' more ...');
-        return JSON.stringify(rows, null, 4);
-    };
-
-    var charts = window.samples.filter(_.identity).map(function (cfg, i) {
-        var $container = $('<div class="cc"></div>').appendTo('body');
-        $container.append('<div class="xsrc">&gt;</div>');
-        $container.append('<div class="name">' + cfg.name + '</div>');
-        $container.append('<div class="desc">' + cfg.desc + '</div>');
-        $container.append('<div class="spec" id="div' + i + '"></div>');
-        $container.append('<div class="code"><pre class="sec-code">' + fcode(cfg.spec) + '</pre><pre class="sec-data">' + fdata(cfg.spec) + '</pre></div>');
-
-        var spec = cfg.spec;
-        spec.settings = spec.settings || {};
-
-        var chart = (spec.hasOwnProperty('type')) ?
-                (new tauCharts.Chart(spec)) :
-                (new tauCharts.Plot(spec));
-        chart.renderTo('#div' + i);
-
-        return chart;
-    });
-
-    setInterval(function () {
-        var inst = charts[charts.length - 1];
-        var data = inst.getData();
-        var last = data[data.length - 1];
-        var newX = last.x + (Math.PI / 100);
-        data.shift();
-        data.shift();
-        data.push({x: newX, y: Math.sin(newX), type: 'sin'});
-        data.push({x: newX, y: Math.cos(newX), type: 'cos'});
-        inst.setData(data);
-    }, 100);
-
-    $('body').on('click', '.cc .xsrc', function (e) {
-        var $t = $(e.target);
-        var sm = $t.text();
-        $t.text(sm === '<' ? '>' : '<');
-        $t.siblings('.code').toggle();
-    });
-
-</script>
 </html>

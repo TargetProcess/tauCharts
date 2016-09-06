@@ -1,4 +1,4 @@
-window.countries = [
+dev.dataset('countries', [
     {"Country": "Австралия", "Gdp": 59570, "Happiness": 41.98},
     {"Country": "Австрия", "Gdp": 48160, "Happiness": 47.085},
     {"Country": "Азербайджан", "Gdp": 6050, "Happiness": 40.885},
@@ -146,4 +146,4 @@ window.countries = [
     {"Country": "ЮжнаяКорея", "Gdp": 22670, "Happiness": 43.781},
     {"Country": "Ямайка", "Gdp": 5140, "Happiness": 58.534},
     {"Country": "Япония", "Gdp": 47870, "Happiness": 47.508}
-]
+]);
