@@ -26,8 +26,6 @@
 
         var shadowStdDev = 2;
 
-        var scrollBarWidth = tauCharts.api.globalSettings.getScrollBarWidth();
-
         var mmin = function (arr) {
             return Math.min.apply(null, arr);
         };
@@ -129,7 +127,7 @@
             return g;
         };
 
-        var extractXAxes = function (getScrollY, srcSvg, axesInfo, animationSpeed) {
+        var extractXAxes = function (getScrollY, scrollbarHeight, srcSvg, axesInfo, animationSpeed) {
             var height = srcSvg.attr('height');
             var width = srcSvg.attr('width');
             var axes = axesInfo.map(function (info) {
@@ -140,7 +138,7 @@
                 return info.translate.y;
             }));
 
-            var axisHeight = height - minY + 1 + scrollBarWidth;
+            var axisHeight = height - minY + 1 + scrollbarHeight;
 
             var g = addAxes(createSlot(srcSvg, width, axisHeight, settings.bgcolor), axes);
             axesInfo.forEach(function (info) {
@@ -215,7 +213,7 @@
             };
         };
 
-        var extractCorner = function (getScrollX, getScrollY, srcSvg, xAxesInfo, yAxesInfo) {
+        var extractCorner = function (getScrollX, getScrollY, scrollbarHeight, srcSvg, xAxesInfo, yAxesInfo) {
             var width = srcSvg.attr('width');
             var height = srcSvg.attr('height');
             var w = mmax(yAxesInfo.map(function (info) {
@@ -224,7 +222,7 @@
             var y = mmin(xAxesInfo.map(function (info) {
                 return info.translate.y;
             }));
-            var h = height - y + 1 + scrollBarWidth;
+            var h = height - y + 1 + scrollbarHeight;
             var x = 0;
 
             var shadowSize = shadowStdDev * 2;
@@ -381,13 +379,14 @@
                         return (scrollableHeight + root.scrollTop);
                     };
 
+                    var s = tauCharts.api.globalSettings.getScrollbarSize(root);
                     var xAxesInfo = extractAxesInfo(xSel);
                     var yAxesInfo = extractAxesInfo(ySel);
                     var animationSpeed = chart.configGPL.settings.animationSpeed;
                     this.handlers = [
-                        extractXAxes(getScrollY, srcSvg, xAxesInfo, animationSpeed),
+                        extractXAxes(getScrollY, s.height, srcSvg, xAxesInfo, animationSpeed),
                         extractYAxes(getScrollX, srcSvg, yAxesInfo, animationSpeed),
-                        extractCorner(getScrollX, getScrollY, srcSvg, xAxesInfo, yAxesInfo)
+                        extractCorner(getScrollX, getScrollY, s.height, srcSvg, xAxesInfo, yAxesInfo)
                     ];
 
                     this.handlers.forEach(function (item) {

@@ -273,7 +273,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
 
         xLabel.padding = sum([
             (kxAxisW * (settings.xTickWidth + rotXBox.height)),
-            (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight - 2))
+            (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight))
         ]);
 
         yLabel.padding = sum([
@@ -282,6 +282,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
         ]);
     }
 
+    const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
     guide.padding = _.extend(
         (guide.padding),
         {
@@ -290,7 +291,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
                 sum([
                     (guide.x.padding),
                     (kxAxisW * (settings.xTickWidth + rotXBox.height)),
-                    (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight))
+                    (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
                 ]),
             l: (guide.y.hide) ?
                 (0) :

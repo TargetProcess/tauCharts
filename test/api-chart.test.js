@@ -56,6 +56,7 @@ define(function (require) {
             div1 = createDiv();
             div2 = createDiv();
             div3 = createDiv();
+            utils.noScrollStyle.create();
         });
 
         it('should correct handler resize', function (done) {
@@ -118,6 +119,7 @@ define(function (require) {
             div1.parentNode.removeChild(div1);
             div2.parentNode.removeChild(div2);
             div3.parentNode.removeChild(div3);
+            utils.noScrollStyle.remove();
         });
     });
 
@@ -163,6 +165,7 @@ define(function (require) {
 
         beforeEach(function () {
             div1 = createDiv();
+            utils.noScrollStyle.create();
         });
 
         it('should support [entire-view] model', function () {
@@ -180,7 +183,7 @@ define(function (require) {
         it('should support [fit-width] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-width'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 600, 214);
+            checkSizes(chart1, 600, 218);
         });
 
         it('should support [fit-height] model', function () {
@@ -192,11 +195,12 @@ define(function (require) {
         it('should support [minimal] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('minimal'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 184, 249);
+            checkSizes(chart1, 184, 253);
         });
 
         afterEach(function () {
             div1.parentNode.removeChild(div1);
+            utils.noScrollStyle.remove();
         });
     });
 
@@ -207,12 +211,14 @@ define(function (require) {
             div.style.width = 600 + 'px';
             div.style.height = 800 + 'px';
             document.body.appendChild(div);
+            utils.noScrollStyle.create();
         });
 
         afterEach(function () {
             if (div && div.parentNode) {
                 div.parentNode.removeChild(div);
             }
+            utils.noScrollStyle.remove();
         });
 
         it('api test element events', function (done) {

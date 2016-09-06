@@ -3,6 +3,7 @@ define(function (require) {
     var schemes = require('schemes');
     var modernizer = require('bower_components/modernizer/modernizr');
     var tauChart = require('src/tau.charts');
+    var utils = require('testUtils');
 
     describe('tauChart.Plot', function () {
 
@@ -37,10 +38,13 @@ define(function (require) {
                     {x: 1, y: 2}
                 ]
             };
+
+            utils.noScrollStyle.create();
         });
 
         afterEach(function () {
             div.parentNode.removeChild(div);
+            utils.noScrollStyle.remove();
         });
 
         it('should support destroy() method', function () {

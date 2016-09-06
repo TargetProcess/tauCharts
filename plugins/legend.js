@@ -23,6 +23,20 @@
         return [min].concat(chunks).concat(max);
     };
 
+    var getSignificantDigitsFormatter = function (start, end) {
+        var diff = Math.abs(end - start);
+        var significantNumbers = 2;
+        if (diff < 1) {
+            significantNumbers += _.findIndex(String(diff).split('.')[1].split(0), function (x) {
+                return x !== '';
+            });
+        }
+
+        return function (num) {
+            return String(parseFloat((num).toFixed(significantNumbers)));
+        };
+    };
+
     function ChartLegend(xSettings) {
 
         var settings = _.defaults(
@@ -231,12 +245,14 @@
                             }) :
                             domain);
 
+                        var numFormatter = getSignificantDigitsFormatter(numDomain[0], numDomain[numDomain.length - 1]);
+
                         var castNum = (isDate ?
                             function (x) {
                                 return new Date(x);
                             } :
                             function (x) {
-                                return x;
+                                return numFormatter(x);
                             });
 
                         var brewerLength = fillScale.brewer.length;

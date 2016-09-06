@@ -483,9 +483,13 @@ var d3_add_transition_end_listener = (selection, callback) => {
 
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 
-    var xAfterUpdate = afterUpdate || _.identity;
+    const xAfterUpdate = afterUpdate || _.identity;
+    const afterUpdateIterator = function () {
+        xAfterUpdate(this);
+    };
 
     return function () {
+
         var flow = this;
 
         if (initAttrs) {
@@ -497,11 +501,9 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         flow = flow.attr(doneAttrs);
 
         if (speed > 0) {
-            flow.each('end.d3_animationInterceptor', function () {
-                xAfterUpdate(this);
-            });
+            flow.each('end.d3_animationInterceptor', afterUpdateIterator);
         } else {
-            xAfterUpdate(flow.node());
+            flow.each(afterUpdateIterator);
         }
 
         return flow;

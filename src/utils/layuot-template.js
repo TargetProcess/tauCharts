@@ -23,8 +23,10 @@ var getLayout = function () {
         layout,
         header,
         content,
+        contentContainer,
         leftSidebar,
         rightSidebar,
+        rightSidebarContainer,
         footer
     };
     /* jshint ignore:end */
