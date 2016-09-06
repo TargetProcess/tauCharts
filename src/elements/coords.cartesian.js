@@ -250,7 +250,7 @@ export class Cartesian extends Element {
             .classed(scale.guide.cssClass, true)
             .call((axis) => {
 
-                var transAxis = transition(axis, animationSpeed);
+                var transAxis = transition(axis, animationSpeed, 'axisTransition');
                 var prevAxisTranslate = axis.attr('transform');
                 var nextAxisTranslate = utilsDraw.translate(...position);
                 if (nextAxisTranslate !== prevAxisTranslate) {
@@ -281,7 +281,7 @@ export class Cartesian extends Element {
                     );
                 }
 
-                transAxis.onTransitionEnd(() => {
+                var onTransitionEnd = () => {
                     if (prettifyTick && scale.guide.avoidCollisions) {
                         d3_decorator_avoid_labels_collisions(axis, isHorizontal);
                     }
@@ -289,7 +289,17 @@ export class Cartesian extends Element {
                     if (isHorizontal && (scale.scaleType === 'time')) {
                         d3_decorator_fix_horizontal_axis_ticks_overflow(axis);
                     }
-                });
+                };
+                // NOTE: As far as floating axes transition overrides current,
+                // transition `end` event cannot be used. So using `setTimeout`.
+                // transAxis.onTransitionEnd(onTransitionEnd);
+                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
+                clearTimeout(this[timeoutField]);
+                if (animationSpeed > 0) {
+                    this[timeoutField] = setTimeout(onTransitionEnd, animationSpeed);
+                } else {
+                    onTransitionEnd();
+                }
             });
     }
 

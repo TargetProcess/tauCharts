@@ -247,7 +247,7 @@
             if (animationSpeed > 0) {
                 d3.select(axisNode)
                     .attr('transform', translate(x0, y0))
-                    .transition()
+                    .transition('axisTransition')
                      // TODO: Determine, how much time passed since last transition beginning.
                     .duration(animationSpeed)
                     .attr('transform', translate(x1, y1));

@@ -164,13 +164,12 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
         }
     });
 
+    var hasOverflow = false;
     if (iMaxTexts >= 0) {
         var rect = timeTexts[iMaxTexts].getBoundingClientRect();
-        // 2px from each side
-        if ((tickStep - rect.width) < 8) {
-            axisNode.classed({'graphical-report__d3-time-overflown': true});
-        }
+        hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
     }
+    axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
 };
 
 /**
@@ -389,10 +388,10 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 attrs.transform = 'rotate(-90)';
             }
 
-            curr.tickRef
-                .append('line')
-                .attr('class', 'label-ref')
+            selectOrAppend(curr.tickRef, 'line.label-ref')
                 .attr(attrs);
+        } else {
+            curr.tickRef.selectAll('line.label-ref').remove();
         }
 
         return curr;
@@ -464,8 +463,9 @@ var d3_transition_attr = function (keyOrMap, value) {
 };
 
 var d3_add_transition_end_listener = (selection, callback) => {
-    // HACK: Determine if selection is transition.
-    if (!selection.duration || selection.empty()) {
+    if (!d3.transition.prototype.isPrototypeOf(selection) || selection.empty()) {
+        // If selection is not transition or empty,
+        // execute callback immediately.
         callback.call(null, selection);
         return;
     }
