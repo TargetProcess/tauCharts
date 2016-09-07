@@ -1,4 +1,4 @@
-window.samples.push({
+dev.spec({
 
     z: 33,
     "type": "horizontal-bar",

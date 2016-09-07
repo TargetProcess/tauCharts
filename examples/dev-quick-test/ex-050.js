@@ -1,4 +1,4 @@
-window.samples.push({
+dev.spec({
     type: 'scatterplot',
     x: 'dx',
     y: 'dy',

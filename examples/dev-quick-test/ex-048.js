@@ -1,6 +1,6 @@
 var now = new Date();
 
-window.samples.push({
+dev.spec({
 
     "type": "stacked-bar",
     "color": "color",

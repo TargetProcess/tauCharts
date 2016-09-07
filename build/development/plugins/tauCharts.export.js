@@ -616,19 +616,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }.bind(this));
 	                var timeoutID = null;
 
-	                popupElement.addEventListener('blur', function () {
+	                var onBlur = function onBlur() {
 	                    timeoutID = setTimeout(function () {
 	                        popup.hide();
 	                    }, 100);
-	                }, true);
-	                popupElement.addEventListener('focus', function () {
+	                };
+	                var onFocus = function onFocus() {
 	                    clearTimeout(timeoutID);
-	                }, true);
-	                this._container.addEventListener('click', function () {
+	                };
+	                var onClick = function onClick() {
 	                    popup.toggle();
 	                    if (!popup.hidden) {
 	                        popupElement.querySelectorAll('a')[0].focus();
 	                    }
+	                };
+	                popupElement.addEventListener('blur', onBlur, true);
+	                popupElement.addEventListener('focus', onFocus, true);
+	                this._container.addEventListener('click', onClick);
+	                this._onDestroy(function () {
+	                    popupElement.removeEventListener('blur', onBlur, true);
+	                    popupElement.removeEventListener('focus', onFocus, true);
+	                    this._container.removeEventListener('click', onClick);
+	                    clearTimeout(timeoutID);
 	                });
 	            },
 
@@ -638,6 +647,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this._info = {};
 	                this._cssPaths = settings.cssPaths;
 	                this._fileName = settings.fileName;
+	                this._destroyListeners = [];
 
 	                this._csvSeparator = settings.csvSeparator || ',';
 	                this._exportFields = settings.exportFields || [];
@@ -660,7 +670,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var popup = chart.addBalloon({
 	                    place: 'bottom-left'
 	                });
-	                this._popup = popup;
 	                // jscs:disable maximumLineLength
 	                popup.content(['<ul class="graphical-report__export__list">', '<li class="graphical-report__export__item">', '   <a data-value="print" tabindex="1">' + tokens.get('Print') + '</a>', '</li>', '<li class="graphical-report__export__item">', '   <a data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>', '</li>', '<li class="graphical-report__export__item">', '   <a data-value="csv" tabindex="3">' + tokens.get('Export to CSV') + '</a>', '</li>', '<li class="graphical-report__export__item">', '   <a data-value="json" tabindex="4">' + tokens.get('Export to JSON') + '</a>', '</li>', '</ul>'].join(''));
 	                // jscs:enable maximumLineLength
@@ -671,12 +680,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                chart.on('exportTo', function (chart, type) {
 	                    this._select(type, chart);
 	                }.bind(this));
+	                this._onDestroy(function () {
+	                    popup.destroy();
+	                });
+	            },
+
+	            _onDestroy: function _onDestroy(listener) {
+	                this._destroyListeners.push(listener);
 	            },
 
 	            destroy: function destroy() {
-	                if (this._popup) {
-	                    this._popup.destroy();
-	                }
+	                this._destroyListeners.forEach(function (listener) {
+	                    listener.call(this);
+	                }, this);
 	            }
 	        };
 	    }
@@ -5951,12 +5967,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	// shim for using process in browser
 
 	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	(function () {
+	  try {
+	    cachedSetTimeout = setTimeout;
+	  } catch (e) {
+	    cachedSetTimeout = function () {
+	      throw new Error('setTimeout is not defined');
+	    }
+	  }
+	  try {
+	    cachedClearTimeout = clearTimeout;
+	  } catch (e) {
+	    cachedClearTimeout = function () {
+	      throw new Error('clearTimeout is not defined');
+	    }
+	  }
+	} ())
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -5972,7 +6016,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = cachedSetTimeout.call(null, cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -5989,7 +6033,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    cachedClearTimeout.call(null, timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -6001,7 +6045,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        cachedSetTimeout.call(null, drainQueue, 0);
 	    }
 	};
 
