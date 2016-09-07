@@ -43,11 +43,11 @@
                 this.cover = null;
                 this.freeze = false;
                 this.activeRange = [];
-                node.on('range-freeze', (_, e) => this.freeze = e);
-                node.on('range-blur', () => {
+                node.on('range-freeze', function (_, e) { this.freeze = e; }.bind(this));
+                node.on('range-blur', function () {
                     this.activeRange = [];
                     drawRect(this.cover, 'cursor', {width: 0})
-                });
+                }.bind(this));
             },
 
             prepareData: function (screenModel) {
@@ -96,32 +96,31 @@
                 var data = this.prepareData(screenModel);
                 var xIndex = this.createXIndex(data, screenModel);
 
-                var findRangeValue = (x) => {
-                    var nextItem = xIndex.find((r) => r.pos >= x);
+                var findRangeValue = function (x) {
+                    var nextItem = _.find(xIndex, function (r) {
+                        return r.pos >= x;
+                    });
                     var prevIndex = nextItem.ind > 0 ? (nextItem.ind - 1) : nextItem.ind;
                     var prevItem = xIndex[prevIndex];
                     return [prevItem.val, nextItem.val];
                 };
 
-                var filterValuesStack = (x) => {
-                    return data.filter((row) => String(row[screenModel.model.scaleX.dim]) === String(x));
+                var filterValuesStack = function (x) {
+                    return data.filter(function (row) {
+                        return String(row[screenModel.model.scaleX.dim]) === String(x);
+                    });
                 };
 
                 var drawCover = function () {
 
                     var that = this;
 
-                    var x = 'x';
-                    var y = 'y';
-                    var w = 'width';
-                    var h = 'height';
-
                     drawRect(that, 'cursor', {
                         class: 'cursor',
-                        [x]: 0,
-                        [y]: 0,
-                        [h]: cfg.options.height,
-                        [w]: 0,
+                        x: 0,
+                        y: 0,
+                        height: cfg.options.height,
+                        width: 0,
                         fill: '#c4b3e6',
                         opacity: 0.25,
                         speed: 0
@@ -139,7 +138,7 @@
                     });
 
                     rect.on('mouseleave', function () {
-                        setTimeout(() => {
+                        setTimeout(function () {
                             if (!self.freeze) {
                                 node.fire('range-blur');
                             }
@@ -168,8 +167,8 @@
                         var nextX = screenModel.model.scaleX(range[1]);
 
                         drawRect(that, 'cursor', {
-                            [x]: prevX,
-                            [w]: nextX - prevX,
+                            x: prevX,
+                            width: nextX - prevX,
                             speed: 0
                         });
 
@@ -189,22 +188,15 @@
                         var nextValues = filterValuesStack(nextValue);
                         var prevValues = filterValuesStack(prevValue);
 
-                        //var topItem = nextValues
-                        //    .map((row) => ({x: screenModel.x(row), y: screenModel.y(row)}))
-                        //    .sort((a, b) => a.y - b.y)
-                        //    [0];
-                        //var pageX = e.pageX - e.offsetX + topItem.x;
-                        //var pageY = e.pageY - e.offsetY + topItem.y;
-
                         var prevStack = prevValues.reduce(
-                            (memo, item) => {
+                            function (memo, item) {
                                 memo[item.entityState] = item.count;
                                 return memo;
                             },
                             {date: prevValue});
 
                         var nextStack = nextValues.reduce(
-                            (memo, item) => {
+                            function (memo, item) {
                                 memo[item.entityState] = item.count;
                                 return memo;
                             },
@@ -253,11 +245,11 @@
 
                 this._tooltip
                     .getElement()
-                    .addEventListener('mouseover', () => self._freeze(true), false);
+                    .addEventListener('mouseover', function () { self._freeze(true); }, false);
 
                 this._tooltip
                     .getElement()
-                    .addEventListener('mouseleave', () => self._freeze(false), false);
+                    .addEventListener('mouseleave', function () { self._freeze(false); }, false);
             },
 
             destroy: function () {
@@ -339,11 +331,13 @@
 
                 self._tooltip.hide();
 
-                var cfd = chart.select((node) => node.config.type === 'ELEMENT.CFD')[0];
+                var cfd = chart.select(function (node) {
+                    return node.config.type === 'ELEMENT.CFD';
+                })[0];
                 self.cfd = cfd;
 
-                cfd.on('range-changed', () => self._tooltip.hide());
-                cfd.on('range-blur', () => self._tooltip.hide());
+                cfd.on('range-changed', function () { self._tooltip.hide(); });
+                cfd.on('range-blur', function () { self._tooltip.hide(); });
                 cfd.on('range-focus', function (sender, e) {
                     var categories = sender.screenModel.model.scaleColor.domain();
                     var states = categories
@@ -364,14 +358,14 @@
                         .show(e.event.pageX + 16, e.event.pageY + 16);
                 });
 
-                cfd.on('range-active', () => clearTimeout(self._hideTooltipTimeout));
+                cfd.on('range-active', function () { clearTimeout(self._hideTooltipTimeout); });
             },
 
             _freeze: function (flag) {
                 var cfd = this.cfd;
                 cfd.fire('range-freeze', flag);
                 if (!flag) {
-                    this._hideTooltipTimeout = setTimeout(() => {
+                    this._hideTooltipTimeout = setTimeout(function () {
                         cfd.fire('range-blur');
                     }, 100);
                 }
