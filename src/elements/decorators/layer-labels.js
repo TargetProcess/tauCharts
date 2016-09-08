@@ -24,7 +24,7 @@ export class LayerLabels {
         this.guide = _.defaults(
             (labelGuide || {}),
             {
-                fontFamily: 'Helvetica, Arial, sans-serif',
+                fontFamily: 'Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif',
                 fontWeight: 'normal',
                 fontSize: 10,
                 fontColor: '#000',
