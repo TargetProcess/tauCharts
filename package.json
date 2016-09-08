@@ -68,7 +68,6 @@
     "karma-cli": "0.1.1",
     "karma-coverage": "^0.5.3",
     "karma-coveralls": "^1.1.0",
-    "karma-es6-shim": "^1.0.0",
     "karma-mocha": "0.2.1",
     "karma-phantomjs-launcher": "0.2.1",
     "karma-sourcemap-loader": "^0.3.5",

@@ -40,6 +40,8 @@ import {ChartArea}              from './api/chart-area';
 import {ChartParallel}          from './api/chart-parallel';
 import {d3_animationInterceptor} from './utils/d3-decorators';
 
+import {polyfills} from './utils/polyfills';
+
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
 
