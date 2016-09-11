@@ -2,8 +2,6 @@ import {Plot} from './tau.plot';
 import {chartTypesRegistry} from '../chart-alias-registry';
 import {default as _} from 'underscore';
 
-const winAware = [];
-
 class Chart extends Plot {
 
     constructor(config) {
@@ -34,11 +32,9 @@ class Chart extends Plot {
         }
         super.destroy();
     }
-
-    static get winAware() {
-        return winAware;
-    }
 }
+
+Chart.winAware = [];
 
 Chart.resizeOnWindowEvent = (function () {
     let rIndex;

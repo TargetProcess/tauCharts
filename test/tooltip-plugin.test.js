@@ -463,6 +463,7 @@ describe('tooltip', function () {
     };
 
     beforeEach(function () {
+        tauCharts.Chart.winAware = [];
         div1 = createDiv();
     });
 
