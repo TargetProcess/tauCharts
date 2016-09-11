@@ -1,6 +1,6 @@
 window.requestAnimationFrame = window.requestAnimationFrame 
     || window.webkitRequestAnimationFrame 
-    || ((fn) => setTimeout(fn, 17));
+    || (function (fn) { setTimeout(fn, 17); });
 
 Number.isFinite = Number.isFinite || function(value) {
     return typeof value === "number" && isFinite(value);
@@ -11,7 +11,7 @@ Number.isNaN = Number.isNaN || function(value) {
 }
 
 if (!Array.prototype.find) {
-  Array.prototype.find = (predicate) => {
+  Array.prototype.find = function (predicate) {
     'use strict';
     if (this == null) {
       throw new TypeError('Array.prototype.find called on null or undefined');
@@ -35,7 +35,7 @@ if (!Array.prototype.find) {
 }
 
 if (!Array.prototype.findIndex) {
-  Array.prototype.findIndex = (predicate) => {
+  Array.prototype.findIndex = function (predicate) {
     'use strict';
     if (this == null) {
       throw new TypeError('Array.prototype.findIndex called on null or undefined');
