@@ -14,6 +14,12 @@
     var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
 
+    var SHADOW_SIZE = 16;
+    var SHADOW_COLOR_0 = '#E5E7EB';
+    var SHADOW_COLOR_1 = '#FFFFFF';
+    var SHADOW_OPACITY_0 = 1;
+    var SHADOW_OPACITY_1 = 0;
+
     var storeProp = '__transitionAttrs__';
     var parentProp = '__floatingAxesSrcParent__';
     var transProp = '__floatingAxesSrcTransform__';
@@ -23,8 +29,6 @@
         var settings = _.defaults(xSettings || {}, {
             bgcolor: '#fff'
         });
-
-        var shadowStdDev = 2;
 
         var mmin = function (arr) {
             return Math.min.apply(null, arr);
@@ -87,17 +91,15 @@
             return axes;
         };
 
-        var createSlot = function (d3Svg, w, h, color, hideShadow) {
+        var createSlot = function (d3Svg, w, h) {
             var slot = d3Svg.append('g');
             slot.attr('class', 'floating-axes');
-            addBackground(slot, w, h, color, hideShadow);
+            addBackground(slot, w, h);
             return slot;
         };
 
-        var addBackground = function (cont, w, h, color, hideShadow) {
-
-            var shadow = hideShadow ? {} : {filter: 'url(#drop-shadow)'};
-
+        var addBackground = function (cont, w, h) {
+            // TODO: What is "2", "-1"?
             var bs = 2;
             var dx = (bs + 1);
             var dy = (-bs);
@@ -108,9 +110,8 @@
                     y: dy,
                     width: w + dx,
                     height: h + bs,
-                    fill: color
-                })
-                .style(shadow);
+                    fill: settings.bgcolor
+                });
 
             return cont;
         };
@@ -127,64 +128,55 @@
             return g;
         };
 
-        var extractXAxes = function (getScrollY, scrollbarHeight, srcSvg, axesInfo, animationSpeed) {
-            var height = srcSvg.attr('height');
-            var width = srcSvg.attr('width');
-            var axes = axesInfo.map(function (info) {
+        var extractXAxes = function (getPositions, srcSvg, xAxesInfo, animationSpeed) {
+            var pos = getPositions();
+            var axes = xAxesInfo.map(function (info) {
                 return info.axis;
             });
 
-            var minY = mmin(axesInfo.map(function (info) {
-                return info.translate.y;
-            }));
+            var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
 
-            var axisHeight = height - minY + 1 + scrollbarHeight;
-
-            var g = addAxes(createSlot(srcSvg, width, axisHeight, settings.bgcolor), axes);
-            axesInfo.forEach(function (info) {
+            var g = addAxes(createSlot(srcSvg, pos.svgWidth, axisHeight), axes);
+            xAxesInfo.forEach(function (info) {
                 translateAxis(
                     info.axis,
                     // NOTE: No vertical transition.
-                    info.translate0.x, info.translate.y - minY,
-                    info.translate.x, info.translate.y - minY,
+                    info.translate0.x, info.translate.y - pos.minXAxesY,
+                    info.translate.x, info.translate.y - pos.minXAxesY,
                     animationSpeed
                 );
             });
             var rect = g.select('.i-role-bg');
 
-            var move = function (x, bottomY) {
-                var dstY = (bottomY - axisHeight);
-                var limY = (minY - 1);
-                var y = Math.min(dstY, limY);
+            var move = function (scrollTop) {
+                var x = 0;
+                var yLimit = pos.minXAxesY;
+                var y = Math.min(
+                    (pos.visibleHeight + scrollTop + pos.minXAxesY - pos.svgHeight - pos.scrollbarHeight),
+                    yLimit
+                );
                 g.attr('transform', translate(x, y));
-
-                var svgFilter = (dstY < limY) ? {filter: 'url(#drop-shadow)'} : {filter:''};
-                rect.style(svgFilter);
             };
 
-            move(0, getScrollY());
+            move(pos.scrollTop);
 
             return {
                 element: g,
                 handler: function () {
-                    move(0, getScrollY());
+                    var pos = getPositions();
+                    move(pos.scrollTop);
                 }
             };
         };
 
-        var extractYAxes = function (getScrollX, srcSvg, axesInfo, animationSpeed) {
-            var width = srcSvg.attr('width');
-            var height = srcSvg.attr('height');
-            var axes = axesInfo.map(function (info) {
+        var extractYAxes = function (getPositions, srcSvg, yAxesInfo, animationSpeed) {
+            var pos = getPositions();
+            var axes = yAxesInfo.map(function (info) {
                 return info.axis;
             });
 
-            var axisWidth = mmax(axesInfo.map(function (info) {
-                return info.translate.x;
-            }));
-
-            var g = addAxes(createSlot(srcSvg, axisWidth, height, settings.bgcolor), axes);
-            axesInfo.forEach(function (info, i) {
+            var g = addAxes(createSlot(srcSvg, pos.maxYAxesX, pos.svgHeight), axes);
+            yAxesInfo.forEach(function (info, i) {
                 translateAxis(
                     info.axis,
                     // NOTE: No horizontal transition.
@@ -195,60 +187,119 @@
             });
             var rect = g.select('.i-role-bg');
 
-            var move = function (topX, y) {
-                var limX = 0;
-                var x = Math.max(topX, limX);
+            var move = function (scrollLeft) {
+                var xLimit = 0;
+                var x = Math.max(scrollLeft, xLimit);
+                var y = 0;
+                g.attr('transform', translate(x, y));
+            };
+            move(pos.scrollLeft);
+
+            return {
+                element: g,
+                handler: function () {
+                    var pos = getPositions();
+                    move(pos.scrollLeft);
+                }
+            };
+        };
+
+        var extractCorner = function (getPositions, srcSvg) {
+            var pos = getPositions();
+            var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
+
+            var g = createSlot(srcSvg, pos.maxYAxesX, xAxesHeight);
+
+            var move = function (scrollLeft, scrollTop) {
+                var bottomY = scrollTop + pos.visibleHeight;
+                var xLimit = 0;
+                var x = Math.max(scrollLeft, xLimit);
+                var yLimit = pos.minXAxesY;
+                var y = Math.min(
+                    (scrollTop + pos.visibleHeight - xAxesHeight),
+                    yLimit
+                );
+                g.attr('transform', translate(x, y));
+            };
+            move(pos.scrollLeft, pos.scrollTop);
+
+            return {
+                element: g,
+                handler: function () {
+                    var pos = getPositions();
+                    move(pos.scrollLeft, pos.scrollTop);
+                }
+            };
+        };
+
+        var createShadows = function (getPositions, srcSvg) {
+            var pos = getPositions();
+            var yAxesWidth = pos.maxYAxesX;
+            var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
+
+            var g = srcSvg.append('g')
+                .attr('class', 'floating-axes floating-axes-shadows')
+                .attr('pointer-events', 'none');
+
+            var createShadow = function (direction, x, y, width, height) {
+                return g.append('rect')
+                    .attr('fill', 'url(#shadow-gradient-' + direction + ')')
+                    .attr('x', x)
+                    .attr('y', y)
+                    .attr('width', width)
+                    .attr('height', height);
+            };
+            var shadowNS = createShadow('ns', 0, 0, yAxesWidth, SHADOW_SIZE);
+            var shadowEW = createShadow('ew',
+                pos.visibleWidth - SHADOW_SIZE - pos.scrollbarWidth,
+                pos.visibleHeight - xAxesHeight,
+                SHADOW_SIZE,
+                xAxesHeight
+            );
+            var shadowSN = createShadow('sn',
+                0,
+                pos.visibleHeight - xAxesHeight - SHADOW_SIZE,
+                yAxesWidth,
+                SHADOW_SIZE
+            );
+            var shadowWE = createShadow('we', yAxesWidth, pos.visibleHeight - xAxesHeight, SHADOW_SIZE, xAxesHeight);
+
+            var move = function (scrollLeft, scrollTop) {
+                var pos = getPositions();
+                var x = scrollLeft;
+                var y = scrollTop;
                 g.attr('transform', translate(x, y));
 
-                var svgFilter = (x > limX) ? {filter: 'url(#drop-shadow)'} : {filter:''};
-                rect.style(svgFilter);
+                // Hide/show shadows
+                var toggle = function (el, show) {
+                    el.style('visibility', show ? '' : 'hidden');
+                };
+                toggle(shadowNS, pos.scrollTop > 0 && pos.svgHeight > pos.visibleHeight);
+                toggle(shadowEW,
+                    (pos.scrollLeft + pos.visibleWidth < pos.svgWidth) &&
+                    (pos.svgWidth > pos.visibleWidth));
+                toggle(shadowSN,
+                    (pos.scrollTop + pos.visibleHeight < pos.svgHeight) &&
+                    (pos.svgHeight > pos.visibleHeight));
+                toggle(shadowWE, pos.scrollLeft > 0 && pos.svgWidth > pos.visibleWidth);
             };
-            move(getScrollX(), 0);
+            move(pos.scrollLeft, pos.scrollTop);
 
             return {
                 element: g,
                 handler: function () {
-                    move(getScrollX(), 0);
+                    var pos = getPositions();
+                    move(pos.scrollLeft, pos.scrollTop);
                 }
             };
         };
 
-        var extractCorner = function (getScrollX, getScrollY, scrollbarHeight, srcSvg, xAxesInfo, yAxesInfo) {
-            var width = srcSvg.attr('width');
-            var height = srcSvg.attr('height');
-            var w = mmax(yAxesInfo.map(function (info) {
-                return info.translate.x;
-            })) + 1;
-            var y = mmin(xAxesInfo.map(function (info) {
-                return info.translate.y;
-            }));
-            var h = height - y + 1 + scrollbarHeight;
-            var x = 0;
-
-            var shadowSize = shadowStdDev * 2;
-            var g = createSlot(srcSvg, w + shadowSize, h + shadowSize, settings.bgcolor, true);
-
-            var move = function (topX, bottomY) {
-                var xi = Math.max((topX), 0);
-                var yi = Math.min((bottomY - h), (y - 1));
-                g.attr('transform', translate(xi, yi));
-            };
-            move(getScrollX(), getScrollY());
-
-            return {
-                element: g,
-                handler: function () {
-                    move(getScrollX(), getScrollY());
-                }
-            };
-        };
-
-        var translateAxis = function(axisNode, x0, y0, x1, y1, animationSpeed) {
+        var translateAxis = function (axisNode, x0, y0, x1, y1, animationSpeed) {
             if (animationSpeed > 0) {
                 d3.select(axisNode)
                     .attr('transform', translate(x0, y0))
                     .transition('axisTransition')
-                     // TODO: Determine, how much time passed since last transition beginning.
+                    // TODO: Determine, how much time passed since last transition beginning.
                     .duration(animationSpeed)
                     .attr('transform', translate(x1, y1));
             } else {
@@ -260,7 +311,7 @@
 
             init: function (chart) {
                 this._chart = chart;
-                this.rootNode = chart.getLayout().content.parentNode;
+                this.rootNode = chart.getLayout().contentContainer;
                 this.handlers = [];
 
                 this._beforeExportHandler = chart.on('beforeExportSVGNode', function () {
@@ -320,46 +371,38 @@
                     var root = this.rootNode;
                     var srcSvg = d3.select(chart.getSVG());
 
-                    var defs = srcSvg.append('defs');
+                    var defs = srcSvg.append('defs')
+                        .attr('class', 'floating-axes');
 
-                    defs.attr('class', 'floating-axes');
+                    // Create shadow gradients definitions
+                    var directions = {
+                        ns: {x1: 0, y1: 0, x2: 0, y2: 1},
+                        ew: {x1: 1, y1: 0, x2: 0, y2: 0},
+                        sn: {x1: 0, y1: 1, x2: 0, y2: 0},
+                        we: {x1: 0, y1: 0, x2: 1, y2: 0}
+                    };
+                    Object.keys(directions).forEach(function createGradient(direction) {
+                        // TODO: Use class prefix.
+                        var coords = directions[direction];
+                        var g = defs.append('linearGradient')
+                            .attr('id', 'shadow-gradient-' + direction)
+                            .attr('x1', coords.x1)
+                            .attr('y1', coords.y1)
+                            .attr('x2', coords.x2)
+                            .attr('y2', coords.y2);
+                        g.append('stop')
+                            .attr('class', 'floating-axes_shadow-start')
+                            .attr('offset', '0%')
+                            .attr('stop-color', SHADOW_COLOR_0)
+                            .attr('stop-opacity', SHADOW_OPACITY_0);
+                        g.append('stop')
+                            .attr('class', 'floating-axes_shadow-end')
+                            .attr('offset', '100%')
+                            .attr('stop-color', SHADOW_COLOR_1)
+                            .attr('stop-opacity', SHADOW_OPACITY_1);
+                    });
 
-                    // create filter with id #drop-shadow
-                    // height=130% so that the shadow is not clipped
-                    var filter = defs
-                        .append('filter')
-                        .attr('id', 'drop-shadow')
-                        .attr('height', '130%');
-
-                    // SourceAlpha refers to opacity of graphic that this filter will be applied to
-                    // convolve that with a Gaussian with standard deviation 3 and store result
-                    // in blur
-                    filter
-                        .append('feGaussianBlur')
-                        .attr('in', 'SourceAlpha')
-                        .attr('stdDeviation', shadowStdDev)
-                        .attr('result', 'blur');
-
-                    // translate output of Gaussian blur to the right and downwards with 2px
-                    // store result in offsetBlur
-                    filter
-                        .append('feOffset')
-                        .attr('in', 'blur')
-                        .attr('dx', 0)
-                        .attr('dy', 0)
-                        .attr('result', 'offsetBlur');
-
-                    // overlay original SourceGraphic over translated blurred opacity by using
-                    // feMerge filter. Order of specifying inputs is important!
-                    var feMerge = filter.append('feMerge');
-
-                    feMerge
-                        .append('feMergeNode')
-                        .attr('in', 'offsetBlur');
-                    feMerge
-                        .append('feMergeNode')
-                        .attr('in', 'SourceGraphic');
-
+                    // Move axes into Floating Axes container
                     var getAxesSelector = function (axis) {
                         var axisPart = '> .' + axis + '.axis.tau-active';
                         var rootPart = '.frame-root.tau-active ';
@@ -371,22 +414,43 @@
                     var xSel = srcSvg.selectAll(getAxesSelector('x'));
                     var ySel = srcSvg.selectAll(getAxesSelector('y'));
 
-                    var scrollableHeight = root.getBoundingClientRect().height;
-                    var getScrollX = function () {
-                        return root.scrollLeft;
-                    };
-                    var getScrollY = function () {
-                        return (scrollableHeight + root.scrollTop);
-                    };
-
-                    var s = tauCharts.api.globalSettings.getScrollbarSize(root);
                     var xAxesInfo = extractAxesInfo(xSel);
                     var yAxesInfo = extractAxesInfo(ySel);
+
+                    var maxYAxesX = mmax(yAxesInfo.map(function (info) {
+                        return info.translate.x;
+                    })) + 1;
+                    var minXAxesY = mmin(xAxesInfo.map(function (info) {
+                        return info.translate.y;
+                    })) - 1;
+
+                    var scrollRect = root.getBoundingClientRect();
+                    var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
+                    var visibleWidth = scrollRect.width;
+                    var visibleHeight = scrollRect.height;
+
+                    var getPositions = function () {
+                        return {
+                            scrollLeft: root.scrollLeft,
+                            scrollTop: root.scrollTop,
+                            visibleWidth: scrollRect.width,
+                            visibleHeight: scrollRect.height,
+                            scrollbarWidth: scrollbars.width,
+                            scrollbarHeight: scrollbars.height,
+                            svgWidth: Number(srcSvg.attr('width')),
+                            svgHeight: Number(srcSvg.attr('height')),
+                            minXAxesY: minXAxesY,
+                            maxYAxesX: maxYAxesX
+                        };
+                    };
+
                     var animationSpeed = chart.configGPL.settings.animationSpeed;
+
                     this.handlers = [
-                        extractXAxes(getScrollY, s.height, srcSvg, xAxesInfo, animationSpeed),
-                        extractYAxes(getScrollX, srcSvg, yAxesInfo, animationSpeed),
-                        extractCorner(getScrollX, getScrollY, s.height, srcSvg, xAxesInfo, yAxesInfo)
+                        extractXAxes(getPositions, srcSvg, xAxesInfo, animationSpeed),
+                        extractYAxes(getPositions, srcSvg, yAxesInfo, animationSpeed),
+                        extractCorner(getPositions, srcSvg),
+                        createShadows(getPositions, srcSvg)
                     ];
 
                     this.handlers.forEach(function (item) {
