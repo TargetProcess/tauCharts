@@ -1,6 +1,6 @@
 sudo: false
 notifications:
-  slack: targetprocess:A8M6sVcJSfLnVOYtoMrPL7BA
+  slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
 language: node_js
 env:
   - CXX=g++-4.8
