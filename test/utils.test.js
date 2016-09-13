@@ -244,7 +244,7 @@ define(function (require) {
             expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
             expect(actBefore).to.deep.equal(['9', '9', '9', '9'], 'text y before decorator');
 
-            d3_decorator_avoid_labels_collisions(d3Axis, true);
+            d3_decorator_avoid_labels_collisions(d3Axis, true, scale.domain());
 
             var actAfter = [];
             var lineAfter = [];
