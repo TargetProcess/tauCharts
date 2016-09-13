@@ -140,9 +140,15 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
         });
 };
 
-var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
+var d3_decorator_fix_horizontal_axis_ticks_overflow = function (axisNode, activeTicks) {
 
-    var timeTicks = axisNode.selectAll('.tick')[0];
+    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
+    if (isDate) {
+        activeTicks = activeTicks.map(d => Number(d));
+    }
+
+    var timeTicks = axisNode.selectAll('.tick')
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
     if (timeTicks.length < 2) {
         return;
     }
@@ -154,7 +160,8 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
 
     var maxTextLn = 0;
     var iMaxTexts = -1;
-    var timeTexts = axisNode.selectAll('.tick text')[0];
+    var timeTexts = axisNode.selectAll('.tick text')
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
     timeTexts.forEach((textNode, i) => {
         var innerHTML = textNode.textContent || '';
         var textLength = innerHTML.length;
@@ -299,7 +306,11 @@ var d3_decorator_wrap_tick_label = (nodeScale, transScale, guide, isHorizontal, 
     }
 };
 
-var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
+var d3_decorator_avoid_labels_collisions = function (nodeScale, isHorizontal, activeTicks) {
+    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
+    if (isDate) {
+        activeTicks = activeTicks.map(d => Number(d));
+    }
     const textOffsetStep = 11;
     const refOffsetStart = isHorizontal ? -10 : 20;
     const translateParam = isHorizontal ? 0 : 1;
@@ -307,6 +318,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     var layoutModel = [];
     nodeScale
         .selectAll('.tick')
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
         .each(function () {
             var tick = d3.select(this);
 

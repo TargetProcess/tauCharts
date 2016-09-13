@@ -281,24 +281,24 @@ export class Cartesian extends Element {
                     );
                 }
 
-                var onTransitionEnd = () => {
+                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
+                var fixAxesCollision = function () {
                     if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoid_labels_collisions(axis, isHorizontal);
+                        d3_decorator_avoid_labels_collisions(axis, isHorizontal, activeTicks);
                     }
 
                     if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fix_horizontal_axis_ticks_overflow(axis);
+                        d3_decorator_fix_horizontal_axis_ticks_overflow(axis, activeTicks);
                     }
                 };
+                fixAxesCollision();
                 // NOTE: As far as floating axes transition overrides current,
                 // transition `end` event cannot be used. So using `setTimeout`.
-                // transAxis.onTransitionEnd(onTransitionEnd);
+                // transAxis.onTransitionEnd(fixAxesCollision);
                 var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
                 clearTimeout(this[timeoutField]);
                 if (animationSpeed > 0) {
-                    this[timeoutField] = setTimeout(onTransitionEnd, animationSpeed);
-                } else {
-                    onTransitionEnd();
+                    this[timeoutField] = setTimeout(fixAxesCollision, animationSpeed);
                 }
             });
     }
