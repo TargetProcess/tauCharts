@@ -43,19 +43,25 @@
         };
 
         var parseTransform = function (transform) {
-            if (!transform || transform.indexOf('translate(') !== 0) {
-                return null;
+            var result = {x: 0, y: 0, r: 0};
+            if (!transform) {
+                return result;
             }
-            return transform
-                .replace('translate(', '')
-                .replace(')', '')
-                .replace(' ', ',')
-                .split(',')
-                .concat(0)
-                .slice(0, 2)
-                .map(function (x) {
-                    return Number(x);
-                });
+            var ts = transform.indexOf('translate(');
+            if (ts >= 0) {
+                var te = transform.indexOf(')', ts + 10);
+                var translateStr = transform.substring(ts + 10, te);
+                var translateParts = translateStr.trim().replace(',', ' ').replace(/\s+/, ' ').split(' ');
+                result.x = parseFloat(translateParts[0]);
+                result.y = parseFloat(translateParts[1]);
+            }
+            var rs = transform.indexOf('rotate(');
+            if (rs >= 0) {
+                var re = transform.indexOf(')', rs + 7);
+                var rotateStr = transform.substring(rs + 7, re);
+                result.r = parseFloat(rotateStr.trim());
+            }
+            return result;
         };
 
         var extractAxesInfo = function (selection) {
@@ -75,14 +81,10 @@
                     nextTransform = (isTransformInTransition ?
                         parseTransform(parent[storeProp].transform) :
                         currentTransform);
-                    if (currentTransform) {
-                        info.translate0.x += currentTransform[0];
-                        info.translate0.y += currentTransform[1];
-                    }
-                    if (nextTransform) {
-                        info.translate.x += nextTransform[0];
-                        info.translate.y += nextTransform[1];
-                    }
+                    info.translate0.x += currentTransform.x;
+                    info.translate0.y += currentTransform.y;
+                    info.translate.x += nextTransform.x;
+                    info.translate.y += nextTransform.y;
                     parent = parent.parentNode;
                 }
                 axes.push(info);
@@ -123,6 +125,12 @@
                 node[transProp] = (node[storeProp] && node[storeProp].transform ?
                     node[storeProp].transform :
                     node.getAttribute('transform'));
+                Array.prototype.forEach.call(
+                    node.querySelectorAll('.label'),
+                    function (label) {
+                        label[transProp] = label.getAttribute('transform');
+                    }
+                );
                 container.appendChild(node);
             });
             return g;
@@ -146,9 +154,9 @@
                     animationSpeed
                 );
             });
-            var rect = g.select('.i-role-bg');
+            var labels = g.selectAll('.label');
 
-            var move = function (scrollTop) {
+            var move = function (scrollLeft, scrollTop) {
                 var x = 0;
                 var yLimit = pos.minXAxesY;
                 var y = Math.min(
@@ -156,15 +164,23 @@
                     yLimit
                 );
                 g.attr('transform', translate(x, y));
+                labels.each(function () {
+                    var t = parseTransform(this[transProp]);
+                    var dx = -pos.svgWidth / 2 + pos.visibleWidth / 2 + scrollLeft;
+                    this.setAttribute(
+                        'transform',
+                        'translate(' + (t.x + dx) + ',' + t.y + ') rotate(' + t.r + ')'
+                    );
+                });
             };
 
-            move(pos.scrollTop);
+            move(pos.scrollLeft, pos.scrollTop);
 
             return {
                 element: g,
                 handler: function () {
                     var pos = getPositions();
-                    move(pos.scrollTop);
+                    move(pos.scrollLeft, pos.scrollTop);
                 }
             };
         };
@@ -185,26 +201,34 @@
                     animationSpeed
                 );
             });
-            var rect = g.select('.i-role-bg');
+            var labels = g.selectAll('.label');
 
-            var move = function (scrollLeft) {
+            var move = function (scrollLeft, scrollTop) {
                 var xLimit = 0;
                 var x = Math.max(scrollLeft, xLimit);
                 var y = 0;
                 g.attr('transform', translate(x, y));
+                labels.each(function () {
+                    var t = parseTransform(this[transProp]);
+                    var dy = -pos.svgHeight / 2 + pos.visibleHeight / 2 + scrollTop;
+                    this.setAttribute(
+                        'transform',
+                        'translate(' + t.x + ',' + (t.y + dy) + ') rotate(' + t.r + ')'
+                    );
+                });
             };
-            move(pos.scrollLeft);
+            move(pos.scrollLeft, pos.scrollTop);
 
             return {
                 element: g,
                 handler: function () {
                     var pos = getPositions();
-                    move(pos.scrollLeft);
+                    move(pos.scrollLeft, pos.scrollTop);
                 }
             };
         };
 
-        var extractCorner = function (getPositions, srcSvg) {
+        var createCorner = function (getPositions, srcSvg) {
             var pos = getPositions();
             var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
 
@@ -331,6 +355,13 @@
                         this.setAttribute('transform', this[transProp]);
                         delete this[parentProp];
                         delete this[transProp];
+                        Array.prototype.forEach.call(
+                            this.querySelectorAll('.label'),
+                            function (label) {
+                                label.setAttribute('transform', label[transProp]);
+                                delete label[transProp];
+                            }
+                        );
                     });
                     item.element.remove();
                 });
@@ -449,7 +480,7 @@
                     this.handlers = [
                         extractXAxes(getPositions, srcSvg, xAxesInfo, animationSpeed),
                         extractYAxes(getPositions, srcSvg, yAxesInfo, animationSpeed),
-                        extractCorner(getPositions, srcSvg),
+                        createCorner(getPositions, srcSvg),
                         createShadows(getPositions, srcSvg)
                     ];
 
