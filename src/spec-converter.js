@@ -91,7 +91,7 @@ export class SpecConverter {
 
         var reduceIterator = (row, key) => {
             let rowKey = row[key];
-            if (utils.isObject(rowKey)) {
+            if (utils.isObject(rowKey) && !utils.isDate(rowKey)) {
                 Object.keys(rowKey).forEach((k) => (row[key + '.' + k] = rowKey[k]));
             }
 

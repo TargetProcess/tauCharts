@@ -25,17 +25,8 @@ export class PeriodScale extends BaseScale {
 
         var periodGenerator = UnitDomainPeriodGenerator.get(props.period);
         if (props.fitToFrameByDims || (periodGenerator === null)) {
-            this.vars = _.unique(vars)
-                .map((x) => new Date(x))
-                .sort((date1, date2) => {
-                    if (date1 > date2) {
-                        return -1;
-                    }
-                    if (date1 < date2) {
-                        return 1;
-                    }
-                    return 0;
-                });
+            this.vars = _.unique(vars.map((x) => new Date(x)), (x) => x.getTime())
+                .sort((date1, date2) => date2 - date1);
         } else {
             this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
         }

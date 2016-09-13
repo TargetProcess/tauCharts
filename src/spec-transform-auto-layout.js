@@ -28,7 +28,7 @@ var applyCustomProps = (targetUnit, customUnit) => {
         extendGuide(guide, targetUnit, name, properties);
     });
     _.extend(targetUnit.guide, Object.keys(guide).reduce((obj, k) => {
-        if (!config[k]) {
+        if (!config.hasOwnProperty(k)) {
             obj[k] = guide[k];
         }
         return obj;
@@ -146,15 +146,17 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
         return size;
     }
 
-    var maxXTickText;
-    let lastComputed = -Infinity;
-    domainValues.forEach((value) => {
+    var maxXTickText = domainValues.reduce((prev, value) => {
         let computed = formatter(value).toString().length;
-        if (computed > lastComputed || computed === -Infinity && maxXTickText === -Infinity) {
-            maxXTickText = value;
-            lastComputed = computed;
+
+        if (!prev.computed || computed > prev.computed) {
+            return {
+                value: value,
+                computed: computed
+            };
         }
-    });
+        return prev;
+    }, {}).value;
 
     // d3 sometimes produce fractional ticks on wide space
     // so we intentionally add fractional suffix
