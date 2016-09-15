@@ -53,7 +53,9 @@
                 var translateStr = transform.substring(ts + 10, te);
                 var translateParts = translateStr.trim().replace(',', ' ').replace(/\s+/, ' ').split(' ');
                 result.x = parseFloat(translateParts[0]);
-                result.y = parseFloat(translateParts[1]);
+                if (translateParts.length > 1) {
+                    result.y = parseFloat(translateParts[1]);
+                }
             }
             var rs = transform.indexOf('rotate(');
             if (rs >= 0) {
