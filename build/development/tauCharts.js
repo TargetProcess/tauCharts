@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.4-beta.2 - 2016-09-15
+/*! taucharts - v0.9.4-beta.3 - 2016-09-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -330,7 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.4-beta.2");
+	var version = ("0.9.4-beta.3");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -9241,8 +9241,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 	var sum = function sum(arr) {
 	    return arr.reduce(function (sum, x) {
 	        return sum + x;
@@ -9255,7 +9253,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    properties.forEach(function (prop) {
 	        _underscore2.default.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
 	    });
-	    _underscore2.default.extend(targetUnit.guide[dimension], _underscore2.default.omit.apply(_underscore2.default, [guide_dim].concat(_toConsumableArray(properties))));
 	}
 
 	var applyCustomProps = function applyCustomProps(targetUnit, customUnit) {
