@@ -10,7 +10,6 @@ function extendGuide(guide, targetUnit, dimension, properties) {
     properties.forEach((prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
-    _.extend(targetUnit.guide[dimension], _.omit(guide_dim, ...properties));
 }
 
 var applyCustomProps = (targetUnit, customUnit) => {
