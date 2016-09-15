@@ -83,10 +83,15 @@
      * Registers chart spec.
      */
     DevApp.prototype.spec = function (spec) {
+        if (!document.currentScript) {
+            this._unknownPathCounter = this._unknownPathCounter || 0;
+        }
         var l = window.location;
         Object.defineProperty(spec, 'filePath', {
-            value: document.currentScript.src
-                .replace(l.protocol + '//' + l.host + '/', '')
+            value: (document.currentScript ?
+                document.currentScript.src.replace(l.protocol + '//' + l.host + '/', '') :
+                'Unknown path ' + this._unknownPathCounter++
+            )
         });
         this._specs.push(spec);
     };
@@ -145,7 +150,7 @@
         //
         // Destroy previous charts
 
-        this._charts.forEach((c) => {
+        this._charts.forEach(function (c) {
             c.destroy();
         });
         this._notRenderedSpecs.splice(0);
@@ -433,7 +438,7 @@
         left = left || '';
         if (typeof path === 'string') {
             var p = left + path;
-            if (!p.endsWith('.js')) {
+            if (p.toLowerCase().lastIndexOf('.js') !== p.length - 3) {
                 p += '.js';
             }
             accumulator.push(p);

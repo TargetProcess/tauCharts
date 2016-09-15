@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.4-beta.1 - 2016-09-07
+/*! taucharts - v0.9.4-beta.2 - 2016-09-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -152,6 +152,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _d2 = _interopRequireDefault(_d);
 
+	__webpack_require__(141);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -209,7 +211,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        defaultColorBrewer: ["#fde725", "#fbe723", "#f8e621", "#f6e620", "#f4e61e", "#f1e51d", "#efe51c", "#ece51b", "#eae51a", "#e7e419", "#e5e419", "#e2e418", "#dfe318", "#dde318", "#dae319", "#d8e219", "#d5e21a", "#d2e21b", "#d0e11c", "#cde11d", "#cae11f", "#c8e020", "#c5e021", "#c2df23", "#c0df25", "#bddf26", "#bade28", "#b8de29", "#b5de2b", "#b2dd2d", "#b0dd2f", "#addc30", "#aadc32", "#a8db34", "#a5db36", "#a2da37", "#a0da39", "#9dd93b", "#9bd93c", "#98d83e", "#95d840", "#93d741", "#90d743", "#8ed645", "#8bd646", "#89d548", "#86d549", "#84d44b", "#81d34d", "#7fd34e", "#7cd250", "#7ad151", "#77d153", "#75d054", "#73d056", "#70cf57", "#6ece58", "#6ccd5a", "#69cd5b", "#67cc5c", "#65cb5e", "#63cb5f", "#60ca60", "#5ec962", "#5cc863", "#5ac864", "#58c765", "#56c667", "#54c568", "#52c569", "#50c46a", "#4ec36b", "#4cc26c", "#4ac16d", "#48c16e", "#46c06f", "#44bf70", "#42be71", "#40bd72", "#3fbc73", "#3dbc74", "#3bbb75", "#3aba76", "#38b977", "#37b878", "#35b779", "#34b679", "#32b67a", "#31b57b", "#2fb47c", "#2eb37c", "#2db27d", "#2cb17e", "#2ab07f", "#29af7f", "#28ae80", "#27ad81", "#26ad81", "#25ac82", "#25ab82", "#24aa83", "#23a983", "#22a884", "#22a785", "#21a685", "#21a585", "#20a486", "#20a386", "#1fa287", "#1fa187", "#1fa188", "#1fa088", "#1f9f88", "#1f9e89", "#1e9d89", "#1e9c89", "#1e9b8a", "#1f9a8a", "#1f998a", "#1f988b", "#1f978b", "#1f968b", "#1f958b", "#1f948c", "#20938c", "#20928c", "#20928c", "#21918c", "#21908d", "#218f8d", "#218e8d", "#228d8d", "#228c8d", "#228b8d", "#238a8d", "#23898e", "#23888e", "#24878e", "#24868e", "#25858e", "#25848e", "#25838e", "#26828e", "#26828e", "#26818e", "#27808e", "#277f8e", "#277e8e", "#287d8e", "#287c8e", "#297b8e", "#297a8e", "#29798e", "#2a788e", "#2a778e", "#2a768e", "#2b758e", "#2b748e", "#2c738e", "#2c728e", "#2c718e", "#2d718e", "#2d708e", "#2e6f8e", "#2e6e8e", "#2e6d8e", "#2f6c8e", "#2f6b8e", "#306a8e", "#30698e", "#31688e", "#31678e", "#31668e", "#32658e", "#32648e", "#33638d", "#33628d", "#34618d", "#34608d", "#355f8d", "#355e8d", "#365d8d", "#365c8d", "#375b8d", "#375a8c", "#38598c", "#38588c", "#39568c", "#39558c", "#3a548c", "#3a538b", "#3b528b", "#3b518b", "#3c508b", "#3c4f8a", "#3d4e8a", "#3d4d8a", "#3e4c8a", "#3e4a89", "#3e4989", "#3f4889", "#3f4788", "#404688", "#404588", "#414487", "#414287", "#424186", "#424086", "#423f85", "#433e85", "#433d84", "#443b84", "#443a83", "#443983", "#453882", "#453781", "#453581", "#463480", "#46337f", "#46327e", "#46307e", "#472f7d", "#472e7c", "#472d7b", "#472c7a", "#472a7a", "#482979", "#482878", "#482677", "#482576", "#482475", "#482374", "#482173", "#482071", "#481f70", "#481d6f", "#481c6e", "#481b6d", "#481a6c", "#48186a", "#481769", "#481668", "#481467", "#471365", "#471164", "#471063", "#470e61", "#470d60", "#460b5e", "#460a5d", "#46085c", "#46075a", "#450559", "#450457", "#440256", "#440154"],
 	        // jscs:enable
 
-	        defaultClassBrewer: _underscore2.default.times(20, function (i) {
+	        defaultClassBrewer: _utils.utils.range(20).map(function (i) {
 	            return 'color20-' + (1 + i);
 	        }),
 
@@ -328,7 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.4-beta.1");
+	var version = ("0.9.4-beta.2");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -452,11 +454,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    getAxisTickLabelSize: function getAxisTickLabelSize(text) {
-
-	        var tmpl = ['<svg class="graphical-report__svg">', '<g class="graphical-report__cell cell">', '<g class="x axis">', '<g class="tick"><text><%= xTick %></text></g>', '</g>', '</g>', '</svg>'].join('');
-
-	        var compiled = _underscore2.default.template(tmpl);
-
 	        var div = document.createElement('div');
 	        div.style.position = 'absolute';
 	        div.style.visibility = 'hidden';
@@ -465,7 +462,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        div.style.border = '1px solid green';
 	        document.body.appendChild(div);
 
-	        div.innerHTML = compiled({ xTick: text });
+	        div.innerHTML = '<svg class="graphical-report__svg">\n            <g class="graphical-report__cell cell">\n            <g class="x axis">\n            <g class="tick"><text>' + text + '</text></g>\n            </g>\n            </g>\n            </svg>';
 
 	        var textNode = _d2.default.select(div).selectAll('.x.axis .tick text')[0][0];
 
@@ -1967,6 +1964,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	var traverseJSON = function traverseJSON(srcObject, byProperty, fnSelectorPredicates, funcTransformRules) {
 
 	    var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -2234,8 +2233,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    clone: function clone(obj) {
 	        return deepClone(obj);
 	    },
-	    isArray: function isArray(obj) {
-	        return Array.isArray(obj);
+	    isDate: function isDate(obj) {
+	        return obj instanceof Date && !isNaN(Number(obj));
+	    },
+	    isObject: function isObject(obj) {
+	        return obj != null && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object';
 	    },
 	    isChartElement: function isChartElement(element) {
 	        return chartElement.some(function (Element) {
@@ -2249,8 +2251,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var m = 10;
 
-	        var low = parseFloat(Math.min.apply(null, domain).toFixed(15));
-	        var top = parseFloat(Math.max.apply(null, domain).toFixed(15));
+	        var low = parseFloat(Math.min.apply(Math, _toConsumableArray(domain)).toFixed(15));
+	        var top = parseFloat(Math.max.apply(Math, _toConsumableArray(domain)).toFixed(15));
 
 	        if (low === top) {
 	            var k = top >= 0 ? -1 : 1;
@@ -2313,24 +2315,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    generateRatioFunction: function generateRatioFunction(dimPropName, paramsList, chartInstanceRef) {
 
 	        var unify = function unify(v) {
-	            return v instanceof Date ? v.getTime() : v;
+	            return utils.isDate(v) ? v.getTime() : v;
 	        };
 
 	        var dataNewSnap = 0;
 	        var dataPrevRef = null;
 	        var xHash = _underscore2.default.memoize(function (data, keys) {
-	            return (0, _underscore2.default)(data).chain().map(function (row) {
+	            return _underscore2.default.uniq(data.map(function (row) {
 	                return keys.reduce(function (r, k) {
 	                    return r.concat(unify(row[k]));
 	                }, []);
-	            }).uniq(function (t) {
+	            }), function (t) {
 	                return JSON.stringify(t);
 	            }).reduce(function (memo, t) {
 	                var k = t[0];
 	                memo[k] = memo[k] || 0;
 	                memo[k] += 1;
 	                return memo;
-	            }, {}).value();
+	            }, {});
 	        }, function (data, keys) {
 	            var seed = dataPrevRef === data ? dataNewSnap : ++dataNewSnap;
 	            dataPrevRef = data;
@@ -2356,8 +2358,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            var xTotal = function xTotal(keys) {
-	                return _underscore2.default.values(xHash(data, keys)).reduce(function (sum, v) {
-	                    return sum + v;
+	                var arr = xHash(data, keys);
+	                return Object.keys(arr).reduce(function (sum, k) {
+	                    return sum + arr[k];
 	                }, 0);
 	            };
 
@@ -2422,10 +2425,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var min = domain[0];
 	        var max = domain[1];
 	        var segment = (max - min) / (parts - 1);
-	        var chunks = _underscore2.default.times(parts - 2, function (n) {
+	        var chunks = parts >= 2 ? utils.range(parts - 2).map(function (n) {
 	            return min + segment * (n + 1);
-	        });
-	        return [min].concat(chunks).concat(max);
+	        }) : [];
+	        return [min].concat(_toConsumableArray(chunks), [max]);
 	    },
 
 	    extRGBColor: function extRGBColor(x) {
@@ -2450,6 +2453,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        return angle;
+	    },
+
+	    range: function range(start, end) {
+	        if (arguments.length === 1) {
+	            end = start;
+	            start = 0;
+	        }
+	        var arr = [];
+	        for (var i = start; i < end; i++) {
+	            arr.push(i);
+	        }
+	        return arr;
 	    }
 	};
 
@@ -3599,7 +3614,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return model.xi(a) - model.xi(b);
 	            });
 
-	            var xs = _underscore2.default.uniq(sortedData.map(function (row) {
+	            var xs = _underscore2.default.unique(sortedData.map(function (row) {
 	                return row[dx];
 	            }), true);
 
@@ -3741,7 +3756,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.w = width;
 	        this.h = height;
 	        this.guide = _underscore2.default.defaults(labelGuide || {}, {
-	            fontFamily: 'Helvetica, Arial, sans-serif',
+	            fontFamily: 'Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif',
 	            fontWeight: 'normal',
 	            fontSize: 10,
 	            fontColor: '#000',
@@ -4555,18 +4570,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.FormatterRegistry = undefined;
 
+	var _utils = __webpack_require__(70);
+
 	var _d = __webpack_require__(2);
 
 	var _d2 = _interopRequireDefault(_d);
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	/* jshint ignore:end */
-	/* jshint ignore:start */
 	var FORMATS_MAP = {
 
 	    'x-num-auto': function xNumAuto(x) {
@@ -4614,6 +4626,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    'x-time-auto': null
 	};
+	/* jshint ignore:start */
+
 
 	var FormatterRegistry = {
 
@@ -4634,7 +4648,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (!hasFormat && formatAlias) {
 	            formatter = function formatter(v) {
-	                var f = _underscore2.default.isDate(v) ? _d2.default.time.format(formatAlias) : _d2.default.format(formatAlias);
+	                var f = _utils.utils.isDate(v) ? _d2.default.time.format(formatAlias) : _d2.default.format(formatAlias);
 	                return f(v);
 	            };
 	        }
@@ -4815,9 +4829,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 
-	var d3_decorator_fix_horizontal_axis_ticks_overflow = function d3_decorator_fix_horizontal_axis_ticks_overflow(axisNode) {
+	var d3_decorator_fix_horizontal_axis_ticks_overflow = function d3_decorator_fix_horizontal_axis_ticks_overflow(axisNode, activeTicks) {
 
-	    var timeTicks = axisNode.selectAll('.tick')[0];
+	    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
+	    if (isDate) {
+	        activeTicks = activeTicks.map(function (d) {
+	            return Number(d);
+	        });
+	    }
+
+	    var timeTicks = axisNode.selectAll('.tick').filter(function (d) {
+	        return activeTicks.indexOf(isDate ? Number(d) : d) >= 0;
+	    })[0];
 	    if (timeTicks.length < 2) {
 	        return;
 	    }
@@ -4829,7 +4852,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var maxTextLn = 0;
 	    var iMaxTexts = -1;
-	    var timeTexts = axisNode.selectAll('.tick text')[0];
+	    var timeTexts = axisNode.selectAll('.tick text').filter(function (d) {
+	        return activeTicks.indexOf(isDate ? Number(d) : d) >= 0;
+	    })[0];
 	    timeTexts.forEach(function (textNode, i) {
 	        var innerHTML = textNode.textContent || '';
 	        var textLength = innerHTML.length;
@@ -4947,13 +4972,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var d3_decorator_avoid_labels_collisions = function d3_decorator_avoid_labels_collisions(nodeScale, isHorizontal) {
+	var d3_decorator_avoid_labels_collisions = function d3_decorator_avoid_labels_collisions(nodeScale, isHorizontal, activeTicks) {
+	    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
+	    if (isDate) {
+	        activeTicks = activeTicks.map(function (d) {
+	            return Number(d);
+	        });
+	    }
 	    var textOffsetStep = 11;
 	    var refOffsetStart = isHorizontal ? -10 : 20;
 	    var translateParam = isHorizontal ? 0 : 1;
 	    var directionKoeff = isHorizontal ? 1 : -1;
 	    var layoutModel = [];
-	    nodeScale.selectAll('.tick').each(function () {
+	    nodeScale.selectAll('.tick').filter(function (d) {
+	        return activeTicks.indexOf(isDate ? Number(d) : d) >= 0;
+	    }).each(function () {
 	        var tick = _d2.default.select(this);
 
 	        var translateXStr = tick.attr('transform').replace('translate(', '').replace(' ', ',') // IE specific
@@ -5123,7 +5156,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var d3_animationInterceptor = function d3_animationInterceptor(speed, initAttrs, doneAttrs, afterUpdate) {
 
-	    var xAfterUpdate = afterUpdate || _underscore2.default.identity;
+	    var xAfterUpdate = afterUpdate || function (x) {
+	        return x;
+	    };
 	    var afterUpdateIterator = function afterUpdateIterator() {
 	        xAfterUpdate(this);
 	    };
@@ -6356,6 +6391,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -6363,7 +6400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	var cast = function cast(v) {
-	    return _underscore2.default.isDate(v) ? v.getTime() : v;
+	    return _utils.utils.isDate(v) ? v.getTime() : v;
 	};
 
 	var GPL = exports.GPL = function (_Emitter) {
@@ -6399,13 +6436,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _this.transformations = _underscore2.default.extend(config.transformations || {}, {
 	            where: function where(data, tuple) {
-	                var predicates = _underscore2.default.map(tuple, function (v, k) {
+	                var predicates = Object.keys(tuple || {}).map(function (k) {
 	                    return function (row) {
-	                        return cast(row[k]) === v;
+	                        return cast(row[k]) === tuple[k];
 	                    };
 	                });
-	                return (0, _underscore2.default)(data).filter(function (row) {
-	                    return _underscore2.default.every(predicates, function (p) {
+	                return data.filter(function (row) {
+	                    return predicates.every(function (p) {
 	                        return p(row);
 	                    });
 	                });
@@ -6598,7 +6635,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                func: func,
 	                args: funcArgs,
 	                exec: function exec() {
-	                    return func.apply(null, [dataFn].concat(funcArgs));
+	                    return func.apply(undefined, [dataFn].concat(_toConsumableArray(funcArgs || [])));
 	                }
 	            };
 	        }
@@ -6646,14 +6683,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore2 = _interopRequireDefault(_underscore);
 
+	var _utils = __webpack_require__(70);
+
 	var _unitDomainPeriodGenerator = __webpack_require__(92);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	var unify = function unify(v) {
-	    return v instanceof Date ? v.getTime() : v;
+	    return _utils.utils.isDate(v) ? v.getTime() : v;
 	};
 
 	var FramesAlgebra = {
@@ -6661,15 +6702,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var data = dataFn();
 
-	        var domainX = (0, _underscore2.default)(data).chain().pluck(dimX).unique(unify).value();
-	        var domainY = (0, _underscore2.default)(data).chain().pluck(dimY).unique(unify).value();
+	        var domainX = _underscore2.default.unique(data.map(function (x) {
+	            return x[dimX];
+	        }), unify);
+	        var domainY = _underscore2.default.unique(data.map(function (x) {
+	            return x[dimY];
+	        }), unify);
 
 	        var domX = domainX.length === 0 ? [null] : domainX;
 	        var domY = domainY.length === 0 ? [null] : domainY;
 
-	        return (0, _underscore2.default)(domY).reduce(function (memo, rowVal) {
+	        return domY.reduce(function (memo, rowVal) {
 
-	            return memo.concat((0, _underscore2.default)(domX).map(function (colVal) {
+	            return memo.concat(domX.map(function (colVal) {
 
 	                var r = {};
 
@@ -6688,23 +6733,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    cross_period: function cross_period(dataFn, dimX, dimY, xPeriod, yPeriod) {
 	        var data = dataFn();
 
-	        var domainX = (0, _underscore2.default)(data).chain().pluck(dimX).unique(unify).value();
-	        var domainY = (0, _underscore2.default)(data).chain().pluck(dimY).unique(unify).value();
+	        var domainX = _underscore2.default.unique(data.map(function (x) {
+	            return x[dimX];
+	        }), unify);
+	        var domainY = _underscore2.default.unique(data.map(function (x) {
+	            return x[dimY];
+	        }), unify);
 
 	        var domX = domainX.length === 0 ? [null] : domainX;
 	        var domY = domainY.length === 0 ? [null] : domainY;
 
 	        if (xPeriod) {
-	            domX = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(_underscore2.default.min(domainX), _underscore2.default.max(domainX), xPeriod);
+	            domX = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(Math.min.apply(Math, _toConsumableArray(domainX)), Math.max.apply(Math, _toConsumableArray(domainX)), xPeriod);
 	        }
 
 	        if (yPeriod) {
-	            domY = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(_underscore2.default.min(domainY), _underscore2.default.max(domainY), yPeriod);
+	            domY = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(Math.min.apply(Math, _toConsumableArray(domainY)), Math.max.apply(Math, _toConsumableArray(domainY)), yPeriod);
 	        }
 
-	        return (0, _underscore2.default)(domY).reduce(function (memo, rowVal) {
+	        return domY.reduce(function (memo, rowVal) {
 
-	            return memo.concat((0, _underscore2.default)(domX).map(function (colVal) {
+	            return memo.concat(domX.map(function (colVal) {
 
 	                var r = {};
 
@@ -6722,7 +6771,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    groupBy: function groupBy(dataFn, dim) {
 	        var data = dataFn();
-	        var domainX = (0, _underscore2.default)(data).chain().pluck(dim).unique(unify).value();
+	        var domainX = _underscore2.default.unique(data.map(function (x) {
+	            return x[dim];
+	        }), unify);
 	        return domainX.map(function (x) {
 	            return _defineProperty({}, dim, unify(x));
 	        });
@@ -7278,10 +7329,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getSourceFiltersIterator',
 	        value: function getSourceFiltersIterator(rejectFiltersPredicate) {
+	            var _this5 = this;
 
-	            var filters = (0, _underscore2.default)(this._filtersStore.filters).chain().values().flatten().reject(function (f) {
-	                return rejectFiltersPredicate(f);
-	            }).pluck('predicate').value();
+	            var filters = _underscore2.default.flatten(Object.keys(this._filtersStore.filters).map(function (key) {
+	                return _this5._filtersStore.filters[key];
+	            })).filter(function (f) {
+	                return !rejectFiltersPredicate(f);
+	            }).map(function (x) {
+	                return x.predicate;
+	            });
 
 	            return function (row) {
 	                return filters.reduce(function (prev, f) {
@@ -7292,14 +7348,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDataSources',
 	        value: function getDataSources() {
-	            var _this5 = this;
+	            var _this6 = this;
 
 	            var param = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-
 	            var excludeFiltersByTagAndSource = function excludeFiltersByTagAndSource(k) {
 	                return function (f) {
-	                    return _underscore2.default.contains(param.excludeFilter, f.tag) || f.src !== k;
+	                    return param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1 || f.src !== k;
 	                };
 	            };
 
@@ -7309,7 +7364,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return k !== '?';
 	            }).reduce(function (memo, k) {
 	                var item = chartDataModel[k];
-	                var filterIterator = _this5.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+	                var filterIterator = _this6.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
 	                memo[k] = {
 	                    dims: item.dims,
 	                    data: item.data.filter(filterIterator)
@@ -7379,11 +7434,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'removeFilter',
 	        value: function removeFilter(id) {
-	            var _this6 = this;
+	            var _this7 = this;
 
-	            _underscore2.default.each(this._filtersStore.filters, function (filters, key) {
-	                _this6._filtersStore.filters[key] = _underscore2.default.reject(filters, function (item) {
-	                    return item.id === id;
+	            Object.keys(this._filtersStore.filters).map(function (key) {
+	                _this7._filtersStore.filters[key] = _this7._filtersStore.filters[key].filter(function (item) {
+	                    return item.id !== id;
 	                });
 	            });
 	            return this;
@@ -7498,13 +7553,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function setupSettings(configSettings) {
 	            var globalSettings = Plot.globalSettings;
 	            var localSettings = Object.keys(globalSettings).reduce(function (memo, k) {
-	                memo[k] = _underscore2.default.isFunction(globalSettings[k]) ? globalSettings[k] : _utils.utils.clone(globalSettings[k]);
+	                memo[k] = typeof globalSettings[k] === 'function' ? globalSettings[k] : _utils.utils.clone(globalSettings[k]);
 	                return memo;
 	            }, {});
 
 	            var r = _underscore2.default.defaults(configSettings || {}, localSettings);
 
-	            if (!_utils.utils.isArray(r.specEngine)) {
+	            if (!Array.isArray(r.specEngine)) {
 	                r.specEngine = [{ width: Number.MAX_VALUE, name: r.specEngine }];
 	            }
 
@@ -8614,13 +8669,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var pair = defaultDetect;
 
-	            if (_underscore2.default.isDate(propertyValue)) {
+	            if (_utils.utils.isDate(propertyValue)) {
 	                pair.type = 'measure';
 	                pair.scale = 'time';
-	            } else if (_underscore2.default.isObject(propertyValue)) {
+	            } else if (_utils.utils.isObject(propertyValue)) {
 	                pair.type = 'order';
 	                pair.scale = 'ordinal';
-	            } else if (_underscore2.default.isNumber(propertyValue)) {
+	            } else if (Number.isFinite(propertyValue)) {
 	                pair.type = 'measure';
 	                pair.scale = 'linear';
 	            }
@@ -8655,7 +8710,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return memo;
 	        };
 
-	        return _underscore2.default.reduce(data, reducer, {});
+	        return data.reduce(reducer, {});
 	    },
 
 	    sortByDim: function sortByDim(data, dimName, dimInfo) {
@@ -8839,7 +8894,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                // leaf elements should inherit coordinates properties
 	                if (root && !childUnit.hasOwnProperty('units')) {
-	                    childUnit = _underscore2.default.defaults(childUnit, _underscore2.default.pick(root, 'x', 'y'));
+	                    childUnit = _underscore2.default.defaults(childUnit, { x: root.x, y: root.y });
 
 	                    var parentGuide = _utils.utils.clone(root.guide || {});
 	                    childUnit.guide.x = _underscore2.default.defaults(childUnit.guide.x || {}, parentGuide.x);
@@ -8862,10 +8917,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var dims = gplSpec.sources['/'].dims;
 
 	            var reduceIterator = function reduceIterator(row, key) {
-
-	                if (_underscore2.default.isObject(row[key]) && !_underscore2.default.isDate(row[key])) {
-	                    _underscore2.default.each(row[key], function (v, k) {
-	                        return row[key + '.' + k] = v;
+	                var rowKey = row[key];
+	                if (_utils.utils.isObject(rowKey) && !_utils.utils.isDate(rowKey)) {
+	                    Object.keys(rowKey).forEach(function (k) {
+	                        return row[key + '.' + k] = rowKey[k];
 	                    });
 	                }
 
@@ -9186,6 +9241,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	var sum = function sum(arr) {
 	    return arr.reduce(function (sum, x) {
 	        return sum + x;
@@ -9195,10 +9252,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function extendGuide(guide, targetUnit, dimension, properties) {
 	    var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
 	    guide_dim = guide_dim || {};
-	    _underscore2.default.each(properties, function (prop) {
+	    properties.forEach(function (prop) {
 	        _underscore2.default.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
 	    });
-	    _underscore2.default.extend(targetUnit.guide[dimension], _underscore2.default.omit.apply(_underscore2.default, [guide_dim].concat[properties]));
+	    _underscore2.default.extend(targetUnit.guide[dimension], _underscore2.default.omit.apply(_underscore2.default, [guide_dim].concat(_toConsumableArray(properties))));
 	}
 
 	var applyCustomProps = function applyCustomProps(targetUnit, customUnit) {
@@ -9211,10 +9268,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        padding: []
 	    };
 
-	    _underscore2.default.each(config, function (properties, name) {
+	    Object.keys(config).forEach(function (name) {
+	        var properties = config[name];
 	        extendGuide(guide, targetUnit, name, properties);
 	    });
-	    _underscore2.default.extend(targetUnit.guide, _underscore2.default.omit.apply(_underscore2.default, [guide].concat(_underscore2.default.keys(config))));
+	    _underscore2.default.extend(targetUnit.guide, Object.keys(guide).reduce(function (obj, k) {
+	        if (!config.hasOwnProperty(k)) {
+	            obj[k] = guide[k];
+	        }
+	        return obj;
+	    }, {}));
+
 	    return targetUnit;
 	};
 
@@ -9222,7 +9286,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    guide[dimension] = _underscore2.default.defaults(guide[dimension] || {}, {
 	        label: ''
 	    });
-	    guide[dimension].label = _underscore2.default.isObject(guide[dimension].label) ? guide[dimension].label : { text: guide[dimension].label };
+	    guide[dimension].label = _utils.utils.isObject(guide[dimension].label) ? guide[dimension].label : { text: guide[dimension].label };
 	    guide[dimension].label = _underscore2.default.defaults(guide[dimension].label, extend || {}, {
 	        padding: 32,
 	        rotate: 0,
@@ -9317,14 +9381,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return size;
 	    }
 
-	    var maxXTickText = _underscore2.default.max(domainValues, function (x) {
-	        return formatter(x).toString().length;
-	    });
+	    var maxXTickText = domainValues.reduce(function (prev, value) {
+	        var computed = formatter(value).toString().length;
+
+	        if (!prev.computed || computed > prev.computed) {
+	            return {
+	                value: value,
+	                computed: computed
+	            };
+	        }
+	        return prev;
+	    }, {}).value;
 
 	    // d3 sometimes produce fractional ticks on wide space
 	    // so we intentionally add fractional suffix
 	    // to foresee scale density issues
-	    var suffix = _underscore2.default.isNumber(maxXTickText) ? '.00' : '';
+	    var suffix = Number.isFinite(maxXTickText) || Number.isNaN(maxXTickText) ? '.00' : '';
 
 	    return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
 	};
@@ -9371,7 +9443,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var xRules = xOrY === 'x' ? [[0, 45, 'middle'], [45, 135, 'start'], [135, 225, 'middle'], [225, 315, 'end'], [315, 360, 'middle']] : [[0, 90, 'end'], [90, 135, 'middle'], [135, 225, 'start'], [225, 315, 'middle'], [315, 360, 'end']];
 
-	    var i = _underscore2.default.findIndex(xRules, function (r) {
+	    var i = xRules.findIndex(function (r) {
 	        return angle >= r[0] && angle < r[1];
 	    });
 
@@ -9554,8 +9626,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            unit.guide.x = unit.guide.x || { label: '' };
 	            unit.guide.y = unit.guide.y || { label: '' };
 
-	            unit.guide.x.label = _underscore2.default.isObject(unit.guide.x.label) ? unit.guide.x.label : { text: unit.guide.x.label };
-	            unit.guide.y.label = _underscore2.default.isObject(unit.guide.y.label) ? unit.guide.y.label : { text: unit.guide.y.label };
+	            unit.guide.x.label = _utils.utils.isObject(unit.guide.x.label) ? unit.guide.x.label : { text: unit.guide.x.label };
+	            unit.guide.y.label = _utils.utils.isObject(unit.guide.y.label) ? unit.guide.y.label : { text: unit.guide.y.label };
 
 	            if (unit.x) {
 	                unit.guide.x.label.text = unit.guide.x.label.text || meta.dimension(unit.x).dimName;
@@ -9740,7 +9812,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    values: values,
 	                    isEmpty: dim.type == null
 	                    // isEmpty: (source == '?')
-	                    // isEmpty: ((values.filter((x) => !(_.isUndefined(x))).length) === 0)
+	                    // isEmpty: ((values.filter((x) => !(x === undefined)).length) === 0)
 	                };
 	            }
 	        };
@@ -9772,7 +9844,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var size = spec.settings.size;
 
-	            var rule = _underscore2.default.find(spec.settings.specEngine, function (rule) {
+	            var rule = spec.settings.specEngine.find(function (rule) {
 	                return size.width <= rule.width;
 	            });
 
@@ -10395,33 +10467,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return Chart;
 	}(_tau.Plot);
 
-	Chart.resizeOnWindowEvent = function () {
+	Chart.winAware = [];
 
-	    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
-	        return setTimeout(fn, 17);
-	    };
-	    var rIndex;
+	Chart.resizeOnWindowEvent = function () {
+	    var rIndex = void 0;
 
 	    function requestReposition() {
 	        if (rIndex || !Chart.winAware.length) {
 	            return;
 	        }
-	        rIndex = rAF(resize);
+	        rIndex = window.requestAnimationFrame(resize);
 	    }
 
 	    function resize() {
 	        rIndex = 0;
-	        var chart;
 	        for (var i = 0, l = Chart.winAware.length; i < l; i++) {
-	            chart = Chart.winAware[i];
-	            chart.resize();
+	            Chart.winAware[i].resize();
 	        }
 	    }
 
 	    return requestReposition;
 	}();
-	Chart.winAware = [];
 	window.addEventListener('resize', Chart.resizeOnWindowEvent);
+
 	exports.Chart = Chart;
 
 /***/ },
@@ -10437,19 +10505,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _error = __webpack_require__(76);
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 	var chartTypes = {};
 	var chartRules = {};
 
 	var throwNotSupported = function throwNotSupported(alias) {
 	    var msg = 'Chart type ' + alias + ' is not supported.';
 	    console.log(msg); // eslint-disable-line
-	    console.log('Use one of ' + _underscore2.default.keys(chartTypes).join(', ') + '.'); // eslint-disable-line
+	    console.log('Use one of ' + Object.keys(chartTypes).join(', ') + '.'); // eslint-disable-line
 	    throw new _error.TauChartError(msg, _error.errorCodes.NOT_SUPPORTED_TYPE_CHART);
 	};
 
@@ -10468,7 +10530,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var chartFactory = chartTypes[alias];
 
-	        if (!_underscore2.default.isFunction(chartFactory)) {
+	        if (typeof chartFactory !== 'function') {
 	            throwNotSupported(alias);
 	        }
 
@@ -10564,7 +10626,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            tickFormatWordWrapLimit: 100
 	        });
 
-	        if (_underscore2.default.isString(_this.config.guide.x.label)) {
+	        if (typeof _this.config.guide.x.label === 'string') {
 	            _this.config.guide.x.label = {
 	                text: _this.config.guide.x.label
 	            };
@@ -10590,7 +10652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            tickFormatWordWrapLimit: 100
 	        });
 
-	        if (_underscore2.default.isString(_this.config.guide.y.label)) {
+	        if (typeof _this.config.guide.y.label === 'string') {
 	            _this.config.guide.y.label = {
 	                text: _this.config.guide.y.label
 	            };
@@ -10771,24 +10833,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    (0, _d3Decorators.d3_decorator_prettify_axis_label)(axis, scale.guide.label, isHorizontal, size, animationSpeed);
 	                }
 
-	                var onTransitionEnd = function onTransitionEnd() {
+	                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
+	                var fixAxesCollision = function fixAxesCollision() {
 	                    if (prettifyTick && scale.guide.avoidCollisions) {
-	                        (0, _d3Decorators.d3_decorator_avoid_labels_collisions)(axis, isHorizontal);
+	                        (0, _d3Decorators.d3_decorator_avoid_labels_collisions)(axis, isHorizontal, activeTicks);
 	                    }
 
 	                    if (isHorizontal && scale.scaleType === 'time') {
-	                        (0, _d3Decorators.d3_decorator_fix_horizontal_axis_ticks_overflow)(axis);
+	                        (0, _d3Decorators.d3_decorator_fix_horizontal_axis_ticks_overflow)(axis, activeTicks);
 	                    }
 	                };
+	                fixAxesCollision();
 	                // NOTE: As far as floating axes transition overrides current,
 	                // transition `end` event cannot be used. So using `setTimeout`.
-	                // transAxis.onTransitionEnd(onTransitionEnd);
+	                // transAxis.onTransitionEnd(fixAxesCollision);
 	                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
 	                clearTimeout(_this3[timeoutField]);
 	                if (animationSpeed > 0) {
-	                    _this3[timeoutField] = setTimeout(onTransitionEnd, animationSpeed);
-	                } else {
-	                    onTransitionEnd();
+	                    _this3[timeoutField] = setTimeout(fixAxesCollision, animationSpeed);
 	                }
 	            });
 	        }
@@ -10865,7 +10927,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        }
 
 	                        var fixLineScales = ['time', 'ordinal', 'period'];
-	                        var fixBottomLine = _underscore2.default.contains(fixLineScales, yScale.scaleType);
+	                        var fixBottomLine = fixLineScales.indexOf(yScale.scaleType) !== -1;
 	                        if (fixBottomLine) {
 	                            var _extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
 	                            (0, _d3Decorators.d3_decorator_fix_axis_start_line)(_extraGridLines, _isHorizontal, width, height, animationSpeed);
@@ -11120,7 +11182,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: '_fnDrawGrid',
 	        value: function _fnDrawGrid(container, config, frameId, uniqueHash) {
 
-	            var grid = container.selectAll('.grid_' + frameId).data([uniqueHash], _underscore2.default.identity);
+	            var grid = container.selectAll('.grid_' + frameId).data([uniqueHash], function (x) {
+	                return x;
+	            });
 	            grid.exit().remove();
 	            grid.enter().append('g').attr('class', 'grid grid_' + frameId).attr('transform', _utilsDraw.utilsDraw.translate(this.L, this.T));
 
@@ -11134,7 +11198,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var columnsScalesMap = this.columnsScalesMap;
 	            var d3Axis = _d2.default.svg.axis().orient('left');
 
-	            var cols = grid.selectAll('.column').data(config.columns, _underscore2.default.identity);
+	            var cols = grid.selectAll('.column').data(config.columns, function (x) {
+	                return x;
+	            });
 	            cols.exit().remove();
 	            cols.enter().append('g').attr('class', 'column').attr('transform', function (d) {
 	                return _utilsDraw.utilsDraw.translate(xBase(d), 0);
@@ -11411,7 +11477,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        isRef: isRef
 	                    };
 	                }).filter(function (d) {
-	                    return !isNaN(d.x) && !isNaN(d.y);
+	                    return !Number.isNaN(d.x) && !Number.isNaN(d.y);
 	                });
 
 	                var anchors = labels.map(function (d) {
@@ -11507,7 +11573,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var path = _d2.default.geo.path().projection(d3Projection);
 
-	            var xmap = node.selectAll('.map-container').data(['' + innerW + innerH + center + contours.join('-')], _underscore2.default.identity);
+	            var xmap = node.selectAll('.map-container').data(['' + innerW + innerH + center + contours.join('-')], function (x) {
+	                return x;
+	            });
 	            xmap.exit().remove();
 	            xmap.enter().append('g').call(function () {
 
@@ -13283,7 +13351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this._fields = {};
 
 	        var data;
-	        if (_underscore2.default.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
+	        if (Array.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
 
 	            var leaveDimsInWhereArgsOrEx = function leaveDimsInWhereArgsOrEx(f) {
 	                var r = {};
@@ -13383,7 +13451,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return row[scale.dim];
 	            });
 
-	            return _underscore2.default.uniq(series, map_value(scale.dimType));
+	            return _underscore2.default.unique(series, map_value(scale.dimType));
 	        }
 	    }]);
 
@@ -13406,10 +13474,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _base = __webpack_require__(121);
 
 	var _utils = __webpack_require__(70);
-
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
 
 	var _d = __webpack_require__(2);
 
@@ -13439,7 +13503,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var discrete = scaleConfig.dimType !== 'measure';
 
-	        var scaleBrewer = _this.scaleConfig.brewer || (discrete ? _underscore2.default.times(20, function (i) {
+	        var scaleBrewer = _this.scaleConfig.brewer || (discrete ? _utils.utils.range(20).map(function (i) {
 	            return 'color20-' + (1 + i);
 	        }) : ['#eee', '#000']);
 
@@ -13449,7 +13513,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var vars = _d2.default.extent(_this.vars);
 
 	            var isNum = function isNum(num) {
-	                return !isNaN(num) && (_underscore2.default.isNumber(num) || _underscore2.default.isDate(num));
+	                return Number.isFinite(num) || _utils.utils.isDate(num);
 	            };
 	            var min = isNum(props.min) ? props.min : vars[0];
 	            var max = isNum(props.max) ? props.max : vars[1];
@@ -13495,7 +13559,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'createDiscreteScale',
 	        value: function createDiscreteScale(varSet, brewer) {
 
-	            var defaultColorClass = _underscore2.default.constant('color-default');
+	            var defaultColorClass = function defaultColorClass() {
+	                return 'color-default';
+	            };
 
 	            var buildArrayGetClass = function buildArrayGetClass(domain, brewer) {
 	                var fullDomain = domain.map(function (x) {
@@ -13505,8 +13571,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var buildObjectGetClass = function buildObjectGetClass(brewer, defaultGetClass) {
-	                var domain = _underscore2.default.keys(brewer);
-	                var range = _underscore2.default.values(brewer);
+	                var domain = Object.keys(brewer);
+	                var range = domain.map(function (x) {
+	                    return brewer[x];
+	                });
 	                var calculateClass = _d2.default.scale.ordinal().range(range).domain(domain);
 	                return function (d) {
 	                    return brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
@@ -13521,17 +13589,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var func;
 
-	            if (_underscore2.default.isArray(brewer)) {
+	            if (Array.isArray(brewer)) {
 
 	                func = wrapString(buildArrayGetClass(varSet, brewer));
-	            } else if (_underscore2.default.isFunction(brewer)) {
+	            } else if (typeof brewer === 'function') {
 
 	                func = function func(d) {
-	                    return brewer(d, wrapString(buildArrayGetClass(varSet, _underscore2.default.times(20, function (i) {
+	                    return brewer(d, wrapString(buildArrayGetClass(varSet, _utils.utils.range(20).map(function (i) {
 	                        return 'color20-' + (1 + i);
 	                    }))));
 	                };
-	            } else if (_underscore2.default.isObject(brewer)) {
+	            } else if (_utils.utils.isObject(brewer)) {
 
 	                func = buildObjectGetClass(brewer, defaultColorClass);
 	            } else {
@@ -13547,7 +13615,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var func;
 
-	            if (_underscore2.default.isArray(brewer)) {
+	            if (Array.isArray(brewer)) {
 
 	                func = _d2.default.scale.linear().domain(_utils.utils.splitEvenly(varSet.map(function (x) {
 	                    return x - 0;
@@ -13614,17 +13682,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SizeScale).call(this, xSource, scaleConfig));
 
-	        var isNum = function isNum(num) {
-	            return !isNaN(num) && _underscore2.default.isNumber(num);
-	        };
-
 	        var props = _this.scaleConfig;
 	        var vars = _d2.default.extent(_this.vars);
 
-	        var min = isNum(props.min) ? props.min : vars[0];
-	        var max = isNum(props.max) ? props.max : vars[1];
+	        var min = Number.isFinite(props.min) ? props.min : vars[0];
+	        var max = Number.isFinite(props.max) ? props.max : vars[1];
 
-	        _this.vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(isNum)))];
+	        _this.vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(Number.isFinite))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(Number.isFinite)))];
 
 	        _this.addField('scaleType', 'size');
 	        return _this;
@@ -13636,7 +13700,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.domain().sort();
 	            var min = domain[0];
 	            var max = domain[domain.length - 1];
-	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	            return !Number.isNaN(min) && !Number.isNaN(max) && x <= max && x >= min;
 	        }
 	    }, {
 	        key: 'create',
@@ -13653,7 +13717,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var f = funcTypes[funType];
 
-	            var values = _underscore2.default.filter(varSet, _underscore2.default.isFinite);
+	            var values = varSet.filter(function (x) {
+	                return Number.isFinite(Number(x));
+	            });
 
 	            var func;
 	            if (values.length === 0) {
@@ -13676,7 +13742,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                    var numX = x !== null ? parseFloat(x) : 0;
 
-	                    if (!_underscore2.default.isFinite(numX)) {
+	                    if (!Number.isFinite(numX)) {
 	                        return maxSize;
 	                    }
 
@@ -13845,20 +13911,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var vars = _this.vars;
 
 	        var domain = _d2.default.extent(vars);
-	        var min = _underscore2.default.isNull(props.min) || _underscore2.default.isUndefined(props.min) ? domain[0] : new Date(props.min).getTime();
-	        var max = _underscore2.default.isNull(props.max) || _underscore2.default.isUndefined(props.max) ? domain[1] : new Date(props.max).getTime();
+	        var min = props.min === null || props.min === undefined ? domain[0] : new Date(props.min).getTime();
+	        var max = props.max === null || props.max === undefined ? domain[1] : new Date(props.max).getTime();
 
 	        var range = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
 
 	        var periodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(props.period);
 	        if (props.fitToFrameByDims || periodGenerator === null) {
-	            _this.vars = (0, _underscore2.default)(vars).chain().uniq(function (x) {
-	                return new Date(x).getTime();
-	            }).map(function (x) {
+	            _this.vars = _underscore2.default.unique(vars.map(function (x) {
 	                return new Date(x);
-	            }).sortBy(function (x) {
-	                return -x;
-	            }).value();
+	            }), function (x) {
+	                return x.getTime();
+	            }).sort(function (date1, date2) {
+	                return date2 - date1;
+	            });
 	        } else {
 	            _this.vars = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
 	        }
@@ -13957,10 +14023,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _base = __webpack_require__(121);
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
 	var _d = __webpack_require__(2);
 
 	var _d2 = _interopRequireDefault(_d);
@@ -13992,8 +14054,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return new Date(v);
 	        });
 
-	        var min = _underscore2.default.isNull(props.min) || _underscore2.default.isUndefined(props.min) ? domain[0] : new Date(props.min).getTime();
-	        var max = _underscore2.default.isNull(props.max) || _underscore2.default.isUndefined(props.max) ? domain[1] : new Date(props.max).getTime();
+	        var min = props.min === null || props.min === undefined ? domain[0] : new Date(props.min).getTime();
+	        var max = props.max === null || props.max === undefined ? domain[1] : new Date(props.max).getTime();
 
 	        vars = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
 
@@ -14028,7 +14090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.domain();
 	            var min = domain[0];
 	            var max = domain[domain.length - 1];
-	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	            return !Number.isNaN(min) && !Number.isNaN(max) && x <= max && x >= min;
 	        }
 	    }, {
 	        key: 'create',
@@ -14089,10 +14151,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(70);
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
 	var _d = __webpack_require__(2);
 
 	var _d2 = _interopRequireDefault(_d);
@@ -14119,17 +14177,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LinearScale).call(this, xSource, scaleConfig));
 
-	        var isNum = function isNum(num) {
-	            return !isNaN(num) && _underscore2.default.isNumber(num);
-	        };
-
 	        var props = _this.scaleConfig;
 	        var vars = _d2.default.extent(_this.vars);
 
-	        var min = isNum(props.min) ? props.min : vars[0];
-	        var max = isNum(props.max) ? props.max : vars[1];
+	        var min = Number.isFinite(props.min) ? props.min : vars[0];
+	        var max = Number.isFinite(props.max) ? props.max : vars[1];
 
-	        vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(isNum)))];
+	        vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(Number.isFinite))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(Number.isFinite)))];
 
 	        _this.vars = props.nice ? _utils.utils.niceZeroBased(vars) : _d2.default.extent(vars);
 
@@ -14143,7 +14197,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.domain();
 	            var min = domain[0];
 	            var max = domain[domain.length - 1];
-	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	            return !Number.isNaN(min) && !Number.isNaN(max) && x <= max && x >= min;
 	        }
 	    }, {
 	        key: 'create',
@@ -14201,10 +14255,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _error = __webpack_require__(76);
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
 	var _d = __webpack_require__(2);
 
 	var _d2 = _interopRequireDefault(_d);
@@ -14231,17 +14281,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LogarithmicScale).call(this, xSource, scaleConfig));
 
-	        var isNum = function isNum(num) {
-	            return !isNaN(num) && _underscore2.default.isNumber(num);
-	        };
-
 	        var props = _this.scaleConfig;
 	        var domain = _d2.default.extent(_this.vars);
 
-	        var min = isNum(props.min) ? props.min : domain[0];
-	        var max = isNum(props.max) ? props.max : domain[1];
+	        var min = Number.isFinite(props.min) ? props.min : domain[0];
+	        var max = Number.isFinite(props.max) ? props.max : domain[1];
 
-	        domain = [Math.min.apply(Math, _toConsumableArray([min, domain[0]].filter(isNum))), Math.max.apply(Math, _toConsumableArray([max, domain[1]].filter(isNum)))];
+	        domain = [Math.min.apply(Math, _toConsumableArray([min, domain[0]].filter(Number.isFinite))), Math.max.apply(Math, _toConsumableArray([max, domain[1]].filter(Number.isFinite)))];
 	        throwIfCrossesZero(domain);
 
 	        if (props.nice) {
@@ -14260,7 +14306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.domain();
 	            var min = domain[0];
 	            var max = domain[domain.length - 1];
-	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	            return !Number.isNaN(min) && !Number.isNaN(max) && x <= max && x >= min;
 	        }
 	    }, {
 	        key: 'create',
@@ -14336,8 +14382,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var absDomain = domain.map(function (d) {
 	        return Math.abs(d);
 	    });
-	    var top = Math.max.apply(null, absDomain);
-	    var low = Math.min.apply(null, absDomain);
+	    var top = Math.max.apply(Math, _toConsumableArray(absDomain));
+	    var low = Math.min.apply(Math, _toConsumableArray(absDomain));
 
 	    var lowExp = low.toExponential().split('e');
 	    var topExp = top.toExponential().split('e');
@@ -14440,15 +14486,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var props = _this.scaleConfig;
 	        var vars = _d2.default.extent(_this.vars);
 
-	        var min = _underscore2.default.isNumber(props.min) ? props.min : vars[0];
-	        var max = _underscore2.default.isNumber(props.max) ? props.max : vars[1];
+	        var min = Number.isFinite(props.min) ? props.min : vars[0];
+	        var max = Number.isFinite(props.max) ? props.max : vars[1];
 
 	        vars = [Math.min(min, vars[0]), Math.max(max, vars[1])];
 
 	        _this.vars = props.nice ? _utils.utils.niceZeroBased(vars) : _d2.default.extent(vars);
 
 	        var opacityStep = (1 - 0.2) / 9;
-	        var defBrewer = _underscore2.default.times(10, function (i) {
+	        var defBrewer = _utils.utils.range(10).map(function (i) {
 	            return 'rgba(90,180,90,' + (0.2 + i * opacityStep).toFixed(2) + ')';
 	        });
 
@@ -14464,7 +14510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.domain();
 	            var min = domain[0];
 	            var max = domain[domain.length - 1];
-	            return !isNaN(min) && !isNaN(max) && x <= max && x >= min;
+	            return !Number.isNaN(min) && !Number.isNaN(max) && x <= max && x >= min;
 	        }
 	    }, {
 	        key: 'create',
@@ -14474,7 +14520,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var brewer = this.getField('brewer');
 
-	            if (!_underscore2.default.isArray(brewer)) {
+	            if (!Array.isArray(brewer)) {
 	                throw new Error('This brewer is not supported');
 	            }
 
@@ -14631,8 +14677,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _strategyNormalizeAxi;
 
-	var _utils = __webpack_require__(70);
-
 	var _underscore = __webpack_require__(3);
 
 	var _underscore2 = _interopRequireDefault(_underscore);
@@ -14648,7 +14692,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var normalizeSettings = function normalizeSettings(axis) {
 	    var defaultValue = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
-	    return !_utils.utils.isArray(axis) ? [axis] : axis.length === 0 ? [defaultValue] : axis;
+	    return !Array.isArray(axis) ? [axis] : axis.length === 0 ? [defaultValue] : axis;
 	};
 
 	var createElement = function createElement(type, config) {
@@ -14686,7 +14730,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var axisName = config.axis;
 	    var index = config.indexMeasureAxis[0];
 	    var measure = axis[index];
-	    var newAxis = _underscore2.default.without(axis, measure);
+	    var newAxis = axis.filter(function (x) {
+	        return x !== measure;
+	    });
 	    newAxis.push(measure);
 
 	    var measureGuide = guide[index][axisName] || {};
@@ -14732,11 +14778,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var maxDeep = Math.max(x.length, y.length);
 
 	    var guide = normalizeSettings(config.guide || {}, {});
+	    var gapsSize = maxDeep - guide.length;
 
 	    // feel the gaps if needed
-	    _underscore2.default.times(maxDeep - guide.length, function () {
-	        return guide.push({});
-	    });
+	    for (var i = 0; i < gapsSize; i++) {
+	        guide.push({});
+	    }
 
 	    // cut items
 	    guide = guide.slice(0, maxDeep);
@@ -15123,17 +15170,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _underscore = __webpack_require__(3);
-
-	var _underscore2 = _interopRequireDefault(_underscore);
-
 	var _formatterRegistry = __webpack_require__(82);
 
 	var _unit = __webpack_require__(139);
 
 	var _spec = __webpack_require__(140);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -15209,7 +15250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                var label = guide.label;
 	                var guideLabel = guide.label || {};
-	                memoRef[scale.dim].label.push(_underscore2.default.isString(label) ? label : guideLabel._original_text || guideLabel.text);
+	                memoRef[scale.dim].label.push(typeof label === 'string' ? label : guideLabel._original_text || guideLabel.text);
 
 	                var format = guide.tickFormat || guide.tickPeriod;
 	                memoRef[scale.dim].format.push(format);
@@ -15251,10 +15292,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, {});
 
 	            var choiceRule = function choiceRule(arr, defaultValue) {
-
-	                var val = (0, _underscore2.default)(arr).chain().filter(_underscore2.default.identity).uniq().first().value();
-
-	                return val || defaultValue;
+	                return arr.filter(function (x) {
+	                    return x;
+	                })[0] || defaultValue;
 	            };
 
 	            return Object.keys(summary).reduce(function (memo, k) {
@@ -15506,6 +15546,98 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 	exports.Spec = Spec;
+
+/***/ },
+/* 141 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+	    setTimeout(fn, 17);
+	};
+
+	if (!Number.isFinite) {
+	    Object.defineProperty(Number, 'isFinite', {
+	        value: function value(_value) {
+	            return typeof _value === 'number' && isFinite(_value);
+	        },
+	        configurable: true,
+	        enumerable: false,
+	        writable: true
+	    });
+	}
+
+	if (!Number.isNaN) {
+	    Object.defineProperty(Number, 'isNaN', {
+	        value: function value(_value2) {
+	            return typeof _value2 === 'number' && isNaN(_value2);
+	        },
+	        configurable: true,
+	        enumerable: false,
+	        writable: true
+	    });
+	}
+
+	if (!Array.prototype.find) {
+	    Object.defineProperty(Array.prototype, 'find', {
+	        value: function value(predicate) {
+	            'use strict';
+
+	            if (this == null) {
+	                throw new TypeError('Array.prototype.find called on null or undefined');
+	            }
+	            if (typeof predicate !== 'function') {
+	                throw new TypeError('predicate must be a function');
+	            }
+	            var list = Object(this);
+	            var length = list.length >>> 0;
+	            var thisArg = arguments[1];
+	            var value;
+
+	            for (var i = 0; i < length; i++) {
+	                value = list[i];
+	                if (predicate.call(thisArg, value, i, list)) {
+	                    return value;
+	                }
+	            }
+	            return undefined;
+	        },
+	        configurable: true,
+	        enumerable: false,
+	        writable: true
+	    });
+	}
+
+	if (!Array.prototype.findIndex) {
+	    Object.defineProperty(Array.prototype, 'findIndex', {
+	        value: function value(predicate) {
+	            'use strict';
+
+	            if (this == null) {
+	                throw new TypeError('Array.prototype.findIndex called on null or undefined');
+	            }
+	            if (typeof predicate !== 'function') {
+	                throw new TypeError('predicate must be a function');
+	            }
+	            var list = Object(this);
+	            var length = list.length >>> 0;
+	            var thisArg = arguments[1];
+	            var value;
+
+	            for (var i = 0; i < length; i++) {
+	                value = list[i];
+	                if (predicate.call(thisArg, value, i, list)) {
+	                    return i;
+	                }
+	            }
+	            return -1;
+	        },
+	        configurable: true,
+	        enumerable: false,
+	        writable: true
+	    });
+	}
 
 /***/ }
 /******/ ])

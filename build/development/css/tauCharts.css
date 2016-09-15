@@ -6,13 +6,13 @@
 /* endregion */
 .graphical-report__layout {
   line-height: 1;
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
 }
 .graphical-report__layout text {
-  font: normal 13px Helvetica, Arial, sans-serif;
+  font: normal 13px Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
 }
 .graphical-report__chart {
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
   position: absolute;
   height: 100%;
   width: 100%;
@@ -42,7 +42,7 @@
   display: flex;
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
-  max-height: 100%;
+  height: 100%;
 }
 .graphical-report__layout__footer {
   -ms-flex: 0 1 auto;
