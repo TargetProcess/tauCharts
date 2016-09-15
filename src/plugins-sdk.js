@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {FormatterRegistry} from './formatter-registry';
 import {Unit} from './plugins-sdk/unit';
 import {Spec} from './plugins-sdk/spec';
@@ -63,7 +62,7 @@ class PluginsSDK {
 
             var label = guide.label;
             var guideLabel = (guide.label || {});
-            memoRef[scale.dim].label.push(_.isString(label) ?
+            memoRef[scale.dim].label.push((typeof label === 'string') ?
                     (label) :
                     (guideLabel._original_text || guideLabel.text)
             );
@@ -109,15 +108,7 @@ class PluginsSDK {
         }, {});
 
         var choiceRule = function (arr, defaultValue) {
-
-            var val = _(arr)
-                .chain()
-                .filter(_.identity)
-                .uniq()
-                .first()
-                .value();
-
-            return val || defaultValue;
+            return arr.filter((x) => x)[0] || defaultValue;
         };
 
         return Object

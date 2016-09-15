@@ -1,6 +1,6 @@
+import {utils} from './utils/utils';
 /* jshint ignore:start */
 import {default as d3} from 'd3';
-import {default as _} from 'underscore';
 /* jshint ignore:end */
 var FORMATS_MAP = {
 
@@ -67,7 +67,7 @@ var FormatterRegistry = {
 
         if (!hasFormat && formatAlias) {
             formatter = (v) => {
-                var f = _.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
+                var f = utils.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
                 return f(v);
             };
         }

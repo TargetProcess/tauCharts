@@ -421,7 +421,7 @@ export class CartesianGrammar {
 
         var sortedData = data.sort((a, b) => model.xi(a) - model.xi(b));
 
-        var xs = _.uniq(sortedData.map((row) => row[dx]), true);
+        var xs = _.unique(sortedData.map((row) => row[dx]), true);
 
         var sign = ((row) => ((row[dy] >= 0) ? 'positive' : 'negative'));
 

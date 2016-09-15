@@ -1,7 +1,6 @@
 import {BaseScale} from './base';
 import {utils} from '../utils/utils';
 /* jshint ignore:start */
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
@@ -11,17 +10,15 @@ export class LinearScale extends BaseScale {
 
         super(xSource, scaleConfig);
 
-        var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
-
         var props = this.scaleConfig;
         var vars = d3.extent(this.vars);
 
-        var min = isNum(props.min) ? props.min : vars[0];
-        var max = isNum(props.max) ? props.max : vars[1];
+        var min = Number.isFinite(props.min) ? props.min : vars[0];
+        var max = Number.isFinite(props.max) ? props.max : vars[1];
 
         vars = [
-            Math.min(...[min, vars[0]].filter(isNum)),
-            Math.max(...[max, vars[1]].filter(isNum))
+            Math.min(...[min, vars[0]].filter(Number.isFinite)),
+            Math.max(...[max, vars[1]].filter(Number.isFinite))
         ];
 
         this.vars = (props.nice) ? utils.niceZeroBased(vars) : d3.extent(vars);
@@ -34,7 +31,7 @@ export class LinearScale extends BaseScale {
         var domain = this.domain();
         var min = domain[0];
         var max = domain[domain.length - 1];
-        return (!isNaN(min) && !isNaN(max) && (x <= max) && (x >= min));
+        return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
     }
 
     create(interval) {

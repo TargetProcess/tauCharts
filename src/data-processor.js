@@ -111,13 +111,13 @@ var DataProcessor = {
 
             var pair = defaultDetect;
 
-            if (_.isDate(propertyValue)) {
+            if (utils.isDate(propertyValue)) {
                 pair.type = 'measure';
                 pair.scale = 'time';
-            } else if (_.isObject(propertyValue)) {
+            } else if (utils.isObject(propertyValue)) {
                 pair.type = 'order';
                 pair.scale = 'ordinal';
-            } else if (_.isNumber(propertyValue)) {
+            } else if (Number.isFinite(propertyValue)) {
                 pair.type = 'measure';
                 pair.scale = 'linear';
             }
@@ -152,7 +152,7 @@ var DataProcessor = {
             return memo;
         };
 
-        return _.reduce(data, reducer, {});
+        return data.reduce(reducer, {});
     },
 
     sortByDim: function (data, dimName, dimInfo) {

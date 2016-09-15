@@ -149,7 +149,7 @@ export class GeoMap extends Element {
                         isRef: isRef
                     };
                 })
-                .filter((d) => !isNaN(d.x) && !isNaN(d.y));
+                .filter((d) => !Number.isNaN(d.x) && !Number.isNaN(d.y));
 
             var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
 
@@ -250,7 +250,7 @@ export class GeoMap extends Element {
 
         var xmap = node
             .selectAll('.map-container')
-            .data([`${innerW}${innerH}${center}${contours.join('-')}`], _.identity);
+            .data([`${innerW}${innerH}${center}${contours.join('-')}`], (x) => x);
         xmap.exit()
             .remove();
         xmap.enter()

@@ -1,7 +1,6 @@
 import {BaseScale} from './base';
 import {TauChartError, errorCodes} from '../error';
 /* jshint ignore:start */
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
@@ -11,17 +10,15 @@ export class LogarithmicScale extends BaseScale {
 
         super(xSource, scaleConfig);
 
-        var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
-
         var props = this.scaleConfig;
         var domain = d3.extent(this.vars);
 
-        var min = isNum(props.min) ? props.min : domain[0];
-        var max = isNum(props.max) ? props.max : domain[1];
+        var min = Number.isFinite(props.min) ? props.min : domain[0];
+        var max = Number.isFinite(props.max) ? props.max : domain[1];
 
         domain = [
-            Math.min(...[min, domain[0]].filter(isNum)),
-            Math.max(...[max, domain[1]].filter(isNum))
+            Math.min(...[min, domain[0]].filter(Number.isFinite)),
+            Math.max(...[max, domain[1]].filter(Number.isFinite))
         ];
         throwIfCrossesZero(domain);
 
@@ -39,7 +36,7 @@ export class LogarithmicScale extends BaseScale {
         var domain = this.domain();
         var min = domain[0];
         var max = domain[domain.length - 1];
-        return (!isNaN(min) && !isNaN(max) && (x <= max) && (x >= min));
+        return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
     }
 
     create(interval) {
@@ -115,8 +112,8 @@ function niceLog10(domain) {
 
     var isPositive = domain[0] > 0;
     var absDomain = domain.map((d) => Math.abs(d));
-    var top = Math.max.apply(null, absDomain);
-    var low = Math.min.apply(null, absDomain);
+    var top = Math.max(...absDomain);
+    var low = Math.min(...absDomain);
 
     var lowExp = low.toExponential().split('e');
     var topExp = top.toExponential().split('e');

@@ -495,7 +495,7 @@ var d3_add_transition_end_listener = (selection, callback) => {
 
 var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
 
-    const xAfterUpdate = afterUpdate || _.identity;
+    const xAfterUpdate = afterUpdate || ((x) => x);
     const afterUpdateIterator = function () {
         xAfterUpdate(this);
     };

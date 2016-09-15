@@ -1,7 +1,6 @@
 import {BaseScale} from './base';
 import {utils} from '../utils/utils';
 /* jshint ignore:start */
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
@@ -16,15 +15,15 @@ export class ColorScale extends BaseScale {
         var scaleBrewer = (this.scaleConfig.brewer
         ||
         (discrete ?
-            (_.times(20, (i) => 'color20-' + (1 + i))) :
-            (['#eee', '#000'])));
+            utils.range(20).map((i) => 'color20-' + (1 + i)) :
+            ['#eee', '#000']));
 
         var props = this.scaleConfig;
 
         if (!discrete) {
             var vars = d3.extent(this.vars);
 
-            var isNum = ((num) => (!isNaN(num) && (_.isNumber(num) || _.isDate(num))));
+            var isNum = (num) => (Number.isFinite(num) || utils.isDate(num));
             var min = isNum(props.min) ? props.min : vars[0];
             var max = isNum(props.max) ? props.max : vars[1];
 
@@ -70,7 +69,7 @@ export class ColorScale extends BaseScale {
 
     createDiscreteScale(varSet, brewer) {
 
-        var defaultColorClass = _.constant('color-default');
+        var defaultColorClass = () => 'color-default';
 
         var buildArrayGetClass = (domain, brewer) => {
             var fullDomain = domain.map((x) => String(x).toString());
@@ -78,8 +77,8 @@ export class ColorScale extends BaseScale {
         };
 
         var buildObjectGetClass = (brewer, defaultGetClass) => {
-            var domain = _.keys(brewer);
-            var range = _.values(brewer);
+            var domain = Object.keys(brewer);
+            var range = domain.map(x => brewer[x]);
             var calculateClass = d3.scale.ordinal().range(range).domain(domain);
             return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
         };
@@ -88,15 +87,18 @@ export class ColorScale extends BaseScale {
 
         var func;
 
-        if (_.isArray(brewer)) {
+        if (Array.isArray(brewer)) {
 
             func = wrapString(buildArrayGetClass(varSet, brewer));
 
-        } else if (_.isFunction(brewer)) {
+        } else if (typeof brewer === 'function') {
 
-            func = (d) => brewer(d, wrapString(buildArrayGetClass(varSet, _.times(20, (i) => 'color20-' + (1 + i)))));
+            func = (d) => brewer(d,
+                wrapString(
+                    buildArrayGetClass(varSet,
+                        utils.range(20).map((i) => 'color20-' + (1 + i)))));
 
-        } else if (_.isObject(brewer)) {
+        } else if (utils.isObject(brewer)) {
 
             func = buildObjectGetClass(brewer, defaultColorClass);
 
@@ -113,7 +115,7 @@ export class ColorScale extends BaseScale {
 
         var func;
 
-        if (_.isArray(brewer)) {
+        if (Array.isArray(brewer)) {
 
             func = d3.scale
                 .linear()

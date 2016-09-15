@@ -128,7 +128,7 @@ export class Parallel extends Element {
 
         var grid = container
             .selectAll(`.grid_${frameId}`)
-            .data([uniqueHash], _.identity);
+            .data([uniqueHash], (x) => x);
         grid.exit()
             .remove();
         grid.enter()
@@ -147,7 +147,7 @@ export class Parallel extends Element {
 
         var cols = grid
             .selectAll('.column')
-            .data(config.columns, _.identity);
+            .data(config.columns, (x) => x);
         cols.exit()
             .remove();
         cols.enter()

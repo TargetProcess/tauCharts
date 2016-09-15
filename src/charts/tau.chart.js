@@ -1,6 +1,7 @@
 import {Plot} from './tau.plot';
 import {chartTypesRegistry} from '../chart-alias-registry';
 import {default as _} from 'underscore';
+
 class Chart extends Plot {
 
     constructor(config) {
@@ -33,31 +34,27 @@ class Chart extends Plot {
     }
 }
 
-Chart.resizeOnWindowEvent = (function () {
+Chart.winAware = [];
 
-    var rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
-            return setTimeout(fn, 17);
-        };
-    var rIndex;
+Chart.resizeOnWindowEvent = (function () {
+    let rIndex;
 
     function requestReposition() {
         if (rIndex || !Chart.winAware.length) {
             return;
         }
-        rIndex = rAF(resize);
+        rIndex = window.requestAnimationFrame(resize);
     }
 
     function resize() {
         rIndex = 0;
-        var chart;
-        for (var i = 0, l = Chart.winAware.length; i < l; i++) {
-            chart = Chart.winAware[i];
-            chart.resize();
+        for (let i = 0, l = Chart.winAware.length; i < l; i++) {
+            Chart.winAware[i].resize();
         }
     }
 
     return requestReposition;
 }());
-Chart.winAware = [];
 window.addEventListener('resize', Chart.resizeOnWindowEvent);
+
 export {Chart};

@@ -13,17 +13,15 @@ export class SizeScale extends BaseScale {
 
         super(xSource, scaleConfig);
 
-        var isNum = ((num) => (!isNaN(num) && _.isNumber(num)));
-
         var props = this.scaleConfig;
         var vars = d3.extent(this.vars);
 
-        var min = isNum(props.min) ? props.min : vars[0];
-        var max = isNum(props.max) ? props.max : vars[1];
+        var min = Number.isFinite(props.min) ? props.min : vars[0];
+        var max = Number.isFinite(props.max) ? props.max : vars[1];
 
         this.vars = [
-            Math.min(...[min, vars[0]].filter(isNum)),
-            Math.max(...[max, vars[1]].filter(isNum))
+            Math.min(...[min, vars[0]].filter(Number.isFinite)),
+            Math.max(...[max, vars[1]].filter(Number.isFinite))
         ];
 
         this.addField('scaleType', 'size');
@@ -33,7 +31,7 @@ export class SizeScale extends BaseScale {
         var domain = this.domain().sort();
         var min = domain[0];
         var max = domain[domain.length - 1];
-        return (!isNaN(min) && !isNaN(max) && (x <= max) && (x >= min));
+        return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
     }
 
     create() {
@@ -49,7 +47,7 @@ export class SizeScale extends BaseScale {
 
         var f = funcTypes[funType];
 
-        var values = _.filter(varSet, _.isFinite);
+        var values = varSet.filter(x => Number.isFinite(Number(x)));
 
         var func;
         if (values.length === 0) {
@@ -70,7 +68,7 @@ export class SizeScale extends BaseScale {
 
                 var numX = (x !== null) ? parseFloat(x) : 0;
 
-                if (!_.isFinite(numX)) {
+                if (!Number.isFinite(numX)) {
                     return maxSize;
                 }
 

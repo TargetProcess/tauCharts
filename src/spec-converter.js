@@ -68,7 +68,7 @@ export class SpecConverter {
 
             // leaf elements should inherit coordinates properties
             if (root && !childUnit.hasOwnProperty('units')) {
-                childUnit = _.defaults(childUnit, _.pick(root, 'x', 'y'));
+                childUnit = _.defaults(childUnit, {x: root.x, y: root.y});
 
                 var parentGuide = utils.clone(root.guide || {});
                 childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
@@ -90,9 +90,9 @@ export class SpecConverter {
         var dims = gplSpec.sources['/'].dims;
 
         var reduceIterator = (row, key) => {
-
-            if (_.isObject(row[key]) && !_.isDate(row[key])) {
-                _.each(row[key], (v, k) => (row[key + '.' + k] = v));
+            let rowKey = row[key];
+            if (utils.isObject(rowKey) && !utils.isDate(rowKey)) {
+                Object.keys(rowKey).forEach((k) => (row[key + '.' + k] = rowKey[k]));
             }
 
             return row;

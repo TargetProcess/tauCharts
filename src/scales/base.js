@@ -18,7 +18,7 @@ export class BaseScale {
         this._fields = {};
 
         var data;
-        if (_.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
+        if (Array.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
 
             let leaveDimsInWhereArgsOrEx = (f) => {
                 var r = {};
@@ -115,6 +115,6 @@ export class BaseScale {
             scale.series :
             arr.map((row) => row[scale.dim]);
 
-        return _.uniq(series, map_value(scale.dimType));
+        return _.unique(series, map_value(scale.dimType));
     }
 }

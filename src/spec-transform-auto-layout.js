@@ -7,10 +7,10 @@ var sum = ((arr) => arr.reduce((sum, x) => (sum + x), 0));
 function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
     guide_dim = guide_dim || {};
-    _.each(properties, (prop) => {
+    properties.forEach((prop) => {
         _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
-    _.extend(targetUnit.guide[dimension], _.omit.apply(_, [guide_dim].concat[properties]));
+    _.extend(targetUnit.guide[dimension], _.omit(guide_dim, ...properties));
 }
 
 var applyCustomProps = (targetUnit, customUnit) => {
@@ -23,10 +23,17 @@ var applyCustomProps = (targetUnit, customUnit) => {
         padding: []
     };
 
-    _.each(config, (properties, name)=> {
+    Object.keys(config).forEach((name) => {
+        let properties = config[name];
         extendGuide(guide, targetUnit, name, properties);
     });
-    _.extend(targetUnit.guide, _.omit.apply(_, [guide].concat(_.keys(config))));
+    _.extend(targetUnit.guide, Object.keys(guide).reduce((obj, k) => {
+        if (!config.hasOwnProperty(k)) {
+            obj[k] = guide[k];
+        }
+        return obj;
+    }, {}));
+
     return targetUnit;
 };
 
@@ -34,7 +41,7 @@ var extendLabel = function (guide, dimension, extend) {
     guide[dimension] = _.defaults(guide[dimension] || {}, {
         label: ''
     });
-    guide[dimension].label = _.isObject(guide[dimension].label) ?
+    guide[dimension].label = utils.isObject(guide[dimension].label) ?
         guide[dimension].label :
     {text: guide[dimension].label};
     guide[dimension].label = _.defaults(
@@ -139,12 +146,22 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
         return size;
     }
 
-    var maxXTickText = _.max(domainValues, (x) => formatter(x).toString().length);
+    var maxXTickText = domainValues.reduce((prev, value) => {
+        let computed = formatter(value).toString().length;
+
+        if (!prev.computed || computed > prev.computed) {
+            return {
+                value: value,
+                computed: computed
+            };
+        }
+        return prev;
+    }, {}).value;
 
     // d3 sometimes produce fractional ticks on wide space
     // so we intentionally add fractional suffix
     // to foresee scale density issues
-    var suffix = _.isNumber(maxXTickText) ? '.00' : '';
+    var suffix = (Number.isFinite(maxXTickText) || Number.isNaN(maxXTickText)) ? '.00' : '';
 
     return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
 };
@@ -202,7 +219,7 @@ var getTextAnchorByAngle = (xAngle, xOrY = 'x') => {
             [315, 360, 'end']
         ]);
 
-    var i = _.findIndex(xRules, (r) => (angle >= r[0] && angle < r[1]));
+    var i = xRules.findIndex((r) => (angle >= r[0] && angle < r[1]));
 
     return xRules[i][2];
 };
@@ -423,8 +440,12 @@ var SpecEngineTypeMap = {
                 unit.guide.x = unit.guide.x || {label: ''};
                 unit.guide.y = unit.guide.y || {label: ''};
 
-                unit.guide.x.label = _.isObject(unit.guide.x.label) ? unit.guide.x.label : {text: unit.guide.x.label};
-                unit.guide.y.label = _.isObject(unit.guide.y.label) ? unit.guide.y.label : {text: unit.guide.y.label};
+                unit.guide.x.label = utils.isObject(unit.guide.x.label)
+                    ? unit.guide.x.label
+                    : {text: unit.guide.x.label};
+                unit.guide.y.label = utils.isObject(unit.guide.y.label)
+                    ? unit.guide.y.label
+                    : {text: unit.guide.y.label};
 
                 if (unit.x) {
                     unit.guide.x.label.text = unit.guide.x.label.text || meta.dimension(unit.x).dimName;
@@ -649,7 +670,7 @@ var SpecEngineFactory = {
                     values: values,
                     isEmpty: (dim.type == null)
                     // isEmpty: (source == '?')
-                    // isEmpty: ((values.filter((x) => !(_.isUndefined(x))).length) === 0)
+                    // isEmpty: ((values.filter((x) => !(x === undefined)).length) === 0)
                 };
             }
         };
@@ -678,7 +699,7 @@ export class SpecTransformAutoLayout {
 
         var size = spec.settings.size;
 
-        var rule = _.find(spec.settings.specEngine, (rule) => (size.width <= rule.width));
+        var rule = spec.settings.specEngine.find((rule) => (size.width <= rule.width));
 
         return SpecEngineFactory.get(
             rule.name,
