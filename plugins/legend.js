@@ -26,7 +26,7 @@
     var getSignificantDigitsFormatter = function (start, end) {
         var diff = Math.abs(end - start);
         var significantNumbers = 2;
-        if (diff < 1) {
+        if (diff > 0 && diff < 1) {
             significantNumbers += _.findIndex(String(diff).split('.')[1].split(0), function (x) {
                 return x !== '';
             });
