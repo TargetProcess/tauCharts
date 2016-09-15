@@ -138,7 +138,7 @@
             return g;
         };
 
-        var extractXAxes = function (getPositions, srcSvg, xAxesInfo, animationSpeed) {
+        var extractXAxes = function (getPositions, srcSvg, xAxesInfo, animationSpeed, visibilityManager) {
             var pos = getPositions();
             var axes = xAxesInfo.map(function (info) {
                 return info.axis;
@@ -157,6 +157,8 @@
                 );
             });
             var labels = g.selectAll('.label');
+            visibilityManager.register(g, 'y');
+            visibilityManager.register(labels, 'x');
 
             var move = function (scrollLeft, scrollTop) {
                 var x = 0;
@@ -187,7 +189,7 @@
             };
         };
 
-        var extractYAxes = function (getPositions, srcSvg, yAxesInfo, animationSpeed) {
+        var extractYAxes = function (getPositions, srcSvg, yAxesInfo, animationSpeed, visibilityManager) {
             var pos = getPositions();
             var axes = yAxesInfo.map(function (info) {
                 return info.axis;
@@ -204,6 +206,8 @@
                 );
             });
             var labels = g.selectAll('.label');
+            visibilityManager.register(g, 'x');
+            visibilityManager.register(labels, 'y');
 
             var move = function (scrollLeft, scrollTop) {
                 var xLimit = 0;
@@ -230,11 +234,12 @@
             };
         };
 
-        var createCorner = function (getPositions, srcSvg) {
+        var createCorner = function (getPositions, srcSvg, visibilityManager) {
             var pos = getPositions();
             var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
 
             var g = createSlot(srcSvg, pos.maxYAxesX, xAxesHeight);
+            visibilityManager.register(g, 'xy');
 
             var move = function (scrollLeft, scrollTop) {
                 var bottomY = scrollTop + pos.visibleHeight;
@@ -258,7 +263,7 @@
             };
         };
 
-        var createShadows = function (getPositions, srcSvg) {
+        var createShadows = function (getPositions, srcSvg, visibilityManager) {
             var pos = getPositions();
             var yAxesWidth = pos.maxYAxesX;
             var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
@@ -289,6 +294,11 @@
                 SHADOW_SIZE
             );
             var shadowWE = createShadow('we', yAxesWidth, pos.visibleHeight - xAxesHeight, SHADOW_SIZE, xAxesHeight);
+
+            visibilityManager.register(shadowNS, 'xy');
+            visibilityManager.register(shadowEW, 'xy');
+            visibilityManager.register(shadowSN, 'xy');
+            visibilityManager.register(shadowWE, 'xy');
 
             var move = function (scrollLeft, scrollTop) {
                 var pos = getPositions();
@@ -367,6 +377,7 @@
                     });
                     item.element.remove();
                 });
+                this._visibilityManager && this._visibilityManager.destroy();
                 var srcSvg = d3.select(this._chart.getSVG());
                 // TODO: Reuse elements.
                 srcSvg.selectAll('.floating-axes').remove();
@@ -479,11 +490,14 @@
 
                     var animationSpeed = chart.configGPL.settings.animationSpeed;
 
+                    this._visibilityManager = new VisibilityScrollManager(root);
+                    var vm = this._visibilityManager;
+
                     this.handlers = [
-                        extractXAxes(getPositions, srcSvg, xAxesInfo, animationSpeed),
-                        extractYAxes(getPositions, srcSvg, yAxesInfo, animationSpeed),
-                        createCorner(getPositions, srcSvg),
-                        createShadows(getPositions, srcSvg)
+                        extractXAxes(getPositions, srcSvg, xAxesInfo, animationSpeed, vm),
+                        extractYAxes(getPositions, srcSvg, yAxesInfo, animationSpeed, vm),
+                        createCorner(getPositions, srcSvg, vm),
+                        createShadows(getPositions, srcSvg, vm)
                     ];
 
                     this.handlers.forEach(function (item) {
@@ -497,6 +511,79 @@
             }
         };
     }
+
+    /**
+     * NOTE: As far as floating axes and labels jump during scroll
+     * in most of browsers (except Chrome with big delta mousewheel)
+     * due to the fact, that browser renders scrolled content first,
+     * and only later fires `scroll` event, letting us return axes in place,
+     * we are hiding floating axes, and show them after some delay.
+     */
+    var VisibilityScrollManager = (function () {
+
+        var HIDE_SCROLL_ITEMS_DURATION = 128;
+        var SHOW_SCROLL_ITEMS_DURATION = 256;
+
+        var callSelections = function (arrayOfSelections, fn, context) {
+            arrayOfSelections.forEach(function (s) {
+                fn.call(context, s);
+            });
+        };
+
+        function VisibilityScrollManager(scrollContainer) {
+            this._xItems = [];
+            this._yItems = [];
+            this._prevScrollLeft = 0;
+            this._prevScrollTop = 0;
+            this._scrollXTimeout = null;
+            this._scrollYTimeout = null;
+            this._scrollContainer = scrollContainer;
+            this._scrollHandler = this._onScroll.bind(this);
+            scrollContainer.addEventListener('scroll', this._scrollHandler);
+        };
+
+        VisibilityScrollManager.prototype.register = function (d3Selection, scrollDirection) {
+            if (scrollDirection.indexOf('x') >= 0) {
+                this._xItems.push(d3Selection);
+            }
+            if (scrollDirection.indexOf('y') >= 0) {
+                this._yItems.push(d3Selection);
+            }
+        };
+
+        VisibilityScrollManager.prototype._onScroll = function () {
+            var handleScroll = function (isX) {
+                var scrollPos = isX ? 'scrollLeft' : 'scrollTop';
+                var prevScrollPos = isX ? '_prevScrollLeft' : '_prevScrollTop';
+                var scrollTimeout = isX ? '_scrollXTimeout' : '_scrollYTimeout';
+                var items = isX ? '_xItems' : '_yItems';
+                if (this._scrollContainer[scrollPos] !== this[prevScrollPos]) {
+                    clearTimeout(this[scrollTimeout]);
+                    callSelections(this[items], function (s) {
+                        s.transition('floatingAxes_scrollVisibility'); // Stop transition
+                        s.attr('opacity', 1e-6);
+                    });
+                    this[scrollTimeout] = setTimeout(function () {
+                        callSelections(this[items], function (s) {
+                            this[scrollTimeout] = null;
+                            s.transition('floatingAxes_scrollVisibility')
+                                .duration(SHOW_SCROLL_ITEMS_DURATION)
+                                .attr('opacity', 1);
+                        }, this);
+                    }.bind(this), HIDE_SCROLL_ITEMS_DURATION);
+                }
+                this[prevScrollPos] = this._scrollContainer[scrollPos];
+            }.bind(this);
+            handleScroll(true);
+            handleScroll(false);
+        };
+
+        VisibilityScrollManager.prototype.destroy = function () {
+            this._scrollContainer.removeEventListener('scroll', this._scrollHandler);
+        };
+
+        return VisibilityScrollManager;
+    })();
 
     tauCharts.api.plugins.add('floating-axes', floatingAxes);
 
