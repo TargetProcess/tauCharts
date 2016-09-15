@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 
@@ -10,8 +9,8 @@ var FramesAlgebra = {
 
         var data = dataFn();
 
-        var domainX = _.unique(data.map(x => x[dimX]), unify);
-        var domainY = _.unique(data.map(x => x[dimY]), unify);
+        var domainX = utils.unique(data.map(x => x[dimX]), unify);
+        var domainY = utils.unique(data.map(x => x[dimY]), unify);
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
@@ -40,8 +39,8 @@ var FramesAlgebra = {
     cross_period(dataFn, dimX, dimY, xPeriod, yPeriod) {
         var data = dataFn();
 
-        var domainX = _.unique(data.map(x => x[dimX]), unify);
-        var domainY = _.unique(data.map(x => x[dimY]), unify);
+        var domainX = utils.unique(data.map(x => x[dimX]), unify);
+        var domainY = utils.unique(data.map(x => x[dimY]), unify);
 
         var domX = domainX.length === 0 ? [null] : domainX;
         var domY = domainY.length === 0 ? [null] : domainY;
@@ -77,7 +76,7 @@ var FramesAlgebra = {
 
     groupBy(dataFn, dim) {
         var data = dataFn();
-        var domainX = _.unique(data.map(x => x[dim]), unify);
+        var domainX = utils.unique(data.map(x => x[dim]), unify);
         return domainX.map((x)=>({[dim]: unify(x)}));
     },
 

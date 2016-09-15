@@ -1,7 +1,7 @@
 import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
 export class GenericCartesian extends Element {
@@ -12,7 +12,7 @@ export class GenericCartesian extends Element {
 
         this.config = config;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             (this.config.guide || {}),
             {
                 animationSpeed: 0,
@@ -20,7 +20,7 @@ export class GenericCartesian extends Element {
                 enableColorToBarPosition: false
             });
 
-        this.config.guide.size = _.defaults(
+        this.config.guide.size = utils.defaults(
             (this.config.guide.size || {}),
             {
                 defMinSize: 10,
@@ -182,7 +182,7 @@ export class GenericCartesian extends Element {
                 });
         };
 
-        var groups = _.groupBy(this.data(), self.screenModel.group);
+        var groups = utils.groupBy(this.data(), self.screenModel.group);
         var fibers = Object
             .keys(groups)
             .sort((a, b) => self.screenModel.order(a) - self.screenModel.order(b))

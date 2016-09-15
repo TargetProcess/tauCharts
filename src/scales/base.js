@@ -1,7 +1,4 @@
 import {utils} from '../utils/utils';
-/* jshint ignore:start */
-import {default as _} from 'underscore';
-/* jshint ignore:end */
 
 var map_value = (dimType) => {
     return (dimType === 'date') ?
@@ -48,7 +45,7 @@ export class BaseScale {
         var vars = this.getVarSet(data, scaleConfig);
 
         if (scaleConfig.order) {
-            vars = _.union(_.intersection(scaleConfig.order, vars), vars);
+            vars = utils.union(utils.intersection(scaleConfig.order, vars), vars);
         }
 
         this.vars = vars;
@@ -70,12 +67,12 @@ export class BaseScale {
             .addField('fixup', (fn) => {
                 var cfg = this.scaleConfig;
                 cfg.__fixup__ = cfg.__fixup__ || {};
-                cfg.__fixup__ = _.extend(
+                cfg.__fixup__ = Object.assign(
                     cfg.__fixup__,
-                    fn(_.extend({}, cfg, cfg.__fixup__)));
+                    fn(Object.assign({}, cfg, cfg.__fixup__)));
             })
             .addField('commit', () => {
-                this.scaleConfig = _.extend(this.scaleConfig, this.scaleConfig.__fixup__);
+                this.scaleConfig = Object.assign(this.scaleConfig, this.scaleConfig.__fixup__);
                 delete this.scaleConfig.__fixup__;
             });
     }
@@ -115,6 +112,6 @@ export class BaseScale {
             scale.series :
             arr.map((row) => row[scale.dim]);
 
-        return _.unique(series, map_value(scale.dimType));
+        return utils.unique(series, map_value(scale.dimType));
     }
 }

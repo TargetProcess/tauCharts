@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 import {FormatterRegistry} from './formatter-registry';
 
@@ -8,7 +7,7 @@ function extendGuide(guide, targetUnit, dimension, properties) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
     guide_dim = guide_dim || {};
     properties.forEach((prop) => {
-        _.extend(targetUnit.guide[dimension][prop], guide_dim[prop]);
+        Object.assign(targetUnit.guide[dimension][prop], guide_dim[prop]);
     });
 }
 
@@ -26,7 +25,7 @@ var applyCustomProps = (targetUnit, customUnit) => {
         let properties = config[name];
         extendGuide(guide, targetUnit, name, properties);
     });
-    _.extend(targetUnit.guide, Object.keys(guide).reduce((obj, k) => {
+    Object.assign(targetUnit.guide, Object.keys(guide).reduce((obj, k) => {
         if (!config.hasOwnProperty(k)) {
             obj[k] = guide[k];
         }
@@ -37,13 +36,13 @@ var applyCustomProps = (targetUnit, customUnit) => {
 };
 
 var extendLabel = function (guide, dimension, extend) {
-    guide[dimension] = _.defaults(guide[dimension] || {}, {
+    guide[dimension] = utils.defaults(guide[dimension] || {}, {
         label: ''
     });
     guide[dimension].label = utils.isObject(guide[dimension].label) ?
         guide[dimension].label :
     {text: guide[dimension].label};
-    guide[dimension].label = _.defaults(
+    guide[dimension].label = utils.defaults(
         guide[dimension].label,
         extend || {},
         {
@@ -58,7 +57,7 @@ var extendLabel = function (guide, dimension, extend) {
     return guide[dimension];
 };
 var extendAxis = function (guide, dimension, extend) {
-    guide[dimension] = _.defaults(
+    guide[dimension] = utils.defaults(
         guide[dimension],
         extend || {},
         {
@@ -81,7 +80,7 @@ var extendAxis = function (guide, dimension, extend) {
 var applyNodeDefaults = (node) => {
     node.options = node.options || {};
     node.guide = node.guide || {};
-    node.guide.padding = _.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
+    node.guide.padding = utils.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
 
     node.guide.x = extendLabel(node.guide, 'x');
     node.guide.x = extendAxis(node.guide, 'x', {
@@ -110,10 +109,10 @@ var inheritProps = (childUnit, root) => {
 
     // leaf elements should inherit coordinates properties
     if (!childUnit.hasOwnProperty('units')) {
-        childUnit = _.defaults(childUnit, root);
-        childUnit.guide = _.defaults(childUnit.guide, utils.clone(root.guide));
-        childUnit.guide.x = _.defaults(childUnit.guide.x, utils.clone(root.guide.x));
-        childUnit.guide.y = _.defaults(childUnit.guide.y, utils.clone(root.guide.y));
+        childUnit = utils.defaults(childUnit, root);
+        childUnit.guide = utils.defaults(childUnit.guide, utils.clone(root.guide));
+        childUnit.guide.x = utils.defaults(childUnit.guide.x, utils.clone(root.guide.x));
+        childUnit.guide.y = utils.defaults(childUnit.guide.y, utils.clone(root.guide.y));
     }
 
     return childUnit;
@@ -299,7 +298,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     }
 
     const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
-    guide.padding = _.extend(
+    guide.padding = Object.assign(
         (guide.padding),
         {
             b: (guide.x.hide) ?
@@ -318,7 +317,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
                 ])
         });
 
-    guide.x = _.extend(
+    guide.x = Object.assign(
         (guide.x),
         {
             density: (rotXBox.width + getSettings(settings, 'xDensityPadding', xMeta.dimType) * 2),
@@ -329,7 +328,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
             tickFormatWordWrapLimit: settings.xAxisTickLabelLimit
         });
 
-    guide.y = _.extend(
+    guide.y = Object.assign(
         (guide.y),
         {
             density: (rotYBox.height + getSettings(settings, 'yDensityPadding', yMeta.dimType) * 2),
@@ -520,7 +519,7 @@ var SpecEngineTypeMap = {
 
                 unit.guide = calcXYGuide(
                     unit.guide,
-                    _.defaults(
+                    utils.defaults(
                         {
                             distToXAxisLabel: (xMeta.isEmpty) ? settings.xTickWidth : settings.distToXAxisLabel,
                             distToYAxisLabel: (yMeta.isEmpty) ? settings.yTickWidth : settings.distToYAxisLabel
@@ -529,21 +528,21 @@ var SpecEngineTypeMap = {
                     xMeta,
                     yMeta);
 
-                unit.guide.x = _.extend(
+                unit.guide.x = Object.assign(
                     (unit.guide.x),
                     {
                         cssClass: (isFacetUnit) ? (unit.guide.x.cssClass + ' facet-axis') : (unit.guide.x.cssClass),
                         avoidCollisions: (isFacetUnit) ? true : (unit.guide.x.avoidCollisions)
                     });
 
-                unit.guide.y = _.extend(
+                unit.guide.y = Object.assign(
                     (unit.guide.y),
                     {
                         cssClass: (isFacetUnit) ? (unit.guide.y.cssClass + ' facet-axis') : (unit.guide.y.cssClass),
                         avoidCollisions: (isFacetUnit) ? false : (unit.guide.y.avoidCollisions)
                     });
 
-                unit.guide = _.extend(
+                unit.guide = Object.assign(
                     (unit.guide),
                     {
                         showGridLines: ((unit.guide.hasOwnProperty('showGridLines')) ?
@@ -578,7 +577,7 @@ var SpecEngineTypeMap = {
                     return calcUnitGuide(
                         unit,
                         meta,
-                        _.defaults(
+                        utils.defaults(
                             {
                                 xTickWordWrapLinesLimit: 1,
                                 yTickWordWrapLinesLimit: 1
@@ -598,7 +597,7 @@ var SpecEngineTypeMap = {
                 return calcUnitGuide(
                     unit,
                     meta,
-                    _.defaults(
+                    utils.defaults(
                         {
                             xAxisPadding: 0,
                             yAxisPadding: 0,
@@ -635,7 +634,7 @@ var fnTraverseSpec = (orig, specUnitRef, transformRules) => {
     var xRef = applyNodeDefaults(specUnitRef);
     xRef = transformRules(createSelectorPredicates(xRef), xRef);
     xRef = applyCustomProps(xRef, orig);
-    var prop = _.omit(xRef, 'units');
+    var prop = utils.omit(xRef, 'units');
     (xRef.units || []).forEach((unit) => fnTraverseSpec(utils.clone(unit), inheritProps(unit, prop), transformRules));
     return xRef;
 };

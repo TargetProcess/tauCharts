@@ -1,6 +1,6 @@
-import {default as _} from 'underscore';
 import {utilsDraw} from '../../utils/utils-draw';
 import {utilsDom} from '../../utils/utils-dom';
+import {utils} from '../../utils/utils';
 import {LayerLabelsModel} from './layer-labels-model';
 import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';
@@ -21,7 +21,7 @@ export class LayerLabels {
         this.flip = isHorizontal;
         this.w = width;
         this.h = height;
-        this.guide = _.defaults(
+        this.guide = utils.defaults(
             (labelGuide || {}),
             {
                 fontFamily: 'Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif',
@@ -111,14 +111,14 @@ export class LayerLabels {
 
         parallel.text = parallel.text
             .filter((r) => r.label)
-            .map((r, i) => _.extend(r, {i: i}));
+            .map((r, i) => Object.assign(r, {i: i}));
 
         var tokens = this.guide.position.filter((token) => token.indexOf('auto:avoid') === 0);
         parallel = ((parallel.text.length > 0) && (tokens.length > 0)) ?
             this.autoPosition(parallel, tokens) :
             parallel;
 
-        var flags = this.guide.position.reduce((memo, token) => _.extend(memo, {[token]:true}), {});
+        var flags = this.guide.position.reduce((memo, token) => Object.assign(memo, {[token]:true}), {});
 
         parallel.text = flags['auto:hide-on-label-edges-overlap'] ?
             this.hideOnLabelEdgesOverlap(parallel.text, parallel.edges) :

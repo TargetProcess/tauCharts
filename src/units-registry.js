@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {TauChartError as Error, errorCodes} from './error';
 
 var UnitsMap = {};
@@ -13,7 +12,7 @@ var unitsRegistry = {
             UnitsMap[unitType] = function (seed) {
                 this.___tauchartsseed___ = seed;
             };
-            UnitsMap[unitType].prototype = _.extend(
+            UnitsMap[unitType].prototype = Object.assign(
                 {
                     node() {
                         return this.___tauchartsseed___;

@@ -1,6 +1,6 @@
 import {Plot} from './tau.plot';
+import {utils} from '../utils/utils';
 import {chartTypesRegistry} from '../chart-alias-registry';
-import {default as _} from 'underscore';
 
 class Chart extends Plot {
 
@@ -14,7 +14,7 @@ class Chart extends Plot {
 
         var chartFactory = chartTypesRegistry.get(config.type);
 
-        config = _.defaults(config, {autoResize: true});
+        config = utils.defaults(config, {autoResize: true});
         config.settings = Plot.setupSettings(config.settings);
         config.dimensions = Plot.setupMetaInfo(config.dimensions, config.data);
 

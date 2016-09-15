@@ -3,7 +3,7 @@
  */
 import {default as d3} from 'd3';
 var tempDiv = document.createElement('div');
-import {default as _} from 'underscore';
+import {utils} from './utils';
 import WeakMap from 'core-js/library/fn/weak-map';
 var scrollbarSizes = new WeakMap();
 
@@ -140,7 +140,7 @@ var utilsDom = {
         return {width: w, height: h};
     },
 
-    getCharSize: _.memoize(
+    getCharSize: utils.memoize(
         (char, {fontSize, fontFamily, fontWeight}) => {
 
             var div = document.createElement('div');
@@ -266,7 +266,7 @@ var utilsDom = {
                 }
             });
         return (
-            _.uniq(classes)
+            utils.unique(classes)
                 .join(' ')
                 .trim()
                 .replace(/\s{2,}/g, ' ')

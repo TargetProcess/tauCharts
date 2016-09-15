@@ -2,7 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
 export class Line extends BasePath {
@@ -13,7 +13,7 @@ export class Line extends BasePath {
 
         var enableStack = this.config.stack;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             (this.config.guide || {}),
             {
                 interpolate: 'linear'
@@ -173,7 +173,7 @@ export class Line extends BasePath {
         };
 
         var cache = [];
-        var prevNext = _.memoize(
+        var prevNext = utils.memoize(
             (thisNode, fiber) => {
                 var testPath = d3
                     .select(thisNode.parentNode)

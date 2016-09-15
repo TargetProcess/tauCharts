@@ -3,7 +3,7 @@ import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
 export class BasePath extends Element {
@@ -14,7 +14,7 @@ export class BasePath extends Element {
 
         this.config = config;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             (this.config.guide || {}),
             {
                 animationSpeed: 0,
@@ -27,7 +27,7 @@ export class BasePath extends Element {
             }
         );
 
-        this.config.guide.label = _.defaults(
+        this.config.guide.label = utils.defaults(
             this.config.guide.label,
             {
                 fontSize: 11,
@@ -41,9 +41,9 @@ export class BasePath extends Element {
                 ]
             });
 
-        this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
+        this.config.guide.color = utils.defaults(this.config.guide.color || {}, {fill: null});
 
-        this.config.guide.size = _.defaults(
+        this.config.guide.size = utils.defaults(
             (this.config.guide.size || {}),
             {
                 defMinSize: 2,

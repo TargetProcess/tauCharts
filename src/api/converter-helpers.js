@@ -1,4 +1,4 @@
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 var convertAxis = (data) => (!data) ? null : data;
 
 var normalizeSettings = (axis, defaultValue = null) => {
@@ -106,7 +106,7 @@ function normalizeConfig(config) {
     x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
-    return _.extend(
+    return Object.assign(
         {},
         config,
         {
@@ -152,7 +152,7 @@ function transformConfig(type, config) {
                 colorGuide: currentGuide.color,
                 sizeGuide: currentGuide.size
             }));
-            spec.guide = _.defaults(
+            spec.guide = utils.defaults(
                 currentGuide,
                 {
                     x: {label: currentX},
@@ -164,7 +164,7 @@ function transformConfig(type, config) {
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
                 unit: [spec],
-                guide: _.defaults(
+                guide: utils.defaults(
                     currentGuide,
                     {
                         x: {label: currentX},

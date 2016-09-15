@@ -3,7 +3,6 @@ import {Line}       from '../elements/element.line';
 import {Area}       from '../elements/element.area';
 import {Interval}   from '../elements/element.interval';
 import {StackedInterval} from '../elements/element.interval.stacked';
-import {default as _} from 'underscore';
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -365,9 +364,9 @@ var utils = {
 
         var dataNewSnap = 0;
         var dataPrevRef = null;
-        var xHash = _.memoize(
+        var xHash = utils.memoize(
             (data, keys) => {
-                return _.uniq(
+                return utils.unique(
                     data.map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), []))),
                     (t) => JSON.stringify(t))
                     .reduce((memo, t) => {
@@ -501,6 +500,77 @@ var utils = {
             arr.push(i);
         }
         return arr;
+    },
+
+    flatten: (array) => {
+        if (!Array.isArray(array)) {
+            return array;
+        }
+        return [].concat(...array.map(x => utils.flatten(x)));
+    },
+
+    unique: (array, func) => {
+        let mappedArray = array;
+        let filter = ((elem, pos, arr) => arr.indexOf(elem) === pos);
+        if (typeof func === 'function') {
+            mappedArray = array.map(func);
+            filter = (elem, pos, arr) => {
+                let mappedElem = mappedArray[pos];
+                return mappedArray.findIndex(x => x === mappedElem) === pos;
+            }
+        }
+        return array.filter(filter);
+    },
+
+    groupBy: (array, func) => {
+        return array.reduce((obj, v) => {
+            var group = func(v);
+            obj[group] = obj[group] || [];
+            obj[group].push(v);
+            return obj;
+        }, {});
+    },
+
+    union: (arr1, arr2) => utils.unique(arr1.concat(arr2)),
+
+    intersection: (arr1, arr2) => arr1.filter(x => arr2.indexOf(x) !== -1),
+
+    defaults: (obj, ...defaultObjs) => {
+        var length = defaultObjs.length;
+        if (length === 0 || !obj) {
+            return obj;
+        }
+        for (var index = 0; index < length; index++) {
+            var source = defaultObjs[index],
+                keys = utils.isObject(source) ? Object.keys(source) : [],
+                l = keys.length;
+            for (var i = 0; i < l; i++) {
+                var key = keys[i];
+                if (obj[key] === undefined) {
+                    obj[key] = source[key];
+                }
+            }
+        }
+        return obj;
+    },
+
+    omit: (obj, prop) => {
+        let newObj = Object.assign({}, obj);
+        delete newObj[prop];
+        return newObj;
+    },
+
+    memoize: function(func, hasher) {
+        let memoize = function(key) {
+            let cache = memoize.cache;
+            let address = '' + (hasher ? hasher.apply(this, arguments) : key);
+            if (!cache.hasOwnProperty(address)) {
+                cache[address] = func.apply(this, arguments);
+            }
+            return cache[address];
+        };
+        memoize.cache = {};
+        return memoize;
     }
 };
 
