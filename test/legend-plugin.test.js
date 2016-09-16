@@ -5,7 +5,6 @@ define(function (require) {
     var legend = require('plugins/legend');
     var trendline = require('plugins/trendline');
     var exportTo = require('plugins/export');
-    var _ = require('underscore');
     var tauCharts = require('src/tau.charts');
     var chartTypes = tauCharts.api.chartTypesRegistry.getAllRegisteredTypes();
     var describeChart = testUtils.describeChart;
@@ -136,7 +135,7 @@ define(function (require) {
 
         svg = chart.getSVG();
         var isHighlight = function (elements) {
-            return _.every(elements, function (element) {
+            return Array.from(elements).every(function (element) {
                 return testUtils.hasClass(element, 'graphical-report__highlighted');
             });
         };

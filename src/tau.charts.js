@@ -62,6 +62,7 @@ var api = {
     isChartElement: utils.isChartElement,
     isLineElement: utils.isLineElement,
     d3: d3,
+    utils: utils,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
         add: function (name, brewer) {

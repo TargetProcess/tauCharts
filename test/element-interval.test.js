@@ -3,12 +3,12 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var _ = require('underscore');
     var assert = require('chai').assert;
     var tauCharts = require('src/tau.charts');
     var Cartesian = require('src/elements/coords.cartesian').Cartesian;
     var Interval = require('src/elements/element.interval').Interval;
     var ScalesFactory = require('src/scales-factory').ScalesFactory;
+    var utils = require('src/utils/utils').utils;
     var testUtils = require('testUtils');
     var WeakMap = require('core-js/library/fn/weak-map');
 
@@ -90,19 +90,19 @@ define(function (require) {
             unitsRegistry: unitsRegistry,
             transformations: {
                 where: function (data, tuple) {
-                    var predicates = _.map(tuple, function (v, k) {
+                    var predicates = tuple.map(function (v, k) {
                         return function (row) {
                             return (row[k] === v);
                         };
                     });
-                    return _(data).filter(function (row) {
-                        return _.every(predicates, function (p) {
+                    return data.filter(function (row) {
+                        return predicates.every(function (p) {
                             return p(row);
                         });
                     });
                 }
             },
-            scales: _.defaults(spec.scales || {}, {
+            scales: utils.defaults(spec.scales || {}, {
                 'x': {type: 'ordinal', source: '/', dim: 'x'},
                 'y': {type: 'linear', source: '/', dim: 'y'},
                 'date': {type: 'period', period: 'day', source: '/', dim: 'createDate'},
@@ -123,7 +123,7 @@ define(function (require) {
                 x: unit.x,
                 y: unit.y,
                 guide: unit.guide || {},
-                units: [_.defaults(unit.units[0], {
+                units: [utils.defaults(unit.units[0], {
                     type: 'ELEMENT.INTERVAL',
                     x: unit.x || 'x',
                     y: unit.y || 'y',
@@ -188,8 +188,8 @@ define(function (require) {
             return parseFloat(x).toFixed(4);
         };
 
-        _.each(bars, function (bar, index) {
-            _.each(bar.childNodes, function (el, ind) {
+        bars.forEach(function (bar, index) {
+            Array.from(bar.childNodes).forEach(function (el, ind) {
                 expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x), `x (${index} / ${ind})`);
                 expect(convertToFixed(attrib(el, 'y'))).to.equal(convertToFixed(coords[index][ind].y), `y (${index} / ${ind})`);
 
@@ -719,8 +719,8 @@ define(function (require) {
             it("should group contain interval element", function () {
                 var bars = getGroupBar();
 
-                _.each(bars, function (bar, barIndex) {
-                    _.each(bar.childNodes, function (el, elIndex) {
+                bars.forEach(function (bar, barIndex) {
+                    Array.from(bar.childNodes).forEach(function (el, elIndex) {
                         expect(parseFloat(attrib(el, 'height')))
                             .to.equal(testExpectCoordForTimeAdCount[barIndex][elIndex]);
                     });
@@ -746,8 +746,8 @@ define(function (require) {
         function () {
             it("should group contain interval element", function () {
                 var bars = getGroupBar();
-                _.each(bars, function (bar, barIndex) {
-                    _.each(bar.childNodes, function (el, elIndex) {
+                bars.forEach(function (bar, barIndex) {
+                    Array.from(bar.childNodes).forEach(function (el, elIndex) {
                         expect(parseFloat(attrib(el, 'width')))
                             .to.equal(testExpectCoordForTimeAdCount[barIndex][elIndex]);
                     });
@@ -807,8 +807,8 @@ define(function (require) {
                 ];
 
                 var bars = getGroupBar();
-                _.each(bars, function (bar, barIndex) {
-                    _.each(bar.childNodes, function (el, elIndex) {
+                bars.forEach(function (bar, barIndex) {
+                    Array.from(bar.childNodes).forEach(function (el, elIndex) {
                         expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
                         expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
                     });
@@ -868,8 +868,8 @@ define(function (require) {
                 ];
 
                 var bars = getGroupBar();
-                _.each(bars, function (bar, barIndex) {
-                    _.each(bar.childNodes, function (el, elIndex) {
+                bars.forEach(function (bar, barIndex) {
+                    Array.from(bar.childNodes).forEach(function (el, elIndex) {
                         expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
                         expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
                     });
@@ -906,10 +906,10 @@ define(function (require) {
         function (context) {
             it("all bar for facet chart should have equal width", function () {
                 var svg = context.chart.getSVG();
-                var width = _.map(svg.querySelectorAll('.i-role-element'), function (item) {
+                var width = Array.from(svg.querySelectorAll('.i-role-element')).map(function (item) {
                     return item.getAttribute('width');
                 });
-                expect(_.unique(width).length).to.equals(1);
+                expect(utils.unique(width).length).to.equals(1);
             });
         },
         {
@@ -932,7 +932,7 @@ define(function (require) {
 
             it('should produce 1 frame element', function () {
                 var svg = context.chart.getSVG();
-                var offsets = _.map(svg.querySelectorAll('.i-role-bar-group'), function (item) {
+                var offsets = Array.from(svg.querySelectorAll('.i-role-bar-group')).map(function (item) {
                     return item.getAttribute('transform');
                 });
                 expect(offsets.length).to.equal(1);
