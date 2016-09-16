@@ -261,7 +261,13 @@ var d3_decorator_prettify_axis_label = (
     }
 };
 
-var d3_decorator_wrap_tick_label = (nodeScale, transScale, guide, isHorizontal, logicalScale) => {
+var d3_decorator_wrap_tick_label = function (
+    nodeScale,
+    animationSpeed,
+    guide,
+    isHorizontal,
+    logicalScale
+) {
 
     var angle = utils.normalizeAngle(guide.rotate);
 
@@ -278,17 +284,18 @@ var d3_decorator_wrap_tick_label = (nodeScale, transScale, guide, isHorizontal, 
         let dy = (k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ?
             (sign < 0 ? 0 : 0.71) :
             0.32));
-        let pt = {
+
+        let texts = nodeScale.selectAll('.tick text');
+        let attrs = {
             x: 9 * kRot,
-            y: 0
-        };
-        let dpt = {
+            y: 0,
             dx: (isHorizontal) ? null : `${dy}em`,
             dy: `${dy}em`
         };
 
-        nodeScale.selectAll('.tick text').attr(pt).attr(dpt);
-        transScale.selectAll('.tick text').attr(pt);
+        // NOTE: Override d3 axis transition.
+        texts.attr(attrs);
+        d3_transition(texts, animationSpeed, 'axisTransition').attr(attrs);
     }
 
     var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);
