@@ -11,7 +11,7 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var d3 = tauCharts.api.d3;
 
     var SHADOW_SIZE = 16;
@@ -26,7 +26,7 @@
 
     function floatingAxes(xSettings) {
 
-        var settings = _.defaults(xSettings || {}, {
+        var settings = utils.defaults(xSettings || {}, {
             bgcolor: '#fff'
         });
 

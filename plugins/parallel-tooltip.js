@@ -11,11 +11,11 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function ChartParallelTooltip(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 // add default settings here
@@ -141,7 +141,7 @@
                 '</div>'
             ].join(''),
 
-            itemTemplate: _.template([
+            itemTemplate: utils.template([
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',

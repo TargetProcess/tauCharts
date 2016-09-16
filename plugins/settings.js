@@ -11,11 +11,11 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function ChartSettings(xSettings) {
 
-        var pluginSettings = _.defaults(
+        var pluginSettings = utils.defaults(
             xSettings || {},
             {
                 show: true,
@@ -59,7 +59,7 @@
                 }
             },
 
-            template: _.template(
+            template: utils.template(
                 [
                     '<div class="graphical-report__chartsettingspanel">',
                         '<div>',

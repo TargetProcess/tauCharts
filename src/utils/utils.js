@@ -268,6 +268,40 @@ var chartElement = [
 
 var testColorCode = ((x) => (/^(#|rgb\(|rgba\()/.test(x)));
 
+// TODO Remove this configs and its associated methods
+// which are just for templating in some plugins
+var noMatch = /(.)^/;
+
+let map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#x27;',
+    '`': '&#x60;'
+};
+let escapes = {
+    '\'': '\'',
+    '\\': '\\',
+    '\r': 'r',
+    '\n': 'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+};
+
+let escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+
+let source = '(?:' + Object.keys(map).join('|') + ')';
+let testRegexp = RegExp(source);
+let replaceRegexp = RegExp(source, 'g');
+
+let templateSettings = {
+    evaluate: /<%([\s\S]+?)%>/g,
+    interpolate: /<%=([\s\S]+?)%>/g,
+    escape: /<%-([\s\S]+?)%>/g
+};
+// End of plugin configs
+
 var utils = {
     clone(obj) {
         return deepClone(obj);
@@ -514,10 +548,10 @@ var utils = {
         let filter = ((elem, pos, arr) => arr.indexOf(elem) === pos);
         if (typeof func === 'function') {
             mappedArray = array.map(func);
-            filter = (elem, pos, arr) => {
+            filter = (elem, pos) => {
                 let mappedElem = mappedArray[pos];
                 return mappedArray.findIndex(x => x === mappedElem) === pos;
-            }
+            };
         }
         return array.filter(filter);
     },
@@ -563,7 +597,7 @@ var utils = {
     memoize: function(func, hasher) {
         let memoize = function(key) {
             let cache = memoize.cache;
-            let address = '' + (hasher ? hasher.apply(this, arguments) : key);
+            let address = String(hasher ? hasher.apply(this, arguments) : key);
             if (!cache.hasOwnProperty(address)) {
                 cache[address] = func.apply(this, arguments);
             }
@@ -571,7 +605,87 @@ var utils = {
         };
         memoize.cache = {};
         return memoize;
+    },
+
+    // TODO Remove this methods and its associated configs
+    // which are just for templating in some plugins
+    pick: (object, ...props) => {
+        var result = {};
+        if (object == null) {
+            return result;
+        }
+
+        return props.reduce((result, prop) => {
+            let value = object[prop];
+            if (value) {
+                result[prop] = value;
+            }
+            return result;
+        }, {});
+    },
+
+    escape: function(string) {
+        string = string == null ? '' : String(string);
+        return testRegexp.test(string) ? string.replace(replaceRegexp, match =>map[match]) : string;
+    },
+
+    template: (text, settings, oldSettings) => {
+        if (!settings && oldSettings){
+            settings = oldSettings;
+        }
+        settings = utils.defaults({}, settings, templateSettings);
+
+        var matcher = RegExp([
+            (settings.escape || noMatch).source,
+            (settings.interpolate || noMatch).source,
+            (settings.evaluate || noMatch).source
+        ].join('|') + '|$', 'g');
+
+        var index = 0;
+        var source = '__p+=\'';
+        text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+            source += text.slice(index, offset).replace(escaper, match => '\\' + escapes[match]);
+            index = offset + match.length;
+
+            if (escape) {
+                source += '\'+\n((__t=(' + escape + '))==null?\'\':utils.escape(__t))+\n\'';
+            } else if (interpolate) {
+                source += '\'+\n((__t=(' + interpolate + '))==null?\'\':__t)+\n\'';
+            } else if (evaluate) {
+                source += '\';\n' + evaluate + '\n__p+=\'';
+            }
+
+            return match;
+        });
+        source += '\';\n';
+
+        if (!settings.variable) {
+            source = 'with(obj||{}){\n' + source + '}\n';
+        }
+
+        source = 'var __t,__p=\'\',__j=Array.prototype.join,' +
+            'print=function(){__p+=__j.call(arguments,\'\');};\n' +
+            source + 'return __p;\n';
+
+        try {
+            var render = new Function(settings.variable || 'obj', source);
+        } catch (e) {
+            e.source = source;
+            throw e;
+        }
+
+        var template = function(data) {
+            return render.call(this, data);
+        };
+
+        var argument = settings.variable || 'obj';
+        template.source = 'function(' + argument + '){\n' + source + '}';
+
+        return template;
     }
+
+    // End of plugins methods
+
 };
 
 export {utils};

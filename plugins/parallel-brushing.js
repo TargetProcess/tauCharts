@@ -11,11 +11,11 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function ChartParallelBrushing(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 verbose: false,
@@ -126,7 +126,7 @@
                 });
             },
 
-            template: _.template('<div class="graphical-report__chart_brushing_panel"></div>')
+            template: utils.template('<div class="graphical-report__chart_brushing_panel"></div>')
         };
 
         return plugin;

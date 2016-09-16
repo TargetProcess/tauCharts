@@ -11,6 +11,8 @@
     }
 })(function (tauCharts) {
 
+    var utils = tauCharts.api.utils;
+
     var MIN = 'minimum';
     var MAX = 'maximum';
     var MEDIAN = 'median';
@@ -181,7 +183,7 @@
                     return Math.max(cfg.minHeight || 1, Math.abs(ys(d[y0]) - ys(d[y1])));
                 };
 
-                return _.extend(
+                return Object.assign(
                     model,
                     {
                         fill: function () {
@@ -290,7 +292,7 @@
 
     function boxWhiskersPlot(xSettings) {
 
-        _.defaults(xSettings, {mode: 'outliers-only'});
+        xSettings = utils.defaults((xSettings || {}), {mode: 'outliers-only'});
 
         return {
 
