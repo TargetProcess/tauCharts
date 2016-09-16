@@ -69,7 +69,7 @@ export class SpecConverter {
             if (root && !childUnit.hasOwnProperty('units')) {
                 childUnit = utils.defaults(childUnit, {x: root.x, y: root.y});
 
-                var parentGuide = utils.clone(root.guide || {});
+                var parentGuide = root.guide || {};
                 childUnit.guide.x = utils.defaults(childUnit.guide.x || {}, parentGuide.x);
                 childUnit.guide.y = utils.defaults(childUnit.guide.y || {}, parentGuide.y);
 
@@ -131,7 +131,7 @@ export class SpecConverter {
     ruleAssignStructure(srcSpec, gplSpec) {
 
         var walkStructure = (srcUnit) => {
-            var gplRoot = utils.clone(utils.omit(srcUnit, 'unit'));
+            var gplRoot = Object.assign({}, utils.omit(srcUnit, 'unit'));
             this.ruleCreateScales(srcUnit, gplRoot);
             gplRoot.expression = this.ruleInferExpression(srcUnit);
 

@@ -62,7 +62,7 @@ export class Plot extends Emitter {
             SpecTransformCalcSize
         ];
 
-        this._originData = utils.clone(this.configGPL.sources);
+        this._originData = Object.assign({}, this.configGPL.sources);
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
         this._plugins = new Plugins(plugins, this);
@@ -236,7 +236,7 @@ export class Plot extends Emitter {
     renderTo(target, xSize) {
         this._svg = null;
         this._target = target;
-        this._defaultSize = utils.clone(xSize);
+        this._defaultSize = Object.assign({}, xSize);
 
         var targetNode = d3.select(target).node();
         if (targetNode === null) {
@@ -254,7 +254,7 @@ export class Plot extends Emitter {
         this._layout.contentContainer.style.padding = `0 ${s.width}px ${s.height}px 0`;
         utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
 
-        var size = utils.clone(xSize) || {};
+        var size = Object.assign({}, xSize) || {};
         if (!size.width || !size.height) {
             let {scrollLeft, scrollTop} = content.parentElement;
             content.style.display = 'none';
@@ -270,7 +270,7 @@ export class Plot extends Emitter {
 
         this.configGPL.settings.size = size;
 
-        this._liveSpec = utils.clone(utils.omit(this.configGPL, 'plugins'));
+        this._liveSpec = Object.assign({}, utils.omit(this.configGPL, 'plugins'));
         this._liveSpec.sources = this.getDataSources();
         this._liveSpec.settings = this.configGPL.settings;
 
