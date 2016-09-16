@@ -294,6 +294,7 @@ var d3_decorator_wrap_tick_label = function (
         };
 
         // NOTE: Override d3 axis transition.
+        texts.transition();
         texts.attr(attrs);
         d3_transition(texts, animationSpeed, 'axisTransition').attr(attrs);
     }
