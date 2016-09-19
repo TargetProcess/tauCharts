@@ -236,6 +236,7 @@ define(function (require) {
             var d3Axis = svgNode.append('g').call(axis);
 
             var ticks = d3Axis.selectAll('.tick');
+            d3Axis.select('.tick text').attr('transform', 'rotate(270)');
             var actBefore = [];
             ticks.each(function () {
                 var d3Tick = d3.select(this);
@@ -250,7 +251,7 @@ define(function (require) {
             var lineAfter = [];
             ticks.each(function () {
                 var d3Tick = d3.select(this);
-                actAfter.push(d3Tick.selectAll('text').attr('y'));
+                actAfter.push(d3Tick.selectAll('text').attr('transform'));
                 var lineRef = d3Tick.selectAll('.label-ref');
                 lineAfter.push([
                     lineRef.attr('y1'),
@@ -258,7 +259,12 @@ define(function (require) {
                 ]);
             });
             expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
-            expect(actAfter).to.deep.equal(['-2', '9', '20', '-2'], 'text y after decorator');
+            expect(actAfter).to.deep.equal([
+                'translate(0,-11) rotate(270)',
+                'translate(0,0) rotate(0)',
+                'translate(0,11) rotate(0)',
+                'translate(0,-11) rotate(0)'
+            ], 'text transform after decorator');
             expect(lineAfter).to.deep.equal([
                 ['-3', '-10'],
                 ['8', '-10'],

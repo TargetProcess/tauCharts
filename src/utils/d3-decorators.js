@@ -390,12 +390,27 @@ var d3_decorator_avoid_labels_collisions = function (nodeScale, isHorizontal, ac
                 text = text.replace(/([\.]*$)/gi, '') + '...';
             }
 
-            var oldY = parseFloat(curr.textRef.attr('y'));
-            var newY = oldY + (curr.l * textOffsetStep); // -1 | 0 | +1
+            var dy = (curr.l * textOffsetStep); // -1 | 0 | +1
+            var newY = parseFloat(curr.textRef.attr('y')) + dy;
+            let tx = isHorizontal ? 0 : dy;
+            let ty = isHorizontal ? dy : 0;
+            var tr = (function (transform) {
+                var rotate = 0;
+                if (!transform) {
+                    return rotate;
+                }
+                var rs = transform.indexOf('rotate(');
+                if (rs >= 0) {
+                    var re = transform.indexOf(')', rs + 7);
+                    var rotateStr = transform.substring(rs + 7, re);
+                    rotate = parseFloat(rotateStr.trim());
+                }
+                return rotate;
+            })(curr.textRef.attr('transform'));
 
             curr.textRef
                 .text((d, i) => i === 0 ? text : '')
-                .attr('y', newY);
+                .attr('transform', 'translate(' + tx + ',' + ty + ') rotate(' + tr + ')');
 
             var attrs = {
                 x1: 0,
