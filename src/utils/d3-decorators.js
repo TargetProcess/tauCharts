@@ -382,9 +382,10 @@ var d3_decorator_avoid_labels_collisions = function (nodeScale, isHorizontal, ac
                 text = text.replace(/([\.]*$)/gi, '') + '...';
             }
 
-            var newY = (curr.l * textOffsetStep); // -1 | 0 | +1
-            let tx = isHorizontal ? 0 : newY;
-            let ty = isHorizontal ? newY : 0;
+            var dy = (curr.l * textOffsetStep); // -1 | 0 | +1
+            var newY = parseFloat(curr.textRef.attr('y')) + dy;
+            let tx = isHorizontal ? 0 : dy;
+            let ty = isHorizontal ? dy : 0;
             var tr = (function (transform) {
                 var rotate = 0;
                 if (!transform) {
