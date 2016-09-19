@@ -62,7 +62,7 @@
                     })
                     .forEach(function (dim) {
                         self._data[dim] = chartData.map(function (x) {
-                            return chartData[dim];
+                            return x[dim];
                         });
                         self._bounds[dim] = d3.extent(self._data[dim]);
                         self._filter[dim] = self._bounds[dim];
