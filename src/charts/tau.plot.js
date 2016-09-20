@@ -66,6 +66,7 @@ export class Plot extends Emitter {
         this._originData = _.clone(this.configGPL.sources);
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
+        this._scenarioLimit = 100;
         this._plugins = new Plugins(plugins, this);
     }
 
@@ -338,6 +339,10 @@ export class Plot extends Emitter {
                     .remove();
             });
 
+        if (this._scenarioLimit && scenario.length > this._scenarioLimit) {
+            this._renderLimitWarning();
+            return;
+        }
         scenario.forEach((item) => {
             item.draw();
             this.onUnitDraw(item.node());
@@ -485,5 +490,53 @@ export class Plot extends Emitter {
 
     getLayout() {
         return this._layout;
+    }
+
+    _renderLimitWarning() {
+        var width = 200;
+        var height = 100;
+        var linesCount = 4;
+        var lineSpacing = 1.2;
+        var midX = width / 2;
+        var fontSize = Math.round(height / linesCount / lineSpacing);
+        var yCounter = 0;
+        var getY = function () {
+            yCounter++;
+            return Math.round(height / linesCount / lineSpacing * yCounter);
+        };
+        this._layout.content.style.height = '100%';
+        this._layout.content.innerHTML = `
+            <svg
+                class="${CSS_PREFIX}svg"
+                width="100%"
+                height="100%"
+                viewBox="0 0 ${width} ${height}">
+                <text
+                    text-anchor="middle"
+                    font-size="${fontSize}">
+                    <tspan x="${midX}" y="${getY()}">WARNING!</tspan>
+                    <tspan x="${midX}" y="${getY()}">Too much items to display,</tspan>
+                    <tspan x="${midX}" y="${getY()}">your browser may crash.</tspan> 
+                </text>
+                <text
+                    class="tau-noLimitButton"
+                    text-anchor="middle"
+                    font-size="${fontSize}"
+                    cursor="pointer"
+                    text-decoration="underline"
+                    x="${midX}"
+                    y="${getY()}">
+                    Display anyway
+                </text>
+            </svg>
+        `;
+        var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`)
+        var btn = this._layout.content.querySelector('.tau-noLimitButton');
+        btn.addEventListener('click', () => {
+            this._scenarioLimit = 0;
+            this._layout.content.removeChild(svg);
+            this._layout.content.style.height = '';
+            this.refresh();
+        });
     }
 }
