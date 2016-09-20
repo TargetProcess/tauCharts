@@ -516,7 +516,7 @@ export class Plot extends Emitter {
                     font-size="${fontSize}">
                     <tspan x="${midX}" y="${getY()}">WARNING!</tspan>
                     <tspan x="${midX}" y="${getY()}">Too much items to display,</tspan>
-                    <tspan x="${midX}" y="${getY()}">your browser may crash.</tspan> 
+                    <tspan x="${midX}" y="${getY()}">your browser may crash.</tspan>
                 </text>
                 <text
                     class="tau-noLimitButton"
@@ -530,7 +530,7 @@ export class Plot extends Emitter {
                 </text>
             </svg>
         `;
-        var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`)
+        var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`);
         var btn = this._layout.content.querySelector('.tau-noLimitButton');
         btn.addEventListener('click', () => {
             this._scenarioLimit = 0;
