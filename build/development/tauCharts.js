@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.4-beta.3 - 2016-09-15
+/*! taucharts - v0.9.4-beta.4 - 2016-09-20
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -330,7 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.4-beta.3");
+	var version = ("0.9.4-beta.4");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -4935,7 +4935,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var d3_decorator_wrap_tick_label = function d3_decorator_wrap_tick_label(nodeScale, transScale, guide, isHorizontal, logicalScale) {
+	var d3_decorator_wrap_tick_label = function d3_decorator_wrap_tick_label(nodeScale, animationSpeed, guide, isHorizontal, logicalScale) {
 
 	    var angle = _utils.utils.normalizeAngle(guide.rotate);
 
@@ -4948,17 +4948,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var k = isHorizontal ? 0.5 : -2;
 	        var sign = guide.scaleOrient === 'top' || guide.scaleOrient === 'left' ? -1 : 1;
 	        var dy = k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ? sign < 0 ? 0 : 0.71 : 0.32);
-	        var pt = {
+
+	        var texts = nodeScale.selectAll('.tick text');
+	        var attrs = {
 	            x: 9 * kRot,
-	            y: 0
-	        };
-	        var dpt = {
+	            y: 0,
 	            dx: isHorizontal ? null : dy + 'em',
 	            dy: dy + 'em'
 	        };
 
-	        nodeScale.selectAll('.tick text').attr(pt).attr(dpt);
-	        transScale.selectAll('.tick text').attr(pt);
+	        // NOTE: Override d3 axis transition.
+	        texts.transition();
+	        texts.attr(attrs);
+	        d3_transition(texts, animationSpeed, 'axisTransition').attr(attrs);
 	    }
 
 	    var limitFunc = function limitFunc(d) {
@@ -5043,12 +5045,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	                text = text.replace(/([\.]*$)/gi, '') + '...';
 	            }
 
-	            var oldY = parseFloat(curr.textRef.attr('y'));
-	            var newY = oldY + curr.l * textOffsetStep; // -1 | 0 | +1
+	            var dy = curr.l * textOffsetStep; // -1 | 0 | +1
+	            var newY = parseFloat(curr.textRef.attr('y')) + dy;
+	            var tx = isHorizontal ? 0 : dy;
+	            var ty = isHorizontal ? dy : 0;
+	            var tr = function (transform) {
+	                var rotate = 0;
+	                if (!transform) {
+	                    return rotate;
+	                }
+	                var rs = transform.indexOf('rotate(');
+	                if (rs >= 0) {
+	                    var re = transform.indexOf(')', rs + 7);
+	                    var rotateStr = transform.substring(rs + 7, re);
+	                    rotate = parseFloat(rotateStr.trim());
+	                }
+	                return rotate;
+	            }(curr.textRef.attr('transform'));
 
 	            curr.textRef.text(function (d, i) {
 	                return i === 0 ? text : '';
-	            }).attr('y', newY);
+	            }).attr('transform', 'translate(' + tx + ',' + ty + ') rotate(' + tr + ')');
 
 	            var attrs = {
 	                x1: 0,
@@ -10824,7 +10841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(transAxis, scale, isHorizontal, animationSpeed);
 	                }
 
-	                (0, _d3Decorators.d3_decorator_wrap_tick_label)(axis, transAxis, scale.guide, isHorizontal, scale);
+	                (0, _d3Decorators.d3_decorator_wrap_tick_label)(axis, animationSpeed, scale.guide, isHorizontal, scale);
 
 	                if (!scale.guide.label.hide) {
 	                    (0, _d3Decorators.d3_decorator_prettify_axis_label)(axis, scale.guide.label, isHorizontal, size, animationSpeed);
