@@ -349,6 +349,7 @@ export class Plot extends Emitter {
         });
         if (timeoutExceeded) {
             this._renderTimeoutWarning();
+            this.fire('renderingtimeout');
             return;
         }
 
@@ -511,7 +512,7 @@ export class Plot extends Emitter {
         this._layout.content.style.height = '100%';
         this._layout.content.innerHTML = `
             <svg
-                class="${CSS_PREFIX}svg ${CSS_PREFIX}_rendering-timeout-warning"
+                class="${CSS_PREFIX}svg ${CSS_PREFIX}rendering-timeout-warning"
                 width="100%"
                 height="100%"
                 viewBox="0 0 ${width} ${height}">

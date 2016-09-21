@@ -2,6 +2,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var modernizer = require('bower_components/modernizer/modernizr');
+    var CSS_PREFIX = require('src/const').CSS_PREFIX;
     var tauChart = require('src/tau.charts');
     var utils = require('testUtils');
 
@@ -683,6 +684,42 @@ define(function (require) {
             var svg = chart.getSVG();
             var transform = d3.select(svg).select('.x.axis').attr('transform');
             expect(transform).to.equals('translate(0,600)');
+        });
+
+        it('should warn about rendering timeout', function (done) {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: _.times(1000, function () {
+                    return {
+                        a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        c: Math.random() * 10
+                    };
+                }),
+                x: ['c'],
+                y: ['a', 'b'],
+                dimensions: {
+                    'a': {type: 'categoty', scale: 'ordinal'},
+                    'b': {type: 'categoty', scale: 'ordinal'},
+                    'c': {type: 'measure', scale: 'linear'}
+                },
+                settings: {
+                    renderingTimeout: 100
+                }
+            });
+            chart.on('renderingtimeout', function () {
+                var svg = chart.getLayout().content.querySelector('svg');
+                expect(svg).to.be.instanceof(SVGSVGElement);
+                expect(svg.getAttribute('class')).to.contain(CSS_PREFIX + 'rendering-timeout-warning');
+                done();
+            });
+            chart.on('render', function () {
+                done(new Error('Rendering timeout was not reached.'));
+            });
+            chart.renderTo(testDiv);
         });
     });
 });
