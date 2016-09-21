@@ -66,7 +66,6 @@ export class Plot extends Emitter {
         this._originData = _.clone(this.configGPL.sources);
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
-        this._scenarioLimit = 100;
         this._plugins = new Plugins(plugins, this);
     }
 
@@ -339,14 +338,18 @@ export class Plot extends Emitter {
                     .remove();
             });
 
-        if (this._scenarioLimit && scenario.length > this._scenarioLimit) {
-            this._renderLimitWarning();
-            return;
-        }
-        scenario.forEach((item) => {
+        var timeout = this._liveSpec.settings.renderingTimeout;
+        var startTime = Date.now();
+        var timeoutExceeded = scenario.some((item) => {
+            if (timeout && Date.now() - startTime > timeout) {
+                return true;
+            }
             item.draw();
             this.onUnitDraw(item.node());
         });
+        if (timeoutExceeded) {
+            this._renderTimeoutWarning();
+        }
 
         // TODO: Render panels before chart, to
         // prevent chart size shrink. Use some other event.
@@ -492,7 +495,7 @@ export class Plot extends Emitter {
         return this._layout;
     }
 
-    _renderLimitWarning() {
+    _renderTimeoutWarning() {
         var width = 200;
         var height = 100;
         var linesCount = 4;
@@ -507,7 +510,7 @@ export class Plot extends Emitter {
         this._layout.content.style.height = '100%';
         this._layout.content.innerHTML = `
             <svg
-                class="${CSS_PREFIX}svg"
+                class="${CSS_PREFIX}svg ${CSS_PREFIX}_rendering-timeout-warning"
                 width="100%"
                 height="100%"
                 viewBox="0 0 ${width} ${height}">
@@ -515,8 +518,8 @@ export class Plot extends Emitter {
                     text-anchor="middle"
                     font-size="${fontSize}">
                     <tspan x="${midX}" y="${getY()}">WARNING!</tspan>
-                    <tspan x="${midX}" y="${getY()}">Too much items to display,</tspan>
-                    <tspan x="${midX}" y="${getY()}">your browser may crash.</tspan>
+                    <tspan x="${midX}" y="${getY()}">Rendering took too long,</tspan>
+                    <tspan x="${midX}" y="${getY()}">application can crash.</tspan>
                 </text>
                 <text
                     class="tau-noLimitButton"
@@ -533,7 +536,7 @@ export class Plot extends Emitter {
         var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`);
         var btn = this._layout.content.querySelector('.tau-noLimitButton');
         btn.addEventListener('click', () => {
-            this._scenarioLimit = 0;
+            this._liveSpec.settings.renderingTimeout = 0;
             this._layout.content.removeChild(svg);
             this._layout.content.style.height = '';
             this.refresh();
