@@ -101,6 +101,7 @@ var utilsDom = {
         div.style.width = '100px';
         div.style.height = '100px';
         div.style.border = '1px solid green';
+        div.style.top = '0';
         document.body.appendChild(div);
 
         div.innerHTML = `<svg class="graphical-report__svg">
@@ -154,6 +155,7 @@ var utilsDom = {
             div.style.position = 'absolute';
             div.style.visibility = 'hidden';
             div.style.border = '0px';
+            div.style.top = '0';
             div.style.fontSize = fontSize;
             div.style.fontFamily = fontFamily;
             div.style.fontWeight = fontWeight;
