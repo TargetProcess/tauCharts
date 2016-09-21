@@ -588,9 +588,11 @@ var utils = {
         return obj;
     },
 
-    omit: (obj, prop) => {
+    omit: (obj, ...props) => {
         let newObj = Object.assign({}, obj);
-        delete newObj[prop];
+        props.forEach((prop) => {
+            delete newObj[prop];
+        });
         return newObj;
     },
 
