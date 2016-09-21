@@ -47,6 +47,7 @@ var utilsDom = {
         var scrollbars = utilsDom.getScrollbarSize(el);
         var initialPaddingRight = isRight ? `${scrollbars.width}px` : '0';
         var initialPaddingBottom = isBottom ? `${scrollbars.height}px` : '0';
+        el.style.overflow = 'hidden';
         el.style.padding = `0 ${initialPaddingRight} ${initialPaddingBottom} 0`;
 
         var hasBottomScroll = el.scrollWidth > el.clientWidth;
@@ -54,6 +55,12 @@ var utilsDom = {
         var paddingRight = isRight && !hasRightScroll ? `${scrollbars.width}px` : '0';
         var paddingBottom = isBottom && !hasBottomScroll ? `${scrollbars.height}px` : '0';
         el.style.padding = `0 ${paddingRight} ${paddingBottom} 0`;
+
+        // NOTE: Manually set scroll due to overflow:auto Chrome 53 bug
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=644450
+        el.style.overflow = '';
+        el.style.overflowX = hasBottomScroll ? 'scroll' : 'hidden';
+        el.style.overflowY = hasRightScroll ? 'scroll' : 'hidden';
 
         return scrollbars;
     },
@@ -94,6 +101,7 @@ var utilsDom = {
         div.style.width = '100px';
         div.style.height = '100px';
         div.style.border = '1px solid green';
+        div.style.top = '0';
         document.body.appendChild(div);
 
         div.innerHTML = `<svg class="graphical-report__svg">
@@ -147,6 +155,7 @@ var utilsDom = {
             div.style.position = 'absolute';
             div.style.visibility = 'hidden';
             div.style.border = '0px';
+            div.style.top = '0';
             div.style.fontSize = fontSize;
             div.style.fontFamily = fontFamily;
             div.style.fontWeight = fontWeight;
