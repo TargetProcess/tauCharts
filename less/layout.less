@@ -40,7 +40,7 @@
         }
 
         &__content {
-            .flex(@flex-grow: 1;@flex-shrink: 1;);
+            .flex(@flex-grow: 1;@flex-shrink: 1);
             overflow: auto;
         }
 
@@ -58,6 +58,14 @@
         text{
             fill: @font-color;
         }
+    }
+
+    &__rendering-timeout-warning {
+        background: fadeout(@bg-color, 50%);
+        height: 100%;
+        position: absolute;
+        top: 0;
+        width: 100%;
     }
 }
 

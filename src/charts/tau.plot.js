@@ -338,29 +338,41 @@ export class Plot extends Emitter {
                     .remove();
             });
 
-        var timeout = this._liveSpec.settings.renderingTimeout;
-        var startTime = Date.now();
-        var timeoutExceeded = scenario.some((item) => {
-            if (timeout && Date.now() - startTime > timeout) {
-                return true;
-            }
-            item.draw();
-            this.onUnitDraw(item.node());
-        });
-        if (timeoutExceeded) {
-            this._renderTimeoutWarning();
+        var duration = 0;
+        var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
+        var timeoutReached = () => {
+            this._renderTimeoutWarning(() => {
+                timeout = Infinity;
+                next();
+            });
             this.fire('renderingtimeout');
-            return;
-        }
+        };
+        var done = () => {
+            // TODO: Render panels before chart, to
+            // prevent chart size shrink. Use some other event.
+            this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
+            this.fire('render', this._svg);
 
-        // TODO: Render panels before chart, to
-        // prevent chart size shrink. Use some other event.
-        this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
-        this.fire('render', this._svg);
-
-        // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
-        utilsDom.setScrollPadding(this._layout.contentContainer);
-        utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
+            // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
+            utilsDom.setScrollPadding(this._layout.contentContainer);
+            utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
+        };
+        var next = () => requestAnimationFrame(() => {
+            var item = scenario.shift();
+            var start = Date.now();
+            item.draw();
+            var end = Date.now();
+            duration += end - start;
+            this.onUnitDraw(item.node());
+            if (scenario.length === 0) {
+                done();
+            } else if (duration > timeout) {
+                timeoutReached();
+            } else {
+                next();
+            }
+        });
+        next();
     }
 
     getScaleFactory(dataSources = null) {
@@ -497,7 +509,7 @@ export class Plot extends Emitter {
         return this._layout;
     }
 
-    _renderTimeoutWarning() {
+    _renderTimeoutWarning({proceed}) {
         var width = 200;
         var height = 100;
         var linesCount = 4;
@@ -510,11 +522,9 @@ export class Plot extends Emitter {
             return Math.round(height / linesCount / lineSpacing * yCounter);
         };
         this._layout.content.style.height = '100%';
-        this._layout.content.innerHTML = `
+        this._layout.content.insertAdjacentHTML('beforeend', `
             <svg
-                class="${CSS_PREFIX}svg ${CSS_PREFIX}rendering-timeout-warning"
-                width="100%"
-                height="100%"
+                class="${CSS_PREFIX}rendering-timeout-warning"
                 viewBox="0 0 ${width} ${height}">
                 <text
                     text-anchor="middle"
@@ -534,14 +544,13 @@ export class Plot extends Emitter {
                     Display anyway
                 </text>
             </svg>
-        `;
-        var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`);
+        `);
+        var warning = this._layout.content.querySelector(`svg.${CSS_PREFIX}rendering-timeout-warning`);
         var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-disable-btn`);
         btn.addEventListener('click', () => {
-            this._liveSpec.settings.renderingTimeout = 0;
-            this._layout.content.removeChild(svg);
+            this._layout.content.removeChild(warning);
             this._layout.content.style.height = '';
-            this.refresh();
+            proceed.call(this);
         });
     }
 }
