@@ -233,7 +233,9 @@
 
                         var fillScale = firstNode.getScale('color');
 
-                        var domain = fillScale.domain().sort();
+                        var domain = fillScale.domain().sort(function (a, b) {
+                            return a - b;
+                        });
 
                         var isDate = domain.reduce(function (memo, x) {
                             return memo && utils.isDate(x);
@@ -322,7 +324,9 @@
 
                         var sizeScale = firstNode.getScale('size');
 
-                        var domain = sizeScale.domain().sort();
+                        var domain = sizeScale.domain().sort(function (a, b) {
+                            return a - b;
+                        });
 
                         var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
 

@@ -78,7 +78,7 @@ export class Line extends BasePath {
             // (vertices.length === 1)
             vertices.push(vertices[0]);
 
-            var pair = utils.range(vertices.length - 1).map((i) => i)
+            var pair = utils.range(vertices.length - 1)
                 .map((edge) => {
                     var v0 = vertices[edge];
                     var v1 = vertices[edge + 1];

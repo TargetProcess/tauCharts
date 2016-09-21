@@ -351,7 +351,9 @@
                 var title = getGuideLabel(configUnit.guide, 'color', fillScale.dim).toUpperCase();
                 var titleStyle = 'text-transform:uppercase;font-weight:600;font-size:' + settings.fontSize + 'px';
 
-                var domain = fillScale.domain().sort();
+                var domain = fillScale.domain().sort(function (a, b) {
+                    return a - b;
+                });
                 var brewerLength = fillScale.brewer.length;
                 var labelsLength = 3;
                 var height = 120;
@@ -609,9 +611,9 @@
                     .map(function (item) {
                         var value = item[colorDimension];
                         return {color: colorScale(value), value: value, label: value};
-                    }, function (legendItem) {
+                    }), function (legendItem) {
                         return legendItem.value;
-                    }))
+                    })
                     .reduce(function (memo, item) {
                         memo.brewer[item.value] = item.color;
                         memo.values.push(item);
