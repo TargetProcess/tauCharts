@@ -94,6 +94,7 @@ var api = {
     globalSettings: {
 
         animationSpeed: 750,
+        renderingTimeout: 2500,
 
         defaultNiceColor: true,
 

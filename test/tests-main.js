@@ -2,6 +2,7 @@ var tauCharts = require('src/tau.charts');
 
 // setup global settings for tests
 tauCharts.api.globalSettings.animationSpeed = 0;
+tauCharts.api.globalSettings.renderingTimeout = 0;
 
 var tests = [];
 for (var file in window.__karma__.files) {

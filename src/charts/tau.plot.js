@@ -338,10 +338,20 @@ export class Plot extends Emitter {
                     .remove();
             });
 
-        scenario.forEach((item) => {
+        var timeout = this._liveSpec.settings.renderingTimeout;
+        var startTime = Date.now();
+        var timeoutExceeded = scenario.some((item) => {
+            if (timeout && Date.now() - startTime > timeout) {
+                return true;
+            }
             item.draw();
             this.onUnitDraw(item.node());
         });
+        if (timeoutExceeded) {
+            this._renderTimeoutWarning();
+            this.fire('renderingtimeout');
+            return;
+        }
 
         // TODO: Render panels before chart, to
         // prevent chart size shrink. Use some other event.
@@ -485,5 +495,53 @@ export class Plot extends Emitter {
 
     getLayout() {
         return this._layout;
+    }
+
+    _renderTimeoutWarning() {
+        var width = 200;
+        var height = 100;
+        var linesCount = 4;
+        var lineSpacing = 1.2;
+        var midX = width / 2;
+        var fontSize = Math.round(height / linesCount / lineSpacing);
+        var yCounter = 0;
+        var getY = function () {
+            yCounter++;
+            return Math.round(height / linesCount / lineSpacing * yCounter);
+        };
+        this._layout.content.style.height = '100%';
+        this._layout.content.innerHTML = `
+            <svg
+                class="${CSS_PREFIX}svg ${CSS_PREFIX}rendering-timeout-warning"
+                width="100%"
+                height="100%"
+                viewBox="0 0 ${width} ${height}">
+                <text
+                    text-anchor="middle"
+                    font-size="${fontSize}">
+                    <tspan x="${midX}" y="${getY()}">WARNING!</tspan>
+                    <tspan x="${midX}" y="${getY()}">Rendering took too long,</tspan>
+                    <tspan x="${midX}" y="${getY()}">application can crash.</tspan>
+                </text>
+                <text
+                    class="${CSS_PREFIX}rendering-timeout-disable-btn"
+                    text-anchor="middle"
+                    font-size="${fontSize}"
+                    cursor="pointer"
+                    text-decoration="underline"
+                    x="${midX}"
+                    y="${getY()}">
+                    Display anyway
+                </text>
+            </svg>
+        `;
+        var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`);
+        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-disable-btn`);
+        btn.addEventListener('click', () => {
+            this._liveSpec.settings.renderingTimeout = 0;
+            this._layout.content.removeChild(svg);
+            this._layout.content.style.height = '';
+            this.refresh();
+        });
     }
 }
