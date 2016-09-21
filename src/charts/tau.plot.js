@@ -349,6 +349,7 @@ export class Plot extends Emitter {
         });
         if (timeoutExceeded) {
             this._renderTimeoutWarning();
+            return;
         }
 
         // TODO: Render panels before chart, to
