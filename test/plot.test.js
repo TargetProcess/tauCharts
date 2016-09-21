@@ -692,7 +692,7 @@ define(function (require) {
 
             var chart = new tauChart.Chart({
                 type: 'scatterplot',
-                data: _.times(1000, function () {
+                data: _.times(500, function () {
                     return {
                         a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
                         b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
