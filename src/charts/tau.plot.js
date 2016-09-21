@@ -524,7 +524,7 @@ export class Plot extends Emitter {
                     <tspan x="${midX}" y="${getY()}">application can crash.</tspan>
                 </text>
                 <text
-                    class="tau-noLimitButton"
+                    class="${CSS_PREFIX}rendering-timeout-disable-btn"
                     text-anchor="middle"
                     font-size="${fontSize}"
                     cursor="pointer"
@@ -536,7 +536,7 @@ export class Plot extends Emitter {
             </svg>
         `;
         var svg = this._layout.content.querySelector(`svg.${CSS_PREFIX}svg`);
-        var btn = this._layout.content.querySelector('.tau-noLimitButton');
+        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-disable-btn`);
         btn.addEventListener('click', () => {
             this._liveSpec.settings.renderingTimeout = 0;
             this._layout.content.removeChild(svg);
