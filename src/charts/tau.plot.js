@@ -350,6 +350,7 @@ export class Plot extends Emitter {
         this._activeRenderingId = renderingId;
 
         var duration = 0;
+        var syncDuration = 0;
         var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
         var i = 0;
 
@@ -376,6 +377,7 @@ export class Plot extends Emitter {
             this.onUnitDraw(item.node());
             var end = Date.now();
             duration += end - start;
+            syncDuration += end - start;
 
             i++;
             reportProgress(i / scenario.length);
@@ -409,9 +411,19 @@ export class Plot extends Emitter {
             utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
         };
 
-        var next = (this._liveSpec.settings.asyncRendering ?
-            () => requestAnimationFrame(drawScenario) :
-            drawScenario);
+        var nextSync = () => drawScenario();
+        var nextAsync = () => requestAnimationFrame(drawScenario);
+
+        var next = (!this._liveSpec.settings.asyncRendering ?
+            nextSync :
+            () => {
+                if (syncDuration >= this._liveSpec.settings.syncRenderingDuration) {
+                    syncDuration = 0;
+                    nextAsync();
+                } else {
+                    nextSync();
+                }
+            });
 
         next();
     }
