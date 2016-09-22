@@ -346,7 +346,7 @@ export class Plot extends Emitter {
     _renderScenario(scenario) {
 
         this._activeRenderingId = this._activeRenderingId || 0;
-        var renderingId = this._activeRenderingId++;
+        var renderingId = this._activeRenderingId + 1;
         this._activeRenderingId = renderingId;
 
         var duration = 0;
