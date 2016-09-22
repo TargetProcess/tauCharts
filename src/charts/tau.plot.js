@@ -67,12 +67,14 @@ export class Plot extends Emitter {
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
         this._plugins = new Plugins(plugins, this);
+        this._activeRenderingId = null;
     }
 
     destroy() {
         this.destroyNodes();
         d3.select(this._svg).remove();
         d3.select(this._layout.layout).remove();
+        this._activeRenderingId = null;
         super.destroy();
     }
 
@@ -338,15 +340,62 @@ export class Plot extends Emitter {
                     .remove();
             });
 
+        this._renderScenario(scenario);
+    }
+
+    _renderScenario(scenario) {
+
+        this._activeRenderingId = this._activeRenderingId || 0;
+        var renderingId = this._activeRenderingId++;
+        this._activeRenderingId = renderingId;
+
         var duration = 0;
         var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
-        var timeoutReached = () => {
-            this._renderTimeoutWarning(() => {
-                timeout = Infinity;
+        var i = 0;
+
+        // Display progress
+        var header = d3.select(this._layout.header);
+        var progressBar = selectOrAppend(header, `div.${CSS_PREFIX}progress`);
+        var progressValue = selectOrAppend(progressBar, `div.${CSS_PREFIX}progress__value`)
+            .style('width', 0);
+        var reportProgress = function (value) {
+            progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
+            progressValue.style('width', (value * 100) + '%');
+        };
+
+        var drawScenario = () => {
+            if (renderingId !== this._activeRenderingId) {
+                return;
+            }
+            var item = scenario[i];
+
+            var start = Date.now();
+            item.draw();
+            this.onUnitDraw(item.node());
+            var end = Date.now();
+            duration += end - start;
+
+            i++;
+            reportProgress(i / scenario.length);
+            if (i === scenario.length) {
+                done();
+            } else if (duration > timeout) {
+                timeoutReached();
+            } else {
                 next();
+            }
+        };
+
+        var timeoutReached = () => {
+            this._renderTimeoutWarning({
+                proceed: () => {
+                    timeout = Infinity;
+                    next();
+                }
             });
             this.fire('renderingtimeout');
         };
+
         var done = () => {
             // TODO: Render panels before chart, to
             // prevent chart size shrink. Use some other event.
@@ -357,21 +406,11 @@ export class Plot extends Emitter {
             utilsDom.setScrollPadding(this._layout.contentContainer);
             utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
         };
-        var next = () => requestAnimationFrame(() => {
-            var item = scenario.shift();
-            var start = Date.now();
-            item.draw();
-            var end = Date.now();
-            duration += end - start;
-            this.onUnitDraw(item.node());
-            if (scenario.length === 0) {
-                done();
-            } else if (duration > timeout) {
-                timeoutReached();
-            } else {
-                next();
-            }
-        });
+
+        var next = (this._liveSpec.settings.asyncRendering ?
+            () => requestAnimationFrame(drawScenario) :
+            drawScenario);
+
         next();
     }
 
