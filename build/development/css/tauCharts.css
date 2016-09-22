@@ -55,11 +55,11 @@
 .graphical-report__layout__content {
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
-  overflow: auto;
+  overflow: hidden;
 }
 .graphical-report__layout__sidebar-right {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
 }

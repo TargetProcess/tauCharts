@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.4-beta.4 - 2016-09-20
+/*! taucharts - v0.9.4-beta.5 - 2016-09-22
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -330,7 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.4-beta.4");
+	var version = ("0.9.4-beta.5");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -413,6 +413,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var scrollbars = utilsDom.getScrollbarSize(el);
 	        var initialPaddingRight = isRight ? scrollbars.width + 'px' : '0';
 	        var initialPaddingBottom = isBottom ? scrollbars.height + 'px' : '0';
+	        el.style.overflow = 'hidden';
 	        el.style.padding = '0 ' + initialPaddingRight + ' ' + initialPaddingBottom + ' 0';
 
 	        var hasBottomScroll = el.scrollWidth > el.clientWidth;
@@ -420,6 +421,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var paddingRight = isRight && !hasRightScroll ? scrollbars.width + 'px' : '0';
 	        var paddingBottom = isBottom && !hasBottomScroll ? scrollbars.height + 'px' : '0';
 	        el.style.padding = '0 ' + paddingRight + ' ' + paddingBottom + ' 0';
+
+	        // NOTE: Manually set scroll due to overflow:auto Chrome 53 bug
+	        // https://bugs.chromium.org/p/chromium/issues/detail?id=644450
+	        el.style.overflow = '';
+	        el.style.overflowX = hasBottomScroll ? 'scroll' : 'hidden';
+	        el.style.overflowY = hasRightScroll ? 'scroll' : 'hidden';
 
 	        return scrollbars;
 	    },
@@ -460,6 +467,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        div.style.width = '100px';
 	        div.style.height = '100px';
 	        div.style.border = '1px solid green';
+	        div.style.top = '0';
 	        document.body.appendChild(div);
 
 	        div.innerHTML = '<svg class="graphical-report__svg">\n            <g class="graphical-report__cell cell">\n            <g class="x axis">\n            <g class="tick"><text>' + text + '</text></g>\n            </g>\n            </g>\n            </svg>';
@@ -514,6 +522,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        div.style.position = 'absolute';
 	        div.style.visibility = 'hidden';
 	        div.style.border = '0px';
+	        div.style.top = '0';
 	        div.style.fontSize = fontSize;
 	        div.style.fontFamily = fontFamily;
 	        div.style.fontWeight = fontWeight;
