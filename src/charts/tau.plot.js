@@ -356,7 +356,9 @@ export class Plot extends Emitter {
         // Display progress
         var header = d3.select(this._layout.header);
         var progressBar = selectOrAppend(header, `div.${CSS_PREFIX}progress`);
-        var progressValue = selectOrAppend(progressBar, `div.${CSS_PREFIX}progress__value`)
+        progressBar.select(`div.${CSS_PREFIX}progress__value`).remove();
+        var progressValue = progressBar.append('div')
+            .classed(`${CSS_PREFIX}progress__value`, true)
             .style('width', 0);
         var reportProgress = function (value) {
             progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
