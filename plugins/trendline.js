@@ -484,7 +484,7 @@
                                     return ((p[0] !== null) && (p[1] !== null));
                                 })
                                 .sort(function (p1, p2) {
-                                    return p2[0] - p1[0];
+                                    return p1[0] - p2[0];
                                 })
                                 .map(function (p) {
                                     var item = {};

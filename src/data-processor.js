@@ -137,7 +137,7 @@ var DataProcessor = {
                 if (val === null) {
                     memo[key].hasNull = true;
                 } else {
-                    var typeScalePair = detectType(val, Object.assign({}, defaultDetect));
+                    var typeScalePair = detectType(val, utils.clone(defaultDetect));
                     var detectedType = typeScalePair.type;
                     var detectedScale = typeScalePair.scale;
 

@@ -270,7 +270,7 @@ export class Plot extends Emitter {
 
         this.configGPL.settings.size = size;
 
-        this._liveSpec = Object.assign({}, utils.omit(this.configGPL, 'plugins'));
+        this._liveSpec = utils.clone(utils.omit(this.configGPL, 'plugins'));
         this._liveSpec.sources = this.getDataSources();
         this._liveSpec.settings = this.configGPL.settings;
 

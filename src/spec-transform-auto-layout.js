@@ -110,9 +110,9 @@ var inheritProps = (childUnit, root) => {
     // leaf elements should inherit coordinates properties
     if (!childUnit.hasOwnProperty('units')) {
         childUnit = utils.defaults(childUnit, root);
-        childUnit.guide = utils.defaults(childUnit.guide, root.guide);
-        childUnit.guide.x = utils.defaults(childUnit.guide.x, root.guide.x);
-        childUnit.guide.y = utils.defaults(childUnit.guide.y, root.guide.y);
+        childUnit.guide = utils.defaults(childUnit.guide, utils.clone(root.guide));
+        childUnit.guide.x = utils.defaults(childUnit.guide.x, utils.clone(root.guide.x));
+        childUnit.guide.y = utils.defaults(childUnit.guide.y, utils.clone(root.guide.y));
     }
 
     return childUnit;
