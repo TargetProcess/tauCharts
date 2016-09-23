@@ -20,8 +20,7 @@
   ],
   "dependencies": {
     "d3": "^3.5.5",
-    "topojson": "1.6.24",
-    "underscore": "~1.8.3"
+    "topojson": "1.6.24"
   },
   "repository": {
     "type": "git",

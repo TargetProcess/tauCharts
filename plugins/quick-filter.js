@@ -11,7 +11,7 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function QuickFilter(xSettings) {
 
@@ -42,9 +42,9 @@
                 var spec = this._chart.getSpec();
                 var sources = spec.sources['/'];
 
-                this._fields = ((_.isArray(xSettings) && xSettings.length > 0) ?
+                this._fields = ((Array.isArray(xSettings) && xSettings.length > 0) ?
                     (xSettings) :
-                    (_(sources.dims).keys()));
+                    (Object.keys(sources.dims)));
 
                 var chartData = self._chart.getChartModelData();
 
@@ -61,7 +61,9 @@
                         return isMeasure;
                     })
                     .forEach(function (dim) {
-                        self._data[dim] = _(chartData).pluck(dim);
+                        self._data[dim] = chartData.map(function (x) {
+                            return x[dim];
+                        });
                         self._bounds[dim] = d3.extent(self._data[dim]);
                         self._filter[dim] = self._bounds[dim];
 
@@ -77,7 +79,7 @@
             },
 
             _filtersContainer: '<div class="graphical-report__filter"></div>',
-            _filterWrapper: _.template(
+            _filterWrapper: utils.template(
                 '<div class="graphical-report__filter__wrap">' +
                     '<div class="graphical-report__legend__title"><%=name%></div>' +
                 '</div>'
@@ -89,7 +91,7 @@
                 var bounds = this._bounds[dim];
 
                 var filter = this._filter[dim];
-                var isDate = (_.isDate(bounds[0]) || _.isDate(bounds[1]));
+                var isDate = (utils.isDate(bounds[0]) || utils.isDate(bounds[1]));
 
                 var self = this;
 
@@ -157,7 +159,7 @@
 
                 function getFormatters(formatters) {
 
-                    var index = _(formatters)
+                    var index = formatters
                         .findIndex(function (token) {
                             var f = d3.time.format(token);
                             return (f(new Date(bounds[0])) !== f(new Date(bounds[1])));

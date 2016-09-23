@@ -1,5 +1,5 @@
 import {default as d3} from 'd3';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as topojson} from 'topojson';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
@@ -34,7 +34,7 @@ export class GeoMap extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             this.config.guide || {},
             {
                 defaultFill: 'rgba(128,128,128,0.25)',

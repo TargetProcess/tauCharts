@@ -3,7 +3,6 @@ import {Line}       from '../elements/element.line';
 import {Area}       from '../elements/element.area';
 import {Interval}   from '../elements/element.interval';
 import {StackedInterval} from '../elements/element.interval.stacked';
-import {default as _} from 'underscore';
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -269,6 +268,40 @@ var chartElement = [
 
 var testColorCode = ((x) => (/^(#|rgb\(|rgba\()/.test(x)));
 
+// TODO Remove this configs and its associated methods
+// which are just for templating in some plugins
+var noMatch = /(.)^/;
+
+let map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#x27;',
+    '`': '&#x60;'
+};
+let escapes = {
+    '\'': '\'',
+    '\\': '\\',
+    '\r': 'r',
+    '\n': 'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+};
+
+let escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+
+let source = '(?:' + Object.keys(map).join('|') + ')';
+let testRegexp = RegExp(source);
+let replaceRegexp = RegExp(source, 'g');
+
+let templateSettings = {
+    evaluate: /<%([\s\S]+?)%>/g,
+    interpolate: /<%=([\s\S]+?)%>/g,
+    escape: /<%-([\s\S]+?)%>/g
+};
+// End of plugin configs
+
 var utils = {
     clone(obj) {
         return deepClone(obj);
@@ -365,9 +398,9 @@ var utils = {
 
         var dataNewSnap = 0;
         var dataPrevRef = null;
-        var xHash = _.memoize(
+        var xHash = utils.memoize(
             (data, keys) => {
-                return _.uniq(
+                return utils.unique(
                     data.map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), []))),
                     (t) => JSON.stringify(t))
                     .reduce((memo, t) => {
@@ -501,7 +534,160 @@ var utils = {
             arr.push(i);
         }
         return arr;
+    },
+
+    flatten: (array) => {
+        if (!Array.isArray(array)) {
+            return array;
+        }
+        return [].concat(...array.map(x => utils.flatten(x)));
+    },
+
+    unique: (array, func) => {
+        let mappedArray = array;
+        let filter = ((elem, pos, arr) => arr.indexOf(elem) === pos);
+        if (typeof func === 'function') {
+            mappedArray = array.map(func);
+            filter = (elem, pos) => {
+                let mappedElem = mappedArray[pos];
+                return mappedArray.findIndex(x => x === mappedElem) === pos;
+            };
+        }
+        return array.filter(filter);
+    },
+
+    groupBy: (array, func) => {
+        return array.reduce((obj, v) => {
+            var group = func(v);
+            obj[group] = obj[group] || [];
+            obj[group].push(v);
+            return obj;
+        }, {});
+    },
+
+    union: (arr1, arr2) => utils.unique(arr1.concat(arr2)),
+
+    intersection: (arr1, arr2) => arr1.filter(x => arr2.indexOf(x) !== -1),
+
+    defaults: (obj, ...defaultObjs) => {
+        var length = defaultObjs.length;
+        if (length === 0 || !obj) {
+            return obj;
+        }
+        for (var index = 0; index < length; index++) {
+            var source = defaultObjs[index],
+                keys = utils.isObject(source) ? Object.keys(source) : [],
+                l = keys.length;
+            for (var i = 0; i < l; i++) {
+                var key = keys[i];
+                if (obj[key] === undefined) {
+                    obj[key] = source[key];
+                }
+            }
+        }
+        return obj;
+    },
+
+    omit: (obj, ...props) => {
+        let newObj = Object.assign({}, obj);
+        props.forEach((prop) => {
+            delete newObj[prop];
+        });
+        return newObj;
+    },
+
+    memoize: function(func, hasher) {
+        let memoize = function(key) {
+            let cache = memoize.cache;
+            let address = String(hasher ? hasher.apply(this, arguments) : key);
+            if (!cache.hasOwnProperty(address)) {
+                cache[address] = func.apply(this, arguments);
+            }
+            return cache[address];
+        };
+        memoize.cache = {};
+        return memoize;
+    },
+
+    // TODO Remove this methods and its associated configs
+    // which are just for templating in some plugins
+    pick: (object, ...props) => {
+        var result = {};
+        if (object == null) {
+            return result;
+        }
+
+        return props.reduce((result, prop) => {
+            let value = object[prop];
+            if (value) {
+                result[prop] = value;
+            }
+            return result;
+        }, {});
+    },
+
+    escape: function(string) {
+        string = string == null ? '' : String(string);
+        return testRegexp.test(string) ? string.replace(replaceRegexp, match =>map[match]) : string;
+    },
+
+    template: (text, settings, oldSettings) => {
+        if (!settings && oldSettings){
+            settings = oldSettings;
+        }
+        settings = utils.defaults({}, settings, templateSettings);
+
+        var matcher = RegExp([
+            (settings.escape || noMatch).source,
+            (settings.interpolate || noMatch).source,
+            (settings.evaluate || noMatch).source
+        ].join('|') + '|$', 'g');
+
+        var index = 0;
+        var source = '__p+=\'';
+        text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+            source += text.slice(index, offset).replace(escaper, match => '\\' + escapes[match]);
+            index = offset + match.length;
+
+            if (escape) {
+                source += '\'+\n((__t=(' + escape + '))==null?\'\':utils.escape(__t))+\n\'';
+            } else if (interpolate) {
+                source += '\'+\n((__t=(' + interpolate + '))==null?\'\':__t)+\n\'';
+            } else if (evaluate) {
+                source += '\';\n' + evaluate + '\n__p+=\'';
+            }
+
+            return match;
+        });
+        source += '\';\n';
+
+        if (!settings.variable) {
+            source = 'with(obj||{}){\n' + source + '}\n';
+        }
+
+        source = 'var __t,__p=\'\',__j=Array.prototype.join,' +
+            'print=function(){__p+=__j.call(arguments,\'\');};\n' +
+            source + 'return __p;\n';
+
+        try {
+            var render = new Function(settings.variable || 'obj', source);
+        } catch (e) {
+            e.source = source;
+            throw e;
+        }
+
+        var template = function(data) {
+            return render.call(this, data);
+        };
+
+        var argument = settings.variable || 'obj';
+        template.source = 'function(' + argument + '){\n' + source + '}';
+
+        return template;
     }
+
+    // End of plugins methods
+
 };
 
 export {utils};

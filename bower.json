@@ -19,8 +19,7 @@
     "!license.txt"
   ],
   "dependencies": {
-    "d3": "~3.5.5",
-    "underscore": "~1.8.2"
+    "d3": "~3.5.5"
   },
   "devDependencies": {
     "modernizer": "2.8.2",

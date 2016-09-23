@@ -2,7 +2,6 @@ import {Emitter} from '../event';
 import {utils} from '../utils/utils';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
-import {default as _} from 'underscore';
 var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
 
 export class GPL extends Emitter {
@@ -12,7 +11,7 @@ export class GPL extends Emitter {
         super();
 
         // jscs:disable
-        _.defaults(config.scales, {
+        utils.defaults(config.scales, {
             'size_null': {type: 'size', source: '?'},
             'split_null': {type: 'value', source: '?'},
             'label_null': {type: 'value', source: '?'},
@@ -34,7 +33,7 @@ export class GPL extends Emitter {
         this.unitSet = unitsRegistry;
         this.scalesHub = scalesRegistryInstance;
 
-        this.transformations = _.extend(
+        this.transformations = Object.assign(
             config.transformations || {},
             {
                 where(data, tuple) {
@@ -77,7 +76,7 @@ export class GPL extends Emitter {
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
             var instance = this.unitSet.create(
                 unit.type,
-                _.extend(
+                Object.assign(
                     {adjustPhase: true},
                     {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
                     (unit),
@@ -96,7 +95,7 @@ export class GPL extends Emitter {
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
             var instance = this.unitSet.create(
                 unit.type,
-                _.extend(
+                Object.assign(
                     {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
                     (unit),
                     {options: parentInstance.allocateRect(rootFrame.key)}

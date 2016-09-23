@@ -107,9 +107,7 @@ chartType.forEach(function (item) {
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
                         var data = context.chart.getChartModelData();
-                        var expected = tauCharts.api._.sortBy(data, function (a) {
-                            return a.x;
-                        });
+                        var expected = data.sort((a1, a2) => a1.x - a2.x);
                         expect(expected).to.be.eql([
                             {
                                 x: 2,
@@ -181,15 +179,8 @@ describeChart(
                     testUtils.simulateEvent('click', excluder);
                     var d = testUtils.Deferred();
                     var data = context.chart.getChartModelData();
-                    var expected = tauCharts.api._.sortBy(data, function (a) {
-                        return a.x;
-                    });
-                    expect(expected).to.be.eql([
-                        {
-                            x: 4,
-                            y: 5
-                        }
-                    ]);
+                    var expected = data.sort((a1, a2) =>a1.x - a2.x);
+                    expect(expected).to.be.eql([{x: 4, y: 5}]);
                     return d.resolve();
                 })
                 .then(function () {
@@ -236,7 +227,7 @@ chartType.forEach(function (item) {
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
-                        var texts = _.pluck(tooltipElements, 'textContent');
+                        var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['x', '2', 'color', 'yellow']);
 
                         return hideTooltip(expect, context.chart, 0, elementSelector);
@@ -253,7 +244,7 @@ chartType.forEach(function (item) {
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
-                        var texts = _.pluck(tooltipElements, 'textContent');
+                        var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['y', '3']);
                         return hideTooltip(expect, context.chart, 0, elementSelector);
                     })
@@ -439,7 +430,7 @@ describeChart(
             var content = document.querySelectorAll('.graphical-report__tooltip');
 
             var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
-            var texts = _.pluck(tooltipElements, 'textContent');
+            var texts = Array.from(tooltipElements).map((x) => x.textContent);
             expect(texts).to.be.eql(['x', '2', 'y', '2']);
 
             testUtils.simulateEvent('mouseout', datum);

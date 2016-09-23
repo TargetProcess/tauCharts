@@ -12,13 +12,13 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
 
     function Layers(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 title: 'Layers',
@@ -26,11 +26,12 @@
                 showPanel: true,
                 showLayers: true,
                 mode: 'merge',
-                axisWidth: 45
+                axisWidth: 45,
+                layers: []
             });
 
         settings.layers.forEach(function (layer) {
-            layer.guide = _.defaults(
+            layer.guide = utils.defaults(
                 (layer.guide || {}),
                 {
                     scaleOrient: 'left',
@@ -60,12 +61,10 @@
 
                 spec.addTransformation('defined-only', function (data, props) {
                     var k = props.key;
-                    return _(data)
-                        .chain()
+                    return data
                         .filter(function (row) {
                             return ((row[k] !== null) && (typeof (row[k]) !== 'undefined'));
-                        })
-                        .value();
+                        });
                 });
 
                 if (!this._isApplicable) {
@@ -89,7 +88,7 @@
                         var k = props.key;
                         var g = props.group;
                         if (g) {
-                            return _(data).filter(function (row) {
+                            return data.filter(function (row) {
                                 var groupKey = row[g];
                                 var groupVal = row[groupKey];
                                 return (
@@ -101,7 +100,7 @@
                                 );
                             });
                         } else {
-                            return _(data).filter(function (row) {
+                            return data.filter(function (row) {
                                 return (
                                     (row[metaField] === layersText[k])
                                     &&
@@ -131,7 +130,7 @@
                         }
                     };
 
-                    sources['/'].dims = _.extend(newDim, originalSources['/'].dims);
+                    sources['/'].dims = Object.assign(newDim, originalSources['/'].dims);
                     sources['/'].data = originalSources['/'].data.reduce(function (memo, row) {
                         return memo.concat(layersDims.map(function (layerDim) {
                             var seed = {};
@@ -141,11 +140,11 @@
                                 seed[g] = row[layerDim];
                                 seed['subLayer'] = g;
                             }
-                            return _.extend(seed, row);
+                            return Object.assign(seed, row);
                         }));
                     }, []);
 
-                    return _.extend(sources, _.omit(originalSources, '/'));
+                    return Object.assign(sources, utils.omit(originalSources, '/'));
                 });
 
                 if (settings.showPanel) {
@@ -179,7 +178,7 @@
                 return ([this.primaryY]
                     .concat(settings.layers)
                     .reduce(function (memo, layer) {
-                        var ys = (_.isArray(layer.y) ? layer.y : [layer.y]);
+                        var ys = (Array.isArray(layer.y) ? layer.y : [layer.y]);
                         return ys.reduce(function (state, y) {
                             state[y] = this.extractLabelForKey(layer, y);
                             return state;
@@ -193,11 +192,11 @@
                     .concat(settings.layers)
                     .reduce(function (memo, layer) {
                         var g = null;
-                        if (_.isArray(layer.y)) {
+                        if (Array.isArray(layer.y)) {
                             g = layer.y.join(', ');
                         }
 
-                        return _.flatten([layer.y]).reduce(function (memo, y) {
+                        return utils.flatten([layer.y]).reduce(function (memo, y) {
                             memo[y] = g;
                             return memo;
                         }, memo);
@@ -254,9 +253,9 @@
             isFinalCoordNode: function (unit, parent) {
                 return ((unit) && (unit.type === 'COORDS.RECT')
                     &&
-                    (_.every(unit.units, function (subUnit) {
+                    (unit.units).every(function (subUnit) {
                         return subUnit.type !== 'COORDS.RECT';
-                    }))
+                    })
                 );
             },
 
@@ -321,7 +320,7 @@
                         unit.guide.y.label.text = [
                             facetLabelSeed
                             ,
-                            _(currLayers).filter(isVisibleAxis).map(self.extractLayerLabel.bind(self)).join(', ')
+                            currLayers.filter(isVisibleAxis).map(self.extractLayerLabel.bind(self)).join(', ')
                         ].join(fullSpec.getSettings('facetLabelDelimiter'));
 
                         if (settings.mode === 'dock') {
@@ -352,7 +351,7 @@
                         if (settings.mode === 'merge') {
                             unit.guide.y.label.text = (self.isFacet ?
                                 ('') :
-                                _(currLayers).filter(isVisibleAxis).map(self.extractLayerLabel.bind(self)).join(', '));
+                                currLayers.filter(isVisibleAxis).map(self.extractLayerLabel.bind(self)).join(', '));
                         }
                     }
                     return memo;
@@ -364,7 +363,7 @@
                 var self = this;
                 var layerScaleName = self.getScaleName(xLayer.scaleName || xLayer.y);
                 var layerScaleOrient = xLayer.guide.scaleOrient;
-                var isGroupedY = _.isArray(xLayer.y);
+                var isGroupedY = Array.isArray(xLayer.y);
                 var isPrimaryLayer = (xLayer.isPrimary);
 
                 return function (memo, unit, parent) {
@@ -402,7 +401,7 @@
                     var isFinalCoord = self.isFinalCoordNode(unit);
                     if (isFinalCoord) {
                         unit.y = layerScaleName;
-                        unit.guide.y = _.extend(unit.guide.y, (xLayer.guide || {}));
+                        unit.guide.y = Object.assign(unit.guide.y, (xLayer.guide || {}));
                         unit.guide.y.label = (unit.guide.y.label || {});
                         unit.guide.y.label.text = self.extractLayerLabel(xLayer);
                         unit.guide.x.hide = true;
@@ -430,16 +429,16 @@
             },
 
             getScaleName: function (layerY) {
-                return (_.isArray(layerY)) ? layerY.join(', ') : layerY;
+                return (Array.isArray(layerY)) ? layerY.join(', ') : layerY;
             },
 
             extractLabelForKey: function (layer, yKey) {
                 var g = layer.guide || {};
-                g.label = (_.isString(g.label) ? {text: g.label} : g.label);
+                g.label = ((typeof g.label === 'string') ? {text: g.label} : g.label);
                 var l = (g.label || {});
                 var keys = l.byKeys || {};
 
-                if (_.isArray(layer.y)) {
+                if (Array.isArray(layer.y)) {
                     return keys[yKey] || yKey;
                 }
 
@@ -448,7 +447,7 @@
 
             extractLayerLabel: function (layer) {
                 var self = this;
-                var ys = (_.isArray(layer.y) ? layer.y : [layer.y]);
+                var ys = (Array.isArray(layer.y) ? layer.y : [layer.y]);
                 return ys
                     .map(function (yKey) {
                         return self.extractLabelForKey(layer, yKey);
@@ -479,9 +478,9 @@
                         var scaleName = self.getScaleName(layer.y);
                         return memo.addScale(
                             scaleName,
-                            _.extend(
+                            Object.assign(
                                 {type: 'linear', source: '/', dim: scaleName, autoScale: true},
-                                (_.pick(layer.guide || {}, 'min', 'max', 'autoScale', 'nice', 'niceInterval'))));
+                                (utils.pick(layer.guide || {}, 'min', 'max', 'autoScale', 'nice', 'niceInterval'))));
                     }, fullSpec);
 
                 var currLayers = [this.primaryY].concat(settings.layers).sort(function (a, b) {
@@ -545,7 +544,7 @@
 
                     var fullSpec = pluginsSDK.spec(self._chart.getSpec());
                     var primaryY = self.primaryY.scaleName;
-                    var scaleNames = _(settings.layers)
+                    var scaleNames = settings.layers
                         .map(function (layer) {
                             return self.getScaleName(layer.y);
                         })
@@ -557,13 +556,16 @@
                     var hashBounds = scaleNames.reduce(function (memo, yi) {
                             var info = self._chart.getScaleInfo(yi);
                             memo[yi] = info.domain().filter(function (n) {
-                                return !isNaN(n) && _.isNumber(n);
+                                return Number.isFinite(n);
                             });
                             return memo;
                         },
                         {});
 
-                    var minMax = d3.extent(_(hashBounds).chain().values().flatten().value());
+                    var minMax = d3.extent(utils.flatten(Object.keys(hashBounds)
+                        .map(function(key) {
+                            return hashBounds[key];
+                        })));
                     scaleNames.forEach(function (y) {
                         var yScale = fullSpec.getScale(y);
                         yScale.min = minMax[0];
@@ -575,7 +577,7 @@
 
             // jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
-            template: _.template([
+            template: utils.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
                 '   <input type="checkbox"',
                 '          class="graphical-report__checkbox__input i-role-show-layers"',

@@ -13,7 +13,7 @@ module.exports = function (config) {
             {pattern: 'css/tooltip.default.css', included: true},
             {pattern: 'css/tauCharts.default.css', included: true},
             {pattern: 'test/utils/test.css', included: true},
-            {pattern: 'node_modules/underscore/underscore.js', included: true},
+            {pattern: 'test/utils/polyfills.js', included: true},
             {pattern: 'node_modules/d3/d3.js', included: true},
             {pattern: 'css/base.css', included: true},
             'test/tests-main.js'

@@ -19,7 +19,6 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 var selectOrAppend = utilsDom.selectOrAppend;
 
@@ -35,7 +34,7 @@ export class Plot extends Emitter {
         this._layout = getLayout();
 
         var iref = 0;
-        config.settings = Plot.setupSettings(_.defaults(
+        config.settings = Plot.setupSettings(utils.defaults(
             (config.settings || {}),
             {
                 references: new WeakMap(),
@@ -63,7 +62,7 @@ export class Plot extends Emitter {
             SpecTransformCalcSize
         ];
 
-        this._originData = _.clone(this.configGPL.sources);
+        this._originData = Object.assign({}, this.configGPL.sources);
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
         this._plugins = new Plugins(plugins, this);
@@ -86,7 +85,7 @@ export class Plot extends Emitter {
             throw new Error('Provide spec for plot');
         }
 
-        var resConfig = _.defaults(
+        var resConfig = utils.defaults(
             config,
             {
                 spec: {},
@@ -176,7 +175,7 @@ export class Plot extends Emitter {
                 return memo;
             }, {});
 
-        var r = _.defaults(configSettings || {}, localSettings);
+        var r = utils.defaults(configSettings || {}, localSettings);
 
         if (!Array.isArray(r.specEngine)) {
             r.specEngine = [{width: Number.MAX_VALUE, name: r.specEngine}];
@@ -237,7 +236,7 @@ export class Plot extends Emitter {
     renderTo(target, xSize) {
         this._svg = null;
         this._target = target;
-        this._defaultSize = _.clone(xSize);
+        this._defaultSize = Object.assign({}, xSize);
 
         var targetNode = d3.select(target).node();
         if (targetNode === null) {
@@ -255,11 +254,11 @@ export class Plot extends Emitter {
         this._layout.contentContainer.style.padding = `0 ${s.width}px ${s.height}px 0`;
         utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
 
-        var size = _.clone(xSize) || {};
+        var size = Object.assign({}, xSize) || {};
         if (!size.width || !size.height) {
             let {scrollLeft, scrollTop} = content.parentElement;
             content.style.display = 'none';
-            size = _.defaults(size, utilsDom.getContainerSize(content.parentNode));
+            size = utils.defaults(size, utilsDom.getContainerSize(content.parentNode));
             content.style.display = '';
             content.parentElement.scrollLeft = scrollLeft;
             content.parentElement.scrollTop = scrollTop;
@@ -271,7 +270,7 @@ export class Plot extends Emitter {
 
         this.configGPL.settings.size = size;
 
-        this._liveSpec = utils.clone(_.omit(this.configGPL, 'plugins'));
+        this._liveSpec = utils.clone(utils.omit(this.configGPL, 'plugins'));
         this._liveSpec.sources = this.getDataSources();
         this._liveSpec.settings = this.configGPL.settings;
 
@@ -368,7 +367,7 @@ export class Plot extends Emitter {
     }
 
     getSourceFiltersIterator(rejectFiltersPredicate) {
-        var filters = _.flatten(Object.keys(this._filtersStore.filters).map(key => this._filtersStore.filters[key]))
+        var filters = utils.flatten(Object.keys(this._filtersStore.filters).map(key => this._filtersStore.filters[key]))
             .filter((f) => !rejectFiltersPredicate(f))
             .map(x => x.predicate);
 

@@ -320,12 +320,12 @@
         });
     }());
     // jscs:enable
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var d3 = tauCharts.api.d3;
 
     function trendline(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 type: 'linear',
@@ -455,31 +455,36 @@
 
                     var xMapper = isXPeriod ?
                         (createPeriodCaster(props.x.period)) :
-                        (_.identity);
+                        (function (x) {
+                            return x;
+                        });
 
                     var yMapper = isYPeriod ?
                         (createPeriodCaster(props.y.period)) :
-                        (_.identity);
+                        (function (x) {
+                            return x;
+                        });
 
                     var src = data.map(function (item) {
-                        var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
-                        var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
+                        var ix = utils.isDate(item[x]) ? item[x].getTime() : item[x];
+                        var iy = utils.isDate(item[y]) ? item[y].getTime() : item[y];
                         var ig = item[g];
                         return [ix, iy, ig];
                     });
 
-                    var groups = _.groupBy(src, '2');
+                    var groups = utils.groupBy(src, function(x) {
+                        return x['2'];
+                    });
                     return Object.keys(groups).reduce(
                         function (memo, k) {
                             var fiber = groups[k];
                             var regression = regressionsHub(props.type, fiber);
-                            var points = _(regression.points)
-                                .chain()
+                            var points = regression.points
                                 .filter(function (p) {
                                     return ((p[0] !== null) && (p[1] !== null));
                                 })
-                                .sortBy(function (p) {
-                                    return p[0];
+                                .sort(function (p1, p2) {
+                                    return p1[0] - p2[0];
                                 })
                                 .map(function (p) {
                                     var item = {};
@@ -491,8 +496,7 @@
                                     }
 
                                     return item;
-                                })
-                                .value();
+                                });
 
                             if ((points.length > 1) && (isXPeriod || isYPeriod)) {
                                 points = [points[0], points[points.length - 1]];
@@ -532,7 +536,7 @@
                         });
                         // var basicGuide = {interpolate: 'basis'};
                         var basicGuide = {};
-                        trend.guide = _.defaults(basicGuide, trend.guide || {});
+                        trend.guide = utils.defaults(basicGuide, trend.guide || {});
                         trend.guide.interpolate = 'linear';
                         trend.guide.showAnchors   = false;
                         trend.guide.cssClass      = 'graphical-report__trendline';
@@ -544,7 +548,7 @@
 
             // jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
-            template: _.template([
+            template: utils.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
                 '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend" <%= showTrend %> />',
                 '<span class="graphical-report__checkbox__icon"></span>',

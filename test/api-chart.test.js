@@ -416,7 +416,7 @@ define(function (require) {
         });
 
         it('api test filters', function () {
-            var newConfig = tauCharts.api._.clone(config);
+            var newConfig = Object.assign({}, config);
             newConfig.data = [{x: 1, y: 2, z: 'category1'}, {x: 3, y: 4, z: 'category2'}, {x: 3, y: 1, z: 'category3'}];
             var plot = new tauCharts.Plot(newConfig);
             var id = plot.addFilter({

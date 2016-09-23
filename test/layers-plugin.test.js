@@ -1,6 +1,4 @@
 define(function (require) {
-
-    var _ = require('underscore');
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var layers = require('plugins/layers');
@@ -189,9 +187,9 @@ define(function (require) {
             };
 
             var data0 = chart.getData();
-            expect(_(data0).pluck('id').join(',')).to.equal('0,1,2');
+            expect(data0.map((x) => x.id).join(',')).to.equal('0,1,2');
             var chartModelData0 = chart.getChartModelData();
-            expect(_(chartModelData0).map(xMap).join(',')).to.equal('0:y0,0:y1,1:y0,1:y1,2:y0,2:y1');
+            expect(chartModelData0.map(xMap).join(',')).to.equal('0:y0,0:y1,1:y0,1:y1,2:y0,2:y1');
             var dims0 = chart.getDataDims();
             var keys0 = Object.keys(dims0).join(',');
             expect(keys0).to.equal('id,x,y0,y1,color');
@@ -204,9 +202,9 @@ define(function (require) {
             ]);
 
             var data1 = chart.getData();
-            expect(_(data1).pluck('id').join(',')).to.equal('6,7,8,9');
+            expect(data1.map((x) => x.id).join(',')).to.equal('6,7,8,9');
             var chartModelData1 = chart.getChartModelData();
-            expect(_(chartModelData1).map(xMap).join(',')).to.equal('6:y0,6:y1,7:y0,7:y1,8:y0,8:y1,9:y0,9:y1');
+            expect(chartModelData1.map(xMap).join(',')).to.equal('6:y0,6:y1,7:y0,7:y1,8:y0,8:y1,9:y0,9:y1');
             var dims1 = chart.getDataDims();
             var keys1 = Object.keys(dims1).join(',');
             expect(keys1).to.equal('id,x,y0,y1,color');

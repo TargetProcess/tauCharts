@@ -1,9 +1,9 @@
 import {default as d3} from 'd3';
-import {default as _} from 'underscore';
 import {Element} from './element';
 import {CartesianModel} from '../models/cartesian';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
+import {utils} from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
@@ -26,7 +26,7 @@ export class Cartesian extends Element {
 
         this.config = config;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             this.config.guide || {},
             {
                 showGridLines: 'xy',
@@ -34,7 +34,7 @@ export class Cartesian extends Element {
             });
 
         this.config.guide.x = this.config.guide.x || {};
-        this.config.guide.x = _.defaults(
+        this.config.guide.x = utils.defaults(
             this.config.guide.x,
             {
                 cssClass: 'x axis',
@@ -55,7 +55,7 @@ export class Cartesian extends Element {
             };
         }
 
-        this.config.guide.x.label = _.defaults(
+        this.config.guide.x.label = utils.defaults(
             this.config.guide.x.label,
             {
                 text: 'X',
@@ -66,7 +66,7 @@ export class Cartesian extends Element {
         );
 
         this.config.guide.y = this.config.guide.y || {};
-        this.config.guide.y = _.defaults(
+        this.config.guide.y = utils.defaults(
             this.config.guide.y,
             {
                 cssClass: 'y axis',
@@ -86,7 +86,7 @@ export class Cartesian extends Element {
             };
         }
 
-        this.config.guide.y.label = _.defaults(
+        this.config.guide.y.label = utils.defaults(
             this.config.guide.y.label,
             {
                 text: 'Y',
@@ -155,7 +155,7 @@ export class Cartesian extends Element {
 
     drawFrames(frames) {
 
-        var node = _.extend({}, this.config);
+        var node = Object.assign({}, this.config);
 
         var options = node.options;
 

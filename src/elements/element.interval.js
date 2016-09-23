@@ -3,7 +3,7 @@ import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
 export class Interval extends Element {
@@ -16,7 +16,7 @@ export class Interval extends Element {
 
         var enableStack = this.config.stack;
         this.config.guide = (this.config.guide || {});
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             (this.config.guide),
             {
                 animationSpeed: 0,
@@ -24,7 +24,7 @@ export class Interval extends Element {
                 enableColorToBarPosition: !enableStack
             });
 
-        this.config.guide.size = _.defaults(
+        this.config.guide.size = utils.defaults(
             (this.config.guide.size || {}),
             {
                 enableDistributeEvenly: true,
@@ -32,7 +32,7 @@ export class Interval extends Element {
                 defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
             });
 
-        this.config.guide.label = _.defaults(
+        this.config.guide.label = utils.defaults(
             (this.config.guide.label || {}),
             {
                 position: (this.config.flip ?
@@ -286,7 +286,7 @@ export class Interval extends Element {
                 })
             };
         }
-        return _.extend(
+        return Object.assign(
             model,
             {
                 class: ((d) => `${baseCssClass} ${screenModel.class(d)}`),

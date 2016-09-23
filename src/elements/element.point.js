@@ -3,7 +3,7 @@ import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 
 export class Point extends Element {
 
@@ -13,7 +13,7 @@ export class Point extends Element {
 
         this.config = config;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             (this.config.guide || {}),
             {
                 animationSpeed: 0,
@@ -21,7 +21,7 @@ export class Point extends Element {
                 enableColorToBarPosition: false
             });
 
-        this.config.guide.size = _.defaults(
+        this.config.guide.size = utils.defaults(
             (this.config.guide.size || {}),
             {
                 defMinSize: 10,
@@ -29,7 +29,7 @@ export class Point extends Element {
                 enableDistributeEvenly: !this.isEmptySize
             });
 
-        this.config.guide.label = _.defaults(
+        this.config.guide.label = utils.defaults(
             (this.config.guide.label || {}),
             {
                 position: [
@@ -176,7 +176,7 @@ export class Point extends Element {
                 .attr('opacity', 1);
         };
 
-        var groups = _.groupBy(fullData, self.screenModel.group);
+        var groups = utils.groupBy(fullData, self.screenModel.group);
         var fibers = Object
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);

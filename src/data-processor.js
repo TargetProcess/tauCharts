@@ -1,6 +1,4 @@
 import {utils} from './utils/utils';
-import {default as _} from 'underscore';
-var isObject = (obj) => obj === Object(obj);
 
 var DataProcessor = {
 
@@ -14,7 +12,7 @@ var DataProcessor = {
 
                     var fnVar = (hash, f) => {
                         var propValue = item[f];
-                        var hashValue = isObject(propValue) ? JSON.stringify(propValue) : propValue;
+                        var hashValue = utils.isObject(propValue) ? JSON.stringify(propValue) : propValue;
                         hash.push(hashValue);
                         return hash;
                     };
@@ -87,7 +85,7 @@ var DataProcessor = {
         Object.keys(dimensions).forEach((k) => {
             var item = dimensions[k];
             var type = (item.type || defaultType).toLowerCase();
-            r[k] = _.extend(
+            r[k] = Object.assign(
                 {},
                 item,
                 {

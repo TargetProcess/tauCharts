@@ -3,8 +3,8 @@
 define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
-    var _ = require('underscore');
     var tauCharts = require('src/tau.charts');
+    var utils = require('src/utils/utils').utils;
     var testUtils = require('testUtils');
 
     var convertSpec = function (spec, data) {
@@ -36,19 +36,19 @@ define(function (require) {
             unitsRegistry: unitsRegistry,
             transformations: {
                 where: function (data, tuple) {
-                    var predicates = _.map(tuple, function (v, k) {
+                    var predicates = tuple.map(function (v, k) {
                         return function (row) {
                             return (row[k] === v);
                         };
                     });
-                    return _(data).filter(function (row) {
-                        return _.every(predicates, function (p) {
+                    return data.filter(function (row) {
+                        return predicates.every(function (p) {
                             return p(row);
                         });
                     });
                 }
             },
-            scales: _.defaults(spec.scales || {}, {
+            scales: utils.defaults(spec.scales || {}, {
                 'x': {type: 'ordinal', source: '/', dim: 'x'},
                 'y': {type: 'linear', source: '/', dim: 'y'},
                 'date': {type: 'period', period: 'day', source: '/', dim: 'createDate'},
@@ -69,7 +69,7 @@ define(function (require) {
                 x: unit.x,
                 y: unit.y,
                 guide: unit.guide || {},
-                units: [_.defaults(unit.units[0], {
+                units: [utils.defaults(unit.units[0], {
                     type: 'ELEMENT.INTERVAL',
                     x: unit.x || 'x',
                     y: unit.y || 'y',
@@ -119,13 +119,13 @@ define(function (require) {
                 },
                 transformations: {
                     where: function (data, tuple) {
-                        var predicates = _.map(tuple, function (v, k) {
+                        var predicates = tuple.map(function (v, k) {
                             return function (row) {
                                 return (row[k] === v);
                             };
                         });
-                        return _(data).filter(function (row) {
-                            return _.every(predicates, function (p) {
+                        return data.filter(function (row) {
+                            return predicates.every(function (p) {
                                 return p(row);
                             });
                         });
