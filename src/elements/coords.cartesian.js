@@ -18,6 +18,12 @@ import {
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
 
+const calcTicks = (distributionKoeff) => {
+    const limit = 20;
+    const factor = ((distributionKoeff <= limit) ? 1 : 0.75);
+    return Math.max(2, Math.round(distributionKoeff * factor));
+};
+
 export class Cartesian extends Element {
 
     constructor(config) {
@@ -239,7 +245,7 @@ export class Cartesian extends Element {
 
         var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
         if (formatter !== null) {
-            axisScale.ticks(Math.round(size / scale.guide.density));
+            axisScale.ticks(calcTicks(size / scale.guide.density));
             axisScale.tickFormat(formatter);
         }
 
@@ -342,7 +348,7 @@ export class Cartesian extends Element {
 
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
                         if (formatter !== null) {
-                            xGridAxis.ticks(Math.round(width / xScale.guide.density));
+                            xGridAxis.ticks(calcTicks(width / xScale.guide.density));
                             xGridAxis.tickFormat(formatter);
                         }
 
@@ -382,7 +388,7 @@ export class Cartesian extends Element {
 
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);
                         if (formatter !== null) {
-                            yGridAxis.ticks(Math.round(height / yScale.guide.density));
+                            yGridAxis.ticks(calcTicks(height / yScale.guide.density));
                             yGridAxis.tickFormat(formatter);
                         }
 
