@@ -344,11 +344,11 @@ export class Plot extends Emitter {
 
         // TODO: Render panels before chart, to
         // prevent chart size shrink. Use some other event.
+        utilsDom.setScrollPadding(this._layout.contentContainer);
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.fire('render', this._svg);
 
         // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
-        utilsDom.setScrollPadding(this._layout.contentContainer);
         utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
     }
 

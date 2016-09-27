@@ -8,6 +8,7 @@
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'horizontal-scroll',
             'whiskers'
         ],
         'dev-quick-test/': fileRange(
@@ -19,6 +20,7 @@
             'countries',
             'exoplanets',
             'data',
+            'medals',
             'olympics',
             'tpStories'
         ]
@@ -470,7 +472,7 @@
             return prefix + num;
         });
     }
-    
+
     function range(start, end) {
         var arr = [];
         for (var i = start; i <= end; i++) {

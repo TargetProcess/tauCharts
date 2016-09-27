@@ -282,7 +282,7 @@
             };
             var shadowNS = createShadow('ns', 0, 0, yAxesWidth, SHADOW_SIZE);
             var shadowEW = createShadow('ew',
-                pos.visibleWidth - SHADOW_SIZE - pos.scrollbarWidth,
+                pos.visibleWidth - SHADOW_SIZE,
                 pos.visibleHeight - xAxesHeight,
                 SHADOW_SIZE,
                 xAxesHeight
@@ -293,7 +293,12 @@
                 yAxesWidth,
                 SHADOW_SIZE
             );
-            var shadowWE = createShadow('we', yAxesWidth, pos.visibleHeight - xAxesHeight, SHADOW_SIZE, xAxesHeight);
+            var shadowWE = createShadow('we',
+                yAxesWidth,
+                pos.visibleHeight - xAxesHeight,
+                SHADOW_SIZE,
+                xAxesHeight
+            );
 
             visibilityManager.register(shadowNS, 'xy');
             visibilityManager.register(shadowEW, 'xy');
@@ -468,17 +473,14 @@
                         return info.translate.y;
                     })) - 1;
 
-                    var scrollRect = root.getBoundingClientRect();
                     var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
-                    var visibleWidth = scrollRect.width;
-                    var visibleHeight = scrollRect.height;
 
                     var getPositions = function () {
                         return {
                             scrollLeft: root.scrollLeft,
                             scrollTop: root.scrollTop,
-                            visibleWidth: scrollRect.width,
-                            visibleHeight: scrollRect.height,
+                            visibleWidth: root.clientWidth,
+                            visibleHeight: root.clientHeight,
                             scrollbarWidth: scrollbars.width,
                             scrollbarHeight: scrollbars.height,
                             svgWidth: Number(srcSvg.attr('width')),
