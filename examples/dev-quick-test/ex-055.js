@@ -51,7 +51,7 @@
             },
 
             prepareData: function (screenModel) {
-                var groups = _.groupBy(this.node().data(), screenModel.group);
+                var groups = utils.groupBy(this.node().data(), screenModel.group);
                 return Object
                     .keys(groups)
                     .sort(function (a, b) {
@@ -70,19 +70,17 @@
             },
 
             createXIndex: function (data, screenModel) {
-                return _(data)
-                    .chain()
-                    .pluck(screenModel.model.scaleX.dim)
-                    .uniq(String)
-                    .sortBy()
+                return utils.uniq(data.map(x => x[screenModel.model.scaleX.dim]), String)
+                    .sort(function(x1, x2) {
+                        return x1 - x2;
+                    })
                     .map(function (date, i) {
                         return {
                             ind: i,
                             val: date,
                             pos: screenModel.model.scaleX.value(date)
                         };
-                    })
-                    .value();
+                    });
             },
 
             draw: function () {
@@ -97,7 +95,7 @@
                 var xIndex = this.createXIndex(data, screenModel);
 
                 var findRangeValue = function (x) {
-                    var nextItem = _.find(xIndex, function (r) {
+                    var nextItem = xIndex.find(function (r) {
                         return r.pos >= x;
                     });
                     var prevIndex = nextItem.ind > 0 ? (nextItem.ind - 1) : nextItem.ind;
@@ -297,7 +295,7 @@
 
             getContent: function(dateRange, states) {
                 var str = [];
-                var max = Math.max.apply(null, _(states).pluck('value'));
+                var max = Math.max.apply(null, states.map(state => state['value']));
                 str.push('<div style="padding: 5px">');
                 str.push('<strong>');
                 str.push(this.formatRange(dateRange));
@@ -1922,7 +1920,7 @@ var orderIndex = [
     "A cadrer(UserStory)"
 ].reverse();
 
-var orderRange = d3.extent(_.values(orderByState));
+var orderRange = d3.extent(Object.keys(orderByState).map(key => orderByState[key]));
 
 dev.spec({
     z: 777,
@@ -2001,7 +1999,7 @@ function splitEvenly(domain, parts) {
     var min = domain[0];
     var max = domain[1];
     var segment = (max - min) / (parts - 1);
-    var chunks = _.times(parts - 2, function (n) {
+    var chunks = utils.range(parts - 2).map(function (n) {
         return min + segment * (n + 1);
     });
     return [min].concat(chunks).concat(max);

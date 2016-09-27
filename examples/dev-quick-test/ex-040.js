@@ -2,7 +2,7 @@ var now = new Date();
 
 var gendata = function (num) {
     var zzz = num || 100;
-    return _.times(zzz, _.identity)
+    return utils.range(zzz)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
 

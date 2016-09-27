@@ -17,8 +17,7 @@ dev.spec({
     },
 
     data: dev.dataset('olympics', function (data) {
-        return _(data)
-            .chain()
+        var processedData = data
             .filter(function (row) {
                 return (
                     (['Belarus'].indexOf(row['Country']) >= 0)
@@ -29,21 +28,24 @@ dev.spec({
             .reduce(function (memo, row) {
                 var k = row['Athlete'] + row['Year'].getFullYear();
                 if (!memo[k]) {
-                    memo[k] = _.clone(row);
+                    memo[k] = Object.assign({}, row);
                     memo[k]['Total Medals'] = 0;
                     memo[k]['FullYear'] = row['Year'].getFullYear();
                 }
 
                 memo[k]['Total Medals'] += row['Total Medals'];
                 return memo;
-            }, {})
-            .values()
-            .sortBy('FullYear')
+            }, {});
+
+        return Object.keys(processedData)
+            .map(key => processedData[key])
+            .sort(function(x1, x2) {
+                return x1['FullYear'] - x2['FullYear'];
+            })
             .map(function (row) {
                 row['FullYear'] = row['FullYear'].toString();
                 return row;
-            })
-            .value();
+            });
     })
 
 });

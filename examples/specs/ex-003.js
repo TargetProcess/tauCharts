@@ -17,8 +17,7 @@ dev.spec({
     ],
 
     data: dev.dataset('olympics', function (data) {
-        return _(data)
-            .chain()
+        var processedData = data
             .filter(function (row) {
                 return (
                     (['Germany', 'Russia', 'United States', 'Japan'].indexOf(row['Country']) >= 0)
@@ -41,8 +40,8 @@ dev.spec({
 
                 return memo;
             },
-            {})
-            .values()
-            .value()
+            {});
+        
+        return Object.keys(processedData).map(key => processedData[key]);
     })
 });
