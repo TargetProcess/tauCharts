@@ -51,9 +51,7 @@ dev.spec({
         {x1: {id: 2, name: "Tau Product - Kanban #1"}, y1: 80, color: 1},
         {x1: {id: 2, name: "Tau Product - Kanban #1"}, y1: 90, color: 0},
         {x1: {id: 2, name: "Tau Product - Kanban #1"}, y1: 100, color: 10}
-    ].concat(_.times(10, function (x) {
-            return x;
-        }).map(function (i) {
+    ].concat(utils.range(10).map(function (i) {
             return {
                 x1: {id: 2, name: "Tau Product - Kanban #1"},
                 y1: 100 + i * 3,

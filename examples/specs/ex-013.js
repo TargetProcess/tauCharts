@@ -13,22 +13,22 @@ dev.spec({
     ],
 
     data: dev.dataset('olympics', function (data) {
-        return _(data)
-            .chain()
+        var processedData = data
             .filter(function (row) {
                 return ['Belarus'].indexOf(row['Country']) >= 0;
             })
             .reduce(function (memo, row) {
                 var k = row['Athlete'];
                 if (!memo[k]) {
-                    memo[k] = _.clone(row);
+                    memo[k] = Object.assign({}, row);
                     memo[k]['Total Medals'] = 0;
                 }
 
                 memo[k]['Total Medals'] += row['Total Medals'];
                 return memo;
-            }, {})
-            .values()
-            .value();
+            }, {});
+
+        return Object.keys(processedData).map(key => processedData[key]);
+
     })
 });

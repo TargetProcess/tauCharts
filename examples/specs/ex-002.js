@@ -17,7 +17,7 @@ dev.spec({
         }
     ],
 
-    data: _.times(100, _.identity).reduce(function (memo, i) {
+    data: utils.range(100).reduce(function (memo, i) {
         var x = i * (Math.PI / 100);
         return memo.concat([
             {
