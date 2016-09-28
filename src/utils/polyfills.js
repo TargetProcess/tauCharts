@@ -5,6 +5,7 @@ window.requestAnimationFrame = window.requestAnimationFrame
 if (!Number.isFinite) {
     Object.defineProperty(Number, 'isFinite', {
         value: function (value) {
+            'use strict';
             return typeof value === 'number' && isFinite(value);
         },
         configurable: true,
@@ -16,6 +17,7 @@ if (!Number.isFinite) {
 if (!Number.isNaN) {
     Object.defineProperty(Number, 'isNaN', {
         value: function (value) {
+            'use strict';
             return typeof value === 'number' && isNaN(value);
         },
         configurable: true,
@@ -104,7 +106,10 @@ if (typeof Object.assign != 'function') {
                     }
                 }
                 return output;
-            }
+            },
+            configurable: true,
+            enumerable: false,
+            writable: true
         });
     })();
 }
