@@ -1,4 +1,4 @@
-/*! taucharts - v0.9.4-beta.5 - 2016-09-22
+/*! taucharts - v0.9.4-beta.6 - 2016-09-28
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -330,7 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.9.4-beta.5");
+	var version = ("0.9.4-beta.6");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -2522,7 +2522,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Point(config) {
 	        _classCallCheck(this, Point);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Point).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Point.__proto__ || Object.getPrototypeOf(Point)).call(this, config));
 
 	        _this.config = config;
 
@@ -2767,7 +2767,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Element(config) {
 	        _classCallCheck(this, Element);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Element).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Element.__proto__ || Object.getPrototypeOf(Element)).call(this, config));
 
 	        _this.screenModel = null;
 	        _this._elementNameSpace = config.namespace || 'default';
@@ -3689,7 +3689,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function TauChartError(message, errorCode, errorArgs) {
 	        _classCallCheck(this, TauChartError);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TauChartError).call(this));
+	        var _this = _possibleConstructorReturn(this, (TauChartError.__proto__ || Object.getPrototypeOf(TauChartError)).call(this));
 
 	        _this.name = 'TauChartError';
 	        _this.message = message;
@@ -4828,12 +4828,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    nodeAxis.selectAll('.tick').each(function (tickData) {
 	        // NOTE: Skip ticks removed by D3 axis call during transition.
 	        if (logicalScale(tickData)) {
-	            var tickNode = d3_transition(_d2.default.select(this), animationSpeed);
 
-	            var offset = logicalScale.stepSize(tickData) * 0.5;
-	            var key = isHorizontal ? 'x' : 'y';
-	            var val = isHorizontal ? offset : -offset;
-	            tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+	            var tickNode = _d2.default.select(this);
+
+	            var setAttr = function setAttr(selection) {
+	                var _selection$select$att;
+
+	                var tickCoord = logicalScale(tickData);
+	                var tx = isHorizontal ? tickCoord : 0;
+	                var ty = isHorizontal ? 0 : tickCoord;
+	                selection.attr('transform', 'translate(' + tx + ',' + ty + ')');
+
+	                var offset = logicalScale.stepSize(tickData) * 0.5;
+	                var key = isHorizontal ? 'x' : 'y';
+	                var val = isHorizontal ? offset : -offset;
+	                selection.select('line').attr((_selection$select$att = {}, _defineProperty(_selection$select$att, key + '1', val), _defineProperty(_selection$select$att, key + '2', val), _selection$select$att));
+	            };
+
+	            if (!tickNode.classed('tau-enter')) {
+	                tickNode.call(setAttr);
+	                tickNode.classed('tau-enter', true);
+	            }
+
+	            d3_transition(tickNode, animationSpeed).call(setAttr);
 	        }
 	    });
 	};
@@ -5275,7 +5292,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Line(config) {
 	        _classCallCheck(this, Line);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Line).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Line.__proto__ || Object.getPrototypeOf(Line)).call(this, config));
 
 	        var enableStack = _this.config.stack;
 
@@ -5310,7 +5327,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return n;
 	            };
 
-	            var baseModel = _get(Object.getPrototypeOf(Line.prototype), 'buildModel', this).call(this, screenModel);
+	            var baseModel = _get(Line.prototype.__proto__ || Object.getPrototypeOf(Line.prototype), 'buildModel', this).call(this, screenModel);
 
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
@@ -5546,7 +5563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function BasePath(config) {
 	        _classCallCheck(this, BasePath);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BasePath).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (BasePath.__proto__ || Object.getPrototypeOf(BasePath)).call(this, config));
 
 	        _this.config = config;
 
@@ -5924,7 +5941,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Area(config) {
 	        _classCallCheck(this, Area);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Area).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Area.__proto__ || Object.getPrototypeOf(Area)).call(this, config));
 
 	        var enableStack = _this.config.stack;
 
@@ -5936,7 +5953,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'buildModel',
 	        value: function buildModel(screenModel) {
 	            var self = this;
-	            var baseModel = _get(Object.getPrototypeOf(Area.prototype), 'buildModel', this).call(this, screenModel);
+	            var baseModel = _get(Area.prototype.__proto__ || Object.getPrototypeOf(Area.prototype), 'buildModel', this).call(this, screenModel);
 
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
@@ -6071,7 +6088,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Interval(config) {
 	        _classCallCheck(this, Interval);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Interval).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Interval.__proto__ || Object.getPrototypeOf(Interval)).call(this, config));
 
 	        _this.config = config;
 
@@ -6384,7 +6401,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _classCallCheck(this, StackedInterval);
 
 	        config.stack = true;
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(StackedInterval).call(this, config));
+	        return _possibleConstructorReturn(this, (StackedInterval.__proto__ || Object.getPrototypeOf(StackedInterval)).call(this, config));
 	    }
 
 	    return StackedInterval;
@@ -6436,7 +6453,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _classCallCheck(this, GPL);
 
 	        // jscs:disable
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GPL).call(this));
+	        var _this = _possibleConstructorReturn(this, (GPL.__proto__ || Object.getPrototypeOf(GPL)).call(this));
 
 	        _underscore2.default.defaults(config.scales, {
 	            'size_null': { type: 'size', source: '?' },
@@ -7067,7 +7084,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Plot(config) {
 	        _classCallCheck(this, Plot);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Plot).call(this));
+	        var _this = _possibleConstructorReturn(this, (Plot.__proto__ || Object.getPrototypeOf(Plot)).call(this));
 
 	        _this._nodes = [];
 	        _this._svg = null;
@@ -7116,7 +7133,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.destroyNodes();
 	            _d2.default.select(this._svg).remove();
 	            _d2.default.select(this._layout.layout).remove();
-	            _get(Object.getPrototypeOf(Plot.prototype), 'destroy', this).call(this);
+	            _get(Plot.prototype.__proto__ || Object.getPrototypeOf(Plot.prototype), 'destroy', this).call(this);
 	        }
 	    }, {
 	        key: 'setupChartSourceModel',
@@ -10468,7 +10485,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        config.settings = _tau.Plot.setupSettings(config.settings);
 	        config.dimensions = _tau.Plot.setupMetaInfo(config.dimensions, config.data);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Chart).call(this, chartFactory(config)));
+	        var _this = _possibleConstructorReturn(this, (Chart.__proto__ || Object.getPrototypeOf(Chart)).call(this, chartFactory(config)));
 
 	        if (config.autoResize) {
 	            Chart.winAware.push(_this);
@@ -10483,7 +10500,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (index !== -1) {
 	                Chart.winAware.splice(index, 1);
 	            }
-	            _get(Object.getPrototypeOf(Chart.prototype), 'destroy', this).call(this);
+	            _get(Chart.prototype.__proto__ || Object.getPrototypeOf(Chart.prototype), 'destroy', this).call(this);
 	        }
 	    }]);
 
@@ -10627,7 +10644,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Cartesian(config) {
 	        _classCallCheck(this, Cartesian);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Cartesian).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Cartesian.__proto__ || Object.getPrototypeOf(Cartesian)).call(this, config));
 
 	        _this.config = config;
 
@@ -11090,7 +11107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Parallel(config) {
 	        _classCallCheck(this, Parallel);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Parallel).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Parallel.__proto__ || Object.getPrototypeOf(Parallel)).call(this, config));
 
 	        _this.config = config;
 
@@ -11380,7 +11397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function GeoMap(config) {
 	        _classCallCheck(this, GeoMap);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GeoMap).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (GeoMap.__proto__ || Object.getPrototypeOf(GeoMap)).call(this, config));
 
 	        _this.config = config;
 	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
@@ -12821,7 +12838,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function GenericCartesian(config) {
 	        _classCallCheck(this, GenericCartesian);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GenericCartesian).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (GenericCartesian.__proto__ || Object.getPrototypeOf(GenericCartesian)).call(this, config));
 
 	        _this.config = config;
 
@@ -13031,7 +13048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function Path(config) {
 	        _classCallCheck(this, Path);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Path).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (Path.__proto__ || Object.getPrototypeOf(Path)).call(this, config));
 
 	        _this.decorators = [_cartesianGrammar.CartesianGrammar.decorator_orientation, _cartesianGrammar.CartesianGrammar.decorator_group, _cartesianGrammar.CartesianGrammar.decorator_dynamic_size, _cartesianGrammar.CartesianGrammar.decorator_color, _cartesianGrammar.CartesianGrammar.decorator_label, config.adjustPhase && _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale].concat(config.transformModel || []);
 	        return _this;
@@ -13042,7 +13059,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function buildModel(screenModel) {
 
 	            var self = this;
-	            var baseModel = _get(Object.getPrototypeOf(Path.prototype), 'buildModel', this).call(this, screenModel);
+	            var baseModel = _get(Path.prototype.__proto__ || Object.getPrototypeOf(Path.prototype), 'buildModel', this).call(this, screenModel);
 
 	            baseModel.matchRowInCoordinates = function (rows, _ref) {
 	                var x = _ref.x;
@@ -13153,7 +13170,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function ParallelLine(config) {
 	        _classCallCheck(this, ParallelLine);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ParallelLine).call(this, config));
+	        var _this = _possibleConstructorReturn(this, (ParallelLine.__proto__ || Object.getPrototypeOf(ParallelLine)).call(this, config));
 
 	        _this.config = config;
 	        _this.config.guide = _underscore2.default.defaults(_this.config.guide || {}, {
@@ -13295,7 +13312,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function IdentityScale(xSource, scaleConfig) {
 	        _classCallCheck(this, IdentityScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(IdentityScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (IdentityScale.__proto__ || Object.getPrototypeOf(IdentityScale)).call(this, xSource, scaleConfig));
 
 	        _this._references = scaleConfig.references;
 	        _this._refCounter = scaleConfig.refCounter;
@@ -13522,7 +13539,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function ColorScale(xSource, scaleConfig) {
 	        _classCallCheck(this, ColorScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ColorScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (ColorScale.__proto__ || Object.getPrototypeOf(ColorScale)).call(this, xSource, scaleConfig));
 
 	        var discrete = scaleConfig.dimType !== 'measure';
 
@@ -13703,7 +13720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function SizeScale(xSource, scaleConfig) {
 	        _classCallCheck(this, SizeScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SizeScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (SizeScale.__proto__ || Object.getPrototypeOf(SizeScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
 	        var vars = _d2.default.extent(_this.vars);
@@ -13819,7 +13836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function OrdinalScale(xSource, scaleConfig) {
 	        _classCallCheck(this, OrdinalScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(OrdinalScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (OrdinalScale.__proto__ || Object.getPrototypeOf(OrdinalScale)).call(this, xSource, scaleConfig));
 
 	        _this.addField('scaleType', 'ordinal').addField('discrete', true);
 	        return _this;
@@ -13928,7 +13945,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function PeriodScale(xSource, scaleConfig) {
 	        _classCallCheck(this, PeriodScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PeriodScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (PeriodScale.__proto__ || Object.getPrototypeOf(PeriodScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
 	        var vars = _this.vars;
@@ -14068,7 +14085,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function TimeScale(xSource, scaleConfig) {
 	        _classCallCheck(this, TimeScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TimeScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (TimeScale.__proto__ || Object.getPrototypeOf(TimeScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
 	        var vars = _this.vars;
@@ -14198,7 +14215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function LinearScale(xSource, scaleConfig) {
 	        _classCallCheck(this, LinearScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LinearScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (LinearScale.__proto__ || Object.getPrototypeOf(LinearScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
 	        var vars = _d2.default.extent(_this.vars);
@@ -14302,7 +14319,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function LogarithmicScale(xSource, scaleConfig) {
 	        _classCallCheck(this, LogarithmicScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LogarithmicScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (LogarithmicScale.__proto__ || Object.getPrototypeOf(LogarithmicScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
 	        var domain = _d2.default.extent(_this.vars);
@@ -14443,7 +14460,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function ValueScale(xSource, scaleConfig) {
 	        _classCallCheck(this, ValueScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ValueScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (ValueScale.__proto__ || Object.getPrototypeOf(ValueScale)).call(this, xSource, scaleConfig));
 
 	        _this.addField('scaleType', 'value').addField('georole', scaleConfig.georole);
 	        return _this;
@@ -14504,7 +14521,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function FillScale(xSource, scaleConfig) {
 	        _classCallCheck(this, FillScale);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(FillScale).call(this, xSource, scaleConfig));
+	        var _this = _possibleConstructorReturn(this, (FillScale.__proto__ || Object.getPrototypeOf(FillScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
 	        var vars = _d2.default.extent(_this.vars);
