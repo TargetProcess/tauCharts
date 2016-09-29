@@ -3,7 +3,6 @@ define(function (require) {
     var expect = require('chai').expect;
     var testUtils = require('testUtils');
     var trendline = require('plugins/trendline');
-    var _ = require('underscore');
     var describeChart = testUtils.describeChart;
 
     describeChart(

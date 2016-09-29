@@ -12,8 +12,7 @@ dev.spec({
     },
 
     data: dev.dataset('olympics', function (data) {
-        return _(data)
-            .chain()
+        var processedData = data
             .reduce(function (memo, row) {
                 var k = row['Country'];
                 if (!memo[k]) {
@@ -25,9 +24,10 @@ dev.spec({
 
                 memo[k]['SUM(Total Medals)'] += row['Total Medals'];
                 return memo;
-            }, {})
-            .values()
-            .value();
+            }, {});
+
+        return Object.keys(processedData).map(key => processedData[key]);
+
     })
 
 });

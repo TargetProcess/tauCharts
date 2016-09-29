@@ -10,7 +10,7 @@
     }
 })(function (tauCharts, canvg, saveAs, Promise, printCss) {
     var d3 = tauCharts.api.d3;
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
 
@@ -120,7 +120,7 @@
     var getGuideLabel = function (guide, key, defaultLabel) {
 
         var kGuide = ((guide || {})[key] || {});
-        var kLabel = (_.isObject(kGuide.label)) ? kGuide.label.text : kGuide.label;
+        var kLabel = (utils.isObject(kGuide.label)) ? kGuide.label.text : kGuide.label;
 
         return kLabel || defaultLabel;
     };
@@ -141,14 +141,14 @@
                         var r = token;
                         var fieldInfo = info[token] || {};
 
-                        if (_.isString(token)) {
+                        if (typeof token === 'string') {
                             r = {
                                 field: token,
                                 title: (fieldInfo.label || token)
                             };
                         }
 
-                        if (!_.isFunction(r.value)) {
+                        if (typeof r.value !== 'function') {
                             r.value = function (row) {
                                 var fieldValue = row[this.field];
                                 return (fieldInfo.isComplexField ?
@@ -160,7 +160,7 @@
                         return r;
                     })
                     .filter(function (item) {
-                        return !_.any(excludeFields, function (exFieldName) {
+                        return !excludeFields.find(function (exFieldName) {
                             return item.field === exFieldName;
                         });
                     }));
@@ -304,17 +304,16 @@
                                     var origVal = f.value(row);
                                     var origStr = JSON.stringify(origVal);
 
-                                    if (!_.isDate(origVal) && _.isObject(origVal)) {
+                                    if (!utils.isDate(origVal) && utils.isObject(origVal)) {
                                         // complex objects if any
                                         origStr = ('"' + origStr.replace(/"/g, '""') + '"');
                                     } else {
                                         // everything else
                                         var trimStr = trimChar(origStr, '"').replace(/"/g, '""');
-                                        var needEncoding = _.any(
-                                            ['"', ',', ';', '\n', '\r'],
-                                            function (sym) {
+                                        var needEncoding = Boolean(['"', ',', ';', '\n', '\r']
+                                            .find(function (sym) {
                                                 return (trimStr.indexOf(sym) >= 0);
-                                            });
+                                            }));
                                         origStr = (needEncoding ? ('"' + trimStr + '"') : trimStr);
                                     }
 
@@ -342,9 +341,9 @@
                     var min = domain[0];
                     var max = domain[1];
                     var segment = ((max - min) / (parts - 1));
-                    var chunks = _.times(parts - 2, function (n) {
+                    var chunks = utils.range(parts - 2).map((function (n) {
                         return (min + segment * (n + 1));
-                    });
+                    }));
                     return [min].concat(chunks).concat(max);
                 };
 
@@ -352,7 +351,9 @@
                 var title = getGuideLabel(configUnit.guide, 'color', fillScale.dim).toUpperCase();
                 var titleStyle = 'text-transform:uppercase;font-weight:600;font-size:' + settings.fontSize + 'px';
 
-                var domain = _(fillScale.domain()).sortBy();
+                var domain = fillScale.domain().sort(function (a, b) {
+                    return a - b;
+                });
                 var brewerLength = fillScale.brewer.length;
                 var labelsLength = 3;
                 var height = 120;
@@ -438,7 +439,7 @@
                         .attr('x', 12)
                         .attr('y', 5)
                         .text(function (d) {
-                            return _.escape(isEmpty(d.label) ? ('No ' + colorScaleName) : d.label);
+                            return utils.escape(isEmpty(d.label) ? ('No ' + colorScaleName) : d.label);
                         })
                         .style({'font-size': settings.fontSize + 'px'});
                 };
@@ -472,11 +473,9 @@
                 var sizeScale = this._unit.getScale('size');
                 var sizeScaleName = getGuideLabel(configUnit.guide, 'size', sizeScale.dim).toUpperCase();
 
-                var chartData = _.sortBy(
-                    chart.getChartModelData(),
-                    function (el) {
-                        return sizeScale(el[sizeScale.dim]);
-                    });
+                var chartData = chart.getChartModelData().sort(function (x1, x2) {
+                    return sizeScale(x1[sizeScale.dim]) - sizeScale(x2[sizeScale.dim]);
+                });
 
                 var chartDataLength = chartData.length;
                 var first = chartData[0][sizeScale.dim];
@@ -487,13 +486,10 @@
                     var xF = (4 - count) < 0 ? 0 : Math.round((4 - count));
                     var base = Math.pow(10, xF);
                     var step = (last - first) / 5;
-                    values = _([first, first + step, first + step * 2, first + step * 3, last])
-                        .chain()
+                    values = utils.unique([first, first + step, first + step * 2, first + step * 3, last]
                         .map(function (x) {
                             return (x === last || x === first) ? x : Math.round(x * base) / base;
-                        })
-                        .unique()
-                        .value();
+                        }));
                 } else {
                     values = [first];
                 }
@@ -511,7 +507,9 @@
                     }.bind(this))
                     .reverse();
 
-                var maxDiameter = Math.max.apply(null, _.pluck(data, 'diameter'));
+                var maxDiameter = Math.max.apply(null, data.map(function (x) {
+                    return x.diameter;
+                }));
                 var fontSize = settings.fontSize;
 
                 var offsetInner = 0;
@@ -609,16 +607,13 @@
 
             _getColorMap: function (data, colorScale, colorDimension) {
 
-                return _(data)
-                    .chain()
+                return utils.unique(data
                     .map(function (item) {
                         var value = item[colorDimension];
                         return {color: colorScale(value), value: value, label: value};
-                    })
-                    .uniq(function (legendItem) {
+                    }), function (legendItem) {
                         return legendItem.value;
                     })
-                    .value()
                     .reduce(function (memo, item) {
                         memo.brewer[item.value] = item.color;
                         memo.values.push(item);
@@ -721,7 +716,7 @@
                     );
                 }
 
-                settings = _.defaults(settings, {
+                settings = utils.defaults(settings, {
                     visible: true,
                     fontSize: 13,
                     paddingTop: 30

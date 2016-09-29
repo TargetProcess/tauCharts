@@ -79,7 +79,7 @@ dev.spec({
         }
     },
 
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
             return memo.concat([
@@ -130,7 +130,7 @@ dev.spec({
     x: ['x'],
     y: ['y'],
 
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
             return memo.concat([
@@ -196,7 +196,7 @@ dev.spec({
         }
     ],
 
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
             return memo.concat([

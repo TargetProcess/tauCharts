@@ -10,7 +10,7 @@ dev.spec({
             nice: false
         }
     },
-    data: _.times(1000, function (n) {
+    data: utils.range(1000).map(function (n) {
         var x = Math.random(n) * 10;
         var y = Math.random(n) * 10;
         return {

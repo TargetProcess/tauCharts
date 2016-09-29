@@ -2,12 +2,15 @@
 
     'use strict';
 
+    var utils = tauCharts.api.utils;
+
     //----------------------------------------------
     // NOTE: Place paths to specs and datasets here.
     //
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'horizontal-scroll',
             'whiskers'
         ],
         'dev-quick-test/': fileRange(
@@ -19,6 +22,7 @@
             'countries',
             'exoplanets',
             'data',
+            'medals',
             'olympics',
             'tpStories'
         ]
@@ -372,7 +376,7 @@
         if (!(settings instanceof Object)) {
             settings = {};
         }
-        settings = _.defaults(settings, {
+        settings = utils.defaults(settings, {
             path: '',
             types: [],
             plugins: []
@@ -409,6 +413,7 @@
      */
     window.addEventListener('load', function () {
         window.dev = new DevApp(PATHS);
+        window.utils = utils;
     });
 
 
@@ -464,13 +469,13 @@
 
     function fileRange(prefix, numbers) {
         numbers = Array.prototype.slice.call(arguments, 1);
-        return _.flatten(numbers).map(function (num) {
+        return utils.flatten(numbers).map(function (num) {
             num = '00' + String(num);
             num = num.substring(num.length - 3);
             return prefix + num;
         });
     }
-    
+
     function range(start, end) {
         var arr = [];
         for (var i = start; i <= end; i++) {

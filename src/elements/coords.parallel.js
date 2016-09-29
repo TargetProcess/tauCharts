@@ -1,5 +1,4 @@
 import {default as d3} from 'd3';
-import {default as _} from 'underscore';
 import {Element} from './element';
 import {utilsDraw} from '../utils/utils-draw';
 import {utils} from '../utils/utils';
@@ -14,7 +13,7 @@ export class Parallel extends Element {
 
         this.config = config;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             this.config.guide || {},
             {
                 padding: {l: 50, r: 50, t: 50, b: 50},
@@ -76,7 +75,7 @@ export class Parallel extends Element {
 
     drawFrames(frames) {
 
-        var cfg = _.extend({}, this.config);
+        var cfg = Object.assign({}, this.config);
         var options = cfg.options;
 
         var updateCellLayers = (cellId, cell, frame) => {

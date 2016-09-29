@@ -3,13 +3,12 @@
 
 var expect = require('chai').expect;
 var schemes = require('schemes');
-var _ = require('underscore');
 var tauCharts = require('src/tau.charts');
 var testUtils = require('testUtils');
 var {TauChartError, errorCodes} = require('testUtils');
 
 var getGroupBar = function (div) {
-    return div.getElementsByClassName('i-role-bar-group');
+    return Array.from(div.getElementsByClassName('i-role-bar-group'));
 };
 var attrib = testUtils.attrib;
 
@@ -22,8 +21,8 @@ var expectCoordsElement = function (div, expect, coords) {
     };
 
     //var r = [];
-    //_.each(bars, function (bar, index) {
-    //    _.each(bar.childNodes, function (el, ind) {
+    //bars.forEach(function (bar, index) {
+    //    Array.from(bar.childNodes).forEach(function (el, ind) {
     //        r.push({
     //            x: convertToFixed(attrib(el, 'x')),
     //            width: convertToFixed(attrib(el, 'width')),
@@ -38,8 +37,8 @@ var expectCoordsElement = function (div, expect, coords) {
     //
     //console.log(JSON.stringify(r, null, 2));
 
-    _.each(bars, function (bar, index) {
-        _.each(bar.childNodes, function (el, ind) {
+    bars.forEach(function (bar, index) {
+        Array.from(bar.childNodes).forEach(function (el, ind) {
 
             if (coords[index][ind].hasOwnProperty('x')) {
                 expect(convertToFixed(attrib(el, 'x'))).to.equal(convertToFixed(coords[index][ind].x), `x (${index} / ${ind})`);

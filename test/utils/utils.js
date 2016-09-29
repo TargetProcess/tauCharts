@@ -1,7 +1,7 @@
 define(function (require) {
     var tauCharts = require('src/tau.charts'),
         $ = require('jquery'),
-        _ = require('underscore'),
+        utils = require('src/utils/utils').utils,
         d3 = require('d3');
 
     var testChartSettings = {
@@ -139,7 +139,7 @@ define(function (require) {
     }
 
     function describeChart(name, config, data, fn, options) {
-        options = _.defaults(options || {}, {autoResize: false});
+        options = utils.defaults(options || {}, {autoResize: false});
         config.data = data;
         describe(name, function () {
             var context = {

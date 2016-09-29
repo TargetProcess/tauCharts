@@ -1,6 +1,6 @@
 {
   "name": "tauCharts",
-  "version": "0.9.4-beta.4",
+  "version": "0.9.4-beta.5",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "D3 based data-focused charting library",
   "keywords": [
@@ -19,8 +19,7 @@
     "!license.txt"
   ],
   "dependencies": {
-    "d3": "~3.5.5",
-    "underscore": "~1.8.2"
+    "d3": "~3.5.5"
   },
   "devDependencies": {
     "modernizer": "2.8.2",

@@ -11,13 +11,13 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     var splitEvenly = function (domain, parts) {
         var min = domain[0];
         var max = domain[1];
         var segment = ((max - min) / (parts - 1));
-        var chunks = _.times(parts - 2, function (n) {
+        var chunks = utils.range(parts - 2).map(function (n) {
             return (min + segment * (n + 1));
         });
         return [min].concat(chunks).concat(max);
@@ -27,7 +27,7 @@
         var diff = Math.abs(end - start);
         var significantNumbers = 2;
         if (diff > 0 && diff < 1) {
-            significantNumbers += _.findIndex(String(diff).split('.')[1].split(0), function (x) {
+            significantNumbers += String(diff).split('.')[1].split(0).findIndex(function (x) {
                 return x !== '';
             });
         }
@@ -39,7 +39,7 @@
 
     function ChartLegend(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 // add default settings here
@@ -182,8 +182,8 @@
 
             // jscs:disable maximumLineLength
             _containerTemplate: '<div class="graphical-report__legend"></div>',
-            _template: _.template('<div class="graphical-report__legend__wrap"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
-            _itemTemplate: _.template([
+            _template: utils.template('<div class="graphical-report__legend__wrap"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
+            _itemTemplate: utils.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '   <div class="graphical-report__legend__guide__wrap">',
                 '   <div class="graphical-report__legend__guide <%=cssClass%>"',
@@ -193,7 +193,7 @@
                 '   <%=label%>',
                 '</div>'
             ].join('')),
-            _itemFillTemplate: _.template([
+            _itemFillTemplate: utils.template([
                 '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
                 '<div class="graphical-report__legend__guide__wrap" style="top:0;left:0;">',
                 '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
@@ -201,7 +201,7 @@
                 '</div>',
                 '</div>'
             ].join('')),
-            _itemSizeTemplate: _.template([
+            _itemSizeTemplate: utils.template([
                 '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
                 '<div class="graphical-report__legend__guide__wrap">',
                 '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
@@ -233,10 +233,12 @@
 
                         var fillScale = firstNode.getScale('color');
 
-                        var domain = _(fillScale.domain()).sortBy();
+                        var domain = fillScale.domain().sort(function (a, b) {
+                            return a - b;
+                        });
 
                         var isDate = domain.reduce(function (memo, x) {
-                            return memo && _.isDate(x);
+                            return memo && utils.isDate(x);
                         }, true);
 
                         var numDomain = (isDate ?
@@ -322,7 +324,9 @@
 
                         var sizeScale = firstNode.getScale('size');
 
-                        var domain = _(sizeScale.domain()).sortBy();
+                        var domain = sizeScale.domain().sort(function (a, b) {
+                            return a - b;
+                        });
 
                         var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
 
@@ -336,13 +340,10 @@
                             var base = Math.pow(10, xF);
                             var step = (last - first) / 5;
                             var steps = [first, first + step, first + step * 2, first + step * 3, last];
-                            values = _(steps)
-                                .chain()
+                            values = utils.unique(steps
                                 .map(function (x) {
                                     return (x === last || x === first) ? x : Math.round(x * base) / base;
-                                })
-                                .unique()
-                                .value();
+                                }));
                         }
 
                         self._container
@@ -385,15 +386,14 @@
                             ._chart
                             .getDataSources({excludeFilter: ['legend']});
 
-                        var domain = _(dataSource[colorScale.source].data)
-                            .chain()
-                            .pluck(colorScale.dim)
-                            .uniq()
-                            .value();
+                        var domain = utils.unique(dataSource[colorScale.source].data
+                            .map(function (x) {
+                                return x[colorScale.dim];
+                            }));
 
                         var colorScaleConfig = self._chart.getSpec().scales[c];
                         if (colorScaleConfig.order) {
-                            domain = _.union(_.intersection(colorScaleConfig.order, domain), domain);
+                            domain = utils.union(utils.intersection(colorScaleConfig.order, domain), domain);
                         } else {
                             var orderState = self._legendOrderState[c];
                             domain = domain.sort(function (a, b) {
@@ -427,13 +427,13 @@
                                     .map(function (d) {
                                         return self._itemTemplate({
                                             scaleId: d.scaleId,
-                                            dim: _.escape(d.dim),
+                                            dim: utils.escape(d.dim),
                                             color: d.color,
                                             cssClass: (colorScale.toClass(d.color)),
                                             cssColor: (colorScale.toColor(d.color)),
                                             classDisabled: d.disabled ? 'disabled' : '',
-                                            label: _.escape(isEmpty(d.label) ? noVal : d.label),
-                                            value: _.escape(d.value)
+                                            label: utils.escape(isEmpty(d.label) ? noVal : d.label),
+                                            value: utils.escape(d.value)
                                         });
                                     })
                                     .join('')
@@ -508,7 +508,7 @@
 
                 var limit = 20;
 
-                var defBrewer = _.times(limit, function (i) {
+                var defBrewer = utils.range(limit).map(function (i) {
                     return 'color20-' + (1 + i);
                 });
 
@@ -537,7 +537,7 @@
                         .createScaleInfoByName(c)
                         .domain();
 
-                    if (!scaleConfig.brewer || _.isArray(scaleConfig.brewer)) {
+                    if (!scaleConfig.brewer || Array.isArray(scaleConfig.brewer)) {
                         scaleConfig.brewer = self._generateColorMap(fullLegendDomain);
                     }
 

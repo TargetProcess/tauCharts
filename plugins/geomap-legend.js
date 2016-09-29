@@ -11,11 +11,11 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function ChartGeoMapLegend(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 // add default settings here
@@ -105,8 +105,8 @@
 
             // jscs:disable maximumLineLength
             _containerTemplate: '<div class="graphical-report__legend"></div>',
-            _template: _.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
-            _itemTemplate: _.template([
+            _template: utils.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
+            _itemTemplate: utils.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '<div class="graphical-report__legend__guide__wrap">',
                 '<div class="graphical-report__legend__guide <%=color%>"></div>',
@@ -114,7 +114,7 @@
                 '<%=label%>',
                 '</div>'
             ].join('')),
-            _itemFillTemplate: _.template([
+            _itemFillTemplate: utils.template([
                 '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
                 '<div class="graphical-report__legend__guide__wrap" style="top:0;left:0;">',
                 '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
@@ -145,14 +145,13 @@
                         var colorScale = firstNode.getScale('color');
                         var dataSource = self._chart.getDataSources({excludeFilter: ['legend']});
 
-                        var domain = _(dataSource[colorScale.source].data)
-                            .chain()
-                            .pluck(colorScale.dim)
-                            .uniq()
-                            .value();
+                        var domain = utils.unique(dataSource[colorScale.source].data
+                            .map(function (x) {
+                                return x[colorScale.dim];
+                            }));
 
                         var legendColorItems = domain.map(function (d) {
-                            var val = _.escape(d);
+                            var val = utils.escape(d);
                             var key = colorScale.dim + val;
                             return {
                                 scaleId: c,
@@ -202,7 +201,7 @@
 
                         var step = (domain[1] - domain[0]) / brewer.length;
 
-                        var items = _.times(brewer.length, _.identity).map(function (i) {
+                        var items = utils.range(brewer.length).map(function (i) {
                             var d = domain[0] + i * step;
                             var label = '';
 
@@ -217,7 +216,7 @@
                             return self._itemFillTemplate({
                                 color: fillScale(d),
                                 label: label,
-                                value: _.escape(d)
+                                value: utils.escape(d)
                             });
                         });
 
@@ -284,7 +283,7 @@
 
                 var limit = 20;
 
-                var defBrewer = _.times(limit, function (i) {
+                var defBrewer = utils.range(limit).map(function (i) {
                     return 'color20-' + (1 + i);
                 });
 

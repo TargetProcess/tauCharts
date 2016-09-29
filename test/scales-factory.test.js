@@ -11,6 +11,7 @@ define(function (require) {
     var SizeScale = require('src/scales/size').SizeScale;
     var OrdinalScale = require('src/scales/ordinal').OrdinalScale;
     var FillScale = require('src/scales/fill').FillScale;
+    var utils = require('src/utils/utils').utils;
 
     describe('scales-registry', function () {
 
@@ -87,23 +88,19 @@ define(function (require) {
                         var pad = 20;
 
                         var xHash = (keys) => {
-                            return _(data)
-                                .chain()
-                                .map((row) => {
-                                    return keys.reduce((r, k) => (r.concat(row[k])), []);
-                                })
-                                .uniq((t) => JSON.stringify(t))
+                            return utils.unique(data.map((row) => keys.reduce((r, k) => (r.concat(row[k])), [])),
+                                (t) => JSON.stringify(t))
                                 .reduce((memo, t) => {
                                     var k = t[0];
                                     memo[k] = memo[k] || 0;
                                     memo[k] += 1;
                                     return memo;
-                                }, {})
-                                .value();
+                                }, {});
                         };
 
                         var xTotal = (keys) => {
-                            return _.values(xHash(keys)).reduce((sum, v) => (sum + v), 0);
+                            let values = xHash(keys);
+                            return Object.keys(values).reduce((sum, key) => (sum + values[key]), 0);
                         };
 
                         var xPart = (keys, k) => {

@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 
 export class SpecConverter {
@@ -59,7 +58,7 @@ export class SpecConverter {
         var iterator = (childUnit, root) => {
 
             childUnit.namespace = 'chart';
-            childUnit.guide = _.defaults(
+            childUnit.guide = utils.defaults(
                 (childUnit.guide || {}),
                 {
                     animationSpeed: settings.animationSpeed || 0
@@ -68,11 +67,11 @@ export class SpecConverter {
 
             // leaf elements should inherit coordinates properties
             if (root && !childUnit.hasOwnProperty('units')) {
-                childUnit = _.defaults(childUnit, {x: root.x, y: root.y});
+                childUnit = utils.defaults(childUnit, {x: root.x, y: root.y});
 
-                var parentGuide = utils.clone(root.guide || {});
-                childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
-                childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
+                var parentGuide = utils.clone(root.guide) || {};
+                childUnit.guide.x = utils.defaults(childUnit.guide.x || {}, parentGuide.x);
+                childUnit.guide.y = utils.defaults(childUnit.guide.y || {}, parentGuide.y);
 
                 childUnit.expression.inherit = root.expression.inherit;
             }
@@ -132,7 +131,7 @@ export class SpecConverter {
     ruleAssignStructure(srcSpec, gplSpec) {
 
         var walkStructure = (srcUnit) => {
-            var gplRoot = utils.clone(_.omit(srcUnit, 'unit'));
+            var gplRoot = utils.clone(utils.omit(srcUnit, 'unit'));
             this.ruleCreateScales(srcUnit, gplRoot);
             gplRoot.expression = this.ruleInferExpression(srcUnit);
 
@@ -388,6 +387,6 @@ export class SpecConverter {
             }
         }
 
-        return _.extend({inherit: true, source: '/'}, expr);
+        return Object.assign({inherit: true, source: '/'}, expr);
     }
 }

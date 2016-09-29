@@ -72,8 +72,7 @@ var generateTestConf = function (addLoaders) {
             ].concat(addLoaders)
         },
         externals: {
-            d3: 'd3',
-            underscore: '_'
+            d3: 'd3'
         },
         query: {
             cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
@@ -142,8 +141,7 @@ var webpackConf = {
         filename: 'tauCharts.js'
     },
     externals:  transformUMDExternal({
-        d3: 'd3',
-        underscore: '_'
+        d3: 'd3'
     }),
     module: {
         loaders: [babelConfig]

@@ -1,4 +1,4 @@
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {TauChartError as Error, errorCodes} from './../error';
 
 const delimiter = '(@taucharts@)';
@@ -220,7 +220,7 @@ export class CartesianGrammar {
         var stackYi = createFnStack({positive: {}, negative: {}});
         var stackY0 = createFnStack({positive: {}, negative: {}});
 
-        var memoize = ((fn) => _.memoize(fn, model.id));
+        var memoize = ((fn) => utils.memoize(fn, model.id));
 
         return {
             yi: memoize((d) => yScale.value(stackYi(d).nextStack)),
@@ -401,7 +401,7 @@ export class CartesianGrammar {
     }
 
     static toFibers(data, model) {
-        var groups = _.groupBy(data, model.group);
+        var groups = utils.groupBy(data, model.group);
         return (Object
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))
@@ -421,7 +421,7 @@ export class CartesianGrammar {
 
         var sortedData = data.sort((a, b) => model.xi(a) - model.xi(b));
 
-        var xs = _.unique(sortedData.map((row) => row[dx]), true);
+        var xs = utils.unique(sortedData.map((row) => row[dx]));
 
         var sign = ((row) => ((row[dy] >= 0) ? 'positive' : 'negative'));
 
@@ -437,17 +437,17 @@ export class CartesianGrammar {
         };
 
         var merge = (templateSorted, fiberSorted, sign) => {
-            var groups = _.groupBy(fiberSorted, (row) => row[dx]);
+            var groups = utils.groupBy(fiberSorted, (row) => row[dx]);
             var sample = fiberSorted[0];
             return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
         };
 
-        var groups = _.groupBy(sortedData, model.group);
+        var groups = utils.groupBy(sortedData, model.group);
         return (Object
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))
             .reduce((memo, k) => {
-                var bySign = _.groupBy(groups[k], sign);
+                var bySign = utils.groupBy(groups[k], sign);
                 return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
             },
             []));

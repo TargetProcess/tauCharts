@@ -1,7 +1,6 @@
 import {BaseScale} from './base';
 import {utils} from '../utils/utils';
 /* jshint ignore:start */
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
@@ -52,8 +51,7 @@ export class FillScale extends BaseScale {
 
         var size = brewer.length;
         var step = (varSet[1] - varSet[0]) / size;
-        var domain = _
-            .times((size - 1), (i) => i + 1)
+        var domain = utils.range(size - 1).map((i) => i + 1)
             .reduce((memo, i) => memo.concat([varSet[0] + (i * step)]), []);
 
         var func = d3.scale.threshold().domain(domain).range(brewer);

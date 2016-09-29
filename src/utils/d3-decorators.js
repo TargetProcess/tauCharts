@@ -1,19 +1,15 @@
-import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {utilsDraw} from '../utils/utils-draw';
-import {default as _} from 'underscore';
+import {utils} from './utils';
+import {utilsDom} from './utils-dom';
+import {utilsDraw} from './utils-draw';
 import {default as d3} from 'd3';
-// TODO: Fix utilsDom export.
-var selectOrAppend = utilsDom.selectOrAppend;
-var classes = utilsDom.classes;
 
-var d3getComputedTextLength = _.memoize(
+var d3getComputedTextLength = () => utils.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
     (d3Text) => d3Text.node().textContent.length);
 
 var cutText = (textString, getScaleStepSize, getComputedTextLength) => {
 
-    getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
+    getComputedTextLength = getComputedTextLength || d3getComputedTextLength();
 
     textString.each(function () {
 
@@ -51,7 +47,7 @@ var cutText = (textString, getScaleStepSize, getComputedTextLength) => {
 
 var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
 
-    getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
+    getComputedTextLength = getComputedTextLength || d3getComputedTextLength();
 
     var addLine = (targetD3, text, lineHeight, x, y, dy, lineNumber) => {
         var dyNew = (lineNumber * lineHeight) + dy;
@@ -205,8 +201,8 @@ var d3_decorator_fix_axis_start_line = (
     };
 
     var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
-    var extraTick = selectOrAppend(axisNode, `g.${tickClass}`);
-    var extraLine = selectOrAppend(extraTick, 'line');
+    var extraTick = utilsDom.selectOrAppend(axisNode, `g.${tickClass}`);
+    var extraLine = utilsDom.selectOrAppend(extraTick, 'line');
     if (!extraTick.node().hasAttribute('opacity')) {
         extraTick.attr('opacity', 1e-6);
     }
@@ -223,8 +219,8 @@ var d3_decorator_prettify_axis_label = (
 ) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = selectOrAppend(axisNode, `text.label`)
-        .attr('class', classes('label', guide.cssClass))
+    var labelTextNode = utilsDom.selectOrAppend(axisNode, `text.label`)
+        .attr('class', utilsDom.classes('label', guide.cssClass))
         .attr('transform', utilsDraw.rotate(guide.rotate));
 
     var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
@@ -310,7 +306,7 @@ var d3_decorator_wrap_tick_label = function (
             !isHorizontal
         );
     } else {
-        tick.call(cutText, limitFunc, d3getComputedTextLength);
+        tick.call(cutText, limitFunc, d3getComputedTextLength());
     }
 };
 
@@ -423,7 +419,7 @@ var d3_decorator_avoid_labels_collisions = function (nodeScale, isHorizontal, ac
                 attrs.transform = 'rotate(-90)';
             }
 
-            selectOrAppend(curr.tickRef, 'line.label-ref')
+            utilsDom.selectOrAppend(curr.tickRef, 'line.label-ref')
                 .attr(attrs);
         } else {
             curr.tickRef.selectAll('line.label-ref').remove();
@@ -472,7 +468,7 @@ var d3_transition_attr = function (keyOrMap, value) {
                 newAttrs[key] = attrs[key];
             }
         }
-        this[store] = _.extend(
+        this[store] = Object.assign(
             this[store] || {},
             newAttrs
         );
@@ -528,7 +524,7 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         var flow = this;
 
         if (initAttrs) {
-            flow = flow.attr(_.defaults(initAttrs, doneAttrs));
+            flow = flow.attr(utils.defaults(initAttrs, doneAttrs));
         }
 
         flow = d3_transition(flow, speed);

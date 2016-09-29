@@ -11,12 +11,12 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
 
     function Tooltip(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 // add default settings here
@@ -65,7 +65,7 @@
                 this._skipInfo = {};
 
                 // TODO: for compatibility with old TargetProcess implementation
-                _.extend(this, _.omit(settings, 'fields', 'getFields'));
+                Object.assign(this, utils.omit(settings, 'fields', 'getFields'));
 
                 this._tooltip = this._chart.addBalloon(
                     {
@@ -79,7 +79,7 @@
                         ('')
                 );
 
-                var template = _.template(this.template);
+                var template = utils.template(this.template);
 
                 this._tooltip
                     .content(template({
@@ -123,7 +123,7 @@
                         var fields = (
                             settings.fields
                             ||
-                            (_.isFunction(settings.getFields) && settings.getFields(self._chart))
+                            ((typeof settings.getFields === 'function') && settings.getFields(self._chart))
                             ||
                             Object.keys(data)
                         );
@@ -195,7 +195,9 @@
             },
 
             _getFormat: function (k) {
-                var meta = this._metaInfo[k] || {format: _.identity};
+                var meta = this._metaInfo[k] || {format: function (x) {
+                    return x;
+                }};
                 return meta.format;
             },
 
@@ -305,7 +307,7 @@
                 '<%= excludeTemplate %>'
             ].join(''),
 
-            itemTemplate: _.template([
+            itemTemplate: utils.template([
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
@@ -396,10 +398,10 @@
 
                     var res = {};
 
-                    if (_.isFunction(x) || _.isString(x)) {
+                    if (typeof x === 'function' || typeof x === 'string') {
                         res = {format: x};
-                    } else if (_.isObject(x)) {
-                        res = _.pick(x, 'label', 'format', 'nullAlias');
+                    } else if (utils.isObject(x)) {
+                        res = utils.pick(x, 'label', 'format', 'nullAlias');
                     }
 
                     return res;
@@ -409,15 +411,15 @@
 
                     var fmt = toLabelValuePair(settings.formatters[k]);
 
-                    info[k] = _.extend(
+                    info[k] = Object.assign(
                         ({label: k, nullAlias: ('No ' + k)}),
                         (info[k] || {}),
-                        (_.pick(fmt, 'label', 'nullAlias')));
+                        (utils.pick(fmt, 'label', 'nullAlias')));
 
                     if (fmt.hasOwnProperty('format')) {
-                        info[k].format = (_.isFunction(fmt.format) ?
+                        info[k].format = (typeof fmt.format === 'function') ?
                             (fmt.format) :
-                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias)));
+                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
                     } else {
                         info[k].format = (info[k].hasOwnProperty('format')) ?
                             (info[k].format) :

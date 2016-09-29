@@ -1,5 +1,5 @@
 import {BaseScale} from './base';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
 let funcTypes = {
@@ -39,7 +39,7 @@ export class SizeScale extends BaseScale {
         var props = this.scaleConfig;
         var varSet = this.vars;
 
-        var p = _.defaults({}, props, {func: 'sqrt', minSize: 0, maxSize: 1});
+        var p = utils.defaults({}, props, {func: 'sqrt', minSize: 0, maxSize: 1});
 
         var funType = p.func;
         var minSize = p.minSize;

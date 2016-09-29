@@ -43,7 +43,6 @@ import {d3_animationInterceptor} from './utils/d3-decorators';
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
 
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 
 import './utils/polyfills';
@@ -63,7 +62,7 @@ var api = {
     isChartElement: utils.isChartElement,
     isLineElement: utils.isLineElement,
     d3: d3,
-    _: _,
+    utils: utils,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
         add: function (name, brewer) {
@@ -136,7 +135,7 @@ var api = {
             'world-countries.json'
         ].join('/'),
 
-        getAxisTickLabelSize: _.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
+        getAxisTickLabelSize: utils.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
         getScrollbarSize: utilsDom.getScrollbarSize,
 
@@ -192,7 +191,7 @@ Plot.globalSettings = api.globalSettings;
     [
         'identity',
         IdentityScale,
-        ((config, settings) => _.defaults(
+        ((config, settings) => utils.defaults(
             config,
             {
                 references: settings.references,
@@ -202,7 +201,7 @@ Plot.globalSettings = api.globalSettings;
     [
         'color',
         ColorScale,
-        ((config, settings) => _.defaults(
+        ((config, settings) => utils.defaults(
             config,
             {
                 nice: settings.defaultNiceColor,
@@ -232,13 +231,13 @@ api.chartTypesRegistry = chartTypesRegistry
     .add('line', ChartLine, commonRules)
 
     .add('area', ChartArea, commonRules)
-    .add('stacked-area', (cfg) => ChartArea(_.defaults(cfg, {stack: true})), commonRules)
+    .add('stacked-area', (cfg) => ChartArea(utils.defaults(cfg, {stack: true})), commonRules)
 
-    .add('bar', (cfg) => ChartInterval(_.defaults(cfg, {flip: false})), commonRules)
-    .add('horizontalBar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
-    .add('horizontal-bar', (cfg) => ChartInterval(_.defaults({flip: true}, cfg)), commonRules)
-    .add('stacked-bar', (cfg) => ChartInterval(_.defaults({flip: false, stack: true}, cfg)), commonRules)
-    .add('horizontal-stacked-bar', (cfg) => ChartInterval(_.defaults({flip: true, stack: true}, cfg)), commonRules)
+    .add('bar', (cfg) => ChartInterval(utils.defaults(cfg, {flip: false})), commonRules)
+    .add('horizontalBar', (cfg) => ChartInterval(utils.defaults({flip: true}, cfg)), commonRules)
+    .add('horizontal-bar', (cfg) => ChartInterval(utils.defaults({flip: true}, cfg)), commonRules)
+    .add('stacked-bar', (cfg) => ChartInterval(utils.defaults({flip: false, stack: true}, cfg)), commonRules)
+    .add('horizontal-stacked-bar', (cfg) => ChartInterval(utils.defaults({flip: true, stack: true}, cfg)), commonRules)
 
     .add('map', ChartMap, commonRules.concat([
         (config) => {
