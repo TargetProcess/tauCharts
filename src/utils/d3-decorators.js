@@ -126,12 +126,29 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
         .each(function (tickData) {
             // NOTE: Skip ticks removed by D3 axis call during transition.
             if (logicalScale(tickData)) {
-                var tickNode = d3_transition(d3.select(this), animationSpeed);
 
-                var offset = logicalScale.stepSize(tickData) * 0.5;
-                var key = (isHorizontal) ? 'x' : 'y';
-                var val = (isHorizontal) ? offset : (-offset);
-                tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+                var tickNode = d3.select(this);
+
+                var setAttr = function (selection) {
+                    var tickCoord = logicalScale(tickData);
+                    var tx = isHorizontal ? tickCoord : 0;
+                    var ty = isHorizontal ? 0 : tickCoord;
+                    selection.attr('transform', `translate(${tx},${ty})`);
+
+                    var offset = logicalScale.stepSize(tickData) * 0.5;
+                    var key = (isHorizontal) ? 'x' : 'y';
+                    var val = (isHorizontal) ? offset : (-offset);
+                    selection
+                        .select('line')
+                        .attr({[key + '1']: val, [key + '2']: val});
+                };
+
+                if (!tickNode.classed('tau-enter')) {
+                    tickNode.call(setAttr);
+                    tickNode.classed('tau-enter', true);
+                }
+
+                d3_transition(tickNode, animationSpeed).call(setAttr);
             }
         });
 };
