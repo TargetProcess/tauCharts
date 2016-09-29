@@ -39,7 +39,7 @@
             height: 100%;
             width: 100%;
         }
-        
+
         body {
             box-sizing: border-box;
             display: flex;
@@ -48,7 +48,11 @@
             margin: 0;
             width: 100%;
         }
-        
+
+        /*-------------------------
+            Filters section
+        -------------------------*/
+
         #controls {
             background-color: #eee;
             flex: none;
@@ -56,58 +60,78 @@
             padding: 3em 2em 0 2em;
             width: 12em;
         }
-        
+
         .filter-section {
             display: flex;
             flex-direction: column;
             margin-bottom: 2em;
             padding-left: 0.5em;
         }
-        
+
         .filter-section__header {
             font-weight: 300;
             margin: 0 0 0.5em -0.5em;
         }
-        
+
         .filter-section label {
             cursor: pointer;
         }
-        
+
         .check-group {
             display: flex;
             flex-direction: column;
         }
-        
+
+        /*-------------------------
+            Content section
+        -------------------------*/
+
+        main {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #filterText {
+            font-weight: 400;
+            height: 2em;
+            line-height: 2em;            
+            margin: 0;
+            padding-right: 3em;
+            text-align: right;
+        }
+
         #samplesContainer {
             flex: 1;
             overflow-y: scroll;
-            padding: 1em 2em 2em 2em;
+            padding: 1em 2em;
         }
-        
+
         .sample {
-            padding: 2em 0;
+            padding: 0 0 3em 0;
             width: 100%;
         }
-        
+
         .sample__name {
             font-weight: 300;
             margin: 0;
         }
-        
+
         .sample__desc {
             font-weight: 400;
             margin: 0;
         }
-        
+
         .sample__desc:empty {
             display: none;
         }
-        
+
         .sample__chart {
             height: 24em;
             position: relative;
         }
-        
+
         .sample__chart:empty::before {
             align-items: center;
             content: "Loading...";
@@ -120,7 +144,7 @@
             position: absolute;
             width: 100%;
         }
-        
+
         #samplesContainer::-webkit-scrollbar,
         #controls::-webkit-scrollbar,
         .graphical-report__layout__content::-webkit-scrollbar,
@@ -128,7 +152,7 @@
             height: 0.75em;
             width: 0.75em;
         }
-        
+
         #samplesContainer::-webkit-scrollbar-thumb,
         #controls::-webkit-scrollbar-thumb,
         .graphical-report__layout__content::-webkit-scrollbar-thumb,
@@ -153,7 +177,10 @@
             <div id="pluginsContainer" class="check-group"></div>
         </div>
     </div>
-    <div id="samplesContainer"></div>
+    <main>
+        <h4 id="filterText"></h4>
+        <div id="samplesContainer"></div>
+    </main>
 
     <script src="dev.js"></script>
 </body>

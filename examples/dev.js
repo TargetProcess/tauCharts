@@ -177,6 +177,7 @@
                 return s.filePath.match(regex);
             });
         }
+        this._reportFilterResult(specs.length, this._specs.length);
 
         //
         // Handle specs
@@ -191,8 +192,8 @@
                 '  <div class="sample__chart"></div>',
                 '</div>'
             ], {
-                    name: s._name || s.filePath || i,
-                    description: s._desc || ('type: ' + s.type)
+                    name: s.filePath || i,
+                    description: ('type: ' + s.type)
                 });
             container.appendChild(block);
             var target = block.querySelector('.sample__chart');
@@ -365,10 +366,16 @@
         }
     };
 
+    DevApp.prototype._reportFilterResult = function (filtered, total) {
+        document.getElementById('filterText').textContent = (
+            'Showing ' + filtered + ' of ' + total + ' charts'
+        );
+    };
+
     DevApp.prototype._loadSettings = function () {
         var settings;
         try {
-            settings = parseURIQuery(window.location.hash.substring(1));
+            settings = parseURIQuery(window.location.hash.replace(/^#/, '').replace(/^\?/, ''));
         } catch (err) {
             settings = {};
         }
@@ -458,6 +465,9 @@
     }
 
     function filterEmptyValues(arr) {
+        if (!Array.isArray(arr)) {
+            arr = [arr];
+        }
         return arr.map(function (d) {
             return d.trim();
         }).filter(function (d) {
@@ -565,9 +575,10 @@
                 });
             });
         });
-        var query = params.map(function (p) {
-            return p.key + '=' + p.value;
-        }).join('&');
+        var query = (params.length > 0 ? '?' : '') +
+            params.map(function (p) {
+                return p.key + '=' + p.value;
+            }).join('&');
         return query;
     }
 
