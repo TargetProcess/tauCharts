@@ -8,7 +8,12 @@
     <script src="../node_modules/d3/d3.min.js"></script>
 
     <!-- core -->
-    <script src="http://localhost:9000/tauCharts.js"></script>
+    <script src="../tauCharts.js"></script>
+    <script>
+        if(!window.tauCharts){
+            document.write('<script src="../build/development/tauCharts.js"><\/script>');
+        }
+    </script>
 
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
