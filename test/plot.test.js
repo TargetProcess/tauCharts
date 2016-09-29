@@ -5,6 +5,7 @@ define(function (require) {
     var CSS_PREFIX = require('src/const').CSS_PREFIX;
     var tauChart = require('src/tau.charts');
     var utils = require('testUtils');
+    var range = require('src/utils/utils').utils.range;
 
     describe('tauChart.Plot', function () {
 
@@ -692,7 +693,7 @@ define(function (require) {
 
             var chart = new tauChart.Chart({
                 type: 'scatterplot',
-                data: _.times(20, function () {
+                data: range(20).map(function () {
                     return {
                         a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
                         b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
