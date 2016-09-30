@@ -693,7 +693,7 @@ define(function (require) {
 
             var chart = new tauChart.Chart({
                 type: 'scatterplot',
-                data: range(20).map(function () {
+                data: range(40).map(function () {
                     return {
                         a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
                         b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
@@ -709,20 +709,28 @@ define(function (require) {
                 },
                 settings: {
                     asyncRendering: true,
-                    renderingTimeout: 1
+                    renderingTimeout: 1,
+                    syncRenderingDuration: 1
                 }
             });
-            var timeoutReached = false;
+            var timeoutCount = 0;
             chart.on('renderingtimeout', function () {
-                timeoutReached = true;
+                timeoutCount++;
                 var svg = chart.getLayout().content.querySelector('svg.' + CSS_PREFIX + 'rendering-timeout-warning');
                 expect(svg).to.be.instanceof(SVGSVGElement);
 
                 var btn = svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-disable-btn');
                 utils.simulateEvent('click', btn);
+
+                if (timeoutCount === 1) {
+                    // Invoke chart refresh to fire previous rendering cancel
+                    setTimeout(function () {
+                        chart.refresh();
+                    }, 0);
+                }
             });
             chart.on('render', function () {
-                if (!timeoutReached) {
+                if (timeoutCount !== 2) {
                     done(new Error('Rendering timeout was not reached.'));
                 }
                 done();
