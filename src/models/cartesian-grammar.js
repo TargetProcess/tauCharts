@@ -452,4 +452,61 @@ export class CartesianGrammar {
             },
             []));
     }
+
+    static avoidBaseScaleOverflow(model, {dataSource}) {
+        if (model.scaleX.discrete) {
+            return {};
+        }
+
+        var plannedMaxSize;
+        model.scaleSize.fixup((prev) => {
+            plannedMaxSize = prev.maxSize;
+            return prev;
+        });
+
+        if (plannedMaxSize <= 10) {
+            return {};
+        }
+
+        var xs = dataSource
+            .map((row) => model.xi(row))
+            .sort(((a, b) => (a - b)));
+
+        var domain = model.scaleX.domain();
+        var length = Math.abs(model.scaleX.value(domain[1]) - model.scaleX.value(domain[0]));
+        var koeff = ((domain[1] - domain[0]) / length);
+
+        var lPad = Math.abs(Math.min(0, (xs[0] - plannedMaxSize / 2)));
+        var rPad = Math.abs(Math.min(0, (length - (xs[xs.length - 1] + plannedMaxSize / 2))));
+
+        var lxPad = model.flip ? rPad : lPad;
+        var rxPad = model.flip ? lPad : rPad;
+
+        var lVal = domain[0] - (lxPad * koeff);
+        var rVal = domain[1] - (-1 * rxPad * koeff);
+
+        model.scaleX.fixup((prev) => {
+            var next = {};
+            if (!prev.fixed) {
+                next.fixed = true;
+                next.min = lVal;
+                next.max = rVal;
+            } else {
+                if (prev.min > lVal) {
+                    next.min = lVal;
+                }
+
+                if (prev.max < rVal) {
+                    next.max = rVal;
+                }
+            }
+
+            return next;
+        });
+
+        var linearlyScaledMaxSize = plannedMaxSize * (1 - ((lPad + rPad) / length)) - 1;
+        model.scaleSize.fixup(() => ({maxSize: linearlyScaledMaxSize}));
+
+        return {};
+    }
 }

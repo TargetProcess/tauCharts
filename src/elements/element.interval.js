@@ -76,7 +76,11 @@ export class Interval extends Element {
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
             CartesianGrammar.decorator_label,
-            config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly,
+            (config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly),
+            (config.adjustPhase
+            && enableDistributeEvenly
+            && this.config.guide.prettify
+            && CartesianGrammar.avoidBaseScaleOverflow),
             config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
         ].concat(config.transformModel || []);
 
