@@ -283,6 +283,11 @@ define(function (require) {
             y: 'y',
             color: 'color',
             plugins: [legend()],
+            guide: {
+                color: {
+                    brewer: ['#ff0000', '#00ff00', '#0000ff', '#000000']
+                }
+            },
 
             dimensions: {
                 x: {type: 'measure'},
@@ -328,6 +333,11 @@ define(function (require) {
                 expect(getText(nodeList[1])).to.equal('B');
                 expect(getText(nodeList[2])).to.equal('No color');
                 expect(getText(nodeList[3])).to.equal('C');
+
+                expect(d3.rgb(nodeList[0].style.backgroundColor).toString()).to.equal(d3.rgb('#ff0000').toString());
+                expect(d3.rgb(nodeList[1].style.backgroundColor).toString()).to.equal(d3.rgb('#00ff00').toString());
+                expect(d3.rgb(nodeList[2].style.backgroundColor).toString()).to.equal(d3.rgb('#0000ff').toString());
+                expect(d3.rgb(nodeList[3].style.backgroundColor).toString()).to.equal(d3.rgb('#000000').toString());
             });
         },
         {
