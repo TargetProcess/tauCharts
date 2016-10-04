@@ -504,13 +504,9 @@
                     });
             },
 
-            _generateColorMap: function (domain) {
+            _generateColorMap: function (domain, defBrewer) {
 
-                var limit = 20;
-
-                var defBrewer = utils.range(limit).map(function (i) {
-                    return 'color20-' + (1 + i);
-                });
+                var limit = defBrewer.length; // 20;
 
                 return domain.reduce(function (memo, val, i) {
                         memo[val] = defBrewer[i % limit];
@@ -538,7 +534,10 @@
                         .domain();
 
                     if (!scaleConfig.brewer || Array.isArray(scaleConfig.brewer)) {
-                        scaleConfig.brewer = self._generateColorMap(fullLegendDomain);
+                        var defBrewer = scaleConfig.brewer || utils.range(20).map(function (i) {
+                            return 'color20-' + (1 + i);
+                        });
+                        scaleConfig.brewer = self._generateColorMap(fullLegendDomain, defBrewer);
                     }
 
                     self._legendOrderState[c] = fullLegendDomain.reduce(function (memo, x, i) {
