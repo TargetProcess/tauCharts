@@ -66,14 +66,16 @@ export class Plot extends Emitter {
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
         this._plugins = new Plugins(plugins, this);
-        this._activeRenderingId = null;
+
+        this._reportProgress = null;
+        this._renderingFrameId = null;
     }
 
     destroy() {
         this.destroyNodes();
         d3.select(this._svg).remove();
         d3.select(this._layout.layout).remove();
-        this._activeRenderingId = null;
+        this._cancelRendering();
         super.destroy();
     }
 
@@ -339,36 +341,19 @@ export class Plot extends Emitter {
                     .remove();
             });
 
+        this._createProgressBar();
+        this._cancelRendering();
         this._renderScenario(scenario);
     }
 
     _renderScenario(scenario) {
-
-        this._activeRenderingId = this._activeRenderingId || 0;
-        var renderingId = this._activeRenderingId + 1;
-        this._activeRenderingId = renderingId;
 
         var duration = 0;
         var syncDuration = 0;
         var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
         var i = 0;
 
-        // Display progress
-        var header = d3.select(this._layout.header);
-        var progressBar = selectOrAppend(header, `div.${CSS_PREFIX}progress`);
-        progressBar.select(`div.${CSS_PREFIX}progress__value`).remove();
-        var progressValue = progressBar.append('div')
-            .classed(`${CSS_PREFIX}progress__value`, true)
-            .style('width', 0);
-        var reportProgress = function (value) {
-            progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
-            progressValue.style('width', (value * 100) + '%');
-        };
-
         var drawScenario = () => {
-            if (renderingId !== this._activeRenderingId) {
-                return;
-            }
             var item = scenario[i];
 
             var start = Date.now();
@@ -379,7 +364,7 @@ export class Plot extends Emitter {
             syncDuration += end - start;
 
             i++;
-            reportProgress(i / scenario.length);
+            this._reportProgress(i / scenario.length);
             if (i === scenario.length) {
                 done();
             } else if (duration > timeout) {
@@ -411,7 +396,9 @@ export class Plot extends Emitter {
         };
 
         var nextSync = () => drawScenario();
-        var nextAsync = () => requestAnimationFrame(drawScenario);
+        var nextAsync = () => {
+            this._renderingFrameId = requestAnimationFrame(drawScenario);
+        };
 
         var next = (!this._liveSpec.settings.asyncRendering ?
             nextSync :
@@ -425,6 +412,23 @@ export class Plot extends Emitter {
             });
 
         next();
+    }
+
+    _cancelRendering() {
+        cancelAnimationFrame(this._renderingFrameId);
+    }
+
+    _createProgressBar() {
+        var header = d3.select(this._layout.header);
+        var progressBar = selectOrAppend(header, `div.${CSS_PREFIX}progress`);
+        progressBar.select(`div.${CSS_PREFIX}progress__value`).remove();
+        var progressValue = progressBar.append('div')
+            .classed(`${CSS_PREFIX}progress__value`, true)
+            .style('width', 0);
+        this._reportProgress = function (value) {
+            progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
+            progressValue.style('width', (value * 100) + '%');
+        };
     }
 
     getScaleFactory(dataSources = null) {
