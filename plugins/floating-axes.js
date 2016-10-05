@@ -87,8 +87,8 @@
 
                 var axes = (function () {
                     var getAxesSelector = function (axis) {
-                        var axisPart = '> .' + axis + '.axis.tau-active';
                         var rootPart = '.frame-root.tau-active ';
+                        var axisPart = '> .' + axis + '.axis.tau-active';
                         return [
                             rootPart + axisPart,
                             rootPart + '.cell.tau-active ' + axisPart
@@ -120,7 +120,7 @@
                     };
                 })();
 
-                var maxYAxesX = mmin(axesInfo.y.map(function (i) {
+                var maxYAxesX = mmax(axesInfo.y.map(function (i) {
                     return (i.axisTransform.translate.x + i.parentTransform.translate.x);
                 })) + 1;
                 var minXAxesY = mmin(axesInfo.x.map(function (i) {
@@ -147,7 +147,7 @@
 
                 var defs = (function createSVGDefinitions() {
                     var defs = d3Svg.append('defs')
-                        .attr('class', 'floating-axes');
+                        .attr('class', 'floating-axes floating-axes-defs');
 
                     var directions = {
                         ns: {x1: 0, y1: 0, x2: 0, y2: 1},
@@ -201,7 +201,7 @@
 
                     var g = d3Svg.append('g')
                         .attr('class', 'floating-axes floating-axes-x')
-                        .call(addBackground, pos.svgWidth, axisHeight);
+                        .call(addBackground, pos.svgWidth, axisHeight, 0, pos.minXAxesY);
 
                     transferAxes(g, axesInfo.x);
 
@@ -285,10 +285,12 @@
                     return g;
                 })();
 
-                function addBackground(g, w, h) {
+                function addBackground(g, w, h, x, y) {
+                    x = x || 0;
+                    y = y || 0;
                     g.append('rect')
-                        .attr('x', -1)
-                        .attr('y', -1)
+                        .attr('x', x - 1)
+                        .attr('y', y - 1)
                         .attr('width', w + 2)
                         .attr('height', h + 2)
                         .attr('fill', settings.bgcolor);
@@ -334,7 +336,25 @@
                         .handleVisibilityFor(shadowNS, 'xy')
                         .handleVisibilityFor(shadowEW, 'xy')
                         .handleVisibilityFor(shadowSN, 'xy')
-                        .handleVisibilityFor(shadowWE, 'xy');
+                        .handleVisibilityFor(shadowWE, 'xy')
+                        .onScroll(function (scrollLeft, scrollTop) {
+                            var x = scrollLeft;
+                            var y = scrollTop;
+                            g.attr('transform', translate(x, y));
+
+                            // Hide/show shadows
+                            var toggle = function (el, show) {
+                                el.style('visibility', show ? '' : 'hidden');
+                            };
+                            toggle(shadowNS, scrollTop > 0 && pos.svgHeight > pos.visibleHeight);
+                            toggle(shadowEW,
+                                (scrollLeft + pos.visibleWidth < pos.svgWidth) &&
+                                (pos.svgWidth > pos.visibleWidth));
+                            toggle(shadowSN,
+                                (scrollTop + pos.visibleHeight < pos.svgHeight) &&
+                                (pos.svgHeight > pos.visibleHeight));
+                            toggle(shadowWE, scrollLeft > 0 && pos.svgWidth > pos.visibleWidth);
+                        });
                 })();
 
                 // Setup initial position
@@ -391,7 +411,7 @@
     };
 
     function parseTransform(transform) {
-        var result = { x: 0, y: 0, r: 0 };
+        var result = {x: 0, y: 0, r: 0};
         if (!transform) {
             return result;
         }
@@ -463,9 +483,9 @@
         var HIDE_SCROLL_ITEMS_DURATION = 128;
         var SHOW_SCROLL_ITEMS_DURATION = 256;
 
-        var items = { x: [], y: [] };
-        var prevScroll = { x: 0, y: 0 };
-        var scrollTimeout = { x: null, y: null };
+        var items = {x: [], y: []};
+        var prevScroll = {x: 0, y: 0};
+        var scrollTimeout = {x: null, y: null};
         var scrollContainer = _scrollContainer;
         var scrollListeners = [];
 

@@ -315,8 +315,8 @@ export class Plot extends Emitter {
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`).attr({
             class: `${CSS_PREFIX}svg`,
-            width: newSize.width,
-            height: newSize.height
+            width: Math.floor(newSize.width),
+            height: Math.floor(newSize.height)
         });
         this._svg = svg.node();
         this.fire('beforerender', this._svg);
