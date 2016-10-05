@@ -83,6 +83,7 @@
                 var root = this.rootNode;
                 var svg = this.chart.getSVG();
                 var d3Svg = d3.select(svg);
+                var animationSpeed = this.chart.configGPL.settings.animationSpeed;
                 var scrollManager = this.scrollManager = new ScrollManager(root);
 
                 var axes = (function () {
@@ -180,12 +181,24 @@
                 function transferAxes(floating, axesInfo) {
                     axesInfo.forEach(function (i) {
                         i.axis[parentProp] = i.axis.parentNode;
-                        floating.append('g')
-                            .attr('transform', translate(
+                        var g = floating.append('g');
+                        if (animationSpeed) {
+                            g.attr('transform', translate(
+                                i.parentTransform.translate0.x,
+                                i.parentTransform.translate0.y
+                            )).transition()
+                                .duration(animationSpeed)
+                                .attr('transform', translate(
+                                    i.parentTransform.translate.x,
+                                    i.parentTransform.translate.y
+                                ));
+                        } else {
+                            g.attr('transform', translate(
                                 i.parentTransform.translate.x,
                                 i.parentTransform.translate.y
-                            ))
-                            .node()
+                            ));
+                        }
+                        g.node()
                             .appendChild(i.axis);
                         Array.prototype.forEach.call(
                             i.axis.querySelectorAll('.label'),
@@ -442,7 +455,7 @@
             parseTransform(node[storeProp].transform) :
             currentTransform);
         return {
-            translate0: currentTransform.x,
+            translate0: currentTransform,
             translate: nextTransform
         };
     };

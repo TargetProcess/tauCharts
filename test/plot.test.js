@@ -693,7 +693,7 @@ define(function (require) {
 
             var chart = new tauChart.Chart({
                 type: 'scatterplot',
-                data: range(40).map(function () {
+                data: range(20).map(function () {
                     return {
                         a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
                         b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
@@ -709,7 +709,7 @@ define(function (require) {
                 },
                 settings: {
                     asyncRendering: true,
-                    renderingTimeout: 1,
+                    renderingTimeout: 0.1,
                     syncRenderingDuration: 1
                 }
             });

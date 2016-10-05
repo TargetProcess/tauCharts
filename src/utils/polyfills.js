@@ -1,11 +1,6 @@
 if (!window.requestAnimationFrame) {
-    if (window.webkitRequestAnimationFrame) {
-        window.requestAnimationFrame = window.webkitRequestAnimationFrame;
-        window.cancelAnimationFrame = window.webkitCancelAnimationFrame;
-    } else {
-        window.requestAnimationFrame = function (fn) { setTimeout(fn, 17); };
-        window.cancelAnimationFrame = function (id) { clearTimeout(id); };
-    }
+    window.requestAnimationFrame = function (fn) { setTimeout(fn, 17); };
+    window.cancelAnimationFrame = function (id) { clearTimeout(id); };
 }
 
 if (!Number.isFinite) {
