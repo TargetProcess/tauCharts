@@ -1,6 +1,20 @@
+'use strict';
+
 if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = function (fn) { setTimeout(fn, 17); };
-    window.cancelAnimationFrame = function (id) { clearTimeout(id); };
+    (function () {
+        var lastTime = 0;
+        window.requestAnimationFrame = function (fn) {
+            var currTime = Date.now();
+            var delay = Math.max(0, 16 - currTime + lastTime);
+            lastTime = currTime + delay;
+            return setTimeout(function () {
+                fn.call(null, currTime + delay);
+            }, delay);
+        };
+        window.cancelAnimationFrame = function (id) {
+            clearTimeout(id);
+        };
+    })();
 }
 
 if (!Number.isFinite) {
