@@ -114,10 +114,37 @@ LayerLabelsRules
     })
 
     .regRule('keep-inside-or-hide-vertical', (prev) => {
+
+        const cutTextByIndex = (row) => {
+            const text = prev.label(row);
+            const labelWidth = prev.w(row);
+            const availableSpace = prev.model.size(row);
+
+            return ((availableSpace < labelWidth) ?
+                (Math.max(1, Math.floor(availableSpace * text.length / labelWidth)) - 1) :
+                (-1));
+        };
+
         return {
+
+            w: (row) => {
+                const index = cutTextByIndex(row);
+                return ((index > 0) ?
+                        prev.model.size(row) :
+                        prev.w(row));
+            },
+
+            label: (row) => {
+                const index = cutTextByIndex(row);
+                return ((index > 0) ?
+                        (prev.label(row).slice(0, index) + '\u2026') :
+                        (prev.label(row))
+                );
+            },
+
             hide: (row) => {
 
-                if (prev.model.size(row) < prev.w(row)) {
+                if (cutTextByIndex(row) === 0) {
                     return true;
                 }
 
@@ -132,15 +159,51 @@ LayerLabelsRules
     })
 
     .regRule('keep-inside-or-hide-horizontal', (prev) => {
+
+        const cutTextByIndex = (row) => {
+            const text = prev.label(row);
+            const labelWidth = prev.w(row);
+            const availableSpace = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+
+            return ((availableSpace < labelWidth) ?
+                (Math.max(1, Math.floor(availableSpace * text.length / labelWidth)) - 1) :
+                (-1));
+        };
+
         return {
+
+            dx: (row) => {
+                const availableSpace = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                const index = cutTextByIndex(row);
+                return ((index > 0) ?
+                        ((availableSpace * prev.dx(row) / prev.w(row))) :
+                        (prev.dx(row))
+                );
+            },
+
+            w: (row) => {
+                const index = cutTextByIndex(row);
+                return ((index > 0) ?
+                        (Math.abs(prev.model.y0(row) - prev.model.yi(row))) :
+                        (prev.w(row))
+                );
+            },
+
+            label: (row) => {
+                const index = cutTextByIndex(row);
+                return ((index > 0) ?
+                        (prev.label(row).slice(0, index) + '\u2026') :
+                        (prev.label(row))
+                );
+            },
+
             hide: (row) => {
 
                 if (prev.model.size(row) < prev.h(row)) {
                     return true;
                 }
 
-                var w = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                if (w < prev.w(row)) {
+                if (cutTextByIndex(row) === 0) {
                     return true;
                 }
 
