@@ -475,10 +475,11 @@ var d3_transition_attr = function (keyOrMap, value) {
     });
     var onTransitionEnd = function () {
         var leftAttrs = {};
-        var keys = Object.keys(attrs);
+        var attrsKeys = Object.keys(attrs);
         if (this[store]) {
             Object.keys(this[store])
-                .filter((k) => keys.indexOf(k) < 0)
+                .filter((k) => (attrsKeys.indexOf(k) < 0 ||
+                    attrs[k] !== this[store][k]))
                 .forEach((k) => leftAttrs[k] = this[store][k]);
         }
         if (Object.keys(leftAttrs).length === 0) {

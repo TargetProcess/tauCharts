@@ -180,7 +180,12 @@
 
                 function transferAxes(floating, axesInfo) {
                     axesInfo.forEach(function (i) {
+
+                        // Save axis parent node to restore later
                         i.axis[parentProp] = i.axis.parentNode;
+
+                        // NOTE: Put axis into a group with transform
+                        // that is equal to transform of all axis parents.
                         var g = floating.append('g');
                         if (animationSpeed) {
                             g.attr('transform', translate(
@@ -200,6 +205,8 @@
                         }
                         g.node()
                             .appendChild(i.axis);
+
+                        // Save initial labels transform
                         Array.prototype.forEach.call(
                             i.axis.querySelectorAll('.label'),
                             function (label) {
@@ -396,8 +403,12 @@
 
                 function returnAxes(g) {
                     g.selectAll('.axis').each(function () {
+
+                        // Return axis to it's initial parent
                         this[parentProp].appendChild(this);
                         delete this[parentProp];
+
+                        // Return initial labels transform
                         Array.prototype.forEach.call(
                             this.querySelectorAll('.label'),
                             function (label) {
@@ -447,6 +458,10 @@
         return result;
     };
 
+    /**
+     * Returns current transform value and transform value
+     * that element will have when animation ends.
+     */
     function getDynamicTransform(node) {
         var isTransformInTransition = (node[storeProp] &&
             node[storeProp].transform);
@@ -460,6 +475,10 @@
         };
     };
 
+    /**
+     * Returns sum of dynamic transform of an element
+     * including all it's parents transform.
+     */
     function getDeepTransform(node) {
         var info = {
             translate0: {x: 0, y: 0},
@@ -476,19 +495,6 @@
             parent = parent.parentNode;
         }
         return info;
-    };
-
-    function translateAxis(axisNode, x0, y0, x1, y1, animationSpeed) {
-        if (animationSpeed > 0) {
-            d3.select(axisNode)
-                .attr('transform', translate(x0, y0))
-                .transition('axisTransition')
-                // TODO: Determine, how much time passed since last transition beginning.
-                .duration(animationSpeed)
-                .attr('transform', translate(x1, y1));
-        } else {
-            axisNode.setAttribute('transform', translate(x1, y1));
-        }
     };
 
     function ScrollManager(_scrollContainer) {
