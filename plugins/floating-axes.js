@@ -68,7 +68,7 @@
                 });
 
                 if (applicable) {
-                    this.floatingLayout = this.createFloatingLayout();
+                    this.createFloatingLayout();
                 }
             },
 
@@ -380,7 +380,7 @@
                 // Setup initial position
                 scrollManager.fireScroll();
 
-                return {
+                this.floatingLayout = {
                     defs: defs,
                     xAxes: xAxes,
                     yAxes: yAxes,
@@ -395,6 +395,7 @@
                     this.floatingLayout.xAxes.call(returnAxes);
                     this.floatingLayout.yAxes.call(returnAxes);
                     this.scrollManager.destroy();
+                    this.floatingLayout = null;
                 }
 
                 var d3Svg = d3.select(this.chart.getSVG());
