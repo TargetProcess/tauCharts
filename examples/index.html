@@ -4,13 +4,144 @@
 <head>
     <meta charset="utf-8">
 
-    <!-- dependencies -->
-    <script src="../node_modules/d3/d3.js"></script>
+    <script>
+        // Load development JS and CSS
+        var loadLocalD3 = loadJS.bind(null, '../node_modules/d3/d3');
+        var loadDevTaucharts = loadJS.bind(null, '../tauCharts');
+        var loadDevJS = loadJS.bind(null, 'dev');
+        var loadDevPlugins = loadJS.bind(null, [
+            '../plugins/tooltip',
+            '../plugins/export',
+            '../plugins/layers',
+            '../plugins/legend',
+            '../plugins/trendline',
+            '../plugins/settings',
+            '../plugins/annotations',
+            '../plugins/parallel-brushing',
+            '../plugins/parallel-tooltip',
+            '../plugins/geomap-tooltip',
+            '../plugins/geomap-legend',
+            '../plugins/quick-filter',
+            '../plugins/floating-axes',
+            '../plugins/box-whiskers'
+        ]);
+        var loadDevCSS = loadCSS.bind(null, [
+            '../css/tauCharts.default',
+            '../css/export.default',
+            '../css/legend.default',
+            '../css/tooltip.default',
+            '../css/trendline.default',
+            '../css/annotations.default',
+            '../css/quick-filter.default'
+        ]);
+        var loadDevPluginsAndCSS = function (callbacks) {
+            loadDevPlugins();
+            loadDevCSS();
+            loadDevJS();
+        };
 
-    <!-- core -->
-    <script src="http://localhost:9000/tauCharts.js"></script>
+        // Load build JS and CSS
+        var loadCloudD3 = loadJS.bind(null, 'http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3');
+        var loadBuildTaucharts = loadJS.bind(null, '../build/development/tauCharts');
+        var loadBuildPlugins = loadJS.bind(null, [
+            '../build/development/plugins/tauCharts.tooltip',
+            '../build/development/plugins/tauCharts.export',
+            '../build/development/plugins/tauCharts.layers',
+            '../build/development/plugins/tauCharts.legend',
+            '../build/development/plugins/tauCharts.trendline',
+            '../build/development/plugins/tauCharts.annotations',
+            '../build/development/plugins/tauCharts.quick-filter',
+            '../build/development/plugins/tauCharts.floating-axes',
+            '../build/development/plugins/tauCharts.box-whiskers'
+        ]);
+        var loadBuildCSS = loadCSS.bind(null, [
+            '../build/development/css/tauCharts.default',
+            '../build/development/plugins/tauCharts.export.default',
+            '../build/development/plugins/tauCharts.legend.default',
+            '../build/development/plugins/tauCharts.tooltip.default',
+            '../build/development/plugins/tauCharts.trendline.default',
+            '../build/development/plugins/tauCharts.annotations.default',
+            '../build/development/plugins/tauCharts.quick-filter.default'
+        ]);
+        var loadBuildPluginsAndCSS = function (callbacks) {
+            loadBuildPlugins();
+            loadBuildCSS();
+            loadDevJS();
+        };
 
-    <!-- plugins -->
+        // Start loading
+        loadLocalD3({
+            done: loadDevTaucharts.bind(null, {
+                done: loadDevPluginsAndCSS,
+                error: loadBuildTaucharts.bind(null, {
+                    done: loadBuildPluginsAndCSS
+                })
+            }),
+            error: loadCloudD3.bind(null, {
+                done: loadDevTaucharts.bind(null, {
+                    done: loadDevPluginsAndCSS,
+                    error: loadBuildTaucharts.bind(null, {
+                        done: loadBuildPluginsAndCSS
+                    })
+                })
+            })
+        });
+
+        function loadJS(url, callbacks) {
+            createFileLinks(url, callbacks, function (url) {
+                if (url.substring(url.length - 3) !== '.js') {
+                    url += '.js';
+                }
+                var script = document.createElement('script');
+                script.src = url;
+                return script;
+            });
+        }
+
+        function loadCSS(url, callbacks) {
+            createFileLinks(url, callbacks, function (url) {
+                if (url.substring(url.length - 4) !== '.css') {
+                    url += '.css';
+                }
+                var style = document.createElement('link');
+                style.rel = 'stylesheet';
+                style.href = url;
+                return style;
+            });
+        }
+
+        function createFileLinks(url, callbacks, builder) {
+            if (!Array.isArray(url)) {
+                url = [url];
+            }
+            var urlCount = url.length;
+            var wasError = false;
+            var onLoad = function (e) {
+                urlCount--;
+                if (urlCount === 0 && callbacks && callbacks.done) {
+                    callbacks.done.call(null);
+                }
+            };
+            var onError = function (e) {
+                urlCount--;
+                if (wasError || !callbacks || !callbacks.error) {
+                    return;
+                }
+                wasError = true;
+                callbacks.error.call(null, e.error);
+            };
+            url.forEach(function (u) {
+                var el = builder(u);
+                el.onload = onLoad;
+                el.onerror = onError;
+                document.head.appendChild(el);
+            });
+        }
+    </script>
+
+    <!-- TODO: Use simple JS and CSS loading when development and release structure will be the same.
+    <script src="../node_modules/d3/d3.min.js"></script>
+    <script src="../tauCharts.js"></script>
     <script src="../plugins/tooltip.js"></script>
     <script src="../plugins/export.js"></script>
     <script src="../plugins/layers.js"></script>
@@ -25,8 +156,6 @@
     <script src="../plugins/quick-filter.js"></script>
     <script src="../plugins/floating-axes.js"></script>
     <script src="../plugins/box-whiskers.js"></script>
-
-    <!-- css -->
     <link href="../css/tauCharts.default.css" rel="stylesheet" />
     <link href="../css/export.default.css" rel="stylesheet" />
     <link href="../css/legend.default.css" rel="stylesheet" />
@@ -34,12 +163,15 @@
     <link href="../css/trendline.default.css" rel="stylesheet" />
     <link href="../css/annotations.default.css" rel="stylesheet" />
     <link href="../css/quick-filter.default.css" rel="stylesheet" />
+    <script src="dev.js" defer></script>
+    -->
+
     <style>
         html {
             height: 100%;
             width: 100%;
         }
-        
+
         body {
             box-sizing: border-box;
             display: flex;
@@ -48,7 +180,11 @@
             margin: 0;
             width: 100%;
         }
-        
+
+        /*-------------------------
+            Filters section
+        -------------------------*/
+
         #controls {
             background-color: #eee;
             flex: none;
@@ -56,58 +192,82 @@
             padding: 3em 2em 0 2em;
             width: 12em;
         }
-        
+
         .filter-section {
             display: flex;
             flex-direction: column;
             margin-bottom: 2em;
             padding-left: 0.5em;
         }
-        
+
         .filter-section__header {
             font-weight: 300;
             margin: 0 0 0.5em -0.5em;
         }
-        
+
         .filter-section label {
             cursor: pointer;
         }
-        
+
         .check-group {
             display: flex;
             flex-direction: column;
         }
-        
+
+        /*-------------------------
+            Content section
+        -------------------------*/
+
+        main {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #filterText {
+            background: white;
+            font-weight: 400;
+            height: 2em;
+            line-height: 2em;            
+            margin: 0;
+            padding: 0 0.25em;
+            position: fixed;
+            right: 2.75em;
+            text-align: right;
+            z-index: 1;
+        }
+
         #samplesContainer {
             flex: 1;
             overflow-y: scroll;
-            padding: 1em 2em 2em 2em;
+            padding: 2em;
         }
-        
+
         .sample {
-            padding: 2em 0;
+            padding: 1em 0 2em 0;
             width: 100%;
         }
-        
+
         .sample__name {
             font-weight: 300;
             margin: 0;
         }
-        
+
         .sample__desc {
             font-weight: 400;
             margin: 0;
         }
-        
+
         .sample__desc:empty {
             display: none;
         }
-        
+
         .sample__chart {
             height: 24em;
             position: relative;
         }
-        
+
         .sample__chart:empty::before {
             align-items: center;
             content: "Loading...";
@@ -120,7 +280,7 @@
             position: absolute;
             width: 100%;
         }
-        
+
         #samplesContainer::-webkit-scrollbar,
         #controls::-webkit-scrollbar,
         .graphical-report__layout__content::-webkit-scrollbar,
@@ -128,7 +288,7 @@
             height: 0.75em;
             width: 0.75em;
         }
-        
+
         #samplesContainer::-webkit-scrollbar-thumb,
         #controls::-webkit-scrollbar-thumb,
         .graphical-report__layout__content::-webkit-scrollbar-thumb,
@@ -153,9 +313,10 @@
             <div id="pluginsContainer" class="check-group"></div>
         </div>
     </div>
-    <div id="samplesContainer"></div>
-
-    <script src="dev.js"></script>
+    <main>
+        <h4 id="filterText"></h4>
+        <div id="samplesContainer"></div>
+    </main>
 </body>
 
 </html>

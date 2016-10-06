@@ -1,4 +1,4 @@
-define(function (require) {
+/*define(function (require) {
     var worldMap = require('json!src/addons/world-countries');
     var theUKMap = require('json!src/addons/uk-subunits-places');
     var expect = require('chai').expect;
@@ -387,4 +387,4 @@ define(function (require) {
             done();
         });
     });
-});
+});*/

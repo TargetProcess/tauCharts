@@ -210,6 +210,7 @@ module.exports = function (grunt) {
                 publicPath: '/'
             },
             start: {
+                host: '0.0.0.0',
                 port: 9000,
                 keepAlive: true,
                 webpack: {

@@ -42,7 +42,6 @@ if (!Number.isNaN) {
 if (!Array.prototype.find) {
     Object.defineProperty(Array.prototype, 'find', {
         value: function (predicate) {
-            'use strict';
             if (this == null) {
                 throw new TypeError('Array.prototype.find called on null or undefined');
             }
@@ -71,7 +70,6 @@ if (!Array.prototype.find) {
 if (!Array.prototype.findIndex) {
     Object.defineProperty(Array.prototype, 'findIndex', {
         value: function (predicate) {
-            'use strict';
             if (this == null) {
                 throw new TypeError('Array.prototype.findIndex called on null or undefined');
             }
@@ -101,7 +99,6 @@ if (typeof Object.assign != 'function') {
     (function () {
         Object.defineProperty(Object, 'assign', {
             value: function (target) {
-                'use strict';
                 // We must check against these specific cases.
                 if (target === undefined || target === null) {
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -119,7 +116,10 @@ if (typeof Object.assign != 'function') {
                     }
                 }
                 return output;
-            }
+            },
+            configurable: true,
+            enumerable: false,
+            writable: true
         });
     })();
 }
