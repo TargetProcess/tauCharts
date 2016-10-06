@@ -474,12 +474,20 @@ var d3_transition_attr = function (keyOrMap, value) {
         );
     });
     var onTransitionEnd = function () {
+        var args = arguments;
         var leftAttrs = {};
         var attrsKeys = Object.keys(attrs);
         if (this[store]) {
             Object.keys(this[store])
-                .filter((k) => (attrsKeys.indexOf(k) < 0 ||
-                    attrs[k] !== this[store][k]))
+                .filter((k) => {
+                    if (attrsKeys.indexOf(k) < 0) {
+                        return true;
+                    }
+                    var value = (typeof attrs[k] === 'function' ?
+                        attrs[k].apply(this, args) :
+                        attrs[k]);
+                    return value !== this[store][k];
+                })
                 .forEach((k) => leftAttrs[k] = this[store][k]);
         }
         if (Object.keys(leftAttrs).length === 0) {
