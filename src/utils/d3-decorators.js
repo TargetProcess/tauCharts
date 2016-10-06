@@ -462,6 +462,8 @@ var d3_transition = (selection, animationSpeed, nameSpace) => {
 // http://stackoverflow.com/a/39024812/4137472
 // so it will be possible to get future attribute value.
 var d3_transition_attr = function (keyOrMap, value) {
+    var d3AttrResult = d3.transition.prototype.attr.apply(this, arguments);
+
     if (arguments.length === 0) {
         throw new Error('Unexpected `transition().attr()` arguments.');
     }
@@ -475,7 +477,8 @@ var d3_transition_attr = function (keyOrMap, value) {
     // Store transitioned attributes values
     // until transition ends.
     var store = '__transitionAttrs__';
-    var id = utils.generateHash(JSON.stringify(keyOrMap));
+    var idStore = '__lastTransitions__';
+    var id = getTransitionAttrId();
     this.each(function () {
         var newAttrs = {};
         for (var key in attrs) {
@@ -489,34 +492,33 @@ var d3_transition_attr = function (keyOrMap, value) {
             this[store] || {},
             newAttrs
         );
+
+        // NOTE: As far as d3 `interrupt` event is called asynchronously,
+        // we have to store ID to prevent removing attribute value from store,
+        // when new transition is applied for the same attribute.
+        if (!this[store][idStore]) {
+            Object.defineProperty(this[store], idStore, {value: {}});
+        }
+        Object.keys(newAttrs).forEach((key) => this[store][idStore][key] = id);
     });
     var onTransitionEnd = function () {
-        var args = arguments;
-        var leftAttrs = {};
-        var attrsKeys = Object.keys(attrs);
         if (this[store]) {
-            Object.keys(this[store])
-                .filter((k) => {
-                    if (attrsKeys.indexOf(k) < 0) {
-                        return true;
-                    }
-                    var value = (typeof attrs[k] === 'function' ?
-                        attrs[k].apply(this, args) :
-                        attrs[k]);
-                    return value !== this[store][k];
-                })
-                .forEach((k) => leftAttrs[k] = this[store][k]);
-        }
-        if (Object.keys(leftAttrs).length === 0) {
-            delete this[store];
-        } else {
-            this[store] = leftAttrs;
+            Object.keys(attrs)
+                .filter((k) => this[store][idStore][k] === id)
+                .forEach((k) => delete this[store][k]);
+            if (Object.keys(this[store]).length === 0) {
+                delete this[store];
+            }
         }
     };
     this.each(`interrupt.${id}`, onTransitionEnd);
     this.each(`end.${id}`, onTransitionEnd);
 
-    return d3.transition.prototype.attr.apply(this, arguments);
+    return d3AttrResult;
+};
+var transitionsCounter = 0;
+var getTransitionAttrId = function () {
+    return ++transitionsCounter;
 };
 
 var d3_add_transition_end_listener = (selection, callback) => {

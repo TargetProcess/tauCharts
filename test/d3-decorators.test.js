@@ -129,8 +129,8 @@ describe('d3-decorators', function () {
                 .attr('dy', 0)
                 .onTransitionEnd(check(function () {
                     transitionInterrupted = true;
-                    expect(node.__transitionAttrs__.dy).to.equal(4);
-                    expect(node.__transitionAttrs__.x).to.equal(6);
+                    expect(node.__transitionAttrs__.dy).to.equal(0);
+                    expect(node.__transitionAttrs__.x).to.equal(4);
                 }));
             expect(node.__transitionAttrs__.dy).to.equal(0);
             expect(+node.getAttribute('dy')).to.equal(10);
@@ -144,12 +144,12 @@ describe('d3-decorators', function () {
                 expect(+node.getAttribute('dy')).to.be.below(10);
                 transition(d3.select(div).selectAll('text'), 200)
                     .attr({
-                        'x': function (d) { return 10 - d.n; },
-                        'dy': function (d) { return d.n; }
+                        'x': function (d) { return d.n; },
+                        'dy': 0
                     })
                     .onTransitionEnd(final(function () {
-                        expect(+node.getAttribute('dy')).to.equal(4);
-                        expect(+node.getAttribute('x')).to.equal(6);
+                        expect(+node.getAttribute('dy')).to.equal(0);
+                        expect(+node.getAttribute('x')).to.equal(4);
                         expect(node.__transitionAttrs__).to.be.undefined;
                     }));
             }), 100);
