@@ -21,6 +21,7 @@ import {CSS_PREFIX} from '../const';
 import {GPL} from './tau.gpl';
 import {default as d3} from 'd3';
 var selectOrAppend = utilsDom.selectOrAppend;
+var selectImmediate = utilsDom.selectImmediate;
 
 export class Plot extends Emitter {
     constructor(config) {
@@ -66,12 +67,17 @@ export class Plot extends Emitter {
         this._chartDataModel = (src => src);
         this._liveSpec = this.configGPL;
         this._plugins = new Plugins(plugins, this);
+
+        this._reportProgress = null;
+        this._renderingFrameId = null;
+        this._renderingInProgress = false;
     }
 
     destroy() {
         this.destroyNodes();
         d3.select(this._svg).remove();
         d3.select(this._layout.layout).remove();
+        this._cancelRendering();
         super.destroy();
     }
 
@@ -311,8 +317,8 @@ export class Plot extends Emitter {
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`).attr({
             class: `${CSS_PREFIX}svg`,
-            width: newSize.width,
-            height: newSize.height
+            width: Math.floor(newSize.width),
+            height: Math.floor(newSize.height)
         });
         this._svg = svg.node();
         this.fire('beforerender', this._svg);
@@ -337,19 +343,136 @@ export class Plot extends Emitter {
                     .remove();
             });
 
-        scenario.forEach((item) => {
+        this._cancelRendering();
+        this._renderScenario(scenario);
+    }
+
+    _renderScenario(scenario) {
+
+        var duration = 0;
+        var syncDuration = 0;
+        var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
+        var i = 0;
+        this._renderingInProgress = true;
+        Plot.renderingsInProgress++;
+        var safe = (fn) => () => {
+            try {
+                fn();
+            } catch (err) {
+                this._cancelRendering();
+                this._displayRenderingError(err);
+                this.fire('renderingerror', err);
+                if (this._liveSpec.settings.asyncRendering) {
+                    this._liveSpec.settings.log(`An arror occured while rendering: ${err.message}`, 'ERROR');
+                } else {
+                    throw err;
+                }
+            }
+        };
+        this._createProgressBar();
+        this._clearRenderingError();
+        this._clearTimeoutWarning();
+
+        var drawScenario = () => {
+            var item = scenario[i];
+
+            var start = Date.now();
             item.draw();
             this.onUnitDraw(item.node());
-        });
+            var end = Date.now();
+            duration += end - start;
+            syncDuration += end - start;
 
-        // TODO: Render panels before chart, to
-        // prevent chart size shrink. Use some other event.
-        utilsDom.setScrollPadding(this._layout.contentContainer);
-        this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
-        this.fire('render', this._svg);
+            i++;
+            this._reportProgress(i / scenario.length);
+            if (i === scenario.length) {
+                done();
+            } else if (duration > timeout) {
+                timeoutReached();
+            } else {
+                next();
+            }
+        };
 
-        // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
-        utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
+        var timeoutReached = () => {
+            this._displayTimeoutWarning({
+                timeout: timeout,
+                proceed: () => {
+                    timeout = Infinity;
+                    next();
+                },
+                cancel:() => {
+                    this._cancelRendering();
+                }
+            });
+            this.fire('renderingtimeout');
+        };
+
+        var done = () => {
+            this._renderingInProgress = false;
+            Plot.renderingsInProgress--;
+
+            // TODO: Render panels before chart, to
+            // prevent chart size shrink. Use some other event.
+            utilsDom.setScrollPadding(this._layout.contentContainer);
+            this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
+            this.fire('render', this._svg);
+
+            // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
+            utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
+        };
+
+        var nextSync = () => drawScenario();
+        var nextAsync = () => {
+            this._renderingFrameId = requestAnimationFrame(safe(() => {
+                this._renderingFrameId = null;
+                drawScenario();
+            }));
+        };
+
+        var next = () => {
+            if (
+                this._liveSpec.settings.asyncRendering &&
+                syncDuration >= this._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress
+            ) {
+                syncDuration = 0;
+                nextAsync();
+            } else {
+                nextSync();
+            }
+        };
+
+        safe(next)();
+    }
+
+    _cancelRendering() {
+        if (this._renderingInProgress) {
+            this._renderingInProgress = false;
+            Plot.renderingsInProgress--;
+        }
+        cancelAnimationFrame(this._renderingFrameId);
+        this._renderingFrameId = null;
+    }
+
+    _createProgressBar() {
+        var header = d3.select(this._layout.header);
+        var progressBar = selectOrAppend(header, `div.${CSS_PREFIX}progress`);
+        progressBar.select(`div.${CSS_PREFIX}progress__value`).remove();
+        var progressValue = progressBar.append('div')
+            .classed(`${CSS_PREFIX}progress__value`, true)
+            .style('width', 0);
+        this._reportProgress = function (value) {
+            progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
+            progressValue.style('width', (value * 100) + '%');
+        };
+    }
+
+    _displayRenderingError() {
+        this._layout.layout.classList.add(`${CSS_PREFIX}layout_rendering-error`);
+    }
+
+    _clearRenderingError() {
+        this._layout.layout.classList.remove(`${CSS_PREFIX}layout_rendering-error`);
     }
 
     getScaleFactory(dataSources = null) {
@@ -485,4 +608,72 @@ export class Plot extends Emitter {
     getLayout() {
         return this._layout;
     }
+
+    _displayTimeoutWarning({proceed, cancel, timeout}) {
+        var width = 200;
+        var height = 100;
+        var linesCount = 3;
+        var lineSpacing = 1.5;
+        var midX = width / 2;
+        var fontSize = Math.round(height / linesCount / lineSpacing);
+        var getY = function (line) {
+            return Math.round(height / linesCount / lineSpacing * line);
+        };
+        this._layout.content.style.height = '100%';
+        this._layout.content.insertAdjacentHTML('beforeend', `
+            <div class="${CSS_PREFIX}rendering-timeout-warning">
+            <svg
+                viewBox="0 0 ${width} ${height}">
+                <text
+                    text-anchor="middle"
+                    font-size="${fontSize}">
+                    <tspan x="${midX}" y="${getY(1)}">Rendering took more than ${Math.round(timeout) / 1000}s</tspan>
+                    <tspan x="${midX}" y="${getY(2)}">Would you like to continue?</tspan>
+                </text>
+                <text
+                    class="${CSS_PREFIX}rendering-timeout-continue-btn"
+                    text-anchor="end"
+                    font-size="${fontSize}"
+                    cursor="pointer"
+                    text-decoration="underline"
+                    x="${midX - fontSize / 3}"
+                    y="${getY(3)}">
+                    Continue
+                </text>
+                <text
+                    class="${CSS_PREFIX}rendering-timeout-cancel-btn"
+                    text-anchor="start"
+                    font-size="${fontSize}"
+                    cursor="pointer"
+                    text-decoration="underline"
+                    x="${midX + fontSize / 3}"
+                    y="${getY(3)}">
+                    Cancel
+                </text>
+            </svg>
+            </div>
+        `);
+        this._layout.content
+            .querySelector(`.${CSS_PREFIX}rendering-timeout-continue-btn`)
+            .addEventListener('click', () => {
+                this._clearTimeoutWarning();
+                proceed.call(this);
+            });
+        this._layout.content
+            .querySelector(`.${CSS_PREFIX}rendering-timeout-cancel-btn`)
+            .addEventListener('click', () => {
+                this._clearTimeoutWarning();
+                cancel.call(this);
+            });
+    }
+
+    _clearTimeoutWarning() {
+        var warning = selectImmediate(this._layout.content, `.${CSS_PREFIX}rendering-timeout-warning`);
+        if (warning) {
+            this._layout.content.removeChild(warning);
+            this._layout.content.style.height = '';
+        }
+    }
 }
+
+Plot.renderingsInProgress = 0;

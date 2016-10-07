@@ -123,12 +123,14 @@ describe('d3-decorators', function () {
 
         check(function () {
             // Start transition "dy"
-            var texts = transition(d3.select(div).selectAll('text'), 200)
+            var texts = transition(
+                d3.select(div).selectAll('text').data([{n: 4}, {n: 3}, {n: 2}, {n: 1}]),
+                200)
                 .attr('dy', 0)
                 .onTransitionEnd(check(function () {
                     transitionInterrupted = true;
-                    expect(node.__transitionAttrs__.dy).to.be.undefined;
-                    expect(node.__transitionAttrs__.x).to.equal(10);
+                    expect(node.__transitionAttrs__.dy).to.equal(0);
+                    expect(node.__transitionAttrs__.x).to.equal(4);
                 }));
             expect(node.__transitionAttrs__.dy).to.equal(0);
             expect(+node.getAttribute('dy')).to.equal(10);
@@ -136,18 +138,18 @@ describe('d3-decorators', function () {
                 texts.attr();
             }).to.throw(/Unexpected.*arguments/);
 
-            // Start transition "x" with delay
+            // Start transition "x" and "dy" with delay
             setTimeout(check(function () {
                 expect(+node.getAttribute('dy')).to.be.above(0);
                 expect(+node.getAttribute('dy')).to.be.below(10);
                 transition(d3.select(div).selectAll('text'), 200)
                     .attr({
-                        'x': function (d) { return 10; },
-                        'dy': function (d) { return 0; }
+                        'x': function (d) { return d.n; },
+                        'dy': 0
                     })
                     .onTransitionEnd(final(function () {
                         expect(+node.getAttribute('dy')).to.equal(0);
-                        expect(+node.getAttribute('x')).to.equal(10);
+                        expect(+node.getAttribute('x')).to.equal(4);
                         expect(node.__transitionAttrs__).to.be.undefined;
                     }));
             }), 100);

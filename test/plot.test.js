@@ -2,8 +2,10 @@ define(function (require) {
     var expect = require('chai').expect;
     var schemes = require('schemes');
     var modernizer = require('bower_components/modernizer/modernizr');
+    var CSS_PREFIX = require('src/const').CSS_PREFIX;
     var tauChart = require('src/tau.charts');
     var utils = require('testUtils');
+    var range = require('src/utils/utils').utils.range;
 
     describe('tauChart.Plot', function () {
 
@@ -683,6 +685,129 @@ define(function (require) {
             var svg = chart.getSVG();
             var transform = d3.select(svg).select('.x.axis').attr('transform');
             expect(transform).to.equals('translate(0,600)');
+        });
+
+        it('should warn about rendering timeout', function (done) {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: range(20).map(function () {
+                    return {
+                        a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        c: Math.random() * 10
+                    };
+                }),
+                x: ['c'],
+                y: ['a', 'b'],
+                dimensions: {
+                    'a': {type: 'categoty', scale: 'ordinal'},
+                    'b': {type: 'categoty', scale: 'ordinal'},
+                    'c': {type: 'measure', scale: 'linear'}
+                },
+                settings: {
+                    asyncRendering: true,
+                    renderingTimeout: 0.1,
+                    syncRenderingDuration: 1
+                }
+            });
+            var timeoutCount = 0;
+            chart.on('renderingtimeout', function () {
+                timeoutCount++;
+                expect(tauChart.Plot.renderingsInProgress).to.equal(1);
+                var svg = chart.getLayout().content.querySelector('.' + CSS_PREFIX + 'rendering-timeout-warning');
+                expect(svg).to.be.instanceof(Element);
+
+                switch (timeoutCount) {
+                    case 1:
+                        // Invoke chart refresh to fire previous rendering cancel
+                        setTimeout(function () {
+                            chart.refresh();
+                        }, 0);
+                        break;
+                    case 2:
+                        // Click "Cancel"
+                        utils.simulateEvent('click',
+                            svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-cancel-btn'));
+                        expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                        chart.refresh();
+                        break;
+                    case 3:
+                        // Click "Continue"
+                        utils.simulateEvent('click',
+                            svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-continue-btn'));
+                        break;
+                }
+            });
+            chart.on('render', function () {
+                if (timeoutCount !== 3) {
+                    done(new Error('Not all rendering timeouts were reached.'));
+                }
+                expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                done();
+            });
+            chart.renderTo(testDiv);
+        });
+
+        it('should warn about rendering error', function (done) {
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: range(20).map(function () {
+                    return {
+                        a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        c: Math.random() * 10
+                    };
+                }),
+                x: ['c'],
+                y: ['a', 'b'],
+                dimensions: {
+                    'a': {type: 'categoty', scale: 'ordinal'},
+                    'b': {type: 'categoty', scale: 'ordinal'},
+                    'c': {type: 'measure', scale: 'linear'}
+                },
+                settings: {
+                    asyncRendering: true,
+                    syncRenderingDuration: 1
+                }
+            });
+
+            var threwError = false;
+            chart.on('renderingerror', function (chart, err) {
+                threwError = true;
+                expect(err.message).to.equal('Test rendering error.');
+                expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+
+                chart.onUnitDraw = srcOnUnitDraw;
+                chart.refresh();
+                expect(tauChart.Plot.renderingsInProgress).to.equal(1);
+            });
+
+            chart.on('render', function () {
+                if (!threwError) {
+                    done(new Error('Error was not thrown.'));
+                }
+                expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                done();
+            });
+
+            var timer = 10;
+            var srcOnUnitDraw = chart.onUnitDraw;
+            chart.onUnitDraw = function () {
+                timer--;
+                if (timer === 0) {
+                    throw new Error('Test rendering error.');
+                }
+                srcOnUnitDraw.apply(chart, arguments);
+            };
+
+            chart.renderTo(testDiv);
+            expect(tauChart.Plot.renderingsInProgress).to.equal(1);
         });
     });
 });
