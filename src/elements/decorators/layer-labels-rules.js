@@ -12,6 +12,8 @@ export class LayerLabelsRules {
     }
 }
 
+const cutString = (str, index) => str.slice(0, index).replace(/\.+$/g, '') + '\u2026';
+
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
 var alignByX = (exp) => {
@@ -137,7 +139,7 @@ LayerLabelsRules
             label: (row) => {
                 const index = cutTextByIndex(row);
                 return ((index > 0) ?
-                        (prev.label(row).slice(0, index) + '\u2026') :
+                        (cutString(prev.label(row), index)) :
                         (prev.label(row))
                 );
             },
@@ -192,7 +194,7 @@ LayerLabelsRules
             label: (row) => {
                 const index = cutTextByIndex(row);
                 return ((index > 0) ?
-                        (prev.label(row).slice(0, index) + '\u2026') :
+                        (cutString(prev.label(row), index)) :
                         (prev.label(row))
                 );
             },
