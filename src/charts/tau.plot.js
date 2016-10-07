@@ -21,6 +21,7 @@ import {CSS_PREFIX} from '../const';
 import {GPL} from './tau.gpl';
 import {default as d3} from 'd3';
 var selectOrAppend = utilsDom.selectOrAppend;
+var renderingChartsCount = 0;
 
 export class Plot extends Emitter {
     constructor(config) {
@@ -352,6 +353,17 @@ export class Plot extends Emitter {
         var syncDuration = 0;
         var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
         var i = 0;
+        renderingChartsCount++;
+        var safe = (fn) => () => {
+            try {
+                fn();
+            } catch (err) {
+                renderingChartsCount--;
+                this._displayRenderingError(err);
+                throw err;
+            }
+        };
+        this._clearRenderingError();
 
         var drawScenario = () => {
             var item = scenario[i];
@@ -393,25 +405,28 @@ export class Plot extends Emitter {
 
             // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
             utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
+
+            renderingChartsCount--;
         };
 
         var nextSync = () => drawScenario();
         var nextAsync = () => {
-            this._renderingFrameId = requestAnimationFrame(drawScenario);
+            this._renderingFrameId = requestAnimationFrame(safe(drawScenario));
         };
 
-        var next = (!this._liveSpec.settings.asyncRendering ?
-            nextSync :
-            () => {
-                if (syncDuration >= this._liveSpec.settings.syncRenderingDuration) {
-                    syncDuration = 0;
-                    nextAsync();
-                } else {
-                    nextSync();
-                }
-            });
+        var next = () => {
+            if (
+                this._liveSpec.settings.asyncRendering &&
+                syncDuration >= this._liveSpec.settings.syncRenderingDuration / renderingChartsCount
+            ) {
+                syncDuration = 0;
+                nextAsync();
+            } else {
+                nextSync();
+            }
+        };
 
-        next();
+        safe(next)();
     }
 
     _cancelRendering() {
@@ -429,6 +444,14 @@ export class Plot extends Emitter {
             progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
             progressValue.style('width', (value * 100) + '%');
         };
+    }
+
+    _displayRenderingError(err) {
+        this._layout.layout.classList.add(`${CSS_PREFIX}layout_rendering-error`);
+    }
+
+    _clearRenderingError() {
+        this._layout.layout.classList.remove(`${CSS_PREFIX}layout_rendering-error`);
     }
 
     getScaleFactory(dataSources = null) {
