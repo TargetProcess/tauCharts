@@ -653,16 +653,18 @@ export class Plot extends Emitter {
             </svg>
             </div>
         `);
-        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-continue-btn`);
-        btn.addEventListener('click', () => {
-            this._clearTimeoutWarning();
-            proceed.call(this);
-        });
-        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-cancel-btn`);
-        btn.addEventListener('click', () => {
-            this._clearTimeoutWarning();
-            cancel.call(this);
-        });
+        this._layout.content
+            .querySelector(`.${CSS_PREFIX}rendering-timeout-continue-btn`)
+            .addEventListener('click', () => {
+                this._clearTimeoutWarning();
+                proceed.call(this);
+            });
+        this._layout.content
+            .querySelector(`.${CSS_PREFIX}rendering-timeout-cancel-btn`)
+            .addEventListener('click', () => {
+                this._clearTimeoutWarning();
+                cancel.call(this);
+            });
     }
 
     _clearTimeoutWarning() {
