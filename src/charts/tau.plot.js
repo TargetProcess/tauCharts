@@ -21,7 +21,7 @@ import {CSS_PREFIX} from '../const';
 import {GPL} from './tau.gpl';
 import {default as d3} from 'd3';
 var selectOrAppend = utilsDom.selectOrAppend;
-var renderingChartsCount = 0;
+var selectImmediate = utilsDom.selectImmediate;
 
 export class Plot extends Emitter {
     constructor(config) {
@@ -70,6 +70,7 @@ export class Plot extends Emitter {
 
         this._reportProgress = null;
         this._renderingFrameId = null;
+        this._renderingInProgress = false;
     }
 
     destroy() {
@@ -342,7 +343,6 @@ export class Plot extends Emitter {
                     .remove();
             });
 
-        this._createProgressBar();
         this._cancelRendering();
         this._renderScenario(scenario);
     }
@@ -353,17 +353,21 @@ export class Plot extends Emitter {
         var syncDuration = 0;
         var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
         var i = 0;
-        renderingChartsCount++;
+        this._renderingInProgress = true;
+        Plot.renderingsInProgress++;
         var safe = (fn) => () => {
             try {
                 fn();
             } catch (err) {
-                renderingChartsCount--;
+                this._cancelRendering();
                 this._displayRenderingError(err);
-                throw err;
+                this.fire('renderingerror', err);
+                this._liveSpec.settings.log(err.message, 'ERROR');
             }
         };
+        this._createProgressBar();
         this._clearRenderingError();
+        this._clearTimeoutWarning();
 
         var drawScenario = () => {
             var item = scenario[i];
@@ -387,7 +391,7 @@ export class Plot extends Emitter {
         };
 
         var timeoutReached = () => {
-            this._renderTimeoutWarning({
+            this._displayTimeoutWarning({
                 proceed: () => {
                     timeout = Infinity;
                     next();
@@ -397,6 +401,9 @@ export class Plot extends Emitter {
         };
 
         var done = () => {
+            this._renderingInProgress = false;
+            Plot.renderingsInProgress--;
+
             // TODO: Render panels before chart, to
             // prevent chart size shrink. Use some other event.
             utilsDom.setScrollPadding(this._layout.contentContainer);
@@ -405,19 +412,20 @@ export class Plot extends Emitter {
 
             // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
             utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
-
-            renderingChartsCount--;
         };
 
         var nextSync = () => drawScenario();
         var nextAsync = () => {
-            this._renderingFrameId = requestAnimationFrame(safe(drawScenario));
+            this._renderingFrameId = requestAnimationFrame(safe(() => {
+                this._renderingFrameId = null;
+                drawScenario();
+            }));
         };
 
         var next = () => {
             if (
                 this._liveSpec.settings.asyncRendering &&
-                syncDuration >= this._liveSpec.settings.syncRenderingDuration / renderingChartsCount
+                syncDuration >= this._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress
             ) {
                 syncDuration = 0;
                 nextAsync();
@@ -430,7 +438,14 @@ export class Plot extends Emitter {
     }
 
     _cancelRendering() {
-        cancelAnimationFrame(this._renderingFrameId);
+        if (this._renderingInProgress) {
+            this._renderingInProgress = false;
+            Plot.renderingsInProgress--;
+        }
+        if (this._renderingFrameId) {
+            cancelAnimationFrame(this._renderingFrameId);
+            this._renderingFrameId = null;
+        }
     }
 
     _createProgressBar() {
@@ -446,7 +461,7 @@ export class Plot extends Emitter {
         };
     }
 
-    _displayRenderingError(err) {
+    _displayRenderingError() {
         this._layout.layout.classList.add(`${CSS_PREFIX}layout_rendering-error`);
     }
 
@@ -588,7 +603,7 @@ export class Plot extends Emitter {
         return this._layout;
     }
 
-    _renderTimeoutWarning({proceed}) {
+    _displayTimeoutWarning({proceed}) {
         var width = 200;
         var height = 100;
         var linesCount = 4;
@@ -624,12 +639,20 @@ export class Plot extends Emitter {
                 </text>
             </svg>
         `);
-        var warning = this._layout.content.querySelector(`svg.${CSS_PREFIX}rendering-timeout-warning`);
         var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-disable-btn`);
         btn.addEventListener('click', () => {
-            this._layout.content.removeChild(warning);
-            this._layout.content.style.height = '';
+            this._clearTimeoutWarning();
             proceed.call(this);
         });
     }
+
+    _clearTimeoutWarning() {
+        var warning = selectImmediate(this._layout.content, `svg.${CSS_PREFIX}rendering-timeout-warning`);
+        if (warning) {
+            this._layout.content.removeChild(warning);
+            this._layout.content.style.height = '';
+        }
+    }
 }
+
+Plot.renderingsInProgress = 0;
