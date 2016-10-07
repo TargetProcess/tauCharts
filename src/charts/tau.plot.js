@@ -362,7 +362,11 @@ export class Plot extends Emitter {
                 this._cancelRendering();
                 this._displayRenderingError(err);
                 this.fire('renderingerror', err);
-                this._liveSpec.settings.log(err.message, 'ERROR');
+                if (this._liveSpec.settings.asyncRendering) {
+                    this._liveSpec.settings.log(`An arror occured while rendering: ${err.message}`, 'ERROR');
+                } else {
+                    throw err;
+                }
             }
         };
         this._createProgressBar();
@@ -392,9 +396,13 @@ export class Plot extends Emitter {
 
         var timeoutReached = () => {
             this._displayTimeoutWarning({
+                timeout: timeout,
                 proceed: () => {
                     timeout = Infinity;
                     next();
+                },
+                cancel:() => {
+                    this._cancelRendering();
                 }
             });
             this.fire('renderingtimeout');
@@ -442,10 +450,8 @@ export class Plot extends Emitter {
             this._renderingInProgress = false;
             Plot.renderingsInProgress--;
         }
-        if (this._renderingFrameId) {
-            cancelAnimationFrame(this._renderingFrameId);
-            this._renderingFrameId = null;
-        }
+        cancelAnimationFrame(this._renderingFrameId);
+        this._renderingFrameId = null;
     }
 
     _createProgressBar() {
@@ -603,51 +609,64 @@ export class Plot extends Emitter {
         return this._layout;
     }
 
-    _displayTimeoutWarning({proceed}) {
+    _displayTimeoutWarning({proceed, cancel, timeout}) {
         var width = 200;
         var height = 100;
-        var linesCount = 4;
-        var lineSpacing = 1.2;
+        var linesCount = 3;
+        var lineSpacing = 1.5;
         var midX = width / 2;
         var fontSize = Math.round(height / linesCount / lineSpacing);
-        var yCounter = 0;
-        var getY = function () {
-            yCounter++;
-            return Math.round(height / linesCount / lineSpacing * yCounter);
+        var getY = function (line) {
+            return Math.round(height / linesCount / lineSpacing * line);
         };
         this._layout.content.style.height = '100%';
         this._layout.content.insertAdjacentHTML('beforeend', `
+            <div class="${CSS_PREFIX}rendering-timeout-warning">
             <svg
-                class="${CSS_PREFIX}rendering-timeout-warning"
                 viewBox="0 0 ${width} ${height}">
                 <text
                     text-anchor="middle"
                     font-size="${fontSize}">
-                    <tspan x="${midX}" y="${getY()}">WARNING!</tspan>
-                    <tspan x="${midX}" y="${getY()}">Rendering took too long,</tspan>
-                    <tspan x="${midX}" y="${getY()}">application can crash.</tspan>
+                    <tspan x="${midX}" y="${getY(1)}">Rendering took more than ${Math.round(timeout) / 1000}s</tspan>
+                    <tspan x="${midX}" y="${getY(2)}">Would you like to continue?</tspan>
                 </text>
                 <text
-                    class="${CSS_PREFIX}rendering-timeout-disable-btn"
-                    text-anchor="middle"
+                    class="${CSS_PREFIX}rendering-timeout-continue-btn"
+                    text-anchor="end"
                     font-size="${fontSize}"
                     cursor="pointer"
                     text-decoration="underline"
-                    x="${midX}"
-                    y="${getY()}">
-                    Display anyway
+                    x="${midX - fontSize / 3}"
+                    y="${getY(3)}">
+                    Continue
+                </text>
+                <text
+                    class="${CSS_PREFIX}rendering-timeout-cancel-btn"
+                    text-anchor="start"
+                    font-size="${fontSize}"
+                    cursor="pointer"
+                    text-decoration="underline"
+                    x="${midX + fontSize / 3}"
+                    y="${getY(3)}">
+                    Cancel
                 </text>
             </svg>
+            </div>
         `);
-        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-disable-btn`);
+        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-continue-btn`);
         btn.addEventListener('click', () => {
             this._clearTimeoutWarning();
             proceed.call(this);
         });
+        var btn = this._layout.content.querySelector(`.${CSS_PREFIX}rendering-timeout-cancel-btn`);
+        btn.addEventListener('click', () => {
+            this._clearTimeoutWarning();
+            cancel.call(this);
+        });
     }
 
     _clearTimeoutWarning() {
-        var warning = selectImmediate(this._layout.content, `svg.${CSS_PREFIX}rendering-timeout-warning`);
+        var warning = selectImmediate(this._layout.content, `.${CSS_PREFIX}rendering-timeout-warning`);
         if (warning) {
             this._layout.content.removeChild(warning);
             this._layout.content.style.height = '';

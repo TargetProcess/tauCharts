@@ -69,11 +69,20 @@
     }
 
     &__rendering-timeout-warning {
+        align-items: center;
         background: fadeout(@bg-color, 50%);
+        display: flex;
+        flex-direction: column;
         height: 100%;
         position: absolute;
         top: 0;
         width: 100%;
+
+        svg {
+            height: 100%;
+            max-width: 32em;
+            width: 100%;
+        }
 
         text {
             font-weight: 300;

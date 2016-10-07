@@ -717,22 +717,33 @@ define(function (require) {
             chart.on('renderingtimeout', function () {
                 timeoutCount++;
                 expect(tauChart.Plot.renderingsInProgress).to.equal(1);
-                var svg = chart.getLayout().content.querySelector('svg.' + CSS_PREFIX + 'rendering-timeout-warning');
-                expect(svg).to.be.instanceof(SVGSVGElement);
+                var svg = chart.getLayout().content.querySelector('.' + CSS_PREFIX + 'rendering-timeout-warning');
+                expect(svg).to.be.instanceof(Element);
 
-                var btn = svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-disable-btn');
-                utils.simulateEvent('click', btn);
-
-                if (timeoutCount === 1) {
-                    // Invoke chart refresh to fire previous rendering cancel
-                    setTimeout(function () {
+                switch (timeoutCount) {
+                    case 1:
+                        // Invoke chart refresh to fire previous rendering cancel
+                        setTimeout(function () {
+                            chart.refresh();
+                        }, 0);
+                        break;
+                    case 2:
+                        // Click "Cancel"
+                        utils.simulateEvent('click',
+                            svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-cancel-btn'));
+                        expect(tauChart.Plot.renderingsInProgress).to.equal(0);
                         chart.refresh();
-                    }, 0);
+                        break;
+                    case 3:
+                        // Click "Continue"
+                        utils.simulateEvent('click',
+                            svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-continue-btn'));
+                        break;
                 }
             });
             chart.on('render', function () {
-                if (timeoutCount !== 2) {
-                    done(new Error('Rendering timeout was not reached.'));
+                if (timeoutCount !== 3) {
+                    done(new Error('Not all rendering timeouts were reached.'));
                 }
                 expect(tauChart.Plot.renderingsInProgress).to.equal(0);
                 done();
