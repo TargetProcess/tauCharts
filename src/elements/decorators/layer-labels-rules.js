@@ -12,6 +12,14 @@ export class LayerLabelsRules {
     }
 }
 
+const findCutIndex = (text, labelWidth, availableSpace) => {
+    return ((availableSpace < labelWidth) ?
+        (Math.max(1, Math.floor(availableSpace * text.length / labelWidth)) - 1) :
+        (text.length));
+};
+
+const cutString = (str, index) => ((index === 0) ? '' : str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
+
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
 var alignByX = (exp) => {
@@ -113,16 +121,23 @@ LayerLabelsRules
         return changes;
     })
 
-    .regRule('keep-inside-or-hide-vertical', (prev) => {
+    .regRule('hide-by-label-height-vertical', (prev) => {
+
         return {
+
             hide: (row) => {
 
-                if (prev.model.size(row) < prev.w(row)) {
-                    return true;
+                let availableSpace;
+                let requiredSpace;
+                if (prev.angle(row) === 0) {
+                    requiredSpace = prev.h(row);
+                    availableSpace = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                } else {
+                    requiredSpace = prev.w(row);
+                    availableSpace = prev.model.size(row);
                 }
 
-                var h = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                if (h < prev.h(row)) {
+                if (requiredSpace > availableSpace) {
                     return true;
                 }
 
@@ -131,20 +146,116 @@ LayerLabelsRules
         };
     })
 
-    .regRule('keep-inside-or-hide-horizontal', (prev) => {
+    .regRule('cut-label-vertical', (prev) => {
+
         return {
+
+            h: (row) => {
+                const reserved = prev.h(row);
+                if (Math.abs(prev.angle(row)) > 0) {
+                    const text = prev.label(row);
+                    const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                    const index = findCutIndex(text, reserved, available);
+                    return ((index < text.length) ? available : reserved);
+                }
+
+                return reserved;
+            },
+
+            w: (row) => {
+                const reserved = prev.w(row);
+                if (prev.angle(row) === 0) {
+                    const text = prev.label(row);
+                    const available = prev.model.size(row);
+                    const index = findCutIndex(text, reserved, available);
+                    return ((index < text.length) ? available : reserved);
+                }
+
+                return reserved;
+            },
+
+            label: (row) => {
+                let reserved;
+                let available;
+                if (prev.angle(row) === 0) {
+                    reserved = prev.w(row);
+                    available = prev.model.size(row);
+                } else {
+                    reserved = prev.h(row);
+                    available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                }
+
+                const text = prev.label(row);
+                const index = findCutIndex(text, reserved, available);
+
+                return ((index < text.length) ? cutString(text, index) : text);
+            },
+
+            dy: (row) => {
+                const prevDy = prev.dy(row);
+
+                if (prev.angle(row) !== 0) {
+                    const reserved = prev.h(row);
+                    const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                    const text = prev.label(row);
+                    const index = findCutIndex(text, reserved, available);
+
+                    return ((index < text.length) ?
+                            (available * prevDy / reserved) :
+                            (prevDy)
+                    );
+                }
+
+                return prevDy;
+            }
+        };
+    })
+
+    .regRule('hide-by-label-height-horizontal', (prev) => {
+
+        return {
+
             hide: (row) => {
 
                 if (prev.model.size(row) < prev.h(row)) {
                     return true;
                 }
 
-                var w = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                if (w < prev.w(row)) {
-                    return true;
-                }
-
                 return prev.hide(row);
+            }
+        };
+    })
+
+    .regRule('cut-label-horizontal', (prev) => {
+
+        return {
+
+            dx: (row) => {
+                const text = prev.label(row);
+                const required = prev.w(row);
+                const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                const index = findCutIndex(text, required, available);
+                const prevDx = prev.dx(row);
+                return ((index < text.length) ? (available * prevDx / required) : (prevDx));
+            },
+
+            w: (row) => {
+                const text = prev.label(row);
+                const required = prev.w(row);
+                const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                const index = findCutIndex(text, required, available);
+                return ((index < text.length) ? available : required);
+            },
+
+            label: (row) => {
+                const text = prev.label(row);
+                const required = prev.w(row);
+                const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                const index = findCutIndex(text, required, available);
+                return ((index < text.length) ?
+                        (cutString(text, index)) :
+                        (text)
+                );
             }
         };
     })

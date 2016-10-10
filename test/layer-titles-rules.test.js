@@ -204,7 +204,7 @@ define(function (require) {
             expect(m.dy(row)).to.equal(90 - 100 - fontSize / 2, 'should move top to fit box / dy');
         });
 
-        it('should support [keep-inside-or-hide-vertical] rule (by width)', function () {
+        it('should support [cut-label-vertical] rule (by width)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -229,19 +229,18 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-vertical'], seedModel);
+            var m = createModel(['cut-label-vertical'], seedModel);
             var row4 = {text: 'ABCD'};
             expect(m.w(row4)).to.equal(8, 'text width');
             expect(m.model.size(row4)).to.equal(10, 'element width');
-            expect(m.hide(row4)).to.equal(false, 'show');
 
             var row10 = {text: 'ABCDEFGHJK'};
-            expect(m.w(row10)).to.equal(20, 'text width');
+            expect(m.label(row10)).to.equal('ABCD\u2026', 'label text is cut');
+            expect(m.w(row10)).to.equal(10, 'text width is cut from 20');
             expect(m.model.size(row10)).to.equal(10, 'element width');
-            expect(m.hide(row10)).to.equal(true, 'hide');
         });
 
-        it('should support [keep-inside-or-hide-vertical] rule (by height)', function () {
+        it('should support [hide-by-label-height-vertical] rule (by height)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -266,14 +265,15 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-vertical'], seedModel);
+            var m = createModel(['hide-by-label-height-vertical'], seedModel);
             var row4 = {text: 'A'};
             expect(m.w(row4)).to.equal(2, 'text width');
             expect(m.model.size(row4)).to.equal(10, 'element width');
-            expect(m.hide(row4)).to.equal(true, 'hide since not fit an element height');
+
+            expect(m.hide(row4)).to.equal(true, 'hide since misfit by height');
         });
 
-        it('should support [keep-inside-or-hide-horizontal] rule (by height)', function () {
+        it('should support [cut-label-horizontal] rule (by height)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -298,14 +298,13 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-horizontal'], seedModel);
+            var m = createModel(['cut-label-horizontal'], seedModel);
             var row4 = {text: 'A'};
             expect(m.h(row4)).to.equal(fontSize, 'text width');
             expect(m.model.size(row4)).to.equal(4, 'element width');
-            expect(m.hide(row4)).to.equal(true, 'hide since not fit an element height');
         });
 
-        it('should support [keep-inside-or-hide-horizontal] rule (by width)', function () {
+        it('should support [cut-label-horizontal] rule (by width)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -330,15 +329,119 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-horizontal'], seedModel);
+            var m = createModel(['cut-label-horizontal'], seedModel);
             var row1 = {text: 'A'};
             expect(m.h(row1)).to.equal(fontSize, 'text width');
             expect(m.model.size(row1)).to.equal(10, 'element width');
-            expect(m.hide(row1)).to.equal(false, 'hide since not fit an element height');
 
             var row10 = {text: 'ABCDEFGHJK'};
-            expect(m.w(row10)).to.equal(20, 'text width');
-            expect(m.hide(row10)).to.equal(true, 'hide');
+            expect(m.label(row10)).to.equal('A\u2026', 'label text');
+            expect(m.w(row10)).to.equal(m.model.y0(row10) - m.model.yi(row10), 'cut text width by available space (from 20 original)');
+        });
+
+        it('should support [rotate-on-size-overflow] rule', function () {
+
+            var gogModel = {
+                xi: (row) => 0,
+                yi: (row) => 0,
+                y0: (row) => 10,
+                size: (row) => 5,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            var rows = [
+                {text: '123'},
+                {text: '3214'},
+                {text: '1'}
+            ];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['rotate-on-size-overflow'], seedModel, {data:rows});
+            expect(m.angle(rows[0])).to.equal(-90, 'angle is adjusted');
+            expect(m.angle(rows[1])).to.equal(-90, 'angle is adjusted');
+            expect(m.angle(rows[2])).to.equal(-90, 'angle is adjusted');
+
+            var expectedDx = fontSize * 0.5 - 2;
+
+            expect(m.w(rows[0])).to.equal(fontSize, 'swap width and height according to angle');
+            expect(m.h(rows[0])).to.equal(6, 'swap width and height according to angle');
+            expect(m.dx(rows[0])).to.equal(expectedDx, 'calc dx from height value');
+
+            expect(m.w(rows[1])).to.equal(fontSize, 'swap width and height according to angle');
+            expect(m.h(rows[1])).to.equal(8, 'swap width and height according to angle');
+            expect(m.dx(rows[1])).to.equal(expectedDx, 'calc dx from height value');
+
+            expect(m.w(rows[2])).to.equal(fontSize, 'swap width and height according to angle');
+            expect(m.h(rows[2])).to.equal(2, 'swap width and height according to angle');
+            expect(m.dx(rows[2])).to.equal(expectedDx, 'calc dx from height value');
+        });
+
+        it('should support [cut-label-vertical] with [rotate-on-size-overflow] rule', function () {
+
+            var gogModel = {
+                xi: (row) => 0,
+                yi: (row) => 0,
+                y0: (row) => 10,
+                size: (row) => 5,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            var rows = [
+                {text: '123'},
+                {text: '1234567890'},
+                {text: '1'}
+            ];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((str) => {
+                        return {width: str.length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['rotate-on-size-overflow', 'cut-label-vertical'], seedModel, {data:rows});
+            expect(m.angle(rows[0])).to.equal(-90, 'angle is adjusted');
+            expect(m.angle(rows[1])).to.equal(-90, 'angle is adjusted');
+            expect(m.angle(rows[2])).to.equal(-90, 'angle is adjusted');
+
+            var expectedDx = fontSize * 0.5 - 2;
+
+            expect(m.w(rows[0])).to.equal(fontSize, 'swap width and height according to angle');
+            expect(m.h(rows[0])).to.equal(6, 'swap width and height according to angle');
+            expect(m.dx(rows[0])).to.equal(expectedDx, 'calc dx from height value');
+            expect(m.label(rows[0])).to.equal('123', 'original length');
+
+            expect(m.w(rows[1])).to.equal(fontSize, 'swap width and height according to angle');
+            expect(m.h(rows[1])).to.equal(10, 'swap width and height according to angle');
+            expect(m.dx(rows[1])).to.equal(expectedDx, 'calc dx from height value');
+            expect(m.label(rows[1])).to.equal('1234\u2026', 'cut rotated label');
+
+            expect(m.w(rows[2])).to.equal(fontSize, 'swap width and height according to angle');
+            expect(m.h(rows[2])).to.equal(2, 'swap width and height according to angle');
+            expect(m.dx(rows[2])).to.equal(expectedDx, 'calc dx from height value');
+            expect(m.label(rows[2])).to.equal('1', 'original label');
         });
     });
 });
