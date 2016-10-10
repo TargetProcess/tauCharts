@@ -204,7 +204,7 @@ define(function (require) {
             expect(m.dy(row)).to.equal(90 - 100 - fontSize / 2, 'should move top to fit box / dy');
         });
 
-        it('should support [keep-inside-or-hide-vertical] rule (by width)', function () {
+        it('should support [cut-label-vertical] rule (by width)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -229,19 +229,18 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-vertical'], seedModel);
+            var m = createModel(['cut-label-vertical'], seedModel);
             var row4 = {text: 'ABCD'};
             expect(m.w(row4)).to.equal(8, 'text width');
             expect(m.model.size(row4)).to.equal(10, 'element width');
-            expect(m.hide(row4)).to.equal(false, 'show');
 
             var row10 = {text: 'ABCDEFGHJK'};
-            expect(m.w(row10)).to.equal(20, 'text width');
+            expect(m.label(row10)).to.equal('ABCD\u2026', 'label text is cut');
+            expect(m.w(row10)).to.equal(10, 'text width is cut from 20');
             expect(m.model.size(row10)).to.equal(10, 'element width');
-            expect(m.hide(row10)).to.equal(true, 'hide');
         });
 
-        it('should support [keep-inside-or-hide-vertical] rule (by height)', function () {
+        it('should support [cut-label-vertical] rule (by height)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -266,14 +265,13 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-vertical'], seedModel);
+            var m = createModel(['cut-label-vertical'], seedModel);
             var row4 = {text: 'A'};
             expect(m.w(row4)).to.equal(2, 'text width');
             expect(m.model.size(row4)).to.equal(10, 'element width');
-            expect(m.hide(row4)).to.equal(true, 'hide since not fit an element height');
         });
 
-        it('should support [keep-inside-or-hide-horizontal] rule (by height)', function () {
+        it('should support [cut-label-horizontal] rule (by height)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -298,14 +296,13 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-horizontal'], seedModel);
+            var m = createModel(['cut-label-horizontal'], seedModel);
             var row4 = {text: 'A'};
             expect(m.h(row4)).to.equal(fontSize, 'text width');
             expect(m.model.size(row4)).to.equal(4, 'element width');
-            expect(m.hide(row4)).to.equal(true, 'hide since not fit an element height');
         });
 
-        it('should support [keep-inside-or-hide-horizontal] rule (by width)', function () {
+        it('should support [cut-label-horizontal] rule (by width)', function () {
 
             var gogModel = {
                 xi: (row) => 100,
@@ -330,15 +327,14 @@ define(function (require) {
                     })
                 });
 
-            var m = createModel(['keep-inside-or-hide-horizontal'], seedModel);
+            var m = createModel(['cut-label-horizontal'], seedModel);
             var row1 = {text: 'A'};
             expect(m.h(row1)).to.equal(fontSize, 'text width');
             expect(m.model.size(row1)).to.equal(10, 'element width');
-            expect(m.hide(row1)).to.equal(false, 'hide since not fit an element height');
 
             var row10 = {text: 'ABCDEFGHJK'};
-            expect(m.w(row10)).to.equal(20, 'text width');
-            expect(m.hide(row10)).to.equal(true, 'hide');
+            expect(m.label(row10)).to.equal('A\u2026', 'label text');
+            expect(m.w(row10)).to.equal(m.model.y0(row10) - m.model.yi(row10), 'cut text width by available space (from 20 original)');
         });
     });
 });

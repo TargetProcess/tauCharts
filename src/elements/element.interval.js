@@ -36,20 +36,22 @@ export class Interval extends Element {
             (this.config.guide.label || {}),
             {
                 position: (this.config.flip ?
-                    ['r-', 'l+', 'keep-inside-or-hide-horizontal'] :
+                    ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] :
                     (enableStack ?
                         [
                             'rotate-on-size-overflow',
                             't-',
                             'b+',
-                            'keep-inside-or-hide-vertical',
+                            'hide-by-label-height-vertical',
+                            'cut-label-vertical',
                             'auto:hide-on-label-label-overlap'
                         ] :
                         [
                             'rotate-on-size-overflow',
                             't+',
                             'b-',
-                            'keep-inside-or-hide-vertical',
+                            'hide-by-label-height-vertical',
+                            'cut-label-vertical',
                             'auto:hide-on-label-label-overlap'
                         ]
                     )
