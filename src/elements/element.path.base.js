@@ -4,6 +4,7 @@ import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {default as d3} from 'd3';
 
 export class BasePath extends Element {
@@ -20,8 +21,7 @@ export class BasePath extends Element {
                 animationSpeed: 0,
                 cssClass: '',
                 widthCssClass: '',
-                showAnchors: true,
-                anchorSize: 0.1,
+                showAnchors: false,
                 color: {},
                 label: {}
             }
@@ -55,13 +55,11 @@ export class BasePath extends Element {
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
-        if (this.config.guide.showAnchors) {
-            var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-            var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
-            this.on('mouseover', activate);
-            this.on('mousemove', activate);
-            this.on('mouseout', deactivate);
-        }
+        var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
+        var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
+        this.on('mouseover', activate);
+        this.on('mousemove', activate);
+        this.on('mouseout', deactivate);
     }
 
     createScales(fnCreateScale) {
@@ -223,27 +221,38 @@ export class BasePath extends Element {
                     {x: m[0], y: m[1]});
             });
 
-            if (guide.showAnchors) {
-
+            var drawDots = (selection, filter, animate) => {
                 let attr = {
-                    r: () => guide.anchorSize,
+                    r: (d) => (self.screenModel.size(d) / 2),
                     cx: (d) => model.x(d),
                     cy: (d) => model.y(d),
-                    opacity: 0,
-                    class: 'i-data-anchor'
+                    opacity: 1,
+                    fill: (d) => self.screenModel.color(d),
+                    class: (d) => utilsDom.classes('i-data-anchor', self.screenModel.class(d))
                 };
 
-                let dots = this
+                let dots = selection
                     .selectAll('.i-data-anchor')
-                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord));
+                    .data(filter, self.screenModel.id);
                 dots.exit()
                     .remove();
                 dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
                 dots.enter()
                     .append('circle')
-                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
+                    .call(animate ?
+                        createUpdateFunc(guide.animationSpeed, {r: 0}, attr) :
+                        function () { this.attr(attr); }
+                    );
 
                 self.subscribe(dots);
+            };
+
+            if (guide.showAnchors) {
+                drawDots(this, (fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), true);
+            } else {
+                self._dataPointsHighlighter = function (selection, filter) {
+                    selection.call(drawDots, (fiber) => fiber.filter(filter), false);
+                };
             }
         };
 
@@ -300,15 +309,20 @@ export class BasePath extends Element {
 
     highlightDataPoints(filter) {
         const cssClass = 'i-data-anchor';
-        this.config
-            .options
-            .container
-            .selectAll(`.${cssClass}`)
-            .attr({
-                r: (d) => (filter(d) ? (this.screenModel.size(d) / 2) : this.config.guide.anchorSize),
-                opacity: (d) => (filter(d) ? 1 : 0),
-                fill: (d) => this.screenModel.color(d),
-                class: (d) => (`${cssClass} ${this.screenModel.class(d)}`)
-            });
+        if (this.config.guide.showAnchors) {
+            this.config
+                .options
+                .container
+                .selectAll(`.${cssClass}`)
+                .attr({
+                    r: (d) => this.screenModel.size(d) / 2 + Number(filter(d))
+                });
+        } else {
+            this.config
+                .options
+                .container
+                .selectAll('.frame')
+                .call(this._dataPointsHighlighter, filter);
+        }
     }
 }
