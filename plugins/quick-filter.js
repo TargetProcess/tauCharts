@@ -12,6 +12,7 @@
 })(function (tauCharts) {
 
     var utils = tauCharts.api.utils;
+    var REFRESH_DELAY = 0;
 
     function QuickFilter(xSettings) {
 
@@ -238,7 +239,7 @@
                     }
                 });
 
-                if (QuickFilter.refreshDelay < 0) {
+                if (REFRESH_DELAY < 0) {
                     this._chart.refresh();
                 } else {
                     if (this._refreshRequestId) {
@@ -247,12 +248,11 @@
                     this._refreshRequestId = setTimeout(function () {
                         this._refreshRequestId = null;
                         this._chart.refresh();
-                    }.bind(this), QuickFilter.refreshDelay);
+                    }.bind(this), REFRESH_DELAY);
                 }
             }
         };
     }
-    QuickFilter.refreshDelay = 50;
 
     tauCharts.api.plugins.add('quick-filter', QuickFilter);
 
