@@ -12,6 +12,7 @@
 })(function (tauCharts) {
 
     var utils = tauCharts.api.utils;
+    var REFRESH_DELAY = 0;
 
     function QuickFilter(xSettings) {
 
@@ -109,7 +110,6 @@
                     .extent(filter)
                     .on('brushstart', function () {
                         self._layout.style['overflow-y'] = 'hidden';
-                        brushing();
                     })
                     .on('brush', brushing)
                     .on('brushend', function () {
@@ -239,7 +239,17 @@
                     }
                 });
 
-                this._chart.refresh();
+                if (REFRESH_DELAY < 0) {
+                    this._chart.refresh();
+                } else {
+                    if (this._refreshRequestId) {
+                        clearTimeout(this._refreshRequestId);
+                    }
+                    this._refreshRequestId = setTimeout(function () {
+                        this._refreshRequestId = null;
+                        this._chart.refresh();
+                    }.bind(this), REFRESH_DELAY);
+                }
             }
         };
     }
