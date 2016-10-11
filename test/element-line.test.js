@@ -406,7 +406,6 @@ define(function (require) {
                 var points = svg.querySelectorAll('.i-data-anchor');
                 expect(points.length).to.equals(3);
 
-                debugger;
                 testUtils.simulateEvent('mouseover', points[1]);
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[0].getAttribute('r')));
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[2].getAttribute('r')));
