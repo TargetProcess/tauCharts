@@ -324,10 +324,7 @@ export class BasePath extends Element {
                 ),
                 opacity: (hideAnchors ? ((d) => filter(d) ? 1 : 0) : 1),
                 fill: (d) => this.screenModel.color(d),
-                class: (d) => {
-                    console.log(this.screenModel.class(d),utilsDom.classes(cssClass, this.screenModel.class(d)))
-                    return utilsDom.classes(cssClass, this.screenModel.class(d));
-                }
+                class: (d) => utilsDom.classes(cssClass, this.screenModel.class(d))
             });
     }
 }
