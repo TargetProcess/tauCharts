@@ -21,7 +21,8 @@ export class BasePath extends Element {
                 animationSpeed: 0,
                 cssClass: '',
                 widthCssClass: '',
-                showAnchors: false,
+                showAnchors: true,
+                hideAnchorsUntilHighlight: true,
                 color: {},
                 label: {}
             }
@@ -55,11 +56,13 @@ export class BasePath extends Element {
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
-        var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-        var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
-        this.on('mouseover', activate);
-        this.on('mousemove', activate);
-        this.on('mouseout', deactivate);
+        if (this.config.guide.showAnchors) {
+            var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
+            var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
+            this.on('mouseover', activate);
+            this.on('mousemove', activate);
+            this.on('mouseout', deactivate);
+        }
     }
 
     createScales(fnCreateScale) {
@@ -221,38 +224,31 @@ export class BasePath extends Element {
                     {x: m[0], y: m[1]});
             });
 
-            var drawDots = (selection, filter, animate) => {
+            if (guide.showAnchors) {
+                let anchorClass = 'i-data-anchor';
+
                 let attr = {
-                    r: (d) => (self.screenModel.size(d) / 2),
+                    r: (guide.hideAnchorsUntilHighlight ? 0 :
+                        ((d) => self.screenModel.size(d) / 2)
+                    ),
                     cx: (d) => model.x(d),
                     cy: (d) => model.y(d),
-                    opacity: 1,
+                    opacity: (guide.hideAnchorsUntilHighlight ? 0 : 1),
                     fill: (d) => self.screenModel.color(d),
-                    class: (d) => utilsDom.classes('i-data-anchor', self.screenModel.class(d))
+                    class: anchorClass
                 };
 
-                let dots = selection
-                    .selectAll('.i-data-anchor')
-                    .data(filter, self.screenModel.id);
+                let dots = this
+                    .selectAll(`.${anchorClass}`)
+                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), self.screenModel.id);
                 dots.exit()
                     .remove();
                 dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
                 dots.enter()
                     .append('circle')
-                    .call(animate ?
-                        createUpdateFunc(guide.animationSpeed, {r: 0}, attr) :
-                        function () { this.attr(attr); }
-                    );
+                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
 
                 self.subscribe(dots);
-            };
-
-            if (guide.showAnchors) {
-                drawDots(this, (fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), true);
-            } else {
-                self._dataPointsHighlighter = function (selection, filter) {
-                    selection.call(drawDots, (fiber) => fiber.filter(filter), false);
-                };
             }
         };
 
@@ -309,20 +305,29 @@ export class BasePath extends Element {
 
     highlightDataPoints(filter) {
         const cssClass = 'i-data-anchor';
-        if (this.config.guide.showAnchors) {
-            this.config
-                .options
-                .container
-                .selectAll(`.${cssClass}`)
-                .attr({
-                    r: (d) => this.screenModel.size(d) / 2 + Number(filter(d))
-                });
-        } else {
-            this.config
-                .options
-                .container
-                .selectAll('.frame')
-                .call(this._dataPointsHighlighter, filter);
-        }
+        var hideAnchors = this.config.guide.hideAnchorsUntilHighlight;
+        this.config
+            .options
+            .container
+            .selectAll(`.${cssClass}`)
+            .attr({
+                r: (hideAnchors ?
+                    ((d) => filter(d) ? (this.screenModel.size(d) / 2) : 0) :
+                    ((d) => {
+                        // NOTE: Highlight point with larger radius.
+                        let r = this.screenModel.size(d) / 2;
+                        if (filter(d)) {
+                            return (r + Math.max(1, r * 0.25));
+                        }
+                        return r;
+                    })
+                ),
+                opacity: (hideAnchors ? ((d) => filter(d) ? 1 : 0) : 1),
+                fill: (d) => this.screenModel.color(d),
+                class: (d) => {
+                    console.log(this.screenModel.class(d),utilsDom.classes(cssClass, this.screenModel.class(d)))
+                    return utilsDom.classes(cssClass, this.screenModel.class(d));
+                }
+            });
     }
 }

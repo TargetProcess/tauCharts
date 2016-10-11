@@ -159,8 +159,7 @@ define(function (require) {
                             A: 'A',
                             B: 'B'
                         }
-                    },
-                    showAnchors: true
+                    }
                 },
                 settings: {
                     specEngine: 'none',
@@ -228,8 +227,7 @@ define(function (require) {
                             A: 'A',
                             B: 'B'
                         }
-                    },
-                    showAnchors: true
+                    }
                 },
                 settings: {
                     specEngine: 'none',

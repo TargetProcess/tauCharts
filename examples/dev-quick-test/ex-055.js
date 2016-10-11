@@ -70,7 +70,7 @@
             },
 
             createXIndex: function (data, screenModel) {
-                return utils.uniq(data.map(x => x[screenModel.model.scaleX.dim]), String)
+                return utils.unique(data.map(x => x[screenModel.model.scaleX.dim]), String)
                     .sort(function(x1, x2) {
                         return x1 - x2;
                     })

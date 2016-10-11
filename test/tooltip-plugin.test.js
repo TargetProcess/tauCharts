@@ -46,9 +46,6 @@ chartType.forEach(function (item) {
             x: 'x',
             y: 'y',
             color: 'color',
-            guide: {
-                showAnchors: true
-            },
             plugins: [
                 tooltip({
                     afterInit: el => tooltipEl = el
@@ -166,9 +163,6 @@ describeChart(
         type: 'line',
         x: 'x',
         y: 'y',
-        guide: {
-            showAnchors: true
-        },
         plugins: [tooltip()]
     },
     [
@@ -211,9 +205,6 @@ chartType.forEach(function (item) {
             x: 'x',
             y: 'y',
             color: 'color',
-            guide: {
-                showAnchors: true
-            },
             plugins: [tooltip({
                 getFields: function (chart) {
                     expect(chart).to.be.ok;
@@ -421,9 +412,6 @@ describeChart(
         type: 'area',
         x: 'x',
         y: 'y',
-        guide: {
-            showAnchors: true
-        },
         plugins: [tooltip()]
     },
     [
