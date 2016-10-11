@@ -315,9 +315,9 @@ export class BasePath extends Element {
                     ((d) => filter(d) ? (this.screenModel.size(d) / 2) : 0) :
                     ((d) => {
                         // NOTE: Highlight point with larger radius.
-                        let r = this.screenModel.size(d) / 2;
+                        var r = this.screenModel.size(d) / 2;
                         if (filter(d)) {
-                            return (r + Math.max(1, r * 0.25));
+                            return Math.ceil(r * 1.25);
                         }
                         return r;
                     })
