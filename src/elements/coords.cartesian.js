@@ -263,6 +263,7 @@ export class Cartesian extends Element {
                     (prevAxisTranslate ? transAxis : axis).attr('transform', utilsDraw.translate(...position));
                 }
                 transAxis.call(axisScale);
+                transAxis.attr('opacity', 1);
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
@@ -312,7 +313,7 @@ export class Cartesian extends Element {
     _removeDimAxis(container, scale) {
         var axis = selectAllImmediate(container, this._getAxisSelector(scale))
             .classed('tau-active', false);
-        transition(axis, this.config.guide.animationSpeed)
+        transition(axis, this.config.guide.animationSpeed, 'axisTransition')
             .attr('opacity', 1e-6)
             .remove();
     }
