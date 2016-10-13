@@ -195,7 +195,7 @@ export class BasePath extends Element {
 
             var series = this
                 .selectAll(model.pathElement)
-                .data((fiber) => (fiber.length > 1) ? [fiber] : [], ((fib) => fib.map(self.screenModel.id).join('-')));
+                .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
                 .exit()
                 .remove();
@@ -251,10 +251,32 @@ export class BasePath extends Element {
             CartesianGrammar.toStackedFibers(fullData, pathModel) :
             CartesianGrammar.toFibers(fullData, pathModel);
 
+        // NOTE: If any point from new dataset is equal to a point from old dataset,
+        // we assume that path remains the same.
+        // TODO: Id of data array should remain the same (then use `fib => self.screenModel.id(fib)`).
+        var currentDataSets = (function () {
+            var selection = options.container.selectAll('.frame');
+            return selection.empty() ? [] : selection.data();
+        })();
+        var currentIds = currentDataSets.map(ds => ds.map(self.screenModel.id));
+        var notFoundDatasets = 0;
+        var getDataSetId = fib => {
+            var fibIds = fib.map(f => self.screenModel.id(f));
+            var currentIndex = currentIds.findIndex(
+                ds => fibIds.some(
+                    f => f >= ds[0] && f <= ds[ds.length - 1] && ds.some(
+                        d => d === f)));
+            if (currentIndex < 0) {
+                ++notFoundDatasets;
+                return -notFoundDatasets;
+            }
+            return currentIndex;
+        };
+
         var frameGroups = options
             .container
             .selectAll('.frame')
-            .data(fibers);
+            .data(fibers, getDataSetId);
         frameGroups
             .exit()
             .remove();
@@ -264,6 +286,8 @@ export class BasePath extends Element {
             .enter()
             .append('g')
             .call(updateGroupContainer);
+
+        frameGroups.order();
 
         var dataFibers = CartesianGrammar.toFibers(fullData, pathModel);
         self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(dataFibers));

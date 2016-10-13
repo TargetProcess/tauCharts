@@ -189,13 +189,13 @@ define(function (require) {
         it('should support [fit-height] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-height'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 184, 800);
+            checkSizes(chart1, 187, 800);
         });
 
         it('should support [minimal] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('minimal'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 184, 253);
+            checkSizes(chart1, 187, 256);
         });
 
         afterEach(function () {
