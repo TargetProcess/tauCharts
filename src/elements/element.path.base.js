@@ -21,8 +21,7 @@ export class BasePath extends Element {
                 animationSpeed: 0,
                 cssClass: '',
                 widthCssClass: '',
-                showAnchors: true,
-                hideAnchorsUntilHighlight: true,
+                showAnchors: 'hover',
                 color: {},
                 label: {}
             }
@@ -228,12 +227,12 @@ export class BasePath extends Element {
                 let anchorClass = 'i-data-anchor';
 
                 let attr = {
-                    r: (guide.hideAnchorsUntilHighlight ? 0 :
+                    r: (guide.showAnchors === 'hover' ? 0 :
                         ((d) => self.screenModel.size(d) / 2)
                     ),
                     cx: (d) => model.x(d),
                     cy: (d) => model.y(d),
-                    opacity: (guide.hideAnchorsUntilHighlight ? 0 : 1),
+                    opacity: (guide.showAnchors === 'hover' ? 0 : 1),
                     fill: (d) => self.screenModel.color(d),
                     class: anchorClass
                 };
@@ -305,13 +304,13 @@ export class BasePath extends Element {
 
     highlightDataPoints(filter) {
         const cssClass = 'i-data-anchor';
-        var hideAnchors = this.config.guide.hideAnchorsUntilHighlight;
+        var showOnHover = this.config.guide.showAnchors === 'hover';
         this.config
             .options
             .container
             .selectAll(`.${cssClass}`)
             .attr({
-                r: (hideAnchors ?
+                r: (showOnHover ?
                     ((d) => filter(d) ? (this.screenModel.size(d) / 2) : 0) :
                     ((d) => {
                         // NOTE: Highlight point with larger radius.
@@ -322,7 +321,7 @@ export class BasePath extends Element {
                         return r;
                     })
                 ),
-                opacity: (hideAnchors ? ((d) => filter(d) ? 1 : 0) : 1),
+                opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
                 fill: (d) => this.screenModel.color(d),
                 class: (d) => utilsDom.classes(cssClass, this.screenModel.class(d))
             });
