@@ -374,4 +374,47 @@ define(function (require) {
             autoWidth: false
         }
     );
+
+    describeChart('Always show path points',
+        {
+            type: 'line',
+            x: 'y',
+            y: 'x',
+            guide: {
+                showAnchors: true
+            }
+        },
+        [
+            {
+                x: 1,
+                y: 1
+
+            },
+            {
+                x: 2,
+                y: 2
+            },
+            {
+                x: 3,
+                y: 3
+            }
+        ],
+        function (context) {
+
+            it('should set larger radius to highlighted points', function () {
+                var svg = context.chart.getSVG();
+                var points = svg.querySelectorAll('.i-data-anchor');
+                expect(points.length).to.equals(3);
+
+                testUtils.simulateEvent('mouseover', points[1]);
+                expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[0].getAttribute('r')));
+                expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[2].getAttribute('r')));
+                testUtils.simulateEvent('mouseout', points[1]);
+                expect(Number(points[1].getAttribute('r'))).to.be.equal(Number(points[0].getAttribute('r')));
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });

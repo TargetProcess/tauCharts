@@ -4,6 +4,7 @@ import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {default as d3} from 'd3';
 
 export class BasePath extends Element {
@@ -20,8 +21,7 @@ export class BasePath extends Element {
                 animationSpeed: 0,
                 cssClass: '',
                 widthCssClass: '',
-                showAnchors: true,
-                anchorSize: 0.1,
+                showAnchors: 'hover',
                 color: {},
                 label: {}
             }
@@ -224,18 +224,22 @@ export class BasePath extends Element {
             });
 
             if (guide.showAnchors) {
+                let anchorClass = 'i-data-anchor';
 
                 let attr = {
-                    r: () => guide.anchorSize,
+                    r: (guide.showAnchors === 'hover' ? 0 :
+                        ((d) => self.screenModel.size(d) / 2)
+                    ),
                     cx: (d) => model.x(d),
                     cy: (d) => model.y(d),
-                    opacity: 0,
-                    class: 'i-data-anchor'
+                    opacity: (guide.showAnchors === 'hover' ? 0 : 1),
+                    fill: (d) => self.screenModel.color(d),
+                    class: anchorClass
                 };
 
                 let dots = this
-                    .selectAll('.i-data-anchor')
-                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord));
+                    .selectAll(`.${anchorClass}`)
+                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), self.screenModel.id);
                 dots.exit()
                     .remove();
                 dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
@@ -300,15 +304,26 @@ export class BasePath extends Element {
 
     highlightDataPoints(filter) {
         const cssClass = 'i-data-anchor';
+        var showOnHover = this.config.guide.showAnchors === 'hover';
         this.config
             .options
             .container
             .selectAll(`.${cssClass}`)
             .attr({
-                r: (d) => (filter(d) ? (this.screenModel.size(d) / 2) : this.config.guide.anchorSize),
-                opacity: (d) => (filter(d) ? 1 : 0),
+                r: (showOnHover ?
+                    ((d) => filter(d) ? (this.screenModel.size(d) / 2) : 0) :
+                    ((d) => {
+                        // NOTE: Highlight point with larger radius.
+                        var r = this.screenModel.size(d) / 2;
+                        if (filter(d)) {
+                            return Math.ceil(r * 1.25);
+                        }
+                        return r;
+                    })
+                ),
+                opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
                 fill: (d) => this.screenModel.color(d),
-                class: (d) => (`${cssClass} ${this.screenModel.class(d)}`)
+                class: (d) => utilsDom.classes(cssClass, this.screenModel.class(d))
             });
     }
 }
