@@ -4,6 +4,7 @@ import {utils} from '../../utils/utils';
 import {LayerLabelsModel} from './layer-labels-model';
 import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';
+import {LayerLabelsPenalties} from './layer-labels-penalties';
 import {FormatterRegistry} from '../../formatter-registry';
 
 var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
@@ -128,6 +129,10 @@ export class LayerLabels {
             this.hideOnLabelLabelOverlap(parallel.text) :
             parallel.text;
 
+        parallel.text = flags['auto:hide-on-label-anchor-overlap'] ?
+            this.hideOnLabelAnchorOverlap(parallel.text) :
+            parallel.text;
+
         var labels = parallel.text;
 
         var get = ((prop) => ((__, i) => labels[i][prop]));
@@ -162,66 +167,8 @@ export class LayerLabels {
 
     autoPosition(parallel, tokens) {
 
-        var penalties = {
-            'auto:avoid-label-label-overlap': (labels, edges, penaltyRate = 1.0) => {
-                return (index) => {
-                    var x21 = labels[index].x;
-                    var y21 = labels[index].y - labels[index].h + 2.0;
-                    var x22 = labels[index].x + labels[index].w;
-                    var y22 = labels[index].y + 2.0;
-
-                    return labels.reduce((sum, labi, i) => {
-                        var k = (i !== index);
-                        var x11 = labi.x;
-                        var y11 = labi.y - labi.h + 2.0;
-                        var x12 = labi.x + labi.w;
-                        var y12 = labi.y + 2.0;
-                        var x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
-                        var y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
-                        var overlap_area = x_overlap * y_overlap;
-                        return sum + (k * (overlap_area * penaltyRate));
-                    }, 0);
-                };
-            },
-            'auto:avoid-label-anchor-overlap': (labels, edges, penaltyRate = 1.0) => {
-                return (index) => {
-                    var lab0 = labels[index];
-                    var x21 = lab0.x - lab0.w / 2;
-                    var x22 = lab0.x + lab0.w / 2;
-                    var y21 = lab0.y - lab0.h / 2 + 2.0;
-                    var y22 = lab0.y + lab0.h / 2 + 2.0;
-                    return labels.reduce((sum, anchor) => {
-                        var x11 = anchor.x0 - anchor.size / 2;
-                        var x12 = anchor.x0 + anchor.size / 2;
-                        var y11 = anchor.y0 - anchor.size / 2;
-                        var y12 = anchor.y0 + anchor.size / 2;
-                        var x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
-                        var y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
-                        var overlap_area = x_overlap * y_overlap;
-                        return sum + (overlap_area * penaltyRate);
-                    }, 0);
-                };
-            },
-            'auto:avoid-label-edges-overlap': (labels, edges, penaltyRate = 1.0) => {
-                return (index) => {
-                    var label = labels[index];
-                    var x0 = label.x - label.w / 2;
-                    var x1 = label.x + label.w / 2;
-                    var y0 = label.y - label.h / 2;
-                    var y1 = label.y + label.h / 2;
-                    return edges.reduce((sum, edge) => {
-                        var overlapLeftTopRightBottom = intersect(x0, x1, edge.x0, edge.x1, y0, y1, edge.y0, edge.y1);
-                        var overlapLeftBottomRightTop = intersect(x0, x1, edge.x0, edge.x1, y1, y0, edge.y0, edge.y1);
-                        return sum + (overlapLeftTopRightBottom + overlapLeftBottomRightTop) * penaltyRate;
-                    }, 0);
-                };
-            }
-        };
-
         var edges = parallel.edges;
-        var textData = parallel.text;
-
-        var labels = textData
+        var labels = parallel.text
             .map((r) => {
                 var a = 2 + (r.size + r.w) / 2;
                 var b = 2 + (r.size + r.h) / 2;
@@ -251,7 +198,7 @@ export class LayerLabels {
 
         var sim = new AnnealingSimulator({
             items: labels,
-            transactor: function (row) {
+            transactor: (row) => {
                 var prevX = row.x;
                 var prevY = row.y;
                 return {
@@ -283,19 +230,19 @@ export class LayerLabels {
                 };
             },
             penalties: tokens
-                .map((token) => penalties[token])
+                .map((token) => LayerLabelsPenalties.get(token))
                 .filter(x => x)
-                .map((penalty) => penalty(textData, edges))
+                .map((penalty) => penalty(labels, edges))
         });
 
-        sim.start(4);
+        const bestRevision = sim.start(5);
 
-        textData = labels.reduce((memo, l) => {
+        parallel.text = bestRevision.reduce((memo, l) => {
             var r = memo[l.i];
             r.x = l.x;
             r.y = l.y;
             return memo;
-        }, textData);
+        }, parallel.text);
 
         return parallel;
     }
@@ -376,6 +323,38 @@ export class LayerLabels {
                         cross(a, b);
                     }
                 });
+            });
+
+        return data;
+    }
+
+    hideOnLabelAnchorOverlap(data) {
+
+        const getRect = (a) => {
+            var border = 0;
+            return {
+                x0: a.x - a.w / 2 - border,
+                x1: a.x + a.w / 2 + border,
+                y0: a.y - a.h / 2 - border,
+                y1: a.y + a.h / 2 + border
+            };
+        };
+
+        var isIntersects = ((label, point) => {
+            const rect = getRect(label);
+            return ((point.x >= rect.x0) && (point.x <= rect.x1) && (point.y >= rect.y0) && (point.y <= rect.y1));
+        });
+
+        data.filter((row) => !row.hide)
+            .forEach((label) => {
+                const dataLength = data.length;
+                for (let i = 0; i < dataLength; i++) {
+                    const point = data[i];
+                    if ((label.i !== point.i) && isIntersects(label, point)) {
+                        label.hide = true;
+                        break;
+                    }
+                }
             });
 
         return data;

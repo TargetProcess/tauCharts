@@ -1,7 +1,9 @@
 export class AnnealingSimulator {
 
     constructor(config) {
+        this.minError = Number.MAX_VALUE;
         this.items = config.items;
+        this.revision = this.items.map((row) => ({i: row.i, x: row.x, y: row.y}));
         this.penalties = config.penalties;
         this.transactor = config.transactor;
         this.cooling_schedule = config.cooling_schedule || ((ti, t0, n) => (ti - (t0 / n)));
@@ -13,25 +15,41 @@ export class AnnealingSimulator {
 
     move(temperature) {
 
-        var i = Math.floor(Math.random() * this.items.length);
+        const i = Math.floor(Math.random() * this.items.length);
 
-        var trans = this.transactor(this.items[i]);
-        var prevEnergy = this.energy(i);
+        const trans = this.transactor(this.items[i]);
+        const prevEnergy = this.energy(i);
         this.items[i] = trans.modify();
-        var nextEnergy = this.energy(i);
+        const nextEnergy = this.energy(i);
 
-        if (Math.random() >= Math.exp(-(nextEnergy - prevEnergy) / temperature)) {
+        const de = nextEnergy - prevEnergy;
+        const acceptanceProbability = (de < 0) ? 1 : Math.exp(-de / temperature);
+
+        if (Math.random() >= acceptanceProbability) {
             this.items[i] = trans.revert();
+        } else if (nextEnergy < this.minError) {
+            this.minError = nextEnergy;
+            this.revision = this.items.map((row) => ({i: row.i, x: row.x, y: row.y}));
         }
     }
 
     start(nIterations) {
         // main simulated annealing function
         var ti = 1.0;
-        var t0 = 1.0;
-        for (var i = 0; i < nIterations; i++) {
-            this.items.forEach(() => this.move(ti));
-            ti = this.cooling_schedule(ti, t0, nIterations);
+        const t0 = 1.0;
+        const itemsLength = this.items.length;
+        mining: {
+            for (let i = 0; i < nIterations; i++) {
+                for (let m = 0; m < itemsLength; m++) {
+                    this.move(ti);
+                    if (this.minError <= 10) {
+                        break mining;
+                    }
+                }
+                ti = this.cooling_schedule(ti, t0, nIterations);
+            }
         }
+
+        return this.revision;
     }
 }

@@ -36,8 +36,8 @@ export class Point extends Element {
                     'auto:avoid-label-label-overlap',
                     'auto:avoid-label-anchor-overlap',
                     'auto:hide-on-label-label-overlap',
+                    'auto:hide-on-label-anchor-overlap',
                     'keep-in-box'
-                    // 'auto:hide-on-label-edges-overlap'
                 ]
             });
 
