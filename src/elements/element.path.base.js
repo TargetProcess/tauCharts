@@ -2,7 +2,7 @@ import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
-import {d3_animationInterceptor} from '../utils/d3-decorators';
+import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
@@ -193,6 +193,15 @@ export class BasePath extends Element {
 
             self.subscribe(points, (d) => d);
 
+            var updatePath = (selection) => {
+                if (self.config.guide.animationSpeed > 0) {
+                    transition(selection, self.config.guide.animationSpeed, 'pathTransition')
+                        .attrTween(model.pathTween.attr, model.pathTween.fn);
+                } else {
+                    selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(1));
+                }
+            };
+
             var series = this
                 .selectAll(model.pathElement)
                 .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
@@ -205,7 +214,8 @@ export class BasePath extends Element {
                     model.pathAttributesUpdateInit,
                     model.pathAttributesUpdateDone,
                     model.afterPathUpdate
-                ));
+                ))
+                .call(updatePath);
             series
                 .enter()
                 .append(model.pathElement)
@@ -214,7 +224,8 @@ export class BasePath extends Element {
                     model.pathAttributesEnterInit,
                     model.pathAttributesEnterDone,
                     model.afterPathUpdate
-                ));
+                ))
+                .call(updatePath);
 
             self.subscribe(series, function (rows) {
                 var m = d3.mouse(this);

@@ -36,6 +36,8 @@ export class Line extends BasePath {
 
     buildModel(screenModel) {
 
+        var self = this;
+
         var wMax = this.config.options.width;
         var hMax = this.config.options.height;
 
@@ -192,7 +194,7 @@ export class Line extends BasePath {
             });
 
         var pathAttributesDefault = this.isEmptySize ?
-            ({
+            {
                 d: function (fiber) {
                     prevNext(this, fiber);
                     return d3Line(fiber);
@@ -205,14 +207,14 @@ export class Line extends BasePath {
                     var {prev, next} = prevNext(this, fiber);
                     return next - prev;
                 }
-            }) :
-            ({
+            } :
+            {
                 points: d3LineVarySize(baseModel.x, baseModel.y, () => 0)
-            });
+            };
 
         var pathAttributes = this.isEmptySize ?
             ({
-                d: d3Line,
+                // d: d3Line,
                 stroke: (fiber) => baseModel.color(fiber[0]),
                 class: 'i-role-datum',
                 'stroke-dashoffset': 0
@@ -229,6 +231,110 @@ export class Line extends BasePath {
 
         baseModel.pathAttributesEnterInit = pathAttributesDefault;
         baseModel.pathAttributesEnterDone = pathAttributes;
+
+        var tweenStore = '__pathTween__';
+        baseModel.pathTween = {
+            attr: 'd',
+            fn: function (dataTo) {
+                if (!this[tweenStore]) {
+                    this[tweenStore] = {
+                        line: d3Line,
+                        data: []
+                    };
+                }
+                var dataFrom = this[tweenStore].data;
+                var intermediateFrom;
+                var intermediateTo
+                return function (t) {
+                    if (t === 0) {
+                        return this[tweenStore].line(dataFrom);
+                    }
+                    if (t === 1) {
+                        return d3Line(dataTo);
+                    }
+                    if (!intermediateFrom && !intermediateTo) {
+                        let xSorter = (a, b) => baseModel.x(a) - baseModel.x(b);
+                        // NOTE: Suppose data is already sorted by X.
+                        let mapFrom = dataFrom.reduce((memo, d) => (memo[self.screenModel.id(d)] = d, memo), {});
+                        let mapTo = dataTo.reduce((memo, d) => (memo[self.screenModel.id(d)] = d, memo), {});
+                        let idsFrom = Object.keys(mapFrom);
+                        let idsTo = Object.keys(mapTo);
+                        let addedIds = idsTo.filter(d => idsFrom.indexOf(d) < 0);
+                        let deletedIds = idsFrom.filter(d => idsTo.indexOf(idsTo) < 0);
+                        let remainingIds = (idsFrom.length < idsTo.length ? idsFrom : idsTo)
+                            .filter(d => addedIds.indexOf(d) < 0 && deletedIds.indexOf(d) < 0);
+
+                        // Create intermediate points array, so that the number of points
+                        // remains the same and added or excluded points are situated between
+                        // existing points.
+                        intermediateFrom = [];
+                        intermediateTo = [];
+                        let remainingFromIndices = remainingIds.map(id => idsFrom.indexOf(id));
+                        let remainingToIndices = remainingIds.map(id => idsTo.indexOf(id));
+                        let push = (target, items) => Array.prototype.push.apply(target, items);
+                        if (remainingIds.length === 0) {
+                            if (addedIds.length === 0) {
+                                intermediateFrom = dataFrom.slice(0);
+                            } else {
+                                intermediateTo = dataTo.slice(0);
+                            }
+                        }
+                        remainingIds.forEach((id, i) => {
+                            var indexFrom = idsFrom.indexOf(id);
+                            var indexTo = idsTo.indexOf(id);
+                            if (i === 0) {
+                                let oldCount = indexFrom;
+                                let newCount = indexTo;
+                                if (newCount > oldCount) {
+                                    // Create missing points (from) same as start point
+                                    utils.range(newCount - oldCount).forEach(() => {
+                                        intermediateFrom.push(Object.assign(dataFrom[0]));
+                                    });
+                                } else if (newCount < oldCount) {
+                                    // Create missing points (to) same as start point
+                                    utils.range(oldCount - newCount).forEach(() => {
+                                        intermediateTo.push(Object.assign(dataTo[0]));
+                                    });
+                                }
+                                push(intermediateFrom, dataFrom.slice(0, indexFrom + 1));
+                                push(intermediateTo, dataTo.slice(0, indexTo + 1));
+                            } else if (i === remainingIds.length - 1) {
+                                push(intermediateFrom, dataFrom.slice(indexFrom));
+                                push(intermediateTo, dataTo.slice(indexTo));
+                                let oldCount = dataFrom.length - indexFrom - 1;
+                                let newCount = dataTo.length - indexTo - 1;
+                                if (newCount > oldCount) {
+                                    // Create missing points (from) same as end point
+                                    utils.range(newCount - oldCount).forEach(() => {
+                                        intermediateFrom.push(Object.assign(dataFrom[dataFrom.length - 1]));
+                                    });
+                                } else if (newCount < oldCount) {
+                                    // Create missing points (to) same as end point
+                                    utils.range(oldCount - newCount).forEach(() => {
+                                        intermediateTo.push(Object.assign(dataTo[dataTo.length - 1]));
+                                    });
+                                }
+                            } else {
+                                // TEMP: simply push missing copies without X interpolation
+                                let oldCount = indexFrom - idsFrom.indexOf(remainingIds[i - 1]) - 1;
+                                let newCount = indexTo - idsTo.indexOf(remainingIds[i - 1]) - 1;
+                                if (newCount > oldCount) {
+                                    // TODO:
+                                } else if (newCount < oldCount) {
+                                    // TODO:
+                                }
+                                intermediateFrom.push(dataFrom[indexFrom]);
+                                intermediateTo.push(dataTo[id]);
+                            }
+                        });
+                    }
+                    this[tweenStore].data = intermediateFrom;
+                    // var path = d3.interpolate(this[tweenStore].line(intermediate), d3Line(intermediate))(t);
+                    var path = d3.interpolate(this[tweenStore].line(intermediateFrom), d3Line(intermediateTo))(t);
+                    return path;
+                }.bind(this);
+            }
+        };
 
         baseModel.afterPathUpdate = (thisNode) => {
             d3.select(thisNode).attr({
