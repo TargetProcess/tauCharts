@@ -145,7 +145,7 @@ var utilsDom = {
             h = Math.max(h, s.height);
         }
 
-        return {width: w, height: h};
+        return {width: w, height: parseInt(xFontSize)};
     },
 
     getCharSize: utils.memoize(
