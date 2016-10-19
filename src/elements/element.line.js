@@ -233,6 +233,7 @@ export class Line extends BasePath {
         baseModel.pathAttributesEnterDone = pathAttributes;
 
         var tweenStore = '__pathTween__';
+        var tempPointId = '__pathTween_pointId__';
         baseModel.pathTween = {
             attr: 'd',
             fn: function (dataTo) {
@@ -243,21 +244,135 @@ export class Line extends BasePath {
                     };
                 }
                 var dataFrom = this[tweenStore].data;
+                // console.log('tween', dataFrom, dataTo);
                 var intermediate;
                 var changingPoints = [];
+                var push = (target, items) => Array.prototype.push.apply(target, items);
+                var getChangingEnding = function ({t, polyline, decreasing, rightToLeft}) {
+                    // var resultCount = polyline.length - 1;
+                    // var progress = resultCount * t;
+                    // var ti = progress % 1;
+
+                    // TODO: Refactor to single expression.
+                    // var result = [];
+                    // if (decreasing && rightToLeft) {
+                    //     let existingStartIndex = 1;
+                    //     let existingCount = Math.floor(resultCount * (1 - t));
+                    //     let tempCount = resultCount - existingCount;
+                    //     let tempStartIdIndex = existingStartIndex + existingCount;
+                    //     let midPt = d3.interpolate(
+                    //         polyline[existingStartIndex + existingCount],
+                    //         polyline[existingStartIndex + existingCount + 1]
+                    //     )(ti);
+                    //     push(result, polyline.slice(existingStartIndex, existingCount + existingCount));
+                    //     push(result, utils.range(tempCount).map((i) => Object.assign(
+                    //         {}, midPt,
+                    //         {[tempPointId]: ((pt) => pt[tempPointId] || self.screenModel.id(pt))(polyline[tempStartIdIndex + i])}
+                    //     )));
+                    // } else if (decreasing && !rightToLeft) {
+                    //     let existingStartIndex = Math.ceil(resultCount * t) + 1;
+                    //     let existingCount = resultCount - existingStartIndex;
+                    //     let tempCount = resultCount - existingCount;
+                    //     let tempStartIdIndex = 0;
+                    //     let midPt = d3.interpolate(
+                    //         polyline[existingStartIndex],
+                    //         polyline[existingStartIndex - 1]
+                    //     )(ti);
+                    //     push(result, utils.range(tempCount).map((i) => Object.assign(
+                    //         {}, midPt,
+                    //         {[tempPointId]: ((pt) => pt[tempPointId] || self.screenModel.id(pt))(polyline[tempStartIdIndex + i])}
+                    //     )));
+                    //     push(result, polyline.slice(existingStartIndex, existingCount + existingCount));
+                    // } else if (!decreasing && rightToLeft) {
+                    //     let existingStartIndex = Math.floor(resultCount * t);
+                    //     let existingCount = resultCount - existingStartIndex;
+                    //     let tempCount = resultCount - existingCount;
+                    //     let tempStartIdIndex = 0;
+                    //     let midPt = d3.interpolate(
+                    //         polyline[existingStartIndex],
+                    //         polyline[existingStartIndex - 1]
+                    //     )(ti);
+                    //     push(result, utils.range(tempCount).map((i) => Object.assign(
+                    //         {}, midPt,
+                    //         {[tempPointId]: ((pt) => pt[tempPointId] || self.screenModel.id(pt))(polyline[tempStartIdIndex + i])}
+                    //     )));
+                    //     push(result, polyline.slice(existingStartIndex, existingCount + existingCount));
+                    // } else if (!decreasing && !rightToLeft) {
+                    //     let existingStartIndex = 1;
+                    //     let existingCount = Math.floor(resultCount * t);
+                    //     let tempCount = resultCount - existingCount;
+                    //     let tempStartIdIndex = existingStartIndex + existingCount;
+                    //     let midPt = d3.interpolate(
+                    //         polyline[existingStartIndex + existingCount - 1],
+                    //         polyline[existingStartIndex + existingCount]
+                    //     )(ti);
+                    //     push(result, polyline.slice(existingStartIndex, existingStartIndex + existingCount));
+                    //     push(result, utils.range(tempCount).map((i) => Object.assign(
+                    //         {}, midPt,
+                    //         {[tempPointId]: ((pt) => pt[tempPointId] || self.screenModel.id(pt))(polyline[tempStartIdIndex + i])}
+                    //     )));
+                    // }
+
+                    var getLinePiece = (q, line) => {
+                        var existingCount = Math.floor((line.length - 1) * q) + 1;
+                        var tempCount = line.length - existingCount;
+                        var tempStartIdIndex = existingCount;
+                        var qi = (q * (line.length - 1)) % 1;
+                        var midPt = d3.interpolate(
+                            line[existingCount - 1],
+                            line[existingCount]
+                        )(qi);
+                        var result = line.slice(0, existingCount);
+                        push(result, utils.range(tempCount).map((i) => Object.assign(
+                            {}, midPt,
+                            { [tempPointId]: ((pt) => pt[tempPointId] || self.screenModel.id(pt))(line[tempStartIdIndex + i]) }
+                        )));
+                        console.log('piece', result.map(d=>d.x));
+                        return result.slice(1);
+                    };
+
+                    // var result = [];
+                    // if (decreasing && rightToLeft) {
+                    //     result = getLinePiece(1 - t, polyline);
+                    // } else if (decreasing && !rightToLeft) {
+                    //     result = getLinePiece(1 - t, polyline.reverse()).reverse();
+                    // } else if (!decreasing && rightToLeft) {
+                    //     result = getLinePiece(t, polyline.reverse()).reverse();
+                    // } else if (!decreasing && !rightToLeft) {
+                    //     result = getLinePiece(t, polyline);
+                    // }
+
+                    var reverse = Boolean(decreasing) !== Boolean(rightToLeft);
+                    var result = getLinePiece(
+                        (decreasing ? (1 - t) : t),
+                        (reverse ? polyline.reverse() : polyline)
+                    );
+                    if (reverse) {
+                        result.reverse();
+                    }
+
+                    if (result.length !== polyline.length - 1) {
+                        debugger;
+                    }
+                    if (!result.every(d => d)) {
+                        debugger;
+                    }
+                    return result;
+                };
                 return function (t) {
                     if (t === 0) {
                         return this[tweenStore].line(dataFrom);
                     }
                     if (t === 1) {
                         this[tweenStore].data = dataTo;
+                        this[tweenStore].line = d3Line;
                         return d3Line(dataTo);
                     }
                     if (!intermediate) {
                         let xSorter = (a, b) => baseModel.x(a) - baseModel.x(b);
                         // NOTE: Suppose data is already sorted by X.
-                        let mapFrom = dataFrom.reduce((memo, d) => (memo[self.screenModel.id(d)] = d, memo), {});
-                        let mapTo = dataTo.reduce((memo, d) => (memo[self.screenModel.id(d)] = d, memo), {});
+                        let mapFrom = dataFrom.reduce((memo, d) => (memo[d[tempPointId] || self.screenModel.id(d)] = d, memo), {});
+                        let mapTo = dataTo.reduce((memo, d) => (memo[d[tempPointId] || self.screenModel.id(d)] = d, memo), {});
                         let idsFrom = Object.keys(mapFrom);
                         let idsTo = Object.keys(mapTo);
                         let addedIds = idsTo.filter(d => idsFrom.indexOf(d) < 0);
@@ -268,36 +383,10 @@ export class Line extends BasePath {
                         // Create intermediate points array, so that the number of points
                         // remains the same and added or excluded points are situated between
                         // existing points.
+                        console.log('from',idsFrom,'to',idsTo,'added',addedIds,'delete',deletedIds,'remain',remainingIds);
                         intermediate = [];
                         let remainingFromIndices = remainingIds.map(id => idsFrom.indexOf(id));
                         let remainingToIndices = remainingIds.map(id => idsTo.indexOf(id));
-                        let push = (target, items) => Array.prototype.push.apply(target, items);
-                        // if (remainingIds.length === 0) {
-                        //     if (addedIds.length === 0) {
-                        //         intermediateFrom = dataFrom.slice(0);
-                        //     } else {
-                        //         intermediateTo = dataTo.slice(0);
-                        //     }
-                        // }
-                        let getChangingEnding = function (t, polyline, decreasing) {
-                            if (t === 1) {
-                                return polyline.slice(1);
-                            }
-                            var ptCount = polyline.length - 1;
-                            var progress = ptCount * t;
-                            var passedIndex = Math.floor(progress);
-                            var ti = progress % 1;
-                            var midPt = d3.interpolate(polyline[passedIndex], polyline[passedIndex + 1])(ti);
-                            var result;
-                            if (decreasing) {
-                                result = utils.range(passedIndex + 1).map(() => midPt);
-                                push(result, polyline.slice(passedIndex + 1, ptCount));
-                            } else {
-                                result = polyline.slice(1, passedIndex + 1);
-                                push(result, utils.range(ptCount - passedIndex).map(() => midPt));
-                            }
-                            return result;
-                        };
                         remainingIds.forEach((id, i) => {
                             var indexFrom = idsFrom.indexOf(id);
                             var indexTo = idsTo.indexOf(id);
@@ -313,11 +402,11 @@ export class Line extends BasePath {
                                     let decreasing = newCount === 0;
                                     let polyline = decreasing ?
                                         dataFrom.slice(0, indexFrom + 1) :
-                                        dataTo.slice(0, indexTo + 1).reverse();
+                                        dataTo.slice(0, indexTo + 1);
                                     changingPoints.push({
                                         startIndex: 0,
                                         getPoints: function (t) {
-                                            return getChangingEnding(t, polyline, decreasing);
+                                            return getChangingEnding({t, polyline, decreasing, rightToLeft: !decreasing});
                                         }
                                     });
                                     push(intermediate, utils.range(polyline.length - 1).map(() => null));
@@ -330,7 +419,7 @@ export class Line extends BasePath {
                                 //
                                 // Right side changes
 
-                                push(intermediate, dataTo[indexTo]);
+                                intermediate.push(dataTo[indexTo]);
 
                                 let oldCount = dataFrom.length - indexFrom - 1;
                                 let newCount = dataTo.length - indexTo - 1;
@@ -338,12 +427,12 @@ export class Line extends BasePath {
                                 if (newCount > 0 || oldCount > 0) {
                                     let decreasing = newCount === 0;
                                     let polyline = decreasing ?
-                                        dataFrom.slice(indexFrom + 1, indexFrom + 1).reverse() :
-                                        dataTo.slice(indexTo + 1);
+                                        dataFrom.slice(indexFrom) :
+                                        dataTo.slice(indexTo);
                                     changingPoints.push({
                                         startIndex: intermediate.length,
                                         getPoints: function (t) {
-                                            return getChangingEnding(t, polyline, decreasing);
+                                            return getChangingEnding({t, polyline, decreasing, rightToLeft: decreasing});
                                         }
                                     });
                                     push(intermediate, utils.range(polyline.length - 1).map(() => null));
@@ -366,14 +455,49 @@ export class Line extends BasePath {
 
                             }
                         });
+                        if (changingPoints.length === 0) {
+                            if (dataTo.length > 0 && dataFrom.length === 0) {
+                                intermediate.push(dataTo[0]);
+                                push(intermediate, utils.range(dataTo.length - 1).map(() => null));
+                                let polyline = dataTo.slice(0);
+                                changingPoints.push({
+                                    startIndex: 1,
+                                    getPoints: function (t) {
+                                        return getChangingEnding({t, polyline, decreasing: false});
+                                    }
+                                });
+                            } else if (dataFrom.length > 0 && dataTo.length === 0) {
+                                intermediate.push(dataTo[0]);
+                                push(intermediate, utils.range(dataTo.length - 1).map(() => null));
+                                let polyline = dataTo.slice(0);
+                                changingPoints.push({
+                                    startIndex: 1,
+                                    getPoints: function (t) {
+                                        return getChangingEnding({t, polyline, decreasing: true});
+                                    }
+                                });
+                            }
+                        }
                     }
                     changingPoints.forEach((d) => {
                         var points = d.getPoints(t);
                         points.forEach((pt, i) => intermediate[d.startIndex + i] = pt);
                     });
+                    // console.log(intermediate);
+                    // if(intermediate.some(d=>(d[tempPointId]||self.screenModel.id(d))>4)){
+                    //     debugger
+                    // }
                     this[tweenStore].data = intermediate;
+                    for(var i=1;i<intermediate.length;i++){
+                        if(intermediate[i].x<intermediate[i-1].x){
+                            debugger;
+                        }
+                    }
+                    console.log(intermediate.map(d=>d.x));
+                    var prevLine=this[tweenStore].line;
+                    this[tweenStore].line = (data) => d3.interpolate(prevLine(data), d3Line(data))(t);
                     // var path = d3.interpolate(this[tweenStore].line(intermediate), d3Line(intermediate))(t);
-                    var path = d3.interpolate(this[tweenStore].line(intermediate), d3Line(intermediate))(t);
+                    var path = this[tweenStore].line(intermediate);
                     return path;
                 }.bind(this);
             }
