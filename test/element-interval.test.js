@@ -1005,6 +1005,29 @@ define(function (require) {
                 expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
                 expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
             });
+
+            it("should react on mouseover / mouseout events", function () {
+                var svg0 = context.chart.getSVG();
+                expect(svg0.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+                var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
+                intervalNode.fire('mouseover', {data:context.chart.getData()[0]});
+
+                var svg1 = context.chart.getSVG();
+                expect(svg1.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+
+                intervalNode.fire('mouseout', {});
+
+                var svg2 = context.chart.getSVG();
+                expect(svg2.querySelectorAll('.bar').length).to.equals(4);
+                expect(svg2.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+            });
         },
         {
             autoWidth: false
