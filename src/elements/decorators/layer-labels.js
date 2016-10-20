@@ -4,6 +4,7 @@ import {utils} from '../../utils/utils';
 import {LayerLabelsModel} from './layer-labels-model';
 import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';
+import {LayerLabelsPenalties} from './layer-labels-penalties';
 import {FormatterRegistry} from '../../formatter-registry';
 
 var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
@@ -48,8 +49,7 @@ export class LayerLabels {
                 fontColor: guide.fontColor,
                 flip: self.flip,
                 formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
-                labelRectSize: (str) => utilsDom.getLabelSize(str, guide),
-                paddingKoeff: 0.4
+                labelRectSize: (str) => utilsDom.getLabelSize(str, guide)
             });
 
         var args = {maxWidth: self.w, maxHeight: self.h, data: fibers.reduce((memo, f) => memo.concat(f), [])};
@@ -120,12 +120,20 @@ export class LayerLabels {
 
         var flags = this.guide.position.reduce((memo, token) => Object.assign(memo, {[token]:true}), {});
 
+        parallel.text = parallel.text = flags['auto:adjust-on-label-overflow'] ?
+            this.adjustOnOverflow(parallel.text, args) :
+            parallel.text;
+
         parallel.text = flags['auto:hide-on-label-edges-overlap'] ?
             this.hideOnLabelEdgesOverlap(parallel.text, parallel.edges) :
             parallel.text;
 
         parallel.text = flags['auto:hide-on-label-label-overlap'] ?
             this.hideOnLabelLabelOverlap(parallel.text) :
+            parallel.text;
+
+        parallel.text = flags['auto:hide-on-label-anchor-overlap'] ?
+            this.hideOnLabelAnchorOverlap(parallel.text) :
             parallel.text;
 
         var labels = parallel.text;
@@ -136,13 +144,14 @@ export class LayerLabels {
         var yi = get('y');
         var angle = get('angle');
         var color = get('color');
+        var label = get('label');
         var update = function () {
             this.style('fill', color)
                 .style('font-size', `${self.guide.fontSize}px`)
                 .style('display', ((__, i) => labels[i].hide ? 'none' : null))
                 .attr('text-anchor', 'middle')
                 .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`)
-                .text(get('label'));
+                .text(label);
         };
 
         var text = this
@@ -162,116 +171,60 @@ export class LayerLabels {
 
     autoPosition(parallel, tokens) {
 
-        var penalties = {
-            'auto:avoid-label-label-overlap': (labels, edges, penaltyRate = 1.0) => {
-                return (index) => {
-                    var x21 = labels[index].x;
-                    var y21 = labels[index].y - labels[index].h + 2.0;
-                    var x22 = labels[index].x + labels[index].w;
-                    var y22 = labels[index].y + 2.0;
-
-                    return labels.reduce((sum, labi, i) => {
-                        var k = (i !== index);
-                        var x11 = labi.x;
-                        var y11 = labi.y - labi.h + 2.0;
-                        var x12 = labi.x + labi.w;
-                        var y12 = labi.y + 2.0;
-                        var x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
-                        var y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
-                        var overlap_area = x_overlap * y_overlap;
-                        return sum + (k * (overlap_area * penaltyRate));
-                    }, 0);
-                };
-            },
-            'auto:avoid-label-anchor-overlap': (labels, edges, penaltyRate = 1.0) => {
-                return (index) => {
-                    var lab0 = labels[index];
-                    var x21 = lab0.x - lab0.w / 2;
-                    var x22 = lab0.x + lab0.w / 2;
-                    var y21 = lab0.y - lab0.h / 2 + 2.0;
-                    var y22 = lab0.y + lab0.h / 2 + 2.0;
-                    return labels.reduce((sum, anchor) => {
-                        var x11 = anchor.x0 - anchor.size / 2;
-                        var x12 = anchor.x0 + anchor.size / 2;
-                        var y11 = anchor.y0 - anchor.size / 2;
-                        var y12 = anchor.y0 + anchor.size / 2;
-                        var x_overlap = Math.max(0, Math.min(x12, x22) - Math.max(x11, x21));
-                        var y_overlap = Math.max(0, Math.min(y12, y22) - Math.max(y11, y21));
-                        var overlap_area = x_overlap * y_overlap;
-                        return sum + (overlap_area * penaltyRate);
-                    }, 0);
-                };
-            },
-            'auto:avoid-label-edges-overlap': (labels, edges, penaltyRate = 1.0) => {
-                return (index) => {
-                    var label = labels[index];
-                    var x0 = label.x - label.w / 2;
-                    var x1 = label.x + label.w / 2;
-                    var y0 = label.y - label.h / 2;
-                    var y1 = label.y + label.h / 2;
-                    return edges.reduce((sum, edge) => {
-                        var overlapLeftTopRightBottom = intersect(x0, x1, edge.x0, edge.x1, y0, y1, edge.y0, edge.y1);
-                        var overlapLeftBottomRightTop = intersect(x0, x1, edge.x0, edge.x1, y1, y0, edge.y0, edge.y1);
-                        return sum + (overlapLeftTopRightBottom + overlapLeftBottomRightTop) * penaltyRate;
-                    }, 0);
-                };
-            }
+        const calcEllipticXY = (r, angle) => {
+            const xReserve = 4;
+            const yReserve = 2;
+            const a = xReserve + (r.size + r.w) / 2;
+            const b = yReserve + (r.size + r.h) / 2;
+            return {
+                x: (a * Math.cos(angle)),
+                y: (b * Math.sin(angle))
+            };
         };
 
         var edges = parallel.edges;
-        var textData = parallel.text;
-
-        var labels = textData
+        var labels = parallel.text
             .map((r) => {
-                var a = 2 + (r.size + r.w) / 2;
-                var b = 2 + (r.size + r.h) / 2;
-                var m = {
+                const maxAngles = {
                     max: -Math.PI / 2,
                     min: Math.PI / 2,
-                    norm: (Math.random() > 0.5) ? Math.PI : 0
+                    norm: (Math.random() * Math.PI * 2)
                 };
-                var angle = m[r.extr];
-                return ({
+                const xy = calcEllipticXY(r, maxAngles[r.extr]);
+                return {
                     i: r.i,
                     x0: r.x,
                     y0: r.y,
-                    x: r.x + (a * Math.cos(angle)),
-                    y: r.y + (b * Math.sin(angle)),
+                    x: r.x + xy.x,
+                    y: r.y + xy.y,
                     w: r.w,
                     h: r.h,
                     size: r.size,
                     hide: r.hide,
                     extr: r.extr
-                });
+                };
             })
             .filter(r => !r.hide);
 
-        var maxWidth = this.w;
-        var maxHeight = this.h;
-
         var sim = new AnnealingSimulator({
             items: labels,
-            transactor: function (row) {
-                var prevX = row.x;
-                var prevY = row.y;
+            transactor: (row) => {
+                const prevX = row.x;
+                const prevY = row.y;
                 return {
                     modify: () => {
-                        var a = 2 + (row.size + row.w) / 2;
-                        var b = 2 + (row.size + row.h) / 2;
-                        var m = {
+                        const maxAngles = {
                             max: -Math.PI,
                             min: Math.PI,
                             norm: Math.PI * 2
                         };
-                        var n = 4;
-                        var maxAngle = m[row.extr];
-                        var angle = ((maxAngle / n) + (Math.random() * (maxAngle * (n - 2)) / n));
+                        const segm = 4;
+                        const maxAngle = maxAngles[row.extr];
+                        const angle = ((maxAngle / segm) + (Math.random() * (maxAngle * (segm - 2)) / segm));
+                        const xy = calcEllipticXY(row, angle);
 
-                        var nextX = row.x0 + (a * Math.cos(angle));
-                        var nextY = row.y0 + (b * Math.sin(angle));
-
-                        row.x = Math.min(Math.max(nextX, row.w / 2), (maxWidth - row.w / 2));
-                        row.y = Math.max(Math.min(nextY, (maxHeight - row.h / 2)), row.h / 2);
+                        row.x = row.x0 + xy.x;
+                        row.y = row.y0 + xy.y;
 
                         return row;
                     },
@@ -283,37 +236,33 @@ export class LayerLabels {
                 };
             },
             penalties: tokens
-                .map((token) => penalties[token])
+                .map((token) => LayerLabelsPenalties.get(token))
                 .filter(x => x)
-                .map((penalty) => penalty(textData, edges))
+                .map((penalty) => penalty(labels, edges))
         });
 
-        sim.start(4);
+        const bestRevision = sim.start(5);
 
-        textData = labels.reduce((memo, l) => {
+        parallel.text = bestRevision.reduce((memo, l) => {
             var r = memo[l.i];
             r.x = l.x;
             r.y = l.y;
             return memo;
-        }, textData);
+        }, parallel.text);
 
         return parallel;
     }
 
     hideOnLabelEdgesOverlap(data, edges) {
 
-        function penaltyLabelEdgesOverlap(label, edges) {
-            var x0 = label.x - label.w / 2;
-            var x1 = label.x + label.w / 2;
-
-            var y0 = label.y - label.h / 2;
-            var y1 = label.y + label.h / 2;
+        const penaltyLabelEdgesOverlap = (label, edges) => {
+            const rect = this.getLabelRect(label);
             return edges.reduce((sum, edge) => {
-                var overlapTop = intersect(x0, x1, edge.x0, edge.x1, y0, y1, edge.y0, edge.y1);
-                var overlapBtm = intersect(x0, x1, edge.x0, edge.x1, y1, y0, edge.y0, edge.y1);
+                var overlapTop = intersect(rect.x0, rect.x1, edge.x0, edge.x1, rect.y0, rect.y1, edge.y0, edge.y1);
+                var overlapBtm = intersect(rect.x0, rect.x1, edge.x0, edge.x1, rect.y1, rect.y0, edge.y0, edge.y1);
                 return sum + (overlapTop + overlapBtm) * 2;
             }, 0);
-        }
+        };
 
         data.filter((r) => !r.hide)
             .forEach((r) => {
@@ -327,16 +276,6 @@ export class LayerLabels {
 
     hideOnLabelLabelOverlap(data) {
 
-        var rect = (a) => {
-            var border = 0;
-            return {
-                x0: a.x - a.w / 2 - border,
-                x1: a.x + a.w / 2 + border,
-                y0: a.y - a.h / 2 - border,
-                y1: a.y + a.h / 2 + border
-            };
-        };
-
         var extremumOrder = {min: 0, max: 1, norm: 2};
         var collisionSolveStrategies = {
             'min/min': ((p0, p1) => p1.y - p0.y), // desc
@@ -348,8 +287,8 @@ export class LayerLabels {
         };
 
         var cross = ((a, b) => {
-            var ra = rect(a);
-            var rb = rect(b);
+            var ra = this.getLabelRect(a);
+            var rb = this.getLabelRect(b);
             var k = (!a.hide && !b.hide);
 
             var x_overlap = k * Math.max(0, Math.min(rb.x1, ra.x1) - Math.max(ra.x0, rb.x0));
@@ -379,5 +318,65 @@ export class LayerLabels {
             });
 
         return data;
+    }
+
+    getLabelRect(a, border = 0) {
+        return {
+            x0: a.x - a.w / 2 - border,
+            x1: a.x + a.w / 2 + border,
+            y0: a.y - a.h / 2 - border,
+            y1: a.y + a.h / 2 + border
+        };
+    }
+
+    getPointRect(a, border = 0) {
+        return {
+            x0: a.x - a.size / 2 - border,
+            x1: a.x + a.size / 2 + border,
+            y0: a.y - a.size / 2 - border,
+            y1: a.y + a.size / 2 + border
+        };
+    }
+
+    hideOnLabelAnchorOverlap(data) {
+
+        var isIntersects = ((label, point) => {
+            const labelRect = this.getLabelRect(label, 2);
+            const pointRect = this.getPointRect(point, 2);
+
+            var x_overlap = Math.max(
+                0,
+                Math.min(pointRect.x1, labelRect.x1) - Math.max(pointRect.x0, labelRect.x0));
+
+            var y_overlap = Math.max(
+                0,
+                Math.min(pointRect.y1, labelRect.y1) - Math.max(pointRect.y0, labelRect.y0));
+
+            return (x_overlap * y_overlap) > 0.001;
+        });
+
+        data.filter((row) => !row.hide)
+            .forEach((label) => {
+                const dataLength = data.length;
+                for (let i = 0; i < dataLength; i++) {
+                    const point = data[i];
+                    if ((label.i !== point.i) && isIntersects(label, point)) {
+                        label.hide = true;
+                        break;
+                    }
+                }
+            });
+
+        return data;
+    }
+
+    adjustOnOverflow(data, {maxWidth, maxHeight}) {
+        return data.map((row) => {
+            if (!row.hide) {
+                row.x = Math.min(Math.max(row.x, row.w / 2), (maxWidth - row.w / 2));
+                row.y = Math.max(Math.min(row.y, (maxHeight - row.h / 2)), row.h / 2);
+            }
+            return row;
+        });
     }
 }
