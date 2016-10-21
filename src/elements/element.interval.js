@@ -87,6 +87,14 @@ export class Interval extends Element {
         ].concat(config.transformModel || []);
 
         this.on('highlight', (sender, e) => this.highlight(e));
+        this.on('mouseover', ((sender, e) => {
+            const identity = sender.screenModel.model.id;
+            const id = identity(e.data);
+            sender.fire('highlight', ((row) => (identity(row) === id) ? true : null));
+        }));
+        this.on('mouseout', ((sender) => {
+            sender.fire('highlight', (() => (null)));
+        }));
     }
 
     createScales(fnCreateScale) {
