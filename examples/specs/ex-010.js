@@ -14,8 +14,7 @@ dev.spec({
     ],
 
     data: dev.dataset('olympics', function (data) {
-        return _(data)
-            .chain()
+        var processedData = data
             .reduce(function (memo, row) {
                 var key = row['Sport'] + row['Age'] + row['Country'];
                 if (!memo.hasOwnProperty(key)) {
@@ -31,11 +30,12 @@ dev.spec({
 
                 return memo;
             },
-            {})
-            .values()
+            {});
+
+        return Object.keys(processedData)
+            .map(key => processedData[key])
             .filter(function (row) {
                 return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
-            })
-            .value();
+            });
     })
 });

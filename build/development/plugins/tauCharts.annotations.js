@@ -11,7 +11,7 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var d3 = tauCharts.api.d3;
     var pluginsSDK = tauCharts.api.pluginsSDK;
 
@@ -27,7 +27,7 @@
     var stretchByOrdinalAxis = function (noteItem) {
         return function (model) {
             var res = {};
-            var seed = _.find([
+            var seed = [
                 {
                     dim: model.scaleX.dim,
                     scale: model.scaleY,
@@ -45,9 +45,9 @@
                     scale: null,
                     method: null
                 }
-            ], function (a) {
-                    return a.dim === noteItem.dim;
-                });
+            ].find(function (a) {
+                return a.dim === noteItem.dim;
+            });
 
             if (seed.method === null) {
                 return res;
@@ -70,7 +70,7 @@
 
     function annotations(xSettings) {
 
-        var settings = _.defaults(xSettings || {}, {});
+        var settings = utils.defaults(xSettings || {}, {items: []});
         var textScaleName = 'annotation_text';
 
         return {
@@ -314,8 +314,7 @@
 
                 units.forEach(function (coordsUnit) {
 
-                    settings
-                        .items
+                    settings.items
                         .map(function (item, i) {
 
                             var color = (item.color || '#BD10E0').toLowerCase();
@@ -344,7 +343,7 @@
                             };
                         })
                         .forEach(function (item) {
-                            if (_.isArray(item.val)) {
+                            if (Array.isArray(item.val)) {
                                 self.addAreaNote(specRef, coordsUnit, item);
                             } else {
                                 self.addLineNote(specRef, coordsUnit, item);

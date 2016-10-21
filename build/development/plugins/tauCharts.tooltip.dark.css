@@ -37,6 +37,8 @@
 }
 .graphical-report__tooltip__vertical,
 .graphical-report__tooltip__exclude {
+  -ms-flex: 0 0 auto;
+      flex: 0 0 auto;
   color: rgba(101, 113, 127, 0.8);
   cursor: pointer;
   min-height: 86px;

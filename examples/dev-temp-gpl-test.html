@@ -2,12 +2,9 @@
 <html>
 <meta charset="utf-8">
 <head>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script src="../node_modules/d3/d3.min.js"></script>
 
-    <!--<script src="../build/development/tauCharts.js"></script>-->
-    <script src="http://localhost:9000/tauCharts.js"></script>
+    <script src="../tauCharts.js"></script>
     <!-- plugins -->
     <script src="../plugins/tooltip.js"></script>
     <script src="../plugins/export.js"></script>
@@ -548,16 +545,15 @@
                 var y = props.y;
 
                 var src = data.map(function (item) {
-                    var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
-                    var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
+                    var ix = utils.isDate(item[x]) ? item[x].getTime() : item[x];
+                    var iy = utils.isDate(item[y]) ? item[y].getTime() : item[y];
                     return [ix, iy];
                 });
 
                 var regression = regressionsHub(props.type, src);
-                return _(regression.points)
-                        .chain()
-                        .sortBy(function (p) {
-                            return p[0];
+                return regression.points
+                        .sort(function (p1, p2) {
+                            return p1[0] - p2[0];
                         })
 //                      .filter(function (p) {
 //                          return ((minY <= p[1]) && (p[1] <= maxY));
@@ -567,8 +563,7 @@
                             item[x] = p[0];
                             item[y] = p[1];
                             return item;
-                        })
-                        .value();
+                        });
             },
 
             'x-limit': function (data, props) {
@@ -796,24 +791,22 @@
                 var y = props.y;
 
                 var src = sVal.map(function (item) {
-                    var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
-                    var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
+                    var ix = utils.isDate(item[x]) ? item[x].getTime() : item[x];
+                    var iy = utils.isDate(item[y]) ? item[y].getTime() : item[y];
                     return [ix, iy];
                 });
 
                 var regression = regressionsHub(props.type, src);
-                return _(regression.points)
-                        .chain()
-                        .sortBy(function (p) {
-                            return p[0];
+                return regression.points
+                        .sort(function (p1, p2) {
+                            return p1[0] - p2[0];
                         })
                         .map(function (p) {
                             var item = {};
                             item[x] = p[0];
                             item[y] = p[1];
                             return item;
-                        })
-                        .value();
+                        });
             },
 
             'x-limit': function (data, props) {
@@ -1579,10 +1572,10 @@
             {car: "Subaru Forester", co2: 186, hp: 150},
             {car: "Lexus RX", co2: 233, hp: 188}
         ].reduce(function (memo, row) {
-                    var r1 = _.clone(row);
+                    var r1 = Object.assign({}, row);
                     r1['co2-hp-type'] = 'co2';
                     r1['co2,hp'] = row['co2'];
-                    var r2 = _.clone(row);
+                    var r2 = Object.assign({}, row);
                     r1['co2-hp-type'] = 'hp';
                     r2['co2,hp'] = row['hp'];
                     return memo.concat([r1, r2]);

@@ -18,8 +18,7 @@ dev.spec({
     },
 
     data: dev.dataset('olympics', function (data) {
-        return _(data)
-            .chain()
+        var processedData = data
             .reduce(function (memo, row) {
                 var key = row['Sport'] + row['Age'];
                 if (!memo.hasOwnProperty(key)) {
@@ -34,9 +33,9 @@ dev.spec({
 
                 return memo;
             },
-            {})
-            .values()
-            .value();
+            {});
+
+        return Object.keys(processedData).map(key => processedData[key]);
     })
 
 });

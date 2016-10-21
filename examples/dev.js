@@ -2,12 +2,15 @@
 
     'use strict';
 
+    var utils = tauCharts.api.utils;
+
     //----------------------------------------------
     // NOTE: Place paths to specs and datasets here.
     //
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'horizontal-scroll',
             'whiskers'
         ],
         'dev-quick-test/': fileRange(
@@ -19,6 +22,7 @@
             'countries',
             'exoplanets',
             'data',
+            'medals',
             'olympics',
             'tpStories'
         ]
@@ -173,6 +177,7 @@
                 return s.filePath.match(regex);
             });
         }
+        this._reportFilterResult(specs.length, this._specs.length);
 
         //
         // Handle specs
@@ -187,8 +192,8 @@
                 '  <div class="sample__chart"></div>',
                 '</div>'
             ], {
-                    name: s._name || s.filePath || i,
-                    description: s._desc || ('type: ' + s.type)
+                    name: s.filePath || i,
+                    description: ('type: ' + s.type)
                 });
             container.appendChild(block);
             var target = block.querySelector('.sample__chart');
@@ -199,10 +204,10 @@
                 if (!(loader.name in this._datasets)) {
                     throw new Error('Dataset "' + loader.name + '" not found.');
                 }
-                var data = cloneObject(this._datasets[loader.name]);
+                var data = deepClone(this._datasets[loader.name]);
                 s.data = loader.filter(data);
             }
-            s = cloneObject(s);
+            s = deepClone(s);
             s = modifySpec(s);
             if (settings.plugins.length > 0) {
                 s.plugins = s.plugins || [];
@@ -361,18 +366,23 @@
         }
     };
 
+    DevApp.prototype._reportFilterResult = function (filtered, total) {
+        document.getElementById('filterText').textContent = (
+            'Showing ' + filtered + ' of ' + total + ' charts'
+        );
+    };
+
     DevApp.prototype._loadSettings = function () {
-        var json = localStorage.getItem('devSettings');
         var settings;
         try {
-            settings = JSON.parse(json);
+            settings = parseURIQuery(window.location.hash.replace(/^#/, '').replace(/^\?/, ''));
         } catch (err) {
             settings = {};
         }
         if (!(settings instanceof Object)) {
             settings = {};
         }
-        settings = _.defaults(settings, {
+        settings = utils.defaults(settings, {
             path: '',
             types: [],
             plugins: []
@@ -387,8 +397,7 @@
         settings.path = settings.path.trim();
         settings.types = filterEmptyValues(settings.types);
         settings.plugins = filterEmptyValues(settings.plugins);
-        var json = JSON.stringify(settings);
-        localStorage.setItem('devSettings', json);
+        window.location.hash = '#' + stringifyURIQuery(settings);
     };
 
 
@@ -409,6 +418,7 @@
      */
     window.addEventListener('load', function () {
         window.dev = new DevApp(PATHS);
+        window.utils = utils;
     });
 
 
@@ -455,6 +465,9 @@
     }
 
     function filterEmptyValues(arr) {
+        if (!Array.isArray(arr)) {
+            arr = [arr];
+        }
         return arr.map(function (d) {
             return d.trim();
         }).filter(function (d) {
@@ -464,13 +477,13 @@
 
     function fileRange(prefix, numbers) {
         numbers = Array.prototype.slice.call(arguments, 1);
-        return _.flatten(numbers).map(function (num) {
+        return utils.flatten(numbers).map(function (num) {
             num = '00' + String(num);
             num = num.substring(num.length - 3);
             return prefix + num;
         });
     }
-    
+
     function range(start, end) {
         var arr = [];
         for (var i = start; i <= end; i++) {
@@ -507,7 +520,7 @@
         return WeakMap;
     })();
 
-    function cloneObject(src, refs) {
+    function deepClone(src, refs) {
         if (typeof src !== 'object' || src === null) {
             return src;
         }
@@ -520,7 +533,7 @@
             result = [];
             refs.set(src, result);
             src.forEach(function (d) {
-                result.push(cloneObject(d, refs));
+                result.push(deepClone(d, refs));
             });
         } else if (src instanceof Date) {
             result = new Date(src.getTime());
@@ -533,15 +546,58 @@
             result = new Ctor(src);
             refs.set(src, result);
         } else {
-            var Ctor = Object.getPrototypeOf(src).constructor;
+            Ctor = Object.getPrototypeOf(src).constructor;
             result = new Ctor();
             refs.set(src, result);
-            Object.keys(src).reduce(function (memo, key) {
-                memo[key] = cloneObject(src[key], refs);
-                return memo;
-            }, result);
+            Object.setPrototypeOf(result, Object.getPrototypeOf(src));
+            var props = Object.getOwnPropertyNames(src);
+            for (var i = 0, dtor, len = props.length; i < len; i++) {
+                dtor = Object.getOwnPropertyDescriptor(src, props[i]);
+                if ('value' in dtor) {
+                    dtor.value = deepClone(dtor.value, refs);
+                }
+                Object.defineProperty(result, props[i], dtor);
+            }
         }
         return result;
+    }
+
+    function stringifyURIQuery(obj) {
+        var params = [];
+        Object.keys(obj).forEach(function (key) {
+            var values = Array.isArray(obj[key]) ? obj[key] : [obj[key]];
+            values.filter(function (value) {
+                return value !== '';
+            }).forEach(function (value) {
+                params.push({
+                    key: key,
+                    value: encodeURIComponent(value)
+                });
+            });
+        });
+        var query = (params.length > 0 ? '?' : '') +
+            params.map(function (p) {
+                return p.key + '=' + p.value;
+            }).join('&');
+        return query;
+    }
+
+    function parseURIQuery(query) {
+        var obj = {};
+        var parts = query.split('&');
+        parts.forEach(function (p) {
+            var param = p.split('=');
+            var key = param[0];
+            var value = decodeURIComponent(param[1]);
+            if (!(key in obj)) {
+                obj[key] = value;
+            } else if (!Array.isArray(obj[key])) {
+                obj[key] = [obj[key], value];
+            } else {
+                obj[key].push(value);
+            }
+        });
+        return obj;
     }
 
 })();

@@ -70,6 +70,47 @@
 .graphical-report__layout text {
   fill: #333;
 }
+.graphical-report__layout.graphical-report__layout_rendering-error {
+  opacity: 0.75;
+}
+.graphical-report__rendering-timeout-warning {
+  -ms-flex-align: center;
+      align-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+      flex-direction: column;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.graphical-report__rendering-timeout-warning svg {
+  height: 100%;
+  max-width: 32em;
+  width: 100%;
+}
+.graphical-report__rendering-timeout-warning text {
+  font-weight: 300;
+}
+.graphical-report__progress {
+  height: 0.25em;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transition: opacity 1s 0.75s;
+  width: 100%;
+}
+.graphical-report__progress.graphical-report__progress_active {
+  opacity: 1;
+}
+.graphical-report__progress__value {
+  background: rgba(51, 51, 51, 0.25);
+  height: 100%;
+  transition: width 0.75s;
+}
 .graphical-report {
   /* region Select --------------------------------------------------*/
 }

@@ -3,7 +3,7 @@ dev.spec({
     y: 'distribution',
     x: 'y',
     color: 'distribution',
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
 
             var outlierKoeff = function (lim) {
