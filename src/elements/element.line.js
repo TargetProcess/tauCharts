@@ -253,6 +253,7 @@ export class Line extends BasePath {
                 var intermediate;
                 var changingPoints = [];
                 var push = (target, items) => Array.prototype.push.apply(target, items);
+                var getPointId=(pt) => (pt[tempPointId] || self.screenModel.id(pt));
                 var getChangingEnding = function ({t, polyline, decreasing, rightToLeft}) {
 
                     var getLinePiece = (q, line) => {
@@ -267,7 +268,7 @@ export class Line extends BasePath {
                         var result = line.slice(0, existingCount);
                         push(result, utils.range(tempCount).map((i) => Object.assign(
                             {}, midPt,
-                            { [tempPointId]: ((pt) => pt[tempPointId] || self.screenModel.id(pt))(line[tempStartIdIndex + i]) }
+                            { [tempPointId]: getPointId(line[tempStartIdIndex + i]) }
                         )));
                         console.log('piece', result.map(d => d.x), decreasing ? 'decrease' : 'increase', rightToLeft ? 'rightToLeft' : 'leftToRight');
                         return result.slice(1);
@@ -290,8 +291,44 @@ export class Line extends BasePath {
                     }
                     return result;
                 };
+
+                var fillSmallerPolyline = function ({smallPolyline, bigPolyline}) {
+                    var segmentsCount = {
+                        small: smallPolyline.length - 1,
+                        big: bigPolyline.length - 1
+                    };
+                    var minSegmentPointsCount = Math.floor(segmentsCount.big / segmentsCount.small) + 1;
+                    var restPointsCount = segmentsCount.big % segmentsCount.small;
+                    var segmentsPointsCount = utils.range(segmentsCount.small)
+                        .map(i => (minSegmentPointsCount + (i < restPointsCount ? 1 : 0)));
+
+                    var result = [smallPolyline[0]];
+                    var smallPtIndex = 1;
+                    segmentsPointsCount.forEach((segPtCount, si) => {
+                        utils.range(1, segPtCount).forEach(i => {
+                            // TODO: Fill IDs.
+                            if (i === segPtCount - 1) {
+                                result.push(smallPolyline[smallPtIndex]);
+                            } else {
+                                var newPt = d3.interpolate(
+                                    smallPolyline[smallPtIndex - 1],
+                                    smallPolyline[smallPtIndex]
+                                )(i / (segPtCount - 1));
+                                newPt[tempPointId] = getPointId(bigPolyline[result.length]);
+                                result.push(newPt);
+                            }
+                        });
+                        smallPtIndex++;
+                    });
+                    if (result.some(d => !d)) {
+                        debugger;
+                    }
+                    return result;
+                };
                 var getMiddlePoints = function ({t, pointsFrom, pointsTo}) {
                     // return pointTo;
+                    var result = d3.interpolate(pointsFrom, pointsTo)(t);
+                    result.forEach((pt, i) => pt[tempPointId] = getPointId(pointsFrom[i]));
                     return d3.interpolate(pointsFrom, pointsTo)(t);
                 };
                 return function (t) {
@@ -397,60 +434,27 @@ export class Line extends BasePath {
                                 let oldCount = indexFrom - idsFrom.indexOf(remainingIds[i - 1]) - 1;
                                 let newCount = indexTo - idsTo.indexOf(remainingIds[i - 1]) - 1;
 
-                                let fillSmallerPolyline = function ({smallPolyline, bigPolyline}) {
-                                    var segmentsCount = {
-                                        small: smallPolyline.length - 1,
-                                        big: bigPolyline.length - 1
-                                    };
-                                    var minSegmentPointsCount = Math.floor(segmentsCount.big / segmentsCount.small);
-                                    var restPointsCount = segmentsCount.big % segmentsCount.small;
-                                    var segmentsPointsCount = utils.range(segmentsCount.small)
-                                        .map(i => (minSegmentPointsCount + i < restPointsCount ? 1 : 0));
-
-                                    var result = [];
-                                    var smallPtIndex = 0;
-                                    segmentsPointsCount.forEach((segPtCount, si) => {
-                                        utils.range(segPtCount).forEach(i => {
-                                            if (
-                                                (si === 0 && i === 0) ||
-                                                (si === segmentsPointsCount.length - 1 && i === segPtCount - 1)
-                                            ) {
-                                                return;
-                                            }
-                                            // TODO: Fill IDs.
-                                            if (i === segPtCount - 1) {
-                                                result.push(smallPolyline[smallPtIndex]);
-                                            } else {
-                                                result.push(d3.interpolate(
-                                                    smallPolyline[smallPtIndex - 1],
-                                                    smallPolyline[smallPtIndex]
-                                                )(i / (segPtCount - 1)));
-                                            }
-                                            smallPtIndex++;
-                                        });
-                                    });
-                                    return result;
-                                };
-
                                 let putChangingPoints = function (smallerData, smallerIndex, smallerCount, biggerData, biggerIndex, biggerCount, reverse) {
                                     let biggerPoly = biggerData.slice(
-                                        biggerIndex - biggerCount,
-                                        biggerIndex
+                                        biggerIndex - biggerCount - 1,
+                                        biggerIndex + 1
                                     );
                                     let filledPoly = fillSmallerPolyline({
                                         smallPolyline: smallerData.slice(
-                                            smallerIndex - smallerCount,
-                                            smallerIndex
+                                            smallerIndex - smallerCount - 1,
+                                            smallerIndex + 1
                                         ),
                                         bigPolyline: biggerPoly
                                     });
+                                    let biggerPoints = biggerPoly.slice(1, biggerPoly.length - 1);
+                                    let smallerPoints = filledPoly.slice(1, filledPoly.length - 1);
                                     changingPoints.push({
                                         startIndex: intermediate.length,
                                         getPoints: function (t) {
                                             return getMiddlePoints({
                                                 t: reverse ? 1 - t : t,
-                                                pointsFrom: filledPoly,
-                                                pointsTo: biggerPoly
+                                                pointsFrom: smallerPoints,
+                                                pointsTo: biggerPoints
                                             });
                                         }
                                     });

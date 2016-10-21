@@ -58,6 +58,7 @@ export class LinearScale extends BaseScale {
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
+        scale=d3Scale;
         scale.stepSize = (() => 0);
 
         return this.toBaseScale(scale, interval);
