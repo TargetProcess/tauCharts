@@ -412,10 +412,11 @@ export class BasePath extends Element {
                 var tempCount = line.length - existingCount;
                 var tempStartIdIndex = existingCount;
                 var qi = (q * (line.length - 1)) % 1;
-                var midPt = d3.interpolate(
+                var midPt = interpolatePoint(
                     line[existingCount - 1],
-                    line[existingCount]
-                )(qi);
+                    line[existingCount],
+                    qi
+                );
                 var result = line.slice(0, existingCount);
                 push(result, utils.range(tempCount).map((i) => Object.assign(
                     {}, midPt,
@@ -454,10 +455,11 @@ export class BasePath extends Element {
                     if (i === segPtCount - 1) {
                         result.push(smallPolyline[smallPtIndex]);
                     } else {
-                        var newPt = d3.interpolate(
+                        var newPt = interpolatePoint(
                             smallPolyline[smallPtIndex - 1],
-                            smallPolyline[smallPtIndex]
-                        )(i / (segPtCount - 1));
+                            smallPolyline[smallPtIndex],
+                            (i / (segPtCount - 1))
+                        );
                         newPt[tempPointId] = getPointId(bigPolyline[result.length]);
                         result.push(newPt);
                     }
@@ -468,10 +470,29 @@ export class BasePath extends Element {
             return result;
         };
 
-        function interpolatePoints({t, pointsFrom, pointsTo}) {
-            var result = d3.interpolate(pointsFrom, pointsTo)(t);
-            result.forEach((pt, i) => pt[tempPointId] = getPointId(pointsFrom[i]));
-            return d3.interpolate(pointsFrom, pointsTo)(t);
+        function interpolateValue(a, b, t) {
+            if (typeof b === 'string') {
+                return (t < 1 ? a : b);
+            }
+            if (b instanceof Date) {
+                return new Date(Number(a) + t * (b - a));
+            }
+            if (typeof b === 'boolean') {
+                return (t < 1 ? a : b);
+            }
+            return (a + t * (b - a));
+        }
+
+        function interpolatePoint(a, b, t) {
+            var c = {};
+            Object.keys(b).forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
+            c[tempPointId] = getPointId(a);
+            return c;
+        }
+
+        function interpolatePoints(pointsFrom, pointsTo, t) {
+            var result = pointsFrom.map((a, i) => interpolatePoint(a, pointsTo[i], t));
+            return result;
         }
 
         dataFrom = dataFrom.filter(d => !d[tempPointId]);
@@ -578,11 +599,11 @@ export class BasePath extends Element {
                         changingPoints.push({
                             startIndex: intermediate.length,
                             getPoints: function (t) {
-                                return interpolatePoints({
-                                    t: (reverse ? 1 - t : t),
-                                    pointsFrom: smallerPoints,
-                                    pointsTo: biggerPoints
-                                });
+                                return interpolatePoints(
+                                    smallerPoints,
+                                    biggerPoints,
+                                    (reverse ? 1 - t : t)
+                                );
                             }
                         });
                     };
@@ -595,17 +616,17 @@ export class BasePath extends Element {
                         changingPoints.push({
                             startIndex: intermediate.length,
                             getPoints: function (t) {
-                                return interpolatePoints({
-                                    t,
-                                    pointsFrom: dataFrom.slice(
+                                return interpolatePoints(
+                                    dataFrom.slice(
                                         indexFrom - oldCount,
                                         indexFrom
                                     ),
-                                    pointsTo: dataTo.slice(
+                                    dataTo.slice(
                                         indexTo - newCount,
                                         indexTo
-                                    )
-                                });
+                                    ),
+                                    t
+                                );
                             }
                         });
                     }
