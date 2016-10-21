@@ -35,9 +35,9 @@ export class BasePath extends Element {
                     'auto:avoid-label-label-overlap',
                     'auto:avoid-label-anchor-overlap',
                     'auto:avoid-label-edges-overlap',
+                    'auto:adjust-on-label-overflow',
                     'auto:hide-on-label-label-overlap',
-                    'auto:hide-on-label-edges-overlap',
-                    'keep-in-box'
+                    'auto:hide-on-label-edges-overlap'
                 ]
             });
 
