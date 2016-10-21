@@ -359,6 +359,8 @@ export class BasePath extends Element {
                 };
             }
 
+            dataTo = utils.unique(dataTo, self.screenModel.id);
+
             var dataFrom = this[tweenStore].data;
             var interpolate = self.createPathDataInterpolator(dataFrom, dataTo);
 
@@ -484,6 +486,7 @@ export class BasePath extends Element {
         }
 
         function interpolatePoint(a, b, t) {
+            return d3.interpolate(a, b)(t);
             var c = {};
             Object.keys(b).forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
             c[tempPointId] = getPointId(a);
@@ -511,6 +514,7 @@ export class BasePath extends Element {
             // NOTE: Suppose data is already sorted by X.
             let idsFrom = dataFrom.map(getPointId);
             let idsTo = dataTo.map(getPointId);
+            console.log('from', idsFrom, 'to', idsTo);
             let addedIds = idsTo.filter(d => idsFrom.indexOf(d) < 0);
             let deletedIds = idsFrom.filter(d => idsTo.indexOf(d) < 0);
             let remainingIds = (idsFrom.length < idsTo.length ? idsFrom : idsTo)
@@ -692,6 +696,8 @@ export class BasePath extends Element {
             }
 
             updateIntermediatePoints(t);
+
+            intermediate = utils.unique(intermediate, d=>JSON.stringify({x:d.x,y:d.y}))
 
             return intermediate;
 

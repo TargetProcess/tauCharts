@@ -76,10 +76,6 @@ export class Area extends BasePath {
             });
         };
 
-        var pathAttributesDefault = {
-            points: areaPoints(baseModel.x, baseModel.y0, baseModel.x0, baseModel.y0)
-        };
-
         var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => {
@@ -88,17 +84,21 @@ export class Area extends BasePath {
                     colorStr = d3.rgb(colorStr).darker(1);
                 }
                 return colorStr;
-            },
-            points: areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
+            }
         };
 
-        baseModel.pathAttributesUpdateInit = null;
+        baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathAttributesEnterInit = pathAttributesDefault;
-        baseModel.pathAttributesEnterDone = pathAttributes;
-
         baseModel.pathElement = 'polygon';
+
+        baseModel.pathTween = {
+            attr: 'points',
+            fn: this.createPathTween(
+                'points',
+                areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
+            )
+        };
 
         return baseModel;
     }

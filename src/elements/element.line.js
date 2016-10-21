@@ -183,6 +183,7 @@ export class Line extends BasePath {
             });
 
         baseModel.pathAttributesEnterInit = pathAttributes;
+        baseModel.pathAttributesUpdateDone = pathAttributes;
 
         if (this.isEmptySize) {
             baseModel.pathTween = {

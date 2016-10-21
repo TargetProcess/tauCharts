@@ -55,23 +55,23 @@ export class Path extends BasePath {
             return ((fiber) => (fiber.map((d) => [x(d), y(d)].join(',')).join(' ')));
         };
 
-        var pathAttributesDefault = {
-            points: pathPoints(baseModel.x, baseModel.y0)
-        };
-
         var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
-            stroke: (fiber) => baseModel.color(fiber[0]),
-            points: pathPoints(baseModel.x, baseModel.y)
+            stroke: (fiber) => baseModel.color(fiber[0])
         };
 
-        baseModel.pathAttributesUpdateInit = null;
+        baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathAttributesEnterInit = pathAttributesDefault;
-        baseModel.pathAttributesEnterDone = pathAttributes;
-
         baseModel.pathElement = 'polygon';
+
+        baseModel.pathTween = {
+            attr: 'points',
+            fn: this.createPathTween(
+                'points',
+                pathPoints(baseModel.x, baseModel.y)
+            )
+        };
 
         return baseModel;
     }
