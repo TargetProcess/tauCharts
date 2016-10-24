@@ -347,38 +347,41 @@ export class BasePath extends Element {
             });
     }
 
-    createPathTween(attr, pathStringBuilder) {
+    createPathTween(attr, pathStringBuilder, model) {
         const tweenStore = '__pathTween__';
         const self = this;
 
-        return function (dataTo) {
+        return function (data) {
             if (!this[tweenStore]) {
                 this[tweenStore] = {
                     builder: pathStringBuilder,
-                    data: []
+                    points: []
                 };
             }
 
-            dataTo = utils.unique(dataTo, self.screenModel.id);
+            var pointsTo = utils.unique(data, self.screenModel.id)
+                .map(model.toPoint);
 
-            var dataFrom = this[tweenStore].data;
-            var interpolate = self.createPathDataInterpolator(dataFrom, dataTo);
+            var pointsFrom = this[tweenStore].points
+                 .filter(pt => !pt.isInterpolatedEndingPoint);
+
+            var interpolate = self.createPointsInterpolator(pointsFrom, pointsTo);
 
             return function (t) {
                 if (t === 0) {
-                    return this[tweenStore].line(dataFrom);
+                    return this[tweenStore].builder(pointsFrom);
                 }
                 if (t === 1) {
-                    this[tweenStore].data = dataTo;
+                    this[tweenStore].points = pointsTo;
                     this[tweenStore].builder = pathStringBuilder;
-                    return pathStringBuilder(dataTo);
+                    return pathStringBuilder(pointsTo);
                 }
 
                 var intermediate = interpolate(t);
 
                 // Save intermediate data to be able
                 // to continue transition after interrupt
-                this[tweenStore].data = intermediate;
+                this[tweenStore].points = intermediate;
 
                 if (intermediate.length === 0) {
                     return '';
@@ -395,16 +398,11 @@ export class BasePath extends Element {
         };
     }
 
-    createPathDataInterpolator(dataFrom, dataTo) {
-        const tempPointId = '__pathTween_pointId__';
+    createPointsInterpolator(pointsFrom, pointsTo) {
         const self = this;
 
         function push(target, items) {
             return Array.prototype.push.apply(target, items);
-        }
-
-        function getPointId(pt) {
-            return (pt[tempPointId] || self.screenModel.id(pt));
         }
 
         function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
@@ -422,7 +420,10 @@ export class BasePath extends Element {
                 var result = line.slice(0, existingCount);
                 push(result, utils.range(tempCount).map((i) => Object.assign(
                     {}, midPt,
-                    {[tempPointId]: getPointId(line[tempStartIdIndex + i])}
+                    {
+                        id: line[tempStartIdIndex + i].id,
+                        isInterpolatedEndingPoint: true
+                    }
                 )));
                 return result.slice(1);
             };
@@ -462,7 +463,7 @@ export class BasePath extends Element {
                             smallPolyline[smallPtIndex],
                             (i / (segPtCount - 1))
                         );
-                        newPt[tempPointId] = getPointId(bigPolyline[result.length]);
+                        newPt.id = bigPolyline[result.length].id;
                         result.push(newPt);
                     }
                 });
@@ -474,22 +475,21 @@ export class BasePath extends Element {
 
         function interpolateValue(a, b, t) {
             if (typeof b === 'string') {
-                return (t < 1 ? a : b);
+                return (t === 0 ? b : a);
             }
             if (b instanceof Date) {
                 return new Date(Number(a) + t * (b - a));
             }
             if (typeof b === 'boolean') {
-                return (t < 1 ? a : b);
+                return (t === 0 ? b : a);
             }
             return (a + t * (b - a));
         }
 
         function interpolatePoint(a, b, t) {
-            return d3.interpolate(a, b)(t);
             var c = {};
             Object.keys(b).forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
-            c[tempPointId] = getPointId(a);
+            c.id = a.id;
             return c;
         }
 
@@ -498,9 +498,8 @@ export class BasePath extends Element {
             return result;
         }
 
-        dataFrom = dataFrom.filter(d => !d[tempPointId]);
-
         var intermediate;
+        var remainingPoints = [];
         var changingPoints = [];
 
         /**
@@ -512,20 +511,20 @@ export class BasePath extends Element {
             intermediate = [];
 
             // NOTE: Suppose data is already sorted by X.
-            let idsFrom = dataFrom.map(getPointId);
-            let idsTo = dataTo.map(getPointId);
-            console.log('from', idsFrom, 'to', idsTo);
+            let idsFrom = pointsFrom.map(d => d.id);
+            let idsTo = pointsTo.map(d => d.id);
+            // console.log('from', idsFrom, 'to', idsTo);
             let addedIds = idsTo.filter(d => idsFrom.indexOf(d) < 0);
             let deletedIds = idsFrom.filter(d => idsTo.indexOf(d) < 0);
-            let remainingIds = (idsFrom.length < idsTo.length ? idsFrom : idsTo)
-                .filter(d => addedIds.indexOf(d) < 0 && deletedIds.indexOf(d) < 0);
+            let remainingIds = idsFrom
+                .filter(id => idsTo.indexOf(id) >= 0);
 
             remainingIds.forEach((id, i) => {
 
                 var indexFrom = idsFrom.indexOf(id);
                 var indexTo = idsTo.indexOf(id);
 
-                if (i === 0 && remainingIds.length > 1) {
+                if (i === 0 && (indexFrom > 0 || indexTo > 0)) {
 
                     //
                     // Left side changes
@@ -535,47 +534,25 @@ export class BasePath extends Element {
 
                     if (newCount > 0 || oldCount > 0) {
                         let decreasing = newCount === 0;
-                        let polyline = (decreasing ?
-                            dataFrom.slice(0, indexFrom + 1) :
-                            dataTo.slice(0, indexTo + 1)
+                        let targetEnding = (decreasing ?
+                            pointsFrom.slice(0, indexFrom + 1) :
+                            pointsTo.slice(0, indexTo + 1)
                         );
+
+                        let remainingPtIndex = targetEnding.length - 1;
                         changingPoints.push({
                             startIndex: 0,
                             getPoints: function (t) {
+                                var polyline = targetEnding.slice(0);
+                                polyline[targetEnding.length - 1] = intermediate[remainingPtIndex];
                                 return interpolateEnding({t, polyline, decreasing, rightToLeft: !decreasing});
                             }
                         });
-                        push(intermediate, utils.range(polyline.length - 1).map(() => null));
+                        push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
                     }
+                }
 
-                    intermediate.push(dataTo[indexTo]);
-
-                } else if (i === remainingIds.length - 1) {
-
-                    //
-                    // Right side changes
-
-                    intermediate.push(dataTo[indexTo]);
-
-                    let oldCount = dataFrom.length - indexFrom - 1;
-                    let newCount = dataTo.length - indexTo - 1;
-
-                    if (newCount > 0 || oldCount > 0) {
-                        let decreasing = newCount === 0;
-                        let polyline = (decreasing ?
-                            dataFrom.slice(indexFrom) :
-                            dataTo.slice(indexTo)
-                        );
-                        changingPoints.push({
-                            startIndex: intermediate.length,
-                            getPoints: function (t) {
-                                return interpolateEnding({t, polyline, decreasing, rightToLeft: decreasing});
-                            }
-                        });
-                        push(intermediate, utils.range(polyline.length - 1).map(() => null));
-                    }
-
-                } else {
+                if (i > 0) {
 
                     //
                     // Inner changes
@@ -613,19 +590,19 @@ export class BasePath extends Element {
                     };
 
                     if (newCount > oldCount) {
-                        putChangingPoints(dataFrom, indexFrom, oldCount, dataTo, indexTo, newCount, false);
+                        putChangingPoints(pointsFrom, indexFrom, oldCount, pointsTo, indexTo, newCount, false);
                     } else if (oldCount > newCount) {
-                        putChangingPoints(dataTo, indexTo, newCount, dataFrom, indexFrom, oldCount, true);
-                    } else {
+                        putChangingPoints(pointsTo, indexTo, newCount, pointsFrom, indexFrom, oldCount, true);
+                    } else if (oldCount > 0) {
                         changingPoints.push({
                             startIndex: intermediate.length,
                             getPoints: function (t) {
                                 return interpolatePoints(
-                                    dataFrom.slice(
+                                    pointsFrom.slice(
                                         indexFrom - oldCount,
                                         indexFrom
                                     ),
-                                    dataTo.slice(
+                                    pointsTo.slice(
                                         indexTo - newCount,
                                         indexTo
                                     ),
@@ -635,21 +612,55 @@ export class BasePath extends Element {
                         });
                     }
                     push(intermediate, utils.range(Math.max(newCount, oldCount)).map(() => null));
+                }
 
-                    intermediate.push(dataTo[indexTo]);
+                remainingPoints.push({
+                    index: intermediate.length,
+                    getPoint: function (t) {
+                        return interpolatePoint(pointsFrom[indexFrom], pointsTo[indexTo], t);
+                    }
+                });
+                intermediate.push(null);
+                
+                if (i === remainingIds.length - 1) {
+
+                    //
+                    // Right side changes
+
+                    let remainingPtIndex = intermediate.length - 1;
+
+                    let oldCount = pointsFrom.length - indexFrom - 1;
+                    let newCount = pointsTo.length - indexTo - 1;
+
+                    if (newCount > 0 || oldCount > 0) {
+                        let decreasing = newCount === 0;
+                        let targetEnding = (decreasing ?
+                            pointsFrom.slice(indexFrom) :
+                            pointsTo.slice(indexTo)
+                        );
+                        changingPoints.push({
+                            startIndex: intermediate.length,
+                            getPoints: function (t) {
+                                var polyline = targetEnding.slice(0);
+                                polyline[0] = intermediate[remainingPtIndex];
+                                return interpolateEnding({t, polyline, decreasing, rightToLeft: decreasing});
+                            }
+                        });
+                        push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
+                    }
                 }
             });
 
             if (changingPoints.length === 0) {
 
-                if (dataTo.length > 0 && dataFrom.length === 0) {
+                if (pointsTo.length > 0 && remainingIds.length === 0) {
 
                     //
                     // Path is created from zero
 
-                    intermediate.push(dataTo[0]);
-                    push(intermediate, utils.range(dataTo.length - 1).map(() => null));
-                    let polyline = dataTo.slice(0);
+                    intermediate.push(pointsTo[0]);
+                    push(intermediate, utils.range(pointsTo.length - 1).map(() => null));
+                    let polyline = pointsTo.slice(0);
                     changingPoints.push({
                         startIndex: 1,
                         getPoints: function (t) {
@@ -657,14 +668,14 @@ export class BasePath extends Element {
                         }
                     });
 
-                } else if (dataFrom.length > 0 && dataTo.length === 0) {
+                } else if (pointsFrom.length > 0 && remainingIds.length === 0) {
 
                     //
                     // Path is removed
 
-                    intermediate.push(dataTo[0]);
-                    push(intermediate, utils.range(dataTo.length - 1).map(() => null));
-                    let polyline = dataTo.slice(0);
+                    intermediate.push(pointsFrom[0]);
+                    push(intermediate, utils.range(pointsFrom.length - 1).map(() => null));
+                    let polyline = pointsFrom.slice(0);
                     changingPoints.push({
                         startIndex: 1,
                         getPoints: function (t) {
@@ -677,6 +688,10 @@ export class BasePath extends Element {
         };
 
         var updateIntermediatePoints = function (t) {
+            remainingPoints.forEach((d, i) => {
+                var pt = d.getPoint(t);
+                intermediate[d.index] = pt;
+            });
             changingPoints.forEach((d) => {
                 var points = d.getPoints(t);
                 points.forEach((pt, i) => intermediate[d.startIndex + i] = pt);
@@ -685,10 +700,10 @@ export class BasePath extends Element {
 
         return function (t) {
             if (t === 0) {
-                return dataFrom;
+                return pointsFrom;
             }
             if (t === 1) {
-                return dataTo;
+                return pointsTo;
             }
 
             if (!intermediate) {
@@ -696,8 +711,6 @@ export class BasePath extends Element {
             }
 
             updateIntermediatePoints(t);
-
-            intermediate = utils.unique(intermediate, d=>JSON.stringify({x:d.x,y:d.y}))
 
             return intermediate;
 

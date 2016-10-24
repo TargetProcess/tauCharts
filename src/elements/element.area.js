@@ -59,6 +59,14 @@ export class Area extends BasePath {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
+        baseModel.toPoint = (d) => ({
+            id: self.screenModel.id(d),
+            x0: baseModel.x0(d),
+            x1: baseModel.x(d),
+            y0: baseModel.y0(d),
+            y1: baseModel.y(d)
+        });
+
         var areaPoints = (xi, yi, x0, y0) => {
             return ((fiber) => {
                 var ways = fiber
@@ -96,7 +104,8 @@ export class Area extends BasePath {
             attr: 'points',
             fn: this.createPathTween(
                 'points',
-                areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
+                areaPoints(d => d.x1, d => d.y1, d => d.x0, d => d.y0),
+                baseModel
             )
         };
 

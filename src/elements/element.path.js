@@ -51,6 +51,12 @@ export class Path extends BasePath {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
+        baseModel.toPoint = (d) => ({
+            id: self.screenModel.id(d),
+            x: baseModel.x(d),
+            y: baseModel.y(d)
+        });
+
         var pathPoints = (x, y) => {
             return ((fiber) => (fiber.map((d) => [x(d), y(d)].join(',')).join(' ')));
         };
@@ -69,7 +75,8 @@ export class Path extends BasePath {
             attr: 'points',
             fn: this.createPathTween(
                 'points',
-                pathPoints(baseModel.x, baseModel.y)
+                pathPoints(d => d.x, d => d.y),
+                baseModel
             )
         };
 

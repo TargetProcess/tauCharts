@@ -107,11 +107,24 @@ export class Line extends BasePath {
         var tag = this.isEmptySize ? 'line' : 'area';
         const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
+        baseModel.toPoint = this.isEmptySize ?
+            (d) => ({
+                id: self.screenModel.id(d),
+                x: baseModel.x(d),
+                y: baseModel.y(d)
+            }) :
+            (d) => ({
+                id: self.screenModel.id(d),
+                x: baseModel.x(d),
+                y: baseModel.y(d),
+                size: baseModel.size(d)
+            });
+
         var d3Line = d3.svg
             .line()
             .interpolate(guide.interpolate)
-            .x(baseModel.x)
-            .y(baseModel.y);
+            .x(d => d.x)
+            .y(d => d.y);
 
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
@@ -188,14 +201,15 @@ export class Line extends BasePath {
         if (this.isEmptySize) {
             baseModel.pathTween = {
                 attr: 'd',
-                fn: this.createPathTween('d', d3Line)
+                fn: this.createPathTween('d', d3Line, baseModel)
             };
         } else {
             baseModel.pathTween = {
                 attr: 'points',
                 fn: this.createPathTween(
                     'points',
-                    d3LineVarySize(baseModel.x, baseModel.y, baseModel.size)
+                    d3LineVarySize(d => d.x, d => d.y, d => d.size, baseModel),
+                    baseModel
                 )
             };
         }
