@@ -363,7 +363,7 @@ export class BasePath extends Element {
                 .map(model.toPoint);
 
             var pointsFrom = this[tweenStore].points
-                 .filter(pt => !pt.isInterpolatedEndingPoint);
+                .filter(pt => !pt.isInterpolatedEndingPoint);
 
             var interpolate = self.createPointsInterpolator(pointsFrom, pointsTo);
 
@@ -399,12 +399,15 @@ export class BasePath extends Element {
     }
 
     createPointsInterpolator(pointsFrom, pointsTo) {
-        const self = this;
 
         function push(target, items) {
             return Array.prototype.push.apply(target, items);
         }
 
+        /**
+         * Returns a polyline with points that move along line
+         * from start point to full line (or vice versa).
+         */
         function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
 
             var getLinePiece = (q, line) => {
@@ -422,6 +425,7 @@ export class BasePath extends Element {
                     {}, midPt,
                     {
                         id: line[tempStartIdIndex + i].id,
+                        positionIsBeingChanged: true,
                         isInterpolatedEndingPoint: true
                     }
                 )));
@@ -438,8 +442,12 @@ export class BasePath extends Element {
             }
 
             return result;
-        };
+        }
 
+        /**
+         * Returns a polyline, filled with points, so that number of points
+         * becomes the same on both start and end polylines.
+         */
         function fillSmallerPolyline({smallPolyline, bigPolyline}) {
 
             var segmentsCount = {
@@ -453,7 +461,7 @@ export class BasePath extends Element {
 
             var result = [smallPolyline[0]];
             var smallPtIndex = 1;
-            segmentsPointsCount.forEach((segPtCount, si) => {
+            segmentsPointsCount.forEach((segPtCount) => {
                 utils.range(1, segPtCount).forEach(i => {
                     if (i === segPtCount - 1) {
                         result.push(smallPolyline[smallPtIndex]);
@@ -463,6 +471,7 @@ export class BasePath extends Element {
                             smallPolyline[smallPtIndex],
                             (i / (segPtCount - 1))
                         );
+                        newPt.positionIsBeingChanged = true;
                         newPt.id = bigPolyline[result.length].id;
                         result.push(newPt);
                     }
@@ -471,7 +480,7 @@ export class BasePath extends Element {
             });
 
             return result;
-        };
+        }
 
         function interpolateValue(a, b, t) {
             if (typeof b === 'string') {
@@ -511,13 +520,88 @@ export class BasePath extends Element {
             intermediate = [];
 
             // NOTE: Suppose data is already sorted by X.
-            let idsFrom = pointsFrom.map(d => d.id);
-            let idsTo = pointsTo.map(d => d.id);
-            // console.log('from', idsFrom, 'to', idsTo);
-            let addedIds = idsTo.filter(d => idsFrom.indexOf(d) < 0);
-            let deletedIds = idsFrom.filter(d => idsTo.indexOf(d) < 0);
-            let remainingIds = idsFrom
+            var idsFrom = pointsFrom.map(d => d.id);
+            var idsTo = pointsTo.map(d => d.id);
+            var remainingIds = idsFrom
                 .filter(id => idsTo.indexOf(id) >= 0);
+
+            //
+            // Determine start and end scales difference to apply
+            // to initial target position of newly added points
+            // (or end position of deleted points)
+            // This requires at least 2 stable points
+
+            function getScaleDiffFn(points1, points2) {
+
+                // Find remaining points with predictable position
+                var src = [];
+                var dst = [];
+                var i, j, a, b, matchJ = 0;
+                var len1 = points1.length;
+                var len2 = points2.length;
+                for (i = 0; i < len1; i++) {
+                    a = points1[i];
+                    for (j = matchJ; j < len2; j++) {
+                        b = points2[j];
+                        if (a.id === b.id) {
+                            if (
+                                !a.positionIsBeingChanged &&
+                                !b.positionIsBeingChanged
+                            ) {
+                                matchJ = j + 1;
+                                src.push(a);
+                                dst.push(b);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (src.length < 2 || dst.length < 2) {
+                    // Applying scale difference will not be possible
+                    return (d => Object.assign({}, d));
+                }
+
+                var numProps = Object.keys(src[0])
+                    .filter(prop => typeof src[0][prop] === 'number')
+                    .filter(prop => prop !== 'id');
+
+                var propDiffs = {};
+                var repeater = d => d;
+                var createPropDiffFn = (a, b, A, B) => (c) => (
+                    B +
+                    (c - b) *
+                    (B - A) /
+                    (b - a)
+                );
+                numProps.forEach(prop => {
+                    var a = src[0][prop];
+                    for (var i = src.length - 1, b, A, B; i > 0; i--) {
+                        b = src[i][prop];
+                        if (b !== a) {
+                            A = dst[0][prop];
+                            B = dst[i][prop];
+                            propDiffs[prop] = createPropDiffFn(a, b, A, B);
+                            return;
+                        }
+                    }
+                    propDiffs[prop] = repeater;
+                });
+
+                return function (c) {
+                    var C = Object.assign({}, c);
+                    numProps.forEach(p => {
+                        C[p] = propDiffs[p](c[p]);
+                    });
+                    return C;
+                };
+            }
+
+            var applyScaleDiffFrom = getScaleDiffFn(pointsFrom, pointsTo);
+            var applyScaleDiffTo = getScaleDiffFn(pointsTo, pointsFrom);
+
+            //
+            // Determine, how to interpolate changes between remaining points
 
             remainingIds.forEach((id, i) => {
 
@@ -538,15 +622,41 @@ export class BasePath extends Element {
                             pointsFrom.slice(0, indexFrom + 1) :
                             pointsTo.slice(0, indexTo + 1)
                         );
+                        let applyScaleDiff = (decreasing ?
+                            applyScaleDiffFrom :
+                            applyScaleDiffTo
+                        );
 
                         let remainingPtIndex = targetEnding.length - 1;
                         changingPoints.push({
                             startIndex: 0,
-                            getPoints: function (t) {
-                                var polyline = targetEnding.slice(0);
-                                polyline[targetEnding.length - 1] = intermediate[remainingPtIndex];
-                                return interpolateEnding({t, polyline, decreasing, rightToLeft: !decreasing});
-                            }
+                            getPoints: (applyScaleDiff ?
+                                decreasing ?
+                                    function (t) {
+                                        var polyline = targetEnding.slice(0);
+                                        var interpolated = interpolateEnding({
+                                            t, polyline,
+                                            decreasing,
+                                            rightToLeft: !decreasing
+                                        });
+                                        var diffed = interpolated.map(applyScaleDiff);
+                                        return interpolatePoints(interpolated, diffed, t);
+                                    } :
+                                    function (t) {
+                                        var polyline = targetEnding.slice(0);
+                                        var interpolated = interpolateEnding({
+                                            t, polyline,
+                                            decreasing,
+                                            rightToLeft: !decreasing
+                                        });
+                                        var diffed = interpolated.map(applyScaleDiff);
+                                        return interpolatePoints(diffed, interpolated, t);
+                                    } :
+                                function (t) {
+                                    var polyline = targetEnding.slice(0);
+                                    polyline[targetEnding.length - 1] = intermediate[remainingPtIndex];
+                                    return interpolateEnding({t, polyline, decreasing, rightToLeft: !decreasing});
+                                })
                         });
                         push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
                     }
@@ -621,7 +731,7 @@ export class BasePath extends Element {
                     }
                 });
                 intermediate.push(null);
-                
+
                 if (i === remainingIds.length - 1) {
 
                     //
@@ -638,13 +748,40 @@ export class BasePath extends Element {
                             pointsFrom.slice(indexFrom) :
                             pointsTo.slice(indexTo)
                         );
+                        let applyScaleDiff = (decreasing ?
+                            applyScaleDiffFrom :
+                            applyScaleDiffTo
+                        );
+
                         changingPoints.push({
                             startIndex: intermediate.length,
-                            getPoints: function (t) {
-                                var polyline = targetEnding.slice(0);
-                                polyline[0] = intermediate[remainingPtIndex];
-                                return interpolateEnding({t, polyline, decreasing, rightToLeft: decreasing});
-                            }
+                            getPoints: (applyScaleDiff ?
+                                decreasing ?
+                                    function (t) {
+                                        var polyline = targetEnding.slice(0);
+                                        var interpolated = interpolateEnding({
+                                            t, polyline,
+                                            decreasing,
+                                            rightToLeft: decreasing
+                                        });
+                                        var diffed = interpolated.map(applyScaleDiff);
+                                        return interpolatePoints(interpolated, diffed, t);
+                                    } :
+                                    function (t) {
+                                        var polyline = targetEnding.slice(0);
+                                        var interpolated = interpolateEnding({
+                                            t, polyline,
+                                            decreasing,
+                                            rightToLeft: decreasing
+                                        });
+                                        var diffed = interpolated.map(applyScaleDiff);
+                                        return interpolatePoints(diffed, interpolated, t);
+                                    } :
+                                function (t) {
+                                    var polyline = targetEnding.slice(0);
+                                    polyline[0] = intermediate[remainingPtIndex];
+                                    return interpolateEnding({t, polyline, decreasing, rightToLeft: decreasing});
+                                })
                         });
                         push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
                     }
@@ -688,7 +825,7 @@ export class BasePath extends Element {
         };
 
         var updateIntermediatePoints = function (t) {
-            remainingPoints.forEach((d, i) => {
+            remainingPoints.forEach((d) => {
                 var pt = d.getPoint(t);
                 intermediate[d.index] = pt;
             });
