@@ -4,6 +4,7 @@ import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
+import {d3_createPathTween} from '../utils/d3-decorators';
 
 export class Line extends BasePath {
 
@@ -201,15 +202,16 @@ export class Line extends BasePath {
         if (this.isEmptySize) {
             baseModel.pathTween = {
                 attr: 'd',
-                fn: this.createPathTween('d', d3Line, baseModel)
+                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, self.screenModel.id)
             };
         } else {
             baseModel.pathTween = {
                 attr: 'points',
-                fn: this.createPathTween(
+                fn: d3_createPathTween(
                     'points',
                     d3LineVarySize(d => d.x, d => d.y, d => d.size, baseModel),
-                    baseModel
+                    baseModel.toPoint,
+                    self.screenModel.id
                 )
             };
         }

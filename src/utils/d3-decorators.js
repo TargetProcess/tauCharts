@@ -576,8 +576,47 @@ var d3_selectAllImmediate = (container, selector) => {
     });
 };
 
+function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
+    const pointsStore = '__pathPoints__';
+
+    return function (data) {
+        if (!this[pointsStore]) {
+            this[pointsStore] = [];
+        }
+
+        var pointsTo = utils.unique(data, idGetter).map(pointConvertor);
+        var pointsFrom = this[pointsStore];
+
+        var interpolate = utilsDraw.createPointsInterpolator(pointsFrom, pointsTo);
+
+        return function (t) {
+            if (t === 0) {
+                return pathStringBuilder(pointsFrom);
+            }
+            if (t === 1) {
+                this[pointsStore] = pointsTo;
+                return pathStringBuilder(pointsTo);
+            }
+
+            var intermediate = interpolate(t);
+
+            // Save intermediate points to be able
+            // to continue transition after interrupt
+            this[pointsStore] = intermediate;
+
+            if (intermediate.length === 0) {
+                return '';
+            }
+
+            return pathStringBuilder(intermediate);
+
+        }.bind(this);
+    };
+}
+
 export {
     d3_animationInterceptor,
+    d3_createPathTween,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,

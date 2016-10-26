@@ -3,6 +3,7 @@ import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
+import {d3_createPathTween} from '../utils/d3-decorators';
 
 export class Area extends BasePath {
 
@@ -102,10 +103,11 @@ export class Area extends BasePath {
 
         baseModel.pathTween = {
             attr: 'points',
-            fn: this.createPathTween(
+            fn: d3_createPathTween(
                 'points',
                 areaPoints(d => d.x, d => d.y, d => d.x0, d => d.y0),
-                baseModel
+                baseModel.toPoint,
+                self.screenModel.id
             )
         };
 
