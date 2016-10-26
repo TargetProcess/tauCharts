@@ -445,7 +445,7 @@ export class BasePath extends Element {
                     distance.push(totalDistance);
                 }
                 var passedDistance = t * totalDistance;
-                for (var i = 1; i < distance.length; i++) {
+                for (i = 1; i < distance.length; i++) {
                     if (passedDistance === distance[i]) {
                         q = (i / (polyline.length - 1));
                         break;
