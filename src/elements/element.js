@@ -10,13 +10,6 @@ export class Element extends Emitter {
         this.screenModel = null;
         this._elementNameSpace = (config.namespace || 'default');
         this._elementScalesHub = {};
-
-        // TODO: fix when pass scales to constructor
-        this.isEmptySize = (
-            (!config.size)
-            || (config.size.indexOf('size_undefined') === 0)
-            || (config.size.indexOf('size_null') === 0)
-        );
     }
 
     regScale(paramId, scaleObj) {
@@ -71,11 +64,7 @@ export class Element extends Emitter {
     }
 
     walkFrames() {
-        return {
-            toScreenModel() {
-                return null;
-            }
-        };
+        return null;
     }
 
     createScales() {
@@ -93,10 +82,26 @@ export class Element extends Emitter {
 
     init() {
         this.createScales(this.config.fnCreateScale);
-        this.screenModel = (this
-            .walkFrames(this.config.frames)
-            .toScreenModel());
+        this.screenModel = this.walkFrames(this.config.frames);
     }
+
+    /* eslint-disable */
+    defineGrammarModel(fnCreateScale) {
+        return {};
+    }
+
+    evalGrammarRules(initialModel) {
+        return initialModel;
+    }
+
+    adjustScales(grammarModel) {
+        // return nothing
+    }
+
+    createScreenModel(grammarModel) {
+        // return nothing
+    }
+    /* eslint-enable */
 
     draw() {
         // TODO: expose to explicit call everywhere

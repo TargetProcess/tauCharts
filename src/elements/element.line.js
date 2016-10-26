@@ -5,23 +5,25 @@ import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-m
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import getBrushLine from '../utils/path/brush-line-builder';
 
-export class Line extends BasePath {
+const Line = {
 
-    constructor(config) {
+    draw: BasePath.draw,
+    highlight: BasePath.highlight,
+    highlightDataPoints: BasePath.highlightDataPoints,
 
-        super(config);
+    setup(xConfig) {
 
-        var enableStack = this.config.stack;
+        const config = BasePath.setup(xConfig);
+        const enableStack = config.stack;
 
-        this.config.guide = utils.defaults(
-            (this.config.guide || {}),
+        config.guide = utils.defaults(
+            (config.guide || {}),
             {
                 interpolate: 'linear'
             });
 
-        this.decorators = [
+        config.transformRules = [
             CartesianGrammar.decorator_orientation,
             CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_group,
@@ -30,17 +32,68 @@ export class Line extends BasePath {
             enableStack && CartesianGrammar.decorator_stack,
             CartesianGrammar.decorator_dynamic_size,
             CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
-            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
+            CartesianGrammar.decorator_label
         ].concat(config.transformModel || []);
-    }
+
+        config.adjustRules = [
+            ((prevModel, args) => {
+                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: 2,
+                        defMaxSize: (isEmptySize ? 6 : 40)
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+            }),
+            enableStack && CartesianGrammar.adjustYScale
+        ];
+
+        return config;
+    },
 
     buildModel(screenModel) {
 
-        var self = this;
+        const config = this.node().config;
+        const wMax = config.options.width;
+        const hMax = config.options.height;
+        const guide = config.guide;
+        const options = config.options;
+        const isEmptySize = !screenModel.model.scaleSize.dim; // TODO: empty method for size scale???;
+        const widthCss = (isEmptySize ?
+            (guide.widthCssClass || getLineClassesByWidth(options.width)) :
+            (''));
+        const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
+        const tag = isEmptySize ? 'line' : 'area';
+        const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
-        var baseModel = super.buildModel(screenModel);
+        const limit = (x, minN, maxN) => {
+
+            var k = 1000;
+            var n = Math.round(x * k) / k;
+
+            if (n < minN) {
+                return minN;
+            }
+
+            if (n > maxN) {
+                return maxN;
+            }
+
+            return n;
+        };
+
+        var baseModel = BasePath.baseModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
             var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
@@ -61,7 +114,7 @@ export class Line extends BasePath {
 
             // double for consistency in case of
             // (vertices.length === 1)
-            vertices.unshift(vertices[0]);
+            vertices.push(vertices[0]);
 
             var pair = utils.range(vertices.length - 1)
                 .map((edge) => {
@@ -80,24 +133,14 @@ export class Line extends BasePath {
             return pair.sort(by('dist'))[0].data;
         };
 
-        var guide = this.config.guide;
-        var options = this.config.options;
-        var widthCss = (this.isEmptySize ?
-            (guide.widthCssClass || getLineClassesByWidth(options.width)) :
-            (''));
-        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
-
-        var tag = this.isEmptySize ? 'line' : 'area';
-        const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
-
-        baseModel.toPoint = this.isEmptySize ?
+        baseModel.toPoint = isEmptySize ?
             (d) => ({
-                id: self.screenModel.id(d),
+                id: screenModel.id(d),
                 x: baseModel.x(d),
                 y: baseModel.y(d)
             }) :
             (d) => ({
-                id: self.screenModel.id(d),
+                id: screenModel.id(d),
                 x: baseModel.x(d),
                 y: baseModel.y(d),
                 size: baseModel.size(d)
@@ -113,9 +156,63 @@ export class Line extends BasePath {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
-        baseModel.pathElement = 'path';
+        baseModel.pathElement = isEmptySize ? 'path' : 'polygon';
 
-        var pathAttributes = this.isEmptySize ?
+        var d3LineVarySize = (x, y, w) => {
+            return (fiber) => {
+                var xy = ((d) => ([x(d), y(d)]));
+                var ways = fiber
+                    .reduce((memo, d, i, list) => {
+                        var dPrev = list[i - 1];
+                        var dNext = list[i + 1];
+                        var curr = xy(d);
+                        var prev = dPrev ? xy(dPrev) : null;
+                        var next = dNext ? xy(dNext) : null;
+
+                        var width = w(d);
+                        var lAngle = dPrev ? (Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0])) : Math.PI;
+                        var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
+
+                        var gamma = lAngle - rAngle;
+
+                        if (gamma === 0) {
+                            // Avoid divide be zero
+                            return memo;
+                        }
+
+                        var diff = width / 2 / Math.sin(gamma / 2);
+                        var aup = rAngle + gamma / 2;
+                        var adown = aup - Math.PI;
+                        var dxup = diff * Math.cos(aup);
+                        var dyup = diff * Math.sin(aup);
+                        var dxdown = diff * Math.cos(adown);
+                        var dydown = diff * Math.sin(adown);
+
+                        var dir = [
+                            limit(curr[0] + dxup, 0, wMax), // x
+                            limit(curr[1] - dyup, 0, hMax)  // y
+                        ];
+
+                        var rev = [
+                            limit(curr[0] + dxdown, 0, wMax),
+                            limit(curr[1] - dydown, 0, hMax)
+                        ];
+
+                        memo.dir.push(dir);
+                        memo.rev.push(rev);
+
+                        return memo;
+                    },
+                    {
+                        dir: [],
+                        rev: []
+                    });
+
+                return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
+            };
+        };
+
+        var pathAttributes = isEmptySize ?
             ({
                 stroke: (fiber) => baseModel.color(fiber[0]),
                 class: 'i-role-datum'
@@ -127,23 +224,25 @@ export class Line extends BasePath {
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        if (this.isEmptySize) {
+        if (isEmptySize) {
             baseModel.pathTween = {
                 attr: 'd',
-                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, self.screenModel.id)
+                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, screenModel.id)
             };
         } else {
             baseModel.pathTween = {
-                attr: 'd',
+                attr: 'points',
                 fn: d3_createPathTween(
-                    'd',
-                    getBrushLine,
+                    'points',
+                    d3LineVarySize(d => d.x, d => d.y, d => d.size, baseModel),
                     baseModel.toPoint,
-                    self.screenModel.id
+                    screenModel.id
                 )
             };
         }
 
         return baseModel;
     }
-}
+};
+
+export {Line};

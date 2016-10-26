@@ -74,16 +74,24 @@ export class GPL extends Emitter {
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
             var instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
                     {adjustPhase: true},
-                    {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
+                    {fnCreateScale: scalesFactoryMethod},
                     (unit),
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
+            instance.createScales(scalesFactoryMethod);
+            const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
+            const grammarModel = instance.evalGrammarRules(initialModel);
+            instance.adjustScales(grammarModel);
+            instance.node().screenModel = instance.createScreenModel(grammarModel);
+
             instance.init();
+
             return instance;
         });
 
@@ -93,14 +101,19 @@ export class GPL extends Emitter {
 
         return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
             var instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
-                    {fnCreateScale: this._createFrameScalesFactoryMethod(frame)},
+                    {fnCreateScale: scalesFactoryMethod},
                     (unit),
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
+            instance.createScales(scalesFactoryMethod);
+            const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
+            const grammarModel = instance.evalGrammarRules(initialModel);
+            instance.node().screenModel = instance.createScreenModel(grammarModel);
             instance.init();
             instance.parentUnit = parentInstance;
             return instance;

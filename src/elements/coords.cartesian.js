@@ -127,22 +127,34 @@ export class Cartesian extends Element {
             .regScale('y', this.yScale);
     }
 
-    walkFrames() {
+    defineGrammarModel() {
         var w = this.W;
         var h = this.H;
+        return new CartesianModel({
+            scaleX: this.xScale,
+            scaleY: this.yScale,
+            xi: (() => w / 2),
+            yi: (() => h / 2),
+            sizeX: (() => w),
+            sizeY: (() => h)
+        });
+    }
+
+    evalGrammarRules(grammarModel) {
         return [
             CartesianModel.decorator_size,
             CartesianModel.decorator_color
-        ].filter(x => x).reduce(
-            ((model, transform) => transform(model, {})),
-            (new CartesianModel({
-                scaleX: this.xScale,
-                scaleY: this.yScale,
-                xi: (() => w / 2),
-                yi: (() => h / 2),
-                sizeX: (() => w),
-                sizeY: (() => h)
-            })));
+        ].filter(x => x).reduce(((model, rule) => rule(model, {})), grammarModel);
+    }
+
+    createScreenModel(grammarModel) {
+        return grammarModel.toScreenModel();
+    }
+
+    walkFrames() {
+        const grammarModel = this.evalGrammarRules(this.defineGrammarModel());
+        this.adjustScales(grammarModel);
+        return this.createScreenModel(grammarModel);
     }
 
     allocateRect(k) {
