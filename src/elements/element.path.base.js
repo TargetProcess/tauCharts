@@ -510,6 +510,76 @@ export class BasePath extends Element {
             return result;
         }
 
+        /**
+         * Returns a function which moves a point from it's scale
+         * to opposite scale (e.g. from start scale to end scale).
+         */
+        function getScaleDiffFn(points1, points2) {
+
+            // Find remaining points with predictable position
+            var src = [];
+            var dst = [];
+            var i, j, a, b, matchJ = 0;
+            var len1 = points1.length;
+            var len2 = points2.length;
+            for (i = 0; i < len1; i++) {
+                a = points1[i];
+                for (j = matchJ; j < len2; j++) {
+                    b = points2[j];
+                    if (a.id === b.id) {
+                        if (
+                            !a.positionIsBeingChanged &&
+                            !b.positionIsBeingChanged
+                        ) {
+                            matchJ = j + 1;
+                            src.push(a);
+                            dst.push(b);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (src.length < 1 || dst.length < 1) {
+                // Applying scale difference will not be possible
+                return (d => d);
+            }
+
+            var numProps = Object.keys(src[0])
+                .filter(prop => typeof src[0][prop] === 'number')
+                .filter(prop => prop !== 'id');
+
+            var propDiffs = {};
+            var createPropDiffFn = (a, b, A, B) => (c) => (
+                B +
+                (c - b) *
+                (B - A) /
+                (b - a)
+            );
+            var createSimpleDiffFn = (a, A) => (c) => (c - a + A);
+            numProps.forEach(prop => {
+                var a = src[0][prop];
+                var A = dst[0][prop];
+                for (var i = src.length - 1, b, B; i > 0; i--) {
+                    b = src[i][prop];
+                    if (b !== a) {
+                        B = dst[i][prop];
+                        propDiffs[prop] = createPropDiffFn(a, b, A, B);
+                        return;
+                    }
+                }
+                propDiffs[prop] = createSimpleDiffFn(a, A);
+            });
+
+            return function (c) {
+                var C = Object.assign({}, c);
+                numProps.forEach(p => {
+                    C[p] = propDiffs[p](c[p]);
+                });
+                return C;
+            };
+        }
+
         var intermediate;
         var remainingPoints = [];
         var changingPoints = [];
@@ -532,76 +602,9 @@ export class BasePath extends Element {
             // Determine start and end scales difference to apply
             // to initial target position of newly added points
             // (or end position of deleted points)
-            // This requires at least 2 stable points
 
-            function getScaleDiffFn(points1, points2) {
-
-                // Find remaining points with predictable position
-                var src = [];
-                var dst = [];
-                var i, j, a, b, matchJ = 0;
-                var len1 = points1.length;
-                var len2 = points2.length;
-                for (i = 0; i < len1; i++) {
-                    a = points1[i];
-                    for (j = matchJ; j < len2; j++) {
-                        b = points2[j];
-                        if (a.id === b.id) {
-                            if (
-                                !a.positionIsBeingChanged &&
-                                !b.positionIsBeingChanged
-                            ) {
-                                matchJ = j + 1;
-                                src.push(a);
-                                dst.push(b);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                if (src.length < 1 || dst.length < 1) {
-                    // Applying scale difference will not be possible
-                    return (d => d);
-                }
-
-                var numProps = Object.keys(src[0])
-                    .filter(prop => typeof src[0][prop] === 'number')
-                    .filter(prop => prop !== 'id');
-
-                var propDiffs = {};
-                var createPropDiffFn = (a, b, A, B) => (c) => (
-                    B +
-                    (c - b) *
-                    (B - A) /
-                    (b - a)
-                );
-                var createSimpleDiffFn = (a, A) => (c) => (c - a + A);
-                numProps.forEach(prop => {
-                    var a = src[0][prop];
-                    var A = dst[0][prop];
-                    for (var i = src.length - 1, b, B; i > 0; i--) {
-                        b = src[i][prop];
-                        if (b !== a) {
-                            B = dst[i][prop];
-                            propDiffs[prop] = createPropDiffFn(a, b, A, B);
-                            return;
-                        }
-                    }
-                    propDiffs[prop] = createSimpleDiffFn(a, A);
-                });
-
-                return function (c) {
-                    var C = Object.assign({}, c);
-                    numProps.forEach(p => {
-                        C[p] = propDiffs[p](c[p]);
-                    });
-                    return C;
-                };
-            }
-
-            var applyScaleDiffFrom = getScaleDiffFn(pointsFrom, pointsTo);
-            var applyScaleDiffTo = getScaleDiffFn(pointsTo, pointsFrom);
+            var toEndScale = getScaleDiffFn(pointsFrom, pointsTo);
+            var toStartScale = getScaleDiffFn(pointsTo, pointsFrom);
 
             //
             // Determine, how to interpolate changes between remaining points
@@ -625,9 +628,9 @@ export class BasePath extends Element {
                             pointsFrom.slice(0, indexFrom + 1) :
                             pointsTo.slice(0, indexTo + 1)
                         );
-                        let applyScaleDiff = (decreasing ?
-                            applyScaleDiffFrom :
-                            applyScaleDiffTo
+                        let toOppositeScale = (decreasing ?
+                            toEndScale :
+                            toStartScale
                         );
 
                         changingPoints.push({
@@ -641,7 +644,7 @@ export class BasePath extends Element {
                                             decreasing,
                                             rightToLeft: !decreasing
                                         });
-                                        var diffed = interpolated.map(applyScaleDiff);
+                                        var diffed = interpolated.map(toOppositeScale);
                                         return interpolatePoints(interpolated, diffed, t);
                                     } :
                                     function (t) {
@@ -651,7 +654,7 @@ export class BasePath extends Element {
                                             decreasing,
                                             rightToLeft: !decreasing
                                         });
-                                        var diffed = interpolated.map(applyScaleDiff);
+                                        var diffed = interpolated.map(toOppositeScale);
                                         return interpolatePoints(diffed, interpolated, t);
                                     }
                             )
@@ -740,9 +743,9 @@ export class BasePath extends Element {
                             pointsFrom.slice(indexFrom) :
                             pointsTo.slice(indexTo)
                         );
-                        let applyScaleDiff = (decreasing ?
-                            applyScaleDiffFrom :
-                            applyScaleDiffTo
+                        let toOppositeScale = (decreasing ?
+                            toEndScale :
+                            toStartScale
                         );
 
                         changingPoints.push({
@@ -756,7 +759,7 @@ export class BasePath extends Element {
                                             decreasing,
                                             rightToLeft: decreasing
                                         });
-                                        var diffed = interpolated.map(applyScaleDiff);
+                                        var diffed = interpolated.map(toOppositeScale);
                                         return interpolatePoints(interpolated, diffed, t);
                                     } :
                                     function (t) {
@@ -766,7 +769,7 @@ export class BasePath extends Element {
                                             decreasing,
                                             rightToLeft: decreasing
                                         });
-                                        var diffed = interpolated.map(applyScaleDiff);
+                                        var diffed = interpolated.map(toOppositeScale);
                                         return interpolatePoints(diffed, interpolated, t);
                                     }
                             )
