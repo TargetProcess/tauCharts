@@ -41,10 +41,6 @@ export class LinearScale extends BaseScale {
         var d3Domain = d3.scale.linear().domain(varSet);
 
         var d3Scale = d3Domain.rangeRound(interval, 1);
-
-        /*
-        // NOTE: Scale limit is disabled, to help path transition look consistent
-        // (start line becomes wrecked).
         var scale = (int) => {
             var min = varSet[0];
             var max = varSet[1];
@@ -61,8 +57,6 @@ export class LinearScale extends BaseScale {
 
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
-        */
-        var scale = d3Scale;
 
         scale.stepSize = (() => 0);
 
