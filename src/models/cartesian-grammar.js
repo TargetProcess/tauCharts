@@ -3,6 +3,7 @@ import {TauChartError as Error, errorCodes} from './../error';
 
 const delimiter = '(@taucharts@)';
 const synthetic = 'taucharts_synthetic_record';
+const syntheticPoints = {};
 
 export class CartesianGrammar {
 
@@ -426,6 +427,11 @@ export class CartesianGrammar {
         var sign = ((row) => ((row[dy] >= 0) ? 'positive' : 'negative'));
 
         var gen = (x, fi, sign) => {
+            var id = model.id(fi);
+            var genId = [dx, dy, ds, dc, x, id, sign].join(' ');
+            if (syntheticPoints[genId]) {
+                return syntheticPoints[genId];
+            }
             var r = {};
             r[dx] = x;
             r[dy] = 0;
@@ -433,6 +439,7 @@ export class CartesianGrammar {
             r[dc] = fi[dc];
             r[synthetic] = true;
             r[synthetic + 'sign'] = sign; // positive / negative
+            syntheticPoints[genId] = r;
             return r;
         };
 

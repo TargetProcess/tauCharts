@@ -195,6 +195,10 @@ export class BasePath extends Element {
 
             var updatePath = (selection) => {
                 if (self.config.guide.animationSpeed > 0) {
+                    // HACK: This call fixes stacked area tween (some paths are intersected on
+                    // synthetic points). Maybe caused by async call of `toPoint`.
+                    selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(0));
+
                     transition(selection, self.config.guide.animationSpeed, 'pathTransition')
                         .attrTween(model.pathTween.attr, model.pathTween.fn);
                 } else {
