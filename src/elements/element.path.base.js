@@ -409,27 +409,60 @@ export class BasePath extends Element {
                 var existingCount = Math.floor((line.length - 1) * q) + 1;
                 var tempCount = line.length - existingCount;
                 var tempStartIdIndex = existingCount;
-                var qi = (q * (line.length - 1)) % 1;
-                var midPt = interpolatePoint(
-                    line[existingCount - 1],
-                    line[existingCount],
-                    qi
-                );
                 var result = line.slice(0, existingCount);
-                push(result, utils.range(tempCount).map((i) => Object.assign(
-                    {}, midPt,
-                    {
-                        id: line[tempStartIdIndex + i].id,
-                        positionIsBeingChanged: true,
-                        isInterpolatedEndingPoint: true
-                    }
-                )));
+                if (q < 1) {
+                    var qi = (q * (line.length - 1)) % 1;
+                    var midPt = interpolatePoint(
+                        line[existingCount - 1],
+                        line[existingCount],
+                        qi
+                    );
+                    push(result, utils.range(tempCount).map((i) => Object.assign(
+                        {}, midPt,
+                        {
+                            id: line[tempStartIdIndex + i].id,
+                            positionIsBeingChanged: true,
+                            isInterpolatedEndingPoint: true
+                        }
+                    )));
+                }
                 return result.slice(1);
             };
 
             var reverse = Boolean(decreasing) !== Boolean(rightToLeft);
+
+            var q = 0;
+            if (t > 0) {
+                var distance = [0];
+                var totalDistance = 0;
+                for (var i = 1, x, y, x0, y0, d; i < polyline.length; i++) {
+                    x0 = polyline[i - 1].x;
+                    y0 = polyline[i - 1].y;
+                    x = polyline[i].x;
+                    y = polyline[i].y;
+                    d = Math.abs((x - x0) * (x - x0) + (y - y0) * (y - y0));
+                    totalDistance += d;
+                    distance.push(totalDistance);
+                }
+                var passedDistance = t * totalDistance;
+                for (var i = 1; i < distance.length; i++) {
+                    if (passedDistance === distance[i]) {
+                        q = (i / (polyline.length - 1));
+                        break;
+                    }
+                    if (passedDistance < distance[i]) {
+                        q = ((i - 1 +
+                            (passedDistance - distance[i - 1]) /
+                            (distance[i] - distance[i - 1])) /
+                            (polyline.length - 1)
+                        );
+                        break;
+                    }
+                }
+            }
+
             var result = getLinePiece(
-                (decreasing ? (1 - t) : t),
+                (decreasing ? (1 - q) : q),
                 (reverse ? polyline.slice(0).reverse() : polyline)
             );
             if (reverse) {
