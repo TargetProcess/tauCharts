@@ -348,51 +348,42 @@ export class BasePath extends Element {
     }
 
     createPathTween(attr, pathStringBuilder, model) {
-        const tweenStore = '__pathTween__';
+        const pointsStore = '__pathPoints__';
         const self = this;
 
         return function (data) {
-            if (!this[tweenStore]) {
-                this[tweenStore] = {
-                    builder: pathStringBuilder,
-                    points: []
-                };
+            if (!this[pointsStore]) {
+                this[pointsStore] = [];
             }
 
             var pointsTo = utils.unique(data, self.screenModel.id)
                 .map(model.toPoint);
 
-            var pointsFrom = this[tweenStore].points
+            var pointsFrom = this[pointsStore]
                 .filter(pt => !pt.isInterpolatedEndingPoint);
 
             var interpolate = self.createPointsInterpolator(pointsFrom, pointsTo);
 
             return function (t) {
                 if (t === 0) {
-                    return this[tweenStore].builder(pointsFrom);
+                    return pathStringBuilder(pointsFrom);
                 }
                 if (t === 1) {
-                    this[tweenStore].points = pointsTo;
-                    this[tweenStore].builder = pathStringBuilder;
+                    this[pointsStore] = pointsTo;
                     return pathStringBuilder(pointsTo);
                 }
 
                 var intermediate = interpolate(t);
 
-                // Save intermediate data to be able
+                // Save intermediate points to be able
                 // to continue transition after interrupt
-                this[tweenStore].points = intermediate;
+                this[pointsStore] = intermediate;
 
                 if (intermediate.length === 0) {
                     return '';
                 }
 
-                // TODO: Domain and range of a Scale should change dynamically during transition.
-                var attrValue = d3.interpolate(
-                    this[tweenStore].builder(intermediate),
-                    pathStringBuilder(intermediate)
-                )(t);
-                return attrValue;
+                return pathStringBuilder(intermediate);
 
             }.bind(this);
         };
