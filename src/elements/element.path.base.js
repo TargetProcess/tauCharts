@@ -557,9 +557,9 @@ export class BasePath extends Element {
                     }
                 }
 
-                if (src.length < 2 || dst.length < 2) {
+                if (src.length < 1 || dst.length < 1) {
                     // Applying scale difference will not be possible
-                    return (d => Object.assign({}, d));
+                    return (d => d);
                 }
 
                 var numProps = Object.keys(src[0])
@@ -567,25 +567,25 @@ export class BasePath extends Element {
                     .filter(prop => prop !== 'id');
 
                 var propDiffs = {};
-                var repeater = d => d;
                 var createPropDiffFn = (a, b, A, B) => (c) => (
                     B +
                     (c - b) *
                     (B - A) /
                     (b - a)
                 );
+                var createSimpleDiffFn = (a, A) => (c) => (c - a + A);
                 numProps.forEach(prop => {
                     var a = src[0][prop];
-                    for (var i = src.length - 1, b, A, B; i > 0; i--) {
+                    var A = dst[0][prop];
+                    for (var i = src.length - 1, b, B; i > 0; i--) {
                         b = src[i][prop];
                         if (b !== a) {
-                            A = dst[0][prop];
                             B = dst[i][prop];
                             propDiffs[prop] = createPropDiffFn(a, b, A, B);
                             return;
                         }
                     }
-                    propDiffs[prop] = repeater;
+                    propDiffs[prop] = createSimpleDiffFn(a, A);
                 });
 
                 return function (c) {
