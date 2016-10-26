@@ -496,6 +496,9 @@ export class BasePath extends Element {
         }
 
         function interpolatePoint(a, b, t) {
+            if (a === b) {
+                return b;
+            }
             var c = {};
             Object.keys(b).forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
             c.id = a.id;
@@ -627,10 +630,9 @@ export class BasePath extends Element {
                             applyScaleDiffTo
                         );
 
-                        let remainingPtIndex = targetEnding.length - 1;
                         changingPoints.push({
                             startIndex: 0,
-                            getPoints: (applyScaleDiff ?
+                            getPoints: (
                                 decreasing ?
                                     function (t) {
                                         var polyline = targetEnding.slice(0);
@@ -651,12 +653,8 @@ export class BasePath extends Element {
                                         });
                                         var diffed = interpolated.map(applyScaleDiff);
                                         return interpolatePoints(diffed, interpolated, t);
-                                    } :
-                                function (t) {
-                                    var polyline = targetEnding.slice(0);
-                                    polyline[targetEnding.length - 1] = intermediate[remainingPtIndex];
-                                    return interpolateEnding({t, polyline, decreasing, rightToLeft: !decreasing});
-                                })
+                                    }
+                            )
                         });
                         push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
                     }
@@ -671,22 +669,16 @@ export class BasePath extends Element {
                     let newCount = indexTo - idsTo.indexOf(remainingIds[i - 1]) - 1;
 
                     let putChangingPoints = function (
-                        smallerData, smallerIndex, smallerCount,
-                        biggerData, biggerIndex, biggerCount, reverse
+                        smallPolyline,
+                        bigPolyline,
+                        reverse
                     ) {
-                        let biggerPoly = biggerData.slice(
-                            biggerIndex - biggerCount - 1,
-                            biggerIndex + 1
-                        );
-                        let filledPoly = fillSmallerPolyline({
-                            smallPolyline: smallerData.slice(
-                                smallerIndex - smallerCount - 1,
-                                smallerIndex + 1
-                            ),
-                            bigPolyline: biggerPoly
+                        var filledPoly = fillSmallerPolyline({
+                            smallPolyline,
+                            bigPolyline
                         });
-                        let biggerPoints = biggerPoly.slice(1, biggerPoly.length - 1);
-                        let smallerPoints = filledPoly.slice(1, filledPoly.length - 1);
+                        var biggerPoints = bigPolyline.slice(1, bigPolyline.length - 1);
+                        var smallerPoints = filledPoly.slice(1, filledPoly.length - 1);
                         changingPoints.push({
                             startIndex: intermediate.length,
                             getPoints: function (t) {
@@ -699,10 +691,12 @@ export class BasePath extends Element {
                         });
                     };
 
+                    let polyFrom = pointsFrom.slice(indexFrom - oldCount - 1, indexFrom + 1);
+                    let polyTo = pointsTo.slice(indexTo - newCount - 1, indexTo + 1);
                     if (newCount > oldCount) {
-                        putChangingPoints(pointsFrom, indexFrom, oldCount, pointsTo, indexTo, newCount, false);
+                        putChangingPoints(polyFrom, polyTo, false);
                     } else if (oldCount > newCount) {
-                        putChangingPoints(pointsTo, indexTo, newCount, pointsFrom, indexFrom, oldCount, true);
+                        putChangingPoints(polyTo, polyFrom, true);
                     } else if (oldCount > 0) {
                         changingPoints.push({
                             startIndex: intermediate.length,
@@ -737,8 +731,6 @@ export class BasePath extends Element {
                     //
                     // Right side changes
 
-                    let remainingPtIndex = intermediate.length - 1;
-
                     let oldCount = pointsFrom.length - indexFrom - 1;
                     let newCount = pointsTo.length - indexTo - 1;
 
@@ -755,7 +747,7 @@ export class BasePath extends Element {
 
                         changingPoints.push({
                             startIndex: intermediate.length,
-                            getPoints: (applyScaleDiff ?
+                            getPoints: (
                                 decreasing ?
                                     function (t) {
                                         var polyline = targetEnding.slice(0);
@@ -776,12 +768,8 @@ export class BasePath extends Element {
                                         });
                                         var diffed = interpolated.map(applyScaleDiff);
                                         return interpolatePoints(diffed, interpolated, t);
-                                    } :
-                                function (t) {
-                                    var polyline = targetEnding.slice(0);
-                                    polyline[0] = intermediate[remainingPtIndex];
-                                    return interpolateEnding({t, polyline, decreasing, rightToLeft: decreasing});
-                                })
+                                    }
+                            )
                         });
                         push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
                     }
