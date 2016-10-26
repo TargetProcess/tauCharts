@@ -484,13 +484,13 @@ export class BasePath extends Element {
 
         function interpolateValue(a, b, t) {
             if (typeof b === 'string') {
-                return (t === 0 ? b : a);
+                return (t === 0 ? a : b);
             }
             if (b instanceof Date) {
                 return new Date(Number(a) + t * (b - a));
             }
             if (typeof b === 'boolean') {
-                return (t === 0 ? b : a);
+                return (t === 0 ? a : b);
             }
             return (a + t * (b - a));
         }
