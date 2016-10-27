@@ -34,7 +34,39 @@ function createPointsInterpolator(pointsFrom, pointsTo) {
      */
     function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
 
-        var getLinePiece = (q, line) => {
+        var reverse = Boolean(decreasing) !== Boolean(rightToLeft);
+
+        var result = (function getLinePiece(t, line) {
+            var q = 0;
+            if (t > 0) {
+                var distance = [0];
+                var totalDistance = 0;
+                for (var i = 1, x, y, x0, y0, d; i < line.length; i++) {
+                    x0 = line[i - 1].x;
+                    y0 = line[i - 1].y;
+                    x = line[i].x;
+                    y = line[i].y;
+                    d = Math.sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+                    totalDistance += d;
+                    distance.push(totalDistance);
+                }
+                var passedDistance = t * totalDistance;
+                for (i = 1; i < distance.length; i++) {
+                    if (passedDistance === distance[i]) {
+                        q = (i / (line.length - 1));
+                        break;
+                    }
+                    if (passedDistance < distance[i]) {
+                        q = Math.min(1, (i - 1 +
+                            (passedDistance - distance[i - 1]) /
+                            (distance[i] - distance[i - 1])) /
+                            (line.length - 1)
+                        );
+                        break;
+                    }
+                }
+            }
+
             var existingCount = Math.floor((line.length - 1) * q) + 1;
             var tempCount = line.length - existingCount;
             var tempStartIdIndex = existingCount;
@@ -56,42 +88,8 @@ function createPointsInterpolator(pointsFrom, pointsTo) {
                 )));
             }
             return result.slice(1);
-        };
-
-        var reverse = Boolean(decreasing) !== Boolean(rightToLeft);
-
-        var q = 0;
-        if (t > 0) {
-            var distance = [0];
-            var totalDistance = 0;
-            for (var i = 1, x, y, x0, y0, d; i < polyline.length; i++) {
-                x0 = polyline[i - 1].x;
-                y0 = polyline[i - 1].y;
-                x = polyline[i].x;
-                y = polyline[i].y;
-                d = Math.sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
-                totalDistance += d;
-                distance.push(totalDistance);
-            }
-            var passedDistance = t * totalDistance;
-            for (i = 1; i < distance.length; i++) {
-                if (passedDistance === distance[i]) {
-                    q = (i / (polyline.length - 1));
-                    break;
-                }
-                if (passedDistance < distance[i]) {
-                    q = Math.min(1, (i - 1 +
-                        (passedDistance - distance[i - 1]) /
-                        (distance[i] - distance[i - 1])) /
-                        (polyline.length - 1)
-                    );
-                    break;
-                }
-            }
-        }
-
-        var result = getLinePiece(
-            (reverse ? (1 - q) : q),
+        })(
+            (decreasing ? 1 - t : t),
             (reverse ? polyline.slice(0).reverse() : polyline)
         );
         if (reverse) {
@@ -114,7 +112,7 @@ function createPointsInterpolator(pointsFrom, pointsTo) {
         var minSegmentPointsCount = Math.floor(segmentsCount.big / segmentsCount.small) + 1;
         var restPointsCount = segmentsCount.big % segmentsCount.small;
         var segmentsPointsCount = utils.range(segmentsCount.small)
-            .map(i => (minSegmentPointsCount + (i < restPointsCount ? 1 : 0)));
+            .map(i => (minSegmentPointsCount + Number(i < restPointsCount)));
 
         var result = [smallPolyline[0]];
         var smallPtIndex = 1;
@@ -143,7 +141,7 @@ function createPointsInterpolator(pointsFrom, pointsTo) {
         if (typeof b === 'number') {
             return (a + t * (b - a));
         }
-        return (t === 0 ? a : b);
+        return b;
     }
 
     function interpolatePoint(a, b, t) {

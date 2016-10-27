@@ -577,15 +577,15 @@ var d3_selectAllImmediate = (container, selector) => {
 };
 
 function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
-    const pointsStore = '__pathPoints__';
+    const pointStore = '__pathPoints__';
 
     return function (data) {
-        if (!this[pointsStore]) {
-            this[pointsStore] = [];
+        if (!this[pointStore]) {
+            this[pointStore] = [];
         }
 
         var pointsTo = utils.unique(data, idGetter).map(pointConvertor);
-        var pointsFrom = this[pointsStore];
+        var pointsFrom = this[pointStore];
 
         var interpolate = utilsDraw.createPointsInterpolator(pointsFrom, pointsTo);
 
@@ -594,7 +594,7 @@ function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
                 return pathStringBuilder(pointsFrom);
             }
             if (t === 1) {
-                this[pointsStore] = pointsTo;
+                this[pointStore] = pointsTo;
                 return pathStringBuilder(pointsTo);
             }
 
@@ -602,11 +602,7 @@ function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
 
             // Save intermediate points to be able
             // to continue transition after interrupt
-            this[pointsStore] = intermediate;
-
-            if (intermediate.length === 0) {
-                return '';
-            }
+            this[pointStore] = intermediate;
 
             return pathStringBuilder(intermediate);
 

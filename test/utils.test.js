@@ -214,7 +214,7 @@ define(function (require) {
             var mid4 = interpolator4(0.5);
             expect(mid4.length).to.equal(3);
             expect(mid4[0]).to.be.deep.equal({id: 2, x: 0, y: 40});
-            expect(mid3[1]).to.be.deep.equal({id: 3, x: 20, y: 0});
+            expect(mid4[1]).to.be.deep.equal({id: 3, x: 20, y: 0});
             checkMidPoint(4, mid4[2]);
             expect(interpolator4(1)).to.be.deep.equal([]);
 
