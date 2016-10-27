@@ -4,7 +4,7 @@ define(function (require) {
     var createInterpolator = require('src/path-points-interpolator').default;
     var testUtils = require('testUtils');
 
-    describe('utils-draw', function() {
+    describe('path-points-interpolator', function() {
 
         it('should interpolate path points', function() {
             var a = [
@@ -107,7 +107,9 @@ define(function (require) {
             this.timeout(3000);
 
             var testDiv = document.createElement('div');
-            document.body.appendChild(testDiv);           
+            testDiv.style.width = '800px';
+            testDiv.style.height = '600px';
+            document.body.appendChild(testDiv);
 
             function getPolygonPoints() {
                 return testDiv
