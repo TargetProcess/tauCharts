@@ -2,6 +2,7 @@ import {utils} from './utils';
 import {utilsDom} from './utils-dom';
 import {utilsDraw} from './utils-draw';
 import {default as d3} from 'd3';
+import createPathPointsInterpolator from '../path-points-interpolator';
 
 var d3getComputedTextLength = () => utils.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
@@ -576,7 +577,7 @@ var d3_selectAllImmediate = (container, selector) => {
     });
 };
 
-function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
+var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter) => {
     const pointStore = '__pathPoints__';
 
     return function (data) {
@@ -587,9 +588,9 @@ function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
         var pointsTo = utils.unique(data, idGetter).map(pointConvertor);
         var pointsFrom = this[pointStore];
 
-        var interpolate = utilsDraw.createPointsInterpolator(pointsFrom, pointsTo);
+        var interpolate = createPathPointsInterpolator(pointsFrom, pointsTo);
 
-        return function (t) {
+        return (t) => {
             if (t === 0) {
                 return pathStringBuilder(pointsFrom);
             }
@@ -605,10 +606,9 @@ function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
             this[pointStore] = intermediate;
 
             return pathStringBuilder(intermediate);
-
-        }.bind(this);
+        };
     };
-}
+};
 
 export {
     d3_animationInterceptor,
