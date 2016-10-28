@@ -1,7 +1,7 @@
 define(function (require) {
     var expect = require('chai').expect;
     var tauCharts = require('src/tau.charts');
-    var createInterpolator = require('src/path-points-interpolator').default;
+    var createInterpolator = require('src/utils/path-points-interpolator').default;
     var testUtils = require('testUtils');
 
     describe('path-points-interpolator', function() {
