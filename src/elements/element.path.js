@@ -2,6 +2,7 @@ import {CSS_PREFIX} from '../const';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
+import {d3_createPathTween} from '../utils/d3-decorators';
 
 export class Path extends BasePath {
 
@@ -51,27 +52,35 @@ export class Path extends BasePath {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
+        baseModel.toPoint = (d) => ({
+            id: self.screenModel.id(d),
+            x: baseModel.x(d),
+            y: baseModel.y(d)
+        });
+
         var pathPoints = (x, y) => {
             return ((fiber) => (fiber.map((d) => [x(d), y(d)].join(',')).join(' ')));
         };
 
-        var pathAttributesDefault = {
-            points: pathPoints(baseModel.x, baseModel.y0)
-        };
-
         var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
-            stroke: (fiber) => baseModel.color(fiber[0]),
-            points: pathPoints(baseModel.x, baseModel.y)
+            stroke: (fiber) => baseModel.color(fiber[0])
         };
 
-        baseModel.pathAttributesUpdateInit = null;
+        baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathAttributesEnterInit = pathAttributesDefault;
-        baseModel.pathAttributesEnterDone = pathAttributes;
-
         baseModel.pathElement = 'polygon';
+
+        baseModel.pathTween = {
+            attr: 'points',
+            fn: d3_createPathTween(
+                'points',
+                pathPoints(d => d.x, d => d.y),
+                baseModel.toPoint,
+                self.screenModel.id
+            )
+        };
 
         return baseModel;
     }

@@ -689,6 +689,8 @@ define(function (require) {
 
         it('should warn about rendering timeout', function (done) {
 
+            this.timeout(4000);
+
             var testDiv = document.getElementById('test-div');
 
             var chart = new tauChart.Chart({
@@ -752,6 +754,8 @@ define(function (require) {
         });
 
         it('should warn about rendering error', function (done) {
+
+            this.timeout(4000);
 
             var testDiv = document.getElementById('test-div');
 

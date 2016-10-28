@@ -2,6 +2,7 @@ import {utils} from './utils';
 import {utilsDom} from './utils-dom';
 import {utilsDraw} from './utils-draw';
 import {default as d3} from 'd3';
+import createPathPointsInterpolator from './path-points-interpolator';
 
 var d3getComputedTextLength = () => utils.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
@@ -576,8 +577,42 @@ var d3_selectAllImmediate = (container, selector) => {
     });
 };
 
+var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter) => {
+    const pointStore = '__pathPoints__';
+
+    return function (data) {
+        if (!this[pointStore]) {
+            this[pointStore] = [];
+        }
+
+        var pointsTo = utils.unique(data, idGetter).map(pointConvertor);
+        var pointsFrom = this[pointStore];
+
+        var interpolate = createPathPointsInterpolator(pointsFrom, pointsTo);
+
+        return (t) => {
+            if (t === 0) {
+                return pathStringBuilder(pointsFrom);
+            }
+            if (t === 1) {
+                this[pointStore] = pointsTo;
+                return pathStringBuilder(pointsTo);
+            }
+
+            var intermediate = interpolate(t);
+
+            // Save intermediate points to be able
+            // to continue transition after interrupt
+            this[pointStore] = intermediate;
+
+            return pathStringBuilder(intermediate);
+        };
+    };
+};
+
 export {
     d3_animationInterceptor,
+    d3_createPathTween,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,

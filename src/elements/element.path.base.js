@@ -2,7 +2,7 @@ import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
-import {d3_animationInterceptor} from '../utils/d3-decorators';
+import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {default as d3} from 'd3';
@@ -193,9 +193,22 @@ export class BasePath extends Element {
 
             self.subscribe(points, (d) => d);
 
+            var updatePath = (selection) => {
+                if (self.config.guide.animationSpeed > 0) {
+                    // HACK: This call fixes stacked area tween (some paths are intersected on
+                    // synthetic points). Maybe caused by async call of `toPoint`.
+                    selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(0));
+
+                    transition(selection, self.config.guide.animationSpeed, 'pathTransition')
+                        .attrTween(model.pathTween.attr, model.pathTween.fn);
+                } else {
+                    selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(1));
+                }
+            };
+
             var series = this
                 .selectAll(model.pathElement)
-                .data((fiber) => (fiber.length > 1) ? [fiber] : [], ((fib) => fib.map(self.screenModel.id).join('-')));
+                .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
                 .exit()
                 .remove();
@@ -205,7 +218,8 @@ export class BasePath extends Element {
                     model.pathAttributesUpdateInit,
                     model.pathAttributesUpdateDone,
                     model.afterPathUpdate
-                ));
+                ))
+                .call(updatePath);
             series
                 .enter()
                 .append(model.pathElement)
@@ -214,7 +228,8 @@ export class BasePath extends Element {
                     model.pathAttributesEnterInit,
                     model.pathAttributesEnterDone,
                     model.afterPathUpdate
-                ));
+                ))
+                .call(updatePath);
 
             self.subscribe(series, function (rows) {
                 var m = d3.mouse(this);
@@ -255,19 +270,43 @@ export class BasePath extends Element {
             CartesianGrammar.toStackedFibers(fullData, pathModel) :
             CartesianGrammar.toFibers(fullData, pathModel);
 
-        var frameGroups = options
-            .container
-            .selectAll('.frame')
-            .data(fibers);
-        frameGroups
+        var frameSelection = options.container.selectAll('.frame');
+
+        // NOTE: If any point from new dataset is equal to a point from old dataset,
+        // we assume that path remains the same.
+        // TODO: Id of data array should remain the same (then use `fib => self.screenModel.id(fib)`).
+        var getDataSetId = (() => {
+            var currentDataSets = (frameSelection.empty() ? [] : frameSelection.data());
+            var currentDatasetsIds = currentDataSets.map((ds) => ds.map(self.screenModel.id));
+            var notFoundDatasets = 0;
+            return (fib) => {
+                var fibIds = fib.map((f) => self.screenModel.id(f));
+                var currentIndex = currentDatasetsIds.findIndex((currIds) => {
+                    return fibIds.some((newId) => {
+                        return currIds.some((id) => id === newId);
+                    });
+                });
+                if (currentIndex < 0) {
+                    ++notFoundDatasets;
+                    return -notFoundDatasets;
+                }
+                return currentIndex;
+            };
+        })();
+
+        var frameBinding = frameSelection
+            .data(fibers, getDataSetId);
+        frameBinding
             .exit()
             .remove();
-        frameGroups
+        frameBinding
             .call(updateGroupContainer);
-        frameGroups
+        frameBinding
             .enter()
             .append('g')
             .call(updateGroupContainer);
+
+        frameBinding.order();
 
         var dataFibers = CartesianGrammar.toFibers(fullData, pathModel);
         self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(dataFibers));

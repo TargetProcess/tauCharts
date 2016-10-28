@@ -3,6 +3,7 @@ import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
+import {d3_createPathTween} from '../utils/d3-decorators';
 
 export class Area extends BasePath {
 
@@ -59,6 +60,14 @@ export class Area extends BasePath {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
+        baseModel.toPoint = (d) => ({
+            id: self.screenModel.id(d),
+            x0: baseModel.x0(d),
+            x: baseModel.x(d),
+            y0: baseModel.y0(d),
+            y: baseModel.y(d)
+        });
+
         var areaPoints = (xi, yi, x0, y0) => {
             return ((fiber) => {
                 var ways = fiber
@@ -76,10 +85,6 @@ export class Area extends BasePath {
             });
         };
 
-        var pathAttributesDefault = {
-            points: areaPoints(baseModel.x, baseModel.y0, baseModel.x0, baseModel.y0)
-        };
-
         var pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => {
@@ -88,17 +93,23 @@ export class Area extends BasePath {
                     colorStr = d3.rgb(colorStr).darker(1);
                 }
                 return colorStr;
-            },
-            points: areaPoints(baseModel.x, baseModel.y, baseModel.x0, baseModel.y0)
+            }
         };
 
-        baseModel.pathAttributesUpdateInit = null;
+        baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathAttributesEnterInit = pathAttributesDefault;
-        baseModel.pathAttributesEnterDone = pathAttributes;
-
         baseModel.pathElement = 'polygon';
+
+        baseModel.pathTween = {
+            attr: 'points',
+            fn: d3_createPathTween(
+                'points',
+                areaPoints(d => d.x, d => d.y, d => d.x0, d => d.y0),
+                baseModel.toPoint,
+                self.screenModel.id
+            )
+        };
 
         return baseModel;
     }

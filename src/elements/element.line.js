@@ -4,6 +4,7 @@ import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
+import {d3_createPathTween} from '../utils/d3-decorators';
 
 export class Line extends BasePath {
 
@@ -35,6 +36,8 @@ export class Line extends BasePath {
     }
 
     buildModel(screenModel) {
+
+        var self = this;
 
         var wMax = this.config.options.width;
         var hMax = this.config.options.height;
@@ -105,11 +108,24 @@ export class Line extends BasePath {
         var tag = this.isEmptySize ? 'line' : 'area';
         const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
+        baseModel.toPoint = this.isEmptySize ?
+            (d) => ({
+                id: self.screenModel.id(d),
+                x: baseModel.x(d),
+                y: baseModel.y(d)
+            }) :
+            (d) => ({
+                id: self.screenModel.id(d),
+                x: baseModel.x(d),
+                y: baseModel.y(d),
+                size: baseModel.size(d)
+            });
+
         var d3Line = d3.svg
             .line()
             .interpolate(guide.interpolate)
-            .x(baseModel.x)
-            .y(baseModel.y);
+            .x(d => d.x)
+            .y(d => d.y);
 
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
@@ -171,71 +187,34 @@ export class Line extends BasePath {
             };
         };
 
-        var cache = [];
-        var prevNext = utils.memoize(
-            (thisNode, fiber) => {
-                var testPath = d3
-                    .select(thisNode.parentNode)
-                    .append('path')
-                    .datum(fiber)
-                    .attr({d: d3Line, opacity: 0});
-                var next = testPath.node().getTotalLength();
-                testPath.remove();
-                return {prev: thisNode.hasAttribute('d') ? thisNode.getTotalLength() : 0, next};
-            },
-            (nodeRef) => {
-                var index = cache.indexOf(nodeRef);
-                if (index < 0) {
-                    index = cache.push(nodeRef) - 1;
-                }
-                return index;
-            });
-
-        var pathAttributesDefault = this.isEmptySize ?
-            ({
-                d: function (fiber) {
-                    prevNext(this, fiber);
-                    return d3Line(fiber);
-                },
-                'stroke-dasharray': function (fiber) {
-                    var {next} = prevNext(this, fiber);
-                    return `${next} ${next}`;
-                },
-                'stroke-dashoffset': function (fiber) {
-                    var {prev, next} = prevNext(this, fiber);
-                    return next - prev;
-                }
-            }) :
-            ({
-                points: d3LineVarySize(baseModel.x, baseModel.y, () => 0)
-            });
-
         var pathAttributes = this.isEmptySize ?
             ({
-                d: d3Line,
                 stroke: (fiber) => baseModel.color(fiber[0]),
-                class: 'i-role-datum',
-                'stroke-dashoffset': 0
+                class: 'i-role-datum'
             }) :
             ({
-                fill: (fiber) => baseModel.color(fiber[0]),
-                points: d3LineVarySize(baseModel.x, baseModel.y, baseModel.size)
+                fill: (fiber) => baseModel.color(fiber[0])
             });
 
-        baseModel.pathAttributesUpdateInit = this.isEmptySize ?
-            (baseModel.gog.scaleX.discrete ? null : pathAttributesDefault) :
-            (null);
+        baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathAttributesEnterInit = pathAttributesDefault;
-        baseModel.pathAttributesEnterDone = pathAttributes;
-
-        baseModel.afterPathUpdate = (thisNode) => {
-            d3.select(thisNode).attr({
-                'stroke-dasharray': null,
-                'stroke-dashoffset': null
-            });
-        };
+        if (this.isEmptySize) {
+            baseModel.pathTween = {
+                attr: 'd',
+                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, self.screenModel.id)
+            };
+        } else {
+            baseModel.pathTween = {
+                attr: 'points',
+                fn: d3_createPathTween(
+                    'points',
+                    d3LineVarySize(d => d.x, d => d.y, d => d.size, baseModel),
+                    baseModel.toPoint,
+                    self.screenModel.id
+                )
+            };
+        }
 
         return baseModel;
     }
