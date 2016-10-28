@@ -230,7 +230,7 @@
                         }
                     ],
                     guide: {
-                        showAnchors: false,
+                        showAnchors: 'never',
                         cssClass: 'graphical-report__annotation-area',
                         label: {
                             fontColor: noteItem.color,
@@ -287,7 +287,7 @@
                         }
                     ],
                     guide: {
-                        showAnchors: false,
+                        showAnchors: 'never',
                         widthCssClass: 'graphical-report__line-width-2',
                         cssClass: 'graphical-report__annotation-line',
                         label: {

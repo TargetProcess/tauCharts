@@ -381,7 +381,7 @@ define(function (require) {
             x: 'y',
             y: 'x',
             guide: {
-                showAnchors: true
+                showAnchors: 'always'
             }
         },
         [

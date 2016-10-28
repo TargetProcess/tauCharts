@@ -538,7 +538,7 @@
                         var basicGuide = {};
                         trend.guide = utils.defaults(basicGuide, trend.guide || {});
                         trend.guide.interpolate = 'linear';
-                        trend.guide.showAnchors   = false;
+                        trend.guide.showAnchors = 'never';
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';
 
