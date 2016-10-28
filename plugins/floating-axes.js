@@ -309,6 +309,7 @@
                     x = x || 0;
                     y = y || 0;
                     g.append('rect')
+                        .attr('class', 'i-role-bg')
                         .attr('x', x - 1)
                         .attr('y', y - 1)
                         .attr('width', w + 2)
