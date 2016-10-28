@@ -21,7 +21,6 @@ export class BasePath extends Element {
                 animationSpeed: 0,
                 cssClass: '',
                 widthCssClass: '',
-                showAnchors: 'hover',
                 color: {},
                 label: {}
             }
@@ -50,12 +49,16 @@ export class BasePath extends Element {
                 defMaxSize: (this.isEmptySize ? 6 : 40)
             });
 
+        if (['never', 'hover', 'always'].indexOf(this.config.guide.showAnchors) < 0) {
+            this.config.guide.showAnchors = 'hover';
+        }
+
         this.decorators = [];
 
         this.on('highlight', (sender, e) => this.highlight(e));
         this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
-        if (this.config.guide.showAnchors) {
+        if (this.config.guide.showAnchors !== 'never') {
             var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
             var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
             this.on('mouseover', activate);
@@ -238,7 +241,7 @@ export class BasePath extends Element {
                     {x: m[0], y: m[1]});
             });
 
-            if (guide.showAnchors) {
+            if (guide.showAnchors !== 'never') {
                 let anchorClass = 'i-data-anchor';
 
                 let attr = {
