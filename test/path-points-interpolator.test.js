@@ -60,7 +60,7 @@ define(function (require) {
             var mid3 = interpolator3(0.5);
             expect(mid3.length).to.equal(3);
             expect(mid3[0]).to.be.deep.equal({id: 2, x: 0, y: 40});
-            expect(mid3[1]).to.be.deep.equal({id: 3, x: 20, y: 0});
+            expect(mid3[1]).to.be.deep.equal({id: 3, x: 20, y: 0, positionIsBeingChanged: true});
             checkMidPoint(4, mid3[2]);
             expect(interpolator3(1)).to.be.deep.equal(b);
 
@@ -69,14 +69,14 @@ define(function (require) {
             var mid4 = interpolator4(0.5);
             expect(mid4.length).to.equal(3);
             expect(mid4[0]).to.be.deep.equal({id: 2, x: 0, y: 40});
-            expect(mid4[1]).to.be.deep.equal({id: 3, x: 20, y: 0});
+            expect(mid4[1]).to.be.deep.equal({id: 3, x: 20, y: 0, positionIsBeingChanged: true});
             checkMidPoint(4, mid4[2]);
             expect(interpolator4(1)).to.be.deep.equal([]);
 
             var interpolator5 = createInterpolator(a.slice(0, 3), [a[0]]);
             expect(interpolator5(0.5)).to.deep.equal([
                 a[0],
-                a[1],
+                {id: 2, x: 10, y: 20, positionIsBeingChanged: true},
                 {id: 3, x: 10, y: 20, isInterpolatedEnding: true, positionIsBeingChanged: true}
             ]);
 

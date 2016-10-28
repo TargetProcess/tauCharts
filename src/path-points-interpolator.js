@@ -1,11 +1,11 @@
 import {utils} from './utils/utils';
 
-export default function getPathPointsInterpolator(pointsFrom, pointsTo) {
+export default function interpolatePathPoints(pointsFrom, pointsTo) {
 
     // TODO: Continue unfinished transition of ending points.
     pointsFrom = pointsFrom.filter(d => !d.isInterpolatedEnding);
 
-    var getIntermediate;
+    var interpolateIntermediate;
 
     return (t) => {
         if (t === 0) {
@@ -15,11 +15,11 @@ export default function getPathPointsInterpolator(pointsFrom, pointsTo) {
             return pointsTo;
         }
 
-        if (!getIntermediate) {
-            getIntermediate = createIntermediatePointsInterpolator(pointsFrom, pointsTo);
+        if (!interpolateIntermediate) {
+            interpolateIntermediate = interpolateIntermediatePoints(pointsFrom, pointsTo);
         }
 
-        return getIntermediate(t);
+        return interpolateIntermediate(t);
     };
 }
 
@@ -28,7 +28,7 @@ export default function getPathPointsInterpolator(pointsFrom, pointsTo) {
  * remains the same and added or excluded points are situated between
  * existing points.
  */
-function createIntermediatePointsInterpolator(pointsFrom, pointsTo) {
+function interpolateIntermediatePoints(pointsFrom, pointsTo) {
     var intermediate = [];
     var remainingPoints = [];
     var changingPoints = [];
@@ -44,102 +44,80 @@ function createIntermediatePointsInterpolator(pointsFrom, pointsTo) {
     // to initial target position of newly added points
     // (or end position of deleted points)
 
-    var toEndScale = getScaleDiffFn(pointsFrom, pointsTo);
-    var toStartScale = getScaleDiffFn(pointsTo, pointsFrom);
+    var stableFrom = pointsFrom.filter(d => !d.positionIsBeingChanged);
+    var stableTo = pointsTo.filter(d => !d.positionIsBeingChanged);
+    var toEndScale = getScaleDiffFn(stableFrom, stableTo);
+    var toStartScale = getScaleDiffFn(stableTo, stableFrom);
 
     //
     // Determine, how to interpolate changes between remaining points
 
-    var handleLeftSideChanges = (indexFrom, indexTo) => {
-        var newCount = indexTo;
+    var handleEndingChanges = ({polylineFrom, polylineTo, intermediateStartIndex}) => {
 
-        var decreasing = newCount === 0;
-        var targetEnding = (decreasing ?
-            pointsFrom.slice(0, indexFrom + 1) :
-            pointsTo.slice(0, indexTo + 1)
-        );
-        var toOppositeScale = (decreasing ?
-            toEndScale :
-            toStartScale
-        );
+        var polyline = (polylineFrom.length > polylineTo.length ? polylineFrom : polylineTo);
+        var decreasing = (polylineTo.length === 1);
+        var isLeftEnding = (polylineFrom[0].id !== polylineTo[0].id);
+        var rightToLeft = Boolean(isLeftEnding ^ decreasing);
+        var toOppositeScale = (decreasing ? toEndScale : toStartScale);
 
         changingPoints.push({
-            startIndex: 0,
-            getPoints: (
-                decreasing ?
-                    (t) => {
-                        var polyline = targetEnding.slice(0);
-                        var interpolated = interpolateEnding({
-                            t, polyline,
-                            decreasing,
-                            rightToLeft: !decreasing
-                        });
-                        var diffed = interpolated.map(toOppositeScale);
-                        return interpolatePoints(interpolated, diffed, t);
-                    } :
-                    (t) => {
-                        var polyline = targetEnding.slice(0);
-                        var interpolated = interpolateEnding({
-                            t, polyline,
-                            decreasing,
-                            rightToLeft: !decreasing
-                        });
-                        var diffed = interpolated.map(toOppositeScale);
-                        return interpolatePoints(diffed, interpolated, t);
-                    }
-            )
+            intermediateStartIndex,
+            interpolate: (t) => {
+                var interpolated = interpolateEnding({
+                    t, polyline,
+                    decreasing,
+                    rightToLeft
+                });
+                if (decreasing === rightToLeft) {
+                    interpolated.shift();
+                } else {
+                    interpolated.pop();
+                }
+                var diffed = interpolated.map(toOppositeScale);
+                var points = interpolatePoints(diffed, interpolated, (decreasing ? 1 - t : t));
+                points.forEach(d => d.positionIsBeingChanged = true);
+                return points;
+            }
         });
-        push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
+        push(intermediate, utils.range(polyline.length - 1).map(() => null));
     };
 
-    var handleInnerChanges = (indexFrom, indexTo, prevIndexFrom, prevIndexTo) => {
-        var oldCount = indexFrom - prevIndexFrom - 1;
-        var newCount = indexTo - prevIndexTo - 1;
+    var handleInnerChanges = ({polylineFrom, polylineTo, intermediateStartIndex}) => {
 
-        var putChangingPoints = (
-            smallPolyline,
-            bigPolyline,
-            reverse
-        ) => {
-            var filledPoly = fillSmallerPolyline({
-                smallPolyline,
-                bigPolyline
+        var oldCount = polylineFrom.length;
+        var newCount = polylineTo.length;
+
+        if (newCount !== oldCount) {
+            var countIncreased = newCount > oldCount;
+            var smallerPolyline = countIncreased ? polylineFrom : polylineTo;
+            var biggerPolyline = countIncreased ? polylineTo : polylineFrom;
+            var filledPolyline = fillSmallerPolyline({
+                smallerPolyline,
+                biggerPolyline
             });
-            var biggerPoints = bigPolyline.slice(1, bigPolyline.length - 1);
-            var smallerPoints = filledPoly.slice(1, filledPoly.length - 1);
+            var biggerInnerPoints = biggerPolyline.slice(1, biggerPolyline.length - 1);
+            var filledInnerPoints = filledPolyline.slice(1, filledPolyline.length - 1);
             changingPoints.push({
-                startIndex: intermediate.length,
-                getPoints: (t) => {
+                intermediateStartIndex,
+                interpolate: (t) => {
                     var points = interpolatePoints(
-                        smallerPoints,
-                        biggerPoints,
-                        (reverse ? 1 - t : t)
+                        filledInnerPoints,
+                        biggerInnerPoints,
+                        (countIncreased ? t : 1 - t)
                     );
                     points.forEach(d => d.positionIsBeingChanged = true);
                     return points;
                 }
             });
-        };
-
-        var polyFrom = pointsFrom.slice(indexFrom - oldCount - 1, indexFrom + 1);
-        var polyTo = pointsTo.slice(indexTo - newCount - 1, indexTo + 1);
-        if (newCount > oldCount) {
-            putChangingPoints(polyFrom, polyTo, false);
-        } else if (oldCount > newCount) {
-            putChangingPoints(polyTo, polyFrom, true);
-        } else if (oldCount > 0) {
+        } else {
+            var innerPointsFrom = polylineFrom.slice(1, polylineFrom.length - 1);
+            var innerPointsTo = polylineTo.slice(1, polylineTo.length - 1);
             changingPoints.push({
-                startIndex: intermediate.length,
-                getPoints: (t) => {
+                intermediateStartIndex,
+                interpolate: (t) => {
                     var points = interpolatePoints(
-                        pointsFrom.slice(
-                            indexFrom - oldCount,
-                            indexFrom
-                        ),
-                        pointsTo.slice(
-                            indexTo - newCount,
-                            indexTo
-                        ),
+                        innerPointsFrom,
+                        innerPointsTo,
                         t
                     );
                     points.forEach(d => d.positionIsBeingChanged = true);
@@ -147,71 +125,46 @@ function createIntermediatePointsInterpolator(pointsFrom, pointsTo) {
                 }
             });
         }
-        push(intermediate, utils.range(Math.max(newCount, oldCount)).map(() => null));
+        push(intermediate, utils.range(Math.max(newCount, oldCount) - 2).map(() => null));
     };
 
-    var handleRightSideChanges = (indexFrom, indexTo) => {
-        var newCount = pointsTo.length - indexTo - 1;
+    //
+    // Interpolation of remaining points
 
-        var decreasing = newCount === 0;
-        var targetEnding = (decreasing ?
-            pointsFrom.slice(indexFrom) :
-            pointsTo.slice(indexTo)
-        );
-        var toOppositeScale = (decreasing ?
-            toEndScale :
-            toStartScale
-        );
-
-        changingPoints.push({
-            startIndex: intermediate.length,
-            getPoints: (
-                decreasing ?
-                    (t) => {
-                        var polyline = targetEnding.slice(0);
-                        var interpolated = interpolateEnding({
-                            t, polyline,
-                            decreasing,
-                            rightToLeft: decreasing
-                        });
-                        var diffed = interpolated.map(toOppositeScale);
-                        return interpolatePoints(interpolated, diffed, t);
-                    } :
-                    (t) => {
-                        var polyline = targetEnding.slice(0);
-                        var interpolated = interpolateEnding({
-                            t, polyline,
-                            decreasing,
-                            rightToLeft: decreasing
-                        });
-                        var diffed = interpolated.map(toOppositeScale);
-                        return interpolatePoints(diffed, interpolated, t);
-                    }
-            )
-        });
-        push(intermediate, utils.range(targetEnding.length - 1).map(() => null));
-    };
-
-    var handleNewlyCreatedPath = () => {
-        intermediate.push(pointsTo[0]);
-        push(intermediate, utils.range(pointsTo.length - 1).map(() => null));
-        var polyline = pointsTo.slice(0);
-        changingPoints.push({
-            startIndex: 1,
-            getPoints: (t) => {
-                return interpolateEnding({t, polyline, decreasing: false});
+    var handleRemainingPoint = ({pointFrom, pointTo, intermediateIndex}) => {
+        remainingPoints.push({
+            intermediateIndex,
+            interpolate: (t) => {
+                return interpolatePoint(pointFrom, pointTo, t);
             }
         });
+        intermediate.push(null);
     };
 
-    var handleRemovingPath = () => {
-        intermediate.push(pointsFrom[0]);
-        push(intermediate, utils.range(pointsFrom.length - 1).map(() => null));
-        var polyline = pointsFrom.slice(0);
+    //
+    // Interpolation when no points remain
+
+    var handleNonRemainingPath = ({polylineFrom, polylineTo}) => {
+
+        var decreasing = polylineTo.length === 0;
+        var rightToLeft = decreasing;
+
+        var polyline = (decreasing ? polylineFrom : polylineTo);
+        intermediate.push(polyline[0]);
+        push(intermediate, utils.range(polyline.length - 1).map(() => null));
         changingPoints.push({
-            startIndex: 1,
-            getPoints: (t) => {
-                return interpolateEnding({t, polyline, decreasing: true, rightToLeft: true});
+            intermediateStartIndex: 1,
+            interpolate: (t) => {
+                var points = interpolateEnding({
+                    t,
+                    polyline,
+                    decreasing,
+                    rightToLeft
+                }).slice(1);
+                points.forEach(d => {
+                    d.positionIsBeingChanged = true;
+                });
+                return points;
             }
         });
     };
@@ -225,56 +178,67 @@ function createIntermediatePointsInterpolator(pointsFrom, pointsTo) {
             i === 0 &&
             (indexFrom > 0 || indexTo > 0)
         ) {
-            handleLeftSideChanges(indexFrom, indexTo);
+            handleEndingChanges({
+                polylineFrom: pointsFrom.slice(0, indexFrom + 1),
+                polylineTo: pointsTo.slice(0, indexTo + 1),
+                intermediateStartIndex: 0
+            });
         }
 
         if (i > 0) {
-            handleInnerChanges(
-                indexFrom,
-                indexTo,
-                idsFrom.indexOf(remainingIds[i - 1]),
-                idsTo.indexOf(remainingIds[i - 1])
-            );
+            var prevIndexFrom = idsFrom.indexOf(remainingIds[i - 1]);
+            var prevIndexTo = idsTo.indexOf(remainingIds[i - 1]);
+            if (indexFrom - prevIndexFrom > 1 || indexTo - prevIndexTo > 1) {
+                handleInnerChanges({
+                    polylineFrom: pointsFrom.slice(prevIndexFrom, indexFrom + 1),
+                    polylineTo: pointsTo.slice(prevIndexTo, indexTo + 1),
+                    intermediateStartIndex: intermediate.length
+                });
+            }
         }
 
-        remainingPoints.push({
-            index: intermediate.length,
-            getPoint: (t) => {
-                return interpolatePoint(pointsFrom[indexFrom], pointsTo[indexTo], t);
-            }
+        handleRemainingPoint({
+            pointFrom: pointsFrom[indexFrom],
+            pointTo: pointsTo[indexTo],
+            intermediateIndex: intermediate.length
         });
-        intermediate.push(null);
 
         if (
             i === remainingIds.length - 1 &&
             (pointsFrom.length - indexFrom - 1 > 0 ||
-                pointsTo.length - indexTo - 1)
+            pointsTo.length - indexTo - 1 > 0)
         ) {
-            handleRightSideChanges(indexFrom, indexTo);
+            handleEndingChanges({
+                polylineFrom: pointsFrom.slice(indexFrom),
+                polylineTo: pointsTo.slice(indexTo),
+                intermediateStartIndex: intermediate.length
+            });
         }
     });
 
-    if (changingPoints.length === 0) {
-        if (pointsTo.length > 0 && remainingIds.length === 0) {
-            handleNewlyCreatedPath();
-        } else if (pointsFrom.length > 0 && remainingIds.length === 0) {
-            handleRemovingPath();
-        }
+    if (changingPoints.length === 0 && (
+        pointsTo.length > 0 && remainingIds.length === 0 ||
+        pointsFrom.length > 0 && remainingIds.length === 0
+    )) {
+        handleNonRemainingPath({
+            polylineFrom: pointsFrom.slice(0),
+            polylineTo: pointsTo.slice(0)
+        });
     }
 
-    var updateIntermediatePoints = (t) => {
+    var update = (t) => {
         remainingPoints.forEach((d) => {
-            var pt = d.getPoint(t);
-            intermediate[d.index] = pt;
+            var pt = d.interpolate(t);
+            intermediate[d.intermediateIndex] = pt;
         });
         changingPoints.forEach((d) => {
-            var points = d.getPoints(t);
-            points.forEach((pt, i) => intermediate[d.startIndex + i] = pt);
+            var points = d.interpolate(t);
+            points.forEach((pt, i) => intermediate[d.intermediateStartIndex + i] = pt);
         });
     };
 
     return (t) => {
-        updateIntermediatePoints(t);
+        update(t);
         return intermediate;
     };
 }
@@ -360,12 +324,11 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
                 {}, midPt,
                 {
                     id: line[tempStartIdIndex + i].id,
-                    positionIsBeingChanged: true,
                     isInterpolatedEnding: true
                 }
             )));
         }
-        return result.slice(1);
+        return result;
     })(
         (decreasing ? 1 - t : t),
         (reverse ? polyline.slice(0).reverse() : polyline)
@@ -381,31 +344,28 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
  * Returns a polyline, filled with points, so that number of points
  * becomes the same on both start and end polylines.
  */
-function fillSmallerPolyline({smallPolyline, bigPolyline}) {
+function fillSmallerPolyline({smallerPolyline, biggerPolyline}) {
 
-    var segmentsCount = {
-        small: smallPolyline.length - 1,
-        big: bigPolyline.length - 1
-    };
-    var minSegmentPointsCount = Math.floor(segmentsCount.big / segmentsCount.small) + 1;
-    var restPointsCount = segmentsCount.big % segmentsCount.small;
-    var segmentsPointsCount = utils.range(segmentsCount.small)
+    var smallerSegCount = smallerPolyline.length - 1;
+    var biggerSegCount = biggerPolyline.length - 1;
+    var minSegmentPointsCount = Math.floor(biggerSegCount / smallerSegCount) + 1;
+    var restPointsCount = biggerSegCount % smallerSegCount;
+    var segmentsPointsCount = utils.range(smallerSegCount)
         .map(i => (minSegmentPointsCount + Number(i < restPointsCount)));
 
-    var result = [smallPolyline[0]];
+    var result = [smallerPolyline[0]];
     var smallPtIndex = 1;
     segmentsPointsCount.forEach((segPtCount) => {
         utils.range(1, segPtCount).forEach(i => {
             if (i === segPtCount - 1) {
-                result.push(smallPolyline[smallPtIndex]);
+                result.push(smallerPolyline[smallPtIndex]);
             } else {
                 var newPt = interpolatePoint(
-                    smallPolyline[smallPtIndex - 1],
-                    smallPolyline[smallPtIndex],
+                    smallerPolyline[smallPtIndex - 1],
+                    smallerPolyline[smallPtIndex],
                     (i / (segPtCount - 1))
                 );
-                newPt.positionIsBeingChanged = true;
-                newPt.id = bigPolyline[result.length].id;
+                newPt.id = biggerPolyline[result.length].id;
                 result.push(newPt);
             }
         });
@@ -432,14 +392,9 @@ function getScaleDiffFn(points1, points2) {
         for (j = matchJ; j < len2; j++) {
             b = points2[j];
             if (a.id === b.id) {
-                if (
-                    !a.positionIsBeingChanged &&
-                    !b.positionIsBeingChanged
-                ) {
-                    matchJ = j + 1;
-                    src.push(a);
-                    dst.push(b);
-                }
+                matchJ = j + 1;
+                src.push(a);
+                dst.push(b);
                 break;
             }
         }
@@ -455,32 +410,32 @@ function getScaleDiffFn(points1, points2) {
         .filter(prop => prop !== 'id');
 
     var propDiffs = {};
-    var createPropDiffFn = (a, b, A, B) => (c) => (
-        B +
-        (c - b) *
-        (B - A) /
-        (b - a)
+    var createPropDiffFn = (a0, b0, a, b) => (c0) => (
+        b +
+        (c0 - b0) *
+        (b - a) /
+        (b0 - a0)
     );
-    var createSimpleDiffFn = (a, A) => (c) => (c - a + A);
+    var createSimpleDiffFn = (a0, a) => (c0) => (c0 - a0 + a);
     numProps.forEach(prop => {
-        var a = src[0][prop];
-        var A = dst[0][prop];
-        for (var i = src.length - 1, b, B; i > 0; i--) {
-            b = src[i][prop];
-            if (b !== a) {
-                B = dst[i][prop];
-                propDiffs[prop] = createPropDiffFn(a, b, A, B);
+        var a0 = src[0][prop];
+        var a = dst[0][prop];
+        for (var i = src.length - 1, b0, b; i > 0; i--) {
+            b0 = src[i][prop];
+            if (b0 !== a0) {
+                b = dst[i][prop];
+                propDiffs[prop] = createPropDiffFn(a0, b0, a, b);
                 return;
             }
         }
-        propDiffs[prop] = createSimpleDiffFn(a, A);
+        propDiffs[prop] = createSimpleDiffFn(a0, a);
     });
 
-    return (c) => {
-        var C = Object.assign({}, c);
+    return (c0) => {
+        var c = Object.assign({}, c0);
         numProps.forEach(p => {
-            C[p] = propDiffs[p](c[p]);
+            c[p] = propDiffs[p](c0[p]);
         });
-        return C;
+        return c;
     };
 }
