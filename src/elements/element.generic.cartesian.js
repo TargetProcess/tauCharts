@@ -102,9 +102,9 @@ export class GenericCartesian extends Element {
             dataSource: this.data()
         };
 
-        return (config.adjustPhase ? this.adjusters : [])
+        return ((this.adjusters || [])
             .filter(x => x)
-            .reduce((model, rule) => CartesianGrammar.compose(model, rule(model, args)), grammarModel);
+            .reduce((model, rule) => CartesianGrammar.compose(model, rule(model, args)), grammarModel));
     }
 
     createScreenModel(grammarModel) {

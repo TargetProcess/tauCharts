@@ -90,14 +90,9 @@ const BasePath = {
         return baseModel;
     },
 
-    draw() {
-
-        const self = this;
+    addInteraction() {
         const node = this.node();
         const config = this.node().config;
-        const guide = config.guide;
-        const options = config.options;
-        options.container = options.slot(config.uid);
 
         node.on('highlight', (sender, e) => this.highlight(e));
         node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
@@ -109,6 +104,15 @@ const BasePath = {
             node.on('mousemove', activate);
             node.on('mouseout', deactivate);
         }
+    },
+
+    draw() {
+
+        const self = this;
+        const config = this.node().config;
+        const guide = config.guide;
+        const options = config.options;
+        options.container = options.slot(config.uid);
 
         var fullData = this.node().data();
         var screenModel = this.node().screenModel;

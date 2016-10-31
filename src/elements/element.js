@@ -103,6 +103,10 @@ export class Element extends Emitter {
     }
     /* eslint-enable */
 
+    addInteraction() {
+        // do nothing
+    }
+
     draw() {
         // TODO: expose to explicit call everywhere
         this.config.options.container = this.config.options.slot(this.config.uid);

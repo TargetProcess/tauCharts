@@ -10,6 +10,7 @@ const Path = {
     draw: BasePath.draw,
     highlight: BasePath.highlight,
     highlightDataPoints: BasePath.highlightDataPoints,
+    addInteraction: BasePath.addInteraction,
 
     setup(xConfig) {
 

@@ -32,6 +32,9 @@ var unitsRegistry = {
                     createScreenModel(grammarModel) {
                         return this.node().createScreenModel(grammarModel);
                     },
+                    addInteraction() {
+                        this.node().addInteraction();
+                    },
                     node() {
                         return this.___tauchartsseed___;
                     },

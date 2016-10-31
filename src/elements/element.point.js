@@ -102,18 +102,15 @@ const Point = {
         return config;
     },
 
-    init() {
+    addInteraction() {
         var node = this.node();
-        node.init();
         node.on('highlight', (sender, e) => this.highlight(e));
         node.on('mouseover', ((sender, e) => {
             const identity = sender.screenModel.model.id;
             const id = identity(e.data);
             sender.fire('highlight', ((row) => (identity(row) === id) ? true : null));
         }));
-        node.on('mouseout', ((sender) => {
-            sender.fire('highlight', (() => (null)));
-        }));
+        node.on('mouseout', ((sender) => sender.fire('highlight', () => null)));
     },
 
     draw() {

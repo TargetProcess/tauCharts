@@ -78,7 +78,6 @@ export class GPL extends Emitter {
             var instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
-                    {adjustPhase: true},
                     {fnCreateScale: scalesFactoryMethod},
                     (unit),
                     {options: parentInstance.allocateRect(rootFrame.key)}
@@ -116,6 +115,7 @@ export class GPL extends Emitter {
             instance.node().screenModel = instance.createScreenModel(grammarModel);
             instance.init();
             instance.parentUnit = parentInstance;
+            instance.addInteraction();
             return instance;
         });
     }
