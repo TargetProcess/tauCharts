@@ -78,18 +78,15 @@ export class GPL extends Emitter {
             var instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
-                    {fnCreateScale: scalesFactoryMethod},
+                    {},
                     (unit),
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            instance.createScales(scalesFactoryMethod);
             const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
             const grammarModel = instance.evalGrammarRules(initialModel);
             instance.adjustScales(grammarModel);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
-
-            instance.init();
 
             return instance;
         });
@@ -104,18 +101,17 @@ export class GPL extends Emitter {
             var instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
-                    {fnCreateScale: scalesFactoryMethod},
+                    {},
                     (unit),
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            instance.createScales(scalesFactoryMethod);
             const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
             const grammarModel = instance.evalGrammarRules(initialModel);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
-            instance.init();
             instance.parentUnit = parentInstance;
             instance.addInteraction();
+
             return instance;
         });
     }

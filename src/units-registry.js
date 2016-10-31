@@ -17,9 +17,6 @@ var unitsRegistry = {
                     setup(config) {
                         return config;
                     },
-                    createScales(params) {
-                        return this.node().createScales(params);
-                    },
                     defineGrammarModel(params) {
                         return this.node().defineGrammarModel(params);
                     },
@@ -37,9 +34,6 @@ var unitsRegistry = {
                     },
                     node() {
                         return this.___tauchartsseed___;
-                    },
-                    init() {
-                        this.node().init();
                     },
                     draw() {
                         this.node().draw();

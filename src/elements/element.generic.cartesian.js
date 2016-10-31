@@ -44,23 +44,16 @@ export class GenericCartesian extends Element {
         this.adjusters = (this.config.adjustRules || defaultAdjusters);
     }
 
-    init() {
-        // do nothing
-    }
-
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
         const config = this.config;
-        return this
-            .regScale('x', fnCreateScale('pos', config.x, [0, config.options.width]))
+        this.regScale('x', fnCreateScale('pos', config.x, [0, config.options.width]))
             .regScale('y', fnCreateScale('pos', config.y, [config.options.height, 0]))
             .regScale('size', fnCreateScale('size', config.size, {}))
             .regScale('color', fnCreateScale('color', config.color, {}))
             .regScale('split', fnCreateScale('split', config.split, {}))
             .regScale('label', fnCreateScale('label', config.label, {}))
             .regScale('identity', fnCreateScale('identity', config.identity, {}));
-    }
 
-    defineGrammarModel() {
         return new CartesianGrammar({
             scaleX: this.getScale('x'),
             scaleY: this.getScale('y'),

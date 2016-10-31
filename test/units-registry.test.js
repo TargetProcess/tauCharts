@@ -19,7 +19,7 @@ define(function (require) {
             var actions = [];
             registry.reg('Base-A',
                 function () {
-                    this.init = () => {
+                    this.defineGrammarModel = () => {
                         actions.push('init');
                     };
                     this.draw = () => {
@@ -35,7 +35,7 @@ define(function (require) {
             );
 
             var inst = registry.create('a', {});
-            inst.init();
+            inst.defineGrammarModel();
             inst.draw();
             expect(actions).to.deep.equal(['init', 'draw']);
         });
@@ -45,7 +45,7 @@ define(function (require) {
             var actions = [];
             registry.reg('Base-A',
                 function () {
-                    this.init = () => {
+                    this.defineGrammarModel = () => {
                         actions.push('init');
                     };
                     this.draw = () => {
@@ -56,9 +56,9 @@ define(function (require) {
             registry.reg('a',
                 {
                     type: 'A',
-                    init() {
+                    defineGrammarModel() {
                         actions.push('init(A)');
-                        this.node().init();
+                        this.node().defineGrammarModel();
                     },
                     draw() {
                         actions.push('draw(A)');
@@ -69,7 +69,7 @@ define(function (require) {
             );
 
             var inst = registry.create('a', {});
-            inst.init();
+            inst.defineGrammarModel();
             inst.draw();
             expect(actions).to.deep.equal(['init(A)', 'init', 'draw(A)', 'draw']);
         });

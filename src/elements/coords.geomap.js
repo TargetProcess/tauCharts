@@ -48,7 +48,7 @@ export class GeoMap extends Element {
         this.on('highlight', (sender, e) => this._highlightPoint(e));
     }
 
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
 
         var node = this.config;
 

@@ -120,16 +120,13 @@ export class Cartesian extends Element {
         this.H = options.height - (padding.t + padding.b);
     }
 
-    createScales(fnCreateScale) {
-        this.xScale = fnCreateScale('pos', this.config.x, [0, this.W]);
-        this.yScale = fnCreateScale('pos', this.config.y, [this.H, 0]);
+    defineGrammarModel(fnCreateScale) {
+        const w = this.W;
+        const h = this.H;
+        this.xScale = fnCreateScale('pos', this.config.x, [0, w]);
+        this.yScale = fnCreateScale('pos', this.config.y, [h, 0]);
         this.regScale('x', this.xScale)
             .regScale('y', this.yScale);
-    }
-
-    defineGrammarModel() {
-        var w = this.W;
-        var h = this.H;
         return new CartesianModel({
             scaleX: this.xScale,
             scaleY: this.yScale,
@@ -149,12 +146,6 @@ export class Cartesian extends Element {
 
     createScreenModel(grammarModel) {
         return grammarModel.toScreenModel();
-    }
-
-    walkFrames() {
-        const grammarModel = this.evalGrammarRules(this.defineGrammarModel());
-        this.adjustScales(grammarModel);
-        return this.createScreenModel(grammarModel);
     }
 
     allocateRect(k) {

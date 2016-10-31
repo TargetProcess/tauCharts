@@ -63,14 +63,6 @@ export class Element extends Emitter {
         });
     }
 
-    walkFrames() {
-        return null;
-    }
-
-    createScales() {
-        // do nothing by default
-    }
-
     allocateRect() {
         return {
             left: 0,
@@ -78,11 +70,6 @@ export class Element extends Emitter {
             width: 0,
             height: 0
         };
-    }
-
-    init() {
-        this.createScales(this.config.fnCreateScale);
-        this.screenModel = this.walkFrames(this.config.frames);
     }
 
     /* eslint-disable */
