@@ -3,7 +3,7 @@ import {utils} from './utils';
 export default function interpolatePathPoints(pointsFrom, pointsTo) {
 
     // TODO: Continue unfinished transition of ending points.
-    pointsFrom = pointsFrom.filter(d => !d.isInterpolatedEnding);
+    pointsFrom = pointsFrom.filter(d => !d.isInterpolated);
 
     var interpolateIntermediate;
 
@@ -88,12 +88,13 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
         var newCount = polylineTo.length;
 
         if (newCount !== oldCount) {
-            var countIncreased = newCount > oldCount;
-            var smallerPolyline = countIncreased ? polylineFrom : polylineTo;
-            var biggerPolyline = countIncreased ? polylineTo : polylineFrom;
+            var decreasing = newCount < oldCount;
+            var smallerPolyline = decreasing ? polylineTo : polylineFrom;
+            var biggerPolyline = decreasing ? polylineFrom : polylineTo;
             var filledPolyline = fillSmallerPolyline({
                 smallerPolyline,
-                biggerPolyline
+                biggerPolyline,
+                decreasing
             });
             var biggerInnerPoints = biggerPolyline.slice(1, biggerPolyline.length - 1);
             var filledInnerPoints = filledPolyline.slice(1, filledPolyline.length - 1);
@@ -103,7 +104,7 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
                     var points = interpolatePoints(
                         filledInnerPoints,
                         biggerInnerPoints,
-                        (countIncreased ? t : 1 - t)
+                        (decreasing ? 1 - t : t)
                     );
                     points.forEach(d => d.positionIsBeingChanged = true);
                     return points;
@@ -226,7 +227,7 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
         });
     }
 
-    var update = (t) => {
+    return (t) => {
         remainingPoints.forEach((d) => {
             var pt = d.interpolate(t);
             intermediate[d.intermediateIndex] = pt;
@@ -235,10 +236,6 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
             var points = d.interpolate(t);
             points.forEach((pt, i) => intermediate[d.intermediateStartIndex + i] = pt);
         });
-    };
-
-    return (t) => {
-        update(t);
         return intermediate;
     };
 }
@@ -248,6 +245,12 @@ function push(target, items) {
 }
 
 function interpolateValue(a, b, t) {
+    if (a === undefined) {
+        return b;
+    }
+    if (b === undefined) {
+        return a;
+    }
     if (typeof b === 'number') {
         return (a + t * (b - a));
     }
@@ -261,7 +264,7 @@ function interpolatePoint(a, b, t) {
     var c = {};
     var props = utils.unique(Object.keys(a), Object.keys(b));
     props.forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
-    c.id = a.id;
+    c.id = b.id;
     return c;
 }
 
@@ -324,7 +327,7 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
                 {}, midPt,
                 {
                     id: line[tempStartIdIndex + i].id,
-                    isInterpolatedEnding: true
+                    isInterpolated: true
                 }
             )));
         }
@@ -344,7 +347,7 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
  * Returns a polyline, filled with points, so that number of points
  * becomes the same on both start and end polylines.
  */
-function fillSmallerPolyline({smallerPolyline, biggerPolyline}) {
+function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing}) {
 
     var smallerSegCount = smallerPolyline.length - 1;
     var biggerSegCount = biggerPolyline.length - 1;
@@ -357,17 +360,24 @@ function fillSmallerPolyline({smallerPolyline, biggerPolyline}) {
     var smallPtIndex = 1;
     segmentsPointsCount.forEach((segPtCount) => {
         utils.range(1, segPtCount).forEach(i => {
+            var newPt;
             if (i === segPtCount - 1) {
-                result.push(smallerPolyline[smallPtIndex]);
+                newPt = Object.assign({}, smallerPolyline[smallPtIndex]);
+                if (!decreasing) {
+                    newPt.id = biggerPolyline[result.length].id;
+                }
             } else {
-                var newPt = interpolatePoint(
+                newPt = interpolatePoint(
                     smallerPolyline[smallPtIndex - 1],
                     smallerPolyline[smallPtIndex],
                     (i / (segPtCount - 1))
                 );
                 newPt.id = biggerPolyline[result.length].id;
-                result.push(newPt);
+                if (decreasing) {
+                    newPt.isInterpolated = true;
+                }
             }
+            result.push(newPt);
         });
         smallPtIndex++;
     });
