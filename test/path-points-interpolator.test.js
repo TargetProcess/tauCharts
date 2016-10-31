@@ -23,22 +23,22 @@ define(function (require) {
             var interpolator1 = createInterpolator(a, b);
             expect(interpolator1(0)).to.be.deep.equal(a);
             expect(interpolator1(0.5)).to.be.deep.equal([
-                {id: 1, x: -2.5, y: 15, isInterpolatedEnding: true, positionIsBeingChanged: true},
+                {id: 1, x: -2.5, y: 15, isInterpolated: true, positionIsBeingChanged: true},
                 {id: 2, x: 5, y: 30},
                 {id: 3, x: 20, y: 0},
                 {id: 4, x: 35, y: 60},
-                {id: 5, x: 42.5, y: 90, isInterpolatedEnding: true, positionIsBeingChanged: true}
+                {id: 5, x: 42.5, y: 90, isInterpolated: true, positionIsBeingChanged: true}
             ]);
             expect(interpolator1(1)).to.be.deep.equal(b);
 
             var interpolator2 = createInterpolator(b, a);
             expect(interpolator2(0)).to.be.deep.equal(b);
             expect(interpolator2(0.5)).to.be.deep.equal([
-                {id: 1, x: -2.5, y: 15, isInterpolatedEnding: true, positionIsBeingChanged: true},
+                {id: 1, x: -2.5, y: 15, isInterpolated: true, positionIsBeingChanged: true},
                 {id: 2, x: 5, y: 30},
                 {id: 3, x: 20, y: 0},
                 {id: 4, x: 35, y: 60},
-                {id: 5, x: 42.5, y: 90, isInterpolatedEnding: true, positionIsBeingChanged: true}
+                {id: 5, x: 42.5, y: 90, isInterpolated: true, positionIsBeingChanged: true}
             ]);
             expect(interpolator2(1)).to.be.deep.equal(a);
 
@@ -49,7 +49,7 @@ define(function (require) {
             var midY = 80 * kMid; // Expected Y at t=0.5
             var checkMidPoint = function (id, d) {
                 expect(d.id).to.be.equal(id);
-                expect(d.isInterpolatedEnding).to.be.true;
+                expect(d.isInterpolated).to.be.true;
                 expect(d.positionIsBeingChanged).to.be.true;
                 expect(d.x).to.be.closeTo(midX, 1e-6);
                 expect(d.y).to.be.closeTo(midY, 1e-6);
@@ -77,13 +77,13 @@ define(function (require) {
             expect(interpolator5(0.5)).to.deep.equal([
                 a[0],
                 {id: 2, x: 10, y: 20, positionIsBeingChanged: true},
-                {id: 3, x: 10, y: 20, isInterpolatedEnding: true, positionIsBeingChanged: true}
+                {id: 3, x: 10, y: 20, isInterpolated: true, positionIsBeingChanged: true}
             ]);
 
             var interpolator6 = createInterpolator(a.slice(0, 3), [a[0], a[2]]);
             expect(interpolator6(0.5)).to.deep.equal([
                 a[0],
-                {id: 2, x: 10, y: 10, positionIsBeingChanged: true},
+                {id: 2, x: 10, y: 10, isInterpolated: true, positionIsBeingChanged: true},
                 a[2]
             ]);
 
@@ -97,7 +97,7 @@ define(function (require) {
             var interpolator8 = createInterpolator([a[0], {id: 7, x: 10, y: 40}, a[2]], a.slice(0, 3));
             expect(interpolator8(0.5)).to.deep.equal([
                 a[0],
-                {id: 7, x: 10, y: 30, positionIsBeingChanged: true},
+                {id: a[1].id, x: 10, y: 30, positionIsBeingChanged: true},
                 a[2]
             ]);
         });
