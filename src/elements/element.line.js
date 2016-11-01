@@ -79,7 +79,7 @@ export class Line extends BasePath {
 
             // double for consistency in case of
             // (vertices.length === 1)
-            vertices.push(vertices[0]);
+            vertices.unshift(vertices[0]);
 
             var pair = utils.range(vertices.length - 1)
                 .map((edge) => {
