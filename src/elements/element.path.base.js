@@ -8,7 +8,7 @@ import {default as d3} from 'd3';
 
 const BasePath = {
 
-    setup(xConfig) {
+    init(xConfig) {
 
         const config = xConfig;
 

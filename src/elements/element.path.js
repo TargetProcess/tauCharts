@@ -12,9 +12,9 @@ const Path = {
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,
 
-    setup(xConfig) {
+    init(xConfig) {
 
-        const config = BasePath.setup(xConfig);
+        const config = BasePath.init(xConfig);
 
         config.transformRules = [
             CartesianGrammar.decorator_orientation,

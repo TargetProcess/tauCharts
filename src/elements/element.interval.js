@@ -7,7 +7,7 @@ import {default as d3} from 'd3';
 
 const Interval = {
 
-    setup(xConfig) {
+    init(xConfig) {
 
         var config = Object.assign({}, xConfig);
 
@@ -23,9 +23,7 @@ const Interval = {
         config.guide.size = utils.defaults(
             (config.guide.size || {}),
             {
-                enableDistributeEvenly: true,
-                defMinSize: config.guide.prettify ? 3 : 0,
-                defMaxSize: config.guide.prettify ? 40 : Number.MAX_VALUE
+                enableDistributeEvenly: true
             });
 
         config.guide.label = utils.defaults(
@@ -72,7 +70,25 @@ const Interval = {
             .concat(config.transformModel || []);
 
         config.adjustRules = [
-            (enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly),
+            (enableDistributeEvenly && ((prevModel, args) => {
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: config.guide.prettify ? 3 : 0,
+                        defMaxSize: config.guide.prettify ? 40 : Number.MAX_VALUE
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return CartesianGrammar.decorator_size_distribute_evenly(prevModel, params);
+            })),
             (enableDistributeEvenly && config.guide.prettify && CartesianGrammar.avoidBaseScaleOverflow),
             (config.stack && CartesianGrammar.adjustYScale)
         ].filter(x => x);

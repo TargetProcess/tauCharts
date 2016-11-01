@@ -68,12 +68,7 @@ export class GenericCartesian extends Element {
     evalGrammarRules(grammarModel) {
 
         const config = this.config;
-        const sizeCfg = config.guide.size;
         const args = {
-            defMin: sizeCfg.defMinSize,
-            defMax: sizeCfg.defMaxSize,
-            minLimit: sizeCfg.minSize,
-            maxLimit: sizeCfg.maxSize,
             isHorizontal: config.flip,
             dataSource: this.data()
         };

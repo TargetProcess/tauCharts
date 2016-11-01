@@ -13,9 +13,9 @@ const Line = {
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,
 
-    setup(xConfig) {
+    init(xConfig) {
 
-        const config = BasePath.setup(xConfig);
+        const config = BasePath.init(xConfig);
         const enableStack = config.stack;
 
         config.guide = utils.defaults(

@@ -10,11 +10,11 @@ var unitsRegistry = {
         if (xSeed) {
             SeedsMap[unitType] = xSeed;
             UnitsMap[unitType] = function (config, Base) {
-                this.___tauchartsseed___ = new Base(this.setup(config));
+                this.___tauchartsseed___ = new Base(this.init(config));
             };
             UnitsMap[unitType].prototype = Object.assign(
                 {
-                    setup(config) {
+                    init(config) {
                         return config;
                     },
                     defineGrammarModel(params) {

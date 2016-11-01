@@ -6,7 +6,7 @@ import {utils} from '../utils/utils';
 
 const Point = {
 
-    setup(xConfig) {
+    init(xConfig) {
 
         const config = Object.assign({}, xConfig);
 
