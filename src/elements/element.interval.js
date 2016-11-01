@@ -56,15 +56,11 @@ const Interval = {
         var enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
         config.transformRules = [
-            CartesianGrammar.decorator_orientation,
+            config.flip && CartesianGrammar.decorator_flip,
             CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
             CartesianGrammar.decorator_groupOrderByColor,
             config.stack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
         ]
             .filter(x => x)
             .concat(config.transformModel || []);

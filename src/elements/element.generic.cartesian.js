@@ -25,15 +25,11 @@ export class GenericCartesian extends Element {
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
 
         var defaultDecorators = [
-            CartesianGrammar.decorator_orientation,
+            config.flip && CartesianGrammar.decorator_flip,
             CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
             CartesianGrammar.decorator_groupOrderByColor,
             enableStack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
         ];
 
         var defaultAdjusters = [
@@ -69,7 +65,6 @@ export class GenericCartesian extends Element {
 
         const config = this.config;
         const args = {
-            isHorizontal: config.flip,
             dataSource: this.data()
         };
 
@@ -80,13 +75,7 @@ export class GenericCartesian extends Element {
 
     adjustScales(grammarModel) {
         const config = this.config;
-        const sizeCfg = config.guide.size;
         const args = {
-            defMin: sizeCfg.defMinSize,
-            defMax: sizeCfg.defMaxSize,
-            minLimit: sizeCfg.minSize,
-            maxLimit: sizeCfg.maxSize,
-            isHorizontal: config.flip,
             dataSource: this.data()
         };
 

@@ -25,15 +25,11 @@ const Line = {
             });
 
         config.transformRules = [
-            CartesianGrammar.decorator_orientation,
+            config.flip && CartesianGrammar.decorator_flip,
             CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
             !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
             enableStack && CartesianGrammar.decorator_groupOrderByColor,
-            enableStack && CartesianGrammar.decorator_stack,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label
+            enableStack && CartesianGrammar.decorator_stack
         ].concat(config.transformModel || []);
 
         config.adjustRules = [

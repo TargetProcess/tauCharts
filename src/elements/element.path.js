@@ -17,11 +17,7 @@ const Path = {
         const config = BasePath.init(xConfig);
 
         config.transformRules = [
-            CartesianGrammar.decorator_orientation,
-            CartesianGrammar.decorator_group,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label
+            config.flip && CartesianGrammar.decorator_flip
         ].concat(config.transformModel || []);
 
         config.adjustRules = [

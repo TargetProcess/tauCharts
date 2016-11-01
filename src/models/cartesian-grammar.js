@@ -9,7 +9,6 @@ export class CartesianGrammar {
 
     constructor(model) {
         var createFunc = ((x) => (() => x));
-        this.flip = model.flip || false;
         this.scaleX = model.scaleX;
         this.scaleY = model.scaleY;
         this.scaleSize = model.scaleSize;
@@ -19,14 +18,16 @@ export class CartesianGrammar {
         this.scaleIdentity = model.scaleIdentity;
 
         var sid = this.scaleIdentity;
+        this.flip = model.flip || false;
         this.id = ((row) => sid.value(row[sid.dim], row));
+        this.xi = model.xi || ((d) => model.scaleX.value(d[model.scaleX.dim]));
+        this.yi = model.yi || ((d) => model.scaleY.value(d[model.scaleY.dim]));
+        this.color = model.color || ((d) => model.scaleColor.value(d[model.scaleColor.dim]));
+        this.label = model.label || ((d) => model.scaleLabel.value(d[model.scaleLabel.dim]));
+        this.group = model.group || ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`));
+        this.size = model.size || ((d) => (model.scaleSize.value(d[model.scaleSize.dim])));
+
         this.y0 = model.y0 || createFunc(0);
-        this.yi = model.yi || createFunc(0);
-        this.xi = model.xi || createFunc(0);
-        this.size = model.size || createFunc(1);
-        this.label = model.label || createFunc('');
-        this.color = model.color || createFunc('');
-        this.group = model.group || createFunc('');
         this.order = model.order || createFunc(0);
     }
 
@@ -65,39 +66,32 @@ export class CartesianGrammar {
         return model;
     }
 
-    static decorator_orientation(model, {isHorizontal}) {
+    static decorator_flip(model, {}) {
 
-        var baseScale = (isHorizontal ? model.scaleY : model.scaleX);
-        var valsScale = (isHorizontal ? model.scaleX : model.scaleY);
+        var baseScale = model.scaleY;
+        var valsScale = model.scaleX;
 
         return {
-            flip: isHorizontal,
+            flip: true,
             scaleX: baseScale,
             scaleY: valsScale,
-            y0: ((d) => (valsScale.value(d[valsScale.dim]))),
-            yi: ((d) => (valsScale.value(d[valsScale.dim]))),
-            xi: ((d) => (baseScale.value(d[baseScale.dim])))
+            xi: ((d) => (baseScale.value(d[baseScale.dim]))),
+            yi: ((d) => (valsScale.value(d[valsScale.dim])))
         };
     }
 
-    static decorator_groundY0(model, {isHorizontal}) {
-        var k = (isHorizontal ? (-0.5) : (0.5));
-        var ys = model.scaleY.domain();
-        var min = ys[0];
+    static decorator_groundY0(model, {}) {
+        const k = (model.flip ? (-0.5) : (0.5));
+        const ys = model.scaleY.domain();
+        const min = ys[0];
 
         // NOTE: max also can be below 0
-        var y0 = model.scaleY.discrete ?
+        const y0 = model.scaleY.discrete ?
             (model.scaleY.value(min) + model.scaleY.stepSize(min) * k) :
             (model.scaleY.value(Math.max(0, Math.min(...ys))));
 
         return {
             y0: (() => y0)
-        };
-    }
-
-    static decorator_dynamic_size(model, {}) {
-        return {
-            size: ((d) => (model.size(d) * model.scaleSize.value(d[model.scaleSize.dim])))
         };
     }
 
@@ -128,24 +122,6 @@ export class CartesianGrammar {
                 var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
                 return absTickStart + relSegmStart;
             })
-        };
-    }
-
-    static decorator_color(model, {}) {
-        return {
-            color: ((d) => model.scaleColor.value(d[model.scaleColor.dim]))
-        };
-    }
-
-    static decorator_label(model, {}) {
-        return {
-            label: ((d) => model.scaleLabel.value(d[model.scaleLabel.dim]))
-        };
-    }
-
-    static decorator_group(model, {}) {
-        return {
-            group: ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`))
         };
     }
 

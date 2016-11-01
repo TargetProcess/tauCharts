@@ -60,12 +60,8 @@ const Point = {
                 };
             }),
             CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
             config.stack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
         ]
             .filter(x => x)
             .concat(config.transformModel || []);
