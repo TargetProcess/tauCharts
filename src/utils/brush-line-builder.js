@@ -2,6 +2,12 @@
  * Returns line with variable stroke width.
  */
 export default function getBrushLine(points) {
+    if (points.length === 0) {
+        return '';
+    }
+    if (points.length === 1) {
+        return getSegment(points[0], points[0]);
+    }
     var segments = [];
     for (var i = 1; i < points.length; i++) {
         segments.push(getSegment(points[i - 1], points[i]));

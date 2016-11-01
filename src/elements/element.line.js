@@ -40,25 +40,6 @@ export class Line extends BasePath {
 
         var self = this;
 
-        var wMax = this.config.options.width;
-        var hMax = this.config.options.height;
-
-        var limit = (x, minN, maxN) => {
-
-            var k = 1000;
-            var n = Math.round(x * k) / k;
-
-            if (n < minN) {
-                return minN;
-            }
-
-            if (n > maxN) {
-                return maxN;
-            }
-
-            return n;
-        };
-
         var baseModel = super.buildModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
