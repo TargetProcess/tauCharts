@@ -72,6 +72,19 @@ const Line = {
         const tag = isEmptySize ? 'line' : 'area';
         const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
+        const pathAttributes = isEmptySize ?
+            ({
+                stroke: (fiber) => baseModel.color(fiber[0]),
+                class: 'i-role-datum'
+            }) :
+            ({
+                fill: (fiber) => baseModel.color(fiber[0])
+            });
+
+        const d3LineBuilder = isEmptySize ?
+            d3.svg.line().interpolate(guide.interpolate).x(d => d.x).y(d => d.y) :
+            getBrushLine;
+
         const baseModel = BasePath.baseModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
@@ -125,46 +138,17 @@ const Line = {
                 size: baseModel.size(d)
             });
 
-        var d3Line = d3.svg
-            .line()
-            .interpolate(guide.interpolate)
-            .x(d => d.x)
-            .y(d => d.y);
-
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
         baseModel.pathElement = 'path';
-
-        var pathAttributes = isEmptySize ?
-            ({
-                stroke: (fiber) => baseModel.color(fiber[0]),
-                class: 'i-role-datum'
-            }) :
-            ({
-                fill: (fiber) => baseModel.color(fiber[0])
-            });
-
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
-
-        if (isEmptySize) {
-            baseModel.pathTween = {
-                attr: 'd',
-                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, screenModel.id)
-            };
-        } else {
-            baseModel.pathTween = {
-                attr: 'd',
-                fn: d3_createPathTween(
-                    'd',
-                    getBrushLine,
-                    baseModel.toPoint,
-                    screenModel.id
-                )
-            };
-        }
+        baseModel.pathTween = {
+            attr: 'd',
+            fn: d3_createPathTween('d', d3LineBuilder, baseModel.toPoint, screenModel.id)
+        };
 
         return baseModel;
     }
