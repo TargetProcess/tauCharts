@@ -36,7 +36,6 @@ const Point = {
 
         config.transformRules = [
             ((prevModel) => {
-
                 const bestBaseScale = [prevModel.scaleX, prevModel.scaleY]
                     .sort((a, b) => {
                         var discreteA = a.discrete ? 1 : 0;
@@ -44,22 +43,11 @@ const Point = {
                         return (discreteB * b.domain().length) - (discreteA * a.domain().length);
                     })
                     [0];
-
                 const isHorizontal = (prevModel.scaleY === bestBaseScale);
-
-                const baseScale = (isHorizontal ? prevModel.scaleY : prevModel.scaleX);
-                const valsScale = (isHorizontal ? prevModel.scaleX : prevModel.scaleY);
-
-                return {
-                    flip: isHorizontal,
-                    scaleX: baseScale,
-                    scaleY: valsScale,
-                    y0: ((d) => (valsScale.value(d[valsScale.dim]))),
-                    yi: ((d) => (valsScale.value(d[valsScale.dim]))),
-                    xi: ((d) => (baseScale.value(d[baseScale.dim])))
-                };
+                return isHorizontal ?
+                    CartesianGrammar.decorator_flip(prevModel) :
+                    CartesianGrammar.decorator_identity(prevModel);
             }),
-            CartesianGrammar.decorator_groundY0,
             config.stack && CartesianGrammar.decorator_stack,
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor
         ]

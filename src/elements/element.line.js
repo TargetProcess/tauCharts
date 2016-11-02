@@ -27,7 +27,6 @@ const Line = {
 
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
-            CartesianGrammar.decorator_groundY0,
             !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
             enableStack && CartesianGrammar.decorator_groupOrderByColor,
             enableStack && CartesianGrammar.decorator_stack

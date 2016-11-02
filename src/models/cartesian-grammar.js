@@ -27,7 +27,18 @@ export class CartesianGrammar {
         this.group = model.group || ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`));
         this.size = model.size || ((d) => (model.scaleSize.value(d[model.scaleSize.dim])));
 
-        this.y0 = model.y0 || createFunc(0);
+        if (model.y0) {
+            this.y0 = model.y0;
+        } else {
+            const ys = model.scaleY.domain();
+            const min = model.scaleY.discrete ?
+                ys[0] :
+                Math.max(0, Math.min(...ys)); // NOTE: max also can be below 0
+
+            const y0 = model.scaleY.value(min) + model.scaleY.stepSize(min) * 0.5;
+            this.y0 = (() => y0);
+        }
+
         this.order = model.order || createFunc(0);
     }
 
@@ -66,45 +77,38 @@ export class CartesianGrammar {
         return model;
     }
 
-    static decorator_flip(model, {}) {
+    static decorator_flip(model) {
 
         var baseScale = model.scaleY;
         var valsScale = model.scaleX;
+
+        const k = -0.5;
+        const ys = valsScale.domain();
+        const min = valsScale.discrete ?
+            ys[0] :
+            Math.max(0, Math.min(...ys)); // NOTE: max also can be below 0
+        const y0 = valsScale.value(min) + valsScale.stepSize(min) * k;
 
         return {
             flip: true,
             scaleX: baseScale,
             scaleY: valsScale,
             xi: ((d) => (baseScale.value(d[baseScale.dim]))),
-            yi: ((d) => (valsScale.value(d[valsScale.dim])))
-        };
-    }
-
-    static decorator_groundY0(model, {}) {
-        const k = (model.flip ? (-0.5) : (0.5));
-        const ys = model.scaleY.domain();
-        const min = ys[0];
-
-        // NOTE: max also can be below 0
-        const y0 = model.scaleY.discrete ?
-            (model.scaleY.value(min) + model.scaleY.stepSize(min) * k) :
-            (model.scaleY.value(Math.max(0, Math.min(...ys))));
-
-        return {
+            yi: ((d) => (valsScale.value(d[valsScale.dim]))),
             y0: (() => y0)
         };
     }
 
-    static decorator_positioningByColor(model, params) {
+    static decorator_positioningByColor(model) {
 
         var method = (model.scaleX.discrete ?
             CartesianGrammar.decorator_discrete_positioningByColor :
             CartesianGrammar.decorator_identity);
 
-        return method(model, params);
+        return method(model);
     }
 
-    static decorator_discrete_positioningByColor(model, {}) {
+    static decorator_discrete_positioningByColor(model) {
         var baseScale = model.scaleX;
         var scaleColor = model.scaleColor;
         var categories = scaleColor.discrete ?
@@ -125,7 +129,7 @@ export class CartesianGrammar {
         };
     }
 
-    static decorator_groupOrderByColor(model, {}) {
+    static decorator_groupOrderByColor(model) {
 
         var order = model.scaleColor.domain();
 
@@ -165,7 +169,7 @@ export class CartesianGrammar {
         };
     }
 
-    static decorator_stack(model, {}) {
+    static decorator_stack(model) {
 
         var xScale = model.scaleX;
         var yScale = model.scaleY;
