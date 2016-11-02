@@ -1,8 +1,6 @@
 import {BaseScale} from './base';
 import {TauChartError, errorCodes} from '../error';
-/* jshint ignore:start */
-import {default as d3} from 'd3';
-/* jshint ignore:end */
+import d3 from 'd3';
 
 export class LogarithmicScale extends BaseScale {
 

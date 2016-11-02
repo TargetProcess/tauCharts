@@ -26,7 +26,8 @@ import {OrdinalScale}   from './scales/ordinal';
 import {PeriodScale}    from './scales/period';
 import {TimeScale}      from './scales/time';
 import {LinearScale}    from './scales/linear';
-import {LogarithmicScale}    from './scales/logarithmic';
+import {IntegerScale}   from './scales/integer';
+import {LogarithmicScale}   from './scales/logarithmic';
 import {ValueScale}     from './scales/value';
 import {FillScale}      from './scales/fill';
 
@@ -215,6 +216,7 @@ Plot.globalSettings = api.globalSettings;
     ['period', PeriodScale],
     ['time', TimeScale],
     ['linear', LinearScale],
+    ['integer', IntegerScale],
     ['logarithmic', LogarithmicScale],
     ['value', ValueScale]
 ].reduce((memo, nv) => (memo.reg(...nv)), api.scalesRegistry);
