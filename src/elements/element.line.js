@@ -5,6 +5,7 @@ import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-m
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
+import getBrushLine from '../utils/path/brush-line-builder';
 
 const Line = {
 
@@ -62,8 +63,6 @@ const Line = {
     buildModel(screenModel) {
 
         const config = this.node().config;
-        const wMax = config.options.width;
-        const hMax = config.options.height;
         const guide = config.guide;
         const options = config.options;
         const isEmptySize = !screenModel.model.scaleSize.dim; // TODO: empty method for size scale???;
@@ -74,23 +73,7 @@ const Line = {
         const tag = isEmptySize ? 'line' : 'area';
         const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
-        const limit = (x, minN, maxN) => {
-
-            var k = 1000;
-            var n = Math.round(x * k) / k;
-
-            if (n < minN) {
-                return minN;
-            }
-
-            if (n > maxN) {
-                return maxN;
-            }
-
-            return n;
-        };
-
-        var baseModel = BasePath.baseModel(screenModel);
+        const baseModel = BasePath.baseModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
             var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
@@ -111,7 +94,7 @@ const Line = {
 
             // double for consistency in case of
             // (vertices.length === 1)
-            vertices.push(vertices[0]);
+            vertices.unshift(vertices[0]);
 
             var pair = utils.range(vertices.length - 1)
                 .map((edge) => {
@@ -153,61 +136,7 @@ const Line = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
-        baseModel.pathElement = isEmptySize ? 'path' : 'polygon';
-
-        var d3LineVarySize = (x, y, w) => {
-            return (fiber) => {
-                var xy = ((d) => ([x(d), y(d)]));
-                var ways = fiber
-                    .reduce((memo, d, i, list) => {
-                        var dPrev = list[i - 1];
-                        var dNext = list[i + 1];
-                        var curr = xy(d);
-                        var prev = dPrev ? xy(dPrev) : null;
-                        var next = dNext ? xy(dNext) : null;
-
-                        var width = w(d);
-                        var lAngle = dPrev ? (Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0])) : Math.PI;
-                        var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
-
-                        var gamma = lAngle - rAngle;
-
-                        if (gamma === 0) {
-                            // Avoid divide be zero
-                            return memo;
-                        }
-
-                        var diff = width / 2 / Math.sin(gamma / 2);
-                        var aup = rAngle + gamma / 2;
-                        var adown = aup - Math.PI;
-                        var dxup = diff * Math.cos(aup);
-                        var dyup = diff * Math.sin(aup);
-                        var dxdown = diff * Math.cos(adown);
-                        var dydown = diff * Math.sin(adown);
-
-                        var dir = [
-                            limit(curr[0] + dxup, 0, wMax), // x
-                            limit(curr[1] - dyup, 0, hMax)  // y
-                        ];
-
-                        var rev = [
-                            limit(curr[0] + dxdown, 0, wMax),
-                            limit(curr[1] - dydown, 0, hMax)
-                        ];
-
-                        memo.dir.push(dir);
-                        memo.rev.push(rev);
-
-                        return memo;
-                    },
-                    {
-                        dir: [],
-                        rev: []
-                    });
-
-                return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
-            };
-        };
+        baseModel.pathElement = 'path';
 
         var pathAttributes = isEmptySize ?
             ({
@@ -228,10 +157,10 @@ const Line = {
             };
         } else {
             baseModel.pathTween = {
-                attr: 'points',
+                attr: 'd',
                 fn: d3_createPathTween(
-                    'points',
-                    d3LineVarySize(d => d.x, d => d.y, d => d.size, baseModel),
+                    'd',
+                    getBrushLine,
                     baseModel.toPoint,
                     screenModel.id
                 )
