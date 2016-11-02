@@ -187,14 +187,13 @@ export class CartesianGrammar {
                 var x = d[xScale.dim];
                 var y = d[yScale.dim];
 
-                var isPositive = d[synthetic] ? (d[synthetic + 'sign'] === 'positive') : (y >= 0);
-                var state = (isPositive ? totalState.positive : totalState.negative);
+                var state = ((y >= 0) ? totalState.positive : totalState.negative);
 
                 let prevStack = (state[x] || 0);
                 let nextStack = (prevStack + y);
                 state[x] = nextStack;
 
-                return {isPositive, nextStack, prevStack};
+                return {nextStack, prevStack};
             });
         };
 
@@ -404,21 +403,21 @@ export class CartesianGrammar {
 
         var xs = utils.unique(sortedData.map((row) => row[dx]));
 
-        var sign = ((row) => ((row[dy] >= 0) ? 'positive' : 'negative'));
+        var calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
 
-        var gen = (x, fi, sign) => {
-            var id = model.id(fi);
+        var gen = (x, sampleRow, sign) => {
+            var id = model.id(sampleRow);
             var genId = [dx, dy, ds, dc, x, id, sign].join(' ');
             if (syntheticPoints[genId]) {
                 return syntheticPoints[genId];
             }
-            var r = {};
-            r[dx] = x;
-            r[dy] = 0;
-            r[ds] = fi[ds];
-            r[dc] = fi[dc];
-            r[synthetic] = true;
-            r[synthetic + 'sign'] = sign; // positive / negative
+            var r = {
+                [dx]: x,
+                [dy]: sign * (1e-10),
+                [ds]: sampleRow[ds],
+                [dc]: sampleRow[dc],
+                [synthetic]: true
+            };
             syntheticPoints[genId] = r;
             return r;
         };
@@ -434,7 +433,7 @@ export class CartesianGrammar {
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))
             .reduce((memo, k) => {
-                var bySign = utils.groupBy(groups[k], sign);
+                var bySign = utils.groupBy(groups[k], calcSign);
                 return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
             },
             []));

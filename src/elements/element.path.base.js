@@ -107,25 +107,23 @@ const BasePath = {
     },
 
     draw() {
-
-        const self = this;
-        const config = this.node().config;
+        const node = this.node();
+        const config = node.config;
         const guide = config.guide;
         const options = config.options;
         options.container = options.slot(config.uid);
 
-        var fullData = this.node().data();
-        var screenModel = this.node().screenModel;
-        var pathModel = screenModel.model;
-        var model = this.buildModel(screenModel);
+        const fullData = node.data();
+        const screenModel = node.screenModel;
+        const model = this.buildModel(screenModel);
 
-        var createUpdateFunc = d3_animationInterceptor;
+        const createUpdateFunc = d3_animationInterceptor;
 
-        var updateGroupContainer = function () {
+        const updateGroupContainer = function () {
 
             this.attr(model.groupAttributes);
 
-            var points = this
+            const points = this
                 .selectAll('circle')
                 .data((fiber) => (fiber.length <= 1) ? fiber : [], screenModel.id);
             points
@@ -142,9 +140,9 @@ const BasePath = {
                 .append('circle')
                 .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
 
-            self.node().subscribe(points, (d) => d);
+            node.subscribe(points, (d) => d);
 
-            var updatePath = (selection) => {
+            const updatePath = (selection) => {
                 if (config.guide.animationSpeed > 0) {
                     // HACK: This call fixes stacked area tween (some paths are intersected on
                     // synthetic points). Maybe caused by async call of `toPoint`.
@@ -157,7 +155,7 @@ const BasePath = {
                 }
             };
 
-            var series = this
+            const series = this
                 .selectAll(model.pathElement)
                 .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
@@ -182,17 +180,16 @@ const BasePath = {
                 ))
                 .call(updatePath);
 
-            self.node().subscribe(series, function (rows) {
-                var m = d3.mouse(this);
+            node.subscribe(series, function (rows) {
+                const m = d3.mouse(this);
                 return model.matchRowInCoordinates(
                     rows.filter(CartesianGrammar.isNonSyntheticRecord),
                     {x: m[0], y: m[1]});
             });
 
             if (guide.showAnchors !== 'never') {
-                let anchorClass = 'i-data-anchor';
-
-                let attr = {
+                const anchorClass = 'i-data-anchor';
+                const attr = {
                     r: (guide.showAnchors === 'hover' ? 0 :
                         ((d) => screenModel.size(d) / 2)
                     ),
@@ -203,7 +200,7 @@ const BasePath = {
                     class: anchorClass
                 };
 
-                let dots = this
+                const dots = this
                     .selectAll(`.${anchorClass}`)
                     .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), screenModel.id);
                 dots.exit()
@@ -213,20 +210,20 @@ const BasePath = {
                     .append('circle')
                     .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
 
-                self.node().subscribe(dots);
+                node.subscribe(dots);
             }
         };
 
-        var fibers = config.stack ?
-            CartesianGrammar.toStackedFibers(fullData, pathModel) :
-            CartesianGrammar.toFibers(fullData, pathModel);
+        const fibers = config.stack ?
+            CartesianGrammar.toStackedFibers(fullData, screenModel.model) :
+            CartesianGrammar.toFibers(fullData, screenModel.model);
 
-        var frameSelection = options.container.selectAll('.frame');
+        const frameSelection = options.container.selectAll('.frame');
 
         // NOTE: If any point from new dataset is equal to a point from old dataset,
         // we assume that path remains the same.
         // TODO: Id of data array should remain the same (then use `fib => self.screenModel.id(fib)`).
-        var getDataSetId = (() => {
+        const getDataSetId = (() => {
             var currentDataSets = (frameSelection.empty() ? [] : frameSelection.data());
             var currentDatasetsIds = currentDataSets.map((ds) => ds.map(screenModel.id));
             var notFoundDatasets = 0;
@@ -245,7 +242,7 @@ const BasePath = {
             };
         })();
 
-        var frameBinding = frameSelection
+        const frameBinding = frameSelection
             .data(fibers, getDataSetId);
         frameBinding
             .exit()
@@ -259,13 +256,12 @@ const BasePath = {
 
         frameBinding.order();
 
-        var dataFibers = CartesianGrammar.toFibers(fullData, pathModel);
-        self.node()
-            .subscribe(new LayerLabels(
-                pathModel,
-                config.flip,
-                config.guide.label,
-                options).draw(dataFibers));
+        const dataFibers = CartesianGrammar.toFibers(fullData, screenModel.model);
+        node.subscribe(new LayerLabels(
+            screenModel.model,
+            config.flip,
+            config.guide.label,
+            options).draw(dataFibers));
     },
 
     highlight(filter) {
