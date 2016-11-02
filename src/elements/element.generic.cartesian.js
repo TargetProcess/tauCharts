@@ -62,8 +62,6 @@ export class GenericCartesian extends Element {
     }
 
     evalGrammarRules(grammarModel) {
-
-        const config = this.config;
         const args = {
             dataSource: this.data()
         };
@@ -74,7 +72,6 @@ export class GenericCartesian extends Element {
     }
 
     adjustScales(grammarModel) {
-        const config = this.config;
         const args = {
             dataSource: this.data()
         };
