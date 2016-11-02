@@ -2,7 +2,7 @@ import {utils} from './utils';
 import {utilsDom} from './utils-dom';
 import {utilsDraw} from './utils-draw';
 import {default as d3} from 'd3';
-import createPathPointsInterpolator from './path-points-interpolator';
+import createPathPointsInterpolator from './path/path-points-interpolator';
 
 var d3getComputedTextLength = () => utils.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
