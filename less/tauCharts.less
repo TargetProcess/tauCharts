@@ -245,8 +245,8 @@
     /* Scatterplot  */
     &__dot {
         opacity: @dot-opacity;
-        transition: stroke-width 0.1s ease, opacity 0.1s ease;
         stroke-width: 0;
+        transition: stroke-width 0.1s ease, opacity 0.2s ease;
     }
 
     /* Linechart  */
@@ -260,17 +260,22 @@
     }
     /*  Bar  */
     &__bar {
+        opacity: 0.7;
         shape-rendering: auto;
-        transition: opacity 0.2s ease;
         stroke-opacity: 0.5;
         stroke-width: 1;
         stroke: #fff;
-        opacity: 0.7;
+        transition: opacity 0.2s ease;
     }
 
-    &__area polygon, &__area path {
-        opacity: 0.6;
-        transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+    &__area {
+        transition: opacity 0.2s ease;
+
+        path,
+        polygon {
+            opacity: 0.6;
+            transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+        }
     }
 
     /* TODO: fix to avoid conflict on "stroke" with color brewer */
