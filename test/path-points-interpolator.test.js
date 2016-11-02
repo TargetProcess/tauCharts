@@ -2,6 +2,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var tauCharts = require('src/tau.charts');
     var createInterpolator = require('src/utils/path-points-interpolator').default;
+    var getBrushLine = require('src/utils/path/brush-line-builder').default;
     var testUtils = require('testUtils');
 
     describe('path-points-interpolator', function() {
@@ -171,6 +172,64 @@ define(function (require) {
             });
 
             chart.renderTo(testDiv);
+        });
+    });
+
+    describe('brush-line-builder', function () {
+
+        it('should return line with variable width', function () {
+
+            var path = getBrushLine([
+                {x: 20, y: 20, size: 40},
+                {x: 40, y: 20, size: 40},
+                {x: 50, y: 20, size: 20},
+                {x: 80, y: 20, size: 40},
+                {x: 110, y: 20, size: 20}
+            ]);
+            expect(path).to.be.equal([
+                'M20,0',
+                'L40,0 A20,20 0 0 1 40,40',
+                'L20,40',
+                'A20,20 0 0 1 20,0',
+                'Z',
+                'M40,0',
+                'A20,20 0 0 1 40,40',
+                'A20,20 0 0 1 40,0',
+                'Z',
+                'M46.66666666666667,10.571909584179366',
+                'L73.33333333333334,1.143819168358732',
+                'A20,20 0 1 1 73.33333333333334,38.85618083164127',
+                'L46.66666666666667,29.428090415820634',
+                'A10,10 0 0 1 46.66666666666667,10.571909584179366 Z',
+                'M86.66666666666667,1.143819168358732',
+                'L113.33333333333333,10.571909584179366',
+                'A10,10 0 0 1 113.33333333333333,29.428090415820634',
+                'L86.66666666666667,38.85618083164127',
+                'A20,20 0 1 1 86.66666666666667,1.143819168358732',
+                'Z'
+            ].join(' '));
+
+            var singlePoint1 = getBrushLine([{x: 100, y: 100, size: 40}]);
+            expect(singlePoint1).to.be.equal([
+                'M100,80',
+                'A20,20 0 0 1 100,120',
+                'A20,20 0 0 1 100,80',
+                'Z'
+            ].join(' '));
+
+            var singlePoint2 = getBrushLine([
+                {x: 90, y: 100, size: 20},
+                {x: 100, y: 100, size: 40}
+            ]);
+            expect(singlePoint2).to.be.equal([
+                'M100,80',
+                'A20,20 0 0 1 100,120',
+                'A20,20 0 0 1 100,80',
+                'Z'
+            ].join(' '));
+
+            var empty = getBrushLine([]);
+            expect(empty).to.be.equal('');
         });
     });
 });

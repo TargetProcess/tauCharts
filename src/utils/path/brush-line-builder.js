@@ -29,9 +29,9 @@ function getSegment(a, b) {
         var radius = largerPt.size / 2;
         return [
             `M${largerPt.x},${largerPt.y - radius}`,
-            `A${radius} ${radius} 0 0 1`,
+            `A${radius},${radius} 0 0 1`,
             `${largerPt.x},${largerPt.y + radius}`,
-            `A${radius} ${radius} 0 0 1`,
+            `A${radius},${radius} 0 0 1`,
             `${largerPt.x},${largerPt.y - radius}`,
             'Z'
         ].join(' ');
@@ -50,10 +50,10 @@ function getSegment(a, b) {
     return [
         `M${tangentLeftA.x},${tangentLeftA.y}`,
         `L${tangentLeftB.x},${tangentLeftB.y}`,
-        `A${b.size / 2} ${b.size / 2} 0 ${Number(tangentAngle < 0)} 1`,
+        `A${b.size / 2},${b.size / 2} 0 ${Number(tangentAngle < 0)} 1`,
         `${tangentRightB.x},${tangentRightB.y}`,
         `L${tangentRightA.x},${tangentRightA.y}`,
-        `A${a.size / 2} ${a.size / 2} 0 ${Number(tangentAngle > 0)} 1`,
+        `A${a.size / 2},${a.size / 2} 0 ${Number(tangentAngle > 0)} 1`,
         `${tangentLeftA.x},${tangentLeftA.y}`,
         'Z'
     ].join(' ');

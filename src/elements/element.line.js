@@ -5,7 +5,7 @@ import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-m
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import getBrushLine from '../utils/brush-line-builder';
+import getBrushLine from '../utils/path/brush-line-builder';
 
 export class Line extends BasePath {
 
