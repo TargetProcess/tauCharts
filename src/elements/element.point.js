@@ -1,36 +1,27 @@
 import {CSS_PREFIX} from '../const';
-import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 
-export class Point extends Element {
+const Point = {
 
-    constructor(config) {
+    init(xConfig) {
 
-        super(config);
+        const config = Object.assign({}, xConfig);
 
-        this.config = config;
-
-        this.config.guide = utils.defaults(
-            (this.config.guide || {}),
+        config.guide = utils.defaults(
+            (config.guide || {}),
             {
                 animationSpeed: 0,
                 prettify: true,
                 enableColorToBarPosition: false
             });
 
-        this.config.guide.size = utils.defaults(
-            (this.config.guide.size || {}),
-            {
-                defMinSize: 10,
-                defMaxSize: this.isEmptySize ? 10 : 40, // TODO: fix when pass scales to constructor
-                enableDistributeEvenly: !this.isEmptySize
-            });
+        config.guide.size = (config.guide.size || {});
 
-        this.config.guide.label = utils.defaults(
-            (this.config.guide.label || {}),
+        config.guide.label = utils.defaults(
+            (config.guide.label || {}),
             {
                 position: [
                     'auto:avoid-label-label-overlap',
@@ -41,122 +32,98 @@ export class Point extends Element {
                 ]
             });
 
-        this.defMin = config.guide.size.defMinSize;
-        this.defMax = config.guide.size.defMaxSize;
-        this.minLimit = config.guide.size.minSize;
-        this.maxLimit = config.guide.size.maxSize;
+        var enableColorPositioning = config.guide.enableColorToBarPosition;
 
-        this.isHorizontal = false;
+        config.transformRules = [
+            ((prevModel) => {
+                const bestBaseScale = [prevModel.scaleX, prevModel.scaleY]
+                    .sort((a, b) => {
+                        var discreteA = a.discrete ? 1 : 0;
+                        var discreteB = b.discrete ? 1 : 0;
+                        return (discreteB * b.domain().length) - (discreteA * a.domain().length);
+                    })
+                    [0];
+                const isHorizontal = (prevModel.scaleY === bestBaseScale);
+                return isHorizontal ?
+                    CartesianGrammar.decorator_flip(prevModel) :
+                    CartesianGrammar.decorator_identity(prevModel);
+            }),
+            config.stack && CartesianGrammar.decorator_stack,
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+        ]
+            .filter(x => x)
+            .concat(config.transformModel || []);
 
-        var enableStack = this.config.stack;
-        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
-        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
+        config.adjustRules = [
+            (config.stack && CartesianGrammar.adjustYScale),
+            ((prevModel, args) => {
+                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+                const sizeCfg = utils.defaults(
+                    (config.guide.size),
+                    {
+                        defMinSize: 10,
+                        defMaxSize: isEmptySize ? 10 : 40,
+                        enableDistributeEvenly: !isEmptySize
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
 
-        this.decorators = [
-            CartesianGrammar.decorator_orientation,
-            CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
-            enableStack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
-            config.adjustPhase && (enableDistributeEvenly ?
-                CartesianGrammar.adjustSigmaSizeScale :
-                CartesianGrammar.adjustStaticSizeScale)
-        ].concat(config.transformModel || []);
+                const method = (sizeCfg.enableDistributeEvenly ?
+                    CartesianGrammar.adjustSigmaSizeScale :
+                    CartesianGrammar.adjustStaticSizeScale);
 
-        this.on('highlight', (sender, e) => this.highlight(e));
-        this.on('mouseover', ((sender, e) => {
+                return method(prevModel, params);
+            })
+        ].filter(x => x);
+
+        return config;
+    },
+
+    addInteraction() {
+        var node = this.node();
+        node.on('highlight', (sender, e) => this.highlight(e));
+        node.on('mouseover', ((sender, e) => {
             const identity = sender.screenModel.model.id;
             const id = identity(e.data);
             sender.fire('highlight', ((row) => (identity(row) === id) ? true : null));
         }));
-        this.on('mouseout', ((sender) => {
-            sender.fire('highlight', (() => (null)));
-        }));
-    }
+        node.on('mouseout', ((sender) => sender.fire('highlight', () => null)));
+    },
 
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.size = fnCreateScale('size', config.size, {});
-        this.color = fnCreateScale('color', config.color, {});
-        this.split = fnCreateScale('split', config.split, {});
-        this.label = fnCreateScale('label', config.label, {});
-        this.identity = fnCreateScale('identity', config.identity, {});
-
-        var sortDesc = ((a, b) => {
-            var discreteA = a.discrete ? 1 : 0;
-            var discreteB = b.discrete ? 1 : 0;
-            return (discreteB * b.domain().length) - (discreteA * a.domain().length);
-        });
-
-        this.isHorizontal = (this.yScale === [this.xScale, this.yScale].sort(sortDesc)[0]);
-
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color)
-            .regScale('split', this.split)
-            .regScale('label', this.label);
-    }
-
-    walkFrames(frames) {
-
-        var args = {
-            defMin: this.defMin,
-            defMax: this.defMax,
-            minLimit: this.minLimit,
-            maxLimit: this.maxLimit,
-            isHorizontal: this.isHorizontal,
-            dataSource: frames.reduce(((memo, f) => memo.concat(f.part())), [])
-        };
-
-        return this
-            .decorators
-            .filter(x => x)
-            .reduce((model, transform) => CartesianGrammar.compose(model, transform(model, args)),
-            (new CartesianGrammar({
-                scaleX: this.xScale,
-                scaleY: this.yScale,
-                scaleSize: this.size,
-                scaleLabel: this.label,
-                scaleColor: this.color,
-                scaleSplit: this.split,
-                scaleIdentity: this.identity
-            })));
-    }
-
-    drawFrames(frames) {
+    draw() {
 
         var self = this;
+        var config = this.node().config;
 
-        var options = this.config.options;
+        var options = config.options;
+        // TODO: hide it somewhere
+        options.container = options.slot(config.uid);
+
         var transition = (sel) => {
-            return d3_transition(sel, this.config.guide.animationSpeed);
+            return d3_transition(sel, config.guide.animationSpeed);
         };
 
         var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
 
-        var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
+        var fullData = this.node().data();
 
-        var modelGoG = this.walkFrames(frames);
-        self.screenModel = modelGoG.toScreenModel();
+        const screenModel = this.node().screenModel;
         var kRound = 10000;
         var circleAttrs = {
-            fill: ((d) => self.screenModel.color(d)),
-            class: ((d) => `${prefix} ${self.screenModel.class(d)}`)
+            fill: ((d) => screenModel.color(d)),
+            class: ((d) => `${prefix} ${screenModel.class(d)}`)
         };
         var circleTransAttrs = {
-            r: ((d) => (Math.round(kRound * self.screenModel.size(d) / 2) / kRound)),
-            cx: ((d) => self.screenModel.x(d)),
-            cy: ((d) => self.screenModel.y(d))
+            r: ((d) => (Math.round(kRound * screenModel.size(d) / 2) / kRound)),
+            cx: ((d) => screenModel.x(d)),
+            cy: ((d) => screenModel.y(d))
         };
 
         var updateGroups = function () {
@@ -165,7 +132,7 @@ export class Point extends Element {
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
-                        .data((fiber) => fiber, self.screenModel.id);
+                        .data((fiber) => fiber, screenModel.id);
 
                     transition(dots.enter().append('circle').attr(circleAttrs))
                         .attr(circleTransAttrs);
@@ -177,21 +144,21 @@ export class Point extends Element {
                         .attr({r: 0})
                         .remove();
 
-                    self.subscribe(dots);
+                    self.node().subscribe(dots);
                 });
 
             transition(this)
                 .attr('opacity', 1);
         };
 
-        var groups = utils.groupBy(fullData, self.screenModel.group);
+        var groups = utils.groupBy(fullData, screenModel.group);
         var fibers = Object
             .keys(groups)
             .reduce((memo, k) => memo.concat([groups[k]]), []);
 
         var frameGroups = options.container
             .selectAll('.frame')
-            .data(fibers, (f) => self.screenModel.group(f[0]));
+            .data(fibers, (f) => screenModel.group(f[0]));
 
         frameGroups
             .enter()
@@ -208,34 +175,35 @@ export class Point extends Element {
             .selectAll('circle')
             .attr('r', 0);
 
-        self.subscribe(
+        self.node().subscribe(
             new LayerLabels(
-                modelGoG,
-                this.isHorizontal,
-                this.config.guide.label, options
+                screenModel.model,
+                screenModel.flip,
+                config.guide.label,
+                options
             ).draw(fibers)
         );
-    }
+    },
 
     highlight(filter) {
 
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
 
-        var container = this.config.options.container;
+        const container = this.node().config.options.container;
+        const classed = {
+            [x]: ((d) => filter(d) === true),
+            [_]: ((d) => filter(d) === false)
+        };
 
         container
             .selectAll('.dot')
-            .classed({
-                [x]: ((d) => filter(d) === true),
-                [_]: ((d) => filter(d) === false)
-            });
+            .classed(classed);
 
         container
             .selectAll('.i-role-label')
-            .classed({
-                [x]: ((d) => filter(d) === true),
-                [_]: ((d) => filter(d) === false)
-            });
+            .classed(classed);
     }
-}
+};
+
+export {Point};

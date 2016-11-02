@@ -1,28 +1,58 @@
 import {CSS_PREFIX} from '../const';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {BasePath} from './element.path.base';
+import {utils} from '../utils/utils';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {d3_createPathTween} from '../utils/d3-decorators';
 
-export class Path extends BasePath {
+const Path = {
 
-    constructor(config) {
-        super(config);
+    draw: BasePath.draw,
+    highlight: BasePath.highlight,
+    highlightDataPoints: BasePath.highlightDataPoints,
+    addInteraction: BasePath.addInteraction,
 
-        this.decorators = [
-            CartesianGrammar.decorator_orientation,
-            CartesianGrammar.decorator_group,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale
+    init(xConfig) {
+
+        const config = BasePath.init(xConfig);
+
+        config.transformRules = [
+            config.flip && CartesianGrammar.decorator_flip
         ].concat(config.transformModel || []);
-    }
+
+        config.adjustRules = [
+            ((prevModel, args) => {
+                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: 2,
+                        defMaxSize: (isEmptySize ? 6 : 40)
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+            })
+        ];
+
+        return config;
+    },
 
     buildModel(screenModel) {
 
-        var self = this;
-        var baseModel = super.buildModel(screenModel);
+        const baseModel = BasePath.baseModel(screenModel);
+        const guide = this.node().config.guide;
+        const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
+        const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
+        const getDistance = (mx, my, rx, ry) => Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2));
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
@@ -34,7 +64,7 @@ export class Path extends BasePath {
                     return {
                         x: rx,
                         y: ry,
-                        dist: self.getDistance(x, y, rx, ry),
+                        dist: getDistance(x, y, rx, ry),
                         data: row
                     };
                 })
@@ -44,16 +74,12 @@ export class Path extends BasePath {
             return nearest.data;
         };
 
-        var guide = this.config.guide;
-        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
-
-        const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
         baseModel.toPoint = (d) => ({
-            id: self.screenModel.id(d),
+            id: screenModel.id(d),
             x: baseModel.x(d),
             y: baseModel.y(d)
         });
@@ -78,10 +104,12 @@ export class Path extends BasePath {
                 'points',
                 pathPoints(d => d.x, d => d.y),
                 baseModel.toPoint,
-                self.screenModel.id
+                screenModel.id
             )
         };
 
         return baseModel;
     }
-}
+};
+
+export {Path};

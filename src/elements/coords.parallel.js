@@ -32,7 +32,7 @@ export class Parallel extends Element {
         this.H = options.height - (padding.t + padding.b);
     }
 
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
 
         var cfg = this.config;
 

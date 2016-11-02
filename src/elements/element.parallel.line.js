@@ -19,7 +19,7 @@ export class ParallelLine extends Element {
         this.on('highlight', (sender, e) => this.highlight(e));
     }
 
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
 
         var config = this.config;
         var options = config.options;

@@ -16,90 +16,73 @@ export class GenericCartesian extends Element {
             (this.config.guide || {}),
             {
                 animationSpeed: 0,
-                prettify: true,
                 enableColorToBarPosition: false
             });
 
-        this.config.guide.size = utils.defaults(
-            (this.config.guide.size || {}),
-            {
-                defMinSize: 10,
-                defMaxSize: this.isEmptySize ? 10 : 40, // TODO: fix when pass scales to constructor
-                enableDistributeEvenly: !this.isEmptySize
-            });
-
-        this.defMin = config.guide.size.defMinSize;
-        this.defMax = config.guide.size.defMaxSize;
-        this.minLimit = config.guide.size.minSize;
-        this.maxLimit = config.guide.size.maxSize;
-
-        this.isHorizontal = this.config.flip;
+        this.config.guide.size = (this.config.guide.size || {});
 
         var enableStack = this.config.stack;
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
-        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
 
-        this.decorators = [
-            CartesianGrammar.decorator_orientation,
+        var defaultDecorators = [
+            config.flip && CartesianGrammar.decorator_flip,
             CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
             CartesianGrammar.decorator_groupOrderByColor,
             enableStack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale,
-            config.adjustPhase && (enableDistributeEvenly ?
-                CartesianGrammar.adjustSigmaSizeScale :
-                CartesianGrammar.adjustStaticSizeScale)
-        ].concat(config.transformModel || []);
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+        ];
+
+        var defaultAdjusters = [
+            enableStack && CartesianGrammar.adjustYScale
+        ];
+
+        this.decorators = (this.config.transformRules || defaultDecorators).concat(config.transformModel || []);
+        this.adjusters = (this.config.adjustRules || defaultAdjusters);
     }
 
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
+        const config = this.config;
+        this.regScale('x', fnCreateScale('pos', config.x, [0, config.options.width]))
+            .regScale('y', fnCreateScale('pos', config.y, [config.options.height, 0]))
+            .regScale('size', fnCreateScale('size', config.size, {}))
+            .regScale('color', fnCreateScale('color', config.color, {}))
+            .regScale('split', fnCreateScale('split', config.split, {}))
+            .regScale('label', fnCreateScale('label', config.label, {}))
+            .regScale('identity', fnCreateScale('identity', config.identity, {}));
 
-        var config = this.config;
-
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.size = fnCreateScale('size', config.size, {});
-        this.color = fnCreateScale('color', config.color, {});
-        this.split = fnCreateScale('split', config.split, {});
-        this.label = fnCreateScale('label', config.label, {});
-        this.identity = fnCreateScale('identity', config.identity, {});
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color)
-            .regScale('split', this.split)
-            .regScale('label', this.label);
+        return new CartesianGrammar({
+            scaleX: this.getScale('x'),
+            scaleY: this.getScale('y'),
+            scaleSize: this.getScale('size'),
+            scaleLabel: this.getScale('label'),
+            scaleColor: this.getScale('color'),
+            scaleSplit: this.getScale('split'),
+            scaleIdentity: this.getScale('identity')
+        });
     }
 
-    walkFrames() {
-
-        var args = {
-            defMin: this.defMin,
-            defMax: this.defMax,
-            minLimit: this.minLimit,
-            maxLimit: this.maxLimit,
-            isHorizontal: this.isHorizontal,
+    evalGrammarRules(grammarModel) {
+        const args = {
             dataSource: this.data()
         };
 
-        return this
-            .decorators
+        return this.decorators
             .filter(x => x)
-            .reduce((model, transform) => CartesianGrammar.compose(model, transform(model, args)),
-            (new CartesianGrammar({
-                scaleX: this.xScale,
-                scaleY: this.yScale,
-                scaleSize: this.size,
-                scaleLabel: this.label,
-                scaleColor: this.color,
-                scaleSplit: this.split,
-                scaleIdentity: this.identity
-            })));
+            .reduce((model, rule) => CartesianGrammar.compose(model, rule(model, args)), grammarModel);
+    }
+
+    adjustScales(grammarModel) {
+        const args = {
+            dataSource: this.data()
+        };
+
+        return ((this.adjusters || [])
+            .filter(x => x)
+            .reduce((model, rule) => CartesianGrammar.compose(model, rule(model, args)), grammarModel));
+    }
+
+    createScreenModel(grammarModel) {
+        return grammarModel.toScreenModel();
     }
 
     drawFrames() {

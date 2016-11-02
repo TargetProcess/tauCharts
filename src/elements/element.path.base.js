@@ -1,4 +1,3 @@
-import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
@@ -7,16 +6,14 @@ import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {default as d3} from 'd3';
 
-export class BasePath extends Element {
+const BasePath = {
 
-    constructor(config) {
+    init(xConfig) {
 
-        super(config);
+        const config = xConfig;
 
-        this.config = config;
-
-        this.config.guide = utils.defaults(
-            (this.config.guide || {}),
+        config.guide = utils.defaults(
+            (config.guide || {}),
             {
                 animationSpeed: 0,
                 cssClass: '',
@@ -26,8 +23,8 @@ export class BasePath extends Element {
             }
         );
 
-        this.config.guide.label = utils.defaults(
-            this.config.guide.label,
+        config.guide.label = utils.defaults(
+            config.guide.label,
             {
                 fontSize: 11,
                 position: [
@@ -40,59 +37,23 @@ export class BasePath extends Element {
                 ]
             });
 
-        this.config.guide.color = utils.defaults(this.config.guide.color || {}, {fill: null});
+        config.guide.color = utils.defaults(config.guide.color || {}, {fill: null});
 
-        this.config.guide.size = utils.defaults(
-            (this.config.guide.size || {}),
-            {
-                defMinSize: 2,
-                defMaxSize: (this.isEmptySize ? 6 : 40)
-            });
-
-        if (['never', 'hover', 'always'].indexOf(this.config.guide.showAnchors) < 0) {
-            this.config.guide.showAnchors = 'hover';
+        if (['never', 'hover', 'always'].indexOf(config.guide.showAnchors) < 0) {
+            config.guide.showAnchors = 'hover';
         }
 
-        this.decorators = [];
+        config.transformRules = [];
+        config.adjustRules = [];
 
-        this.on('highlight', (sender, e) => this.highlight(e));
-        this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
+        return config;
+    },
 
-        if (this.config.guide.showAnchors !== 'never') {
-            var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-            var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
-            this.on('mouseover', activate);
-            this.on('mousemove', activate);
-            this.on('mouseout', deactivate);
-        }
-    }
-
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.size = fnCreateScale('size', config.size, {});
-        this.color = fnCreateScale('color', config.color, {});
-        this.label = fnCreateScale('label', config.label, {});
-        this.split = fnCreateScale('split', config.split, {});
-        this.identity = fnCreateScale('identity', config.identity, {});
-
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color)
-            .regScale('split', this.split)
-            .regScale('label', this.label);
-    }
-
-    buildModel(screenModel) {
+    baseModel(screenModel) {
 
         const datumClass = `i-role-datum`;
         const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
-        var kRound = 10000;
+        const kRound = 10000;
         var baseModel = {
             gog: screenModel.model,
             x: screenModel.x,
@@ -127,49 +88,36 @@ export class BasePath extends Element {
         };
 
         return baseModel;
-    }
+    },
 
-    getDistance(mx, my, rx, ry) {
-        return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2));
-    }
+    addInteraction() {
+        const node = this.node();
+        const config = this.node().config;
 
-    walkFrames(frames) {
+        node.on('highlight', (sender, e) => this.highlight(e));
+        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
-        var args = {
-            isHorizontal: this.config.flip,
-            defMin: this.config.guide.size.defMinSize,
-            defMax: this.config.guide.size.defMaxSize,
-            minLimit: this.config.guide.size.minSize,
-            maxLimit: this.config.guide.size.maxSize,
-            dataSource: frames.reduce(((memo, f) => memo.concat(f.part())), [])
-        };
+        if (config.guide.showAnchors !== 'never') {
+            const activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
+            const deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
+            node.on('mouseover', activate);
+            node.on('mousemove', activate);
+            node.on('mouseout', deactivate);
+        }
+    },
 
-        return this
-            .decorators
-            .filter(x => x)
-            .reduce((model, transform) => CartesianGrammar.compose(model, transform(model, args)),
-            (new CartesianGrammar({
-                scaleX: this.xScale,
-                scaleY: this.yScale,
-                scaleSize: this.size,
-                scaleLabel: this.label,
-                scaleColor: this.color,
-                scaleSplit: this.split,
-                scaleIdentity: this.identity
-            })));
-    }
+    draw() {
 
-    drawFrames(frames) {
+        const self = this;
+        const config = this.node().config;
+        const guide = config.guide;
+        const options = config.options;
+        options.container = options.slot(config.uid);
 
-        var self = this;
-
-        var guide = this.config.guide;
-        var options = this.config.options;
-
-        var fullData = frames.reduce(((memo, f) => memo.concat(f.part())), []);
-        var pathModel = this.walkFrames(frames);
-        this.screenModel = pathModel.toScreenModel();
-        var model = this.buildModel(this.screenModel);
+        var fullData = this.node().data();
+        var screenModel = this.node().screenModel;
+        var pathModel = screenModel.model;
+        var model = this.buildModel(screenModel);
 
         var createUpdateFunc = d3_animationInterceptor;
 
@@ -179,7 +127,7 @@ export class BasePath extends Element {
 
             var points = this
                 .selectAll('circle')
-                .data((fiber) => (fiber.length <= 1) ? fiber : [], self.screenModel.id);
+                .data((fiber) => (fiber.length <= 1) ? fiber : [], screenModel.id);
             points
                 .exit()
                 .call(createUpdateFunc(
@@ -194,15 +142,15 @@ export class BasePath extends Element {
                 .append('circle')
                 .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
 
-            self.subscribe(points, (d) => d);
+            self.node().subscribe(points, (d) => d);
 
             var updatePath = (selection) => {
-                if (self.config.guide.animationSpeed > 0) {
+                if (config.guide.animationSpeed > 0) {
                     // HACK: This call fixes stacked area tween (some paths are intersected on
                     // synthetic points). Maybe caused by async call of `toPoint`.
                     selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(0));
 
-                    transition(selection, self.config.guide.animationSpeed, 'pathTransition')
+                    transition(selection, config.guide.animationSpeed, 'pathTransition')
                         .attrTween(model.pathTween.attr, model.pathTween.fn);
                 } else {
                     selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(1));
@@ -234,7 +182,7 @@ export class BasePath extends Element {
                 ))
                 .call(updatePath);
 
-            self.subscribe(series, function (rows) {
+            self.node().subscribe(series, function (rows) {
                 var m = d3.mouse(this);
                 return model.matchRowInCoordinates(
                     rows.filter(CartesianGrammar.isNonSyntheticRecord),
@@ -246,18 +194,18 @@ export class BasePath extends Element {
 
                 let attr = {
                     r: (guide.showAnchors === 'hover' ? 0 :
-                        ((d) => self.screenModel.size(d) / 2)
+                        ((d) => screenModel.size(d) / 2)
                     ),
                     cx: (d) => model.x(d),
                     cy: (d) => model.y(d),
                     opacity: (guide.showAnchors === 'hover' ? 0 : 1),
-                    fill: (d) => self.screenModel.color(d),
+                    fill: (d) => screenModel.color(d),
                     class: anchorClass
                 };
 
                 let dots = this
                     .selectAll(`.${anchorClass}`)
-                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), self.screenModel.id);
+                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), screenModel.id);
                 dots.exit()
                     .remove();
                 dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
@@ -265,11 +213,11 @@ export class BasePath extends Element {
                     .append('circle')
                     .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
 
-                self.subscribe(dots);
+                self.node().subscribe(dots);
             }
         };
 
-        var fibers = this.config.stack ?
+        var fibers = config.stack ?
             CartesianGrammar.toStackedFibers(fullData, pathModel) :
             CartesianGrammar.toFibers(fullData, pathModel);
 
@@ -280,10 +228,10 @@ export class BasePath extends Element {
         // TODO: Id of data array should remain the same (then use `fib => self.screenModel.id(fib)`).
         var getDataSetId = (() => {
             var currentDataSets = (frameSelection.empty() ? [] : frameSelection.data());
-            var currentDatasetsIds = currentDataSets.map((ds) => ds.map(self.screenModel.id));
+            var currentDatasetsIds = currentDataSets.map((ds) => ds.map(screenModel.id));
             var notFoundDatasets = 0;
             return (fib) => {
-                var fibIds = fib.map((f) => self.screenModel.id(f));
+                var fibIds = fib.map((f) => screenModel.id(f));
                 var currentIndex = currentDatasetsIds.findIndex((currIds) => {
                     return fibIds.some((newId) => {
                         return currIds.some((id) => id === newId);
@@ -312,12 +260,17 @@ export class BasePath extends Element {
         frameBinding.order();
 
         var dataFibers = CartesianGrammar.toFibers(fullData, pathModel);
-        self.subscribe(new LayerLabels(pathModel, this.config.flip, this.config.guide.label, options).draw(dataFibers));
-    }
+        self.node()
+            .subscribe(new LayerLabels(
+                pathModel,
+                config.flip,
+                config.guide.label,
+                options).draw(dataFibers));
+    },
 
     highlight(filter) {
 
-        var container = this.config.options.container;
+        const container = this.node().config.options.container;
 
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
@@ -329,34 +282,35 @@ export class BasePath extends Element {
                 [_]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === false)
             });
 
+        const classed = {
+            [x]: ((d) => filter(d) === true),
+            [_]: ((d) => filter(d) === false)
+        };
+
         container
             .selectAll('.i-role-dot')
-            .classed({
-                [x]: ((d) => filter(d) === true),
-                [_]: ((d) => filter(d) === false)
-            });
+            .classed(classed);
 
         container
             .selectAll('.i-role-label')
-            .classed({
-                [x]: ((d) => filter(d) === true),
-                [_]: ((d) => filter(d) === false)
-            });
-    }
+            .classed(classed);
+    },
 
     highlightDataPoints(filter) {
         const cssClass = 'i-data-anchor';
-        var showOnHover = this.config.guide.showAnchors === 'hover';
-        this.config
+        const screenModel = this.node().screenModel;
+        const showOnHover = this.node().config.guide.showAnchors === 'hover';
+        this.node()
+            .config
             .options
             .container
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (showOnHover ?
-                    ((d) => filter(d) ? (this.screenModel.size(d) / 2) : 0) :
+                    ((d) => filter(d) ? (screenModel.size(d) / 2) : 0) :
                     ((d) => {
                         // NOTE: Highlight point with larger radius.
-                        var r = this.screenModel.size(d) / 2;
+                        var r = screenModel.size(d) / 2;
                         if (filter(d)) {
                             return Math.ceil(r * 1.25);
                         }
@@ -364,8 +318,10 @@ export class BasePath extends Element {
                     })
                 ),
                 opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
-                fill: (d) => this.screenModel.color(d),
-                class: (d) => utilsDom.classes(cssClass, this.screenModel.class(d))
+                fill: (d) => screenModel.color(d),
+                class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             });
     }
-}
+};
+
+export {BasePath};

@@ -1,164 +1,121 @@
 import {CSS_PREFIX} from '../const';
-import {Element} from './element';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
-export class Interval extends Element {
+const Interval = {
 
-    constructor(config) {
+    init(xConfig) {
 
-        super(config);
+        var config = Object.assign({}, xConfig);
 
-        this.config = config;
-
-        var enableStack = this.config.stack;
-        this.config.guide = (this.config.guide || {});
-        this.config.guide = utils.defaults(
-            (this.config.guide),
+        config.guide = (config.guide || {});
+        config.guide = utils.defaults(
+            (config.guide),
             {
                 animationSpeed: 0,
                 prettify: true,
-                enableColorToBarPosition: !enableStack
+                enableColorToBarPosition: !config.stack
             });
 
-        this.config.guide.size = utils.defaults(
-            (this.config.guide.size || {}),
+        config.guide.size = utils.defaults(
+            (config.guide.size || {}),
             {
-                enableDistributeEvenly: true,
-                defMinSize: this.config.guide.prettify ? 3 : 0,
-                defMaxSize: this.config.guide.prettify ? 40 : Number.MAX_VALUE
+                enableDistributeEvenly: true
             });
 
-        this.config.guide.label = utils.defaults(
-            (this.config.guide.label || {}),
+        config.guide.label = utils.defaults(
+            (config.guide.label || {}),
             {
-                position: (this.config.flip ?
-                    ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] :
-                    (enableStack ?
-                        [
-                            'rotate-on-size-overflow',
-                            't-',
-                            'b+',
-                            'hide-by-label-height-vertical',
-                            'cut-label-vertical',
-                            'auto:hide-on-label-label-overlap'
-                        ] :
-                        [
-                            'rotate-on-size-overflow',
-                            't+',
-                            'b-',
-                            'hide-by-label-height-vertical',
-                            'cut-label-vertical',
-                            'auto:hide-on-label-label-overlap'
-                        ]
-                    )
+                position: (config.flip ?
+                        ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] :
+                        (config.stack ?
+                                [
+                                    'rotate-on-size-overflow',
+                                    't-',
+                                    'b+',
+                                    'hide-by-label-height-vertical',
+                                    'cut-label-vertical',
+                                    'auto:hide-on-label-label-overlap'
+                                ] :
+                                [
+                                    'rotate-on-size-overflow',
+                                    't+',
+                                    'b-',
+                                    'hide-by-label-height-vertical',
+                                    'cut-label-vertical',
+                                    'auto:hide-on-label-label-overlap'
+                                ]
+                        )
                 )
             });
 
-        this.baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+        var enableColorPositioning = config.guide.enableColorToBarPosition;
+        var enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
-        this.defMin = config.guide.size.defMinSize;
-        this.defMax = config.guide.size.defMaxSize;
-        this.minLimit = config.guide.size.minSize;
-        this.maxLimit = config.guide.size.maxSize;
-
-        var enableColorPositioning = this.config.guide.enableColorToBarPosition;
-        var enableDistributeEvenly = this.config.guide.size.enableDistributeEvenly;
-
-        this.decorators = [
-            CartesianGrammar.decorator_orientation,
-            CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
+        config.transformRules = [
+            config.flip && CartesianGrammar.decorator_flip,
             CartesianGrammar.decorator_groupOrderByColor,
-            enableStack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            (config.adjustPhase && enableDistributeEvenly && CartesianGrammar.decorator_size_distribute_evenly),
-            (config.adjustPhase
-            && enableDistributeEvenly
-            && this.config.guide.prettify
-            && CartesianGrammar.avoidBaseScaleOverflow),
-            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
-        ].concat(config.transformModel || []);
+            config.stack && CartesianGrammar.decorator_stack,
+            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+        ]
+            .filter(x => x)
+            .concat(config.transformModel || []);
 
-        this.on('highlight', (sender, e) => this.highlight(e));
-        this.on('mouseover', ((sender, e) => {
+        config.adjustRules = [
+            (enableDistributeEvenly && ((prevModel, args) => {
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: config.guide.prettify ? 3 : 0,
+                        defMaxSize: config.guide.prettify ? 40 : Number.MAX_VALUE
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return CartesianGrammar.decorator_size_distribute_evenly(prevModel, params);
+            })),
+            (enableDistributeEvenly && config.guide.prettify && CartesianGrammar.avoidBaseScaleOverflow),
+            (config.stack && CartesianGrammar.adjustYScale)
+        ].filter(x => x);
+
+        return config;
+    },
+
+    addInteraction() {
+        var node = this.node();
+        node.on('highlight', (sender, e) => this.highlight(e));
+        node.on('mouseover', ((sender, e) => {
             const identity = sender.screenModel.model.id;
             const id = identity(e.data);
             sender.fire('highlight', ((row) => (identity(row) === id) ? true : null));
         }));
-        this.on('mouseout', ((sender) => {
-            sender.fire('highlight', (() => (null)));
-        }));
-    }
+        node.on('mouseout', ((sender) => sender.fire('highlight', () => null)));
+    },
 
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.size = fnCreateScale('size', config.size, {});
-        this.color = fnCreateScale('color', config.color, {});
-        this.split = fnCreateScale('split', config.split, {});
-        this.label = fnCreateScale('label', config.label, {});
-        this.identity = fnCreateScale('identity', config.identity, {});
-
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color)
-            .regScale('split', this.split)
-            .regScale('label', this.label);
-    }
-
-    walkFrames(frames) {
-
-        var args = {
-            isHorizontal: this.config.flip,
-            minLimit: this.minLimit,
-            maxLimit: this.maxLimit,
-            defMin: this.defMin,
-            defMax: this.defMax,
-            dataSource: this.convertFramesToData(frames)
-        };
-
-        return this
-            .decorators
-            .filter(x => x)
-            .reduce(((model, transform) => CartesianGrammar.compose(model, transform(model, args))),
-            (new CartesianGrammar({
-                scaleX: this.xScale,
-                scaleY: this.yScale,
-                scaleSize: this.size,
-                scaleLabel: this.label,
-                scaleColor: this.color,
-                scaleSplit: this.split,
-                scaleIdentity: this.identity
-            })));
-    }
-
-    convertFramesToData(frames) {
-        return frames.reduce(((memo, f) => memo.concat(f.part())), []);
-    }
-
-    drawFrames(frames) {
-
+    draw() {
         var self = this;
+        var config = this.node().config;
 
-        var options = this.config.options;
-        var config = this.config;
+        var options = config.options;
+        // TODO: hide it somewhere
+        options.container = options.slot(config.uid);
+
         var prettify = config.guide.prettify;
-        var baseCssClass = this.baseCssClass;
+        var baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
 
-        var modelGoG = this.walkFrames(frames);
-        self.screenModel = modelGoG.toScreenModel();
-        var d3Attrs = this.buildModel(self.screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
+        var screenModel = this.node().screenModel;
+
+        var d3Attrs = this.buildModel(screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
 
         var createUpdateFunc = d3_animationInterceptor;
 
@@ -169,7 +126,7 @@ export class Interval extends Element {
         var updateBarContainer = function () {
             this.attr('class', 'frame i-role-bar-group');
             var bars = this.selectAll('.bar')
-                .data((fiber) => fiber, self.screenModel.id);
+                .data((fiber) => fiber, screenModel.id);
             bars.exit()
                 .call(createUpdateFunc(
                     config.guide.animationSpeed,
@@ -201,21 +158,21 @@ export class Interval extends Element {
                 .append('rect')
                 .call(createUpdateFunc(
                     config.guide.animationSpeed,
-                    {[barY]: self.screenModel[`${barY}0`], [barH]: 0},
+                    {[barY]: screenModel[`${barY}0`], [barH]: 0},
                     d3Attrs
                 ));
 
-            self.subscribe(bars);
+            self.node().subscribe(bars);
         };
 
-        var data = this.convertFramesToData(frames);
+        var data = this.node().data();
 
-        var fibers = CartesianGrammar.toFibers(data, modelGoG);
+        var fibers = CartesianGrammar.toFibers(data, screenModel.model);
 
         var elements = options
             .container
             .selectAll('.frame')
-            .data(fibers, (d) => modelGoG.group(d[0]));
+            .data(fibers, (d) => screenModel.model.group(d[0]));
         elements
             .exit()
             .remove();
@@ -226,8 +183,9 @@ export class Interval extends Element {
             .append('g')
             .call(updateBarContainer);
 
-        self.subscribe(new LayerLabels(modelGoG, config.flip, config.guide.label, options).draw(fibers));
-    }
+        self.node().subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
+            .draw(fibers));
+    },
 
     buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {
 
@@ -306,27 +264,27 @@ export class Interval extends Element {
                 class: ((d) => `${baseCssClass} ${screenModel.class(d)}`),
                 fill: ((d) => screenModel.color(d))
             });
-    }
+    },
 
     highlight(filter) {
 
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
 
-        var container = this.config.options.container;
+        const container = this.node().config.options.container;
+        const classed = {
+            [x]: ((d) => filter(d) === true),
+            [_]: ((d) => filter(d) === false)
+        };
 
         container
             .selectAll('.bar')
-            .classed({
-                [x]: ((d) => filter(d) === true),
-                [_]: ((d) => filter(d) === false)
-            });
+            .classed(classed);
 
         container
             .selectAll('.i-role-label')
-            .classed({
-                [x]: ((d) => filter(d) === true),
-                [_]: ((d) => filter(d) === false)
-            });
+            .classed(classed);
     }
-}
+};
+
+export {Interval};

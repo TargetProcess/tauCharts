@@ -7,40 +7,72 @@ import {default as d3} from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
 import getBrushLine from '../utils/path/brush-line-builder';
 
-export class Line extends BasePath {
+const Line = {
 
-    constructor(config) {
+    draw: BasePath.draw,
+    highlight: BasePath.highlight,
+    highlightDataPoints: BasePath.highlightDataPoints,
+    addInteraction: BasePath.addInteraction,
 
-        super(config);
+    init(xConfig) {
 
-        var enableStack = this.config.stack;
+        const config = BasePath.init(xConfig);
+        const enableStack = config.stack;
 
-        this.config.guide = utils.defaults(
-            (this.config.guide || {}),
+        config.guide = utils.defaults(
+            (config.guide || {}),
             {
                 interpolate: 'linear'
             });
 
-        this.decorators = [
-            CartesianGrammar.decorator_orientation,
-            CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
+        config.transformRules = [
+            config.flip && CartesianGrammar.decorator_flip,
             !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
             enableStack && CartesianGrammar.decorator_groupOrderByColor,
-            enableStack && CartesianGrammar.decorator_stack,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
-            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
+            enableStack && CartesianGrammar.decorator_stack
         ].concat(config.transformModel || []);
-    }
+
+        config.adjustRules = [
+            ((prevModel, args) => {
+                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: 2,
+                        defMaxSize: (isEmptySize ? 6 : 40)
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+            }),
+            enableStack && CartesianGrammar.adjustYScale
+        ];
+
+        return config;
+    },
 
     buildModel(screenModel) {
 
-        var self = this;
+        const config = this.node().config;
+        const guide = config.guide;
+        const options = config.options;
+        const isEmptySize = !screenModel.model.scaleSize.dim; // TODO: empty method for size scale???;
+        const widthCss = (isEmptySize ?
+            (guide.widthCssClass || getLineClassesByWidth(options.width)) :
+            (''));
+        const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
+        const tag = isEmptySize ? 'line' : 'area';
+        const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
 
-        var baseModel = super.buildModel(screenModel);
+        const baseModel = BasePath.baseModel(screenModel);
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
             var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
@@ -80,24 +112,14 @@ export class Line extends BasePath {
             return pair.sort(by('dist'))[0].data;
         };
 
-        var guide = this.config.guide;
-        var options = this.config.options;
-        var widthCss = (this.isEmptySize ?
-            (guide.widthCssClass || getLineClassesByWidth(options.width)) :
-            (''));
-        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
-
-        var tag = this.isEmptySize ? 'line' : 'area';
-        const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
-
-        baseModel.toPoint = this.isEmptySize ?
+        baseModel.toPoint = isEmptySize ?
             (d) => ({
-                id: self.screenModel.id(d),
+                id: screenModel.id(d),
                 x: baseModel.x(d),
                 y: baseModel.y(d)
             }) :
             (d) => ({
-                id: self.screenModel.id(d),
+                id: screenModel.id(d),
                 x: baseModel.x(d),
                 y: baseModel.y(d),
                 size: baseModel.size(d)
@@ -115,7 +137,7 @@ export class Line extends BasePath {
 
         baseModel.pathElement = 'path';
 
-        var pathAttributes = this.isEmptySize ?
+        var pathAttributes = isEmptySize ?
             ({
                 stroke: (fiber) => baseModel.color(fiber[0]),
                 class: 'i-role-datum'
@@ -127,10 +149,10 @@ export class Line extends BasePath {
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        if (this.isEmptySize) {
+        if (isEmptySize) {
             baseModel.pathTween = {
                 attr: 'd',
-                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, self.screenModel.id)
+                fn: d3_createPathTween('d', d3Line, baseModel.toPoint, screenModel.id)
             };
         } else {
             baseModel.pathTween = {
@@ -139,11 +161,13 @@ export class Line extends BasePath {
                     'd',
                     getBrushLine,
                     baseModel.toPoint,
-                    self.screenModel.id
+                    screenModel.id
                 )
             };
         }
 
         return baseModel;
     }
-}
+};
+
+export {Line};

@@ -1,36 +1,70 @@
 import {default as d3} from 'd3';
 import {CSS_PREFIX} from '../const';
+import {utils} from '../utils/utils';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {d3_createPathTween} from '../utils/d3-decorators';
 
-export class Area extends BasePath {
+const Area = {
 
-    constructor(config) {
+    draw: BasePath.draw,
+    highlight: BasePath.highlight,
+    highlightDataPoints: BasePath.highlightDataPoints,
+    addInteraction: BasePath.addInteraction,
 
-        super(config);
+    init(xConfig) {
 
-        var enableStack = this.config.stack;
+        const config = BasePath.init(xConfig);
+        const enableStack = config.stack;
 
-        this.decorators = [
-            CartesianGrammar.decorator_orientation,
-            CartesianGrammar.decorator_groundY0,
-            CartesianGrammar.decorator_group,
+        config.transformRules = [
+            config.flip && CartesianGrammar.decorator_flip,
             !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
             enableStack && CartesianGrammar.decorator_groupOrderByColor,
-            enableStack && CartesianGrammar.decorator_stack,
-            CartesianGrammar.decorator_dynamic_size,
-            CartesianGrammar.decorator_color,
-            CartesianGrammar.decorator_label,
-            config.adjustPhase && CartesianGrammar.adjustStaticSizeScale,
-            config.adjustPhase && enableStack && CartesianGrammar.adjustYScale
+            enableStack && CartesianGrammar.decorator_stack
         ].concat(config.transformModel || []);
-    }
+
+        config.adjustRules = [
+            ((prevModel, args) => {
+                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: 2,
+                        defMaxSize: (isEmptySize ? 6 : 40)
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+            }),
+            enableStack && CartesianGrammar.adjustYScale
+        ];
+
+        return config;
+    },
 
     buildModel(screenModel) {
-        var self = this;
-        var baseModel = super.buildModel(screenModel);
+
+        const baseModel = BasePath.baseModel(screenModel);
+
+        const guide = this.node().config.guide;
+        const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
+        const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
+
+        /* eslint-disable */
+        const getDistance = (screenModel.flip ?
+            ((mx, my, rx, ry) => Math.abs(my - ry)) :
+            ((mx, my, rx, ry) => Math.abs(mx - rx)));
+        /* eslint-enable */
 
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
@@ -42,7 +76,7 @@ export class Area extends BasePath {
                     return {
                         x: rx,
                         y: ry,
-                        dist: self.getDistance(x, y, rx, ry),
+                        dist: getDistance(x, y, rx, ry),
                         data: row
                     };
                 })
@@ -52,16 +86,12 @@ export class Area extends BasePath {
             return nearest.data;
         };
 
-        var guide = this.config.guide;
-        var countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
-
-        const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
         baseModel.toPoint = (d) => ({
-            id: self.screenModel.id(d),
+            id: screenModel.id(d),
             x0: baseModel.x0(d),
             x: baseModel.x(d),
             y0: baseModel.y0(d),
@@ -107,14 +137,12 @@ export class Area extends BasePath {
                 'points',
                 areaPoints(d => d.x, d => d.y, d => d.x0, d => d.y0),
                 baseModel.toPoint,
-                self.screenModel.id
+                screenModel.id
             )
         };
 
         return baseModel;
     }
+};
 
-    getDistance(mx, my, rx, ry) {
-        return (this.config.flip ? Math.abs(my - ry) : Math.abs(mx - rx));
-    }
-}
+export {Area};

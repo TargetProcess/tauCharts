@@ -9,16 +9,31 @@ var unitsRegistry = {
 
         if (xSeed) {
             SeedsMap[unitType] = xSeed;
-            UnitsMap[unitType] = function (seed) {
-                this.___tauchartsseed___ = seed;
+            UnitsMap[unitType] = function (config, Base) {
+                this.___tauchartsseed___ = new Base(this.init(config));
             };
             UnitsMap[unitType].prototype = Object.assign(
                 {
+                    init(config) {
+                        return config;
+                    },
+                    defineGrammarModel(params) {
+                        return this.node().defineGrammarModel(params);
+                    },
+                    evalGrammarRules(grammarModel) {
+                        return this.node().evalGrammarRules(grammarModel);
+                    },
+                    adjustScales(grammarModel) {
+                        return this.node().adjustScales(grammarModel);
+                    },
+                    createScreenModel(grammarModel) {
+                        return this.node().createScreenModel(grammarModel);
+                    },
+                    addInteraction() {
+                        this.node().addInteraction();
+                    },
                     node() {
                         return this.___tauchartsseed___;
-                    },
-                    init() {
-                        this.node().init();
                     },
                     draw() {
                         this.node().draw();
@@ -44,8 +59,8 @@ var unitsRegistry = {
         var Unit = this.get(unitType);
         var node;
         if (SeedsMap[unitType]) {
-            var Seed = this.get(SeedsMap[unitType]);
-            node = new Unit(new Seed(unitConfig));
+            var Base = this.get(SeedsMap[unitType]);
+            node = new Unit(unitConfig, Base);
         } else {
             node = new Unit(unitConfig);
         }

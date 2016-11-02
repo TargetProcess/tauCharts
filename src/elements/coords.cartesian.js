@@ -120,29 +120,32 @@ export class Cartesian extends Element {
         this.H = options.height - (padding.t + padding.b);
     }
 
-    createScales(fnCreateScale) {
-        this.xScale = fnCreateScale('pos', this.config.x, [0, this.W]);
-        this.yScale = fnCreateScale('pos', this.config.y, [this.H, 0]);
+    defineGrammarModel(fnCreateScale) {
+        const w = this.W;
+        const h = this.H;
+        this.xScale = fnCreateScale('pos', this.config.x, [0, w]);
+        this.yScale = fnCreateScale('pos', this.config.y, [h, 0]);
         this.regScale('x', this.xScale)
             .regScale('y', this.yScale);
+        return new CartesianModel({
+            scaleX: this.xScale,
+            scaleY: this.yScale,
+            xi: (() => w / 2),
+            yi: (() => h / 2),
+            sizeX: (() => w),
+            sizeY: (() => h)
+        });
     }
 
-    walkFrames() {
-        var w = this.W;
-        var h = this.H;
+    evalGrammarRules(grammarModel) {
         return [
             CartesianModel.decorator_size,
             CartesianModel.decorator_color
-        ].filter(x => x).reduce(
-            ((model, transform) => transform(model, {})),
-            (new CartesianModel({
-                scaleX: this.xScale,
-                scaleY: this.yScale,
-                xi: (() => w / 2),
-                yi: (() => h / 2),
-                sizeX: (() => w),
-                sizeY: (() => h)
-            })));
+        ].filter(x => x).reduce(((model, rule) => rule(model, {})), grammarModel);
+    }
+
+    createScreenModel(grammarModel) {
+        return grammarModel.toScreenModel();
     }
 
     allocateRect(k) {
