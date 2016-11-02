@@ -5,6 +5,7 @@ import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-m
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
+import getBrushLine from '../utils/path/brush-line-builder';
 
 export class Line extends BasePath {
 
@@ -38,25 +39,6 @@ export class Line extends BasePath {
     buildModel(screenModel) {
 
         var self = this;
-
-        var wMax = this.config.options.width;
-        var hMax = this.config.options.height;
-
-        var limit = (x, minN, maxN) => {
-
-            var k = 1000;
-            var n = Math.round(x * k) / k;
-
-            if (n < minN) {
-                return minN;
-            }
-
-            if (n > maxN) {
-                return maxN;
-            }
-
-            return n;
-        };
 
         var baseModel = super.buildModel(screenModel);
 
@@ -131,61 +113,7 @@ export class Line extends BasePath {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
-        baseModel.pathElement = this.isEmptySize ? 'path' : 'polygon';
-
-        var d3LineVarySize = (x, y, w) => {
-            return (fiber) => {
-                var xy = ((d) => ([x(d), y(d)]));
-                var ways = fiber
-                    .reduce((memo, d, i, list) => {
-                        var dPrev = list[i - 1];
-                        var dNext = list[i + 1];
-                        var curr = xy(d);
-                        var prev = dPrev ? xy(dPrev) : null;
-                        var next = dNext ? xy(dNext) : null;
-
-                        var width = w(d);
-                        var lAngle = dPrev ? (Math.PI - Math.atan2(curr[1] - prev[1], curr[0] - prev[0])) : Math.PI;
-                        var rAngle = dNext ? (Math.atan2(curr[1] - next[1], next[0] - curr[0])) : 0;
-
-                        var gamma = lAngle - rAngle;
-
-                        if (gamma === 0) {
-                            // Avoid divide be zero
-                            return memo;
-                        }
-
-                        var diff = width / 2 / Math.sin(gamma / 2);
-                        var aup = rAngle + gamma / 2;
-                        var adown = aup - Math.PI;
-                        var dxup = diff * Math.cos(aup);
-                        var dyup = diff * Math.sin(aup);
-                        var dxdown = diff * Math.cos(adown);
-                        var dydown = diff * Math.sin(adown);
-
-                        var dir = [
-                            limit(curr[0] + dxup, 0, wMax), // x
-                            limit(curr[1] - dyup, 0, hMax)  // y
-                        ];
-
-                        var rev = [
-                            limit(curr[0] + dxdown, 0, wMax),
-                            limit(curr[1] - dydown, 0, hMax)
-                        ];
-
-                        memo.dir.push(dir);
-                        memo.rev.push(rev);
-
-                        return memo;
-                    },
-                    {
-                        dir: [],
-                        rev: []
-                    });
-
-                return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
-            };
-        };
+        baseModel.pathElement = 'path';
 
         var pathAttributes = this.isEmptySize ?
             ({
@@ -206,10 +134,10 @@ export class Line extends BasePath {
             };
         } else {
             baseModel.pathTween = {
-                attr: 'points',
+                attr: 'd',
                 fn: d3_createPathTween(
-                    'points',
-                    d3LineVarySize(d => d.x, d => d.y, d => d.size, baseModel),
+                    'd',
+                    getBrushLine,
                     baseModel.toPoint,
                     self.screenModel.id
                 )
