@@ -23,8 +23,9 @@ export class LinearScale extends BaseScale {
         this.vars = (props.nice) ? utils.niceZeroBased(vars) : d3.extent(vars);
 
         this.addField('scaleType', 'linear')
-            .addField('isInteger', values.every(Number.isInteger))
             .addField('discrete', false);
+
+        this._isInteger = values.every(Number.isInteger);
     }
 
     isInDomain(x) {
@@ -49,8 +50,6 @@ export class LinearScale extends BaseScale {
 
     extendScale(scale) {
 
-        var isInteger = this.getField('isInteger');
-
         // have to copy properties since d3 produce Function with methods
         var d3ScaleCopy = scale.copy;
         var d3ScaleTicks = scale.ticks;
@@ -60,7 +59,7 @@ export class LinearScale extends BaseScale {
 
             copy: () => this.extendScale(d3ScaleCopy.call(scale)),
 
-            ticks: (isInteger ?
+            ticks: (this._isInteger ?
                 (n) => d3ScaleTicks.call(scale, n).filter(Number.isInteger) :
                 scale.ticks
             )
