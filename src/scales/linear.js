@@ -1,8 +1,6 @@
 import {BaseScale} from './base';
 import {utils} from '../utils/utils';
-/* jshint ignore:start */
-import {default as d3} from 'd3';
-/* jshint ignore:end */
+import d3 from 'd3';
 
 export class LinearScale extends BaseScale {
 
@@ -11,6 +9,7 @@ export class LinearScale extends BaseScale {
         super(xSource, scaleConfig);
 
         var props = this.scaleConfig;
+        var values = this.vars;
         var vars = d3.extent(this.vars);
 
         var min = Number.isFinite(props.min) ? props.min : vars[0];
@@ -25,6 +24,8 @@ export class LinearScale extends BaseScale {
 
         this.addField('scaleType', 'linear')
             .addField('discrete', false);
+
+        this._isInteger = values.every(Number.isInteger);
     }
 
     isInDomain(x) {
@@ -36,30 +37,34 @@ export class LinearScale extends BaseScale {
 
     create(interval) {
 
-        var varSet = this.vars;
+        var domain = this.vars;
 
-        var d3Domain = d3.scale.linear().domain(varSet);
-
-        var d3Scale = d3Domain.rangeRound(interval, 1);
-        var scale = (int) => {
-            var min = varSet[0];
-            var max = varSet[1];
-            var x = int;
-            if (x > max) {
-                x = max;
-            }
-            if (x < min) {
-                x = min;
-            }
-
-            return d3Scale(x);
-        };
-
-        // have to copy properties since d3 produce Function with methods
-        Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
-
-        scale.stepSize = (() => 0);
+        var scale = this.extendScale(d3.scale.linear());
+        scale
+            .domain(domain)
+            .rangeRound(interval, 1)
+            .clamp(true);
 
         return this.toBaseScale(scale, interval);
+    }
+
+    extendScale(scale) {
+
+        // have to copy properties since d3 produce Function with methods
+        var d3ScaleCopy = scale.copy;
+        var d3ScaleTicks = scale.ticks;
+        Object.assign(scale, {
+
+            stepSize: () => 0,
+
+            copy: () => this.extendScale(d3ScaleCopy.call(scale)),
+
+            ticks: (this._isInteger ?
+                (n) => d3ScaleTicks.call(scale, n).filter(Number.isInteger) :
+                scale.ticks
+            )
+        });
+
+        return scale;
     }
 }
