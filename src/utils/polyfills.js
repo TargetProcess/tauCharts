@@ -39,6 +39,19 @@ if (!Number.isNaN) {
     });
 }
 
+if (!Number.isInteger) {
+    Object.defineProperty(Number, 'isInteger', {
+        value: function (value) {
+            return typeof value === 'number' &&
+                isFinite(value) &&
+                Math.floor(value) === value;
+        },
+        configurable: true,
+        enumerable: false,
+        writable: true
+    });
+}
+
 if (!Array.prototype.find) {
     Object.defineProperty(Array.prototype, 'find', {
         value: function (predicate) {
