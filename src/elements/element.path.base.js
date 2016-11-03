@@ -6,6 +6,43 @@ import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {default as d3} from 'd3';
 
+const synthetic = 'taucharts_synthetic_record';
+const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
+const fillGaps = (fibers, model) => {
+    const dx = model.scaleX.dim;
+    const dy = model.scaleY.dim;
+    const dc = model.scaleColor.dim;
+    const ds = model.scaleSplit.dim;
+    const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
+    const gen = (x, sampleRow, sign) => {
+        return {
+            [dx]: x,
+            [dy]: sign * (1e-10),
+            [ds]: sampleRow[ds],
+            [dc]: sampleRow[dc],
+            [synthetic]: true
+        };
+    };
+
+    const merge = (templateSorted, fiberSorted, sign) => {
+        const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
+        const sample = fiberSorted[0];
+        return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
+    };
+
+    const asc = (a, b) => a - b;
+    const xs = utils
+        .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
+        .sort(asc);
+
+    return fibers
+        .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
+        .reduce((memo, fib) => {
+            const bySign = utils.groupBy(fib, calcSign);
+            return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
+        }, []);
+};
+
 const BasePath = {
 
     init(xConfig) {
@@ -183,7 +220,7 @@ const BasePath = {
             node.subscribe(series, function (rows) {
                 const m = d3.mouse(this);
                 return model.matchRowInCoordinates(
-                    rows.filter(CartesianGrammar.isNonSyntheticRecord),
+                    rows.filter(isNonSyntheticRecord),
                     {x: m[0], y: m[1]});
             });
 
@@ -202,7 +239,7 @@ const BasePath = {
 
                 const dots = this
                     .selectAll(`.${anchorClass}`)
-                    .data((fiber) => fiber.filter(CartesianGrammar.isNonSyntheticRecord), screenModel.id);
+                    .data((fiber) => fiber.filter(isNonSyntheticRecord), screenModel.id);
                 dots.exit()
                     .remove();
                 dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
@@ -214,9 +251,12 @@ const BasePath = {
             }
         };
 
-        const fibers = config.stack ?
-            CartesianGrammar.toStackedFibers(fullData, screenModel.model) :
-            CartesianGrammar.toFibers(fullData, screenModel.model);
+        const fibers = CartesianGrammar.toFibers(fullData, screenModel.model);
+
+        var dataFibers = fibers;
+        if (config.stack) {
+            dataFibers = fillGaps(fibers, screenModel.model);
+        }
 
         const frameSelection = options.container.selectAll('.frame');
 
@@ -243,7 +283,7 @@ const BasePath = {
         })();
 
         const frameBinding = frameSelection
-            .data(fibers, getDataSetId);
+            .data(dataFibers, getDataSetId);
         frameBinding
             .exit()
             .remove();
@@ -256,12 +296,11 @@ const BasePath = {
 
         frameBinding.order();
 
-        const dataFibers = CartesianGrammar.toFibers(fullData, screenModel.model);
         node.subscribe(new LayerLabels(
             screenModel.model,
             config.flip,
             config.guide.label,
-            options).draw(dataFibers));
+            options).draw(fibers));
     },
 
     highlight(filter) {
@@ -274,8 +313,8 @@ const BasePath = {
         container
             .selectAll('.i-role-path')
             .classed({
-                [x]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === true),
-                [_]: ((fiber) => filter(fiber.filter(CartesianGrammar.isNonSyntheticRecord)[0]) === false)
+                [x]: ((fiber) => filter(fiber.filter(isNonSyntheticRecord)[0]) === true),
+                [_]: ((fiber) => filter(fiber.filter(isNonSyntheticRecord)[0]) === false)
             });
 
         const classed = {

@@ -254,17 +254,20 @@ define(function (require) {
             expect(testUtils.hasClass(svgPolygons[0].parentNode, 'A')).to.equal(true, 'A');
             expect(d3.select(svgPolygons[0]).attr('points'))
                 .to
-                .equal('800,0 600,500 400,1000 400,1000 400,500 400,0', 'A');
+                // .equal('800,0 600,500 400,1000 400,1000 400,500 400,0', 'A');
+                .equal('400,1000 600,500 800,0 400,0 400,500 400,1000', 'A');
 
             expect(testUtils.hasClass(svgPolygons[1].parentNode, 'B')).to.equal(true, 'B negative');
             expect(d3.select(svgPolygons[1]).attr('points'))
                 .to
-                .equal('800,0 1000,500 800,1000 400,1000 600,500 800,0', 'B negative');
+                // .equal('800,0 1000,500 800,1000 400,1000 600,500 800,0', 'B negative');
+                .equal('800,1000 1000,500 800,0 800,0 600,500 400,1000', 'B negative');
 
             expect(testUtils.hasClass(svgPolygons[2].parentNode, 'B')).to.equal(true, 'B pos');
             expect(d3.select(svgPolygons[2]).attr('points'))
                 .to
-                .equal('400,0 0,500 0,1000 400,1000 400,500 400,0', 'B positive');
+                //.equal('400,0 0,500 0,1000 400,1000 400,500 400,0', 'B positive');
+                .equal('0,1000 0,500 400,0 400,0 400,500 400,1000', 'B positive');
 
             var points = d3.selectAll('circle')[0].map((node) => {
                 var p = d3.select(node);
@@ -276,7 +279,8 @@ define(function (require) {
             expect(JSON.stringify(points))
                 .to
                 .deep
-                .equal('[["800","0"],["600","500"],["400","1000"],["1000","500"],["800","1000"],["0","500"],["0","1000"]]');
+                // .equal('[["800","0"],["600","500"],["400","1000"],["1000","500"],["800","1000"],["0","500"],["0","1000"]]');
+                .equal('[["400","1000"],["600","500"],["800","0"],["800","1000"],["1000","500"],["0","1000"],["0","500"]]');
         });
     });
 });

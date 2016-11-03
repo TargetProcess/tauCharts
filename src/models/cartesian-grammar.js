@@ -2,8 +2,6 @@ import {utils} from '../utils/utils';
 import {TauChartError as Error, errorCodes} from './../error';
 
 const delimiter = '(@taucharts@)';
-const synthetic = 'taucharts_synthetic_record';
-const syntheticPoints = {};
 
 export class CartesianGrammar {
 
@@ -381,62 +379,11 @@ export class CartesianGrammar {
     }
 
     static toFibers(data, model) {
-        var groups = utils.groupBy(data, model.group);
+        const groups = utils.groupBy(data, model.group);
         return (Object
             .keys(groups)
             .sort((a, b) => model.order(a) - model.order(b))
             .reduce((memo, k) => memo.concat([groups[k]]), []));
-    }
-
-    static isNonSyntheticRecord(row) {
-        return row[synthetic] !== true;
-    }
-
-    static toStackedFibers(data, model) {
-
-        var dx = model.scaleX.dim;
-        var dy = model.scaleY.dim;
-        var dc = model.scaleColor.dim;
-        var ds = model.scaleSplit.dim;
-
-        var sortedData = data.sort((a, b) => model.xi(a) - model.xi(b));
-
-        var xs = utils.unique(sortedData.map((row) => row[dx]));
-
-        var calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
-
-        var gen = (x, sampleRow, sign) => {
-            var id = model.id(sampleRow);
-            var genId = [dx, dy, ds, dc, x, id, sign].join(' ');
-            if (syntheticPoints[genId]) {
-                return syntheticPoints[genId];
-            }
-            var r = {
-                [dx]: x,
-                [dy]: sign * (1e-10),
-                [ds]: sampleRow[ds],
-                [dc]: sampleRow[dc],
-                [synthetic]: true
-            };
-            syntheticPoints[genId] = r;
-            return r;
-        };
-
-        var merge = (templateSorted, fiberSorted, sign) => {
-            var groups = utils.groupBy(fiberSorted, (row) => row[dx]);
-            var sample = fiberSorted[0];
-            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
-        };
-
-        var groups = utils.groupBy(sortedData, model.group);
-        return (Object
-            .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => {
-                var bySign = utils.groupBy(groups[k], calcSign);
-                return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
-            },
-            []));
     }
 
     static avoidBaseScaleOverflow(model, {dataSource}) {
