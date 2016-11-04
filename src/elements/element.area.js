@@ -21,6 +21,7 @@ const Area = {
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
             enableStack ? CartesianGrammar.decorator_groupOrderByColor : CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && BasePath.grammarRuleFillGaps,
             enableStack && CartesianGrammar.decorator_stack
         ].concat(config.transformModel || []);
 
@@ -44,8 +45,7 @@ const Area = {
                     });
 
                 return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
-            }),
-            enableStack && CartesianGrammar.adjustYScale
+            })
         ];
 
         return config;

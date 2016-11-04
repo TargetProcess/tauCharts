@@ -161,7 +161,7 @@ const Interval = {
             node.subscribe(bars);
         };
 
-        const fibers = CartesianGrammar.toFibers(node.data(), screenModel.model);
+        const fibers = screenModel.toFibers();
 
         const elements = options
             .container

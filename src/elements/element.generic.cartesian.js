@@ -26,18 +26,13 @@ export class GenericCartesian extends Element {
 
         var defaultDecorators = [
             config.flip && CartesianGrammar.decorator_flip,
-            CartesianGrammar.decorator_groundY0,
             CartesianGrammar.decorator_groupOrderByColor,
             enableStack && CartesianGrammar.decorator_stack,
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor
         ];
 
-        var defaultAdjusters = [
-            enableStack && CartesianGrammar.adjustYScale
-        ];
-
         this.decorators = (this.config.transformRules || defaultDecorators).concat(config.transformModel || []);
-        this.adjusters = (this.config.adjustRules || defaultAdjusters);
+        this.adjusters = (this.config.adjustRules || []);
     }
 
     defineGrammarModel(fnCreateScale) {
@@ -51,6 +46,7 @@ export class GenericCartesian extends Element {
             .regScale('identity', fnCreateScale('identity', config.identity, {}));
 
         return new CartesianGrammar({
+            data: (() => this.data()),
             scaleX: this.getScale('x'),
             scaleY: this.getScale('y'),
             scaleSize: this.getScale('size'),

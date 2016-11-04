@@ -149,7 +149,7 @@ const Point = {
                 .attr('opacity', 1);
         };
 
-        const fibers = CartesianGrammar.toFibers(node.data(), screenModel.model);
+        const fibers = screenModel.toFibers();
 
         const frameGroups = options
             .container

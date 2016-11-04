@@ -1,4 +1,3 @@
-import {CartesianGrammar} from '../models/cartesian-grammar';
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
@@ -8,42 +7,56 @@ import {default as d3} from 'd3';
 
 const synthetic = 'taucharts_synthetic_record';
 const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
-const fillGaps = (fibers, model) => {
-    const dx = model.scaleX.dim;
-    const dy = model.scaleY.dim;
-    const dc = model.scaleColor.dim;
-    const ds = model.scaleSplit.dim;
-    const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
-    const gen = (x, sampleRow, sign) => {
-        return {
-            [dx]: x,
-            [dy]: sign * (1e-10),
-            [ds]: sampleRow[ds],
-            [dc]: sampleRow[dc],
-            [synthetic]: true
-        };
-    };
-
-    const merge = (templateSorted, fiberSorted, sign) => {
-        const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
-        const sample = fiberSorted[0];
-        return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
-    };
-
-    const asc = (a, b) => a - b;
-    const xs = utils
-        .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
-        .sort(asc);
-
-    return fibers
-        .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
-        .reduce((memo, fib) => {
-            const bySign = utils.groupBy(fib, calcSign);
-            return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
-        }, []);
-};
 
 const BasePath = {
+
+    grammarRuleFillGaps: (model) => {
+
+        const data = model.data();
+
+        const groups = utils.groupBy(data, model.group);
+        const fibers = (Object
+            .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b)))
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
+
+        const dx = model.scaleX.dim;
+        const dy = model.scaleY.dim;
+        const dc = model.scaleColor.dim;
+        const ds = model.scaleSplit.dim;
+        const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
+        const gen = (x, sampleRow, sign) => {
+            return {
+                [dx]: x,
+                [dy]: sign * (1e-10),
+                [ds]: sampleRow[ds],
+                [dc]: sampleRow[dc],
+                [synthetic]: true
+            };
+        };
+
+        const merge = (templateSorted, fiberSorted, sign) => {
+            const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
+            const sample = fiberSorted[0];
+            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
+        };
+
+        const asc = (a, b) => a - b;
+        const xs = utils
+            .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
+            .sort(asc);
+
+        const nextData = fibers
+            .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
+            .reduce((memo, fib) => {
+                const bySign = utils.groupBy(fib, calcSign);
+                return Object.keys(bySign).reduce((memo, s) => memo.concat(merge(xs, bySign[s], s)), memo);
+            }, []);
+
+        return {
+            data: () => nextData
+        };
+    },
 
     init(xConfig) {
 
@@ -150,7 +163,6 @@ const BasePath = {
         const options = config.options;
         options.container = options.slot(config.uid);
 
-        const fullData = node.data();
         const screenModel = node.screenModel;
         const model = this.buildModel(screenModel);
 
@@ -251,12 +263,8 @@ const BasePath = {
             }
         };
 
-        const fibers = CartesianGrammar.toFibers(fullData, screenModel.model);
-
-        var dataFibers = fibers;
-        if (config.stack) {
-            dataFibers = fillGaps(fibers, screenModel.model);
-        }
+        const fullFibers = screenModel.toFibers();
+        const pureFibers = fullFibers.map((arr) => arr.filter(isNonSyntheticRecord));
 
         const frameSelection = options.container.selectAll('.frame');
 
@@ -283,7 +291,7 @@ const BasePath = {
         })();
 
         const frameBinding = frameSelection
-            .data(dataFibers, getDataSetId);
+            .data(fullFibers, getDataSetId);
         frameBinding
             .exit()
             .remove();
@@ -300,7 +308,7 @@ const BasePath = {
             screenModel.model,
             config.flip,
             config.guide.label,
-            options).draw(fibers));
+            options).draw(pureFibers));
     },
 
     highlight(filter) {
