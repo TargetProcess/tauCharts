@@ -9,7 +9,7 @@ const Interval = {
 
     init(xConfig) {
 
-        var config = Object.assign({}, xConfig);
+        const config = Object.assign({}, xConfig);
 
         config.guide = (config.guide || {});
         config.guide = utils.defaults(
@@ -52,8 +52,8 @@ const Interval = {
                 )
             });
 
-        var enableColorPositioning = config.guide.enableColorToBarPosition;
-        var enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
+        const enableColorPositioning = config.guide.enableColorToBarPosition;
+        const enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
@@ -92,7 +92,7 @@ const Interval = {
     },
 
     addInteraction() {
-        var node = this.node();
+        const node = this.node();
         node.on('highlight', (sender, e) => this.highlight(e));
         node.on('mouseover', ((sender, e) => {
             const identity = sender.screenModel.model.id;
@@ -103,29 +103,25 @@ const Interval = {
     },
 
     draw() {
-        var self = this;
-        var config = this.node().config;
-
-        var options = config.options;
+        const node = this.node();
+        const config = node.config;
+        const options = config.options;
         // TODO: hide it somewhere
         options.container = options.slot(config.uid);
 
-        var prettify = config.guide.prettify;
-        var baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+        const prettify = config.guide.prettify;
+        const baseCssClass = `i-role-element i-role-datum bar ${CSS_PREFIX}bar`;
+        const screenModel = node.screenModel;
+        const d3Attrs = this.buildModel(screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
+        const createUpdateFunc = d3_animationInterceptor;
 
-        var screenModel = this.node().screenModel;
-
-        var d3Attrs = this.buildModel(screenModel, {prettify, minBarH: 1, minBarW: 1, baseCssClass});
-
-        var createUpdateFunc = d3_animationInterceptor;
-
-        var barX = config.flip ? 'y' : 'x';
-        var barY = config.flip ? 'x' : 'y';
-        var barH = config.flip ? 'width' : 'height';
-        var barW = config.flip ? 'height' : 'width';
-        var updateBarContainer = function () {
+        const barX = config.flip ? 'y' : 'x';
+        const barY = config.flip ? 'x' : 'y';
+        const barH = config.flip ? 'width' : 'height';
+        const barW = config.flip ? 'height' : 'width';
+        const updateBarContainer = function () {
             this.attr('class', 'frame i-role-bar-group');
-            var bars = this.selectAll('.bar')
+            const bars = this.selectAll('.bar')
                 .data((fiber) => fiber, screenModel.id);
             bars.exit()
                 .call(createUpdateFunc(
@@ -162,14 +158,12 @@ const Interval = {
                     d3Attrs
                 ));
 
-            self.node().subscribe(bars);
+            node.subscribe(bars);
         };
 
-        var data = this.node().data();
+        const fibers = screenModel.toFibers();
 
-        var fibers = CartesianGrammar.toFibers(data, screenModel.model);
-
-        var elements = options
+        const elements = options
             .container
             .selectAll('.frame')
             .data(fibers, (d) => screenModel.model.group(d[0]));
@@ -183,15 +177,13 @@ const Interval = {
             .append('g')
             .call(updateBarContainer);
 
-        self.node().subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
+        node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
     },
 
     buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {
 
-        var flip = screenModel.flip;
-
-        var barSize = ((d) => {
+        const barSize = ((d) => {
             var w = screenModel.size(d);
             if (prettify) {
                 w = Math.max(minBarW, w);
@@ -200,24 +192,24 @@ const Interval = {
         });
 
         var model;
-        var value = (d) => d[screenModel.model.scaleY.dim];
-        if (flip) {
+        const value = (d) => d[screenModel.model.scaleY.dim];
+        if (screenModel.flip) {
             let barHeight = ((d) => Math.abs(screenModel.x(d) - screenModel.x0(d)));
             model = {
                 y: ((d) => screenModel.y(d) - barSize(d) * 0.5),
                 x: ((d) => {
-                    var x = Math.min(screenModel.x0(d), screenModel.x(d));
+                    const x = Math.min(screenModel.x0(d), screenModel.x(d));
                     if (prettify) {
                         // decorate for better visual look & feel
-                        var h = barHeight(d);
-                        var dx = value(d);
+                        const h = barHeight(d);
+                        const dx = value(d);
                         var offset = 0;
 
                         if (dx === 0) {offset = 0;}
                         if (dx > 0) {offset = (h);}
                         if (dx < 0) {offset = (0 - minBarH);}
 
-                        var isTooSmall = (h < minBarH);
+                        const isTooSmall = (h < minBarH);
                         return (isTooSmall) ? (x + offset) : (x);
                     } else {
                         return x;
@@ -225,7 +217,7 @@ const Interval = {
                 }),
                 height: ((d) => barSize(d)),
                 width: ((d) => {
-                    var h = barHeight(d);
+                    const h = barHeight(d);
                     if (prettify) {
                         // decorate for better visual look & feel
                         return (value(d) === 0) ? h : Math.max(minBarH, h);
@@ -241,8 +233,8 @@ const Interval = {
                     var y = Math.min(screenModel.y0(d), screenModel.y(d));
                     if (prettify) {
                         // decorate for better visual look & feel
-                        var h = barHeight(d);
-                        var isTooSmall = (h < minBarH);
+                        const h = barHeight(d);
+                        const isTooSmall = (h < minBarH);
                         y = ((isTooSmall && (value(d) > 0)) ? (y - minBarH) : y);
                     }
                     return y;

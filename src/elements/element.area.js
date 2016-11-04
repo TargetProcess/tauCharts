@@ -20,8 +20,8 @@ const Area = {
 
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
-            !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
-            enableStack && CartesianGrammar.decorator_groupOrderByColor,
+            enableStack ? CartesianGrammar.decorator_groupOrderByColor : CartesianGrammar.decorator_groupOrderByAvg,
+            enableStack && BasePath.grammarRuleFillGaps,
             enableStack && CartesianGrammar.decorator_stack
         ].concat(config.transformModel || []);
 
@@ -45,8 +45,7 @@ const Area = {
                     });
 
                 return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
-            }),
-            enableStack && CartesianGrammar.adjustYScale
+            })
         ];
 
         return config;
@@ -69,7 +68,7 @@ const Area = {
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
             // d3.invert doesn't work for ordinal axes
-            var nearest = rows
+            const nearest = rows
                 .map((row) => {
                     var rx = baseModel.x(row);
                     var ry = baseModel.y(row);
@@ -98,9 +97,9 @@ const Area = {
             y: baseModel.y(d)
         });
 
-        var areaPoints = (xi, yi, x0, y0) => {
+        const areaPoints = (xi, yi, x0, y0) => {
             return ((fiber) => {
-                var ways = fiber
+                const ways = fiber
                     .reduce((memo, d) => {
                         memo.dir.push([xi(d), yi(d)]);
                         memo.rev.push([x0(d), y0(d)]);
@@ -115,7 +114,7 @@ const Area = {
             });
         };
 
-        var pathAttributes = {
+        const pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => {
                 var colorStr = baseModel.color(fiber[0]);

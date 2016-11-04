@@ -32,7 +32,7 @@ const Point = {
                 ]
             });
 
-        var enableColorPositioning = config.guide.enableColorToBarPosition;
+        const enableColorPositioning = config.guide.enableColorToBarPosition;
 
         config.transformRules = [
             ((prevModel) => {
@@ -87,7 +87,7 @@ const Point = {
     },
 
     addInteraction() {
-        var node = this.node();
+        const node = this.node();
         node.on('highlight', (sender, e) => this.highlight(e));
         node.on('mouseover', ((sender, e) => {
             const identity = sender.screenModel.model.id;
@@ -99,34 +99,32 @@ const Point = {
 
     draw() {
 
-        var self = this;
-        var config = this.node().config;
-
-        var options = config.options;
+        const node = this.node();
+        const config = node.config;
+        const options = config.options;
         // TODO: hide it somewhere
         options.container = options.slot(config.uid);
 
-        var transition = (sel) => {
+        const transition = (sel) => {
             return d3_transition(sel, config.guide.animationSpeed);
         };
 
-        var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
+        const prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
+        const screenModel = node.screenModel;
+        const kRound = 10000;
 
-        var fullData = this.node().data();
-
-        const screenModel = this.node().screenModel;
-        var kRound = 10000;
-        var circleAttrs = {
+        const circleAttrs = {
             fill: ((d) => screenModel.color(d)),
             class: ((d) => `${prefix} ${screenModel.class(d)}`)
         };
-        var circleTransAttrs = {
+
+        const circleTransAttrs = {
             r: ((d) => (Math.round(kRound * screenModel.size(d) / 2) / kRound)),
             cx: ((d) => screenModel.x(d)),
             cy: ((d) => screenModel.y(d))
         };
 
-        var updateGroups = function () {
+        const updateGroups = function () {
 
             this.attr('class', 'frame')
                 .call(function () {
@@ -144,19 +142,17 @@ const Point = {
                         .attr({r: 0})
                         .remove();
 
-                    self.node().subscribe(dots);
+                    node.subscribe(dots);
                 });
 
             transition(this)
                 .attr('opacity', 1);
         };
 
-        var groups = utils.groupBy(fullData, screenModel.group);
-        var fibers = Object
-            .keys(groups)
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
+        const fibers = screenModel.toFibers();
 
-        var frameGroups = options.container
+        const frameGroups = options
+            .container
             .selectAll('.frame')
             .data(fibers, (f) => screenModel.group(f[0]));
 
@@ -175,7 +171,7 @@ const Point = {
             .selectAll('circle')
             .attr('r', 0);
 
-        self.node().subscribe(
+        node.subscribe(
             new LayerLabels(
                 screenModel.model,
                 screenModel.flip,

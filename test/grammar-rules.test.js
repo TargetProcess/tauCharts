@@ -29,10 +29,11 @@ define(function (require) {
             var model = {
                 scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
-                xi: (row) => model.scaleX.value(row[model.scaleX.dim])
+                xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
+                data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model, {dataSource: data});
+            CartesianGrammar.avoidBaseScaleOverflow(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -51,10 +52,11 @@ define(function (require) {
             var model = {
                 scaleX: new OrdinalScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
-                xi: (row) => model.scaleX.value(row[model.scaleX.dim])
+                xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
+                data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model, {dataSource: data});
+            CartesianGrammar.avoidBaseScaleOverflow(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -71,10 +73,11 @@ define(function (require) {
             var model = {
                 scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
-                xi: (row) => model.scaleX.value(row[model.scaleX.dim])
+                xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
+                data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model, {dataSource: data});
+            CartesianGrammar.avoidBaseScaleOverflow(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
