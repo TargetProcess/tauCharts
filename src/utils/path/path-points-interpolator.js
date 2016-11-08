@@ -1,6 +1,10 @@
 import {utils} from '../utils';
 
-export default function interpolatePathPoints(pointsFrom, pointsTo) {
+export default function interpolatePathPoints(
+    pointsFrom,
+    pointsTo,
+    cartesianProps = [['x', 'y']]
+) {
 
     // TODO: Continue unfinished transition of ending points.
     pointsFrom = pointsFrom.filter(d => !d.isInterpolated);
@@ -16,7 +20,11 @@ export default function interpolatePathPoints(pointsFrom, pointsTo) {
         }
 
         if (!interpolateIntermediate) {
-            interpolateIntermediate = interpolateIntermediatePoints(pointsFrom, pointsTo);
+            interpolateIntermediate = interpolateIntermediatePoints(
+                pointsFrom,
+                pointsTo,
+                cartesianProps
+            );
         }
 
         return interpolateIntermediate(t);
@@ -28,7 +36,7 @@ export default function interpolatePathPoints(pointsFrom, pointsTo) {
  * remains the same and added or excluded points are situated between
  * existing points.
  */
-function interpolateIntermediatePoints(pointsFrom, pointsTo) {
+function interpolateIntermediatePoints(pointsFrom, pointsTo, cartesianProps) {
     var intermediate = [];
     var remainingPoints = [];
     var changingPoints = [];
@@ -66,7 +74,8 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
                 var interpolated = interpolateEnding({
                     t, polyline,
                     decreasing,
-                    rightToLeft
+                    rightToLeft,
+                    cartesianProps
                 });
                 if (decreasing === rightToLeft) {
                     interpolated.shift();
@@ -94,7 +103,8 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
             var filledPolyline = fillSmallerPolyline({
                 smallerPolyline,
                 biggerPolyline,
-                decreasing
+                decreasing,
+                cartesianProps
             });
             var biggerInnerPoints = biggerPolyline.slice(1, biggerPolyline.length - 1);
             var filledInnerPoints = filledPolyline.slice(1, filledPolyline.length - 1);
@@ -160,7 +170,8 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
                     t,
                     polyline,
                     decreasing,
-                    rightToLeft
+                    rightToLeft,
+                    cartesianProps
                 }).slice(1);
                 points.forEach(d => {
                     d.positionIsBeingChanged = true;
@@ -257,6 +268,15 @@ function interpolateValue(a, b, t) {
     return b;
 }
 
+function cubicValue(a, c1, c2, b, t) {
+    return (
+        a * (1 - t) * (1 - t) * (1 - t) +
+        3 * c1 * (1 - t) * (1 - t) * t +
+        3 * c2 * (1 - t) * t * t +
+        b * t * t * t
+    );
+}
+
 function interpolatePoint(a, b, t) {
     if (a === b) {
         return b;
@@ -264,6 +284,23 @@ function interpolatePoint(a, b, t) {
     var c = {};
     var props = utils.unique(Object.keys(a), Object.keys(b));
     props.forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
+    c.id = b.id;
+    return c;
+}
+
+function interpolateCubicPoint(a, b, t, cartesianProps) {
+    if (a === b) {
+        return b;
+    }
+    var c = {};
+    var props = utils.unique(Object.keys(a), Object.keys(b));
+    props.forEach((k) => {
+        if (cartesianProps.indexOf(k) >= 0) {
+            c[k] = cubicValue(a[k], a.c2[k], b.c1[k], b[k], t);
+        } else {
+            c[k] = interpolateValue(a[k], b[k], t);
+        }
+    });
     c.id = b.id;
     return c;
 }
@@ -277,7 +314,7 @@ function interpolatePoints(pointsFrom, pointsTo, t) {
  * Returns a polyline with points that move along line
  * from start point to full line (or vice versa).
  */
-function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
+function interpolateEnding({t, polyline, decreasing, rightToLeft, cartesianProps}) {
 
     var reverse = Boolean(decreasing) !== Boolean(rightToLeft);
 
@@ -318,10 +355,11 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
         var result = line.slice(0, existingCount);
         if (q < 1) {
             var qi = (q * (line.length - 1)) % 1;
-            var midPt = interpolatePoint(
+            var midPt = interpolateCubicPoint(
                 line[existingCount - 1],
                 line[existingCount],
-                qi
+                qi,
+                cartesianProps
             );
             push(result, utils.range(tempCount).map((i) => Object.assign(
                 {}, midPt,
@@ -347,7 +385,7 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
  * Returns a polyline, filled with points, so that number of points
  * becomes the same on both start and end polylines.
  */
-function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing}) {
+function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing, cartesianProps}) {
 
     var smallerSegCount = smallerPolyline.length - 1;
     var biggerSegCount = biggerPolyline.length - 1;
@@ -355,6 +393,8 @@ function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing}) {
     var restPointsCount = biggerSegCount % smallerSegCount;
     var segmentsPointsCount = utils.range(smallerSegCount)
         .map(i => (minSegmentPointsCount + Number(i < restPointsCount)));
+
+    cartesianProps = utils.flatten(cartesianProps);
 
     var result = [smallerPolyline[0]];
     var smallPtIndex = 1;
@@ -367,10 +407,11 @@ function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing}) {
                     newPt.id = biggerPolyline[result.length].id;
                 }
             } else {
-                newPt = interpolatePoint(
+                newPt = interpolateCubicPoint(
                     smallerPolyline[smallPtIndex - 1],
                     smallerPolyline[smallPtIndex],
-                    (i / (segPtCount - 1))
+                    (i / (segPtCount - 1)),
+                    cartesianProps
                 );
                 newPt.id = biggerPolyline[result.length].id;
                 if (decreasing) {

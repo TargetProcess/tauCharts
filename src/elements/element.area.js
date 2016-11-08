@@ -1,10 +1,11 @@
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import {CSS_PREFIX} from '../const';
 import {utils} from '../utils/utils';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {d3_createPathTween} from '../utils/d3-decorators';
+import {getPolyline, getSmoothLine} from '../utils/path/line-builder';
 
 const Area = {
 
@@ -17,6 +18,12 @@ const Area = {
 
         const config = BasePath.init(xConfig);
         const enableStack = config.stack;
+
+        config.guide = utils.defaults(
+            (config.guide || {}),
+            {
+                smooth: true
+            });
 
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
@@ -81,7 +88,7 @@ const Area = {
                     };
                 })
                 .sort((a, b) => (a.dist - b.dist)) // asc
-                [0];
+            [0];
 
             return nearest.data;
         };
@@ -98,6 +105,7 @@ const Area = {
             y: baseModel.y(d)
         });
 
+        var getLine = guide.smooth ? getSmoothLine : getPolyline;
         var areaPoints = (xi, yi, x0, y0) => {
             return ((fiber) => {
                 var ways = fiber
@@ -111,7 +119,14 @@ const Area = {
                         rev: []
                     });
 
-                return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
+                if (fiber.length < 2) {
+                    return '';
+                }
+                var dir = getLine(ways.dir.map(d => ({x: d[0], y: d[1]})));
+                var rev = getLine(ways.rev.reverse().map(d => ({x: d[0], y: d[1]})));
+                var path = `${dir} L${rev.slice(1)} Z`;
+
+                return path;
             });
         };
 
@@ -129,15 +144,16 @@ const Area = {
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathElement = 'polygon';
+        baseModel.pathElement = 'path';
 
         baseModel.pathTween = {
-            attr: 'points',
+            attr: 'd',
             fn: d3_createPathTween(
-                'points',
+                'd',
                 areaPoints(d => d.x, d => d.y, d => d.x0, d => d.y0),
                 baseModel.toPoint,
-                screenModel.id
+                screenModel.id,
+                guide.smooth
             )
         };
 
