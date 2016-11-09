@@ -103,16 +103,14 @@
     tauCharts.api.unitsRegistry.reg(
         'ELEMENT.BOX-WHISKERS',
         {
-            init: function () {
+            adjustScales: function (grammarModel) {
                 var node = this.node();
-                node.init();
-                var stat = this.calcStat();
-                if (node.config.adjustPhase && node.config.guide.fitScale) {
-                    this.fixScale(node, stat);
+                if (node.config.guide.fitScale) {
+                    this.fixScale(grammarModel, this.calcStat(grammarModel));
                 }
             },
 
-            fixScale: function (node, stat) {
+            fixScale: function (grammarModel, stat) {
                 var vals = stat
                     .reduce(function (memo, row) {
                         return memo.concat([row[KEYS.MIN], row[KEYS.MAX]]);
@@ -123,7 +121,7 @@
 
                 var minY = vals[0];
                 var maxY = vals[vals.length - 1];
-                node.screenModel.model.scaleY.fixup(function (yScaleConfig) {
+                grammarModel.scaleY.fixup(function (yScaleConfig) {
                     var newConf = {};
 
                     if (!yScaleConfig.hasOwnProperty('series')) {
@@ -138,20 +136,17 @@
                 });
             },
 
-            calcStat: function () {
-                var screenModel = this.node().screenModel;
-                var model = screenModel.model;
-
+            calcStat: function (grammarModel) {
                 var cats = this.node().data().reduce(function (memo, row) {
-                    var k = row[model.scaleX.dim];
+                    var k = row[grammarModel.scaleX.dim];
                     memo[k] = memo[k] || [];
-                    memo[k].push(row[model.scaleY.dim]);
+                    memo[k].push(row[grammarModel.scaleY.dim]);
                     return memo;
                 }, {});
 
                 return Object.keys(cats).reduce(function (memo, k) {
                     var base = {};
-                    base[model.scaleX.dim] = k;
+                    base[grammarModel.scaleX.dim] = k;
                     return memo.concat(calculateStatistics(cats[k], base, KEYS));
                 }, []);
             },
@@ -195,7 +190,7 @@
             draw: function () {
                 var cfg = this.node().config;
                 var container = cfg.options.slot(cfg.uid);
-                var summary = this.calcStat();
+                var summary = this.calcStat(this.node().screenModel.model);
                 this.drawElement(container, summary);
             },
 

@@ -37,9 +37,8 @@
     tauCharts.api.unitsRegistry.reg(
         'ELEMENT.CFD',
         {
-            init: function () {
+            addInteraction: function () {
                 var node = this.node();
-                node.init();
                 this.cover = null;
                 this.freeze = false;
                 this.activeRange = [];
