@@ -3,7 +3,8 @@ import {utilsDom} from './utils-dom';
 import {utilsDraw} from './utils-draw';
 import {default as d3} from 'd3';
 import createPathPointsInterpolator from './path/path-points-interpolator';
-import getCubicLine from './path/smooth-cubic-line';
+import createCubicPathInterpolator from './path/cubic-path-interpolator';
+import toCubic from './path/smooth-cubic-line';
 
 var d3getComputedTextLength = () => utils.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
@@ -578,7 +579,7 @@ var d3_selectAllImmediate = (container, selector) => {
     });
 };
 
-var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter, smooth) => {
+var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter, type = 'linear') => {
     const pointStore = '__pathPoints__';
 
     return function (data) {
@@ -586,21 +587,14 @@ var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter, smo
             this[pointStore] = [];
         }
 
-        var pointsTo = utils.unique(data, idGetter).map(pointConvertor);
-        if (smooth) {
-            var cubic = getCubicLine(pointsTo);
-            pointsTo.forEach((pt, i) => {
-                if (i > 0) {
-                    pt.c1 = cubic[i * 3 - 1];
-                }
-                if (i < pointsTo.length - 2) {
-                    pt.c2 = cubic[i * 3 + 1];
-                }
-            });
-        }
+        var points = utils.unique(data, idGetter).map(pointConvertor);
+        var pointsTo = type === 'cubic' ? toCubic(points) : points;
         var pointsFrom = this[pointStore];
 
-        var interpolate = createPathPointsInterpolator(pointsFrom, pointsTo);
+        var interpolate = {
+            'linear': createPathPointsInterpolator,
+            'cubic': createCubicPathInterpolator
+        }[type](pointsFrom, pointsTo);
 
         return (t) => {
             if (t === 0) {

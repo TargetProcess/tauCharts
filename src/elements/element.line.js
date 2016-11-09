@@ -149,7 +149,13 @@ const Line = {
         baseModel.pathAttributesUpdateDone = pathAttributes;
         baseModel.pathTween = {
             attr: 'd',
-            fn: d3_createPathTween('d', d3LineBuilder, baseModel.toPoint, screenModel.id, guide.smooth)
+            fn: d3_createPathTween(
+                'd',
+                d3LineBuilder,
+                baseModel.toPoint,
+                screenModel.id,
+                guide.smooth ? 'cubic' : 'linear'
+            )
         };
 
         return baseModel;
