@@ -589,6 +589,14 @@ var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter, typ
 
         var points = utils.unique(data, idGetter).map(pointConvertor);
         var pointsTo = type === 'cubic' ? toCubic(points) : points;
+        // if (type === 'cubic') {
+        //     pointsTo = toCubic(points);
+        //     for (var i = 1; i < points.length; i++) {
+        //         pointsTo[i*3-2].isCubicControl=pointsTo[i*3-2].isCubicControl=
+        //     }
+        // } else {
+        //     pointsTo = points;
+        // }
         var pointsFrom = this[pointStore];
 
         var interpolate = {
