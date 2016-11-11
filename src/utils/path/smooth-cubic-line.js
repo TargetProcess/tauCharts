@@ -18,7 +18,7 @@ export default function getSmoothCubicLine(points, x = 'x', y = 'y') {
     }
 
     var curve = new Array((points.length - 1) * 3 + 1);
-    var p0, p1, p2, c1x, c1y, c2x, c2y;
+    var p0, p1, p2, c1x, c1y, c2x, c2y, dx1, dy1, dx2, dy2, tan;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
     }
@@ -28,23 +28,26 @@ export default function getSmoothCubicLine(points, x = 'x', y = 'y') {
         p2 = points[i];
         c1x = interpolateValue(p0[x], p1[x], 2 / 3);
         c2x = interpolateValue(p1[x], p2[x], 1 / 3);
-        if ((p1[x] - p0[x]) * (p2[x] - p1[x]) === 0) {
-            c1y = interpolateValue(p0[y], p1[y], 2 / 3);
-            c2y = interpolateValue(p1[y], p2[y], 1 / 3);
-        } else if ((p1[y] - p0[y]) * (p2[y] - p1[y]) <= 0) {
+        dx1 = p1[x] - p0[x];
+        dy1 = p1[y] - p0[y];
+        dx2 = p2[x] - p1[x];
+        dy2 = p2[y] - p1[y];
+        if (dx1 * dx2 === 0) {
+            c1y = p1[y] - dy1 / 3;
+            c2y = p1[y] + dy2 / 3;
+        } else if (dy1 * dy2 <= 0) {
             c1y = p1[y];
             c2y = p1[y];
         } else {
-            c1y = p1[y] - interpolateValue(
-                p1[y] - p0[y],
-                (p2[y] - p1[y]) / (p2[x] - p1[x]) * (p1[x] - p0[x]),
-                1 / 2
-            ) / 3;
-            c2y = p1[y] + interpolateValue(
-                p2[y] - p1[y],
-                (p1[y] - p0[y]) / (p1[x] - p0[x]) * (p2[x] - p1[x]),
-                1 / 2
-            ) / 3;
+            // NOTE: Limit tangent so that curve never exceeds anchors.
+            tan = (dy1 < 0 ? Math.max : Math.min)(
+                (dy1 / dx1 + dy2 / dx2) / 2,
+                3 * dy1 / dx1,
+                3 * dy2 / dx2
+            );
+
+            c1y = p1[y] - tan * dx1 / 3;
+            c2y = p1[y] + tan * dx2 / 3;
         }
         curve[i * 3 - 4] = {[x]: c1x, [y]: c1y};
         curve[i * 3 - 2] = {[x]: c2x, [y]: c2y};
