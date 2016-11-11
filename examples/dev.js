@@ -32,64 +32,6 @@
     // NOTE: Filter specs here.
     //
     function filterSpecs(allSpecs) {
-
-        // return [{
-        //     // type:'stacked-area',
-        //     type:'line',
-        //     x:'x',
-        //     y:'y',
-        //     color:'t',
-        //     // size:'r',
-        //     data:[
-        //         // {y:18,t:'A'},
-        //         // {y:0.01,t:'B'}
-
-        //         // {x:1,y:10,t:'a'},
-        //         // // {x:2,y:30,t:'a'},
-        //         // {x:3,y:35,t:'a'},
-        //         // {x:4,y:5,t:'a'},
-        //         // {x:5,y:10,t:'a'},
-        //         // {x:1,y:0,t:'b'},
-        //         // {x:2,y:30,t:'b'},
-        //         // {x:3,y:20,t:'b'},
-        //         // {x:5,y:50,t:'b'}
-
-        //         {x:1,y:35,t:'a',r:10},
-        //         // {x:1.95,y:15,t:'a',r:10},
-        //         {x:2,y:15,t:'a',r:40},
-        //         {x:3,y:20,t:'a',r:10},
-        //         {x:4,y:20,t:'a',r:5},
-        //         {x:5,y:35,t:'a',r:20},
-        //         {x:5.01,y:35.01,t:'a',r:80},
-        //         {x:5.02,y:35.02,t:'a',r:20},
-        //         {x:7,y:40,t:'a',r:20},
-        //         {x:7.05,y:40,t:'a',r:80},
-        //         {x:1,y:20,t:'b'},
-        //         // {x:2,y:30,t:'b'},
-        //         {x:3,y:35,t:'b'},
-        //         {x:1,y:10,t:'c'},
-        //         {x:2,y:35,t:'c'},
-        //         {x:3,y:35,t:'c'},
-
-        //         // {x:1,y:0,t:'a'},
-        //         // {x:2,y:3,t:'a'},
-        //         // {x:3,y:5,t:'a'},
-        //         // {x:4,y:6,t:'a'},
-        //         // {x:5,y:6,t:'a'},
-        //         // {x:6,y:5,t:'a'},
-        //         // {x:7,y:3,t:'a'},
-        //         // {x:8,y:0,t:'a'},
-        //     ],
-        //     // guide:{
-        //     //     showAnchors:'always',
-        //     //    y:{ nice:false}
-        //     // }
-        //     // dimensions: {
-        //     //     y: { 'type': 'measure', 'scale': 'linear' },
-        //     //     t: { 'type': 'category', 'scale': 'ordinal' }
-        //     // }
-        // }];
-
         return allSpecs;
     };
 
@@ -338,7 +280,7 @@
         var createCheckbox = function (name) {
             var node = createElement(
                 '<label><input type="checkbox" value="{{name}}"/>{{name}}</label>',
-                { name: name }
+                {name: name}
             );
             return {
                 node: node,
