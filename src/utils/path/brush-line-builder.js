@@ -34,7 +34,7 @@ export function getBrushCurve(points) {
 
 function getCircle(x, y, r) {
     return [
-        `M${x},${y - radius}`,
+        `M${x},${y - r}`,
         `A${r},${r} 0 0 1`,
         `${x},${y + r}`,
         `A${r},${r} 0 0 1`,
