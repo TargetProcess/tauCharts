@@ -81,7 +81,7 @@ const Area = {
                     };
                 })
                 .sort((a, b) => (a.dist - b.dist)) // asc
-            [0];
+                [0];
 
             return nearest.data;
         };

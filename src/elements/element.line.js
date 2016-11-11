@@ -120,7 +120,7 @@ const Line = {
                     return [er, v0, v1];
                 })
                 .sort(by('0')) // find minimal distance to edge
-            [0]
+                [0]
                 .slice(1);
 
             return pair.sort(by('dist'))[0].data;

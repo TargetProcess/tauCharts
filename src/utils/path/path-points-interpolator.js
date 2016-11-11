@@ -1,10 +1,6 @@
 import {utils} from '../utils';
 
-export default function interpolatePathPoints(
-    pointsFrom,
-    pointsTo,
-    cartesianProps = [['x', 'y']]
-) {
+export default function interpolatePathPoints(pointsFrom, pointsTo) {
 
     // TODO: Continue unfinished transition of ending points.
     pointsFrom = pointsFrom.filter(d => !d.isInterpolated);
@@ -20,11 +16,7 @@ export default function interpolatePathPoints(
         }
 
         if (!interpolateIntermediate) {
-            interpolateIntermediate = interpolateIntermediatePoints(
-                pointsFrom,
-                pointsTo,
-                cartesianProps
-            );
+            interpolateIntermediate = interpolateIntermediatePoints(pointsFrom, pointsTo);
         }
 
         return interpolateIntermediate(t);
@@ -36,7 +28,7 @@ export default function interpolatePathPoints(
  * remains the same and added or excluded points are situated between
  * existing points.
  */
-function interpolateIntermediatePoints(pointsFrom, pointsTo, cartesianProps) {
+function interpolateIntermediatePoints(pointsFrom, pointsTo) {
     var intermediate = [];
     var remainingPoints = [];
     var changingPoints = [];
@@ -74,8 +66,7 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo, cartesianProps) {
                 var interpolated = interpolateEnding({
                     t, polyline,
                     decreasing,
-                    rightToLeft,
-                    cartesianProps
+                    rightToLeft
                 });
                 if (decreasing === rightToLeft) {
                     interpolated.shift();
@@ -103,8 +94,7 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo, cartesianProps) {
             var filledPolyline = fillSmallerPolyline({
                 smallerPolyline,
                 biggerPolyline,
-                decreasing,
-                cartesianProps
+                decreasing
             });
             var biggerInnerPoints = biggerPolyline.slice(1, biggerPolyline.length - 1);
             var filledInnerPoints = filledPolyline.slice(1, filledPolyline.length - 1);
@@ -170,8 +160,7 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo, cartesianProps) {
                     t,
                     polyline,
                     decreasing,
-                    rightToLeft,
-                    cartesianProps
+                    rightToLeft
                 }).slice(1);
                 points.forEach(d => {
                     d.positionIsBeingChanged = true;
@@ -268,15 +257,6 @@ function interpolateValue(a, b, t) {
     return b;
 }
 
-function cubicValue(a, c1, c2, b, t) {
-    return (
-        a * (1 - t) * (1 - t) * (1 - t) +
-        3 * c1 * (1 - t) * (1 - t) * t +
-        3 * c2 * (1 - t) * t * t +
-        b * t * t * t
-    );
-}
-
 function interpolatePoint(a, b, t) {
     if (a === b) {
         return b;
@@ -284,23 +264,6 @@ function interpolatePoint(a, b, t) {
     var c = {};
     var props = utils.unique(Object.keys(a), Object.keys(b));
     props.forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
-    c.id = b.id;
-    return c;
-}
-
-function interpolateCubicPoint(a, b, t, cartesianProps) {
-    if (a === b) {
-        return b;
-    }
-    var c = {};
-    var props = utils.unique(Object.keys(a), Object.keys(b));
-    props.forEach((k) => {
-        if (cartesianProps.indexOf(k) >= 0) {
-            c[k] = cubicValue(a[k], a.c2[k], b.c1[k], b[k], t);
-        } else {
-            c[k] = interpolateValue(a[k], b[k], t);
-        }
-    });
     c.id = b.id;
     return c;
 }
@@ -314,7 +277,7 @@ function interpolatePoints(pointsFrom, pointsTo, t) {
  * Returns a polyline with points that move along line
  * from start point to full line (or vice versa).
  */
-function interpolateEnding({t, polyline, decreasing, rightToLeft, cartesianProps}) {
+function interpolateEnding({t, polyline, decreasing, rightToLeft}) {
 
     var reverse = Boolean(decreasing) !== Boolean(rightToLeft);
 
@@ -355,11 +318,10 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft, cartesianProps
         var result = line.slice(0, existingCount);
         if (q < 1) {
             var qi = (q * (line.length - 1)) % 1;
-            var midPt = interpolateCubicPoint(
+            var midPt = interpolatePoint(
                 line[existingCount - 1],
                 line[existingCount],
-                qi,
-                cartesianProps
+                qi
             );
             push(result, utils.range(tempCount).map((i) => Object.assign(
                 {}, midPt,
@@ -385,7 +347,7 @@ function interpolateEnding({t, polyline, decreasing, rightToLeft, cartesianProps
  * Returns a polyline, filled with points, so that number of points
  * becomes the same on both start and end polylines.
  */
-function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing, cartesianProps}) {
+function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing}) {
 
     var smallerSegCount = smallerPolyline.length - 1;
     var biggerSegCount = biggerPolyline.length - 1;
@@ -393,8 +355,6 @@ function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing, carte
     var restPointsCount = biggerSegCount % smallerSegCount;
     var segmentsPointsCount = utils.range(smallerSegCount)
         .map(i => (minSegmentPointsCount + Number(i < restPointsCount)));
-
-    cartesianProps = utils.flatten(cartesianProps);
 
     var result = [smallerPolyline[0]];
     var smallPtIndex = 1;
@@ -407,11 +367,10 @@ function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing, carte
                     newPt.id = biggerPolyline[result.length].id;
                 }
             } else {
-                newPt = interpolateCubicPoint(
+                newPt = interpolatePoint(
                     smallerPolyline[smallPtIndex - 1],
                     smallerPolyline[smallPtIndex],
-                    (i / (segPtCount - 1)),
-                    cartesianProps
+                    (i / (segPtCount - 1))
                 );
                 newPt.id = biggerPolyline[result.length].id;
                 if (decreasing) {
