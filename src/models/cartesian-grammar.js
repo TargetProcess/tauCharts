@@ -2,8 +2,6 @@ import {utils} from '../utils/utils';
 import {TauChartError as Error, errorCodes} from './../error';
 
 const delimiter = '(@taucharts@)';
-const synthetic = 'taucharts_synthetic_record';
-const syntheticPoints = {};
 
 export class CartesianGrammar {
 
@@ -40,26 +38,35 @@ export class CartesianGrammar {
         }
 
         this.order = model.order || createFunc(0);
+        this.data = model.data || (() => ([]));
     }
 
     toScreenModel() {
         var flip = this.flip;
         var iff = ((statement, yes, no) => statement ? yes : no);
-        var m = this;
+        var grammarModel = this;
         return {
             flip,
-            id: m.id,
-            x: iff(flip, m.yi, m.xi),
-            y: iff(flip, m.xi, m.yi),
-            x0: iff(flip, m.y0, m.xi),
-            y0: iff(flip, m.xi, m.y0),
-            size: m.size,
-            group: m.group,
-            order: m.order,
-            label: m.label,
-            color: (d) => m.scaleColor.toColor(m.color(d)),
-            class: (d) => m.scaleColor.toClass(m.color(d)),
-            model: m
+            id: grammarModel.id,
+            x: iff(flip, grammarModel.yi, grammarModel.xi),
+            y: iff(flip, grammarModel.xi, grammarModel.yi),
+            x0: iff(flip, grammarModel.y0, grammarModel.xi),
+            y0: iff(flip, grammarModel.xi, grammarModel.y0),
+            size: grammarModel.size,
+            group: grammarModel.group,
+            order: grammarModel.order,
+            label: grammarModel.label,
+            color: (d) => grammarModel.scaleColor.toColor(grammarModel.color(d)),
+            class: (d) => grammarModel.scaleColor.toClass(grammarModel.color(d)),
+            model: grammarModel,
+            toFibers: () => {
+                const data = grammarModel.data();
+                const groups = utils.groupBy(data, grammarModel.group);
+                return (Object
+                    .keys(groups)
+                    .sort((a, b) => grammarModel.order(a) - grammarModel.order(b))
+                    .reduce((memo, k) => memo.concat([groups[k]]), []));
+            }
         };
     }
 
@@ -130,32 +137,32 @@ export class CartesianGrammar {
     }
 
     static decorator_groupOrderByColor(model) {
-
-        var order = model.scaleColor.domain();
-
+        const order = model.scaleColor.domain();
         return {
             order: ((group) => {
-                var color = group.split(delimiter)[0];
-                var i = order.indexOf(color);
+                const color = group.split(delimiter)[0];
+                const i = order.indexOf(color);
                 return ((i < 0) ? Number.MAX_VALUE : i);
             })
         };
     }
 
-    static decorator_groupOrderByAvg(model, {dataSource}) {
+    static decorator_groupOrderByAvg(model) {
 
-        var avg = (arr) => {
+        const dataSource = model.data();
+
+        const avg = (arr) => {
             return arr.map(model.yi).reduce(((sum, i) => (sum + i)), 0) / arr.length;
         };
 
-        var groups = dataSource.reduce((memo, row) => {
+        const groups = dataSource.reduce((memo, row) => {
             var k = model.group(row);
             memo[k] = memo[k] || [];
             memo[k].push(row);
             return memo;
         }, {});
 
-        var order = Object
+        const order = Object
             .keys(groups)
             .map((k) => ([k, avg(groups[k])]))
             .sort((a, b) => (a[1] - b[1]))
@@ -163,7 +170,7 @@ export class CartesianGrammar {
 
         return {
             order: ((group) => {
-                var i = order.indexOf(group);
+                const i = order.indexOf(group);
                 return ((i < 0) ? Number.MAX_VALUE : i);
             })
         };
@@ -171,8 +178,10 @@ export class CartesianGrammar {
 
     static decorator_stack(model) {
 
-        var xScale = model.scaleX;
-        var yScale = model.scaleY;
+        const dataSource = model.data();
+
+        const xScale = model.scaleX;
+        const yScale = model.scaleY;
 
         if (yScale.discrete || (yScale.domain().some((x) => typeof (x) !== 'number'))) {
             throw new Error(
@@ -182,40 +191,81 @@ export class CartesianGrammar {
             );
         }
 
-        var createFnStack = (totalState) => {
+        const createFnStack = (totalState) => {
             return ((d) => {
-                var x = d[xScale.dim];
-                var y = d[yScale.dim];
+                const x = d[xScale.dim];
+                const y = d[yScale.dim];
 
-                var isPositive = d[synthetic] ? (d[synthetic + 'sign'] === 'positive') : (y >= 0);
-                var state = (isPositive ? totalState.positive : totalState.negative);
+                const state = ((y >= 0) ? totalState.positive : totalState.negative);
 
-                let prevStack = (state[x] || 0);
-                let nextStack = (prevStack + y);
+                const prevStack = (state[x] || 0);
+                const nextStack = (prevStack + y);
                 state[x] = nextStack;
 
-                return {isPositive, nextStack, prevStack};
+                return {nextStack, prevStack};
             });
         };
 
-        var stackYi = createFnStack({positive: {}, negative: {}});
-        var stackY0 = createFnStack({positive: {}, negative: {}});
+        const stackYi = createFnStack({positive: {}, negative: {}});
+        const stackY0 = createFnStack({positive: {}, negative: {}});
 
-        var memoize = ((fn) => utils.memoize(fn, model.id));
+        const memoize = ((fn) => utils.memoize(fn, model.id));
+
+        var trackedMinY = Number.MAX_VALUE;
+        var trackedMaxY = Number.MIN_VALUE;
+        const trackAndEval = (y) => {
+            trackedMinY = (y < trackedMinY) ? y : trackedMinY;
+            trackedMaxY = (y > trackedMaxY) ? y : trackedMaxY;
+            return yScale.value(y);
+        };
+
+        const nextYi = memoize((d) => trackAndEval(stackYi(d).nextStack));
+        const nextY0 = memoize((d) => trackAndEval(stackY0(d).prevStack));
+        const nextGroup = ((row) => (model.group(row) + '/' + ((row[yScale.dim] >= 0) ? 1 : -1)));
+
+        const groups = utils.groupBy(dataSource, nextGroup);
+        const nextData = (Object
+            .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b))
+            .reduce((memo, k) => memo.concat(groups[k]), []));
+
+        nextData.forEach((row) => {
+            nextYi(row);
+            nextY0(row);
+        });
+
+        yScale.fixup((yScaleConfig) => {
+
+            const newConf = {};
+
+            if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < trackedMaxY) {
+                newConf.max = trackedMaxY;
+            }
+
+            if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > trackedMinY) {
+                newConf.min = trackedMinY;
+            }
+
+            return newConf;
+        });
 
         return {
-            yi: memoize((d) => yScale.value(stackYi(d).nextStack)),
-            y0: memoize((d) => yScale.value(stackY0(d).prevStack))
+            group: nextGroup,
+            data: () => nextData,
+            yi: nextYi,
+            y0: nextY0
         };
     }
 
-    static decorator_size_distribute_evenly(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
+    static decorator_size_distribute_evenly(model, {minLimit, maxLimit, defMin, defMax}) {
 
-        var asc = ((a, b) => (a - b));
+        const dataSource = model.data();
 
-        var stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
+        const asc = ((a, b) => (a - b));
 
-        var xs = dataSource
+        const stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
+
+        const xs = dataSource
             .map((row) => model.xi(row))
             .sort(asc);
 
@@ -232,17 +282,17 @@ export class CartesianGrammar {
             .concat(Number.MAX_VALUE)
             [0]);
 
-        var minDiff = Math.min(diff, stepSize);
+        const minDiff = Math.min(diff, stepSize);
 
-        var currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
-        var curr = {
+        const currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        const curr = {
             minSize: currMinSize,
             maxSize: (typeof (maxLimit) === 'number') ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
         };
 
         model.scaleSize.fixup((prev) => {
 
-            var next = {};
+            const next = {};
 
             if (!prev.fixed) {
                 next.fixed = true;
@@ -255,44 +305,6 @@ export class CartesianGrammar {
             }
 
             return next;
-        });
-
-        return {};
-    }
-
-    static adjustYScale(model, {dataSource}) {
-
-        var minY = Number.MAX_VALUE;
-        var maxY = Number.MIN_VALUE;
-        var trackY = (y) => {
-            minY = (y < minY) ? y : minY;
-            maxY = (y > maxY) ? y : maxY;
-        };
-
-        var scaleY = model.scaleY.value;
-        model.scaleY.value = ((y) => {
-            trackY(y);
-            return scaleY(y);
-        });
-
-        dataSource.forEach((row) => {
-            model.yi(row);
-            model.y0(row);
-        });
-
-        model.scaleY.fixup((yScaleConfig) => {
-
-            var newConf = {};
-
-            if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
-                newConf.max = maxY;
-            }
-
-            if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
-                newConf.min = minY;
-            }
-
-            return newConf;
         });
 
         return {};
@@ -321,17 +333,19 @@ export class CartesianGrammar {
         return {};
     }
 
-    static adjustSigmaSizeScale(model, {dataSource, minLimit, maxLimit, defMin, defMax}) {
+    static adjustSigmaSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
 
-        var asc = ((a, b) => (a - b));
+        const dataSource = model.data();
 
-        var xs = dataSource.map(((row) => model.xi(row))).sort(asc);
+        const asc = ((a, b) => (a - b));
+
+        const xs = dataSource.map(((row) => model.xi(row))).sort(asc);
 
         var prev = xs[0];
-        var diffX = (xs
+        const diffX = (xs
             .slice(1)
             .map((curr) => {
-                var diff = (curr - prev);
+                const diff = (curr - prev);
                 prev = curr;
                 return diff;
             })
@@ -340,14 +354,14 @@ export class CartesianGrammar {
             .concat(Number.MAX_VALUE)
             [0]);
 
-        var stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
+        const stepSize = model.scaleX.discrete ? (model.scaleX.stepSize() / 2) : Number.MAX_VALUE;
 
-        var maxSize = Math.min(diffX, stepSize);
+        const maxSize = Math.min(diffX, stepSize);
 
-        var currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
-        var maxSizeLimit = (typeof (maxLimit) === 'number') ? maxLimit : defMax;
+        const currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        const maxSizeLimit = (typeof (maxLimit) === 'number') ? maxLimit : defMax;
 
-        var sigma = (x) => {
+        const sigma = (x) => {
             var Ab = (currMinSize + maxSizeLimit) / 2;
             var At = maxSizeLimit;
             var X0 = currMinSize;
@@ -356,14 +370,14 @@ export class CartesianGrammar {
             return Math.round(Ab + (At - Ab) / (1 + Math.exp(-(x - X0) / Wx)));
         };
 
-        var curr = {
+        const curr = {
             minSize: currMinSize,
             maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigma(maxSize)))
         };
 
         model.scaleSize.fixup((prev) => {
 
-            var next = {};
+            const next = {};
 
             if (!prev.fixed) {
                 next.fixed = true;
@@ -381,66 +395,10 @@ export class CartesianGrammar {
         return {};
     }
 
-    static toFibers(data, model) {
-        var groups = utils.groupBy(data, model.group);
-        return (Object
-            .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => memo.concat([groups[k]]), []));
-    }
+    static avoidBaseScaleOverflow(model) {
 
-    static isNonSyntheticRecord(row) {
-        return row[synthetic] !== true;
-    }
+        const dataSource = model.data();
 
-    static toStackedFibers(data, model) {
-
-        var dx = model.scaleX.dim;
-        var dy = model.scaleY.dim;
-        var dc = model.scaleColor.dim;
-        var ds = model.scaleSplit.dim;
-
-        var sortedData = data.sort((a, b) => model.xi(a) - model.xi(b));
-
-        var xs = utils.unique(sortedData.map((row) => row[dx]));
-
-        var sign = ((row) => ((row[dy] >= 0) ? 'positive' : 'negative'));
-
-        var gen = (x, fi, sign) => {
-            var id = model.id(fi);
-            var genId = [dx, dy, ds, dc, x, id, sign].join(' ');
-            if (syntheticPoints[genId]) {
-                return syntheticPoints[genId];
-            }
-            var r = {};
-            r[dx] = x;
-            r[dy] = 0;
-            r[ds] = fi[ds];
-            r[dc] = fi[dc];
-            r[synthetic] = true;
-            r[synthetic + 'sign'] = sign; // positive / negative
-            syntheticPoints[genId] = r;
-            return r;
-        };
-
-        var merge = (templateSorted, fiberSorted, sign) => {
-            var groups = utils.groupBy(fiberSorted, (row) => row[dx]);
-            var sample = fiberSorted[0];
-            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
-        };
-
-        var groups = utils.groupBy(sortedData, model.group);
-        return (Object
-            .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b))
-            .reduce((memo, k) => {
-                var bySign = utils.groupBy(groups[k], sign);
-                return Object.keys(bySign).reduce((memo, s) => memo.concat([merge(xs, bySign[s], s)]), memo);
-            },
-            []));
-    }
-
-    static avoidBaseScaleOverflow(model, {dataSource}) {
         if (model.scaleX.discrete) {
             return {};
         }

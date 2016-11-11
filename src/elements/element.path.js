@@ -57,7 +57,7 @@ const Path = {
         baseModel.matchRowInCoordinates = (rows, {x, y}) => {
 
             // d3.invert doesn't work for ordinal axes
-            var nearest = rows
+            const nearest = rows
                 .map((row) => {
                     var rx = baseModel.x(row);
                     var ry = baseModel.y(row);
@@ -84,11 +84,11 @@ const Path = {
             y: baseModel.y(d)
         });
 
-        var pathPoints = (x, y) => {
+        const pathPoints = (x, y) => {
             return ((fiber) => (fiber.map((d) => [x(d), y(d)].join(',')).join(' ')));
         };
 
-        var pathAttributes = {
+        const pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => baseModel.color(fiber[0])
         };
