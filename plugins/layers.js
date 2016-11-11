@@ -378,12 +378,17 @@
                         unit.type = xLayer.type ? ELEMENT_TYPE[xLayer.type] : unit.type;
                         unit.y = layerScaleName;
 
-                        var sizeScaleName = ('size_null' + layerNum);
-                        fullSpec.addScale(sizeScaleName, {type: 'size', source: '?', mid:1});
-                        unit.size = sizeScaleName;
+                        var isNotEmptySizeScale = (fullSpec.getScale(unit.size).dim);
+                        if (isPrimaryLayer && isNotEmptySizeScale) {
+                            // leave original size scale
+                        } else {
+                            var sizeScaleName = ('size_null' + layerNum);
+                            fullSpec.addScale(sizeScaleName, {type: 'size', source: '?', mid:1});
+                            unit.size = sizeScaleName;
+                        }
 
-                        var isFullScale = (fullSpec.getScale(unit.color).dim);
-                        if (isPrimaryLayer && isFullScale) {
+                        var isNotEmptyColorScale = (fullSpec.getScale(unit.color).dim);
+                        if (isPrimaryLayer && isNotEmptyColorScale) {
                             // leave original color scale
                         } else {
                             unit.color = self.fieldColorScale;
