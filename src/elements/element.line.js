@@ -5,7 +5,7 @@ import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-m
 import {utils} from '../utils/utils';
 import d3 from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import getBrushLine from '../utils/path/brush-line-builder';
+import {getBrushLine, getBrushCurve} from '../utils/path/brush-line-builder';
 import {getPolyline, getSmoothLine} from '../utils/path/line-builder';
 
 const Line = {
@@ -23,7 +23,7 @@ const Line = {
         config.guide = utils.defaults(
             (config.guide || {}),
             {
-                smooth: true,
+                smooth: false,
                 interpolate: 'linear'
             });
 
@@ -84,7 +84,7 @@ const Line = {
 
         const d3LineBuilder = isEmptySize ?
             guide.smooth ? getSmoothLine : getPolyline :
-            getBrushLine;
+            guide.smooth ? getBrushCurve : getBrushLine;
 
         const baseModel = BasePath.baseModel(screenModel);
 

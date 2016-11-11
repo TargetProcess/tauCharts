@@ -534,7 +534,7 @@ function splitCubicSegment(t, [p0, c0, c1, p1]) {
             if (k === 'x' || k === 'y') {
                 memo[k] = bezier(t, [p0[k], c0[k], c1[k], p1[k]]);
             } else {
-                memo[k] = interpolateValue(p0[k], p1[k]);
+                memo[k] = interpolateValue(p0[k], p1[k], t);
             }
             return memo;
         }, {});
