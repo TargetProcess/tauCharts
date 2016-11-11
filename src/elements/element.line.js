@@ -6,7 +6,7 @@ import {utils} from '../utils/utils';
 import d3 from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
 import {getBrushLine, getBrushCurve} from '../utils/path/brush-line-builder';
-import {getPolyline, getSmoothLine} from '../utils/path/line-builder';
+import {getPolyline, getCurve} from '../utils/path/line-builder';
 
 const Line = {
 
@@ -83,7 +83,7 @@ const Line = {
             });
 
         const d3LineBuilder = isEmptySize ?
-            guide.smooth ? getSmoothLine : getPolyline :
+            guide.smooth ? getCurve : getPolyline :
             guide.smooth ? getBrushCurve : getBrushLine;
 
         const baseModel = BasePath.baseModel(screenModel);

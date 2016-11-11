@@ -1,5 +1,3 @@
-import toCubic from './smooth-cubic-line';
-
 export function getPolyline(p) {
     if (p.length < 2) {
         return '';
@@ -11,7 +9,7 @@ export function getPolyline(p) {
     return result;
 }
 
-export function getSmoothLine(p) {
+export function getCurve(p) {
     if (p.length < 4) {
         return '';
     }
