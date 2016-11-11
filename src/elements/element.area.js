@@ -5,7 +5,7 @@ import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import {getPolyline, getSmoothLine} from '../utils/path/line-builder';
+import getAreaPath from '../utils/path/area-path-builder';
 
 const Area = {
 
@@ -18,12 +18,6 @@ const Area = {
 
         const config = BasePath.init(xConfig);
         const enableStack = config.stack;
-
-        config.guide = utils.defaults(
-            (config.guide || {}),
-            {
-                smooth: true
-            });
 
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
@@ -104,31 +98,6 @@ const Area = {
             y: baseModel.y(d)
         });
 
-        var getLine = guide.smooth ? getSmoothLine : getPolyline;
-        const areaPoints = (xi, yi, x0, y0) => {
-            return ((fiber) => {
-                const ways = fiber
-                    .reduce((memo, d) => {
-                        memo.dir.push([xi(d), yi(d)]);
-                        memo.rev.push([x0(d), y0(d)]);
-                        return memo;
-                    },
-                    {
-                        dir: [],
-                        rev: []
-                    });
-
-                if (fiber.length < 2) {
-                    return '';
-                }
-                var dir = getLine(ways.dir.map(d => ({x: d[0], y: d[1]})));
-                var rev = getLine(ways.rev.reverse().map(d => ({x: d[0], y: d[1]})));
-                var path = `${dir} L${rev.slice(1)} Z`;
-
-                return path;
-            });
-        };
-
         const pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => {
@@ -149,10 +118,9 @@ const Area = {
             attr: 'd',
             fn: d3_createPathTween(
                 'd',
-                areaPoints(d => d.x, d => d.y, d => d.x0, d => d.y0),
+                getAreaPath,
                 baseModel.toPoint,
-                screenModel.id,
-                guide.smooth
+                screenModel.id
             )
         };
 

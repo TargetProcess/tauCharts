@@ -580,9 +580,8 @@ function bezier(t, p) {
 }
 
 function getBezierPoint(t, ...p) {
-    var pt = {
+    return {
         x: bezier(t, p.map(p => p.x)),
         y: bezier(t, p.map(p => p.y))
     };
-    return pt;
 }
