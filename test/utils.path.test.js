@@ -52,8 +52,8 @@ define(function (require) {
                 expect(d.id).to.be.equal(id);
                 expect(d.isInterpolated).to.be.true;
                 expect(d.positionIsBeingChanged).to.be.true;
-                expect(d.x).to.be.closeTo(midX, 2);
-                expect(d.y).to.be.closeTo(midY, 2);
+                expect(d.x).to.be.closeTo(midX, 3);
+                expect(d.y).to.be.closeTo(midY, 3);
             };
 
             var interpolator3 = createInterpolator([], b);
@@ -160,9 +160,9 @@ define(function (require) {
                         var p = getPolygonPoints();
                         expect(p.length).to.equal(6);
                         expect(p[2].x - p[1].x).to.be.above(0);
-                        expect(p[2].x - p[1].x).to.be.closeTo(p[1].x - p[0].x, 2);
+                        expect(p[2].x - p[1].x).to.be.closeTo(p[1].x - p[0].x, 3);
                         expect(p[2].y - p[1].y).to.be.above(0);
-                        expect(p[2].y - p[1].y).to.be.closeTo(p[1].y - p[0].y, 2);
+                        expect(p[2].y - p[1].y).to.be.closeTo(p[1].y - p[0].y, 3);
 
                         testUtils.destroyCharts();
                         document.body.removeChild(testDiv);
