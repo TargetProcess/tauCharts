@@ -192,7 +192,8 @@ function getCubicInterpolator(pointsFrom, pointsTo) {
             if (indexFrom - prevIndexFrom > 3 || indexTo - prevIndexTo > 3) {
                 interpolators.push(getInnerInterpolator({
                     polylineFrom: pointsFrom.slice(prevIndexFrom, indexFrom + 1),
-                    polylineTo: pointsTo.slice(prevIndexTo, indexTo + 1)
+                    polylineTo: pointsTo.slice(prevIndexTo, indexTo + 1),
+                    isCubic: true
                 }));
             } else {
                 interpolators.push(getControlsBetweenRemainingInterpolator({
@@ -227,7 +228,8 @@ function getCubicInterpolator(pointsFrom, pointsTo) {
     )) {
         interpolators.push(getNonRemainingPathInterpolator({
             polylineFrom: pointsFrom.slice(0),
-            polylineTo: pointsTo.slice(0)
+            polylineTo: pointsTo.slice(0),
+            isCubic: true
         }));
     }
 
@@ -318,14 +320,14 @@ function getControlsBetweenRemainingInterpolator({polylineFrom, polylineTo}) {
     };
 }
 
-function getNonRemainingPathInterpolator({polylineFrom, polylineTo}) {
+function getNonRemainingPathInterpolator({polylineFrom, polylineTo, isCubic}) {
 
     var decreasing = polylineTo.length === 0;
     var rightToLeft = decreasing;
 
     var polyline = (decreasing ? polylineFrom : polylineTo);
     return (t) => {
-        var points = interpolateEnding({
+        var points = (isCubic ? interpolateCubicEnding : interpolateEnding)({
             t,
             polyline,
             decreasing,
@@ -527,7 +529,7 @@ function interpolateCubicEnding({t, polyline, decreasing, rightToLeft}) {
     })(
         (decreasing ? 1 - t : t),
         (reverse ? polyline.slice(0).reverse() : polyline)
-        );
+    );
     if (reverse) {
         result.reverse();
     }
@@ -697,7 +699,7 @@ function splitCubicSegment(t, [p0, c0, c1, p1]) {
         .reduce((memo, k) => {
             if (k === 'x' || k === 'y') {
                 memo[k] = bezier(t, [p0[k], c0[k], c1[k], p1[k]]);
-            } else {
+            } else if (k !== 'id') {
                 memo[k] = interpolateValue(p0[k], p1[k], t);
             }
             return memo;
