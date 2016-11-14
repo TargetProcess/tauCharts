@@ -122,7 +122,11 @@ function getInterpolator(pointsFrom, pointsTo) {
  */
 function getCubicInterpolator(pointsFrom, pointsTo) {
 
-    for (var i = 2; i < pointsTo.length - 1; i += 3) {
+    for (var i = 2; i < pointsFrom.length - 1; i += 3) {
+        pointsFrom[i - 1].isCubicControl = true;
+        pointsFrom[i].isCubicControl = true;
+    }
+    for (i = 2; i < pointsTo.length - 1; i += 3) {
         pointsTo[i - 1].isCubicControl = true;
         pointsTo[i].isCubicControl = true;
     }
@@ -366,7 +370,9 @@ function interpolatePoint(a, b, t) {
     var c = {};
     var props = utils.unique(Object.keys(a), Object.keys(b));
     props.forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
-    c.id = b.id;
+    if (b.id !== undefined) {
+        c.id = b.id;
+    }
     return c;
 }
 
