@@ -112,12 +112,12 @@ const Area = {
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathElement = 'path';
+        baseModel.pathElement = 'polygon';
 
         baseModel.pathTween = {
-            attr: 'd',
+            attr: 'points',
             fn: d3_createPathTween(
-                'd',
+                'points',
                 getAreaPath,
                 baseModel.toPoint,
                 screenModel.id

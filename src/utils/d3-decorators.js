@@ -592,8 +592,8 @@ var d3_createPathTween = (attr, pathStringBuilder, pointConvertor, idGetter, typ
         var pointsFrom = this[pointStore];
 
         var interpolate = {
-            'linear': createPathPointsInterpolator,
-            'cubic': createCubicPathInterpolator
+            linear: createPathPointsInterpolator,
+            cubic: createCubicPathInterpolator
         }[type](pointsFrom, pointsTo);
 
         return (t) => {

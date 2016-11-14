@@ -2,7 +2,7 @@ define(function (require) {
     var expect = require('chai').expect;
     var tauCharts = require('src/tau.charts');
     var createInterpolator = require('src/utils/path/path-points-interpolator').default;
-    var getBrushLine = require('src/utils/path/brush-line-builder').default;
+    var getBrushLine = require('src/utils/path/brush-line-builder').getBrushLine;
     var testUtils = require('testUtils');
 
     describe('path-points-interpolator', function() {

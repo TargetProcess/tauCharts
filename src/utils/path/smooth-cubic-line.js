@@ -7,11 +7,11 @@ export default function getSmoothCubicLine(points) {
             points[0],
             {
                 x: interpolate(points[0].x, points[1].x, 1 / 3),
-                y: interpolate(points[0].y, points[1].y, 1 / 3),
+                y: interpolate(points[0].y, points[1].y, 1 / 3)
             },
             {
                 x: interpolate(points[0].x, points[1].x, 2 / 3),
-                y: interpolate(points[0].y, points[1].y, 2 / 3),
+                y: interpolate(points[0].y, points[1].y, 2 / 3)
             },
             points[1]
         ];
@@ -22,7 +22,7 @@ export default function getSmoothCubicLine(points) {
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
     }
-    for (var i = 2; i < points.length; i++) {
+    for (i = 2; i < points.length; i++) {
         p0 = points[i - 2];
         p1 = points[i - 1];
         p2 = points[i];
@@ -74,5 +74,5 @@ export default function getSmoothCubicLine(points) {
 }
 
 function interpolate(a, b, t) {
-    return a + t * (b - a)
+    return a + t * (b - a);
 }

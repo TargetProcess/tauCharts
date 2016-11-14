@@ -3,7 +3,6 @@ import {BasePath} from './element.path.base';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {utils} from '../utils/utils';
-import d3 from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
 import {getBrushLine, getBrushCurve} from '../utils/path/brush-line-builder';
 import {getPolyline, getCurve} from '../utils/path/line-builder';

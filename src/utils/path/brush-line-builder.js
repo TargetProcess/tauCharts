@@ -134,7 +134,6 @@ function getCurveSegment(a, c1, c2, b) {
     var applyWidthCompensation = (pt, c1, c2, reverse) => {
         var a1 = getAngle(pt, c1);
         var a2 = getAngle(c1, c2);
-        console.log(Math.sin(a2 - a1));
         return getPolarPoint(
             pt,
             (

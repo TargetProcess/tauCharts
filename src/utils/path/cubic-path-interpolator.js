@@ -38,9 +38,10 @@ function interpolateIntermediatePoints(pointsFrom, pointsTo) {
     // Replace interpolated points sequence with straight segment
     // TODO: Continue unfinished transition of ending points.
     pointsFrom = pointsFrom.filter(d => !d.isInterpolated);
-    for (var i = pointsFrom.length - 2, d, p; i >= 0; i--) {
-        var p = pointsFrom[i + 1];
-        var d = pointsFrom[i];
+    var d, p;
+    for (i = pointsFrom.length - 2; i >= 0; i--) {
+        p = pointsFrom[i + 1];
+        d = pointsFrom[i];
         if (!d.isCubicControl && !p.isCubicControl) {
             pointsFrom.splice(
                 i + 1,
@@ -445,8 +446,8 @@ function fillSmallerPolyline({smallerPolyline, biggerPolyline, decreasing}) {
             }
             push(result, spl.slice(1));
         } else {
-            var newC0 = Object.assign({}, smallerPolyline[smallPtIndex - 2])
-            var newC1 = Object.assign({}, smallerPolyline[smallPtIndex - 1])
+            var newC0 = Object.assign({}, smallerPolyline[smallPtIndex - 2]);
+            var newC1 = Object.assign({}, smallerPolyline[smallPtIndex - 1]);
             var newPt = Object.assign({}, smallerPolyline[smallPtIndex]);
             if (!decreasing) {
                 newPt.id = biggerPolyline[result.length + 2].id;

@@ -1,10 +1,8 @@
-import {getPolyline} from './line-builder';
-
 export default function getAreaPath(points) {
     const ways = points
         .reduce((memo, d) => {
-            memo.dir.push({x: d.x, y: d.y});
-            memo.rev.unshift({x: d.x0, y: d.y0});
+            memo.dir.push(`${d.x},${d.y}`);
+            memo.rev.unshift(`${d.x0},${d.y0}`);
             return memo;
         },
         {
@@ -15,9 +13,7 @@ export default function getAreaPath(points) {
     if (points.length < 2) {
         return '';
     }
-    var dir = getPolyline(ways.dir);
-    var rev = getPolyline(ways.rev);
-    var path = `${dir} L${rev.slice(1)} Z`;
+    var path = `${ways.dir.join(' ')} ${ways.rev.join(' ')}`;
 
     return path;
 }
