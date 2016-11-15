@@ -24,7 +24,7 @@ module.exports = function (config) {
                 base: 'Chrome',
                 flags: [
                     '--no-sandbox',
-                    '--force-device-scale-factor=1'
+                    '--device-scale-factor=1'
                 ]
             }
         },
