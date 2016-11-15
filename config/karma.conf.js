@@ -22,7 +22,10 @@ module.exports = function (config) {
         customLaunchers: {
             ChromeTravisCI: {
                 base: 'Chrome',
-                flags: ['--no-sandbox']
+                flags: [
+                    '--no-sandbox',
+                    '--enable-use-zoom-for-dsf'
+                ]
             }
         },
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
