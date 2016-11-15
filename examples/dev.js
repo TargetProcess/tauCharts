@@ -32,6 +32,27 @@
     // NOTE: Filter specs here.
     //
     function filterSpecs(allSpecs) {
+        return [{
+            type:'line',
+            x:'x',
+            y:'y',
+            size:'s',
+            color:'t',
+            guide: {
+                smooth: true
+            },
+            data: [
+                {x:10,y:20,s:20,t:'a'},
+                {x:20,y:40,s:10,t:'a'},
+                {x:30,y:40,s:40,t:'a'},
+                {x:40,y:80,s:20,t:'a'},
+                {x:10,y:40,s:10,t:'b'},
+                {x:20,y:20,s:20,t:'b'},
+                {x:30,y:80,s:10,t:'b'},
+                {x:40,y:20,s:40,t:'b'},
+            ]
+        }]
+
         return allSpecs;
     };
 
