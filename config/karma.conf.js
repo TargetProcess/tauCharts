@@ -24,6 +24,8 @@ module.exports = function (config) {
                 base: 'Chrome',
                 flags: [
                     '--no-sandbox',
+                    '--window-size=1024x768',
+                    '--window-position=0,0',
                     '--device-scale-factor=1'
                 ]
             }
