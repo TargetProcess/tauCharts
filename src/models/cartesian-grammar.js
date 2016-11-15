@@ -17,7 +17,7 @@ export class CartesianGrammar {
 
         var sid = this.scaleIdentity;
         this.flip = model.flip || false;
-        this.id = ((row) => sid.value(row[sid.dim], row));
+        this.id = model.id || ((row) => sid.value(row[sid.dim], row));
         this.xi = model.xi || ((d) => model.scaleX.value(d[model.scaleX.dim]));
         this.yi = model.yi || ((d) => model.scaleY.value(d[model.scaleY.dim]));
         this.color = model.color || ((d) => model.scaleColor.value(d[model.scaleColor.dim]));
