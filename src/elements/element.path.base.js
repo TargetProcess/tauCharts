@@ -11,9 +11,7 @@ const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
 const BasePath = {
 
     grammarRuleFillGaps: (model) => {
-
         const data = model.data();
-
         const groups = utils.groupBy(data, model.group);
         const fibers = (Object
             .keys(groups)
@@ -25,13 +23,16 @@ const BasePath = {
         const dc = model.scaleColor.dim;
         const ds = model.scaleSplit.dim;
         const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
+
         const gen = (x, sampleRow, sign) => {
+            const genId = [x, model.id(sampleRow), sign].join(' ');
             return {
                 [dx]: x,
                 [dy]: sign * (1e-10),
                 [ds]: sampleRow[ds],
                 [dc]: sampleRow[dc],
-                [synthetic]: true
+                [synthetic]: true,
+                [synthetic + 'id']: genId
             };
         };
 
@@ -54,7 +55,8 @@ const BasePath = {
             }, []);
 
         return {
-            data: () => nextData
+            data: () => nextData,
+            id: (row) => ((row[synthetic]) ? row[synthetic + 'id'] : model.id(row))
         };
     },
 
