@@ -24,7 +24,7 @@ module.exports = function (config) {
                 base: 'Chrome',
                 flags: [
                     '--no-sandbox',
-                    '--enable-use-zoom-for-dsf'
+                    '--force-device-scale-factor=1'
                 ]
             }
         },
