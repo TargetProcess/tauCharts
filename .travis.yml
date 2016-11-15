@@ -1,17 +1,13 @@
-sudo: false
+sudo: required
 notifications:
   slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
 language: node_js
-env:
-  - CXX=g++-4.8
 addons:
   apt:
     sources:
       - google-chrome
-      - ubuntu-toolchain-r-test
     packages:
       - google-chrome-stable
-      - g++-4.8
 node_js:
   - "5.2.0"
 before_install:
