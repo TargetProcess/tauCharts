@@ -156,7 +156,8 @@ define(function (require) {
                 {id: 5, x: 60, y: 0},
                 {id: 3, x: 90, y: 0},
                 {id: 6, x: 180, y: 0},
-                {id: 7, x: 270, y: 0}
+                {id: 7, x: 270, y: 0},
+                {id: 8, x: 360, y: 0}
             ]);
 
             var e = toCurve([
@@ -219,9 +220,12 @@ define(function (require) {
                 {isCubicControl: true, x: 140, y: 0, positionIsBeingChanged: true},
                 {isCubicControl: true, x: 175, y: 0, positionIsBeingChanged: true},
                 {id: 6, x: 210, y: 0, positionIsBeingChanged: true},
-                {isCubicControl: true, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
-                {isCubicControl: true, x:210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
-                {id: 7, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true}
+                {isCubicControl: true, x: 227.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x:245, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 7, x: 262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x:262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 8, x: 262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true}
             ]);
 
             var interpolate5 = createInterpolator(d, c, 'cubic');
@@ -240,9 +244,12 @@ define(function (require) {
                 {isCubicControl: true, x: 140, y: 0, positionIsBeingChanged: true},
                 {isCubicControl: true, x: 175, y: 0, positionIsBeingChanged: true},
                 {id: 6, x: 210, y: 0, positionIsBeingChanged: true},
-                {isCubicControl: true, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
-                {isCubicControl: true, x:210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
-                {id: 7, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true}
+                {isCubicControl: true, x: 227.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x:245, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 7, x: 262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x:262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 8, x: 262.5, y: 0, isInterpolated: true, positionIsBeingChanged: true}
             ]);
 
             var interpolate6 = createInterpolator(result5, e, 'cubic');
