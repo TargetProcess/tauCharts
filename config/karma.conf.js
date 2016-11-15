@@ -23,10 +23,7 @@ module.exports = function (config) {
             ChromeTravisCI: {
                 base: 'Chrome',
                 flags: [
-                    '--no-sandbox',
-                    '--window-size=1024x768',
-                    '--window-position=0,0',
-                    '--device-scale-factor=1'
+                    '--no-sandbox'
                 ]
             }
         },
