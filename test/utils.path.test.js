@@ -150,6 +150,20 @@ define(function (require) {
                 {id: 3, x: 120, y: 0}
             ]);
 
+            var d = toCurve([
+                {id: 1, x: 0, y: 0},
+                {id: 4, x: 30, y: 0},
+                {id: 5, x: 60, y: 0},
+                {id: 3, x: 90, y: 0},
+                {id: 6, x: 180, y: 0},
+                {id: 7, x: 270, y: 0}
+            ]);
+
+            var e = toCurve([
+                {id: 1, x: 0, y: 0},
+                {id: 3, x: 210, y: 0}
+            ]);
+
             var interpolate = createInterpolator(a, b, 'cubic');
             expect(interpolate(0.5)).to.deep.equal([
                 {id: 1, x: -7.5, y: 67.5, isInterpolated: true, positionIsBeingChanged: true},
@@ -188,6 +202,61 @@ define(function (require) {
                 {isCubicControl: true, x: 75, y: 0, isInterpolated: true, positionIsBeingChanged: true},
                 {isCubicControl: true, x: 90, y: 0, isInterpolated: true, positionIsBeingChanged: true},
                 {id: 3, x: 105, y: 0, isInterpolated: true, positionIsBeingChanged: true}
+            ]);
+
+            var interpolate4 = createInterpolator(c, d, 'cubic');
+            expect(interpolate4(0.5)).to.deep.equal([
+                {id: 1, x: 0, y: 0},
+                {isCubicControl: true, x: 10, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 20, y: 0, positionIsBeingChanged: true},
+                {id: 4, x: 30, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 40, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 50, y: 0, positionIsBeingChanged: true},
+                {id: 5, x: 60, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 75, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 90, y: 0, positionIsBeingChanged: true},
+                {id: 3, x: 105, y: 0},
+                {isCubicControl: true, x: 140, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 175, y: 0, positionIsBeingChanged: true},
+                {id: 6, x: 210, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x:210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 7, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true}
+            ]);
+
+            var interpolate5 = createInterpolator(d, c, 'cubic');
+            var result5 = interpolate5(0.5);
+            expect(result5).to.deep.equal([
+                {id: 1, x: 0, y: 0},
+                {isCubicControl: true, x: 10, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 20, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 4, x: 30, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 40, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 50, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 5, x: 60, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 75, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 90, y: 0, positionIsBeingChanged: true},
+                {id: 3, x: 105, y: 0},
+                {isCubicControl: true, x: 140, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 175, y: 0, positionIsBeingChanged: true},
+                {id: 6, x: 210, y: 0, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x:210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 7, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true}
+            ]);
+
+            var interpolate6 = createInterpolator(result5, e, 'cubic');
+            expect(interpolate6(0.5)).to.deep.equal([
+                {id: 1, x: 0, y: 0},
+                {isCubicControl: true, x: 37.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 45, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 5, x: 82.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 107.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 132.5, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 3, x: 157.5, y: 0},
+                {isCubicControl: true, x: 183.75, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {isCubicControl: true, x: 210, y: 0, isInterpolated: true, positionIsBeingChanged: true},
+                {id: 6, x: 236.25, y: 0, isInterpolated: true, positionIsBeingChanged: true}
             ]);
         });
 
