@@ -484,11 +484,7 @@ function interpolateCubicEnding({t, polyline, decreasing, rightToLeft}) {
             }
             var passedDistance = t * totalDistance;
             for (i = 1; i < distance.length; i++) {
-                if (passedDistance === distance[i]) {
-                    q = (i / (pointsCount - 1));
-                    break;
-                }
-                if (passedDistance < distance[i]) {
+                if (passedDistance <= distance[i]) {
                     q = Math.min(1, (i - 1 +
                         (passedDistance - distance[i - 1]) /
                         (distance[i] - distance[i - 1])) /
