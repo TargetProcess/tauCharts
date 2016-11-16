@@ -125,9 +125,6 @@ define(function (require) {
 
     describe('Chart fit model', function () {
 
-        console.info('Device pixel ratio is ' + devicePixelRatio);
-        console.info('Window size is ' + window.innerWidth + 'x' + window.innerHeight);
-
         var div1;
 
         var createDiv = function () {
