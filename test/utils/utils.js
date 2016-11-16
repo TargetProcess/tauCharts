@@ -210,8 +210,15 @@ define(function (require) {
             });
     }
 
+    function roundNumbersInString(str, fractionDigits) {
+        return str.replace(/-?\d+\.?\d*/g, function (match) {
+            return parseFloat(match).toFixed(fractionDigits);
+        });
+    }
+
     return {
         toLocalDate: toLocalDate,
+        roundNumbersInString: roundNumbersInString,
         describePlot: describePlot,
         describeChart: describeChart,
         getDots: getDots,

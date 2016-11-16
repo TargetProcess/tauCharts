@@ -1,10 +1,11 @@
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import {CSS_PREFIX} from '../const';
 import {utils} from '../utils/utils';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {d3_createPathTween} from '../utils/d3-decorators';
+import getAreaPath from '../utils/path/area-path-builder';
 
 const Area = {
 
@@ -97,23 +98,6 @@ const Area = {
             y: baseModel.y(d)
         });
 
-        const areaPoints = (xi, yi, x0, y0) => {
-            return ((fiber) => {
-                const ways = fiber
-                    .reduce((memo, d) => {
-                        memo.dir.push([xi(d), yi(d)]);
-                        memo.rev.push([x0(d), y0(d)]);
-                        return memo;
-                    },
-                    {
-                        dir: [],
-                        rev: []
-                    });
-
-                return [].concat(ways.dir).concat(ways.rev.reverse()).join(' ');
-            });
-        };
-
         const pathAttributes = {
             fill: (fiber) => baseModel.color(fiber[0]),
             stroke: (fiber) => {
@@ -134,7 +118,7 @@ const Area = {
             attr: 'points',
             fn: d3_createPathTween(
                 'points',
-                areaPoints(d => d.x, d => d.y, d => d.x0, d => d.y0),
+                getAreaPath,
                 baseModel.toPoint,
                 screenModel.id
             )

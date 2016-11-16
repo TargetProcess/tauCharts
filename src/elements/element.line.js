@@ -3,9 +3,9 @@ import {BasePath} from './element.path.base';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {utils} from '../utils/utils';
-import {default as d3} from 'd3';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import getBrushLine from '../utils/path/brush-line-builder';
+import {getBrushLine, getBrushCurve} from '../utils/path/brush-line-builder';
+import {getPolyline, getCurve} from '../utils/path/line-builder';
 
 const Line = {
 
@@ -22,6 +22,7 @@ const Line = {
         config.guide = utils.defaults(
             (config.guide || {}),
             {
+                smooth: false,
                 interpolate: 'linear'
             });
 
@@ -81,8 +82,8 @@ const Line = {
             });
 
         const d3LineBuilder = isEmptySize ?
-            d3.svg.line().interpolate(guide.interpolate).x(d => d.x).y(d => d.y) :
-            getBrushLine;
+            guide.smooth ? getCurve : getPolyline :
+            guide.smooth ? getBrushCurve : getBrushLine;
 
         const baseModel = BasePath.baseModel(screenModel);
 
@@ -146,7 +147,13 @@ const Line = {
         baseModel.pathAttributesUpdateDone = pathAttributes;
         baseModel.pathTween = {
             attr: 'd',
-            fn: d3_createPathTween('d', d3LineBuilder, baseModel.toPoint, screenModel.id)
+            fn: d3_createPathTween(
+                'd',
+                d3LineBuilder,
+                baseModel.toPoint,
+                screenModel.id,
+                guide.smooth ? 'cubic' : 'linear'
+            )
         };
 
         return baseModel;
