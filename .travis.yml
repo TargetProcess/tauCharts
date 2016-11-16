@@ -7,6 +7,13 @@ node_js:
 notifications:
   slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+
 before_install:
   - export CHROME_BIN=/usr/bin/google-chrome
   - export DISPLAY=:99.0
