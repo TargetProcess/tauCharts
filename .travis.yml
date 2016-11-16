@@ -1,5 +1,4 @@
-sudo: required
-dist: trusty
+sudo: false
 language: node_js
 node_js:
   - "5.2.0"
@@ -7,11 +6,14 @@ node_js:
 notifications:
   slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
 
+addons:
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+
 before_install:
-  - export CHROME_BIN=/usr/bin/google-chrome
+  - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -dpi 72 -ac +extension GLX +render -noreset
-  - sudo apt-get update
-  - sudo apt-get install -y libappindicator1 fonts-liberation
-  - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  - sudo dpkg -i google-chrome*.deb
