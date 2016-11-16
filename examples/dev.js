@@ -70,6 +70,19 @@
 
     var LAZY_RENDERING = true;
 
+    var pluginConfigs = {
+        'exportTo': {
+            cssPaths: [
+                '../css/tauCharts.default.css',
+                '../css/export.default.css',
+                '../css/legend.default.css',
+                '../css/trendline.default.css',
+                '../css/annotations.default.css',
+                '../css/quick-filter.default.css'
+            ]
+        }
+    };
+
 
     function DevApp(paths) {
         this._specs = [];
@@ -213,7 +226,8 @@
                 s.plugins = s.plugins || [];
                 s.plugins.splice(0);
                 settings.plugins.forEach(function (p) {
-                    s.plugins.push(tauCharts.api.plugins.get(p)());
+                    var config = pluginConfigs[p];
+                    s.plugins.push(tauCharts.api.plugins.get(p)(config));
                 });
             }
 
