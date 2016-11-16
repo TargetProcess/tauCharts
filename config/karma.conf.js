@@ -10,15 +10,23 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            {pattern: 'css/tooltip.default.css', included: true},
-            {pattern: 'css/tauCharts.default.css', included: true},
-            {pattern: 'test/utils/test.css', included: true},
-            {pattern: 'test/utils/polyfills.js', included: true},
-            {pattern: 'node_modules/d3/d3.js', included: true},
-            {pattern: 'css/base.css', included: true},
+            'css/tooltip.default.css',
+            'css/tauCharts.default.css',
+            'test/utils/test.css',
+            'test/utils/polyfills.js',
+            'node_modules/d3/d3.js',
+            'css/base.css',
             'test/tests-main.js'
         ],
-        browsers: ['PhantomJS'],
+        browsers: process.env.TRAVIS ? ['ChromeTravisCI'] : ['Chrome'],
+        customLaunchers: {
+            ChromeTravisCI: {
+                base: 'Chrome',
+                flags: [
+                    '--no-sandbox'
+                ]
+            }
+        },
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
         reporters: ['coverage', 'spec', 'coveralls'],
         coverageReporter: {
