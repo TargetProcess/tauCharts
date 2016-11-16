@@ -94,7 +94,10 @@ export class LayerLabels {
 
                 // Prevent displaying a sequence of equal labels
                 absFiber = absFiber.filter((d, i, fib) => {
-                    return i === fib.length - 1 || d.label !== fib[i + 1].label;
+                    return (
+                        i === fib.length - 1 ||
+                        d.label !== fib[i + 1].label
+                    );
                 });
 
                 memo.text = memo.text.concat(absFiber);
