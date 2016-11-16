@@ -9,7 +9,7 @@ var ensureDir = function (absolutePath) {
 };
 var coverage =  {
     test: /\.js$/,
-    exclude: /test|addons|plugins|node_modules|bower_components|libs\//,
+    exclude: /test|addons|plugins|node_modules|bower_components|libs\/|src\/utils\/polyfills\.js/,
     loader: 'isparta-loader'
 };
 
