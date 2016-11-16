@@ -91,6 +91,15 @@ export class LayerLabels {
                         color: m.color(row)
                     };
                 });
+
+                // Prevent displaying a sequence of equal labels
+                absFiber = absFiber.filter((d, i, fib) => {
+                    return (
+                        (i === fib.length - 1) ||
+                        (d.label !== fib[i + 1].label)
+                    );
+                });
+
                 memo.text = memo.text.concat(absFiber);
                 memo.edges = memo.edges.concat(readBy3(absFiber, (prev, curr, next) => {
 
