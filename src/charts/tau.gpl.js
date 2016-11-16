@@ -4,6 +4,29 @@ import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
 var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
 
+const MixinModel = function (prev) {
+    Object
+        .keys(prev)
+        .forEach((k) => this[k] = prev[k]);
+};
+
+const compose = (prev, updates = {}) => {
+    return (Object
+        .keys(updates)
+        .reduce((memo, propName) => {
+            memo[propName] = updates[propName];
+            return memo;
+        },
+        (new MixinModel(prev))));
+};
+
+const evalGrammarRules = (grammarRules, initialGrammarModel) => {
+    return grammarRules.reduce(
+        (prevModel, rule) => compose(prevModel, rule(prevModel, {})),
+        (initialGrammarModel)
+    );
+};
+
 export class GPL extends Emitter {
 
     constructor(config, scalesRegistryInstance, unitsRegistry) {
@@ -83,9 +106,9 @@ export class GPL extends Emitter {
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
-            const grammarModel = instance.evalGrammarRules(initialModel);
-            instance.adjustScales(grammarModel);
+            const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+            const grammarModel = evalGrammarRules(instance.evalGrammarRules(), initialModel);
+            evalGrammarRules(instance.adjustScales(), grammarModel);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
 
             return instance;
@@ -106,8 +129,8 @@ export class GPL extends Emitter {
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
-            const grammarModel = instance.evalGrammarRules(initialModel);
+            const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+            const grammarModel = evalGrammarRules(instance.evalGrammarRules(), initialModel);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
             instance.parentUnit = parentInstance;
             instance.addInteraction();

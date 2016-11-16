@@ -57,7 +57,6 @@ const Interval = {
 
         config.transformRules = [
             config.flip && CartesianGrammar.decorator_flip,
-            CartesianGrammar.decorator_groupOrderByColor,
             config.stack && CartesianGrammar.decorator_stack,
             enableColorPositioning && CartesianGrammar.decorator_positioningByColor
         ]

@@ -1,84 +1,7 @@
 import {utils} from '../utils/utils';
 import {TauChartError as Error, errorCodes} from './../error';
 
-const delimiter = '(@taucharts@)';
-
 export class CartesianGrammar {
-
-    constructor(model) {
-        var createFunc = ((x) => (() => x));
-        this.scaleX = model.scaleX;
-        this.scaleY = model.scaleY;
-        this.scaleSize = model.scaleSize;
-        this.scaleLabel = model.scaleLabel;
-        this.scaleColor = model.scaleColor;
-        this.scaleSplit = model.scaleSplit;
-        this.scaleIdentity = model.scaleIdentity;
-
-        var sid = this.scaleIdentity;
-        this.flip = model.flip || false;
-        this.id = model.id || ((row) => sid.value(row[sid.dim], row));
-        this.xi = model.xi || ((d) => model.scaleX.value(d[model.scaleX.dim]));
-        this.yi = model.yi || ((d) => model.scaleY.value(d[model.scaleY.dim]));
-        this.color = model.color || ((d) => model.scaleColor.value(d[model.scaleColor.dim]));
-        this.label = model.label || ((d) => model.scaleLabel.value(d[model.scaleLabel.dim]));
-        this.group = model.group || ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`));
-        this.size = model.size || ((d) => (model.scaleSize.value(d[model.scaleSize.dim])));
-
-        if (model.y0) {
-            this.y0 = model.y0;
-        } else {
-            const ys = model.scaleY.domain();
-            const min = model.scaleY.discrete ?
-                ys[0] :
-                Math.max(0, Math.min(...ys)); // NOTE: max also can be below 0
-
-            const y0 = model.scaleY.value(min) + model.scaleY.stepSize(min) * 0.5;
-            this.y0 = (() => y0);
-        }
-
-        this.order = model.order || createFunc(0);
-        this.data = model.data || (() => ([]));
-    }
-
-    toScreenModel() {
-        var flip = this.flip;
-        var iff = ((statement, yes, no) => statement ? yes : no);
-        var grammarModel = this;
-        return {
-            flip,
-            id: grammarModel.id,
-            x: iff(flip, grammarModel.yi, grammarModel.xi),
-            y: iff(flip, grammarModel.xi, grammarModel.yi),
-            x0: iff(flip, grammarModel.y0, grammarModel.xi),
-            y0: iff(flip, grammarModel.xi, grammarModel.y0),
-            size: grammarModel.size,
-            group: grammarModel.group,
-            order: grammarModel.order,
-            label: grammarModel.label,
-            color: (d) => grammarModel.scaleColor.toColor(grammarModel.color(d)),
-            class: (d) => grammarModel.scaleColor.toClass(grammarModel.color(d)),
-            model: grammarModel,
-            toFibers: () => {
-                const data = grammarModel.data();
-                const groups = utils.groupBy(data, grammarModel.group);
-                return (Object
-                    .keys(groups)
-                    .sort((a, b) => grammarModel.order(a) - grammarModel.order(b))
-                    .reduce((memo, k) => memo.concat([groups[k]]), []));
-            }
-        };
-    }
-
-    static compose(prev, updates = {}) {
-        return (Object
-            .keys(updates)
-            .reduce((memo, propName) => {
-                memo[propName] = updates[propName];
-                return memo;
-            },
-            (new CartesianGrammar(prev))));
-    }
 
     static decorator_identity(model) {
         return model;
@@ -132,17 +55,6 @@ export class CartesianGrammar {
                 var middleStep = (availableSpace / (categoriesCount + 1));
                 var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
                 return absTickStart + relSegmStart;
-            })
-        };
-    }
-
-    static decorator_groupOrderByColor(model) {
-        const order = model.scaleColor.domain();
-        return {
-            order: ((group) => {
-                const color = group.split(delimiter)[0];
-                const i = order.indexOf(color);
-                return ((i < 0) ? Number.MAX_VALUE : i);
             })
         };
     }
