@@ -1,17 +1,9 @@
-sudo: required
 language: node_js
 node_js:
   - "5.2.0"
 
 notifications:
   slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
-
-addons:
-  apt:
-    sources:
-      - google-chrome
-    packages:
-      - google-chrome-stable
 
 before_install:
   - export CHROME_BIN=chromium-browser
