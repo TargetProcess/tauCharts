@@ -137,7 +137,7 @@ export class Cartesian extends Element {
         };
     }
 
-    evalGrammarRules() {
+    getGrammarRules() {
         return [
             CartesianModel.decorator_size
         ].filter(x => x);

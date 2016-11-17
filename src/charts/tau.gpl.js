@@ -107,7 +107,7 @@ export class GPL extends Emitter {
                 ));
 
             const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
-            const grammarModel = evalGrammarRules(instance.evalGrammarRules(), initialModel);
+            const grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel);
             evalGrammarRules(instance.adjustScales(), grammarModel);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
 
@@ -130,7 +130,7 @@ export class GPL extends Emitter {
                 ));
 
             const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
-            const grammarModel = evalGrammarRules(instance.evalGrammarRules(), initialModel);
+            const grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
             instance.parentUnit = parentInstance;
             instance.addInteraction();

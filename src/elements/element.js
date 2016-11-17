@@ -77,7 +77,7 @@ export class Element extends Emitter {
         return {};
     }
 
-    evalGrammarRules() {
+    getGrammarRules() {
         return [];
     }
 

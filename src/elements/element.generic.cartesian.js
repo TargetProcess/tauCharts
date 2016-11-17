@@ -86,7 +86,7 @@ export class GenericCartesian extends Element {
         };
     }
 
-    evalGrammarRules() {
+    getGrammarRules() {
         return this.decorators.filter(x => x);
     }
 
