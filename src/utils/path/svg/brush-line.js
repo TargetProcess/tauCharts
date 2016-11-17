@@ -1,5 +1,6 @@
 /**
- * Returns line with variable stroke width.
+ * Returns line with variable width.
+ * @param points Linear points.
  */
 export function getBrushLine(points) {
     if (points.length === 0) {
@@ -16,7 +17,8 @@ export function getBrushLine(points) {
 }
 
 /**
- * Returns curve with variable stroke width.
+ * Returns curve with variable width.
+ * @param points Cubic spline points.
  */
 export function getBrushCurve(points) {
     if (points.length === 0) {
@@ -32,6 +34,9 @@ export function getBrushCurve(points) {
     return segments.join(' ');
 }
 
+/**
+ * Returns single circle as part of SVG path.
+ */
 function getCircle(x, y, r) {
     return [
         `M${x},${y - r}`,

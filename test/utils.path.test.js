@@ -1,11 +1,11 @@
 define(function (require) {
     var expect = require('chai').expect;
     var tauCharts = require('src/tau.charts');
-    var createInterpolator = require('src/utils/path/path-points-interpolator').default;
-    var getBrushLine = require('src/utils/path/brush-line-builder').getBrushLine;
-    var getBrushCurve = require('src/utils/path/brush-line-builder').getBrushCurve;
-    var toCurve = require('src/utils/path/smooth-cubic-line').default;
-    var lines = require('src/utils/path/line-builder');
+    var createInterpolator = require('src/utils/path/interpolators/path-points').default;
+    var getBrushLine = require('src/utils/path/svg/brush-line').getBrushLine;
+    var getBrushCurve = require('src/utils/path/svg/brush-line').getBrushCurve;
+    var toCurve = require('src/utils/path/interpolators/smooth').getLimitedCurve;
+    var lines = require('src/utils/path/svg/line');
     var testUtils = require('testUtils');
 
     describe('path utilities', function() {
@@ -131,6 +131,7 @@ define(function (require) {
         });
 
         it('should interpolate smooth cubic path', function () {
+
             var a = toCurve([
                 {id: 1, x: 0, y: 0},
                 {id: 2, x: 30, y: 60},
@@ -357,7 +358,7 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    smooth: true
+                    interpolate: 'smooth-limited'
                 }
             });
 

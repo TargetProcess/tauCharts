@@ -4,8 +4,9 @@ import {CartesianGrammar} from '../models/cartesian-grammar';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {utils} from '../utils/utils';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import {getBrushLine, getBrushCurve} from '../utils/path/brush-line-builder';
-import {getPolyline, getCurve} from '../utils/path/line-builder';
+import {getInterpolatorSplineType} from '../utils/path/interpolators/interpolators-registry';
+import {getBrushLine, getBrushCurve} from '../utils/path/svg/brush-line';
+import {getPolyline, getCurve} from '../utils/path/svg/line';
 
 const Line = {
 
@@ -22,7 +23,6 @@ const Line = {
         config.guide = utils.defaults(
             (config.guide || {}),
             {
-                smooth: false,
                 interpolate: 'linear'
             });
 
@@ -81,9 +81,9 @@ const Line = {
                 fill: (fiber) => baseModel.color(fiber[0])
             });
 
-        const d3LineBuilder = isEmptySize ?
-            guide.smooth ? getCurve : getPolyline :
-            guide.smooth ? getBrushCurve : getBrushLine;
+        const d3LineBuilder = (getInterpolatorSplineType(guide.interpolate) === 'cubic' ?
+            (isEmptySize ? getCurve : getBrushCurve) :
+            (isEmptySize ? getPolyline : getBrushLine));
 
         const baseModel = BasePath.baseModel(screenModel);
 
@@ -152,7 +152,7 @@ const Line = {
                 d3LineBuilder,
                 baseModel.toPoint,
                 screenModel.id,
-                guide.smooth ? 'cubic' : 'linear'
+                guide.interpolate
             )
         };
 
