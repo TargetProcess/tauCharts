@@ -81,7 +81,7 @@ export class Element extends Emitter {
         return [];
     }
 
-    adjustScales() {
+    getAdjustScalesRules() {
         return [];
     }
 

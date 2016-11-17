@@ -103,7 +103,7 @@
     tauCharts.api.unitsRegistry.reg(
         'ELEMENT.BOX-WHISKERS',
         {
-            adjustScales: function () {
+            getAdjustScalesRules: function () {
                 var self = this;
                 var node = self.node();
                 var rules = [];

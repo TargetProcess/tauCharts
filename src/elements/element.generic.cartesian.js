@@ -90,7 +90,7 @@ export class GenericCartesian extends Element {
         return this.decorators.filter(x => x);
     }
 
-    adjustScales() {
+    getAdjustScalesRules() {
         return (this.adjusters || []).filter(x => x);
     }
 
