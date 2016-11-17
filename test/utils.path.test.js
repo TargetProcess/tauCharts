@@ -4,11 +4,94 @@ define(function (require) {
     var createInterpolator = require('src/utils/path/interpolators/path-points').default;
     var getBrushLine = require('src/utils/path/svg/brush-line').getBrushLine;
     var getBrushCurve = require('src/utils/path/svg/brush-line').getBrushCurve;
-    var toCurve = require('src/utils/path/interpolators/smooth').getLimitedCurve;
+    var toCurve = require('src/utils/path/interpolators/smooth').getCurveKeepingExtremums;
+    var getLineInterpolator = require('src/utils/path/interpolators/interpolators-registry').getLineInterpolator;
     var lines = require('src/utils/path/svg/line');
     var testUtils = require('testUtils');
 
     describe('path utilities', function() {
+
+        it('should interpolate points', function () {
+
+            var data = [
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 150, y: 360, size: 60, id: 4}
+            ];
+
+            var line = getLineInterpolator('linear')(data);
+            expect(line).to.deep.equal([
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 150, y: 360, size: 60, id: 4}
+            ]);
+
+            var curve = getLineInterpolator('smooth')(data);
+            expect(curve).to.deep.equal([
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 20, y: 125},
+                {x: 40, y: 35},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 70, y: -17.5},
+                {x: 80, y: -2.5},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 110, y: 95},
+                {x: 130, y: 205},
+                {x: 150, y: 360, size: 60, id: 4}
+            ]);
+
+            var curveWithExtremums = getLineInterpolator('smooth-keep-extremum')(data);
+            expect(curveWithExtremums).to.deep.equal([
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 20, y: 90},
+                {x: 40, y: 0},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 70, y: 0},
+                {x: 80, y: 0},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 110, y: 90},
+                {x: 130, y: 200},
+                {x: 150, y: 360, size: 60, id: 4}
+            ]);
+
+            var stepLine = getLineInterpolator('step')(data);
+            expect(stepLine).to.deep.equal([
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 30, y: 270, size: 30, id: '1-2-1'},
+                {x: 30, y: 0, size: 60, id: '1-2-2'},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 75, y: 0, size: 60, id: '2-3-1'},
+                {x: 75, y: 30, size: 30, id: '2-3-2'},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 120, y: 30, size: 30, id: '3-4-1'},
+                {x: 120, y: 360, size: 60, id: '3-4-2'},
+                {x: 150, y: 360, size: 60, id: 4}
+            ]);
+
+            var stepBeforeLine = getLineInterpolator('step-before')(data);
+            expect(stepBeforeLine).to.deep.equal([
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 0, y: 0, size: 60, id: '1-2'},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 60, y: 30, size: 30, id: '2-3'},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 90, y: 360, size: 60, id: '3-4'},
+                {x: 150, y: 360, size: 60, id: 4}
+            ]);
+
+            var stepAfterLine = getLineInterpolator('step-after')(data);
+            expect(stepAfterLine).to.deep.equal([
+                {x: 0, y: 270, size: 30, id: 1},
+                {x: 60, y: 270, size: 30, id: '1-2'},
+                {x: 60, y: 0, size: 60, id: 2},
+                {x: 90, y: 0, size: 60, id: '2-3'},
+                {x: 90, y: 30, size: 30, id: 3},
+                {x: 150, y: 30, size: 30, id: '3-4'},
+                {x: 150, y: 360, size: 60, id: 4}
+            ]);
+        });
 
         it('should return SVG path value', function () {
             var points = [
