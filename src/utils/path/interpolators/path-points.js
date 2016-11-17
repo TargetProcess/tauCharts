@@ -1,6 +1,9 @@
-import {utils} from '../utils';
+import {utils} from '../../utils';
 
-export default function interpolatePathPoints(pointsFrom, pointsTo, type = 'linear') {
+/**
+ * Returns intermediate line or curve between two sources.
+ */
+export default function interpolatePathPoints(pointsFrom, pointsTo, type = 'polyline') {
 
     var interpolate;
 
@@ -15,7 +18,7 @@ export default function interpolatePathPoints(pointsFrom, pointsTo, type = 'line
         if (!interpolate) {
             interpolate = (type === 'cubic' ?
                 getCubicInterpolator :
-                getInterpolator
+                getLinearInterpolator
             )(pointsFrom, pointsTo);
         }
 
@@ -28,7 +31,7 @@ export default function interpolatePathPoints(pointsFrom, pointsTo, type = 'line
  * remains the same and added or excluded points are situated between
  * existing points.
  */
-function getInterpolator(pointsFrom, pointsTo) {
+function getLinearInterpolator(pointsFrom, pointsTo) {
 
     // TODO: Continue unfinished transition of ending points.
     pointsFrom = pointsFrom.filter(d => !d.isInterpolated);

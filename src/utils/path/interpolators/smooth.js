@@ -1,4 +1,21 @@
-export default function getSmoothCubicLine(points) {
+/**
+ * Returns smooth cubic spline.
+ * Applicable to math functions.
+ */
+export function getCurve(points) {
+    return getCubicSpline(points, false);
+}
+
+/**
+ * Returns cubic spline that never exceeds extremums.
+ * Applicable to business data.
+ */
+export function getCurveKeepingExtremums(points) {
+    return getCubicSpline(points, true);
+}
+
+// TODO: Smooth sengments junctions.
+function getCubicSpline(points, limited) {
     if (points.length < 2) {
         return points.slice(0);
     }
@@ -35,16 +52,19 @@ export default function getSmoothCubicLine(points) {
         if (dx1 * dx2 === 0) {
             c1y = p1.y - dy1 / 3;
             c2y = p1.y + dy2 / 3;
-        } else if (dy1 * dy2 <= 0) {
+        } else if (limited && dy1 * dy2 <= 0) {
             c1y = p1.y;
             c2y = p1.y;
         } else {
-            // NOTE: Limit tangent so that curve never exceeds anchors.
-            tan = (dy1 < 0 ? Math.max : Math.min)(
-                (dy1 / dx1 + dy2 / dx2) / 2,
-                3 * dy1 / dx1,
-                3 * dy2 / dx2
-            );
+            if (limited) {
+                tan = (dy1 < 0 ? Math.max : Math.min)(
+                    (dy1 / dx1 + dy2 / dx2) / 2,
+                    3 * dy1 / dx1,
+                    3 * dy2 / dx2
+                );
+            } else {
+                tan = (dy1 / dx1 + dy2 / dx2) / 2;
+            }
 
             c1y = p1.y - tan * dx1 / 3;
             c2y = p1.y + tan * dx2 / 3;

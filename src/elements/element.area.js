@@ -5,7 +5,7 @@ import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {CartesianGrammar} from '../models/cartesian-grammar';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import getAreaPath from '../utils/path/area-path-builder';
+import getAreaPath from '../utils/path/svg/area-path';
 
 const Area = {
 
