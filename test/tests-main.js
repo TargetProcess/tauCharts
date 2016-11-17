@@ -10,7 +10,7 @@ tauCharts.api.globalSettings.asyncRendering = false;
     var s = document.createElement('style');
     s.textContent = [
         '* {',
-        '    font-family: serif !important;',
+        '    font-family: monospace !important;',
         '    font-style: normal !important;',
         '    font-weight: normal !important;',
         '}'
