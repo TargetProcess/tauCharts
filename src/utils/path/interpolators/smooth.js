@@ -10,7 +10,7 @@ export function getCurve(points) {
  * Returns cubic spline that never exceeds extremums.
  * Applicable to business data.
  */
-export function getLimitedCurve(points) {
+export function getCurveKeepingExtremums(points) {
     return getCubicSpline(points, true);
 }
 

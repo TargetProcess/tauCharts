@@ -1,4 +1,4 @@
-import {getCurve, getLimitedCurve} from './smooth';
+import {getCurve, getCurveKeepingExtremums} from './smooth';
 import {getStepLine, getStepBeforeLine, getStepAfterLine} from './step';
 
 var polylineInterpolators = {
@@ -9,7 +9,7 @@ var polylineInterpolators = {
 };
 var curveInterpolators = {
     smooth: getCurve,
-    'smooth-limited': getLimitedCurve
+    'smooth-keep-extremum': getCurveKeepingExtremums
 };
 
 export function getLineInterpolator(type) {

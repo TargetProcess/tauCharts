@@ -358,7 +358,7 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    interpolate: 'smooth-limited'
+                    interpolate: 'smooth-keep-extremum'
                 }
             });
 
