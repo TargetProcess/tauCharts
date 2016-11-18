@@ -25,9 +25,9 @@ export class GenericCartesian extends Element {
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
 
         var defaultDecorators = [
-            config.flip && CartesianGrammar.decorator_flip,
-            enableStack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+            config.flip && CartesianGrammar.get('flip'),
+            enableStack && CartesianGrammar.get('stack'),
+            enableColorPositioning && CartesianGrammar.get('positioningByColor')
         ];
 
         this.decorators = (this.config.transformRules || defaultDecorators).concat(config.transformModel || []);

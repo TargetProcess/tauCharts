@@ -1,6 +1,5 @@
 import {default as d3} from 'd3';
 import {Element} from './element';
-import {CartesianModel} from '../models/cartesian';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {utils} from '../utils/utils';
@@ -139,8 +138,17 @@ export class Cartesian extends Element {
 
     getGrammarRules() {
         return [
-            CartesianModel.decorator_size
-        ].filter(x => x);
+            (prevModel) => {
+                var sx = prevModel.scaleX;
+                var sy = prevModel.scaleY;
+                return {
+                    xi: ((d) => (!d ? prevModel.xi(d) : sx(d[sx.dim]))),
+                    yi: ((d) => (!d ? prevModel.yi(d) : sy(d[sy.dim]))),
+                    sizeX: ((d) => (!d ? prevModel.sizeX(d) : sx.stepSize(d[sx.dim]))),
+                    sizeY: ((d) => (!d ? prevModel.sizeY(d) : sy.stepSize(d[sy.dim])))
+                };
+            }
+        ];
     }
 
     createScreenModel(grammarModel) {

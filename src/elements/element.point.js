@@ -45,17 +45,17 @@ const Point = {
                     [0];
                 const isHorizontal = (prevModel.scaleY === bestBaseScale);
                 return isHorizontal ?
-                    CartesianGrammar.decorator_flip(prevModel) :
-                    CartesianGrammar.decorator_identity(prevModel);
+                    CartesianGrammar.get('flip')(prevModel) :
+                    CartesianGrammar.get('identity')(prevModel);
             }),
-            config.stack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+            config.stack && CartesianGrammar.get('stack'),
+            enableColorPositioning && CartesianGrammar.get('positioningByColor')
         ]
             .filter(x => x)
             .concat(config.transformModel || []);
 
         config.adjustRules = [
-            (config.stack && CartesianGrammar.adjustYScale),
+            (config.stack && CartesianGrammar.get('adjustYScale')),
             ((prevModel, args) => {
                 const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
                 const sizeCfg = utils.defaults(
@@ -76,8 +76,8 @@ const Point = {
                     });
 
                 const method = (sizeCfg.enableDistributeEvenly ?
-                    CartesianGrammar.adjustSigmaSizeScale :
-                    CartesianGrammar.adjustStaticSizeScale);
+                    CartesianGrammar.get('adjustSigmaSizeScale') :
+                    CartesianGrammar.get('adjustStaticSizeScale'));
 
                 return method(prevModel, params);
             })

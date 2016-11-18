@@ -11,13 +11,7 @@ const MixinModel = function (prev) {
 };
 
 const compose = (prev, updates = {}) => {
-    return (Object
-        .keys(updates)
-        .reduce((memo, propName) => {
-            memo[propName] = updates[propName];
-            return memo;
-        },
-        (new MixinModel(prev))));
+    return (Object.assign(new MixinModel(prev), updates));
 };
 
 const evalGrammarRules = (grammarRules, initialGrammarModel) => {

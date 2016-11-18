@@ -27,10 +27,10 @@ const Line = {
             });
 
         config.transformRules = [
-            config.flip && CartesianGrammar.decorator_flip,
-            !enableStack && CartesianGrammar.decorator_groupOrderByAvg,
+            config.flip && CartesianGrammar.get('flip'),
+            !enableStack && CartesianGrammar.get('groupOrderByAvg'),
             enableStack && BasePath.grammarRuleFillGaps,
-            enableStack && CartesianGrammar.decorator_stack
+            enableStack && CartesianGrammar.get('stack')
         ].concat(config.transformModel || []);
 
         config.adjustRules = [
@@ -52,7 +52,7 @@ const Line = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+                return CartesianGrammar.get('adjustStaticSizeScale')(prevModel, params);
             })
         ];
 

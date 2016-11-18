@@ -17,7 +17,7 @@ const Path = {
         const config = BasePath.init(xConfig);
 
         config.transformRules = [
-            config.flip && CartesianGrammar.decorator_flip
+            config.flip && CartesianGrammar.get('flip')
         ].concat(config.transformModel || []);
 
         config.adjustRules = [
@@ -39,7 +39,7 @@ const Path = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+                return CartesianGrammar.get('adjustStaticSizeScale')(prevModel, params);
             })
         ];
 

@@ -56,9 +56,9 @@ const Interval = {
         const enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
         config.transformRules = [
-            config.flip && CartesianGrammar.decorator_flip,
-            config.stack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+            config.flip && CartesianGrammar.get('flip'),
+            config.stack && CartesianGrammar.get('stack'),
+            enableColorPositioning && CartesianGrammar.get('positioningByColor')
         ]
             .filter(x => x)
             .concat(config.transformModel || []);
@@ -81,10 +81,10 @@ const Interval = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.decorator_size_distribute_evenly(prevModel, params);
+                return CartesianGrammar.get('size_distribute_evenly')(prevModel, params);
             })),
-            (enableDistributeEvenly && config.guide.prettify && CartesianGrammar.avoidBaseScaleOverflow),
-            (config.stack && CartesianGrammar.adjustYScale)
+            (enableDistributeEvenly && config.guide.prettify && CartesianGrammar.get('avoidBaseScaleOverflow')),
+            (config.stack && CartesianGrammar.get('adjustYScale'))
         ].filter(x => x);
 
         return config;

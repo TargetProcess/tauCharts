@@ -33,7 +33,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model);
+            CartesianGrammar.get('avoidBaseScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -56,7 +56,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model);
+            CartesianGrammar.get('avoidBaseScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -77,7 +77,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model);
+            CartesianGrammar.get('avoidBaseScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
