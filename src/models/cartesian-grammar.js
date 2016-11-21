@@ -48,7 +48,8 @@ CartesianGrammar
                     scaleColor.domain() :
                     scaleColor.originalSeries().sort((a, b) => a - b);
                 var categoriesCount = (categories.length || 1);
-                var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim]))); // -1 (not found) to 0
+                // -1 (not found) to 0
+                var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim])));
                 var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
 
                 return {
