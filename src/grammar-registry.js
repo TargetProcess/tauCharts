@@ -1,8 +1,8 @@
-import {utils} from '../utils/utils';
-import {TauChartError as Error, errorCodes} from './../error';
+import {utils} from './utils/utils';
+import {TauChartError as Error, errorCodes} from './error';
 
 var rules = {};
-var CartesianGrammar = {
+var GrammarRegistry = {
 
     get(name) {
         return rules[name];
@@ -14,7 +14,7 @@ var CartesianGrammar = {
     }
 };
 
-CartesianGrammar
+GrammarRegistry
     .reg('identity', () => {
         return {};
     })
@@ -369,4 +369,4 @@ CartesianGrammar
         return {};
     });
 
-export {CartesianGrammar};
+export {GrammarRegistry};

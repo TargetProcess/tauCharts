@@ -4,6 +4,7 @@ import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {d3_transition as transition} from '../utils/d3-decorators';
+import {GrammarRegistry} from '../grammar-registry';
 import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
@@ -293,7 +294,7 @@ export class Plot extends Emitter {
 
         this.fire('specready', this._liveSpec);
 
-        var xGpl = new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry);
+        var xGpl = new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry, GrammarRegistry);
         var structure = xGpl.unfoldStructure();
 
         this.onUnitsStructureExpanded(structure);

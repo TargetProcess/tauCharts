@@ -1,5 +1,5 @@
 import {Element} from './element';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
@@ -25,9 +25,9 @@ export class GenericCartesian extends Element {
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
 
         var defaultDecorators = [
-            config.flip && CartesianGrammar.get('flip'),
-            enableStack && CartesianGrammar.get('stack'),
-            enableColorPositioning && CartesianGrammar.get('positioningByColor')
+            config.flip && GrammarRegistry.get('flip'),
+            enableStack && GrammarRegistry.get('stack'),
+            enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ];
 
         this.decorators = (this.config.transformRules || defaultDecorators).concat(config.transformModel || []);

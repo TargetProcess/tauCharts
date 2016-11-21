@@ -1,5 +1,5 @@
 import {CSS_PREFIX} from '../const';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
@@ -45,17 +45,17 @@ const Point = {
                     [0];
                 const isHorizontal = (prevModel.scaleY === bestBaseScale);
                 return isHorizontal ?
-                    CartesianGrammar.get('flip')(prevModel) :
-                    CartesianGrammar.get('identity')(prevModel);
+                    GrammarRegistry.get('flip')(prevModel) :
+                    GrammarRegistry.get('identity')(prevModel);
             }),
-            config.stack && CartesianGrammar.get('stack'),
-            enableColorPositioning && CartesianGrammar.get('positioningByColor')
+            config.stack && GrammarRegistry.get('stack'),
+            enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]
             .filter(x => x)
             .concat(config.transformModel || []);
 
         config.adjustRules = [
-            (config.stack && CartesianGrammar.get('adjustYScale')),
+            (config.stack && GrammarRegistry.get('adjustYScale')),
             ((prevModel, args) => {
                 const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
                 const sizeCfg = utils.defaults(
@@ -76,8 +76,8 @@ const Point = {
                     });
 
                 const method = (sizeCfg.enableDistributeEvenly ?
-                    CartesianGrammar.get('adjustSigmaSizeScale') :
-                    CartesianGrammar.get('adjustStaticSizeScale'));
+                    GrammarRegistry.get('adjustSigmaSizeScale') :
+                    GrammarRegistry.get('adjustStaticSizeScale'));
 
                 return method(prevModel, params);
             })

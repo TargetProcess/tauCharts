@@ -1,5 +1,5 @@
 import {CSS_PREFIX} from '../const';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
@@ -56,9 +56,9 @@ const Interval = {
         const enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
         config.transformRules = [
-            config.flip && CartesianGrammar.get('flip'),
-            config.stack && CartesianGrammar.get('stack'),
-            enableColorPositioning && CartesianGrammar.get('positioningByColor')
+            config.flip && GrammarRegistry.get('flip'),
+            config.stack && GrammarRegistry.get('stack'),
+            enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]
             .filter(x => x)
             .concat(config.transformModel || []);
@@ -81,10 +81,10 @@ const Interval = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.get('size_distribute_evenly')(prevModel, params);
+                return GrammarRegistry.get('size_distribute_evenly')(prevModel, params);
             })),
-            (enableDistributeEvenly && config.guide.prettify && CartesianGrammar.get('avoidBaseScaleOverflow')),
-            (config.stack && CartesianGrammar.get('adjustYScale'))
+            (enableDistributeEvenly && config.guide.prettify && GrammarRegistry.get('avoidBaseScaleOverflow')),
+            (config.stack && GrammarRegistry.get('adjustYScale'))
         ].filter(x => x);
 
         return config;

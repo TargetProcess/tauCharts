@@ -3,7 +3,7 @@ import {CSS_PREFIX} from '../const';
 import {utils} from '../utils/utils';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {d3_createPathTween} from '../utils/d3-decorators';
 import getAreaPath from '../utils/path/area-path-builder';
 
@@ -20,10 +20,10 @@ const Area = {
         const enableStack = config.stack;
 
         config.transformRules = [
-            config.flip && CartesianGrammar.get('flip'),
-            !enableStack && CartesianGrammar.get('groupOrderByAvg'),
+            config.flip && GrammarRegistry.get('flip'),
+            !enableStack && GrammarRegistry.get('groupOrderByAvg'),
             enableStack && BasePath.grammarRuleFillGaps,
-            enableStack && CartesianGrammar.get('stack')
+            enableStack && GrammarRegistry.get('stack')
         ].concat(config.transformModel || []);
 
         config.adjustRules = [
@@ -45,7 +45,7 @@ const Area = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.get('adjustStaticSizeScale')(prevModel, params);
+                return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
             })
         ];
 
