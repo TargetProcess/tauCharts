@@ -1,3 +1,5 @@
+import {bezier, getBezierPoint} from '../bezier';
+
 /**
  * Returns line with variable width.
  * @param points Linear points.
@@ -217,7 +219,7 @@ function splitCurveSegment(p0, c0, c1, p1) {
     var r = utils.unique(Object.keys(p0), Object.keys(p1))
         .reduce((memo, k) => {
             if (k === 'x' || k === 'y') {
-                memo[k] = bezier(0.5, [p0[k], c0[k], c1[k], p1[k]]);
+                memo[k] = bezier(0.5, p0[k], c0[k], c1[k], p1[k]);
             } else if (k === 'size') {
                 memo.size = (p0.size + p1.size) / 2;
             }
@@ -227,30 +229,4 @@ function splitCurveSegment(p0, c0, c1, p1) {
     var c5 = getBezierPoint(0.5, c1, p1);
 
     return [p0, c2, c3, r, c4, c5, p1];
-}
-
-function getBezierPoint(t, ...p) {
-    return {
-        x: bezier(t, p.map(p => p.x)),
-        y: bezier(t, p.map(p => p.y))
-    };
-}
-
-function bezier(t, p) {
-    if (p.length === 2) {
-        return (p[0] * (1 - t) + p[1] * t);
-    }
-    if (p.length === 3) {
-        return (
-            p[0] * (1 - t) * (1 - t) +
-            2 * p[1] * (1 - t) * t
-            + p[2] * t * t
-        );
-    }
-    return (
-        p[0] * (1 - t) * (1 - t) * (1 - t) +
-        3 * p[1] * (1 - t) * (1 - t) * t +
-        3 * p[2] * (1 - t) * t * t +
-        p[3] * t * t * t
-    );
 }
