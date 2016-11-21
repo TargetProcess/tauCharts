@@ -27,6 +27,19 @@ export function getBrushCurve(points) {
     if (points.length === 1) {
         return getSegment(points[0], points[0]);
     }
+
+    // NOTE: Split segments for better visual result.
+    // TODO: Split when necessary (e.g. some angle change threshold).
+    points = points.slice(0);
+    for (var i = points.length - 1, a, c1, c2, b, seg; i >= 3; i -= 3) {
+        a = points[i - 3];
+        c1 = points[i - 2];
+        c2 = points[i - 1];
+        b = points[i];
+        seg = splitCurveSegment(a, c1, c2, b);
+        points.splice.apply(points, [i - 2, 2].concat(seg.slice(1, 6)));
+    }
+
     var segments = [];
     for (var i = 3; i < points.length; i += 3) {
         segments.push(getCurveSegment(points[i - 3], points[i - 2], points[i - 1], points[i]));
@@ -54,8 +67,8 @@ function getCircle(x, y, r) {
 function getSegment(a, b) {
     var mainDistance = getDistance(a, b);
     if (mainDistance === 0 ||
-        (mainDistance + a.size / 2 <= b.size / 2) ||
-        (mainDistance + b.size / 2 <= a.size / 2)
+        (mainDistance + a.size / 2 < b.size / 2) ||
+        (mainDistance + b.size / 2 < a.size / 2)
     ) {
         // Return single circle, if one is inside another
         var largerPt = a.size > b.size ? a : b;
@@ -89,6 +102,11 @@ function getSegment(a, b) {
  * Returns two circles joined with cubic curves.
  */
 function getCurveSegment(a, c1, c2, b) {
+    // NOTE: Replace self-intersected segment with straight.
+    if (a.x + a.size / 2 > b.x || b.x - b.size / 2 < a.x) {
+        return getSegment(a, b);
+    }
+
     var mainDistance = getDistance(a, b);
     if (mainDistance === 0 ||
         (mainDistance + a.size / 2 <= b.size / 2) ||
@@ -137,14 +155,16 @@ function getCurveSegment(a, c1, c2, b) {
     // Compensation for line width in the middle
     var midSize = (a.size + b.size) / 2;
     var applyWidthCompensation = (pt, c1, c2, reverse) => {
+        // return c1;
         var a1 = getAngle(pt, c1);
         var a2 = getAngle(c1, c2);
         return getPolarPoint(
             pt,
-            (
+            Math.max(
                 getDistance(pt, c1) +
                 (reverse ? -1 : 1) *
-                Math.sin(a2 - a1) * midSize / 3
+                Math.sin(a2 - a1) * midSize / 3,
+                0
             ),
             a1
         );
@@ -189,4 +209,48 @@ function getPolarPoint(start, distance, angle) {
         x: start.x + distance * Math.cos(angle),
         y: start.y + distance * Math.sin(angle)
     };
+}
+
+function splitCurveSegment(p0, c0, c1, p1) {
+    var c2 = getBezierPoint(0.5, p0, c0);
+    var c3 = getBezierPoint(0.5, p0, c0, c1);
+    var r = utils.unique(Object.keys(p0), Object.keys(p1))
+        .reduce((memo, k) => {
+            if (k === 'x' || k === 'y') {
+                memo[k] = bezier(0.5, [p0[k], c0[k], c1[k], p1[k]]);
+            } else if (k === 'size') {
+                memo.size = (p0.size + p1.size) / 2;
+            }
+            return memo;
+        }, {});
+    var c4 = getBezierPoint(0.5, c0, c1, p1);
+    var c5 = getBezierPoint(0.5, c1, p1);
+
+    return [p0, c2, c3, r, c4, c5, p1];
+}
+
+function getBezierPoint(t, ...p) {
+    return {
+        x: bezier(t, p.map(p => p.x)),
+        y: bezier(t, p.map(p => p.y))
+    };
+}
+
+function bezier(t, p) {
+    if (p.length === 2) {
+        return (p[0] * (1 - t) + p[1] * t);
+    }
+    if (p.length === 3) {
+        return (
+            p[0] * (1 - t) * (1 - t) +
+            2 * p[1] * (1 - t) * t
+            + p[2] * t * t
+        );
+    }
+    return (
+        p[0] * (1 - t) * (1 - t) * (1 - t) +
+        3 * p[1] * (1 - t) * (1 - t) * t +
+        3 * p[2] * (1 - t) * t * t +
+        p[3] * t * t * t
+    );
 }
