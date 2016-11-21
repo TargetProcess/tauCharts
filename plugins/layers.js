@@ -40,13 +40,19 @@
                 });
         });
 
+        var createFunc = function (args) {
+            return function (unit) {
+                return Object.assign(unit, args);
+            }
+        };
+
         var ELEMENT_TYPE = {
-            line: 'ELEMENT.LINE',
-            area: 'ELEMENT.AREA',
-            dots: 'ELEMENT.POINT',
-            scatterplot: 'ELEMENT.POINT',
-            bar: 'ELEMENT.INTERVAL',
-            'stacked-bar': 'ELEMENT.INTERVAL.STACKED'
+            line: createFunc({type: 'ELEMENT.LINE'}),
+            area: createFunc({type: 'ELEMENT.AREA'}),
+            dots: createFunc({type: 'ELEMENT.POINT'}),
+            scatterplot: createFunc({type: 'ELEMENT.POINT'}),
+            bar: createFunc({type: 'ELEMENT.INTERVAL'}),
+            'stacked-bar': createFunc({type: 'ELEMENT.INTERVAL', stack: true}),
         };
 
         return {
@@ -375,7 +381,12 @@
                     }
 
                     if (self.isLeafElement(unit, parent)) {
-                        unit.type = xLayer.type ? ELEMENT_TYPE[xLayer.type] : unit.type;
+                        var method = xLayer.type ?
+                            ELEMENT_TYPE[xLayer.type] :
+                            (function (x) {
+                                return x;
+                            });
+                        method(unit);
                         unit.y = layerScaleName;
 
                         var isNotEmptySizeScale = (fullSpec.getScale(unit.size).dim);

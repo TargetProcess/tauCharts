@@ -77,12 +77,12 @@ export class Element extends Emitter {
         return {};
     }
 
-    evalGrammarRules(initialModel) {
-        return initialModel;
+    getGrammarRules() {
+        return [];
     }
 
-    adjustScales(grammarModel) {
-        // return nothing
+    getAdjustScalesRules() {
+        return [];
     }
 
     createScreenModel(grammarModel) {

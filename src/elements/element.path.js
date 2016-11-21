@@ -1,5 +1,5 @@
 import {CSS_PREFIX} from '../const';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {BasePath} from './element.path.base';
 import {utils} from '../utils/utils';
 import {getLineClassesByCount} from '../utils/css-class-map';
@@ -17,7 +17,7 @@ const Path = {
         const config = BasePath.init(xConfig);
 
         config.transformRules = [
-            config.flip && CartesianGrammar.decorator_flip
+            config.flip && GrammarRegistry.get('flip')
         ].concat(config.transformModel || []);
 
         config.adjustRules = [
@@ -39,7 +39,7 @@ const Path = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+                return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
             })
         ];
 

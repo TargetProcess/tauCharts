@@ -1,6 +1,5 @@
 import {default as d3} from 'd3';
 import {Element} from './element';
-import {CartesianModel} from '../models/cartesian';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import {utils} from '../utils/utils';
@@ -127,25 +126,33 @@ export class Cartesian extends Element {
         this.yScale = fnCreateScale('pos', this.config.y, [h, 0]);
         this.regScale('x', this.xScale)
             .regScale('y', this.yScale);
-        return new CartesianModel({
+        return {
             scaleX: this.xScale,
             scaleY: this.yScale,
             xi: (() => w / 2),
             yi: (() => h / 2),
             sizeX: (() => w),
             sizeY: (() => h)
-        });
+        };
     }
 
-    evalGrammarRules(grammarModel) {
+    getGrammarRules() {
         return [
-            CartesianModel.decorator_size,
-            CartesianModel.decorator_color
-        ].filter(x => x).reduce(((model, rule) => rule(model, {})), grammarModel);
+            (prevModel) => {
+                var sx = prevModel.scaleX;
+                var sy = prevModel.scaleY;
+                return {
+                    xi: ((d) => (!d ? prevModel.xi(d) : sx(d[sx.dim]))),
+                    yi: ((d) => (!d ? prevModel.yi(d) : sy(d[sy.dim]))),
+                    sizeX: ((d) => (!d ? prevModel.sizeX(d) : sx.stepSize(d[sx.dim]))),
+                    sizeY: ((d) => (!d ? prevModel.sizeY(d) : sy.stepSize(d[sy.dim])))
+                };
+            }
+        ];
     }
 
     createScreenModel(grammarModel) {
-        return grammarModel.toScreenModel();
+        return grammarModel;
     }
 
     allocateRect(k) {

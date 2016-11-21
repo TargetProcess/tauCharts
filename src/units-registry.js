@@ -20,11 +20,11 @@ var unitsRegistry = {
                     defineGrammarModel(params) {
                         return this.node().defineGrammarModel(params);
                     },
-                    evalGrammarRules(grammarModel) {
-                        return this.node().evalGrammarRules(grammarModel);
+                    getGrammarRules(grammarModel) {
+                        return this.node().getGrammarRules(grammarModel);
                     },
-                    adjustScales(grammarModel) {
-                        return this.node().adjustScales(grammarModel);
+                    getAdjustScalesRules(grammarModel) {
+                        return this.node().getAdjustScalesRules(grammarModel);
                     },
                     createScreenModel(grammarModel) {
                         return this.node().createScreenModel(grammarModel);

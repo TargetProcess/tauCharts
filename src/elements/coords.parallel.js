@@ -57,7 +57,8 @@ export class Parallel extends Element {
 
         this.xBase = ((p) => colsMap[p]);
 
-        return this.regScale('columns', this.columnsScalesMap);
+        this.regScale('columns', this.columnsScalesMap);
+        return {};
     }
 
     allocateRect() {

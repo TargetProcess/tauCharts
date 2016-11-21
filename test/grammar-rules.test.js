@@ -1,7 +1,7 @@
 define(function (require) {
 
     var expect = require('chai').expect;
-    var CartesianGrammar = require('src/models/cartesian-grammar').CartesianGrammar;
+    var GrammarRegistry = require('src/grammar-registry').GrammarRegistry;
     var SizeScale = require('src/scales/size').SizeScale;
     var LinearScale = require('src/scales/linear').LinearScale;
     var OrdinalScale = require('src/scales/ordinal').OrdinalScale;
@@ -33,7 +33,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model);
+            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -56,7 +56,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model);
+            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -77,7 +77,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            CartesianGrammar.avoidBaseScaleOverflow(model);
+            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();

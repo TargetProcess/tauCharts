@@ -4,9 +4,28 @@ import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
 var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
 
+const MixinModel = function (prev) {
+    Object
+        .keys(prev)
+        .forEach((k) => this[k] = prev[k]);
+};
+
+const compose = (prev, updates = {}) => {
+    return (Object.assign(new MixinModel(prev), updates));
+};
+
+const evalGrammarRules = (grammarRules, initialGrammarModel, grammarRegistry) => {
+    return grammarRules
+        .map((rule) => {
+            return ((typeof(rule) === 'string') ? grammarRegistry.get(rule) : rule);
+        })
+        .filter(x => x)
+        .reduce((prevModel, rule) => compose(prevModel, rule(prevModel, {})), initialGrammarModel);
+};
+
 export class GPL extends Emitter {
 
-    constructor(config, scalesRegistryInstance, unitsRegistry) {
+    constructor(config, scalesRegistryInstance, unitsRegistry, grammarRules) {
 
         super();
 
@@ -31,6 +50,7 @@ export class GPL extends Emitter {
         this.sources = config.sources;
         this.scales = config.scales;
         this.unitSet = unitsRegistry;
+        this.grammarRules = grammarRules;
         this.scalesHub = scalesRegistryInstance;
 
         this.transformations = Object.assign(
@@ -71,11 +91,12 @@ export class GPL extends Emitter {
     }
 
     getDrawScenario(root) {
+        const grammarRules = this.grammarRules;
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
-            var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            const frame = (unit.expression.inherit === false) ? null : rootFrame;
             const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
-            var instance = this.unitSet.create(
+            const instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
                     {},
@@ -83,9 +104,9 @@ export class GPL extends Emitter {
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
-            const grammarModel = instance.evalGrammarRules(initialModel);
-            instance.adjustScales(grammarModel);
+            const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+            const grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel, grammarRules);
+            evalGrammarRules(instance.getAdjustScalesRules(), grammarModel, grammarRules);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
 
             return instance;
@@ -96,9 +117,9 @@ export class GPL extends Emitter {
             .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
 
         return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
-            var frame = (unit.expression.inherit === false) ? null : rootFrame;
+            const frame = (unit.expression.inherit === false) ? null : rootFrame;
             const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
-            var instance = this.unitSet.create(
+            const instance = this.unitSet.create(
                 unit.type,
                 Object.assign(
                     {},
@@ -106,8 +127,8 @@ export class GPL extends Emitter {
                     {options: parentInstance.allocateRect(rootFrame.key)}
                 ));
 
-            const initialModel = instance.defineGrammarModel(scalesFactoryMethod);
-            const grammarModel = instance.evalGrammarRules(initialModel);
+            const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+            const grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel, grammarRules);
             instance.node().screenModel = instance.createScreenModel(grammarModel);
             instance.parentUnit = parentInstance;
             instance.addInteraction();

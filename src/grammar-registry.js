@@ -1,91 +1,24 @@
-import {utils} from '../utils/utils';
-import {TauChartError as Error, errorCodes} from './../error';
+import {utils} from './utils/utils';
+import {TauChartError as Error, errorCodes} from './error';
 
-const delimiter = '(@taucharts@)';
+var rules = {};
+var GrammarRegistry = {
 
-export class CartesianGrammar {
+    get(name) {
+        return rules[name];
+    },
 
-    constructor(model) {
-        var createFunc = ((x) => (() => x));
-        this.scaleX = model.scaleX;
-        this.scaleY = model.scaleY;
-        this.scaleSize = model.scaleSize;
-        this.scaleLabel = model.scaleLabel;
-        this.scaleColor = model.scaleColor;
-        this.scaleSplit = model.scaleSplit;
-        this.scaleIdentity = model.scaleIdentity;
-
-        var sid = this.scaleIdentity;
-        this.flip = model.flip || false;
-        this.id = model.id || ((row) => sid.value(row[sid.dim], row));
-        this.xi = model.xi || ((d) => model.scaleX.value(d[model.scaleX.dim]));
-        this.yi = model.yi || ((d) => model.scaleY.value(d[model.scaleY.dim]));
-        this.color = model.color || ((d) => model.scaleColor.value(d[model.scaleColor.dim]));
-        this.label = model.label || ((d) => model.scaleLabel.value(d[model.scaleLabel.dim]));
-        this.group = model.group || ((d) => (`${d[model.scaleColor.dim]}${delimiter}${d[model.scaleSplit.dim]}`));
-        this.size = model.size || ((d) => (model.scaleSize.value(d[model.scaleSize.dim])));
-
-        if (model.y0) {
-            this.y0 = model.y0;
-        } else {
-            const ys = model.scaleY.domain();
-            const min = model.scaleY.discrete ?
-                ys[0] :
-                Math.max(0, Math.min(...ys)); // NOTE: max also can be below 0
-
-            const y0 = model.scaleY.value(min) + model.scaleY.stepSize(min) * 0.5;
-            this.y0 = (() => y0);
-        }
-
-        this.order = model.order || createFunc(0);
-        this.data = model.data || (() => ([]));
+    reg(name, func) {
+        rules[name] = func;
+        return this;
     }
+};
 
-    toScreenModel() {
-        var flip = this.flip;
-        var iff = ((statement, yes, no) => statement ? yes : no);
-        var grammarModel = this;
-        return {
-            flip,
-            id: grammarModel.id,
-            x: iff(flip, grammarModel.yi, grammarModel.xi),
-            y: iff(flip, grammarModel.xi, grammarModel.yi),
-            x0: iff(flip, grammarModel.y0, grammarModel.xi),
-            y0: iff(flip, grammarModel.xi, grammarModel.y0),
-            size: grammarModel.size,
-            group: grammarModel.group,
-            order: grammarModel.order,
-            label: grammarModel.label,
-            color: (d) => grammarModel.scaleColor.toColor(grammarModel.color(d)),
-            class: (d) => grammarModel.scaleColor.toClass(grammarModel.color(d)),
-            model: grammarModel,
-            toFibers: () => {
-                const data = grammarModel.data();
-                const groups = utils.groupBy(data, grammarModel.group);
-                return (Object
-                    .keys(groups)
-                    .sort((a, b) => grammarModel.order(a) - grammarModel.order(b))
-                    .reduce((memo, k) => memo.concat([groups[k]]), []));
-            }
-        };
-    }
-
-    static compose(prev, updates = {}) {
-        return (Object
-            .keys(updates)
-            .reduce((memo, propName) => {
-                memo[propName] = updates[propName];
-                return memo;
-            },
-            (new CartesianGrammar(prev))));
-    }
-
-    static decorator_identity(model) {
-        return model;
-    }
-
-    static decorator_flip(model) {
-
+GrammarRegistry
+    .reg('identity', () => {
+        return {};
+    })
+    .reg('flip', (model) => {
         var baseScale = model.scaleY;
         var valsScale = model.scaleX;
 
@@ -104,50 +37,36 @@ export class CartesianGrammar {
             yi: ((d) => (valsScale.value(d[valsScale.dim]))),
             y0: (() => y0)
         };
-    }
-
-    static decorator_positioningByColor(model) {
+    })
+    .reg('positioningByColor', (model) => {
 
         var method = (model.scaleX.discrete ?
-            CartesianGrammar.decorator_discrete_positioningByColor :
-            CartesianGrammar.decorator_identity);
+            ((model) => {
+                var baseScale = model.scaleX;
+                var scaleColor = model.scaleColor;
+                var categories = scaleColor.discrete ?
+                    scaleColor.domain() :
+                    scaleColor.originalSeries().sort((a, b) => a - b);
+                var categoriesCount = (categories.length || 1);
+                // -1 (not found) to 0
+                var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim])));
+                var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
+
+                return {
+                    xi: ((d) => {
+                        var availableSpace = space(d);
+                        var absTickStart = (model.xi(d) - (availableSpace / 2));
+                        var middleStep = (availableSpace / (categoriesCount + 1));
+                        var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
+                        return absTickStart + relSegmStart;
+                    })
+                };
+            }) :
+            (() => ({})));
 
         return method(model);
-    }
-
-    static decorator_discrete_positioningByColor(model) {
-        var baseScale = model.scaleX;
-        var scaleColor = model.scaleColor;
-        var categories = scaleColor.discrete ?
-            scaleColor.domain() :
-            scaleColor.originalSeries().sort((a, b) => a - b);
-        var categoriesCount = (categories.length || 1);
-        var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim]))); // -1 (not found) to 0
-        var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
-
-        return {
-            xi: ((d) => {
-                var availableSpace = space(d);
-                var absTickStart = (model.xi(d) - (availableSpace / 2));
-                var middleStep = (availableSpace / (categoriesCount + 1));
-                var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
-                return absTickStart + relSegmStart;
-            })
-        };
-    }
-
-    static decorator_groupOrderByColor(model) {
-        const order = model.scaleColor.domain();
-        return {
-            order: ((group) => {
-                const color = group.split(delimiter)[0];
-                const i = order.indexOf(color);
-                return ((i < 0) ? Number.MAX_VALUE : i);
-            })
-        };
-    }
-
-    static decorator_groupOrderByAvg(model) {
+    })
+    .reg('groupOrderByAvg', (model) => {
 
         const dataSource = model.data();
 
@@ -174,9 +93,8 @@ export class CartesianGrammar {
                 return ((i < 0) ? Number.MAX_VALUE : i);
             })
         };
-    }
-
-    static decorator_stack(model) {
+    })
+    .reg('stack', (model) => {
 
         const dataSource = model.data();
 
@@ -255,9 +173,8 @@ export class CartesianGrammar {
             yi: nextYi,
             y0: nextY0
         };
-    }
-
-    static decorator_size_distribute_evenly(model, {minLimit, maxLimit, defMin, defMax}) {
+    })
+    .reg('size_distribute_evenly', (model, {minLimit, maxLimit, defMin, defMax}) => {
 
         const dataSource = model.data();
 
@@ -308,9 +225,8 @@ export class CartesianGrammar {
         });
 
         return {};
-    }
-
-    static adjustStaticSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
+    })
+    .reg('adjustStaticSizeScale', (model, {minLimit, maxLimit, defMin, defMax}) => {
 
         var curr = {
             minSize: (typeof (minLimit) === 'number') ? minLimit : defMin,
@@ -331,9 +247,8 @@ export class CartesianGrammar {
         });
 
         return {};
-    }
-
-    static adjustSigmaSizeScale(model, {minLimit, maxLimit, defMin, defMax}) {
+    })
+    .reg('adjustSigmaSizeScale', (model, {minLimit, maxLimit, defMin, defMax}) => {
 
         const dataSource = model.data();
 
@@ -393,9 +308,8 @@ export class CartesianGrammar {
         });
 
         return {};
-    }
-
-    static avoidBaseScaleOverflow(model) {
+    })
+    .reg('avoidBaseScaleOverflow', (model) => {
 
         const dataSource = model.data();
 
@@ -453,5 +367,6 @@ export class CartesianGrammar {
         model.scaleSize.fixup(() => ({maxSize: linearlyScaledMaxSize}));
 
         return {};
-    }
-}
+    });
+
+export {GrammarRegistry};

@@ -75,13 +75,14 @@ export class GeoMap extends Element {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        return this
-            .regScale('latitude', this.latScale)
+        this.regScale('latitude', this.latScale)
             .regScale('longitude', this.lonScale)
             .regScale('size', this.sizeScale)
             .regScale('color', this.colorScale)
             .regScale('code', this.codeScale)
             .regScale('fill', this.fillScale);
+
+        return {};
     }
 
     drawFrames(frames) {

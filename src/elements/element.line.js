@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
 import {utils} from '../utils/utils';
 import {d3_createPathTween} from '../utils/d3-decorators';
@@ -27,10 +27,10 @@ const Line = {
             });
 
         config.transformRules = [
-            config.flip && CartesianGrammar.decorator_flip,
-            enableStack ? CartesianGrammar.decorator_groupOrderByColor : CartesianGrammar.decorator_groupOrderByAvg,
+            config.flip && GrammarRegistry.get('flip'),
+            !enableStack && GrammarRegistry.get('groupOrderByAvg'),
             enableStack && BasePath.grammarRuleFillGaps,
-            enableStack && CartesianGrammar.decorator_stack
+            enableStack && GrammarRegistry.get('stack')
         ].concat(config.transformModel || []);
 
         config.adjustRules = [
@@ -52,7 +52,7 @@ const Line = {
                         maxLimit: sizeCfg.maxSize
                     });
 
-                return CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+                return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
             })
         ];
 

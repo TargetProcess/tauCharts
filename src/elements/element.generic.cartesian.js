@@ -1,5 +1,5 @@
 import {Element} from './element';
-import {CartesianGrammar} from '../models/cartesian-grammar';
+import {GrammarRegistry} from '../grammar-registry';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
@@ -25,10 +25,9 @@ export class GenericCartesian extends Element {
         var enableColorPositioning = this.config.guide.enableColorToBarPosition;
 
         var defaultDecorators = [
-            config.flip && CartesianGrammar.decorator_flip,
-            CartesianGrammar.decorator_groupOrderByColor,
-            enableStack && CartesianGrammar.decorator_stack,
-            enableColorPositioning && CartesianGrammar.decorator_positioningByColor
+            config.flip && GrammarRegistry.get('flip'),
+            enableStack && GrammarRegistry.get('stack'),
+            enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ];
 
         this.decorators = (this.config.transformRules || defaultDecorators).concat(config.transformModel || []);
@@ -45,40 +44,82 @@ export class GenericCartesian extends Element {
             .regScale('label', fnCreateScale('label', config.label, {}))
             .regScale('identity', fnCreateScale('identity', config.identity, {}));
 
-        return new CartesianGrammar({
+        const scaleX = this.getScale('x');
+        const scaleY = this.getScale('y');
+        const scaleSize = this.getScale('size');
+        const scaleLabel = this.getScale('label');
+        const scaleColor = this.getScale('color');
+        const scaleSplit = this.getScale('split');
+        const scaleIdentity = this.getScale('identity');
+
+        const ys = scaleY.domain();
+        const min = scaleY.discrete ?
+            ys[0] :
+            Math.max(0, Math.min(...ys)); // NOTE: max also can be below 0
+        const y0 = scaleY.value(min) + scaleY.stepSize(min) * 0.5;
+        const order = scaleColor.domain();
+        const delimiter = '(@taucharts@)';
+
+        return {
             data: (() => this.data()),
-            scaleX: this.getScale('x'),
-            scaleY: this.getScale('y'),
-            scaleSize: this.getScale('size'),
-            scaleLabel: this.getScale('label'),
-            scaleColor: this.getScale('color'),
-            scaleSplit: this.getScale('split'),
-            scaleIdentity: this.getScale('identity')
-        });
+            flip: false,
+            scaleX,
+            scaleY,
+            scaleSize,
+            scaleLabel,
+            scaleColor,
+            scaleSplit,
+            scaleIdentity,
+            color: ((d) => scaleColor.value(d[scaleColor.dim])),
+            label: ((d) => scaleLabel.value(d[scaleLabel.dim])),
+            group: ((d) => (`${d[scaleColor.dim]}${delimiter}${d[scaleSplit.dim]}`)),
+            order: ((group) => {
+                const color = group.split(delimiter)[0];
+                const i = order.indexOf(color);
+                return ((i < 0) ? Number.MAX_VALUE : i);
+            }),
+            size: ((d) => (scaleSize.value(d[scaleSize.dim]))),
+            id: ((row) => scaleIdentity.value(row[scaleIdentity.dim], row)),
+            xi: ((d) => scaleX.value(d[scaleX.dim])),
+            yi: ((d) => scaleY.value(d[scaleY.dim])),
+            y0: (() => y0)
+        };
     }
 
-    evalGrammarRules(grammarModel) {
-        const args = {
-            dataSource: this.data()
-        };
-
-        return this.decorators
-            .filter(x => x)
-            .reduce((model, rule) => CartesianGrammar.compose(model, rule(model, args)), grammarModel);
+    getGrammarRules() {
+        return this.decorators.filter(x => x);
     }
 
-    adjustScales(grammarModel) {
-        const args = {
-            dataSource: this.data()
-        };
-
-        return ((this.adjusters || [])
-            .filter(x => x)
-            .reduce((model, rule) => CartesianGrammar.compose(model, rule(model, args)), grammarModel));
+    getAdjustScalesRules() {
+        return (this.adjusters || []).filter(x => x);
     }
 
     createScreenModel(grammarModel) {
-        return grammarModel.toScreenModel();
+        const flip = grammarModel.flip;
+        const iff = ((statement, yes, no) => statement ? yes : no);
+        return {
+            flip,
+            id: grammarModel.id,
+            x: iff(flip, grammarModel.yi, grammarModel.xi),
+            y: iff(flip, grammarModel.xi, grammarModel.yi),
+            x0: iff(flip, grammarModel.y0, grammarModel.xi),
+            y0: iff(flip, grammarModel.xi, grammarModel.y0),
+            size: grammarModel.size,
+            group: grammarModel.group,
+            order: grammarModel.order,
+            label: grammarModel.label,
+            color: (d) => grammarModel.scaleColor.toColor(grammarModel.color(d)),
+            class: (d) => grammarModel.scaleColor.toClass(grammarModel.color(d)),
+            model: grammarModel,
+            toFibers: () => {
+                const data = grammarModel.data();
+                const groups = utils.groupBy(data, grammarModel.group);
+                return (Object
+                    .keys(groups)
+                    .sort((a, b) => grammarModel.order(a) - grammarModel.order(b))
+                    .reduce((memo, k) => memo.concat([groups[k]]), []));
+            }
+        };
     }
 
     drawFrames() {

@@ -7,6 +7,7 @@ import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {FormatterRegistry} from './formatter-registry';
 import {unitsRegistry} from './units-registry';
 import {scalesRegistry} from './scales-registry';
+import {GrammarRegistry} from './grammar-registry';
 
 import {Cartesian}  from './elements/coords.cartesian';
 import {Parallel}   from './elements/coords.parallel';
@@ -57,6 +58,7 @@ var api = {
     errorCodes,
     unitsRegistry: unitsRegistry,
     scalesRegistry: scalesRegistry,
+    grammarRegistry: GrammarRegistry,
     tickFormat: FormatterRegistry,
     isChartElement: utils.isChartElement,
     d3: d3,
