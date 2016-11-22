@@ -154,34 +154,6 @@ function getCurveSegment(a, c1, c2, b) {
         angleRight + angleB - mainAngle + Math.PI / 2
     );
 
-    // Compensation for line width in the middle
-    var midSize = (a.size + b.size) / 2;
-    var applyWidthCompensation = (pt, c1, c2, reverse) => {
-        // return c1;
-        var a1 = getAngle(pt, c1);
-        var a2 = getAngle(c1, c2);
-        return getPolarPoint(
-            pt,
-            Math.max(
-                getDistance(pt, c1) +
-                (reverse ? -1 : 1) *
-                Math.sin(a2 - a1) * midSize / 3,
-                0
-            ),
-            a1
-        );
-    };
-    var controls = [
-        applyWidthCompensation(tangentLeftA, cLeftA, cLeftB),
-        applyWidthCompensation(tangentLeftB, cLeftB, cLeftA, true),
-        applyWidthCompensation(tangentRightA, cRightA, cRightB, true),
-        applyWidthCompensation(tangentRightB, cRightB, cRightA)
-    ];
-    cLeftA = controls[0];
-    cLeftB = controls[1];
-    cRightA = controls[2];
-    cRightB = controls[3];
-
     return [
         `M${tangentLeftA.x},${tangentLeftA.y}`,
         `C${cLeftA.x},${cLeftA.y}`,
