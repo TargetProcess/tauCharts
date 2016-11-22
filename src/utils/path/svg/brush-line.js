@@ -105,11 +105,6 @@ function getSegment(a, b) {
  * Returns two circles joined with cubic curves.
  */
 function getCurveSegment(a, c1, c2, b) {
-    // NOTE: Replace self-intersected segment with straight.
-    if (a.x + a.size / 2 >= b.x || b.x - b.size / 2 <= a.x) {
-        return getSegment(a, b);
-    }
-
     var mainDistance = getDistance(a, b);
     if (mainDistance === 0 ||
         (mainDistance + a.size / 2 <= b.size / 2) ||
@@ -119,6 +114,11 @@ function getCurveSegment(a, c1, c2, b) {
         var largerPt = a.size > b.size ? a : b;
         var radius = largerPt.size / 2;
         return getCircle(largerPt.x, largerPt.y, radius);
+    }
+
+    // NOTE: Replace self-intersected segment with straight.
+    if (a.x + a.size / 2 >= b.x || b.x - b.size / 2 <= a.x) {
+        return getSegment(a, b);
     }
 
     var mainAngle = getAngle(a, b);
