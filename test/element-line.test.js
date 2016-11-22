@@ -236,7 +236,7 @@ define(function (require) {
                 .querySelector('.area path')
                 .getAttribute('d');
 
-            expect(pathValue).to.equal([
+            expect(testUtils.roundNumbersInString(pathValue)).to.equal([
                 'M0,500 L500,500',
                 'A0,0 0 0 1 500,500',
                 'L0,500',

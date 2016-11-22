@@ -1,4 +1,5 @@
 import {utils} from '../../utils';
+import {bezier, getBezierPoint} from '../bezier';
 
 /**
  * Returns intermediate line or curve between two sources.
@@ -354,9 +355,6 @@ function push(target, items) {
 }
 
 function interpolateValue(a, b, t) {
-    if (a === undefined) {
-        return b;
-    }
     if (b === undefined) {
         return a;
     }
@@ -699,7 +697,7 @@ function splitCubicSegment(t, [p0, c0, c1, p1]) {
     var r = utils.unique(Object.keys(p0), Object.keys(p1))
         .reduce((memo, k) => {
             if (k === 'x' || k === 'y') {
-                memo[k] = bezier(t, [p0[k], c0[k], c1[k], p1[k]]);
+                memo[k] = bezier(t, p0[k], c0[k], c1[k], p1[k]);
             } else if (k !== 'id') {
                 memo[k] = interpolateValue(p0[k], p1[k], t);
             }
@@ -725,30 +723,4 @@ function multipleSplitCubicSegment(ts, seg) {
     push(result, seg.slice(1));
 
     return result;
-}
-
-function bezier(t, p) {
-    if (p.length === 2) {
-        return (p[0] * (1 - t) + p[1] * t);
-    }
-    if (p.length === 3) {
-        return (
-            p[0] * (1 - t) * (1 - t) +
-            2 * p[1] * (1 - t) * t
-            + p[2] * t * t
-        );
-    }
-    return (
-        p[0] * (1 - t) * (1 - t) * (1 - t) +
-        3 * p[1] * (1 - t) * (1 - t) * t +
-        3 * p[2] * (1 - t) * t * t +
-        p[3] * t * t * t
-    );
-}
-
-function getBezierPoint(t, ...p) {
-    return {
-        x: bezier(t, p.map(p => p.x)),
-        y: bezier(t, p.map(p => p.y))
-    };
 }

@@ -1,3 +1,5 @@
+import {bezier, getBezierPoint} from '../bezier';
+
 /**
  * Returns smooth cubic spline.
  * Applicable to math functions.
@@ -35,62 +37,76 @@ function getCubicSpline(points, limited) {
     }
 
     var curve = new Array((points.length - 1) * 3 + 1);
-    var p0, p1, p2, c1x, c1y, c2x, c2y, dx1, dy1, dx2, dy2, tan;
+    var c0, p1, c3, c1x, c1y, c2x, c2y, qx, qy, qt, tan;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
-    }
-    for (i = 2; i < points.length; i++) {
-        p0 = points[i - 2];
-        p1 = points[i - 1];
-        p2 = points[i];
-        c1x = interpolate(p0.x, p1.x, 2 / 3);
-        c2x = interpolate(p1.x, p2.x, 1 / 3);
-        dx1 = p1.x - p0.x;
-        dy1 = p1.y - p0.y;
-        dx2 = p2.x - p1.x;
-        dy2 = p2.y - p1.y;
-        if (dx1 * dx2 === 0) {
-            c1y = p1.y - dy1 / 3;
-            c2y = p1.y + dy2 / 3;
-        } else if (limited && dy1 * dy2 <= 0) {
-            c1y = p1.y;
-            c2y = p1.y;
-        } else {
-            if (limited) {
-                tan = (dy1 < 0 ? Math.max : Math.min)(
-                    (dy1 / dx1 + dy2 / dx2) / 2,
-                    3 * dy1 / dx1,
-                    3 * dy2 / dx2
-                );
-            } else {
-                tan = (dy1 / dx1 + dy2 / dx2) / 2;
-            }
-
-            c1y = p1.y - tan * dx1 / 3;
-            c2y = p1.y + tan * dx2 / 3;
+        if (i > 0) {
+            curve[i * 3 - 2] = getBezierPoint(1 / 3, points[i - 1], points[i]);
+            curve[i * 3 - 1] = getBezierPoint(2 / 3, points[i - 1], points[i]);
         }
-        curve[i * 3 - 4] = {x: c1x, y: c1y};
-        curve[i * 3 - 2] = {x: c2x, y: c2y};
     }
-    curve[1] = {
-        x: interpolate(curve[0].x, curve[3].x, 1 / 3),
-        y: interpolate(curve[0].y, interpolate(
-            curve[3].y,
-            curve[2].y,
-            3 / 2
-        ), 2 / 3)
-    };
-    var last = curve.length - 1;
-    curve[last - 1] = {
-        x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
-        y: interpolate(curve[last].y, interpolate(
-            curve[last - 3].y,
-            curve[last - 2].y,
-            3 / 2
-        ), 2 / 3)
-    };
+    var result = curve.slice(0);
+    for (var j = 0, last; j < 3; j++) {
+        for (i = 6; i < result.length; i += 3) {
+            c0 = result[i - 5];
+            p1 = result[i - 3];
+            c3 = result[i - 1];
+            if ((p1.x - c0.x) * (c3.x - p1.x) === 0) {
+                c1x = bezier(0.5, c0.x, p1.x);
+                c2x = bezier(0.5, p1.x, c3.x);
+                c1y = bezier(0.5, c0.y, p1.y);
+                c2y = bezier(0.5, p1.y, c3.y);
+            } else {
+                qt = (p1.x - c0.x) / (c3.x - c0.x);
+                qx = (p1.x - c0.x * (1 - qt) * (1 - qt) - c3.x * qt * qt) / (2 * (1 - qt) * qt);
+                qy = (p1.y - c0.y * (1 - qt) * (1 - qt) - c3.y * qt * qt) / (2 * (1 - qt) * qt);
+                c1x = bezier(qt, c0.x, qx);
+                c2x = bezier(qt, qx, c3.x);
+                c1y = bezier(qt, c0.y, qy);
+                c2y = bezier(qt, qy, c3.y);
 
-    return curve;
+                if (limited) {
+                    if ((p1.y - c0.y) * (c3.y - p1.y) <= 0) {
+                        tan = 0;
+                    } else if (p1.y > c0.y) {
+                        tan = Math.min(
+                            (c2y - p1.y) / (c2x - p1.x),
+                            (c3.y - p1.y) / (c2x - p1.x)
+                        );
+                    } else {
+                        tan = Math.max(
+                            (p1.y - c1y) / (p1.x - c1x),
+                            (p1.y - c0.y) / (p1.x - c1x)
+                        );
+                    }
+                    c1y = p1.y - tan * (p1.x - c1x);
+                    c2y = p1.y + tan * (c2x - p1.x);
+                }
+            }
+            curve[i - 4] = {x: c1x, y: c1y};
+            curve[i - 2] = {x: c2x, y: c2y};
+        }
+        curve[1] = {
+            x: interpolate(curve[0].x, curve[3].x, 1 / 3),
+            y: interpolate(curve[0].y, interpolate(
+                curve[3].y,
+                curve[2].y,
+                3 / 2
+            ), 2 / 3)
+        };
+        last = curve.length - 1;
+        curve[last - 1] = {
+            x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
+            y: interpolate(curve[last].y, interpolate(
+                curve[last - 3].y,
+                curve[last - 2].y,
+                3 / 2
+            ), 2 / 3)
+        };
+        result = curve.slice(0);
+    }
+
+    return result;
 }
 
 function interpolate(a, b, t) {

@@ -1,3 +1,6 @@
+import {bezier, getBezierPoint} from '../bezier';
+import {utils} from '../../utils';
+
 /**
  * Returns line with variable width.
  * @param points Linear points.
@@ -27,8 +30,21 @@ export function getBrushCurve(points) {
     if (points.length === 1) {
         return getSegment(points[0], points[0]);
     }
+
+    // NOTE: Split segments for better visual result.
+    // TODO: Split when necessary (e.g. some angle change threshold).
+    points = points.slice(0);
+    for (var i = points.length - 1, a, c1, c2, b, seg; i >= 3; i -= 3) {
+        a = points[i - 3];
+        c1 = points[i - 2];
+        c2 = points[i - 1];
+        b = points[i];
+        seg = splitCurveSegment(a, c1, c2, b);
+        points.splice.apply(points, [i - 2, 2].concat(seg.slice(1, 6)));
+    }
+
     var segments = [];
-    for (var i = 3; i < points.length; i += 3) {
+    for (i = 3; i < points.length; i += 3) {
         segments.push(getCurveSegment(points[i - 3], points[i - 2], points[i - 1], points[i]));
     }
     return segments.join(' ');
@@ -100,6 +116,11 @@ function getCurveSegment(a, c1, c2, b) {
         return getCircle(largerPt.x, largerPt.y, radius);
     }
 
+    // NOTE: Replace self-intersected segment with straight.
+    if (a.x + a.size / 2 >= b.x || b.x - b.size / 2 <= a.x) {
+        return getSegment(a, b);
+    }
+
     var mainAngle = getAngle(a, b);
     var tangentAngle = Math.asin((a.size - b.size) / mainDistance / 2);
     var angleLeft = mainAngle - Math.PI / 2 + tangentAngle;
@@ -134,32 +155,6 @@ function getCurveSegment(a, c1, c2, b) {
         angleRight + angleB - mainAngle + Math.PI / 2
     );
 
-    // Compensation for line width in the middle
-    var midSize = (a.size + b.size) / 2;
-    var applyWidthCompensation = (pt, c1, c2, reverse) => {
-        var a1 = getAngle(pt, c1);
-        var a2 = getAngle(c1, c2);
-        return getPolarPoint(
-            pt,
-            (
-                getDistance(pt, c1) +
-                (reverse ? -1 : 1) *
-                Math.sin(a2 - a1) * midSize / 3
-            ),
-            a1
-        );
-    };
-    var controls = [
-        applyWidthCompensation(tangentLeftA, cLeftA, cLeftB),
-        applyWidthCompensation(tangentLeftB, cLeftB, cLeftA, true),
-        applyWidthCompensation(tangentRightA, cRightA, cRightB, true),
-        applyWidthCompensation(tangentRightB, cRightB, cRightA)
-    ];
-    cLeftA = controls[0];
-    cLeftB = controls[1];
-    cRightA = controls[2];
-    cRightB = controls[3];
-
     return [
         `M${tangentLeftA.x},${tangentLeftA.y}`,
         `C${cLeftA.x},${cLeftA.y}`,
@@ -189,4 +184,22 @@ function getPolarPoint(start, distance, angle) {
         x: start.x + distance * Math.cos(angle),
         y: start.y + distance * Math.sin(angle)
     };
+}
+
+function splitCurveSegment(p0, c0, c1, p1) {
+    var c2 = getBezierPoint(0.5, p0, c0);
+    var c3 = getBezierPoint(0.5, p0, c0, c1);
+    var r = utils.unique(Object.keys(p0), Object.keys(p1))
+        .reduce((memo, k) => {
+            if (k === 'x' || k === 'y') {
+                memo[k] = bezier(0.5, p0[k], c0[k], c1[k], p1[k]);
+            } else if (k === 'size') {
+                memo.size = (p0.size + p1.size) / 2;
+            }
+            return memo;
+        }, {});
+    var c4 = getBezierPoint(0.5, c0, c1, p1);
+    var c5 = getBezierPoint(0.5, c1, p1);
+
+    return [p0, c2, c3, r, c4, c5, p1];
 }
