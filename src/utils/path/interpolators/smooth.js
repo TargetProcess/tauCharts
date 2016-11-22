@@ -37,7 +37,7 @@ function getCubicSpline(points, limited) {
     }
 
     var curve = new Array((points.length - 1) * 3 + 1);
-    var p0, c0, p1, c3, p2, c1x, c1y, c2x, c2y, qx, qy, qt;
+    var p0, c0, p1, c3, p2, c1x, c1y, c2x, c2y, qx, qy, qt, tan;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
         if (i > 0) {
@@ -64,6 +64,24 @@ function getCubicSpline(points, limited) {
                 c2x = bezier(qt, qx, c3.x);
                 c1y = bezier(qt, c0.y, qy);
                 c2y = bezier(qt, qy, c3.y);
+
+                if (limited) {
+                    if ((p1.y - c0.y) * (c3.y - p1.y) <= 0) {
+                        tan = 0;
+                    } else if (p1.y > c0.y) {
+                        tan = Math.min(
+                            (c2.y - p1.y) / (c2.x - p1.x),
+                            (c3.y - p1.y) / (c2.x - p1.x)
+                        );
+                    } else {
+                        tan = Math.max(
+                            (p1.y - c1.y) / (p1.x - c1.x),
+                            (p1.y - c0.y) / (p1.x - c1.x)
+                        );
+                    }
+                    c1y = p1.y - tan * (p1.x - c1x);
+                    c2y = p1.y + tan * (c2x - p1.x);
+                }
             }
             curve[i - 4] = {x: c1x, y: c1y};
             curve[i - 2] = {x: c2x, y: c2y};
