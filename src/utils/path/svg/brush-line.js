@@ -1,4 +1,5 @@
 import {bezier, getBezierPoint} from '../bezier';
+import {utils} from '../../utils';
 
 /**
  * Returns line with variable width.
@@ -43,7 +44,7 @@ export function getBrushCurve(points) {
     }
 
     var segments = [];
-    for (var i = 3; i < points.length; i += 3) {
+    for (i = 3; i < points.length; i += 3) {
         segments.push(getCurveSegment(points[i - 3], points[i - 2], points[i - 1], points[i]));
     }
     return segments.join(' ');
@@ -69,8 +70,8 @@ function getCircle(x, y, r) {
 function getSegment(a, b) {
     var mainDistance = getDistance(a, b);
     if (mainDistance === 0 ||
-        (mainDistance + a.size / 2 < b.size / 2) ||
-        (mainDistance + b.size / 2 < a.size / 2)
+        (mainDistance + a.size / 2 <= b.size / 2) ||
+        (mainDistance + b.size / 2 <= a.size / 2)
     ) {
         // Return single circle, if one is inside another
         var largerPt = a.size > b.size ? a : b;
@@ -105,7 +106,7 @@ function getSegment(a, b) {
  */
 function getCurveSegment(a, c1, c2, b) {
     // NOTE: Replace self-intersected segment with straight.
-    if (a.x + a.size / 2 > b.x || b.x - b.size / 2 < a.x) {
+    if (a.x + a.size / 2 >= b.x || b.x - b.size / 2 <= a.x) {
         return getSegment(a, b);
     }
 
