@@ -37,7 +37,7 @@ function getCubicSpline(points, limited) {
     }
 
     var curve = new Array((points.length - 1) * 3 + 1);
-    var p0, c0, p1, c3, p2, c1x, c1y, c2x, c2y, q0, q1, q2, qt, curve;
+    var p0, c0, p1, c3, p2, c1x, c1y, c2x, c2y, qx, qy, qt;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
         if (i > 0) {
@@ -46,13 +46,11 @@ function getCubicSpline(points, limited) {
         }
     }
     var result = curve.slice(0);
-    for (var j = 0, last; j < 2; j++) {
+    for (var j = 0, last; j < 3; j++) {
         for (i = 6; i < result.length; i += 3) {
-            p0 = result[i - 6];
             c0 = result[i - 5];
             p1 = result[i - 3];
             c3 = result[i - 1];
-            p2 = result[i];
             if ((p1.x - c0.x) * (c3.x - p1.x) === 0) {
                 c1x = bezier(0.5, c0.x, p1.x);
                 c2x = bezier(0.5, p1.x, c3.x);
@@ -60,13 +58,12 @@ function getCubicSpline(points, limited) {
                 c2y = bezier(0.5, p1.y, c3.y);
             } else {
                 qt = (p1.x - c0.x) / (c3.x - c0.x);
-                q1 = (p1.y - c0.y * (1 - qt) * (1 - qt) - c3.y * qt * qt) / (2 * (1 - qt) * qt);
-                q0 = bezier(qt, c0.y, q1);
-                q2 = bezier(qt, q1, c3.y);
-                c1x = bezier(qt, c0.x, bezier(qt, c0.x, c3.x));
-                c2x = bezier(qt, bezier(qt, c0.x, c3.x), c3.x);
-                c1y = bezier(qt, q0, p1.y);
-                c2y = bezier(qt, p1.y, q2);
+                qx = (p1.x - c0.x * (1 - qt) * (1 - qt) - c3.x * qt * qt) / (2 * (1 - qt) * qt);
+                qy = (p1.y - c0.y * (1 - qt) * (1 - qt) - c3.y * qt * qt) / (2 * (1 - qt) * qt);
+                c1x = bezier(qt, c0.x, qx);
+                c2x = bezier(qt, qx, c3.x);
+                c1y = bezier(qt, c0.y, qy);
+                c2y = bezier(qt, qy, c3.y);
             }
             curve[i - 4] = {x: c1x, y: c1y};
             curve[i - 2] = {x: c2x, y: c2y};
@@ -91,7 +88,7 @@ function getCubicSpline(points, limited) {
         result = curve.slice(0);
     }
 
-    return curve;
+    return result;
 }
 
 function interpolate(a, b, t) {
