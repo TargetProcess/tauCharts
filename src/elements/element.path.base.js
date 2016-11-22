@@ -197,12 +197,16 @@ const BasePath = {
                 if (config.guide.animationSpeed > 0) {
                     // HACK: This call fixes stacked area tween (some paths are intersected on
                     // synthetic points). Maybe caused by async call of `toPoint`.
-                    selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(0));
+                    selection.attr(model.pathTween.attr, function (d) {
+                        return model.pathTween.fn.call(this, d)(0);
+                    });
 
                     transition(selection, config.guide.animationSpeed, 'pathTransition')
                         .attrTween(model.pathTween.attr, model.pathTween.fn);
                 } else {
-                    selection.attr(model.pathTween.attr, (d) => model.pathTween.fn(d)(1));
+                    selection.attr(model.pathTween.attr, function (d) {
+                        return model.pathTween.fn.call(this, d)(1);
+                    });
                 }
             };
 
