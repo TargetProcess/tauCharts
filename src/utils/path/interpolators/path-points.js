@@ -355,9 +355,6 @@ function push(target, items) {
 }
 
 function interpolateValue(a, b, t) {
-    if (a === undefined) {
-        return b;
-    }
     if (b === undefined) {
         return a;
     }
