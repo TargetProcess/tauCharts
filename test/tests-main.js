@@ -8,9 +8,10 @@ tauCharts.api.globalSettings.asyncRendering = false;
 // Setup font for tests
 (function () {
     var s = document.createElement('style');
+    var font = navigator.appVersion.indexOf('Linux') >= 0 ? 'sans-serif' : 'serif';
     s.textContent = [
         '* {',
-        '    font-family: serif !important;',
+        '    font-family: ' + font + ' !important;',
         '    font-style: normal !important;',
         '    font-weight: normal !important;',
         '}'
