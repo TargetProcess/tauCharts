@@ -68,7 +68,7 @@ function getCircle(x, y, r) {
  * Returns two circles joined with tangents.
  */
 function getSegment(a, b) {
-    var mainDistance = getDistance(a, b);
+    var mainDistance = distance(a, b);
     if (mainDistance === 0 ||
         (mainDistance + a.size / 2 <= b.size / 2) ||
         (mainDistance + b.size / 2 <= a.size / 2)
@@ -105,7 +105,7 @@ function getSegment(a, b) {
  * Returns two circles joined with cubic curves.
  */
 function getCurveSegment(a, c1, c2, b) {
-    var mainDistance = getDistance(a, b);
+    var mainDistance = distance(a, b);
     if (mainDistance === 0 ||
         (mainDistance + a.size / 2 <= b.size / 2) ||
         (mainDistance + b.size / 2 <= a.size / 2)
@@ -136,22 +136,22 @@ function getCurveSegment(a, c1, c2, b) {
 
     var cLeftA = getPolarPoint(
         tangentLeftA,
-        getDistance(a, c1) / mainDistance * getDistance(tangentLeftA, tangentLeftB),
+        distance(a, c1) / mainDistance * distance(tangentLeftA, tangentLeftB),
         angleLeft + angleA - mainAngle + Math.PI / 2
     );
     var cLeftB = getPolarPoint(
         tangentLeftB,
-        getDistance(c2, b) / mainDistance * getDistance(tangentLeftA, tangentLeftB),
+        distance(c2, b) / mainDistance * distance(tangentLeftA, tangentLeftB),
         angleLeft + angleB - mainAngle - Math.PI / 2
     );
     var cRightA = getPolarPoint(
         tangentRightA,
-        getDistance(a, c1) / mainDistance * getDistance(tangentRightA, tangentRightB),
+        distance(a, c1) / mainDistance * distance(tangentRightA, tangentRightB),
         angleRight + angleA - mainAngle - Math.PI / 2
     );
     var cRightB = getPolarPoint(
         tangentRightB,
-        getDistance(c2, b) / mainDistance * getDistance(tangentRightA, tangentRightB),
+        distance(c2, b) / mainDistance * distance(tangentRightA, tangentRightB),
         angleRight + angleB - mainAngle + Math.PI / 2
     );
 
@@ -175,7 +175,7 @@ function getAngle(a, b) {
     return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
-function getDistance(a, b) {
+function distance(a, b) {
     return Math.sqrt((b.y - a.y) * (b.y - a.y) + (b.x - a.x) * (b.x - a.x));
 }
 
@@ -193,13 +193,14 @@ function splitCurveSegment(p0, c0, c1, p1) {
         .reduce((memo, k) => {
             if (k === 'x' || k === 'y') {
                 memo[k] = bezier(0.5, p0[k], c0[k], c1[k], p1[k]);
-            } else if (k === 'size') {
-                memo.size = (p0.size + p1.size) / 2;
             }
             return memo;
         }, {});
     var c4 = getBezierPoint(0.5, c0, c1, p1);
     var c5 = getBezierPoint(0.5, c1, p1);
+    r.size = (p0.size + p1.size) /
+        (1 + (distance(r, c4) + distance(c4, c5) + distance(c5, p1) + distance(p1, r)) /
+            (distance(p0, c2) + distance(c2, c3) + distance(c3, r) + distance(r, p0)));
 
     return [p0, c2, c3, r, c4, c5, p1];
 }
