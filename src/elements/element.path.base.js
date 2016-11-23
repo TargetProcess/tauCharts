@@ -150,8 +150,8 @@ const BasePath = {
         node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
         if (config.guide.showAnchors !== 'never') {
-            const activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-            const deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
+            const activate = ((sender, e) => sender.fire('highlight-data-points', {data: e.data, domEvent: e.event}));
+            const deactivate = ((sender, e) => sender.fire('highlight-data-points', {data: null, domEvent: e.event}));
             node.on('mouseover', activate);
             node.on('mousemove', activate);
             node.on('mouseout', deactivate);
@@ -345,11 +345,12 @@ const BasePath = {
             .classed(classed);
     },
 
-    highlightDataPoints(filter) {
+    highlightDataPoints(e) {
+        var filter = (d) => d === e.data;
         const cssClass = 'i-data-anchor';
         const screenModel = this.node().screenModel;
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
-        this.node()
+        var anchors = this.node()
             .config
             .options
             .container
@@ -370,6 +371,13 @@ const BasePath = {
                 fill: (d) => screenModel.color(d),
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             });
+
+        // Add highlighted elements to event.
+        var targetElements = [];
+        anchors.filter(filter).each(function () {
+            targetElements.push(this);
+        });
+        e.targetElements = targetElements;
     }
 };
 
