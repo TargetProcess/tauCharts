@@ -150,8 +150,14 @@ const BasePath = {
         node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
         if (config.guide.showAnchors !== 'never') {
-            const activate = ((sender, e) => sender.fire('highlight-data-points', {data: e.data, domEvent: e.event}));
-            const deactivate = ((sender, e) => sender.fire('highlight-data-points', {data: null, domEvent: e.event}));
+            const getHighlightEvtObj = (e, data) => {
+                const filter = ((d) => d === data);
+                filter.data = data;
+                filter.domEvent = e;
+                return filter;
+            };
+            const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
+            const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
             node.on('mouseover', activate);
             node.on('mousemove', activate);
             node.on('mouseout', deactivate);
@@ -345,8 +351,7 @@ const BasePath = {
             .classed(classed);
     },
 
-    highlightDataPoints(e) {
-        var filter = (d) => d === e.data;
+    highlightDataPoints(filter) {
         const cssClass = 'i-data-anchor';
         const screenModel = this.node().screenModel;
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
@@ -372,12 +377,11 @@ const BasePath = {
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             });
 
-        // Add highlighted elements to event.
-        var targetElements = [];
+        // Add highlighted elements to event
+        filter.targetElements = [];
         anchors.filter(filter).each(function () {
-            targetElements.push(this);
+            filter.targetElements.push(this);
         });
-        e.targetElements = targetElements;
     }
 };
 

@@ -53,6 +53,15 @@
             };
         }
 
+        function getHighlightEvtObj(e, data) {
+            var filter = function (row) {
+                return (raw === data ? true : null);
+            };
+            filter.domEvent = e;
+            filter.data = data;
+            return filter;
+        }
+
         var plugin = {
 
             init: function (chart) {
@@ -231,7 +240,7 @@
                 }
 
                 if (this._currentUnit) {
-                    this._currentUnit.fire('highlight-data-points', {data: null, domEvent: e});
+                    this._currentUnit.fire('highlight-data-points', getHighlightEvtObj(e, null));
                 }
 
                 return this;
@@ -240,7 +249,7 @@
             _accentFocus: function (e) {
                 var self = this;
                 if (self._currentUnit && self._currentData) {
-                    self._currentUnit.fire('highlight-data-points', {data: self._currentData, domEvent: e});
+                    self._currentUnit.fire('highlight-data-points', getHighlightEvtObj(e, self._currentUnit));
                 }
 
                 return this;
