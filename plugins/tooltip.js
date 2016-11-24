@@ -328,28 +328,27 @@
                     'ELEMENT.AREA',
                     'ELEMENT.PATH',
                     'ELEMENT.INTERVAL',
-                    'ELEMENT.INTERVAL.STACKED'
+                    'ELEMENT.INTERVAL.STACKED',
+                    'ELEMENT.POINT'
                 ];
 
                 this._chart
                     .select(function (node) {
-                        return true;
+                        return (elementsToMatch.indexOf(node.config.type) >= 0);
                     })
                     .forEach(function (node) {
 
-                        if (elementsToMatch.indexOf(node.config.type) > -1) {
-                            node.on('highlight-data-points', function (sender, e) {
-                                if (e.data) {
-                                    self.showTooltip(
-                                        e.data,
-                                        {x: e.domEvent.clientX, y: e.domEvent.clientY},
-                                        e.targetElements[0]
-                                    );
-                                } else {
-                                    self.hideTooltip(e);
-                                }
-                            });
-                        }
+                        node.on('highlight-data-points', function (sender, e) {
+                            if (e.data) {
+                                self.showTooltip(
+                                    e.data,
+                                    {x: e.domEvent.clientX, y: e.domEvent.clientY},
+                                    e.targetElements[0]
+                                );
+                            } else {
+                                self.hideTooltip(e);
+                            }
+                        });
                     });
             },
 
