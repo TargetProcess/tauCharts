@@ -93,12 +93,19 @@ const Interval = {
     addInteraction() {
         const node = this.node();
         node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('mouseover', ((sender, e) => {
-            const identity = sender.screenModel.model.id;
-            const id = identity(e.data);
-            sender.fire('highlight', ((row) => (identity(row) === id) ? true : null));
-        }));
-        node.on('mouseout', ((sender) => sender.fire('highlight', () => null)));
+        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
+
+        const getHighlightEvtObj = (e, data) => {
+            const filter = ((d) => d === data ? true : null);
+            filter.data = data;
+            filter.domEvent = e;
+            return filter;
+        };
+        const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
+        const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
+        node.on('mouseover', activate);
+        node.on('mousemove', activate);
+        node.on('mouseout', deactivate);
     },
 
     draw() {
@@ -275,6 +282,19 @@ const Interval = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
+    },
+
+    highlightDataPoints(filter) {
+        this.highlight(filter);
+
+        // Add highlighted elements to event.
+        filter.targetElements = [];
+        this.node().config.options.container
+            .selectAll('.bar')
+            .filter(filter)
+            .each(function () {
+                filter.targetElements.push(this);
+            });
     }
 };
 

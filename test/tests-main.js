@@ -18,11 +18,5 @@ tauCharts.api.globalSettings.asyncRendering = false;
     document.head.appendChild(s);
 })();
 
-var tests = [];
-for (var file in window.__karma__.files) {
-    if (/test.js$/.test(file)) {
-        tests.push(file);
-    }
-}
 var testsContext = require.context('.', true, /test\.js$/);
 testsContext.keys().forEach(testsContext);
