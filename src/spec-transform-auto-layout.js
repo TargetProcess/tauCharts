@@ -314,7 +314,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     }
     var paddingLeft = guide.padding.r || 10;
     if (!guide.y.hide) {
-        let padLft = paddingLeft = sum([
+        let padLft = sum([
             (guide.y.padding),
             (kyAxisW * (settings.yTickWidth + rotYBox.width)),
             (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
