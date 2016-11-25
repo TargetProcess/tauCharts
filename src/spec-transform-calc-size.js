@@ -162,18 +162,19 @@ export class SpecTransformCalcSize {
 
             var recommendedWidth = newSize.width;
             var recommendedHeight = newSize.height;
+            const scrollThreshold = 1.5;
 
             // TODO: Calculate content size and axis size separately.
             // Axis size should not be the part of padding.
             if (recommendedWidth > srcSize.width &&
-                recommendedWidth - guide.padding.l + guide.padding.r <= srcSize.width
+                recommendedWidth - guide.padding.l + guide.padding.r <= srcSize.width * scrollThreshold
             ) {
                 recommendedWidth -= guide.padding.l - guide.padding.r;
                 guide.padding.l = guide.padding.r;
                 guide.y.hide = true;
             }
             if (recommendedHeight > srcSize.height &&
-                recommendedHeight - guide.padding.b + guide.padding.t <= srcSize.height
+                recommendedHeight - guide.padding.b + guide.padding.t <= srcSize.height * scrollThreshold
             ) {
                 recommendedHeight -= guide.padding.b - guide.padding.t;
                 guide.padding.b = guide.padding.t;
@@ -183,7 +184,6 @@ export class SpecTransformCalcSize {
             recommendedHeight = Math.max(srcSize.height, recommendedHeight);
 
             // Prevent scrollbar if chart is about to fit size
-            const scrollThreshold = 0.25;
             if (recommendedWidth > srcSize.width &&
                 recommendedWidth <= srcSize.width * scrollThreshold
             ) {
