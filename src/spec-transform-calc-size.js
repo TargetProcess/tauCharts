@@ -156,12 +156,44 @@ export class SpecTransformCalcSize {
             newH = newSize.newH;
         }
 
-        var prettifySize = (srcSize, newSize) => {
+        var prettifySize = (srcSize, newSize, guide) => {
 
             var scrollSize = specRef.settings.getScrollbarSize(chart.getLayout().contentContainer);
 
             var recommendedWidth = newSize.width;
             var recommendedHeight = newSize.height;
+            const scrollThreshold = 1.5;
+
+            // TODO: Calculate content size and axis size separately.
+            // Axis size should not be the part of padding.
+            if (recommendedWidth > srcSize.width &&
+                recommendedWidth - guide.padding.l + guide.padding.r <= srcSize.width * scrollThreshold
+            ) {
+                recommendedWidth -= guide.padding.l - guide.padding.r;
+                guide.padding.l = guide.padding.r;
+                guide.y.hide = true;
+            }
+            if (recommendedHeight > srcSize.height &&
+                recommendedHeight - guide.padding.b + guide.padding.t <= srcSize.height * scrollThreshold
+            ) {
+                recommendedHeight -= guide.padding.b - guide.padding.t;
+                guide.padding.b = guide.padding.t;
+                guide.x.hide = true;
+            }
+            recommendedWidth = Math.max(srcSize.width, recommendedWidth);
+            recommendedHeight = Math.max(srcSize.height, recommendedHeight);
+
+            // Prevent scrollbar if chart is about to fit size
+            if (recommendedWidth > srcSize.width &&
+                recommendedWidth <= srcSize.width * scrollThreshold
+            ) {
+                recommendedWidth = srcSize.width;
+            }
+            if (recommendedHeight > srcSize.height &&
+                recommendedHeight <= srcSize.height * scrollThreshold
+            ) {
+                recommendedHeight = srcSize.height;
+            }
 
             var deltaW = (srcSize.width - recommendedWidth);
             var deltaH = (srcSize.height - recommendedHeight);
@@ -175,7 +207,11 @@ export class SpecTransformCalcSize {
             };
         };
 
-        specRef.settings.size = prettifySize(srcSize, {width: newW, height: newH});
+        specRef.settings.size = prettifySize(
+            srcSize,
+            {width: newW, height: newH},
+            specRef.unit.guide
+        );
 
         return specRef;
     }
