@@ -106,12 +106,8 @@ export class Cartesian extends Element {
         if (guide.autoLayout === 'extract-axes') {
             var containerHeight = unit.options.containerHeight;
             var diff = (containerHeight - (unit.options.top + unit.options.height));
-            if (!guide.x.hide && (Math.floor(diff) > 0)) {
-                guide.x.hide = true;
-            }
-            if (!guide.y.hide && (Math.floor(unit.options.left) > 0)) {
-                guide.y.hide = true;
-            }
+            guide.x.hide = (Math.floor(diff) > 0);
+            guide.y.hide = (Math.floor(unit.options.left) > 0);
         }
 
         var options = this.config.options;
@@ -281,7 +277,7 @@ export class Cartesian extends Element {
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                if (prettifyTick) {
+                if (prettifyTick && !scale.guide.hideTicks) {
                     d3_decorator_prettify_categorical_axis_ticks(
                         transAxis,
                         scale,
@@ -300,6 +296,11 @@ export class Cartesian extends Element {
                         size,
                         animationSpeed
                     );
+                }
+
+                if (scale.guide.hideTicks) {
+                    axis.selectAll('.tick').remove();
+                    return;
                 }
 
                 var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();

@@ -235,8 +235,8 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
 
     var xValues = xMeta.values;
     var yValues = yMeta.values;
-    var xIsEmptyAxis = (xMeta.isEmpty);
-    var yIsEmptyAxis = (yMeta.isEmpty);
+    var xIsEmptyAxis = (xMeta.isEmpty || guide.x.hideTicks);
+    var yIsEmptyAxis = (yMeta.isEmpty || guide.y.hideTicks);
 
     var maxXTickBox = getMaxTickLabelSize(
         xValues,
@@ -298,38 +298,23 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     }
 
     const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
-    const axisHideThreshold = 0.25;
-    var paddingBottom = guide.padding.t || 10;
-    if (!guide.x.hide) {
-        let padBtm = sum([
-            (guide.x.padding),
-            (kxAxisW * (settings.xTickWidth + rotXBox.height)),
-            (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
-        ]);
-        if (padBtm > settings.size.height * axisHideThreshold) {
-            guide.x.hide = true;
-        } else {
-            paddingBottom = padBtm;
-        }
-    }
-    var paddingLeft = guide.padding.r || 10;
-    if (!guide.y.hide) {
-        let padLft = sum([
-            (guide.y.padding),
-            (kyAxisW * (settings.yTickWidth + rotYBox.width)),
-            (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
-        ]);
-        if (padLft > settings.size.width * axisHideThreshold) {
-            guide.y.hide = true;
-        } else {
-            paddingLeft = padLft;
-        }
-    }
     guide.padding = Object.assign(
         (guide.padding),
         {
-            b: paddingBottom,
-            l: paddingLeft
+            b: (guide.x.hide) ?
+                (0) :
+                sum([
+                    (guide.x.padding),
+                    (kxAxisW * (settings.xTickWidth + rotXBox.height)),
+                    (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
+                ]),
+            l: (guide.y.hide) ?
+                (0) :
+                sum([
+                    (guide.y.padding),
+                    (kyAxisW * (settings.yTickWidth + rotYBox.width)),
+                    (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
+                ])
         });
 
     guide.x = Object.assign(
@@ -630,6 +615,71 @@ var SpecEngineTypeMap = {
             });
 
         return spec;
+    },
+
+    'BUILD-SPARKLINE': (srcSpec, meta, settings) => {
+
+        var spec = utils.clone(srcSpec);
+        fnTraverseSpec(
+            utils.clone(spec.unit),
+            spec.unit,
+            (selectorPredicates, unit) => {
+
+                if (selectorPredicates.isLeaf) {
+                    return unit;
+                }
+
+                if (!unit.guide.hasOwnProperty('showGridLines')) {
+                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
+                }
+
+                if (selectorPredicates.isLeafParent) {
+                    unit.guide.x.hideTicks = true;
+                    unit.guide.y.hideTicks = true;
+
+                    return calcUnitGuide({
+                        unit,
+                        meta,
+                        settings: utils.defaults(
+                            {
+                                xTickWordWrapLinesLimit: 1,
+                                yTickWordWrapLinesLimit: 1
+                            },
+                            settings),
+                        allowXVertical: false,
+                        allowYVertical: false,
+                        inlineLabels: true
+                    });
+                }
+
+                // facet level
+                unit.guide.x.cssClass += ' facet-axis compact';
+                unit.guide.x.avoidCollisions = true;
+                unit.guide.x.hideTicks = true;
+                unit.guide.y.cssClass += ' facet-axis compact';
+                unit.guide.y.avoidCollisions = true;
+                unit.guide.y.hideTicks = true;
+
+                return calcUnitGuide({
+                    unit,
+                    meta,
+                    settings: utils.defaults(
+                        {
+                            xAxisPadding: 0,
+                            yAxisPadding: 0,
+                            distToXAxisLabel: 0,
+                            distToYAxisLabel: 0,
+                            xTickWordWrapLinesLimit: 1,
+                            yTickWordWrapLinesLimit: 1
+                        },
+                        settings),
+                    allowXVertical: false,
+                    allowYVertical: true,
+                    inlineLabels: true
+                });
+            });
+
+        return spec;
     }
 };
 
@@ -642,6 +692,13 @@ SpecEngineTypeMap.AUTO = (srcSpec, meta, settings) => {
 
 SpecEngineTypeMap.COMPACT = (srcSpec, meta, settings) => {
     return ['BUILD-LABELS', 'BUILD-COMPACT'].reduce(
+        (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
+        srcSpec
+    );
+};
+
+SpecEngineTypeMap.SPARKLINE = (srcSpec, meta, settings) => {
+    return ['BUILD-LABELS', 'BUILD-SPARKLINE'].reduce(
         (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
         srcSpec
     );
