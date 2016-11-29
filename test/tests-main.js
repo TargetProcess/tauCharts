@@ -4,6 +4,7 @@ var tauCharts = require('src/tau.charts');
 tauCharts.api.globalSettings.animationSpeed = 0;
 tauCharts.api.globalSettings.renderingTimeout = 0;
 tauCharts.api.globalSettings.asyncRendering = false;
+tauCharts.api.globalSettings.avoidScrollAtRatio = 1;
 
 // Setup font for tests
 (function () {
