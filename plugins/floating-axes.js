@@ -270,7 +270,10 @@
                             g.attr('transform', translate(x, y));
                             labels.each(function () {
                                 var t = parseTransform(this[transProp]);
-                                var dy = -pos.svgHeight / 2 + pos.visibleHeight / 2 + scrollTop;
+                                var dy = (this.matches('.inline') ?
+                                    (scrollTop) :
+                                    (scrollTop - pos.svgHeight / 2 + pos.visibleHeight / 2)
+                                );
                                 this.setAttribute(
                                     'transform',
                                     'translate(' + t.x + ',' + (t.y + dy) + ') rotate(' + t.r + ')'

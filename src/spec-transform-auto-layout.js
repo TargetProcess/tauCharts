@@ -675,7 +675,7 @@ var SpecEngineTypeMap = {
                         settings),
                     allowXVertical: false,
                     allowYVertical: true,
-                    inlineLabels: true
+                    inlineLabels: false
                 });
             });
 
