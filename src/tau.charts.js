@@ -146,7 +146,7 @@ var api = {
 
         getScrollbarSize: utilsDom.getScrollbarSize,
 
-        noScrollRatio: 1.5,
+        avoidScrollAtRatio: 1.5,
 
         xAxisTickLabelLimit: 150,
         yAxisTickLabelLimit: 150,
