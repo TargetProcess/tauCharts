@@ -1,5 +1,4 @@
 import {bezier, getBezierPoint} from '../bezier';
-import {utils} from '../../utils';
 
 /**
  * Returns line with variable width.
@@ -189,7 +188,7 @@ function getPolarPoint(start, distance, angle) {
 function splitCurveSegment(p0, c0, c1, p1) {
     var c2 = getBezierPoint(0.5, p0, c0);
     var c3 = getBezierPoint(0.5, p0, c0, c1);
-    var r = utils.unique(Object.keys(p0), Object.keys(p1))
+    var r = Object.keys(p1)
         .reduce((memo, k) => {
             if (k === 'x' || k === 'y') {
                 memo[k] = bezier(0.5, p0[k], c0[k], c1[k], p1[k]);

@@ -369,7 +369,7 @@ function interpolatePoint(a, b, t) {
         return b;
     }
     var c = {};
-    var props = utils.unique(Object.keys(a), Object.keys(b));
+    var props = Object.keys(a);
     props.forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
     if (b.id !== undefined) {
         c.id = b.id;
@@ -694,7 +694,7 @@ function getDistance(x0, y0, x, y) {
 }
 
 function splitCubicSegment(t, [p0, c0, c1, p1]) {
-    var r = utils.unique(Object.keys(p0), Object.keys(p1))
+    var r = Object.keys(p1)
         .reduce((memo, k) => {
             if (k === 'x' || k === 'y') {
                 memo[k] = bezier(t, p0[k], c0[k], c1[k], p1[k]);

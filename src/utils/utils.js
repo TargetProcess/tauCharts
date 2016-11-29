@@ -534,16 +534,19 @@ var utils = {
     },
 
     unique: (array, func) => {
-        let mappedArray = array;
-        let filter = ((elem, pos, arr) => arr.indexOf(elem) === pos);
-        if (typeof func === 'function') {
-            mappedArray = array.map(func);
-            filter = (elem, pos) => {
-                let mappedElem = mappedArray[pos];
-                return mappedArray.findIndex(x => x === mappedElem) === pos;
-            };
+        var hash = {};
+        var result = [];
+        var len = array.length;
+        var hasher = func || ((x) => String(x));
+        for (var i = 0; i < len; ++i) {
+            var item = array[i];
+            var key = hasher(item);
+            if (!hash.hasOwnProperty(key)) {
+                hash[key] = true;
+                result.push(item);
+            }
         }
-        return array.filter(filter);
+        return result;
     },
 
     groupBy: (array, func) => {
