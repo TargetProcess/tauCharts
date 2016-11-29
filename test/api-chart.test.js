@@ -219,11 +219,11 @@ define(function (require) {
             });
             chart.renderTo(container);
             var svg = chart.getSVG();
-            expect(parseInt(svg.getAttribute('height'))).to.equal(expectHeight - scrollbar.height);
+            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 10);
             document.body.removeChild(container);
         };
 
-        testChart(1, 159);
+        testChart(1, 160);
         testChart(2, 120);
     });
 
