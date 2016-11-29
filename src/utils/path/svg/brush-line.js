@@ -1,5 +1,4 @@
 import {bezier, getBezierPoint} from '../bezier';
-import {utils} from '../../utils';
 
 /**
  * Returns line with variable width.
