@@ -44,7 +44,7 @@ export class LogarithmicScale extends BaseScale {
 
         var d3Scale = extendLogScale(d3.scale.log())
             .domain(domain)
-            .rangeRound(interval, 1);
+            .range(interval);
         d3Scale.stepSize = (() => 0);
 
         return this.toBaseScale(d3Scale, interval);

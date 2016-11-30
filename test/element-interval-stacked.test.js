@@ -17,7 +17,7 @@ var expectCoordsElement = function (div, expect, coords) {
     var bars = getGroupBar(div);
 
     var convertToFixed = function (x) {
-        return parseFloat(x).toFixed(4);
+        return parseFloat(x).toFixed(0);
     };
 
     //var r = [];

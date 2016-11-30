@@ -3,6 +3,7 @@ define(function (require) {
     var schemes = require('schemes');
     var tauChart = require('src/tau.charts');
     var testUtils = require('testUtils');
+    var round = testUtils.roundNumbersInString;
 
     describe('Area plot chart', function () {
 
@@ -184,17 +185,17 @@ define(function (require) {
             expect(svgPolygons.length).to.equal(3);
 
             expect(testUtils.hasClass(svgPolygons[0].parentNode, 'A')).to.equal(true);
-            expect(d3.select(svgPolygons[0]).attr('points'))
+            expect(round(d3.select(svgPolygons[0]).attr('points')))
                 .to
                 .equal('0,600 500,400 1000,200 1000,600 500,600 0,600', 'A');
 
             expect(testUtils.hasClass(svgPolygons[1].parentNode, 'B')).to.equal(true);
-            expect(d3.select(svgPolygons[1]).attr('points'))
+            expect(round(d3.select(svgPolygons[1]).attr('points')))
                 .to
                 .equal('0,200 500,0 1000,200 1000,200 500,400 0,600', 'B positive');
 
             expect(testUtils.hasClass(svgPolygons[2].parentNode, 'B')).to.equal(true);
-            expect(d3.select(svgPolygons[2]).attr('points'))
+            expect(round(d3.select(svgPolygons[2]).attr('points')))
                 .to
                 .equal('0,1000 500,1000 1000,600 1000,600 500,600 0,600', 'B negative');
 
@@ -205,7 +206,7 @@ define(function (require) {
                 return [x, y];
             });
 
-            expect(JSON.stringify(points))
+            expect(round(JSON.stringify(points)))
                 .to
                 .deep
                 .equal('[["0","600"],["500","400"],["1000","200"],["0","200"],["500","0"],["0","1000"],["500","1000"]]');
@@ -252,19 +253,19 @@ define(function (require) {
             expect(svgPolygons.length).to.equal(3);
 
             expect(testUtils.hasClass(svgPolygons[0].parentNode, 'A')).to.equal(true, 'A');
-            expect(d3.select(svgPolygons[0]).attr('points'))
+            expect(round(d3.select(svgPolygons[0]).attr('points')))
                 .to
                 // .equal('800,0 600,500 400,1000 400,1000 400,500 400,0', 'A');
                 .equal('400,1000 600,500 800,0 400,0 400,500 400,1000', 'A');
 
             expect(testUtils.hasClass(svgPolygons[1].parentNode, 'B')).to.equal(true, 'B negative');
-            expect(d3.select(svgPolygons[1]).attr('points'))
+            expect(round(d3.select(svgPolygons[1]).attr('points')))
                 .to
                 // .equal('800,0 1000,500 800,1000 400,1000 600,500 800,0', 'B negative');
                 .equal('800,1000 1000,500 800,0 800,0 600,500 400,1000', 'B negative');
 
             expect(testUtils.hasClass(svgPolygons[2].parentNode, 'B')).to.equal(true, 'B pos');
-            expect(d3.select(svgPolygons[2]).attr('points'))
+            expect(round(d3.select(svgPolygons[2]).attr('points')))
                 .to
                 //.equal('400,0 0,500 0,1000 400,1000 400,500 400,0', 'B positive');
                 .equal('0,1000 0,500 400,0 400,0 400,500 400,1000', 'B positive');
