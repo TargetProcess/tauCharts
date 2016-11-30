@@ -335,14 +335,14 @@ GrammarRegistry
         var length = Math.abs(model.scaleX.value(domain[1]) - model.scaleX.value(domain[0]));
         var koeff = ((domain[1] - domain[0]) / length);
 
-        var lPad = Math.abs(Math.min(0, (xs[0] - plannedMaxSize / 2)));
-        var rPad = Math.abs(Math.min(0, (length - (xs[xs.length - 1] + plannedMaxSize / 2))));
+        var lPad = Math.max(0, (plannedMaxSize / 2 - xs[0]));
+        var rPad = Math.max(0, (xs[xs.length - 1] + plannedMaxSize / 2 - length));
 
         var lxPad = model.flip ? rPad : lPad;
         var rxPad = model.flip ? lPad : rPad;
 
         var lVal = domain[0] - (lxPad * koeff);
-        var rVal = domain[1] - (-1 * rxPad * koeff);
+        var rVal = domain[1] + (rxPad * koeff);
 
         model.scaleX.fixup((prev) => {
             var next = {};
@@ -350,6 +350,7 @@ GrammarRegistry
                 next.fixed = true;
                 next.min = lVal;
                 next.max = rVal;
+                next.nice = false;
             } else {
                 if (prev.min > lVal) {
                     next.min = lVal;
@@ -363,7 +364,7 @@ GrammarRegistry
             return next;
         });
 
-        var linearlyScaledMaxSize = plannedMaxSize * (1 - ((lPad + rPad) / length)) - 1;
+        var linearlyScaledMaxSize = plannedMaxSize * (length / (lxPad + rxPad + length));
         model.scaleSize.fixup(() => ({maxSize: linearlyScaledMaxSize}));
 
         return {};

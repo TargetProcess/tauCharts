@@ -455,7 +455,7 @@ define(function (require) {
 
             expect(scale0(low)).to.equal(0);
             expect(scale0(medium)).to.equal(
-                Math.round((Math.log(medium) - Math.log(low)) / (Math.log(high) - Math.log(low)) * width)
+                ((Math.log(medium) - Math.log(low)) / (Math.log(high) - Math.log(low)) * width)
             );
             expect(scale0(high)).to.equal(width);
 
