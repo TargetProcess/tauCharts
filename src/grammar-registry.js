@@ -309,7 +309,7 @@ GrammarRegistry
 
         return {};
     })
-    .reg('avoidBaseScaleOverflow', (model) => {
+    .reg('avoidXScaleOverflow', (model) => {
 
         const dataSource = model.data();
 
@@ -317,8 +317,10 @@ GrammarRegistry
             return {};
         }
 
+        var plannedMinSize;
         var plannedMaxSize;
         model.scaleSize.fixup((prev) => {
+            plannedMinSize = prev.minSize;
             plannedMaxSize = prev.maxSize;
             return prev;
         });
@@ -327,16 +329,21 @@ GrammarRegistry
             return {};
         }
 
-        var xs = dataSource
-            .map((row) => model.xi(row))
-            .sort(((a, b) => (a - b)));
+        var contentRange = dataSource
+            .reduce((memo, row) => {
+                var x = model.xi(row);
+                var r = (plannedMinSize + model.size(row) * (plannedMaxSize - plannedMinSize)) / 2;
+                memo[0] = Math.min(memo[0], x - r);
+                memo[1] = Math.max(memo[1], x + r);
+                return memo;
+            }, [Infinity, -Infinity]);
 
         var domain = model.scaleX.domain();
         var length = Math.abs(model.scaleX.value(domain[1]) - model.scaleX.value(domain[0]));
         var koeff = ((domain[1] - domain[0]) / length);
 
-        var lPad = Math.max(0, (plannedMaxSize / 2 - xs[0]));
-        var rPad = Math.max(0, (xs[xs.length - 1] + plannedMaxSize / 2 - length));
+        var lPad = Math.max(0, (-contentRange[0]));
+        var rPad = Math.max(0, (contentRange[1] - length));
 
         var lxPad = model.flip ? rPad : lPad;
         var rxPad = model.flip ? lPad : rPad;
@@ -365,6 +372,73 @@ GrammarRegistry
         });
 
         var linearlyScaledMaxSize = plannedMaxSize * (length / (lxPad + rxPad + length));
+        model.scaleSize.fixup(() => ({maxSize: linearlyScaledMaxSize}));
+
+        return {};
+    })
+    .reg('avoidYScaleOverflow', (model) => {
+
+        const dataSource = model.data();
+
+        if (model.scaleY.discrete) {
+            return {};
+        }
+
+        var plannedMinSize;
+        var plannedMaxSize;
+        model.scaleSize.fixup((prev) => {
+            plannedMinSize = prev.minSize;
+            plannedMaxSize = prev.maxSize;
+            return prev;
+        });
+
+        if (plannedMaxSize <= 10) {
+            return {};
+        }
+
+        var contentRange = dataSource
+            .reduce((memo, row) => {
+                var y = model.yi(row);
+                var r = (plannedMinSize + model.size(row) * (plannedMaxSize - plannedMinSize)) / 2;
+                memo[0] = Math.min(memo[0], y - r);
+                memo[1] = Math.max(memo[1], y + r);
+                return memo;
+            }, [Infinity, -Infinity]);
+
+        var domain = model.scaleY.domain();
+        var length = Math.abs(model.scaleY.value(domain[1]) - model.scaleY.value(domain[0]));
+        var koeff = ((domain[1] - domain[0]) / length);
+
+        var tPad = Math.max(0, (-contentRange[0]));
+        var bPad = Math.max(0, (contentRange[1] - length));
+
+        var bxPad = model.flip ? bPad : tPad;
+        var txPad = model.flip ? tPad : bPad;
+
+        var bVal = domain[0] - (txPad * koeff);
+        var tVal = domain[1] + (bxPad * koeff);
+
+        model.scaleY.fixup((prev) => {
+            var next = {};
+            if (!prev.fixed) {
+                next.fixed = true;
+                next.min = bVal;
+                next.max = tVal;
+                next.nice = false;
+            } else {
+                if (prev.min > bVal) {
+                    next.min = bVal;
+                }
+
+                if (prev.max < tVal) {
+                    next.max = tVal;
+                }
+            }
+
+            return next;
+        });
+
+        var linearlyScaledMaxSize = plannedMaxSize * (length / (bxPad + txPad + length));
         model.scaleSize.fixup(() => ({maxSize: linearlyScaledMaxSize}));
 
         return {};

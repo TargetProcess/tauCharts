@@ -23,7 +23,7 @@ define(function (require) {
             }
         };
 
-        it('should support avoidBaseScaleOverflow rule (continues scale)', function () {
+        it('should support avoidXScaleOverflow rule (continues scale)', function () {
             var xConfig = {dim: 'x'};
             var sConfig = {dim: 's', minSize: 1, maxSize: 40};
             var model = {
@@ -33,7 +33,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
+            GrammarRegistry.get('avoidXScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -44,7 +44,7 @@ define(function (require) {
             expect(sConfig.maxSize).to.be.closeTo(29, 1);
         });
 
-        it('should ignore avoidBaseScaleOverflow rule for ordinal scale', function () {
+        it('should ignore avoidXScaleOverflow rule for ordinal scale', function () {
             var xConfig = {dim: 'x_ordinal'};
             var xConfigOriginal = JSON.stringify(xConfig);
             var sConfig = {dim: 's', minSize: 1, maxSize: 40};
@@ -56,7 +56,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
+            GrammarRegistry.get('avoidXScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -65,7 +65,7 @@ define(function (require) {
             expect(JSON.stringify(sConfig)).to.equal(sConfigOriginal);
         });
 
-        it('should ignore avoidBaseScaleOverflow rule when max size is less than 10', function () {
+        it('should ignore avoidXScaleOverflow rule when max size is less than 10', function () {
             var xConfig = {dim: 'x'};
             var xConfigOriginal = JSON.stringify(xConfig);
             var sConfig = {dim: 's', minSize: 1, maxSize: 10};
@@ -77,7 +77,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
+            GrammarRegistry.get('avoidXScaleOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();

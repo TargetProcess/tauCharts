@@ -53,9 +53,10 @@ const Line = {
                     });
 
                 return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
-            })
-        ];
-
+            }),
+            (config.guide.size && GrammarRegistry.get('avoidXScaleOverflow')),
+            (config.guide.size && GrammarRegistry.get('avoidYScaleOverflow'))
+        ].filter(x => x);
         return config;
     },
 

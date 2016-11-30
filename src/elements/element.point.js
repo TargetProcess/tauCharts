@@ -14,7 +14,6 @@ const Point = {
             (config.guide || {}),
             {
                 animationSpeed: 0,
-                prettify: true,
                 enableColorToBarPosition: false
             });
 
@@ -80,7 +79,9 @@ const Point = {
                     GrammarRegistry.get('adjustStaticSizeScale'));
 
                 return method(prevModel, params);
-            })
+            }),
+            (GrammarRegistry.get('avoidXScaleOverflow')),
+            (GrammarRegistry.get('avoidYScaleOverflow'))
         ].filter(x => x);
 
         return config;

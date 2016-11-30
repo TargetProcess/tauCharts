@@ -83,7 +83,7 @@ const Interval = {
 
                 return GrammarRegistry.get('size_distribute_evenly')(prevModel, params);
             })),
-            (enableDistributeEvenly && config.guide.prettify && GrammarRegistry.get('avoidBaseScaleOverflow')),
+            (enableDistributeEvenly && config.guide.prettify && GrammarRegistry.get('avoidXScaleOverflow')),
             (config.stack && GrammarRegistry.get('adjustYScale'))
         ].filter(x => x);
 
