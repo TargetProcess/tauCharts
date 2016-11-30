@@ -277,7 +277,7 @@ export class Cartesian extends Element {
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                if (prettifyTick) {
+                if (prettifyTick && !scale.guide.hideTicks) {
                     d3_decorator_prettify_categorical_axis_ticks(
                         transAxis,
                         scale,
@@ -296,6 +296,11 @@ export class Cartesian extends Element {
                         size,
                         animationSpeed
                     );
+                }
+
+                if (scale.guide.hideTicks) {
+                    axis.selectAll('.tick').remove();
+                    return;
                 }
 
                 var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();

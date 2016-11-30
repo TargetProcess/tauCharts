@@ -70,11 +70,9 @@ define(function (require) {
             };
 
             function checkSizes(chart, width, height) {
-                if (modernizer.flexbox) {
-                    var svg = chart.getSVG();
-                    expect(parseInt($(svg).attr('width'))).to.be.equal(width);
-                    expect(parseInt($(svg).attr('height'))).to.be.equal(height);
-                }
+                var svg = chart.getSVG();
+                expect(parseInt($(svg).attr('width'))).to.be.equal(width);
+                expect(parseInt($(svg).attr('height'))).to.be.equal(height);
             }
 
             var chart1 = new tauCharts.Chart(createConfig());
@@ -156,11 +154,9 @@ define(function (require) {
         };
 
         function checkSizes(chart, width, height) {
-            if (modernizer.flexbox) {
-                var svg = chart.getSVG();
-                expect(parseInt($(svg).attr('width'))).to.be.equal(width);
-                expect(parseInt($(svg).attr('height'))).to.be.equal(height);
-            }
+            var svg = chart.getSVG();
+            expect(parseInt($(svg).attr('width'))).to.be.equal(width);
+            expect(parseInt($(svg).attr('height'))).to.be.equal(height);
         }
 
         beforeEach(function () {
@@ -202,6 +198,33 @@ define(function (require) {
             div1.parentNode.removeChild(div1);
             utils.noScrollStyle.remove();
         });
+    });
+
+    describe('Avoid chart scrollbar', function () {
+        var testChart = function (avoidScrollAtRatio, expectHeight) {
+            var container = document.createElement('div');
+            container.style.width = '120px';
+            container.style.height = '120px';
+            document.body.appendChild(container);
+            var scrollbar = tauCharts.api.globalSettings.getScrollbarSize(container);
+            var chart = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x',
+                y: 'y',
+                data: [{ x: 'o_O', y: 16 }],
+                settings: {
+                    fitModel: 'normal',
+                    avoidScrollAtRatio: avoidScrollAtRatio
+                }
+            });
+            chart.renderTo(container);
+            var svg = chart.getSVG();
+            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 10);
+            document.body.removeChild(container);
+        };
+
+        testChart(1, 160);
+        testChart(2, 120);
     });
 
     describe('API CHART', function () {

@@ -117,12 +117,19 @@ var api = {
         excludeNull: true,
         specEngine: [
             {
+                name: 'SPARKLINE',
+                width: 300,
+                height: 200
+            },
+            {
                 name: 'COMPACT',
-                width: 600
+                width: 600,
+                height: 400
             },
             {
                 name: 'AUTO',
-                width: Number.MAX_VALUE
+                width: Number.MAX_VALUE,
+                height: Number.MAX_VALUE
             }
         ],
 
@@ -138,6 +145,8 @@ var api = {
         getAxisTickLabelSize: utils.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
 
         getScrollbarSize: utilsDom.getScrollbarSize,
+
+        avoidScrollAtRatio: 1.5,
 
         xAxisTickLabelLimit: 150,
         yAxisTickLabelLimit: 150,

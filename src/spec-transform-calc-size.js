@@ -156,12 +156,20 @@ export class SpecTransformCalcSize {
             newH = newSize.newH;
         }
 
-        var prettifySize = (srcSize, newSize) => {
+        var prettifySize = (srcSize, newSize, rScroll) => {
 
             var scrollSize = specRef.settings.getScrollbarSize(chart.getLayout().contentContainer);
 
-            var recommendedWidth = newSize.width;
-            var recommendedHeight = newSize.height;
+            var recommendedWidth = (
+                (newSize.width > srcSize.width && newSize.width <= srcSize.width * rScroll) ?
+                    srcSize.width :
+                    newSize.width
+            );
+            var recommendedHeight = (
+                (newSize.height > srcSize.height && newSize.height <= srcSize.height * rScroll) ?
+                    srcSize.height :
+                    newSize.height
+            );
 
             var deltaW = (srcSize.width - recommendedWidth);
             var deltaH = (srcSize.height - recommendedHeight);
@@ -175,7 +183,11 @@ export class SpecTransformCalcSize {
             };
         };
 
-        specRef.settings.size = prettifySize(srcSize, {width: newW, height: newH});
+        specRef.settings.size = prettifySize(
+            srcSize,
+            {width: newW, height: newH},
+            specRef.settings.avoidScrollAtRatio
+        );
 
         return specRef;
     }

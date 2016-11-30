@@ -165,6 +165,8 @@
 
     DevApp.prototype._renderCharts = function () {
 
+        var settings = this._settings;
+
         //
         // Destroy previous charts
 
@@ -175,10 +177,18 @@
         var container = document.getElementById('samplesContainer');
         container.innerHTML = '';
 
+        // Set containers sizes
+        document.getElementById('chartSizeStyle')
+            .textContent = [
+                '.sample {',
+                settings.width ? ('  width: ' + settings.width + ';') : null,
+                settings.height ? ('  height: ' + settings.height + ';') : null,
+                '}'
+            ].filter(function (d) { return Boolean(d); }).join('\n');
+
         //
         // Filter specs
 
-        var settings = this._settings;
         var specs = filterSpecs(this._specs.slice(0));
         if (settings.types.length) {
             specs = specs.filter(function (s) {
@@ -341,6 +351,14 @@
         createCheckGroup(pluginsContainer, PLUGINS, settings.plugins);
 
         //
+        // Init chart size inputs
+
+        var widthInput = document.getElementById('inputWidth');
+        var heightInput = document.getElementById('inputHeight');
+        widthInput.value = settings.width;
+        heightInput.value = settings.height;
+
+        //
         // Handle input changes
 
         var onValueChanged = function (e) {
@@ -355,21 +373,29 @@
             var settings = {
                 path: pathInput.value.trim(),
                 types: getValues(typesContainer),
-                plugins: getValues(pluginsContainer)
+                plugins: getValues(pluginsContainer),
+                width: widthInput.value.trim(),
+                height: heightInput.value.trim()
             };
             this._settings = settings;
             this._saveSettings(settings);
             this._renderCharts();
         }.bind(this);
 
-        pathInput.onchange = onValueChanged;
-        pathInput.onkeydown = function (e) {
-            if (e.keyCode === 13) {
-                onValueChanged(e);
-            }
+        var listenTextChange = function (input) {
+            input.onchange = onValueChanged;
+            input.onkeydown = function (e) {
+                if (e.keyCode === 13) {
+                    onValueChanged(e);
+                }
+            };
         };
+
+        listenTextChange(pathInput);
         typesContainer.addEventListener('change', onValueChanged);
         pluginsContainer.addEventListener('change', onValueChanged);
+        listenTextChange(widthInput);
+        listenTextChange(heightInput);
 
         //
         // Init scroll
@@ -400,7 +426,9 @@
         settings = utils.defaults(settings, {
             path: '',
             types: [],
-            plugins: []
+            plugins: [],
+            width: '',
+            height: ''
         });
         settings.path = settings.path.trim();
         settings.types = filterEmptyValues(settings.types);
