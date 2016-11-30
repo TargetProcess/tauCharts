@@ -118,8 +118,8 @@ var api = {
         specEngine: [
             {
                 name: 'SPARKLINE',
-                width: 200,
-                height: 150
+                width: 300,
+                height: 200
             },
             {
                 name: 'COMPACT',
