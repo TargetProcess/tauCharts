@@ -237,13 +237,17 @@ define(function (require) {
                 .getAttribute('d');
 
             expect(testUtils.roundNumbersInString(pathValue)).to.equal([
-                'M0,500 L500,500',
-                'A0,0 0 0 1 500,500',
+                'M0,500',
+                'L333,500',
+                'A0,0 0 0 1 333,500',
                 'L0,500',
-                'A0,0 0 0 1 0,500 Z',
-                'M1000,0',
-                'A500,500 0 0 1 1000,1000',
-                'A500,500 0 0 1 1000,0',
+                'A0,0 0 0 1 0,500',
+                'Z',
+                'M333,500',
+                'L333,500',
+                'A333,333 0 1 1 333,500',
+                'L333,500',
+                'A0,0 0 0 1 333,500',
                 'Z'
             ].join(' '), 'line with variable size');
         });

@@ -29,6 +29,7 @@ define(function (require) {
             var model = {
                 scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
+                size: (row) => model.scaleSize.value(row[model.scaleSize.dim]),
                 xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
                 data: (() => data)
             };
@@ -52,27 +53,7 @@ define(function (require) {
             var model = {
                 scaleX: new OrdinalScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
-                xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
-                data: (() => data)
-            };
-
-            GrammarRegistry.get('avoidXScaleOverflow')(model);
-
-            model.scaleX.commit();
-            model.scaleSize.commit();
-
-            expect(JSON.stringify(xConfig)).to.equal(xConfigOriginal);
-            expect(JSON.stringify(sConfig)).to.equal(sConfigOriginal);
-        });
-
-        it('should ignore avoidXScaleOverflow rule when max size is less than 10', function () {
-            var xConfig = {dim: 'x'};
-            var xConfigOriginal = JSON.stringify(xConfig);
-            var sConfig = {dim: 's', minSize: 1, maxSize: 10};
-            var sConfigOriginal = JSON.stringify(sConfig);
-            var model = {
-                scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
-                scaleSize: new SizeScale(xSrc, sConfig).create(),
+                size: (row) => model.scaleSize.value(row[model.scaleSize.dim]),
                 xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
                 data: (() => data)
             };

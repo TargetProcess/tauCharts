@@ -7,7 +7,13 @@ define(function(require) {
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
     var attrib = testUtils.attrib;
-    var position = testUtils.position;
+    var position = function (el) {
+        var p = testUtils.position(el);
+        Object.keys(p).forEach(function (k) {
+            p[k] = Math.round(p[k]);
+        });
+        return p;
+    };
     var assert = require('chai').assert;
     var testData = [
         {x: 1, y: 1, color: 'red', size: 6},
@@ -47,8 +53,8 @@ define(function(require) {
             it("should render point with right cord", function() {
                 var dots = getDots();
                 expect(dots.length).to.equal(3);
-                expect(position(dots[1])).to.deep.equal({x: '0', y: '800'});
-                expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
+                expect(position(dots[1])).to.deep.equal({x: 17, y: 784});
+                expect(position(dots[2])).to.deep.equal({x: 781, y: 18});
             });
             it("should render point with right size", function() {
                 var dots = getDots();
@@ -92,8 +98,8 @@ define(function(require) {
             it("should render point with right cord", function() {
                 var dots = getDots();
                 expect(dots.length).to.equal(3);
-                expect(position(dots[1])).to.deep.equal({x: '0', y: '800'});
-                expect(position(dots[2])).to.deep.equal({x: '800', y: '0'});
+                expect(position(dots[1])).to.deep.equal({x: 5, y: 795});
+                expect(position(dots[2])).to.deep.equal({x: 795, y: 5});
             });
             it("should render point with right size", function() {
                 var dots = getDots();
@@ -258,8 +264,8 @@ define(function(require) {
         function() {
             it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(6.5, 0); // ~ 100 * Math.pow(3.3 - 2, 2) == Math.pow(15 - 2, 2)
-                expect(sizes[1]).to.be.closeTo(20, 0);
+                expect(sizes[0]).to.be.closeTo(6.5, 1); // ~ 100 * Math.pow(3.3 - 2, 2) == Math.pow(15 - 2, 2)
+                expect(sizes[1]).to.be.closeTo(18, 1);
             });
         });
 
@@ -273,8 +279,8 @@ define(function(require) {
         function() {
             it("should have sizes in small range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(15.6066, 0.0001);
-                expect(sizes[1]).to.be.closeTo(20, 0);
+                expect(sizes[0]).to.be.closeTo(15, 1);
+                expect(sizes[1]).to.be.closeTo(18, 1);
             });
         });
 
@@ -288,8 +294,8 @@ define(function(require) {
         function() {
             it("should have proportional sizes", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(15.6066, 0.0001);
-                expect(sizes[1]).to.be.closeTo(20, 0);
+                expect(sizes[0]).to.be.closeTo(15, 1);
+                expect(sizes[1]).to.be.closeTo(18, 1);
             });
         });
 
@@ -305,8 +311,8 @@ define(function(require) {
             it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(minimalRadius, 0);
-                expect(sizes[1]).to.be.closeTo(15.6066, 0.0001);
-                expect(sizes[2]).to.be.closeTo(20, 0);
+                expect(sizes[1]).to.be.closeTo(15, 1);
+                expect(sizes[2]).to.be.closeTo(18, 1);
             });
         });
 
@@ -318,7 +324,7 @@ define(function(require) {
 
             it("should map Infinity to maximum size", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[3]).to.be.equal(20);
+                expect(sizes[3]).to.be.closeTo(18, 1);
             });
 
             it("should map null to 0 size", function() {
