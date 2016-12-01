@@ -35,15 +35,15 @@ const Line = {
         ].concat(config.transformModel || []);
 
         const avoidScalesOverflow = config.guide.avoidScalesOverflow;
+        const isEmptySize = ((model) => !model.scaleSize.dim); // TODO: empty method for size scale???
 
         config.adjustRules = [
             ((prevModel, args) => {
-                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
                 const sizeCfg = utils.defaults(
                     (config.guide.size || {}),
                     {
                         defMinSize: 2,
-                        defMaxSize: (isEmptySize ? 6 : 40)
+                        defMaxSize: (isEmptySize(prevModel) ? 6 : 40)
                     });
                 const params = Object.assign(
                     {},
@@ -57,8 +57,18 @@ const Line = {
 
                 return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
             }),
-            (config.guide.size && avoidScalesOverflow && GrammarRegistry.get('avoidXScaleOverflow')),
-            (config.guide.size && avoidScalesOverflow && GrammarRegistry.get('avoidYScaleOverflow'))
+            (avoidScalesOverflow && ((prevModel, args) => {
+                if (isEmptySize(prevModel)) {
+                    return (() => ({}));
+                }
+                return GrammarRegistry.get('avoidXScaleOverflow')(prevModel, args);
+            })),
+            (avoidScalesOverflow && ((prevModel, args) => {
+                if (isEmptySize(prevModel)) {
+                    return (() => ({}));
+                }
+                return GrammarRegistry.get('avoidYScaleOverflow')(prevModel, args);
+            }))
         ].filter(x => x);
         return config;
     },
