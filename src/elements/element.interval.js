@@ -88,7 +88,7 @@ const Interval = {
             (
                 avoidScalesOverflow &&
                 enableDistributeEvenly &&
-                GrammarRegistry.get('avoidXScaleOverflow')
+                GrammarRegistry.get('avoidScalesOverflow')
             ),
             (config.stack && GrammarRegistry.get('adjustYScale'))
         ].filter(x => x);

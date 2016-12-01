@@ -23,7 +23,7 @@ define(function (require) {
             }
         };
 
-        it('should support avoidXScaleOverflow rule (continues scale)', function () {
+        it('should support avoidScalesOverflow rule (continues scale)', function () {
             var xConfig = {dim: 'x'};
             var sConfig = {dim: 's', minSize: 1, maxSize: 40};
             var model = {
@@ -34,7 +34,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidXScaleOverflow')(model);
+            GrammarRegistry.get('avoidScalesOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -45,7 +45,7 @@ define(function (require) {
             expect(sConfig.maxSize).to.be.closeTo(29, 1);
         });
 
-        it('should ignore avoidXScaleOverflow rule for ordinal scale', function () {
+        it('should ignore avoidScalesOverflow rule for ordinal scale', function () {
             var xConfig = {dim: 'x_ordinal'};
             var xConfigOriginal = JSON.stringify(xConfig);
             var sConfig = {dim: 's', minSize: 1, maxSize: 40};
@@ -58,7 +58,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidXScaleOverflow')(model);
+            GrammarRegistry.get('avoidScalesOverflow')(model);
 
             model.scaleX.commit();
             model.scaleSize.commit();

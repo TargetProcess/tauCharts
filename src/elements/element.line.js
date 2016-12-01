@@ -61,13 +61,7 @@ const Line = {
                 if (isEmptySize(prevModel)) {
                     return (() => ({}));
                 }
-                return GrammarRegistry.get('avoidXScaleOverflow')(prevModel, args);
-            })),
-            (avoidScalesOverflow && ((prevModel, args) => {
-                if (isEmptySize(prevModel)) {
-                    return (() => ({}));
-                }
-                return GrammarRegistry.get('avoidYScaleOverflow')(prevModel, args);
+                return GrammarRegistry.get('avoidScalesOverflow')(prevModel, args);
             }))
         ].filter(x => x);
         return config;

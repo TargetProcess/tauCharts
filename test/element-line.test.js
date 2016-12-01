@@ -250,6 +250,60 @@ define(function (require) {
         });
     });
 
+    describe('line chart with size (prevent overflow)', function () {
+
+        var element;
+        var chart;
+
+        beforeEach(function () {
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Chart({
+                type: 'line',
+                x: 'xx',
+                y: 'yy',
+                size: 'ss',
+                guide: {
+                    x: {hide: true, nice: false},
+                    y: {hide: true, nice: false},
+                    size: {minSize: 200, maxSize: 1000},
+                    avoidScalesOverflow: true,
+                    padding: {l: 0, r: 0, b: 0, t: 0}
+                },
+                settings: {
+                    layoutEngine: 'NONE'
+                },
+                data: [
+                    {xx: 0, yy: 0, ss: 2},
+                    {xx: 4, yy: 2, ss: 2}
+                ]
+            });
+            chart.renderTo(element, {width: 1000, height: 1000});
+        });
+
+        afterEach(function () {
+            element.parentNode.removeChild(element);
+        });
+
+        it('should render brush line and prevent points overflow', function () {
+
+            var pathValue = document
+                .querySelector('.area path')
+                .getAttribute('d');
+
+            expect(testUtils.roundNumbersInString(pathValue)).to.equal([
+                'M0,500 L500,500',
+                'A0,0 0 0 1 500,500',
+                'L0,500',
+                'A0,0 0 0 1 0,500 Z',
+                'M1000,0',
+                'A500,500 0 0 1 1000,1000',
+                'A500,500 0 0 1 1000,0',
+                'Z'
+            ].join(' '), 'line with variable size and without overflow');
+        });
+    });
+
     var describeChart = testUtils.describeChart;
     describeChart("Line event API",
         {

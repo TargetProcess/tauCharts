@@ -82,8 +82,7 @@ const Point = {
 
                 return method(prevModel, params);
             }),
-            (avoidScalesOverflow && GrammarRegistry.get('avoidXScaleOverflow')),
-            (avoidScalesOverflow && GrammarRegistry.get('avoidYScaleOverflow'))
+            (avoidScalesOverflow && GrammarRegistry.get('avoidScalesOverflow'))
         ].filter(x => x);
 
         return config;
