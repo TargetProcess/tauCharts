@@ -325,14 +325,14 @@ GrammarRegistry
             return prev;
         });
 
-        if (plannedMaxSize <= 10) {
-            return {};
-        }
-
         var contentRange = dataSource
             .reduce((memo, row) => {
                 var x = model.xi(row);
-                var r = (plannedMinSize + model.size(row) * (plannedMaxSize - plannedMinSize)) / 2;
+                var s = model.size(row);
+                var r = ((s >= plannedMinSize ?
+                    s :
+                    (plannedMinSize + s * (plannedMaxSize - plannedMinSize))
+                ) / 2);
                 memo[0] = Math.min(memo[0], x - r);
                 memo[1] = Math.max(memo[1], x + r);
                 return memo;
@@ -392,14 +392,14 @@ GrammarRegistry
             return prev;
         });
 
-        if (plannedMaxSize <= 10) {
-            return {};
-        }
-
         var contentRange = dataSource
             .reduce((memo, row) => {
                 var y = model.yi(row);
-                var r = (plannedMinSize + model.size(row) * (plannedMaxSize - plannedMinSize)) / 2;
+                var s = model.size(row);
+                var r = ((s >= plannedMinSize ?
+                    s :
+                    (plannedMinSize + s * (plannedMaxSize - plannedMinSize))
+                ) / 2);
                 memo[0] = Math.min(memo[0], y - r);
                 memo[1] = Math.max(memo[1], y + r);
                 return memo;
