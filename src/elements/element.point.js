@@ -14,6 +14,7 @@ const Point = {
             (config.guide || {}),
             {
                 animationSpeed: 0,
+                avoidScalesOverflow: true,
                 enableColorToBarPosition: false
             });
 
@@ -31,6 +32,7 @@ const Point = {
                 ]
             });
 
+        const avoidScalesOverflow = config.guide.avoidScalesOverflow;
         const enableColorPositioning = config.guide.enableColorToBarPosition;
 
         config.transformRules = [
@@ -80,8 +82,8 @@ const Point = {
 
                 return method(prevModel, params);
             }),
-            (GrammarRegistry.get('avoidXScaleOverflow')),
-            (GrammarRegistry.get('avoidYScaleOverflow'))
+            (avoidScalesOverflow && GrammarRegistry.get('avoidXScaleOverflow')),
+            (avoidScalesOverflow && GrammarRegistry.get('avoidYScaleOverflow'))
         ].filter(x => x);
 
         return config;

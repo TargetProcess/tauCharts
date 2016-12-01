@@ -23,6 +23,7 @@ const Line = {
         config.guide = utils.defaults(
             (config.guide || {}),
             {
+                avoidScalesOverflow: true,
                 interpolate: 'linear'
             });
 
@@ -32,6 +33,8 @@ const Line = {
             enableStack && BasePath.grammarRuleFillGaps,
             enableStack && GrammarRegistry.get('stack')
         ].concat(config.transformModel || []);
+
+        const avoidScalesOverflow = config.guide.avoidScalesOverflow;
 
         config.adjustRules = [
             ((prevModel, args) => {
@@ -54,8 +57,8 @@ const Line = {
 
                 return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
             }),
-            (config.guide.size && GrammarRegistry.get('avoidXScaleOverflow')),
-            (config.guide.size && GrammarRegistry.get('avoidYScaleOverflow'))
+            (config.guide.size && avoidScalesOverflow && GrammarRegistry.get('avoidXScaleOverflow')),
+            (config.guide.size && avoidScalesOverflow && GrammarRegistry.get('avoidYScaleOverflow'))
         ].filter(x => x);
         return config;
     },

@@ -16,6 +16,7 @@ const Interval = {
             (config.guide),
             {
                 animationSpeed: 0,
+                avoidScalesOverflow: true,
                 prettify: true,
                 enableColorToBarPosition: !config.stack
             });
@@ -52,6 +53,7 @@ const Interval = {
                 )
             });
 
+        const avoidScalesOverflow = config.guide.avoidScalesOverflow;
         const enableColorPositioning = config.guide.enableColorToBarPosition;
         const enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
@@ -83,7 +85,11 @@ const Interval = {
 
                 return GrammarRegistry.get('size_distribute_evenly')(prevModel, params);
             })),
-            (enableDistributeEvenly && config.guide.prettify && GrammarRegistry.get('avoidXScaleOverflow')),
+            (
+                avoidScalesOverflow &&
+                enableDistributeEvenly &&
+                GrammarRegistry.get('avoidXScaleOverflow')
+            ),
             (config.stack && GrammarRegistry.get('adjustYScale'))
         ].filter(x => x);
 
