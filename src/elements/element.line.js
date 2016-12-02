@@ -23,6 +23,7 @@ const Line = {
         config.guide = utils.defaults(
             (config.guide || {}),
             {
+                avoidScalesOverflow: true,
                 interpolate: 'linear'
             });
 
@@ -33,14 +34,16 @@ const Line = {
             enableStack && GrammarRegistry.get('stack')
         ].concat(config.transformModel || []);
 
+        const avoidScalesOverflow = config.guide.avoidScalesOverflow;
+        const isEmptySize = ((model) => !model.scaleSize.dim); // TODO: empty method for size scale???
+
         config.adjustRules = [
             ((prevModel, args) => {
-                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
                 const sizeCfg = utils.defaults(
                     (config.guide.size || {}),
                     {
                         defMinSize: 2,
-                        defMaxSize: (isEmptySize ? 6 : 40)
+                        defMaxSize: (isEmptySize(prevModel) ? 6 : 40)
                     });
                 const params = Object.assign(
                     {},
@@ -53,9 +56,17 @@ const Line = {
                     });
 
                 return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
-            })
-        ];
-
+            }),
+            (avoidScalesOverflow && ((prevModel, args) => {
+                if (isEmptySize(prevModel)) {
+                    return (() => ({}));
+                }
+                const params = Object.assign({}, args, {
+                    sizeDirection: 'xy'
+                });
+                return GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+            }))
+        ].filter(x => x);
         return config;
     },
 

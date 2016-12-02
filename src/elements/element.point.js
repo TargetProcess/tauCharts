@@ -14,7 +14,7 @@ const Point = {
             (config.guide || {}),
             {
                 animationSpeed: 0,
-                prettify: true,
+                avoidScalesOverflow: true,
                 enableColorToBarPosition: false
             });
 
@@ -32,6 +32,7 @@ const Point = {
                 ]
             });
 
+        const avoidScalesOverflow = config.guide.avoidScalesOverflow;
         const enableColorPositioning = config.guide.enableColorToBarPosition;
 
         config.transformRules = [
@@ -80,7 +81,13 @@ const Point = {
                     GrammarRegistry.get('adjustStaticSizeScale'));
 
                 return method(prevModel, params);
-            })
+            }),
+            (avoidScalesOverflow && ((prevModel, args) => {
+                const params = Object.assign({}, args, {
+                    sizeDirection: 'xy'
+                });
+                return GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+            }))
         ].filter(x => x);
 
         return config;

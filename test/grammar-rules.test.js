@@ -23,28 +23,29 @@ define(function (require) {
             }
         };
 
-        it('should support avoidBaseScaleOverflow rule (continues scale)', function () {
+        it('should support avoidScalesOverflow rule (continues scale)', function () {
             var xConfig = {dim: 'x'};
             var sConfig = {dim: 's', minSize: 1, maxSize: 40};
             var model = {
                 scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
+                size: (row) => model.scaleSize.value(row[model.scaleSize.dim]),
                 xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
+            GrammarRegistry.get('avoidScalesOverflow')(model, {sizeDirection: 'x'});
 
             model.scaleX.commit();
             model.scaleSize.commit();
 
             expect(xConfig.min).to.equal(-0.2);
             expect(xConfig.max).to.equal(1.2);
-            expect(sConfig.minSize).to.equal(1);
+            expect(sConfig.minSize).to.be.closeTo(0.7, 0.1);
             expect(sConfig.maxSize).to.be.closeTo(29, 1);
         });
 
-        it('should ignore avoidBaseScaleOverflow rule for ordinal scale', function () {
+        it('should ignore avoidScalesOverflow rule for ordinal scale', function () {
             var xConfig = {dim: 'x_ordinal'};
             var xConfigOriginal = JSON.stringify(xConfig);
             var sConfig = {dim: 's', minSize: 1, maxSize: 40};
@@ -52,32 +53,12 @@ define(function (require) {
             var model = {
                 scaleX: new OrdinalScale(xSrc, xConfig).create([0, 100]),
                 scaleSize: new SizeScale(xSrc, sConfig).create(),
+                size: (row) => model.scaleSize.value(row[model.scaleSize.dim]),
                 xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
-
-            model.scaleX.commit();
-            model.scaleSize.commit();
-
-            expect(JSON.stringify(xConfig)).to.equal(xConfigOriginal);
-            expect(JSON.stringify(sConfig)).to.equal(sConfigOriginal);
-        });
-
-        it('should ignore avoidBaseScaleOverflow rule when max size is less than 10', function () {
-            var xConfig = {dim: 'x'};
-            var xConfigOriginal = JSON.stringify(xConfig);
-            var sConfig = {dim: 's', minSize: 1, maxSize: 10};
-            var sConfigOriginal = JSON.stringify(sConfig);
-            var model = {
-                scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
-                scaleSize: new SizeScale(xSrc, sConfig).create(),
-                xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
-                data: (() => data)
-            };
-
-            GrammarRegistry.get('avoidBaseScaleOverflow')(model);
+            GrammarRegistry.get('avoidScalesOverflow')(model, {sizeDirection: 'x'});
 
             model.scaleX.commit();
             model.scaleSize.commit();

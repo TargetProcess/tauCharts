@@ -22,6 +22,7 @@ define(function(require) {
         {
             unit: {
                 guide: {
+                    avoidScalesOverflow: false,
                     x: {nice: false},
                     y: {nice: false}
                 },
@@ -75,6 +76,7 @@ define(function(require) {
                 x: 'x',
                 y: 'y',
                 guide: {
+                    avoidScalesOverflow: false,
                     x: {nice: false},
                     y: {nice: false}
                 },
@@ -228,6 +230,7 @@ define(function(require) {
             x: 'x',
             y: 'y',
             guide: {
+                avoidScalesOverflow: false,
                 x: {nice: false},
                 y: {nice: false}
             },
@@ -307,6 +310,36 @@ define(function(require) {
                 expect(sizes[0]).to.be.closeTo(minimalRadius, 0);
                 expect(sizes[1]).to.be.closeTo(15.6066, 0.0001);
                 expect(sizes[2]).to.be.closeTo(20, 0);
+            });
+        });
+
+    describePlot(
+        "Scatterplot without overflow",
+        {
+            unit: Object.assign({}, scatterplotSpec.unit, {
+                guide: {
+                    avoidScalesOverflow: true,
+                    x: {nice: false},
+                    y: {nice: false}
+                }
+            })
+        },
+        [
+            {x: 0, y: 0, size: 4},
+            {x: 1, y: 1, size: 8}
+        ],
+        function() {
+            it("Should avoid points overflow", function() {
+                var dots = getDots();
+                expect(dots.length).to.equal(2);
+                var positions = dots.map(position);
+                expect(parseFloat(positions[0].x)).to.be.closeTo(15, 1);
+                expect(parseFloat(positions[0].y)).to.be.closeTo(785, 1);
+                expect(parseFloat(positions[1].x)).to.be.closeTo(781, 1);
+                expect(parseFloat(positions[1].y)).to.be.closeTo(19, 1);
+                var sizes = dots.map(getAttr('r')).map(parseFloat);
+                expect(sizes[0]).to.be.closeTo(15, 1);
+                expect(sizes[1]).to.be.closeTo(19, 1);
             });
         });
 

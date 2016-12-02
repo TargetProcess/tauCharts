@@ -309,63 +309,105 @@ GrammarRegistry
 
         return {};
     })
-    .reg('avoidBaseScaleOverflow', (model) => {
+    .reg('avoidScalesOverflow', (model, {sizeDirection}) => {
 
-        const dataSource = model.data();
+        // TODO: Don't ignore logarithmic scale,
+        // add scale method for extending it's domain.
+        const shouldIgnoreScale = (scale, direction) => (
+            !scale ||
+            scale.discrete ||
+            scale.scaleType === 'logarithmic' ||
+            sizeDirection.indexOf(direction) < 0
+        );
 
-        if (model.scaleX.discrete) {
+        const ignoreX = shouldIgnoreScale(model.scaleX, 'x');
+        const ignoreY = shouldIgnoreScale(model.scaleY, 'y');
+
+        if (ignoreX && ignoreY) {
             return {};
         }
 
+        var plannedMinSize;
         var plannedMaxSize;
         model.scaleSize.fixup((prev) => {
+            plannedMinSize = prev.minSize;
             plannedMaxSize = prev.maxSize;
             return prev;
         });
 
-        if (plannedMaxSize <= 10) {
-            return {};
-        }
+        var border = model.data()
+            .reduce((memo, row) => {
+                var s = model.size(row);
+                var r = ((s >= plannedMinSize ?
+                    s :
+                    (plannedMinSize + s * (plannedMaxSize - plannedMinSize))
+                ) / 2);
+                var x, y;
+                if (!ignoreX) {
+                    x = model.xi(row);
+                    memo.left = Math.min(memo.left, x - r);
+                    memo.right = Math.max(memo.right, x + r);
+                }
+                if (!ignoreY) {
+                    y = model.yi(row);
+                    memo.top = Math.min(memo.top, y - r);
+                    memo.bottom = Math.max(memo.bottom, y + r);
+                }
+                return memo;
+            }, {
+                top: Number.MAX_VALUE,
+                right: -Number.MAX_VALUE,
+                bottom: -Number.MAX_VALUE,
+                left: Number.MAX_VALUE
+            });
 
-        var xs = dataSource
-            .map((row) => model.xi(row))
-            .sort(((a, b) => (a - b)));
+        const fixScale = (scale, start, end, flip) => {
 
-        var domain = model.scaleX.domain();
-        var length = Math.abs(model.scaleX.value(domain[1]) - model.scaleX.value(domain[0]));
-        var koeff = ((domain[1] - domain[0]) / length);
+            var domain = scale.domain();
+            var length = Math.abs(scale.value(domain[1]) - scale.value(domain[0]));
+            var koeff = ((domain[1] - domain[0]) / length);
 
-        var lPad = Math.max(0, (plannedMaxSize / 2 - xs[0]));
-        var rPad = Math.max(0, (xs[xs.length - 1] + plannedMaxSize / 2 - length));
+            var _startPad = Math.max(0, (-start));
+            var _endPad = Math.max(0, (end - length));
 
-        var lxPad = model.flip ? rPad : lPad;
-        var rxPad = model.flip ? lPad : rPad;
+            var startPad = model.flip ? _endPad : _startPad;
+            var endPad = model.flip ? _startPad : _endPad;
 
-        var lVal = domain[0] - (lxPad * koeff);
-        var rVal = domain[1] + (rxPad * koeff);
+            var startVal = domain[0] - ((flip ? endPad : startPad) * koeff);
+            var endVal = domain[1] + ((flip ? startPad : endPad) * koeff);
 
-        model.scaleX.fixup((prev) => {
-            var next = {};
-            if (!prev.fixed) {
-                next.fixed = true;
-                next.min = lVal;
-                next.max = rVal;
-                next.nice = false;
-            } else {
-                if (prev.min > lVal) {
-                    next.min = lVal;
+            scale.fixup((prev) => {
+                var next = {};
+                if (!prev.fixed) {
+                    next.fixed = true;
+                    next.min = startVal;
+                    next.max = endVal;
+                    next.nice = false;
+                } else {
+                    if (prev.min > startVal) {
+                        next.min = startVal;
+                    }
+
+                    if (prev.max < endVal) {
+                        next.max = endVal;
+                    }
                 }
 
-                if (prev.max < rVal) {
-                    next.max = rVal;
-                }
-            }
+                return next;
+            });
 
-            return next;
-        });
+            return (length / (startPad + length + endPad));
+        };
 
-        var linearlyScaledMaxSize = plannedMaxSize * (length / (lxPad + rxPad + length));
-        model.scaleSize.fixup(() => ({maxSize: linearlyScaledMaxSize}));
+        var kx = (ignoreX ? 1 : fixScale(model.scaleX, border.left, border.right, false));
+        var ky = (ignoreY ? 1 : fixScale(model.scaleY, border.top, border.bottom, true));
+
+        var linearlyScaledMinSize = Math.min(plannedMinSize * kx, plannedMinSize * ky);
+        var linearlyScaledMaxSize = Math.min(plannedMaxSize * kx, plannedMaxSize * ky);
+        model.scaleSize.fixup(() => ({
+            minSize: linearlyScaledMinSize,
+            maxSize: linearlyScaledMaxSize
+        }));
 
         return {};
     });
