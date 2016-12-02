@@ -344,6 +344,13 @@ export class Plot extends Emitter {
                     .remove();
             });
 
+        // Set chart background
+        if (this.configGPL.settings.detectBackground) {
+            var container = this._layout.layout;
+            container.style.backgroundColor = '';
+            container.style.backgroundColor = utilsDom.detectElementBackgroundColor(container);
+        }
+
         this._cancelRendering();
         this._renderScenario(scenario);
     }
