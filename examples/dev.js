@@ -11,12 +11,15 @@
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
             'horizontal-scroll',
+            'logarithmic-scale',
             'smooth-line',
             'whiskers'
         ],
         'dev-quick-test/': fileRange(
             'ex-',
-            range(0, 31), range(40, 55)
+            range(0, 31),
+            range(40, 48),
+            range(50, 55)
         ),
         'datasets/': [
             'cars',
