@@ -89,7 +89,12 @@ const Interval = {
             (
                 avoidScalesOverflow &&
                 enableDistributeEvenly &&
-                GrammarRegistry.get('avoidScalesOverflow')
+                ((prevModel, args) => {
+                    const params = Object.assign({}, args, {
+                        sizeDirection: 'x'
+                    });
+                    return GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+                })
             ),
             (config.stack && GrammarRegistry.get('adjustYScale'))
         ].filter(x => x);

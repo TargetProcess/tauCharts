@@ -82,7 +82,12 @@ const Point = {
 
                 return method(prevModel, params);
             }),
-            (avoidScalesOverflow && GrammarRegistry.get('avoidScalesOverflow'))
+            (avoidScalesOverflow && ((prevModel, args) => {
+                const params = Object.assign({}, args, {
+                    sizeDirection: 'xy'
+                });
+                return GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+            }))
         ].filter(x => x);
 
         return config;

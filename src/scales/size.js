@@ -24,8 +24,7 @@ export class SizeScale extends BaseScale {
             Math.max(...[max, vars[1]].filter(Number.isFinite))
         ];
 
-        this.addField('scaleType', 'size')
-            .addField('direction', 'xy');
+        this.addField('scaleType', 'size');
     }
 
     isInDomain(x) {

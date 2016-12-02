@@ -309,7 +309,7 @@ GrammarRegistry
 
         return {};
     })
-    .reg('avoidScalesOverflow', (model) => {
+    .reg('avoidScalesOverflow', (model, {sizeDirection}) => {
 
         // TODO: Don't ignore logarithmic scale,
         // add scale method for extending it's domain.
@@ -317,7 +317,7 @@ GrammarRegistry
             !scale ||
             scale.discrete ||
             scale.scaleType === 'logarithmic' ||
-            model.scaleSize.direction.indexOf(direction) < 0
+            sizeDirection.indexOf(direction) < 0
         );
 
         const ignoreX = shouldIgnoreScale(model.scaleX, 'x');

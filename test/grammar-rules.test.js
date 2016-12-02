@@ -34,7 +34,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidScalesOverflow')(model);
+            GrammarRegistry.get('avoidScalesOverflow')(model, {sizeDirection: 'x'});
 
             model.scaleX.commit();
             model.scaleSize.commit();
@@ -58,7 +58,7 @@ define(function (require) {
                 data: (() => data)
             };
 
-            GrammarRegistry.get('avoidScalesOverflow')(model);
+            GrammarRegistry.get('avoidScalesOverflow')(model, {sizeDirection: 'x'});
 
             model.scaleX.commit();
             model.scaleSize.commit();
