@@ -355,10 +355,10 @@ GrammarRegistry
                 }
                 return memo;
             }, {
-                top: Infinity,
-                right: -Infinity,
-                bottom: -Infinity,
-                left: Infinity
+                top: Number.MAX_VALUE,
+                right: -Number.MAX_VALUE,
+                bottom: -Number.MAX_VALUE,
+                left: Number.MAX_VALUE
             });
 
         const fixScale = (scale, start, end, flip) => {
