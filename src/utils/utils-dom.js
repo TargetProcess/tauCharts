@@ -293,7 +293,8 @@ var utilsDom = {
             if (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
                 return s.backgroundColor;
             }
-        } while (current = current.parentElement);
+            current = current.parentElement;
+        } while (current);
         return 'white';
     }
 };
