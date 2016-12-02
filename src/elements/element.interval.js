@@ -66,6 +66,7 @@ const Interval = {
             .concat(config.transformModel || []);
 
         config.adjustRules = [
+            ((model) => (model.scaleSize.direction = 'x', {})),
             (enableDistributeEvenly && ((prevModel, args) => {
                 const sizeCfg = utils.defaults(
                     (config.guide.size || {}),

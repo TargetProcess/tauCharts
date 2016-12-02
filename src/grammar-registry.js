@@ -311,9 +311,10 @@ GrammarRegistry
     })
     .reg('avoidScalesOverflow', (model) => {
 
-        const dataSource = model.data();
+        const ignoreX = (!model.scaleX || model.scaleX.discrete || model.scaleSize.direction.indexOf('x') < 0);
+        const ignoreY = (!model.scaleY || model.scaleY.discrete || model.scaleSize.direction.indexOf('y') < 0);
 
-        if (model.scaleX.discrete && model.scaleY.discrete) {
+        if (ignoreX && ignoreY) {
             return {};
         }
 
@@ -325,19 +326,24 @@ GrammarRegistry
             return prev;
         });
 
-        var border = dataSource
+        var border = model.data()
             .reduce((memo, row) => {
-                var x = model.xi(row);
-                var y = model.yi(row);
                 var s = model.size(row);
                 var r = ((s >= plannedMinSize ?
                     s :
                     (plannedMinSize + s * (plannedMaxSize - plannedMinSize))
                 ) / 2);
-                memo.top = Math.min(memo.top, y - r);
-                memo.right = Math.max(memo.right, x + r);
-                memo.bottom = Math.max(memo.bottom, y + r);
-                memo.left = Math.min(memo.left, x - r);
+                var x, y;
+                if (!ignoreX) {
+                    x = model.xi(row);
+                    memo.left = Math.min(memo.left, x - r);
+                    memo.right = Math.max(memo.right, x + r);
+                }
+                if (!ignoreY) {
+                    y = model.yi(row);
+                    memo.top = Math.min(memo.top, y - r);
+                    memo.bottom = Math.max(memo.bottom, y + r);
+                }
                 return memo;
             }, {
                 top: Infinity,
@@ -384,8 +390,8 @@ GrammarRegistry
             return (length / (startPad + length + endPad));
         };
 
-        var kx = model.scaleX.discrete ? 1 : fixScale(model.scaleX, border.left, border.right, false);
-        var ky = model.scaleY.discrete ? 1 : fixScale(model.scaleY, border.top, border.bottom, true);
+        var kx = (ignoreX ? 1 : fixScale(model.scaleX, border.left, border.right, false));
+        var ky = (ignoreY ? 1 : fixScale(model.scaleY, border.top, border.bottom, true));
 
         var linearlyScaledMinSize = Math.min(plannedMinSize * kx, plannedMinSize * ky);
         var linearlyScaledMaxSize = Math.min(plannedMaxSize * kx, plannedMaxSize * ky);

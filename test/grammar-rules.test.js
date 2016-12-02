@@ -41,7 +41,7 @@ define(function (require) {
 
             expect(xConfig.min).to.equal(-0.2);
             expect(xConfig.max).to.equal(1.2);
-            expect(sConfig.minSize).to.equal(1);
+            expect(sConfig.minSize).to.be.closeTo(0.7, 0.1);
             expect(sConfig.maxSize).to.be.closeTo(29, 1);
         });
 
