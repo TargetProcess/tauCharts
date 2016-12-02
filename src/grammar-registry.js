@@ -384,13 +384,8 @@ GrammarRegistry
                     next.max = endVal;
                     next.nice = false;
                 } else {
-                    if (prev.min > startVal) {
-                        next.min = startVal;
-                    }
-
-                    if (prev.max < endVal) {
-                        next.max = endVal;
-                    }
+                    next.min = (prev.min > startVal ? next.min : prev.min);
+                    next.max = (prev.max < endVal ? next.max : prev.max);
                 }
 
                 return next;
