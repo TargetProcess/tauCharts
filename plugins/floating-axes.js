@@ -24,6 +24,11 @@
     var parentProp = '__floatingAxesSrcParent__';
     var transProp = '__floatingAxesSrcTransform__';
 
+    var counter = 0;
+    var getId = function () {
+        return ++counter;
+    };
+
     function floatingAxes(_settings) {
 
         var settings = utils.defaults(_settings || {}, {
@@ -34,6 +39,7 @@
         return {
 
             init: function (chart) {
+                this.instanceId = getId();
                 this.chart = chart;
                 this.rootNode = chart.getLayout().contentContainer;
 
@@ -89,9 +95,11 @@
 
             createFloatingLayout: function () {
 
+                var id = this.instanceId;
                 var root = this.rootNode;
                 var svg = this.chart.getSVG();
                 var d3Svg = d3.select(svg);
+                var frameRoot = d3Svg.selectAll('.frame-root');
                 var animationSpeed = this.chart.configGPL.settings.animationSpeed;
                 var scrollManager = this.scrollManager = new ScrollManager(root);
 
@@ -139,6 +147,7 @@
                 var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
 
                 function getPositions() {
+                    var chartTransform = parseTransform(frameRoot.attr('transform'));
                     return {
                         scrollLeft: root.scrollLeft,
                         scrollTop: root.scrollTop,
@@ -148,6 +157,8 @@
                         scrollbarHeight: scrollbars.height,
                         svgWidth: Number(d3Svg.attr('width')),
                         svgHeight: Number(d3Svg.attr('height')),
+                        frameRootX: chartTransform.x,
+                        frameRootY: chartTransform.y,
                         minXAxesY: minXAxesY,
                         maxYAxesX: maxYAxesX
                     };
@@ -159,22 +170,42 @@
                     var defs = d3Svg.append('defs')
                         .attr('class', 'floating-axes floating-axes__defs');
 
-                    var clipRect = defs.append('clipPath')
-                        .attr('id', 'floating-axes__clip-rect')
-                        .append('rect')
+                    var chartClip = defs.append('clipPath')
+                        .attr('id', 'floating-axes__chart-clip-path-' + id)
+                        .append('rect');
+
+                    var xAxisClip = defs.append('clipPath')
+                        .attr('id', 'floating-axes__x-axis-clip-path-' + id)
+                        .append('rect');
+
+                    var yAxisClip = defs.append('clipPath')
+                        .attr('id', 'floating-axes__y-axis-clip-path-' + id)
+                        .append('rect');
 
                     scrollManager
                         .onScroll(function (scrollLeft, scrollTop) {
-                            var x = (scrollLeft);
-                            var y = (scrollTop);
-                            var width = (pos.visibleWidth - pos.maxYAxesX - pos.scrollbarWidth);
-                            var height = (pos.visibleHeight - pos.svgHeight + pos.minXAxesY - pos.scrollbarHeight);
-                            clipRect
-                                .attr('x', x)
-                                .attr('y', y)
-                                .attr('width', width)
-                                .attr('height', height);
+
+                            chartClip
+                                .attr('x', (scrollLeft + maxYAxesX - pos.frameRootX))
+                                .attr('y', (scrollTop - pos.frameRootY))
+                                .attr('width', (pos.visibleWidth - pos.maxYAxesX))
+                                .attr('height', (pos.visibleHeight - pos.svgHeight + pos.minXAxesY - pos.scrollbarHeight));
+
+                            xAxisClip
+                                .attr('x', (pos.maxYAxesX + scrollLeft))
+                                .attr('y', (pos.minXAxesY))
+                                .attr('width', (pos.visibleWidth - pos.maxYAxesX))
+                                .attr('height', (pos.svgHeight - pos.minXAxesY));
+
+                            yAxisClip
+                                .attr('x', 0)
+                                .attr('y', scrollTop)
+                                .attr('width', (pos.maxYAxesX))
+                                .attr('height', (pos.visibleHeight - pos.svgHeight + pos.minXAxesY - pos.scrollbarHeight));
                         });
+
+                    frameRoot
+                        .attr('clip-path', 'url(#floating-axes__chart-clip-path-' + id + ')');
 
                     var directions = {
                         ns: {x1: 0, y1: 0, x2: 0, y2: 1},
@@ -185,7 +216,7 @@
                     Object.keys(directions).forEach(function (d) {
                         var coords = directions[d];
                         var g = defs.append('linearGradient')
-                            .attr('id', 'shadow-gradient-' + d)
+                            .attr('id', 'shadow-gradient-' + d + '-' + id)
                             .attr('x1', coords.x1)
                             .attr('y1', coords.y1)
                             .attr('x2', coords.x2)
@@ -247,7 +278,8 @@
                     var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
 
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes__x');
+                        .attr('class', 'floating-axes floating-axes__x')
+                        .attr('clip-path', 'url(#floating-axes__x-axis-clip-path-' + id + ')');
 
                     transferAxes(g, axesInfo.x);
 
@@ -279,7 +311,8 @@
 
                 var yAxes = (function extractYAxes() {
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes__y');
+                        .attr('class', 'floating-axes floating-axes__y')
+                        .attr('clip-path', 'url(#floating-axes__y-axis-clip-path-' + id + ')');
 
                     transferAxes(g, axesInfo.y);
 
@@ -319,7 +352,7 @@
 
                     var createShadow = function (direction, x, y, width, height) {
                         return g.append('rect')
-                            .attr('fill', 'url(#shadow-gradient-' + direction + ')')
+                            .attr('fill', 'url(#shadow-gradient-' + direction + '-' + id + ')')
                             .attr('x', x)
                             .attr('y', y)
                             .attr('width', width)
@@ -369,9 +402,6 @@
                             toggle(shadowWE, scrollLeft > 0 && pos.svgWidth > pos.visibleWidth);
                         });
                 })();
-
-                d3.select(svg).selectAll('.frame-root')
-                    .attr('clip-path', 'url(#floating-axes__clip-rect)');
 
                 // Setup initial position
                 scrollManager.fireScroll();
