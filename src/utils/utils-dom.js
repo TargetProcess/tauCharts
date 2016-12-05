@@ -280,22 +280,6 @@ var utilsDom = {
                 .trim()
                 .replace(/\s{2,}/g, ' ')
         );
-    },
-
-    detectElementBackgroundColor: function (el) {
-        var current = el;
-        var s;
-        do {
-            s = window.getComputedStyle(current);
-            if (s.backgroundImage !== 'none') {
-                return 'transparent';
-            }
-            if (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                return s.backgroundColor;
-            }
-            current = current.parentElement;
-        } while (current);
-        return 'white';
     }
 };
 // TODO: Export functions separately.

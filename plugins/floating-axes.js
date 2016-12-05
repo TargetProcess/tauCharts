@@ -31,10 +31,7 @@
 
     function floatingAxes(_settings) {
 
-        var settings = utils.defaults(_settings || {}, {
-            detectBackground: true,
-            bgcolor: '#fff'
-        });
+        var settings = _settings || {};
 
         return {
 
@@ -56,14 +53,6 @@
             },
 
             onRender: function () {
-
-                if (settings.detectBackground) {
-                    var bg = window.getComputedStyle(this.chart.getLayout().layout).backgroundColor;
-                    if (bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
-                        settings.bgcolor = bg;
-                    }
-                }
-                SHADOW_COLOR_1 = settings.bgcolor;
 
                 var applicable = true;
                 this.chart.traverseSpec(this.chart.getSpec(), function (unit) {
