@@ -24,15 +24,19 @@
     var parentProp = '__floatingAxesSrcParent__';
     var transProp = '__floatingAxesSrcTransform__';
 
+    var counter = 0;
+    var getId = function () {
+        return ++counter;
+    };
+
     function floatingAxes(_settings) {
 
-        var settings = utils.defaults(_settings || {}, {
-            bgcolor: '#fff'
-        });
+        var settings = _settings || {};
 
         return {
 
             init: function (chart) {
+                this.instanceId = getId();
                 this.chart = chart;
                 this.rootNode = chart.getLayout().contentContainer;
 
@@ -80,9 +84,11 @@
 
             createFloatingLayout: function () {
 
+                var id = this.instanceId;
                 var root = this.rootNode;
                 var svg = this.chart.getSVG();
                 var d3Svg = d3.select(svg);
+                var frameRoot = d3Svg.selectAll('.frame-root');
                 var animationSpeed = this.chart.configGPL.settings.animationSpeed;
                 var scrollManager = this.scrollManager = new ScrollManager(root);
 
@@ -130,6 +136,7 @@
                 var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
 
                 function getPositions() {
+                    var chartTransform = parseTransform(frameRoot.attr('transform'));
                     return {
                         scrollLeft: root.scrollLeft,
                         scrollTop: root.scrollTop,
@@ -139,6 +146,8 @@
                         scrollbarHeight: scrollbars.height,
                         svgWidth: Number(d3Svg.attr('width')),
                         svgHeight: Number(d3Svg.attr('height')),
+                        frameRootX: chartTransform.x,
+                        frameRootY: chartTransform.y,
                         minXAxesY: minXAxesY,
                         maxYAxesX: maxYAxesX
                     };
@@ -148,7 +157,54 @@
 
                 var defs = (function createSVGDefinitions() {
                     var defs = d3Svg.append('defs')
-                        .attr('class', 'floating-axes floating-axes-defs');
+                        .attr('class', 'floating-axes floating-axes__defs');
+
+                    var chartClip = defs.append('clipPath')
+                        .attr('id', 'floating-axes__chart-clip-path-' + id)
+                        .append('rect');
+
+                    var xAxisClip = defs.append('clipPath')
+                        .attr('id', 'floating-axes__x-axis-clip-path-' + id)
+                        .append('rect');
+
+                    var yAxisClip = defs.append('clipPath')
+                        .attr('id', 'floating-axes__y-axis-clip-path-' + id)
+                        .append('rect');
+
+                    scrollManager
+                        .onScroll(function (scrollLeft, scrollTop) {
+
+                            chartClip
+                                .attr('x', (scrollLeft + maxYAxesX - pos.frameRootX))
+                                .attr('y', (scrollTop - pos.frameRootY))
+                                .attr('width', (pos.visibleWidth - pos.maxYAxesX))
+                                .attr('height', (
+                                    pos.visibleHeight -
+                                    pos.svgHeight +
+                                    pos.minXAxesY -
+                                    pos.scrollbarHeight
+                                ));
+
+                            xAxisClip
+                                .attr('x', (pos.maxYAxesX + scrollLeft))
+                                .attr('y', (pos.minXAxesY))
+                                .attr('width', (pos.visibleWidth - pos.maxYAxesX))
+                                .attr('height', (pos.svgHeight - pos.minXAxesY));
+
+                            yAxisClip
+                                .attr('x', 0)
+                                .attr('y', scrollTop)
+                                .attr('width', (pos.maxYAxesX))
+                                .attr('height', (
+                                    pos.visibleHeight -
+                                    pos.svgHeight +
+                                    pos.minXAxesY -
+                                    pos.scrollbarHeight
+                                ));
+                        });
+
+                    frameRoot
+                        .attr('clip-path', 'url(#floating-axes__chart-clip-path-' + id + ')');
 
                     var directions = {
                         ns: {x1: 0, y1: 0, x2: 0, y2: 1},
@@ -159,22 +215,23 @@
                     Object.keys(directions).forEach(function (d) {
                         var coords = directions[d];
                         var g = defs.append('linearGradient')
-                            .attr('id', 'shadow-gradient-' + d)
+                            .attr('id', 'shadow-gradient-' + d + '-' + id)
                             .attr('x1', coords.x1)
                             .attr('y1', coords.y1)
                             .attr('x2', coords.x2)
                             .attr('y2', coords.y2);
                         g.append('stop')
-                            .attr('class', 'floating-axes_shadow-start')
+                            .attr('class', 'floating-axes__shadow-start')
                             .attr('offset', '0%')
                             .attr('stop-color', SHADOW_COLOR_0)
                             .attr('stop-opacity', SHADOW_OPACITY_0);
                         g.append('stop')
-                            .attr('class', 'floating-axes_shadow-end')
+                            .attr('class', 'floating-axes__shadow-end')
                             .attr('offset', '100%')
                             .attr('stop-color', SHADOW_COLOR_1)
                             .attr('stop-opacity', SHADOW_OPACITY_1);
                     });
+
                     return defs;
                 })();
 
@@ -220,8 +277,8 @@
                     var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
 
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-x')
-                        .call(addBackground, pos.svgWidth, axisHeight, 0, pos.minXAxesY);
+                        .attr('class', 'floating-axes floating-axes__x')
+                        .attr('clip-path', 'url(#floating-axes__x-axis-clip-path-' + id + ')');
 
                     transferAxes(g, axesInfo.x);
 
@@ -253,8 +310,8 @@
 
                 var yAxes = (function extractYAxes() {
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-y')
-                        .call(addBackground, pos.maxYAxesX, pos.svgHeight);
+                        .attr('class', 'floating-axes floating-axes__y')
+                        .attr('clip-path', 'url(#floating-axes__y-axis-clip-path-' + id + ')');
 
                     transferAxes(g, axesInfo.y);
 
@@ -284,53 +341,17 @@
                     return g;
                 })();
 
-                var corner = (function createCorner() {
-                    var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
-
-                    var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-corner')
-                        .call(addBackground, pos.maxYAxesX, xAxesHeight);
-
-                    scrollManager
-                        .handleVisibilityFor(g, 'xy')
-                        .onScroll(function (scrollLeft, scrollTop) {
-                            var bottomY = scrollTop + pos.visibleHeight;
-                            var xLimit = 0;
-                            var x = Math.max(scrollLeft, xLimit);
-                            var yLimit = pos.minXAxesY;
-                            var y = Math.min(
-                                (scrollTop + pos.visibleHeight - xAxesHeight),
-                                yLimit
-                            );
-                            g.attr('transform', translate(x, y));
-                        });
-
-                    return g;
-                })();
-
-                function addBackground(g, w, h, x, y) {
-                    x = x || 0;
-                    y = y || 0;
-                    g.append('rect')
-                        .attr('class', 'i-role-bg')
-                        .attr('x', x - 1)
-                        .attr('y', y - 1)
-                        .attr('width', w + 2)
-                        .attr('height', h + 2)
-                        .attr('fill', settings.bgcolor);
-                }
-
                 var shadows = (function createShadows() {
                     var yAxesWidth = pos.maxYAxesX;
                     var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
 
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-shadows')
+                        .attr('class', 'floating-axes floating-axes__shadows')
                         .attr('pointer-events', 'none');
 
                     var createShadow = function (direction, x, y, width, height) {
                         return g.append('rect')
-                            .attr('fill', 'url(#shadow-gradient-' + direction + ')')
+                            .attr('fill', 'url(#shadow-gradient-' + direction + '-' + id + ')')
                             .attr('x', x)
                             .attr('y', y)
                             .attr('width', width)
@@ -388,7 +409,6 @@
                     defs: defs,
                     xAxes: xAxes,
                     yAxes: yAxes,
-                    corner: corner,
                     shadows: shadows
                 };
             },
@@ -403,6 +423,9 @@
                 }
 
                 var d3Svg = d3.select(this.chart.getSVG());
+                d3Svg.selectAll('.frame-root')
+                    .attr('clip-path', null);
+
                 // TODO: Reuse elements.
                 d3Svg.selectAll('.floating-axes').remove();
 
