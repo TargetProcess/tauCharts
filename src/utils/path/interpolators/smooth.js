@@ -72,20 +72,11 @@ function getCubicSpline(points, limited) {
                     if ((p1.y - c0.y) * (c3.y - p1.y) <= 0) {
                         tan = 0;
                     } else {
-                        if (p1.y > c0.y) {
-                            if (c2y > c3.y) {
-                                dx2 = dx2 * (c3.y - p1.y) / (c2y - p1.y);
-                            }
-                            if (c1y < c0.y) {
-                                dx1 = dx1 * (p1.y - c0.y) / (p1.y - c1y);
-                            }
-                        } else {
-                            if (c2y < c3.y) {
-                                dx2 = dx2 * (c3.y - p1.y) / (c2y - p1.y);
-                            }
-                            if (c1y > c0.y) {
-                                dx1 = dx1 * (p1.y - c0.y) / (p1.y - c1y);
-                            }
+                        if (p1.y > c0.y === c2y > c3.y) {
+                            dx2 = dx2 * (c3.y - p1.y) / (c2y - p1.y);
+                        }
+                        if (p1.y > c0.y === c1y < c0.y) {
+                            dx1 = dx1 * (p1.y - c0.y) / (p1.y - c1y);
                         }
                     }
                     c1x = p1.x - dx1;
