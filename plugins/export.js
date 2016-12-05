@@ -601,7 +601,7 @@
             },
 
             _addBackground: function (svg, color) {
-                if (!this._backgroundColor || this._backgroundColor === 'transparent') {
+                if (!color || color === 'transparent') {
                     return;
                 }
                 var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
