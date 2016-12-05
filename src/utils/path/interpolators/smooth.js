@@ -37,7 +37,7 @@ function getCubicSpline(points, limited) {
     }
 
     var curve = new Array((points.length - 1) * 3 + 1);
-    var c0, p1, c3, c1x, c1y, c2x, c2y, qx, qy, qt, tan;
+    var c0, p1, c3, c1x, c1y, c2x, c2y, qx, qy, qt, tan, dx1, dx2;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
         if (i > 0) {
@@ -66,21 +66,23 @@ function getCubicSpline(points, limited) {
                 c2y = bezier(qt, qy, c3.y);
 
                 if (limited) {
+                    dx1 = (p1.x - c1x);
+                    dx2 = (c2x - p1.x);
+                    tan = (c2y - p1.y) / dx2;
                     if ((p1.y - c0.y) * (c3.y - p1.y) <= 0) {
                         tan = 0;
-                    } else if (p1.y > c0.y) {
-                        tan = Math.min(
-                            (c2y - p1.y) / (c2x - p1.x),
-                            (c3.y - p1.y) / (c2x - p1.x)
-                        );
                     } else {
-                        tan = Math.max(
-                            (p1.y - c1y) / (p1.x - c1x),
-                            (p1.y - c0.y) / (p1.x - c1x)
-                        );
+                        if (p1.y > c0.y === c2y > c3.y) {
+                            dx2 = dx2 * (c3.y - p1.y) / (c2y - p1.y);
+                        }
+                        if (p1.y > c0.y === c1y < c0.y) {
+                            dx1 = dx1 * (p1.y - c0.y) / (p1.y - c1y);
+                        }
                     }
-                    c1y = p1.y - tan * (p1.x - c1x);
-                    c2y = p1.y + tan * (c2x - p1.x);
+                    c1x = p1.x - dx1;
+                    c2x = p1.x + dx2;
+                    c1y = p1.y - tan * dx1;
+                    c2y = p1.y + tan * dx2;
                 }
             }
             curve[i - 4] = {x: c1x, y: c1y};
