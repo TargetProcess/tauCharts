@@ -178,7 +178,12 @@
                                 .attr('x', (scrollLeft + maxYAxesX - pos.frameRootX))
                                 .attr('y', (scrollTop - pos.frameRootY))
                                 .attr('width', (pos.visibleWidth - pos.maxYAxesX))
-                                .attr('height', (pos.visibleHeight - pos.svgHeight + pos.minXAxesY - pos.scrollbarHeight));
+                                .attr('height', (
+                                    pos.visibleHeight -
+                                    pos.svgHeight +
+                                    pos.minXAxesY -
+                                    pos.scrollbarHeight
+                                ));
 
                             xAxisClip
                                 .attr('x', (pos.maxYAxesX + scrollLeft))
@@ -190,7 +195,12 @@
                                 .attr('x', 0)
                                 .attr('y', scrollTop)
                                 .attr('width', (pos.maxYAxesX))
-                                .attr('height', (pos.visibleHeight - pos.svgHeight + pos.minXAxesY - pos.scrollbarHeight));
+                                .attr('height', (
+                                    pos.visibleHeight -
+                                    pos.svgHeight +
+                                    pos.minXAxesY -
+                                    pos.scrollbarHeight
+                                ));
                         });
 
                     frameRoot
