@@ -62,6 +62,7 @@ export class BaseScale {
             .addField('scaleType', this.scaleConfig.type)
             .addField('source', this.scaleConfig.source)
             .addField('domain', (() => this.vars))
+            .addField('isInteger', originalSeries.every(Number.isInteger))
             .addField('originalSeries', (() => originalSeries))
             .addField('isContains', ((x) => this.isInDomain(x)))
             .addField('fixup', (fn) => {

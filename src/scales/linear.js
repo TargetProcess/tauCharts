@@ -24,8 +24,6 @@ export class LinearScale extends BaseScale {
 
         this.addField('scaleType', 'linear')
             .addField('discrete', false);
-
-        this._isInteger = values.every(Number.isInteger);
     }
 
     isInDomain(x) {
@@ -59,7 +57,7 @@ export class LinearScale extends BaseScale {
 
             copy: () => this.extendScale(d3ScaleCopy.call(scale)),
 
-            ticks: (this._isInteger ?
+            ticks: (this.getField('isInteger') ?
                 (n) => d3ScaleTicks.call(scale, n).filter(Number.isInteger) :
                 scale.ticks
             )

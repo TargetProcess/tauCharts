@@ -345,6 +345,9 @@
                                     return (x === last || x === first) ? x : Math.round(x * base) / base;
                                 }));
                         }
+                        if (sizeScale.isInteger) {
+                            values = values.map(Math.round);
+                        }
 
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
