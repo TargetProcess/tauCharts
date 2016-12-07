@@ -23,8 +23,8 @@ export function getBezierPoint(t, ...p) {
     x.unshift(t);
     y.unshift(t);
     return {
-        x: bezier.apply(null, x),
-        y: bezier.apply(null, y)
+        x: bezier(...x),
+        y: bezier(...y)
     };
 }
 
