@@ -175,14 +175,6 @@ function approximateQuadCurve(p0, p1, p2) {
     return [p0, c, p2];
 }
 
-function scaleQuadControl(newStart, start, control, end) {
-    return polar(
-        newStart,
-        (dist(start, control) * dist(newStart, end) / dist(start, end)),
-        angle(start, control)
-    );
-}
-
 function rotateQuadControl(a, start, control, end) {
     // TODO: This function is too approximate
     // and causes artifacts in extremal cases.
@@ -289,17 +281,6 @@ function getCirclesCurveTangents(a, ca, cb, b) {
         angle(tanStart.right[0], tanStart.right[1]),
         angle(tanEnd.right[1], tanEnd.right[0])
     );
-
-    // Move curve endings to become circles tangents
-    var scaleControls = (c, start, end) => [
-        c[0],
-        scaleQuadControl(start, c[0], c[1], c[2]),
-        scaleQuadControl(end, c[3], c[2], c[1]),
-        c[3]
-    ];
-
-    cleft = scaleControls(cleft, tanStart.left[0], tanEnd.left[1]);
-    cright = scaleControls(cright, tanStart.right[0], tanEnd.right[1]);
 
     return {
         left: cleft,
