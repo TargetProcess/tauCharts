@@ -33,19 +33,6 @@ export function getBrushCurve(points) {
     if (points.length === 1) {
         return getStraightSegment(points[0], points[0]);
     }
-
-    // // NOTE: Split segments for better visual result.
-    // // TODO: Split when necessary (e.g. some angle change threshold).
-    // points = points.slice(0);
-    // for (var i = points.length - 1, a, c1, c2, b, seg; i >= 3; i -= 3) {
-    //     a = points[i - 3];
-    //     c1 = points[i - 2];
-    //     c2 = points[i - 1];
-    //     b = points[i];
-    //     seg = splitCurveSegment(a, c1, c2, b);
-    //     points.splice.apply(points, [i - 2, 2].concat(seg.slice(1, 6)));
-    // }
-
     var segments = [];
     for (var i = 3; i < points.length; i += 3) {
         segments.push(getCurveSegment(points[i - 3], points[i - 2], points[i - 1], points[i]));
@@ -81,13 +68,13 @@ function getLargerCirclePath(a, b) {
  */
 function getStraightSegmentPath(a, b, tan) {
     return [
-        `M${tan.start.left.x},${tan.start.left.y}`,
-        `L${tan.end.left.x},${tan.end.left.y}`,
+        `M${tan.left[0].x},${tan.left[0].y}`,
+        `L${tan.left[1].x},${tan.left[1].y}`,
         `A${b.size / 2},${b.size / 2} 0 ${Number(a.size < b.size)} 1`,
-        `${tan.end.right.x},${tan.end.right.y}`,
-        `L${tan.start.right.x},${tan.start.right.y}`,
+        `${tan.right[1].x},${tan.right[1].y}`,
+        `L${tan.right[0].x},${tan.right[0].y}`,
         `A${a.size / 2},${a.size / 2} 0 ${Number(a.size > b.size)} 1`,
-        `${tan.start.left.x},${tan.start.left.y}`,
+        `${tan.left[0].x},${tan.left[0].y}`,
         'Z'
     ].join(' ');
 }
@@ -96,20 +83,20 @@ function getStraightSegmentPath(a, b, tan) {
  * Returns two circles joined with curves path.
  */
 function getCurveSegmentPath(a, b, ctan) {
-    var qa = diffAngle(angle(a, ctan.start.right), angle(a, ctan.start.left));
-    var qb = diffAngle(angle(b, ctan.end.right), angle(b, ctan.end.left));
+    var qa = rotation(angle(a, ctan.right[0]), angle(a, ctan.left[0]));
+    var qb = rotation(angle(b, ctan.right[1]), angle(b, ctan.left[1]));
     return [
-        `M${ctan.start.left.x},${ctan.start.left.y}`,
-        `C${ctan.start.cleft.x},${ctan.start.cleft.y}`,
-        `${ctan.end.cleft.x},${ctan.end.cleft.y}`,
-        `${ctan.end.left.x},${ctan.end.left.y}`,
+        `M${ctan.left[0].x},${ctan.left[0].y}`,
+        `C${ctan.left[1].x},${ctan.left[1].y}`,
+        `${ctan.left[2].x},${ctan.left[2].y}`,
+        `${ctan.left[3].x},${ctan.left[3].y}`,
         `A${b.size / 2},${b.size / 2} 0 ${Number(qa > Math.PI)} 1`,
-        `${ctan.end.right.x},${ctan.end.right.y}`,
-        `C${ctan.end.cright.x},${ctan.end.cright.y}`,
-        `${ctan.start.cright.x},${ctan.start.cright.y}`,
-        `${ctan.start.right.x},${ctan.start.right.y}`,
+        `${ctan.right[3].x},${ctan.right[3].y}`,
+        `C${ctan.right[2].x},${ctan.right[2].y}`,
+        `${ctan.right[1].x},${ctan.right[1].y}`,
+        `${ctan.right[0].x},${ctan.right[0].y}`,
         `A${a.size / 2},${a.size / 2} 0 ${Number(qb > Math.PI)} 1`,
-        `${ctan.start.left.x},${ctan.start.left.y}`,
+        `${ctan.left[0].x},${ctan.left[0].y}`,
         'Z'
     ].join(' ');
 }
@@ -131,7 +118,7 @@ function getStraightSegment(a, b) {
 function getCurveSegment(a, ca, cb, b) {
     var ctan = getCirclesCurveTangents(a, ca, cb, b);
     if (!ctan) {
-        return getLargerCirclePath(a, b);
+        return getStraightSegment(a, b);
     }
     return getCurveSegmentPath(a, b, ctan);
 }
@@ -140,7 +127,7 @@ function angle(a, b) {
     return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
-function diffAngle(a, b) {
+function rotation(a, b) {
     if (b < a) {
         b += 2 * Math.PI;
     }
@@ -160,8 +147,8 @@ function dist(...p) {
 
 function polar(start, d, a) {
     return {
-        x: start.x + d * Math.cos(a),
-        y: start.y + d * Math.sin(a)
+        x: (start.x + d * Math.cos(a)),
+        y: (start.y + d * Math.sin(a))
     };
 }
 
@@ -176,16 +163,40 @@ function splitCurveSegment(t, p0, c0, c1, p1) {
     return seg;
 }
 
-function approxCubicThrough4Points(p0, p1, p2, p3) {
-    var c1 = approxQuadThrough3Points(p0, p1, p2)[1];
-    var c2 = approxQuadThrough3Points(p1, p2, p3)[1];
+function approximateCubicCurve(p0, p1, p2, p3) {
+    var c1 = approximateQuadCurve(p0, p1, p2)[1];
+    var c2 = approximateQuadCurve(p1, p2, p3)[1];
     return [p0, c1, c2, p3];
 }
 
-function approxQuadThrough3Points(p0, p1, p2) {
+function approximateQuadCurve(p0, p1, p2) {
     var m = bezierPt(dist(p0, p1) / dist(p0, p1, p2), p0, p2);
     var c = bezierPt(2, m, p1);
     return [p0, c, p2];
+}
+
+function scaleQuadControl(newStart, start, control, end) {
+    return polar(
+        newStart,
+        (dist(start, control) * dist(newStart, end) / dist(start, end)),
+        angle(start, control)
+    );
+}
+
+function rotateQuadControl(a, start, control, end) {
+    // TODO: This function is too approximate
+    // and causes artifacts in extremal cases.
+    var l = dist(start, control);
+    if (l < 2) {
+        return control;
+    }
+    var dx = (control.x - start.x);
+    var lc = Math.min(l, (Math.abs(a) === Math.PI / 2 ? (l) : (dx / Math.cos(a))));
+    var dy = (lc * Math.sin(a));
+    return {
+        x: (start.x + dx),
+        y: (start.y + dy)
+    };
 }
 
 function getCirclesTangents(a, b) {
@@ -199,18 +210,18 @@ function getCirclesTangents(a, b) {
 
     var ma = angle(a, b);
     var ta = Math.asin((a.size - b.size) / d / 2);
-    var aleft = ma - Math.PI / 2 + ta;
-    var aright = ma + Math.PI / 2 - ta;
+    var aleft = (ma - Math.PI / 2 + ta);
+    var aright = (ma + Math.PI / 2 - ta);
 
     return {
-        start: {
-            left: polar(a, a.size / 2, aleft),
-            right: polar(a, a.size / 2, aright)
-        },
-        end: {
-            left: polar(b, b.size / 2, aleft),
-            right: polar(b, b.size / 2, aright)
-        }
+        left: [
+            polar(a, a.size / 2, aleft),
+            polar(b, b.size / 2, aleft)
+        ],
+        right: [
+            polar(a, a.size / 2, aright),
+            polar(b, b.size / 2, aright)
+        ]
     };
 }
 
@@ -223,178 +234,75 @@ function getCirclesCurveTangents(a, ca, cb, b) {
         return null;
     }
 
+    // Get approximate endings tangents
+    // TODO: Formula to calculate exact endings tangents (at least outer).
+    var tanStart = getCirclesTangents(a, splitCurveSegment(1 / 27, a, ca, cb, b)[3]);
+    var tanEnd = getCirclesTangents(splitCurveSegment(26 / 27, a, ca, cb, b)[3], b);
+    if (!(tanStart && tanEnd)) {
+        return null;
+    }
+
     // Get tangets with circles at 1/3 and 2/3 of curve
     var seg1 = splitCurveSegment(1 / 3, a, ca, cb, b);
-    var seg2 = splitCurveSegment(1 / 2, seg1[3], seg1[4], seg1[5], seg1[6]);
-    var m = seg1[3];
-    var n = seg2[3];
-    var tanAM = getCirclesTangents(a, m);
-    var tanMN = getCirclesTangents(m, n);
-    var tanNB = getCirclesTangents(n, b);
+    var seg2 = splitCurveSegment(1 / 2, ...seg1.slice(3));
+    var c = seg1[3];
+    var d = seg2[3];
+    var tanAC = getCirclesTangents(a, c);
+    var tanCD = getCirclesTangents(c, d);
+    var tanDB = getCirclesTangents(d, b);
+    if (!(tanAC && tanCD && tanDB)) {
+        return null;
+    }
 
-    var mleft = bezierPt(0.5, tanAM.end.left, tanMN.start.left);
-    var mright = bezierPt(0.5, tanAM.end.right, tanMN.start.right);
-    var nleft = bezierPt(0.5, tanMN.end.left, tanNB.start.left);
-    var nright = bezierPt(0.5, tanMN.end.right, tanNB.start.right);
+    // Points that tangent curves should go through
+    var leftPoints = [
+        tanStart.left[0],
+        bezierPt(0.5, tanAC.left[1], tanCD.left[0]),
+        bezierPt(0.5, tanCD.left[1], tanDB.left[0]),
+        tanEnd.left[1]
+    ];
+    var rightPoints = [
+        tanStart.right[0],
+        bezierPt(0.5, tanAC.right[1], tanCD.right[0]),
+        bezierPt(0.5, tanCD.right[1], tanDB.right[0]),
+        tanEnd.right[1]
+    ];
 
-    var gctPreserveAngles = () => {
-        var aleft = polar(a, a.size / 2, angle(a, ca) - Math.PI / 2);
-        var acleft = polar(aleft, dist(a, ca) * dist(a, mleft) / dist(a, m), angle(a, ca));
-        var aright = polar(a, a.size / 2, angle(a, ca) + Math.PI / 2);
-        var acright = polar(aright, dist(a, ca) * dist(a, mright) / dist(a, m), angle(a, ca));
-        var bleft = polar(b, b.size / 2, angle(b, cb) + Math.PI / 2);
-        var bcleft = polar(bleft, dist(b, cb) * dist(b, nleft) / dist(b, n), angle(b, cb));
-        var bright = polar(b, b.size / 2, angle(b, cb) - Math.PI / 2);
-        var bcright = polar(bright, dist(b, cb) * dist(b, nright) / dist(b, n), angle(b, cb));
-        return {aleft, acleft, aright, acright, bleft, bcleft, bright, bcright};
-    };
+    // Get tangent curves
+    var cleft = approximateCubicCurve(...leftPoints);
+    var cright = approximateCubicCurve(...rightPoints);
 
-    var scaleControl = (to,from, control, opposite) => {
-        return polar(
-            to,
-            dist(from, control) * dist(to, opposite) / dist(from, opposite),
-            angle(from, control)
-        );
-    };
+    // Rotate controls to initial angle
+    var rotateControls = (c, startAngle, endAngle) => [
+        c[0],
+        rotateQuadControl(startAngle, c[0], c[1], c[2]),
+        rotateQuadControl(endAngle, c[3], c[2], c[1]),
+        c[3]
+    ];
+    cleft = rotateControls(
+        cleft,
+        angle(tanStart.left[0], tanStart.left[1]),
+        angle(tanEnd.left[1], tanEnd.left[0])
+    );
+    cright = rotateControls(
+        cright,
+        angle(tanStart.right[0], tanStart.right[1]),
+        angle(tanEnd.right[1], tanEnd.right[0])
+    );
 
-    var rotateControl = (a, start, control, opposite) => {
-        var l = dist(start, control);
-        var dx = control.x - start.x;
-        var dy = dx * Math.tan(a); // l * Math.sin(a) / Math.sin(angle(start, control));
-        console.log(dx, dy)
-        return {
-            x: start.x + dx,
-            y: start.y + dy
-        };
+    // Move curve endings to become circles tangents
+    var scaleControls = (c, start, end) => [
+        c[0],
+        scaleQuadControl(start, c[0], c[1], c[2]),
+        scaleQuadControl(end, c[3], c[2], c[1]),
+        c[3]
+    ];
 
-        // var la = dist(start, opposite);
-        // var lb = dist(start, control);
-        // var lc = dist(control, opposite);
-        // var p = (la + lb + lc) / 2;
-        // var q = diffAngle(angle(start, opposite), a);
-        // if (q > Math.PI) {
-        //     q -= Math.PI;
-        // }
-        // console.log(q);
-        // var d = (2 * Math.sqrt(Math.max(0, p * (p - la) * (p - lb) * (p - lc))) / la / Math.sin(q));
-        // if (isNaN(d)) {
-        //     console.log('NaN', la, Math.sin(q), Math.sqrt(p * (p - la) * (p - lb) * (p - lc)), la, lb, lc);
-        // }
-        // return polar(
-        //     start,
-        //     d,
-        //     a
-        // );
-
-        // return polar(
-        //     start,
-        //     dist(start, control),
-        //     a
-        // );
-
-        // var q = diffAngle(angle(start, opposite), a);
-        // if (q > Math.PI) {
-        //     q -= Math.PI;
-        // }
-        // var l = dist(start, control, opposite);
-        // var d = dist(start, opposite);
-        // var lc = (l * l - d * d) / (l - d * Math.cos(q)) / 2;
-        // // return polar(start, lc, a);
-        // var r=polar(start, lc, a);
-        // // console.log('angle',a/Math.PI*180,angle(start,r)/Math.PI*180);
-        // console.log('dist',lc,dist(start,control));
-        // return r;
-    };
-
-    var gctPreserveWidth = () => {
-        // Approximately build curves througn tangents
-        var cleft = approxCubicThrough4Points(
-            tanAM.start.left,
-            bezierPt(0.5, tanAM.end.left, tanMN.start.left),
-            bezierPt(0.5, tanMN.end.left, tanNB.start.left),
-            tanNB.end.left
-        );
-        var cright = approxCubicThrough4Points(
-            tanAM.start.right,
-            bezierPt(0.5, tanAM.end.right, tanMN.start.right),
-            bezierPt(0.5, tanMN.end.right, tanNB.start.right),
-            tanNB.end.right
-        );
-
-        // Rotate controls to initial angle
-        cleft = [
-            cleft[0],
-            rotateControl(angle(a, ca), cleft[0], cleft[1], cleft[2]),
-            rotateControl(angle(b, cb), cleft[3], cleft[2], cleft[1]),
-            cleft[3]
-        ];
-        cright = [
-            cright[0],
-            rotateControl(angle(a, ca), cright[0], cright[1], cright[2]),
-            rotateControl(angle(b, cb), cright[3], cright[2], cright[1]),
-            cright[3]
-        ];
-
-        // Move curve endings to become circles tangents
-        // and scale controls length
-        var aleft = cleft[0];
-        var acleft = cleft[1];
-        var aright = cright[0];
-        var acright = cright[1];
-        var bleft = cleft[3];
-        var bcleft = cleft[2];
-        var bright = cright[3];
-        var bcright = cright[2];
-        // var aleft = polar(a, a.size / 2, angle(cleft[0], cleft[1]) - Math.PI / 2);
-        // var acleft = scaleControl(aleft, cleft[0], cleft[1], cleft[2]);
-        // var aright = polar(a, a.size / 2, angle(cright[0], cright[1]) + Math.PI / 2);
-        // var acright = scaleControl(aright, cright[0], cright[1], cright[2]);
-        // var bleft = polar(b, b.size / 2, angle(cleft[2], cleft[3]) - Math.PI / 2);
-        // var bcleft = scaleControl(bleft, cleft[3], cleft[2], cleft[1]);
-        // var bright = polar(b, b.size / 2, angle(cright[2], cright[3]) + Math.PI / 2);
-        // var bcright = scaleControl(bright, cright[3], cright[2], cright[1]);
-
-        // var aleft = polar(a, a.size / 2, angle(cleft[0], cleft[1]) - Math.PI / 2);
-        // var acleft = scaleControl(aleft, cleft[0], rotateControl(angle(a, ca), cleft[0], cleft[1], cleft[2]), cleft[2]);
-        // var aright = polar(a, a.size / 2, angle(cright[0], cright[1]) + Math.PI / 2);
-        // var acright = scaleControl(aright, cright[0], rotateControl(angle(a, ca), cright[0], cright[1], cright[2]), cright[2]);
-        // var bleft = polar(b, b.size / 2, angle(cleft[2], cleft[3]) - Math.PI / 2);
-        // var bcleft = scaleControl(bleft, cleft[3], rotateControl(angle(b, cb), cleft[3], cleft[2], cleft[1]), cleft[1]);
-        // var bright = polar(b, b.size / 2, angle(cright[2], cright[3]) + Math.PI / 2);
-        // var bcright = scaleControl(bright, cright[3], rotateControl(angle(b, cb), cright[3], cright[2], cright[1]), cright[1]);
-
-        return {aleft, acleft, aright, acright, bleft, bcleft, bright, bcright};
-    };
-
-    var cta = gctPreserveAngles();
-    var ctw = gctPreserveWidth();
-
-    var intr = (a, b) => {
-        var r = {};
-        Object.keys(a).forEach((k) => {
-            if (typeof b[k] === 'object') {
-                r[k] = intr(a[k], b[k]);
-            } else {
-                r[k] = (a[k] + b[k]) / 2;
-            }
-        });
-        return r;
-    };
-
-    var ct = ctw// intr(cta, ctw);
+    cleft = scaleControls(cleft, tanStart.left[0], tanEnd.left[1]);
+    cright = scaleControls(cright, tanStart.right[0], tanEnd.right[1]);
 
     return {
-        start: {
-            left: ct.aleft,
-            cleft: ct.acleft,
-            right: ct.aright,
-            cright: ct.acright
-        },
-        end: {
-            left: ct.bleft,
-            cleft: ct.bcleft,
-            right: ct.bright,
-            cright: ct.bcright
-        }
+        left: cleft,
+        right: cright
     };
 }
