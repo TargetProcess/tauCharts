@@ -51,7 +51,7 @@ function getCubicSpline(points, limited) {
             c0 = result[i - 5];
             p1 = result[i - 3];
             c3 = result[i - 1];
-            if ((p1.x - c0.x) * (c3.x - p1.x) * 1e12 <= 1e12) {
+            if ((p1.x - c0.x) * (c3.x - p1.x) * 1e12 < 1) {
                 c1x = bezier(0.5, c0.x, p1.x);
                 c2x = bezier(0.5, p1.x, c3.x);
                 c1y = bezier(0.5, c0.y, p1.y);
