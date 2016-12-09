@@ -52,7 +52,7 @@ function getCubicSpline(points, limited) {
             p1 = result[i - 3];
             c3 = result[i - 1];
             if ((p1.x - c0.x) * (c3.x - p1.x) * 1e12 < 1) {
-                c1x = interpolate(c0.x, p1.x);
+                c1x = interpolate(c0.x, p1.x, 0.5);
                 c2x = interpolate(p1.x, c3.x, 0.5);
                 c1y = interpolate(c0.y, p1.y, 0.5);
                 c2y = interpolate(p1.y, c3.y, 0.5);
