@@ -23,6 +23,41 @@
         return [min].concat(chunks).concat(max);
     };
 
+    var splitRealValuesEvenly = function (values, count) {
+        var result = [values[0]];
+        if (values.length === 1) {
+            return result;
+        }
+        var length = (values[values.length - 1] - values[0]);
+        var i, j, s, btm, top, minDiff, closest, diff;
+        for (i = 1, j = 0; i < count - 1; i++) {
+            s = (length * i / (count - 1));
+            btm = Math.max(
+                (result[result.length - 1] + length * 0.5 / (count - 1)),
+                (length * (i - 0.5) / (count - 1)));
+            top = (length * (i + 0.5) / (count - 1));
+            minDiff = Number.MAX_VALUE;
+            closest = null;
+            while (
+                (++j < values.length - 1) &&
+                (values[j] < top)
+            ) {
+                if (values[j] >= btm) {
+                    diff = Math.abs(values[j] - s);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closest = values[j];
+                    }
+                }
+            }
+            if (closest !== null) {
+                result.push(closest);
+            }
+        }
+        result.push(values[values.length - 1]);
+        return result;
+    };
+
     var getSignificantDigitsFormatter = function (start, end) {
         var diff = Math.abs(end - start);
         var significantNumbers = 2;
@@ -341,12 +376,12 @@
                             var count = log10(last - first);
                             var xF = Math.round((4 - count));
                             var base = Math.pow(10, xF);
-                            var step = (last - first) / 5;
-                            var steps = [first, first + step, first + step * 2, first + step * 3, last];
 
                             var realValues = utils.unique(
                                 self._chart
-                                    .getDataSources({excludeFilter: ['legend']})[sizeScale.source]
+                                    .getDataSources({
+                                        excludeFilter: ['legend']
+                                    })[sizeScale.source]
                                     .data
                                     .map(function (d) {
                                         return d[sizeScale.dim];
@@ -354,25 +389,7 @@
                                 .sort(function (a, b) {
                                     return (a - b);
                                 });
-
-                            for (var i = 1, ir = 0, found; i < steps.length - 1; i++) {
-                                found = false;
-                                while (
-                                    (ir < realValues.length - 1) &&
-                                    (realValues[ir] < steps[i + 1])
-                                ) {
-                                    if (realValues[ir] >= steps[i]) {
-                                        steps[i] = realValues[ir];
-                                        found = true;
-                                        break;
-                                    }
-                                    ir++;
-                                }
-                                if (!found) {
-                                    steps.splice(i, 1);
-                                    i--;
-                                }
-                            }
+                            var steps = splitRealValuesEvenly(realValues, 5);
 
                             values = utils.unique(steps
                                 .map(function (x) {
