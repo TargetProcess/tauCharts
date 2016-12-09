@@ -1,5 +1,4 @@
 import {
-    bezier,
     getBezierPoint as bezierPt,
     splitCubicSegment as split
 } from '../bezier';

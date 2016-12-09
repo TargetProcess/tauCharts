@@ -1,5 +1,5 @@
 import {utils} from '../../utils';
-import {bezier, getBezierPoint, splitCubicSegment as split} from '../bezier';
+import {getBezierPoint, splitCubicSegment as split} from '../bezier';
 
 /**
  * Returns intermediate line or curve between two sources.
