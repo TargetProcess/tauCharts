@@ -1,4 +1,4 @@
-import {bezier, getBezierPoint} from '../bezier';
+import {getBezierPoint} from '../bezier';
 
 /**
  * Returns smooth cubic spline.
@@ -52,18 +52,18 @@ function getCubicSpline(points, limited) {
             p1 = result[i - 3];
             c3 = result[i - 1];
             if ((p1.x - c0.x) * (c3.x - p1.x) * 1e12 < 1) {
-                c1x = bezier(0.5, c0.x, p1.x);
-                c2x = bezier(0.5, p1.x, c3.x);
-                c1y = bezier(0.5, c0.y, p1.y);
-                c2y = bezier(0.5, p1.y, c3.y);
+                c1x = interpolate(c0.x, p1.x);
+                c2x = interpolate(p1.x, c3.x, 0.5);
+                c1y = interpolate(c0.y, p1.y, 0.5);
+                c2y = interpolate(p1.y, c3.y, 0.5);
             } else {
                 qt = (p1.x - c0.x) / (c3.x - c0.x);
                 qx = (p1.x - c0.x * (1 - qt) * (1 - qt) - c3.x * qt * qt) / (2 * (1 - qt) * qt);
                 qy = (p1.y - c0.y * (1 - qt) * (1 - qt) - c3.y * qt * qt) / (2 * (1 - qt) * qt);
-                c1x = bezier(qt, c0.x, qx);
-                c2x = bezier(qt, qx, c3.x);
-                c1y = bezier(qt, c0.y, qy);
-                c2y = bezier(qt, qy, c3.y);
+                c1x = interpolate(c0.x, qx, qt);
+                c2x = interpolate(qx, c3.x, qt);
+                c1y = interpolate(c0.y, qy, qt);
+                c2y = interpolate(qy, c3.y, qt);
 
                 if (limited) {
                     dx1 = (p1.x - c1x);
