@@ -51,7 +51,7 @@ function getCubicSpline(points, limited) {
             c0 = result[i - 5];
             p1 = result[i - 3];
             c3 = result[i - 1];
-            if ((p1.x - c0.x) * (c3.x - p1.x) === 0) {
+            if ((p1.x - c0.x) * (c3.x - p1.x) * 1e12 <= 1e12) {
                 c1x = bezier(0.5, c0.x, p1.x);
                 c2x = bezier(0.5, p1.x, c3.x);
                 c1y = bezier(0.5, c0.y, p1.y);
@@ -73,10 +73,10 @@ function getCubicSpline(points, limited) {
                         tan = 0;
                     } else {
                         if (p1.y > c0.y === c2y > c3.y) {
-                            dx2 = dx2 * (c3.y - p1.y) / (c2y - p1.y);
+                            tan = (c3.y - p1.y) / dx2;
                         }
                         if (p1.y > c0.y === c1y < c0.y) {
-                            dx1 = dx1 * (p1.y - c0.y) / (p1.y - c1y);
+                            tan = (p1.y - c0.y) / dx1;
                         }
                     }
                     c1x = p1.x - dx1;
