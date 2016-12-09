@@ -13,11 +13,11 @@ export function getBrushLine(points) {
         return '';
     }
     if (points.length === 1) {
-        return getStraightSegment(points[0], points[0]);
+        return getCirclePath(points[0]);
     }
     var segments = [];
     for (var i = 1; i < points.length; i++) {
-        segments.push(getStraightSegment(points[i - 1], points[i]));
+        segments.push(getStraightSegmentPath(points[i - 1], points[i]));
     }
     return segments.join(' ');
 }
@@ -31,42 +31,32 @@ export function getBrushCurve(points) {
         return '';
     }
     if (points.length === 1) {
-        return getStraightSegment(points[0], points[0]);
+        return getCirclePath(points[0]);
     }
     var segments = [];
     for (var i = 3; i < points.length; i += 3) {
-        segments.push(getCurveSegment(points[i - 3], points[i - 2], points[i - 1], points[i]));
+        segments.push(getCurveSegmentPath(points[i - 3], points[i - 2], points[i - 1], points[i]));
     }
     return segments.join(' ');
 }
 
-/**
- * Returns single circle as part of SVG path.
- */
-function getCirclePath(x, y, r) {
+function getCirclePath(pt) {
+    var r = (pt.size / 2);
     return [
-        `M${x},${y - r}`,
+        `M${pt.x},${pt.y - r}`,
         `A${r},${r} 0 0 1`,
-        `${x},${y + r}`,
+        `${pt.x},${pt.y + r}`,
         `A${r},${r} 0 0 1`,
-        `${x},${y - r}`,
+        `${pt.x},${pt.y - r}`,
         'Z'
     ].join(' ');
 }
 
-/**
- * Returns single circle as part of SVG path.
- */
-function getLargerCirclePath(a, b) {
-    var largerPt = a.size > b.size ? a : b;
-    var radius = largerPt.size / 2;
-    return getCirclePath(largerPt.x, largerPt.y, radius);
-}
-
-/**
- * Returns two circles joined with lines path.
- */
-function getStraightSegmentPath(a, b, tan) {
+function getStraightSegmentPath(a, b) {
+    var tan = getCirclesTangents(a, b);
+    if (!tan) {
+        return getCirclePath((a.size > b.size ? a : b));
+    }
     return [
         `M${tan.left[0].x},${tan.left[0].y}`,
         `L${tan.left[1].x},${tan.left[1].y}`,
@@ -79,10 +69,11 @@ function getStraightSegmentPath(a, b, tan) {
     ].join(' ');
 }
 
-/**
- * Returns two circles joined with curves path.
- */
-function getCurveSegmentPath(a, b, ctan) {
+function getCurveSegmentPath(a, ca, cb, b) {
+    var ctan = getCirclesCurveTangents(a, ca, cb, b);
+    if (!ctan) {
+        return getStraightSegmentPath(a, b);
+    }
     var qa = rotation(angle(a, ctan.right[0]), angle(a, ctan.left[0]));
     var qb = rotation(angle(b, ctan.right[1]), angle(b, ctan.left[1]));
     return [
@@ -99,28 +90,6 @@ function getCurveSegmentPath(a, b, ctan) {
         `${ctan.left[0].x},${ctan.left[0].y}`,
         'Z'
     ].join(' ');
-}
-
-/**
- * Returns two circles joined with tangents.
- */
-function getStraightSegment(a, b) {
-    var tan = getCirclesTangents(a, b);
-    if (!tan) {
-        return getLargerCirclePath(a, b);
-    }
-    return getStraightSegmentPath(a, b, tan);
-}
-
-/**
- * Returns two circles joined with curves.
- */
-function getCurveSegment(a, ca, cb, b) {
-    var ctan = getCirclesCurveTangents(a, ca, cb, b);
-    if (!ctan) {
-        return getStraightSegment(a, b);
-    }
-    return getCurveSegmentPath(a, b, ctan);
 }
 
 function angle(a, b) {
@@ -163,32 +132,10 @@ function splitCurveSegment(t, p0, c0, c1, p1) {
     return seg;
 }
 
-function approximateCubicCurve(p0, p1, p2, p3) {
-    var c1 = approximateQuadCurve(p0, p1, p2)[1];
-    var c2 = approximateQuadCurve(p1, p2, p3)[1];
-    return [p0, c1, c2, p3];
-}
-
 function approximateQuadCurve(p0, p1, p2) {
     var m = bezierPt(dist(p0, p1) / dist(p0, p1, p2), p0, p2);
     var c = bezierPt(2, m, p1);
     return [p0, c, p2];
-}
-
-function rotateQuadControl(a, start, control, end) {
-    // TODO: This function is too approximate
-    // and causes artifacts in extremal cases.
-    var l = dist(start, control);
-    if (l < 2) {
-        return control;
-    }
-    var dx = (control.x - start.x);
-    var lc = Math.min(l, (Math.abs(a) === Math.PI / 2 ? (l) : (dx / Math.cos(a))));
-    var dy = (lc * Math.sin(a));
-    return {
-        x: (start.x + dx),
-        y: (start.y + dy)
-    };
 }
 
 function getCirclesTangents(a, b) {
@@ -227,63 +174,45 @@ function getCirclesCurveTangents(a, ca, cb, b) {
     }
 
     // Get approximate endings tangents
-    // TODO: Formula to calculate exact endings tangents (at least outer).
-    var tanStart = getCirclesTangents(a, splitCurveSegment(1 / 27, a, ca, cb, b)[3]);
-    var tanEnd = getCirclesTangents(splitCurveSegment(26 / 27, a, ca, cb, b)[3], b);
-    if (!(tanStart && tanEnd)) {
-        return null;
-    }
+    // TODO: Use formulas instead of approximate equations.
+    const kt = 1 / 12;
+    var getTangentsVectors = (isEnd) => {
+        var curve = (isEnd ? [b, cb, ca, a] : [a, ca, cb, b]);
+        var seg1 = splitCurveSegment(2 * kt, ...curve);
+        var seg2 = splitCurveSegment(0.5, ...seg1.slice(0, 4));
 
-    // Get tangets with circles at 1/3 and 2/3 of curve
-    var seg1 = splitCurveSegment(1 / 3, a, ca, cb, b);
-    var seg2 = splitCurveSegment(1 / 2, ...seg1.slice(3));
-    var c = seg1[3];
-    var d = seg2[3];
-    var tanAC = getCirclesTangents(a, c);
-    var tanCD = getCirclesTangents(c, d);
-    var tanDB = getCirclesTangents(d, b);
-    if (!(tanAC && tanCD && tanDB)) {
-        return null;
-    }
+        var m = seg2[3];
+        var n = seg2[6];
+        var mtan = getCirclesTangents(curve[0], m);
+        var ntan = getCirclesTangents(m, n);
 
-    // Points that tangent curves should go through
-    var leftPoints = [
-        tanStart.left[0],
-        bezierPt(0.5, tanAC.left[1], tanCD.left[0]),
-        bezierPt(0.5, tanCD.left[1], tanDB.left[0]),
-        tanEnd.left[1]
-    ];
-    var rightPoints = [
-        tanStart.right[0],
-        bezierPt(0.5, tanAC.right[1], tanCD.right[0]),
-        bezierPt(0.5, tanCD.right[1], tanDB.right[0]),
-        tanEnd.right[1]
-    ];
+        var lpoints = [
+            mtan.left[0],
+            bezierPt(0.5, mtan.left[1], ntan.left[0]),
+            ntan.left[1]
+        ];
+        var rpoints = [
+            mtan.right[0],
+            bezierPt(0.5, mtan.right[1], ntan.right[0]),
+            ntan.right[1]
+        ];
 
-    // Get tangent curves
-    var cleft = approximateCubicCurve(...leftPoints);
-    var cright = approximateCubicCurve(...rightPoints);
+        var lq = approximateQuadCurve(...lpoints)[1];
+        var rq = approximateQuadCurve(...rpoints)[1];
+        var lc = bezierPt(1 / 3 / kt, mtan.left[0], lq);
+        var rc = bezierPt(1 / 3 / kt, mtan.right[0], rq);
 
-    // Rotate controls to initial angle
-    var rotateControls = (c, startAngle, endAngle) => [
-        c[0],
-        rotateQuadControl(startAngle, c[0], c[1], c[2]),
-        rotateQuadControl(endAngle, c[3], c[2], c[1]),
-        c[3]
-    ];
-    cleft = rotateControls(
-        cleft,
-        angle(tanStart.left[0], tanStart.left[1]),
-        angle(tanEnd.left[1], tanEnd.left[0])
-    );
-    cright = rotateControls(
-        cright,
-        angle(tanStart.right[0], tanStart.right[1]),
-        angle(tanEnd.right[1], tanEnd.right[0])
-    );
+        return {
+            left: (isEnd ? [rc, rpoints[0]] : [lpoints[0], lc]),
+            right: (isEnd ? [lc, lpoints[0]] : [rpoints[0], rc])
+        };
+    };
+
+    var tstart = getTangentsVectors(false);
+    var tend = getTangentsVectors(true);
 
     return {
-        left: cleft,
-        right: cright
+        left: [...tstart.left, ...tend.left],
+        right: [...tstart.right, ...tend.right]
     };
 }
